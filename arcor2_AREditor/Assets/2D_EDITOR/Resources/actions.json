@@ -1,0 +1,41 @@
+[
+    {
+      "action_id": "MoveTo",
+      "parameters": [
+        {
+          "position": {
+            "type": "Pose6f",
+            "description": "Final position of the robotic ARM"
+          }
+        }
+      ]
+    },
+    {
+      "action_id": "MoveLine",
+      "parameters": [
+        {
+          "p1": {
+            "type": "Pose6f",
+            "description": "Start position of the robotic ARM"
+          }
+        },
+        {
+          "p2": {
+            "type": "Pose6f",
+            "description": "Final position of the robotic ARM"
+          }
+        }
+      ]
+    },
+    {
+      "action_id": "TriggerIO",
+      "parameters": [
+        {
+          "address": {
+            "type": "String",
+            "description": "Address of the IO"
+          }
+        }
+      ]
+    }
+  ]

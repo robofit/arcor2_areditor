@@ -1,0 +1,202 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "scene_id",
+    "objects"
+  ],
+  "properties": {
+    "scene_id": {
+      "$id": "#/properties/scene_id",
+      "type": "string",
+      "title": "ID of selected scene",
+      "default": "",
+      "examples": [
+        "jabloPCB/scenes/default"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "objects": {
+      "$id": "#/properties/objects",
+      "type": "array",
+      "title": "The Objects Schema",
+      "items": {
+        "$id": "#/properties/objects/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "id",
+          "action_points"
+        ],
+        "properties": {
+          "id": {
+            "$id": "#/properties/objects/items/properties/id",
+            "type": "string",
+            "title": "The Id Schema",
+            "default": "",
+            "examples": [
+              "BoxIN"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "action_points": {
+            "$id": "#/properties/objects/items/properties/action_points",
+            "type": "array",
+            "title": "The Action_points Schema",
+            "items": {
+              "$id": "#/properties/objects/items/properties/action_points/items",
+              "type": "object",
+              "title": "The Items Schema",
+              "required": [
+                "id",
+                "_position",
+                "_orientation",
+                "actions"
+              ],
+              "properties": {
+                "id": {
+                  "$id": "#/properties/objects/items/properties/action_points/items/properties/id",
+                  "type": "string",
+                  "title": "The Id Schema",
+                  "default": "",
+                  "examples": [
+                    "transfer"
+                  ],
+                  "pattern": "^(.*)$"
+                },
+                "_position": {
+                  "$id": "#/properties/objects/items/properties/action_points/items/properties/_position",
+                  "type": "object",
+                  "title": "The _position Schema",
+                  "required": [
+                    "x",
+                    "y",
+                    "z"
+                  ],
+                  "properties": {
+                    "x": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_position/properties/x",
+                      "type": "number",
+                      "title": "The X Schema",
+                      "default": 0.0,
+                      "examples": [
+                        0.5
+                      ]
+                    },
+                    "y": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_position/properties/y",
+                      "type": "number",
+                      "title": "The Y Schema",
+                      "default": 0.0,
+                      "examples": [
+                        0.6
+                      ]
+                    },
+                    "z": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_position/properties/z",
+                      "type": "integer",
+                      "title": "The Z Schema",
+                      "default": 0,
+                      "examples": [
+                        0
+                      ]
+                    }
+                  }
+                },
+                "_orientation": {
+                  "$id": "#/properties/objects/items/properties/action_points/items/properties/_orientation",
+                  "type": "object",
+                  "title": "The _orientation Schema",
+                  "required": [
+                    "x",
+                    "y",
+                    "z",
+                    "w"
+                  ],
+                  "properties": {
+                    "x": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_orientation/properties/x",
+                      "type": "integer",
+                      "title": "The X Schema",
+                      "default": 0,
+                      "examples": [
+                        0
+                      ]
+                    },
+                    "y": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_orientation/properties/y",
+                      "type": "integer",
+                      "title": "The Y Schema",
+                      "default": 0,
+                      "examples": [
+                        0
+                      ]
+                    },
+                    "z": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_orientation/properties/z",
+                      "type": "integer",
+                      "title": "The Z Schema",
+                      "default": 0,
+                      "examples": [
+                        0
+                      ]
+                    },
+                    "w": {
+                      "$id": "#/properties/objects/items/properties/action_points/items/properties/_orientation/properties/w",
+                      "type": "integer",
+                      "title": "The W Schema",
+                      "default": 0,
+                      "examples": [
+                        1
+                      ]
+                    }
+                  }
+                },
+                "actions": {
+                  "$id": "#/properties/objects/items/properties/action_points/items/properties/actions",
+                  "type": "array",
+                  "title": "The Actions Schema",
+                  "items": {
+                    "$id": "#/properties/objects/items/properties/action_points/items/properties/actions/items",
+                    "type": "object",
+                    "title": "The Items Schema",
+                    "required": [
+                      "id",
+                      "type",
+                      "parameters"
+                    ],
+                    "properties": {
+                      "id": {
+                        "$id": "#/properties/objects/items/properties/action_points/items/properties/actions/items/properties/id",
+                        "type": "string",
+                        "title": "The Id Schema",
+                        "default": "",
+                        "examples": [
+                          "MoveToBoxIN"
+                        ],
+                        "pattern": "^(.*)$"
+                      },
+                      "type": {
+                        "$id": "#/properties/objects/items/properties/action_points/items/properties/actions/items/properties/type",
+                        "type": "string",
+                        "title": "The Type Schema",
+                        "default": "",
+                        "examples": [
+                          "kinali/robot/MoveTo"
+                        ],
+                        "pattern": "^(.*)$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
