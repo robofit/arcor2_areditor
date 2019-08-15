@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using UnityEngine;
 
     /// <summary>
     /// Base class that manipulates an object via a gesture.
     /// </summary>
-    public abstract class Manipulator : MonoBehaviour
-    {
+    public abstract class Manipulator : MonoBehaviour {
         private bool m_IsManipulating;
 
         private GameObject m_SelectedObject;
@@ -34,18 +32,15 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Makes this game object become the Selected Object.
         /// </summary>
-        public void Select()
-        {
+        public void Select() {
             ManipulationSystem.Instance.Select(gameObject);
         }
 
         /// <summary>
         /// Unselects this game object if it is currently the Selected Object.
         /// </summary>
-        public void Deselect()
-        {
-            if (IsSelected())
-            {
+        public void Deselect() {
+            if (IsSelected()) {
                 ManipulationSystem.Instance.Deselect();
             }
         }
@@ -54,8 +49,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Whether this game object is the Selected Object.
         /// </summary>
         /// <returns><c>true</c>, if this is the Selected Object, <c>false</c> otherwise.</returns>
-        public bool IsSelected()
-        {
+        public bool IsSelected() {
             return m_SelectedObject == gameObject;
         }
 
@@ -64,8 +58,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected virtual bool CanStartManipulationForGesture(DragGesture gesture)
-        {
+        protected virtual bool CanStartManipulationForGesture(DragGesture gesture) {
             return false;
         }
 
@@ -74,8 +67,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected virtual bool CanStartManipulationForGesture(PinchGesture gesture)
-        {
+        protected virtual bool CanStartManipulationForGesture(PinchGesture gesture) {
             return false;
         }
 
@@ -84,8 +76,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected virtual bool CanStartManipulationForGesture(TapGesture gesture)
-        {
+        protected virtual bool CanStartManipulationForGesture(TapGesture gesture) {
             return false;
         }
 
@@ -94,8 +85,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected virtual bool CanStartManipulationForGesture(TwistGesture gesture)
-        {
+        protected virtual bool CanStartManipulationForGesture(TwistGesture gesture) {
             return false;
         }
 
@@ -104,8 +94,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected virtual bool CanStartManipulationForGesture(TwoFingerDragGesture gesture)
-        {
+        protected virtual bool CanStartManipulationForGesture(TwoFingerDragGesture gesture) {
             return false;
         }
 
@@ -113,8 +102,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnStartManipulation(DragGesture gesture)
-        {
+        protected virtual void OnStartManipulation(DragGesture gesture) {
             // Optional override.
         }
 
@@ -122,8 +110,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnStartManipulation(PinchGesture gesture)
-        {
+        protected virtual void OnStartManipulation(PinchGesture gesture) {
             // Optional override.
         }
 
@@ -131,8 +118,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnStartManipulation(TapGesture gesture)
-        {
+        protected virtual void OnStartManipulation(TapGesture gesture) {
             // Optional override.
         }
 
@@ -140,8 +126,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnStartManipulation(TwistGesture gesture)
-        {
+        protected virtual void OnStartManipulation(TwistGesture gesture) {
             // Optional override.
         }
 
@@ -149,8 +134,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnStartManipulation(TwoFingerDragGesture gesture)
-        {
+        protected virtual void OnStartManipulation(TwoFingerDragGesture gesture) {
             // Optional override.
         }
 
@@ -158,8 +142,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is continued.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnContinueManipulation(DragGesture gesture)
-        {
+        protected virtual void OnContinueManipulation(DragGesture gesture) {
             // Optional override.
         }
 
@@ -167,8 +150,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is continued.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnContinueManipulation(PinchGesture gesture)
-        {
+        protected virtual void OnContinueManipulation(PinchGesture gesture) {
             // Optional override.
         }
 
@@ -176,8 +158,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is continued.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnContinueManipulation(TapGesture gesture)
-        {
+        protected virtual void OnContinueManipulation(TapGesture gesture) {
             // Optional override.
         }
 
@@ -185,8 +166,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is continued.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnContinueManipulation(TwistGesture gesture)
-        {
+        protected virtual void OnContinueManipulation(TwistGesture gesture) {
             // Optional override.
         }
 
@@ -194,8 +174,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is continued.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnContinueManipulation(TwoFingerDragGesture gesture)
-        {
+        protected virtual void OnContinueManipulation(TwoFingerDragGesture gesture) {
             // Optional override.
         }
 
@@ -203,8 +182,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnEndManipulation(DragGesture gesture)
-        {
+        protected virtual void OnEndManipulation(DragGesture gesture) {
             // Optional override.
         }
 
@@ -212,8 +190,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnEndManipulation(PinchGesture gesture)
-        {
+        protected virtual void OnEndManipulation(PinchGesture gesture) {
             // Optional override.
         }
 
@@ -221,8 +198,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnEndManipulation(TapGesture gesture)
-        {
+        protected virtual void OnEndManipulation(TapGesture gesture) {
             // Optional override.
         }
 
@@ -230,8 +206,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnEndManipulation(TwistGesture gesture)
-        {
+        protected virtual void OnEndManipulation(TwistGesture gesture) {
             // Optional override.
         }
 
@@ -239,163 +214,135 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected virtual void OnEndManipulation(TwoFingerDragGesture gesture)
-        {
+        protected virtual void OnEndManipulation(TwoFingerDragGesture gesture) {
             // Optional override.
         }
 
         /// <summary>
         /// Function called when this game object becomes the Selected Object.
         /// </summary>
-        protected virtual void OnSelected()
-        {
+        protected virtual void OnSelected() {
             // Optional override.
         }
 
         /// <summary>
         /// Function called when this game object is deselected if it was the Selected Object.
         /// </summary>
-        protected virtual void OnDeselected()
-        {
+        protected virtual void OnDeselected() {
             // Optional override.
         }
 
         /// <summary>
         /// Enables the manipulator.
         /// </summary>
-        protected virtual void OnEnable()
-        {
+        protected virtual void OnEnable() {
             ConnectToRecognizers();
         }
 
         /// <summary>
         /// Disables the manipulator.
         /// </summary>
-        protected virtual void OnDisable()
-        {
+        protected virtual void OnDisable() {
             DisconnectFromRecognizers();
         }
 
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        protected virtual void Update()
-        {
+        protected virtual void Update() {
             if (m_SelectedObject == gameObject &&
-                ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+                ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_SelectedObject = ManipulationSystem.Instance.SelectedObject;
                 OnDeselected();
-            }
-            else if (m_SelectedObject != gameObject &&
-                ManipulationSystem.Instance.SelectedObject == gameObject)
-            {
+            } else if (m_SelectedObject != gameObject &&
+                  ManipulationSystem.Instance.SelectedObject == gameObject) {
                 m_SelectedObject = ManipulationSystem.Instance.SelectedObject;
                 OnSelected();
-            }
-            else
-            {
+            } else {
                 m_SelectedObject = ManipulationSystem.Instance.SelectedObject;
             }
         }
 
-        private void ConnectToRecognizers()
-        {
-            if (ManipulationSystem.Instance == null)
-            {
+        private void ConnectToRecognizers() {
+            if (ManipulationSystem.Instance == null) {
                 Debug.LogError("Manipulation system not found in scene.");
                 return;
             }
 
             DragGestureRecognizer dragGestureRecognizer =
                 ManipulationSystem.Instance.DragGestureRecognizer;
-            if (dragGestureRecognizer != null)
-            {
+            if (dragGestureRecognizer != null) {
                 dragGestureRecognizer.onGestureStarted += OnGestureStarted;
             }
 
             PinchGestureRecognizer pinchGestureRecognizer =
                 ManipulationSystem.Instance.PinchGestureRecognizer;
-            if (pinchGestureRecognizer != null)
-            {
+            if (pinchGestureRecognizer != null) {
                 pinchGestureRecognizer.onGestureStarted += OnGestureStarted;
             }
 
             TapGestureRecognizer tapGestureRecognizer =
                 ManipulationSystem.Instance.TapGestureRecognizer;
-            if (tapGestureRecognizer != null)
-            {
+            if (tapGestureRecognizer != null) {
                 tapGestureRecognizer.onGestureStarted += OnGestureStarted;
             }
 
             TwistGestureRecognizer twistGestureRecognizer =
                 ManipulationSystem.Instance.TwistGestureRecognizer;
-            if (twistGestureRecognizer != null)
-            {
+            if (twistGestureRecognizer != null) {
                 twistGestureRecognizer.onGestureStarted += OnGestureStarted;
             }
 
             TwoFingerDragGestureRecognizer twoFingerDragGestureRecognizer =
                 ManipulationSystem.Instance.TwoFingerDragGestureRecognizer;
-            if (twoFingerDragGestureRecognizer != null)
-            {
+            if (twoFingerDragGestureRecognizer != null) {
                 twoFingerDragGestureRecognizer.onGestureStarted += OnGestureStarted;
             }
         }
 
-        private void DisconnectFromRecognizers()
-        {
-            if (ManipulationSystem.Instance == null)
-            {
+        private void DisconnectFromRecognizers() {
+            if (ManipulationSystem.Instance == null) {
                 Debug.LogError("Manipulation system not found in scene.");
                 return;
             }
 
             DragGestureRecognizer dragGestureRecognizer =
                 ManipulationSystem.Instance.DragGestureRecognizer;
-            if (dragGestureRecognizer != null)
-            {
+            if (dragGestureRecognizer != null) {
                 dragGestureRecognizer.onGestureStarted -= OnGestureStarted;
             }
 
             PinchGestureRecognizer pinchGestureRecognizer =
                 ManipulationSystem.Instance.PinchGestureRecognizer;
-            if (pinchGestureRecognizer != null)
-            {
+            if (pinchGestureRecognizer != null) {
                 pinchGestureRecognizer.onGestureStarted -= OnGestureStarted;
             }
 
             TapGestureRecognizer tapGestureRecognizer =
                 ManipulationSystem.Instance.TapGestureRecognizer;
-            if (tapGestureRecognizer != null)
-            {
+            if (tapGestureRecognizer != null) {
                 tapGestureRecognizer.onGestureStarted -= OnGestureStarted;
             }
 
             TwistGestureRecognizer twistGestureRecognizer =
                 ManipulationSystem.Instance.TwistGestureRecognizer;
-            if (twistGestureRecognizer != null)
-            {
+            if (twistGestureRecognizer != null) {
                 twistGestureRecognizer.onGestureStarted -= OnGestureStarted;
             }
 
             TwoFingerDragGestureRecognizer twoFingerDragGestureRecognizer =
                 ManipulationSystem.Instance.TwoFingerDragGestureRecognizer;
-            if (twoFingerDragGestureRecognizer != null)
-            {
+            if (twoFingerDragGestureRecognizer != null) {
                 twoFingerDragGestureRecognizer.onGestureStarted -= OnGestureStarted;
             }
         }
 
-        private void OnGestureStarted(DragGesture gesture)
-        {
-            if (m_IsManipulating)
-            {
+        private void OnGestureStarted(DragGesture gesture) {
+            if (m_IsManipulating) {
                 return;
             }
 
-            if (CanStartManipulationForGesture(gesture))
-            {
+            if (CanStartManipulationForGesture(gesture)) {
                 m_IsManipulating = true;
                 gesture.onUpdated += OnUpdated;
                 gesture.onFinished += OnFinished;
@@ -403,15 +350,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private void OnGestureStarted(PinchGesture gesture)
-        {
-            if (m_IsManipulating)
-            {
+        private void OnGestureStarted(PinchGesture gesture) {
+            if (m_IsManipulating) {
                 return;
             }
 
-            if (CanStartManipulationForGesture(gesture))
-            {
+            if (CanStartManipulationForGesture(gesture)) {
                 m_IsManipulating = true;
                 gesture.onUpdated += OnUpdated;
                 gesture.onFinished += OnFinished;
@@ -419,15 +363,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private void OnGestureStarted(TapGesture gesture)
-        {
-            if (m_IsManipulating)
-            {
+        private void OnGestureStarted(TapGesture gesture) {
+            if (m_IsManipulating) {
                 return;
             }
 
-            if (CanStartManipulationForGesture(gesture))
-            {
+            if (CanStartManipulationForGesture(gesture)) {
                 m_IsManipulating = true;
                 gesture.onUpdated += OnUpdated;
                 gesture.onFinished += OnFinished;
@@ -435,15 +376,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private void OnGestureStarted(TwistGesture gesture)
-        {
-            if (m_IsManipulating)
-            {
+        private void OnGestureStarted(TwistGesture gesture) {
+            if (m_IsManipulating) {
                 return;
             }
 
-            if (CanStartManipulationForGesture(gesture))
-            {
+            if (CanStartManipulationForGesture(gesture)) {
                 m_IsManipulating = true;
                 gesture.onUpdated += OnUpdated;
                 gesture.onFinished += OnFinished;
@@ -451,15 +389,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private void OnGestureStarted(TwoFingerDragGesture gesture)
-        {
-            if (m_IsManipulating)
-            {
+        private void OnGestureStarted(TwoFingerDragGesture gesture) {
+            if (m_IsManipulating) {
                 return;
             }
 
-            if (CanStartManipulationForGesture(gesture))
-            {
+            if (CanStartManipulationForGesture(gesture)) {
                 m_IsManipulating = true;
                 gesture.onUpdated += OnUpdated;
                 gesture.onFinished += OnFinished;
@@ -467,16 +402,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private void OnUpdated(DragGesture gesture)
-        {
-            if (!m_IsManipulating)
-            {
+        private void OnUpdated(DragGesture gesture) {
+            if (!m_IsManipulating) {
                 return;
             }
 
             // Can only transform selected Items.
-            if (ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+            if (ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_IsManipulating = false;
                 OnEndManipulation(gesture);
                 return;
@@ -485,16 +417,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             OnContinueManipulation(gesture);
         }
 
-        private void OnUpdated(PinchGesture gesture)
-        {
-            if (!m_IsManipulating)
-            {
+        private void OnUpdated(PinchGesture gesture) {
+            if (!m_IsManipulating) {
                 return;
             }
 
             // Can only transform selected Items.
-            if (ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+            if (ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_IsManipulating = false;
                 OnEndManipulation(gesture);
                 return;
@@ -503,16 +432,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             OnContinueManipulation(gesture);
         }
 
-        private void OnUpdated(TapGesture gesture)
-        {
-            if (!m_IsManipulating)
-            {
+        private void OnUpdated(TapGesture gesture) {
+            if (!m_IsManipulating) {
                 return;
             }
 
             // Can only transform selected Items.
-            if (ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+            if (ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_IsManipulating = false;
                 OnEndManipulation(gesture);
                 return;
@@ -521,16 +447,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             OnContinueManipulation(gesture);
         }
 
-        private void OnUpdated(TwistGesture gesture)
-        {
-            if (!m_IsManipulating)
-            {
+        private void OnUpdated(TwistGesture gesture) {
+            if (!m_IsManipulating) {
                 return;
             }
 
             // Can only transform selected Items.
-            if (ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+            if (ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_IsManipulating = false;
                 OnEndManipulation(gesture);
                 return;
@@ -539,16 +462,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             OnContinueManipulation(gesture);
         }
 
-        private void OnUpdated(TwoFingerDragGesture gesture)
-        {
-            if (!m_IsManipulating)
-            {
+        private void OnUpdated(TwoFingerDragGesture gesture) {
+            if (!m_IsManipulating) {
                 return;
             }
 
             // Can only transform selected Items.
-            if (ManipulationSystem.Instance.SelectedObject != gameObject)
-            {
+            if (ManipulationSystem.Instance.SelectedObject != gameObject) {
                 m_IsManipulating = false;
                 OnEndManipulation(gesture);
                 return;
@@ -557,32 +477,27 @@ namespace GoogleARCore.Examples.ObjectManipulation
             OnContinueManipulation(gesture);
         }
 
-        private void OnFinished(DragGesture gesture)
-        {
+        private void OnFinished(DragGesture gesture) {
             m_IsManipulating = false;
             OnEndManipulation(gesture);
         }
 
-        private void OnFinished(PinchGesture gesture)
-        {
+        private void OnFinished(PinchGesture gesture) {
             m_IsManipulating = false;
             OnEndManipulation(gesture);
         }
 
-        private void OnFinished(TapGesture gesture)
-        {
+        private void OnFinished(TapGesture gesture) {
             m_IsManipulating = false;
             OnEndManipulation(gesture);
         }
 
-        private void OnFinished(TwistGesture gesture)
-        {
+        private void OnFinished(TwistGesture gesture) {
             m_IsManipulating = false;
             OnEndManipulation(gesture);
         }
 
-        private void OnFinished(TwoFingerDragGesture gesture)
-        {
+        private void OnFinished(TwoFingerDragGesture gesture) {
             m_IsManipulating = false;
             OnEndManipulation(gesture);
         }

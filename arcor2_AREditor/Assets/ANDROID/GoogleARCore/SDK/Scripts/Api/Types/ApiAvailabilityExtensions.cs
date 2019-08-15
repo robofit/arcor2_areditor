@@ -18,17 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Collections.Generic;
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiAvailabilityExtensions
-    {
-        public static ApkAvailabilityStatus ToApkAvailabilityStatus(this ApiAvailability apiStatus)
-        {
-            switch (apiStatus)
-            {
+    internal static class ApiAvailabilityExtensions {
+        public static ApkAvailabilityStatus ToApkAvailabilityStatus(this ApiAvailability apiStatus) {
+            switch (apiStatus) {
                 case ApiAvailability.UnknownError:
                     return ApkAvailabilityStatus.UnknownError;
                 case ApiAvailability.UnknownChecking:

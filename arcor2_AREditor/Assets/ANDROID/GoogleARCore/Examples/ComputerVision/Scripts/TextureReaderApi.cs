@@ -17,8 +17,7 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCore.Examples.ComputerVision
-{
+namespace GoogleARCore.Examples.ComputerVision {
     using System;
     using UnityEngine;
 
@@ -27,19 +26,16 @@ namespace GoogleARCore.Examples.ComputerVision
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
     /// <summary>
     /// API that provides CPU access to GPU texture.
     /// </summary>
-    public class TextureReaderApi
-    {
+    public class TextureReaderApi {
         /// <summary>
         /// Image format type.
         /// </summary>
-        public enum ImageFormatType
-        {
+        public enum ImageFormatType {
             /// <summary>
             /// Color image pixel format. Four bytes per pixel, in the order of R, G, B, and A.
             /// </summary>
@@ -62,16 +58,14 @@ namespace GoogleARCore.Examples.ComputerVision
         /// output image may be cropped if the image aspect ratio is different from the texture
         /// aspect ratio. If false, the output image covers the entire texture scope and no cropping
         /// is applied.</param>
-        public void Create(ImageFormatType format, int width, int height, bool keepAspectRatio)
-        {
-            ExternApi.TextureReader_create((int)format, width, height, keepAspectRatio);
+        public void Create(ImageFormatType format, int width, int height, bool keepAspectRatio) {
+            ExternApi.TextureReader_create((int) format, width, height, keepAspectRatio);
         }
 
         /// <summary>
         /// Destroys the texture reader instance and release internal resources.
         /// </summary>
-        public void Destroy()
-        {
+        public void Destroy() {
             ExternApi.TextureReader_destroy();
         }
 
@@ -85,8 +79,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <param name="textureHeight">Height of the texture, in pixels.</param>
         /// <returns>The frame buffer index, which can be used to retrieve the frame later through
         /// AcquireFrame(). -1 if the submission fails.</returns>
-        public int SubmitFrame(int textureId, int textureWidth, int textureHeight)
-        {
+        public int SubmitFrame(int textureId, int textureWidth, int textureHeight) {
             int bufferIndex =
                 ExternApi.TextureReader_submitFrame(textureId, textureWidth, textureHeight);
             GL.InvalidateState();
@@ -100,8 +93,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// SubmitFrame().</param>
         /// <param name="bufferSize">The size of the output image pixel buffer, in bytes.</param>
         /// <returns>The pointer to the raw buffer of the output image. null if fails.</returns>
-        public IntPtr AcquireFrame(int bufferIndex, ref int bufferSize)
-        {
+        public IntPtr AcquireFrame(int bufferIndex, ref int bufferSize) {
             IntPtr pixelBuffer = ExternApi.TextureReader_acquireFrame(bufferIndex, ref bufferSize);
             return pixelBuffer;
         }
@@ -111,13 +103,11 @@ namespace GoogleARCore.Examples.ComputerVision
         /// </summary>
         /// <param name="bufferIndex">The buffer index required by previous call to
         /// SubmitFrame().</param>
-        public void ReleaseFrame(int bufferIndex)
-        {
+        public void ReleaseFrame(int bufferIndex) {
             ExternApi.TextureReader_releaseFrame(bufferIndex);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             public const string ARCoreCameraUtilityAPI = "arcore_camera_utility";
 

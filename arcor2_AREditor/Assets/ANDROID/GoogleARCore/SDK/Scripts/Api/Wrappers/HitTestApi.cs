@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using GoogleARCore;
@@ -30,22 +29,18 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class HitTestApi
-    {
+    internal class HitTestApi {
         private NativeSession m_NativeSession;
 
-        public HitTestApi(NativeSession nativeSession)
-        {
+        public HitTestApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
         public bool Raycast(
             IntPtr frameHandle, float x, float y, TrackableHitFlags filter,
-            List<TrackableHit> outHitList)
-        {
+            List<TrackableHit> outHitList) {
             outHitList.Clear();
 
             IntPtr hitResultListHandle = IntPtr.Zero;
@@ -60,8 +55,7 @@ namespace GoogleARCoreInternal
 
         public bool Raycast(
             IntPtr frameHandle, Vector3 origin, Vector3 direction, float maxDistance,
-            TrackableHitFlags filter, List<TrackableHit> outHitList)
-        {
+            TrackableHitFlags filter, List<TrackableHit> outHitList) {
             outHitList.Clear();
 
             IntPtr hitResultListHandle = IntPtr.Zero;
@@ -81,20 +75,16 @@ namespace GoogleARCoreInternal
 
         private void FilterTrackableHits(
             IntPtr hitResultListHandle, float maxDistance, TrackableHitFlags filter,
-            List<TrackableHit> outHitList)
-        {
+            List<TrackableHit> outHitList) {
             int hitListSize = 0;
             ExternApi.ArHitResultList_getSize(
                 m_NativeSession.SessionHandle, hitResultListHandle, ref hitListSize);
 
-            for (int i = 0; i < hitListSize; i++)
-            {
+            for (int i = 0; i < hitListSize; i++) {
                 TrackableHit trackableHit;
-                if (HitResultListGetItemAt(hitResultListHandle, i, out trackableHit))
-                {
+                if (HitResultListGetItemAt(hitResultListHandle, i, out trackableHit)) {
                     if ((filter & trackableHit.Flags) != TrackableHitFlags.None &&
-                        trackableHit.Distance <= maxDistance)
-                    {
+                        trackableHit.Distance <= maxDistance) {
                         outHitList.Add(trackableHit);
                     }
                 }
@@ -102,8 +92,7 @@ namespace GoogleARCoreInternal
         }
 
         private bool HitResultListGetItemAt(
-            IntPtr hitResultListHandle, int index, out TrackableHit outTrackableHit)
-        {
+            IntPtr hitResultListHandle, int index, out TrackableHit outTrackableHit) {
             outTrackableHit = new TrackableHit();
 
             // Query the hit result.
@@ -111,8 +100,7 @@ namespace GoogleARCoreInternal
             ExternApi.ArHitResult_create(m_NativeSession.SessionHandle, ref hitResultHandle);
             ExternApi.ArHitResultList_getItem(
                 m_NativeSession.SessionHandle, hitResultListHandle, index, hitResultHandle);
-            if (hitResultHandle == IntPtr.Zero)
-            {
+            if (hitResultHandle == IntPtr.Zero) {
                 ExternApi.ArHitResult_destroy(hitResultHandle);
                 return false;
             }
@@ -137,46 +125,35 @@ namespace GoogleARCoreInternal
 
             // Calculate trackable hit flags.
             TrackableHitFlags flag = TrackableHitFlags.None;
-            if (trackable == null)
-            {
+            if (trackable == null) {
                 Debug.Log("Could not create trackable from hit result.");
                 m_NativeSession.PoseApi.Destroy(poseHandle);
                 return false;
-            }
-            else if (trackable is DetectedPlane)
-            {
-                if (m_NativeSession.PlaneApi.IsPoseInPolygon(trackableHandle, poseHandle))
-                {
+            } else if (trackable is DetectedPlane) {
+                if (m_NativeSession.PlaneApi.IsPoseInPolygon(trackableHandle, poseHandle)) {
                     flag |= TrackableHitFlags.PlaneWithinPolygon;
                 }
 
-                if (m_NativeSession.PlaneApi.IsPoseInExtents(trackableHandle, poseHandle))
-                {
+                if (m_NativeSession.PlaneApi.IsPoseInExtents(trackableHandle, poseHandle)) {
                     flag |= TrackableHitFlags.PlaneWithinBounds;
                 }
 
                 flag |= TrackableHitFlags.PlaneWithinInfinity;
-            }
-            else if (trackable is FeaturePoint)
-            {
-                var point = trackable as FeaturePoint;
+            } else if (trackable is FeaturePoint) {
+                FeaturePoint point = trackable as FeaturePoint;
                 flag |= TrackableHitFlags.FeaturePoint;
-                if (point.OrientationMode == FeaturePointOrientationMode.SurfaceNormal)
-                {
+                if (point.OrientationMode == FeaturePointOrientationMode.SurfaceNormal) {
                     flag |= TrackableHitFlags.FeaturePointWithSurfaceNormal;
                 }
-            }
-            else
-            {
+            } else {
                 ApiTrackableType trackableType =
                     m_NativeSession.TrackableApi.GetType(trackableHandle);
-                if (!ExperimentManager.Instance.IsManagingTrackableType((int)trackableType))
-                {
+                if (!ExperimentManager.Instance.IsManagingTrackableType((int) trackableType)) {
                     m_NativeSession.PoseApi.Destroy(poseHandle);
                     return false;
                 }
 
-                flag |= ExperimentManager.Instance.GetTrackableHitFlags((int)trackableType);
+                flag |= ExperimentManager.Instance.GetTrackableHitFlags((int) trackableType);
             }
 
             outTrackableHit = new TrackableHit(hitPose, hitDistance, flag, trackable);
@@ -184,8 +161,7 @@ namespace GoogleARCoreInternal
             return true;
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArFrame_hitTest(

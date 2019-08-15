@@ -18,17 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
-    using UnityEngine;
 
     /// <summary>
     /// Flags representing categories of raycast hits.
     /// </summary>
     [Flags]
-    public enum TrackableHitFlags
-    {
+    public enum TrackableHitFlags {
         /// <summary>
         /// This value is returned on a TrackableHit to indicate no collision occurred.
         ///

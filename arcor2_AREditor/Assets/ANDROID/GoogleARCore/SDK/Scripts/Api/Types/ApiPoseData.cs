@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using UnityEngine;
@@ -30,8 +29,7 @@ namespace GoogleARCoreInternal
     [StructLayout(LayoutKind.Sequential)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
     Justification = "Internal")]
-    public struct ApiPoseData
-    {
+    public struct ApiPoseData {
         [MarshalAs(UnmanagedType.R4)]
         public float Qx;
 
@@ -53,20 +51,17 @@ namespace GoogleARCoreInternal
         [MarshalAs(UnmanagedType.R4)]
         public float Z;
 
-        public ApiPoseData(UnityEngine.Pose unityPose)
-        {
+        public ApiPoseData(UnityEngine.Pose unityPose) {
             ConversionHelper.UnityPoseToApiPose(unityPose, out this);
         }
 
-        public UnityEngine.Pose ToUnityPose()
-        {
+        public UnityEngine.Pose ToUnityPose() {
             Pose unityPose;
             ConversionHelper.ApiPoseToUnityPose(this, out unityPose);
             return unityPose;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return string.Format("qx: {0}, qy: {1}, qz: {2}, qw: {3}, x: {4}, y: {5}, z: {6}",
                 Qx, Qy, Qz, Qw, X, Y, Z);
         }

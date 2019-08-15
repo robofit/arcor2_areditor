@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ArrowActivator : MonoBehaviour
-{
+public class ArrowActivator : MonoBehaviour {
 
     private void OnEnable() {
         GameManager.Instance.OnRunProject += ActivateArrow;

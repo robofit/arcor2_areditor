@@ -17,9 +17,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.Common
-{
-    using System.Collections;
+namespace GoogleARCore.Examples.Common {
     using UnityEngine;
     using UnityEngine.UI;
     using UnityEngine.Video;
@@ -29,8 +27,7 @@ namespace GoogleARCore.Examples.Common
     /// </summary>
     [RequireComponent(typeof(RawImage))]
     [RequireComponent(typeof(VideoPlayer))]
-    public class RawImageVideoPlayer : MonoBehaviour
-    {
+    public class RawImageVideoPlayer : MonoBehaviour {
         /// <summary>
         /// The raw image where the video will be played.
         /// </summary>
@@ -46,8 +43,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
-        public void Start()
-        {
+        public void Start() {
             VideoPlayer.enabled = false;
             m_RawImageTexture = RawImage.texture;
             VideoPlayer.prepareCompleted += _PrepareCompleted;
@@ -56,21 +52,16 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
-            if (!Session.Status.IsValid() || Session.Status.IsError())
-            {
+        public void Update() {
+            if (!Session.Status.IsValid() || Session.Status.IsError()) {
                 VideoPlayer.Stop();
                 return;
             }
 
-            if (RawImage.enabled && !VideoPlayer.enabled)
-            {
+            if (RawImage.enabled && !VideoPlayer.enabled) {
                 VideoPlayer.enabled = true;
                 VideoPlayer.Play();
-            }
-            else if (!RawImage.enabled && VideoPlayer.enabled)
-            {
+            } else if (!RawImage.enabled && VideoPlayer.enabled) {
                 // Stop video playback to save power usage.
                 VideoPlayer.Stop();
                 RawImage.texture = m_RawImageTexture;
@@ -78,8 +69,7 @@ namespace GoogleARCore.Examples.Common
             }
         }
 
-        private void _PrepareCompleted(VideoPlayer player)
-        {
+        private void _PrepareCompleted(VideoPlayer player) {
             RawImage.texture = player.texture;
         }
     }

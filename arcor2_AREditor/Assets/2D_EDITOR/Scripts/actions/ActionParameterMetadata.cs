@@ -1,24 +1,20 @@
-﻿using System;
-
-public class ActionParameterMetadata
-{
+﻿public class ActionParameterMetadata {
     string _name;
     Types _type;
     JSONObject _defaultValue;
 
-    public enum Types { Integer, Double, String, ActionPoint, Bool, Unknown }
+    public enum Types {
+        Integer, Double, String, ActionPoint, Bool, Unknown
+    }
 
-    public ActionParameterMetadata(string name, string type, JSONObject defaultValue)
-    {
+    public ActionParameterMetadata(string name, string type, JSONObject defaultValue) {
         _name = name;
         _type = StringToType(type);
         _defaultValue = defaultValue;
     }
 
-    static public Types StringToType(string type)
-    {
-        switch (type)
-        {
+    static public Types StringToType(string type) {
+        switch (type) {
             case "str":
                 return Types.String;
             case "int":
@@ -30,14 +26,12 @@ public class ActionParameterMetadata
             case "bool":
                 return Types.Bool;
             default:
-                return Types.Unknown;                
+                return Types.Unknown;
         }
     }
 
-    static public string TypeToString(Types type)
-    {
-        switch (type)
-        {
+    static public string TypeToString(Types type) {
+        switch (type) {
             case Types.String:
                 return "str";
             case Types.Integer:
@@ -53,18 +47,22 @@ public class ActionParameterMetadata
         }
     }
 
-    public void SetType(string type)
-    {
+    public void SetType(string type) {
         Type = StringToType(type);
     }
 
-    public string GetStringType()
-    {
+    public string GetStringType() {
         return TypeToString(Type);
     }
 
-    
-    public string Name { get => _name; set => _name = value; }
-    public Types Type { get => _type; set => _type = value; }
-    public JSONObject DefaultValue { get => _defaultValue; set => _defaultValue = value; }
+
+    public string Name {
+        get => _name; set => _name = value;
+    }
+    public Types Type {
+        get => _type; set => _type = value;
+    }
+    public JSONObject DefaultValue {
+        get => _defaultValue; set => _defaultValue = value;
+    }
 }

@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
     using UnityEngine;
     using UnityEngine.Rendering;
@@ -31,8 +30,7 @@ namespace GoogleARCore
     [ExecuteInEditMode]
     [HelpURL(
         "https://developers.google.com/ar/reference/unity/class/GoogleARCore/EnvironmentalLight")]
-    public class EnvironmentalLight : MonoBehaviour
-    {
+    public class EnvironmentalLight : MonoBehaviour {
         /// <summary>
         /// The directional light used by
         /// <see cref="LightEstimationMode"/>.<c>EnvironmentalHDRWithReflections</c> and
@@ -50,11 +48,9 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Requires further investigation.")]
-        public void Update()
-        {
+        public void Update() {
             if (Application.isEditor && (!Application.isPlaying ||
-                 !ARCoreProjectSettings.Instance.IsInstantPreviewEnabled))
-            {
+                 !ARCoreProjectSettings.Instance.IsInstantPreviewEnabled)) {
                 // Set _GlobalColorCorrection to white in editor, if the value is not set, all
                 // materials using light estimation shaders will be black.
                 Shader.SetGlobalColor("_GlobalColorCorrection", Color.white);
@@ -66,13 +62,11 @@ namespace GoogleARCore
 
             LightEstimate estimate = Frame.LightEstimate;
             if (estimate.State != LightEstimateState.Valid ||
-                estimate.Mode == LightEstimationMode.Disabled)
-            {
+                estimate.Mode == LightEstimationMode.Disabled) {
                 return;
             }
 
-            if (estimate.Mode == LightEstimationMode.AmbientIntensity)
-            {
+            if (estimate.Mode == LightEstimationMode.AmbientIntensity) {
                 // Normalize pixel intensity by middle gray in gamma space.
                 const float middleGray = 0.466f;
                 float normalizedIntensity = estimate.PixelIntensity / middleGray;
@@ -84,14 +78,10 @@ namespace GoogleARCore
 
                 // Set _GlobalLightEstimation for backward compatibility.
                 Shader.SetGlobalFloat("_GlobalLightEstimation", normalizedIntensity);
-            }
-            else if (m_LightEstimateTimestamp != estimate.Timestamp)
-            {
+            } else if (m_LightEstimateTimestamp != estimate.Timestamp) {
                 m_LightEstimateTimestamp = estimate.Timestamp;
-                if (DirectionalLight != null)
-                {
-                    if (!DirectionalLight.gameObject.activeSelf || !DirectionalLight.enabled)
-                    {
+                if (DirectionalLight != null) {
+                    if (!DirectionalLight.gameObject.activeSelf || !DirectionalLight.enabled) {
                         DirectionalLight.gameObject.SetActive(true);
                         DirectionalLight.enabled = true;
                     }
@@ -103,8 +93,7 @@ namespace GoogleARCore
                 RenderSettings.ambientMode = AmbientMode.Skybox;
                 RenderSettings.ambientProbe = estimate.AmbientProbe;
 
-                if (estimate.Mode == LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+                if (estimate.Mode == LightEstimationMode.EnvironmentalHDRWithReflections) {
                     RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
                     RenderSettings.customReflection = estimate.ReflectionProbe;
                 }

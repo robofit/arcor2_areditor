@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using GoogleARCore;
     using UnityEngine;
 
-    internal class TrackableManager
-    {
+    internal class TrackableManager {
         private Dictionary<IntPtr, Trackable> m_TrackableDict =
             new Dictionary<IntPtr, Trackable>(new IntPtrEqualityComparer());
 
@@ -42,8 +40,7 @@ namespace GoogleARCoreInternal
 
         private HashSet<Trackable> m_OldTrackables = new HashSet<Trackable>();
 
-        public TrackableManager(NativeSession nativeSession)
-        {
+        public TrackableManager(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
@@ -54,16 +51,13 @@ namespace GoogleARCoreInternal
         /// WILL BE HANDLED BY THIS METHOD.</param>
         /// <returns>A reference to the Trackable. May return <c>null</c> on error or if Trackable
         /// is not handled.</returns>
-        public Trackable TrackableFactory(IntPtr nativeHandle)
-        {
-            if (nativeHandle == IntPtr.Zero)
-            {
+        public Trackable TrackableFactory(IntPtr nativeHandle) {
+            if (nativeHandle == IntPtr.Zero) {
                 return null;
             }
 
             Trackable result;
-            if (m_TrackableDict.TryGetValue(nativeHandle, out result))
-            {
+            if (m_TrackableDict.TryGetValue(nativeHandle, out result)) {
                 // Release aquired handle and return cached result.
                 m_NativeSession.TrackableApi.Release(nativeHandle);
                 return result;
@@ -73,36 +67,24 @@ namespace GoogleARCoreInternal
             // the most derived type.
 #pragma warning disable 618 // Obsolete warning
             ApiTrackableType trackableType = m_NativeSession.TrackableApi.GetType(nativeHandle);
-            if (trackableType == ApiTrackableType.Plane)
-            {
+            if (trackableType == ApiTrackableType.Plane) {
                 result = new TrackedPlane(nativeHandle, m_NativeSession);
-            }
-            else if (trackableType == ApiTrackableType.Point)
-            {
+            } else if (trackableType == ApiTrackableType.Point) {
                 result = new TrackedPoint(nativeHandle, m_NativeSession);
-            }
-            else if (trackableType == ApiTrackableType.AugmentedImage)
-            {
+            } else if (trackableType == ApiTrackableType.AugmentedImage) {
                 result = new AugmentedImage(nativeHandle, m_NativeSession);
-            }
-            else if (trackableType == ApiTrackableType.AugmentedFace)
-            {
+            } else if (trackableType == ApiTrackableType.AugmentedFace) {
                 result = new AugmentedFace(nativeHandle, m_NativeSession);
-            }
-            else if (ExperimentManager.Instance.IsManagingTrackableType((int)trackableType))
-            {
+            } else if (ExperimentManager.Instance.IsManagingTrackableType((int) trackableType)) {
                 result =
-                    ExperimentManager.Instance.TrackableFactory((int)trackableType, nativeHandle);
-            }
-            else
-            {
+                    ExperimentManager.Instance.TrackableFactory((int) trackableType, nativeHandle);
+            } else {
                 Debug.LogWarning(
                     "TrackableFactory::No constructor for requested trackable type.");
             }
 #pragma warning restore 618
 
-            if (result != null)
-            {
+            if (result != null) {
                 m_TrackableDict.Add(nativeHandle, result);
             }
 
@@ -110,10 +92,8 @@ namespace GoogleARCoreInternal
         }
 
         public void GetTrackables<T>(
-            List<T> trackables, TrackableQueryFilter filter) where T : Trackable
-        {
-            if (m_LastUpdateFrame < Time.frameCount)
-            {
+            List<T> trackables, TrackableQueryFilter filter) where T : Trackable {
+            if (m_LastUpdateFrame < Time.frameCount) {
                 // Get trackables updated this frame.
                 m_NativeSession.FrameApi.GetUpdatedTrackables(m_UpdatedTrackables);
 
@@ -122,11 +102,9 @@ namespace GoogleARCoreInternal
 
                 // Find trackables that are not in the hashset (new).
                 m_NewTrackables.Clear();
-                for (int i = 0; i < m_AllTrackables.Count; i++)
-                {
+                for (int i = 0; i < m_AllTrackables.Count; i++) {
                     Trackable trackable = m_AllTrackables[i];
-                    if (!m_OldTrackables.Contains(trackable))
-                    {
+                    if (!m_OldTrackables.Contains(trackable)) {
                         m_NewTrackables.Add(trackable);
                         m_OldTrackables.Add(trackable);
                     }
@@ -137,33 +115,23 @@ namespace GoogleARCoreInternal
 
             trackables.Clear();
 
-            if (filter == TrackableQueryFilter.All)
-            {
-                for (int i = 0; i < m_AllTrackables.Count; i++)
-                {
+            if (filter == TrackableQueryFilter.All) {
+                for (int i = 0; i < m_AllTrackables.Count; i++) {
                     _SafeAdd<T>(m_AllTrackables[i], trackables);
                 }
-            }
-            else if (filter == TrackableQueryFilter.New)
-            {
-                for (int i = 0; i < m_NewTrackables.Count; i++)
-                {
+            } else if (filter == TrackableQueryFilter.New) {
+                for (int i = 0; i < m_NewTrackables.Count; i++) {
                     _SafeAdd<T>(m_NewTrackables[i], trackables);
                 }
-            }
-            else if (filter == TrackableQueryFilter.Updated)
-            {
-                for (int i = 0; i < m_UpdatedTrackables.Count; i++)
-                {
+            } else if (filter == TrackableQueryFilter.Updated) {
+                for (int i = 0; i < m_UpdatedTrackables.Count; i++) {
                     _SafeAdd<T>(m_UpdatedTrackables[i], trackables);
                 }
             }
         }
 
-        private void _SafeAdd<T>(Trackable trackable, List<T> trackables) where T : Trackable
-        {
-            if (trackable is T)
-            {
+        private void _SafeAdd<T>(Trackable trackable, List<T> trackables) where T : Trackable {
+            if (trackable is T) {
                 trackables.Add(trackable as T);
             }
         }

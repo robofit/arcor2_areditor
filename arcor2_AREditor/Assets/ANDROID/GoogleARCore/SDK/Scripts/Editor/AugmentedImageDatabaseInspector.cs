@@ -18,9 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System;
+namespace GoogleARCoreInternal {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using GoogleARCore;
@@ -30,8 +28,7 @@ namespace GoogleARCoreInternal
     [CustomEditor(typeof(AugmentedImageDatabase))]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
      Justification = "Internal")]
-    public class AugmentedImageDatabaseInspector : Editor
-    {
+    public class AugmentedImageDatabaseInspector : Editor {
         private const float k_ImageSpacerHeight = 55f;
         private const int k_PageSize = 5;
         private const float k_HeaderHeight = 30f;
@@ -46,11 +43,9 @@ namespace GoogleARCoreInternal
 
         private int m_PageIndex = 0;
 
-        public override void OnInspectorGUI()
-        {
+        public override void OnInspectorGUI() {
             AugmentedImageDatabase database = target as AugmentedImageDatabase;
-            if (database == null)
-            {
+            if (database == null) {
                 return;
             }
 
@@ -66,25 +61,20 @@ namespace GoogleARCoreInternal
             int removeAt = -1;
             int pageStartIndex = m_PageIndex * k_PageSize;
             int pageEndIndex = Mathf.Min(database.Count, pageStartIndex + k_PageSize);
-            for (int i = pageStartIndex; i < pageEndIndex; i++, displayedImageCount++)
-            {
+            for (int i = pageStartIndex; i < pageEndIndex; i++, displayedImageCount++) {
                 AugmentedImageDatabaseEntry updatedImage;
                 bool wasRemoved;
 
                 _DrawImageField(database[i], out updatedImage, out wasRemoved);
 
-                if (wasRemoved)
-                {
+                if (wasRemoved) {
                     removeAt = i;
-                }
-                else if (!database[i].Equals(updatedImage))
-                {
+                } else if (!database[i].Equals(updatedImage)) {
                     database[i] = updatedImage;
                 }
             }
 
-            if (removeAt > -1)
-            {
+            if (removeAt > -1) {
                 database.RemoveAt(removeAt);
             }
 
@@ -92,19 +82,15 @@ namespace GoogleARCoreInternal
             _DrawPageField(database.Count);
         }
 
-        private static void _RunDirtyQualityJobs(AugmentedImageDatabase database)
-        {
-            if (database == null)
-            {
+        private static void _RunDirtyQualityJobs(AugmentedImageDatabase database) {
+            if (database == null) {
                 return;
             }
 
-            if (s_DatabaseForQualityJobs != database)
-            {
+            if (s_DatabaseForQualityJobs != database) {
                 // If another database is already running quality evaluation,
                 // stop all pending jobs to prioritise the current database.
-                if (s_DatabaseForQualityJobs != null)
-                {
+                if (s_DatabaseForQualityJobs != null) {
                     s_QualityBackgroundExecutor.RemoveAllPendingJobs();
                 }
 
@@ -118,31 +104,26 @@ namespace GoogleARCoreInternal
             // Otherwise if there exists one frame with no newly finished jobs, the UI will never
             // get refreshed.
             // EditorUtility.SetDirty can only be called from main thread.
-            if (s_QualityBackgroundExecutor.PendingJobsCount > 0)
-            {
+            if (s_QualityBackgroundExecutor.PendingJobsCount > 0) {
                 EditorUtility.SetDirty(database);
                 return;
             }
 
             List<AugmentedImageDatabaseEntry> dirtyEntries = database.GetDirtyQualityEntries();
-            if (dirtyEntries.Count == 0)
-            {
+            if (dirtyEntries.Count == 0) {
                 return;
             }
 
             string cliBinaryPath;
-            if (!AugmentedImageDatabase.FindCliBinaryPath(out cliBinaryPath))
-            {
+            if (!AugmentedImageDatabase.FindCliBinaryPath(out cliBinaryPath)) {
                 return;
             }
 
-            for (int i = 0; i < dirtyEntries.Count; ++i)
-            {
+            for (int i = 0; i < dirtyEntries.Count; ++i) {
                 AugmentedImageDatabaseEntry image = dirtyEntries[i];
-                var imagePath = AssetDatabase.GetAssetPath(image.Texture);
-                var textureGUID = image.TextureGUID;
-                s_QualityBackgroundExecutor.PushJob(() =>
-                {
+                string imagePath = AssetDatabase.GetAssetPath(image.Texture);
+                string textureGUID = image.TextureGUID;
+                s_QualityBackgroundExecutor.PushJob(() => {
                     string quality;
                     string error;
                     ShellHelper.RunCommand(
@@ -150,14 +131,12 @@ namespace GoogleARCoreInternal
                         string.Format("eval-img --input_image_path \"{0}\"", imagePath),
                         out quality,
                         out error);
-                    if (!string.IsNullOrEmpty(error))
-                    {
+                    if (!string.IsNullOrEmpty(error)) {
                         Debug.LogError(error);
                         quality = "ERROR";
                     }
 
-                    lock (s_UpdatedQualityScores)
-                    {
+                    lock (s_UpdatedQualityScores) {
                         s_UpdatedQualityScores.Add(textureGUID, quality);
                     }
                 });
@@ -167,19 +146,14 @@ namespace GoogleARCoreInternal
             EditorUtility.SetDirty(database);
         }
 
-        private static void _UpdateDatabaseQuality(AugmentedImageDatabase database)
-        {
-            lock (s_UpdatedQualityScores)
-            {
-                if (s_UpdatedQualityScores.Count == 0)
-                {
+        private static void _UpdateDatabaseQuality(AugmentedImageDatabase database) {
+            lock (s_UpdatedQualityScores) {
+                if (s_UpdatedQualityScores.Count == 0) {
                     return;
                 }
 
-                for (int i = 0; i < database.Count; ++i)
-                {
-                    if (s_UpdatedQualityScores.ContainsKey(database[i].TextureGUID))
-                    {
+                for (int i = 0; i < database.Count; ++i) {
+                    if (s_UpdatedQualityScores.ContainsKey(database[i].TextureGUID)) {
                         AugmentedImageDatabaseEntry updatedImage = database[i];
                         updatedImage.Quality = s_UpdatedQualityScores[updatedImage.TextureGUID];
                         database[i] = updatedImage;
@@ -193,8 +167,7 @@ namespace GoogleARCoreInternal
             EditorUtility.SetDirty(database);
         }
 
-        private void _DrawTitle()
-        {
+        private void _DrawTitle() {
             const string TITLE_STRING = "Images in Database";
             GUIStyle titleStyle = new GUIStyle();
             titleStyle.alignment = TextAnchor.MiddleCenter;
@@ -210,22 +183,20 @@ namespace GoogleARCoreInternal
             EditorGUILayout.EndVertical();
         }
 
-        private void _DrawContainer()
-        {
-            var containerRect = new Rect(
+        private void _DrawContainer() {
+            Rect containerRect = new Rect(
                 k_ContainerStart.x, k_ContainerStart.y, EditorGUIUtility.currentViewWidth - 30,
                 (k_PageSize * k_ImageSpacerHeight) + k_HeaderHeight);
             GUI.Box(containerRect, string.Empty);
         }
 
-        private void _DrawColumnNames()
-        {
+        private void _DrawColumnNames() {
             EditorGUILayout.BeginVertical();
             GUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(45);
 
-            var style = new GUIStyle(GUI.skin.label);
+            GUIStyle style = new GUIStyle(GUI.skin.label);
             style.alignment = TextAnchor.MiddleLeft;
 
             GUILayoutOption[] options =
@@ -245,15 +216,12 @@ namespace GoogleARCoreInternal
             EditorGUILayout.EndVertical();
         }
 
-        private string _QualityForDisplay(string quality)
-        {
-            if (string.IsNullOrEmpty(quality))
-            {
+        private string _QualityForDisplay(string quality) {
+            if (string.IsNullOrEmpty(quality)) {
                 return "Calculating...";
             }
 
-            if (quality == "?")
-            {
+            if (quality == "?") {
                 return "?";
             }
 
@@ -262,8 +230,7 @@ namespace GoogleARCoreInternal
 
         private void _DrawImageField(
             AugmentedImageDatabaseEntry image, out AugmentedImageDatabaseEntry updatedImage,
-            out bool wasRemoved)
-        {
+            out bool wasRemoved) {
             updatedImage = new AugmentedImageDatabaseEntry();
 
             EditorGUILayout.BeginVertical();
@@ -271,12 +238,12 @@ namespace GoogleARCoreInternal
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
 
-            var buttonStyle = new GUIStyle(GUI.skin.button);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.margin = new RectOffset(10, 10, 13, 0);
 
             wasRemoved = GUILayout.Button("X", buttonStyle);
 
-            var textFieldStyle = new GUIStyle(GUI.skin.textField);
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
             textFieldStyle.margin = new RectOffset(5, 5, 15, 0);
             updatedImage.Name =
                 EditorGUILayout.TextField(image.Name, textFieldStyle, GUILayout.MaxWidth(80f));
@@ -285,7 +252,7 @@ namespace GoogleARCoreInternal
             updatedImage.Width =
                 EditorGUILayout.FloatField(image.Width, textFieldStyle, GUILayout.MaxWidth(80f));
 
-            var labelStyle = new GUIStyle(GUI.skin.label);
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
             labelStyle.alignment = TextAnchor.MiddleLeft;
             GUILayout.Space(5);
             EditorGUILayout.LabelField(_QualityForDisplay(image.Quality), labelStyle,
@@ -296,8 +263,7 @@ namespace GoogleARCoreInternal
             updatedImage.Texture = EditorGUILayout.ObjectField(
                 image.Texture, typeof(Texture2D), false, GUILayout.Height(45), GUILayout.Width(45))
                 as Texture2D;
-            if (updatedImage.TextureGUID == image.TextureGUID)
-            {
+            if (updatedImage.TextureGUID == image.TextureGUID) {
                 updatedImage.Quality = image.Quality;
             }
 
@@ -307,21 +273,19 @@ namespace GoogleARCoreInternal
             EditorGUILayout.EndVertical();
         }
 
-        private void _DrawImageSpacers(int displayedImageCount)
-        {
+        private void _DrawImageSpacers(int displayedImageCount) {
             EditorGUILayout.BeginVertical();
             GUILayout.Space((k_PageSize - displayedImageCount) * k_ImageSpacerHeight);
             EditorGUILayout.EndVertical();
         }
 
-        private void _DrawPageField(int imageCount)
-        {
-            var lastPageIndex = Mathf.Max(imageCount - 1, 0) / k_PageSize;
+        private void _DrawPageField(int imageCount) {
+            int lastPageIndex = Mathf.Max(imageCount - 1, 0) / k_PageSize;
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(15);
 
-            var labelStyle = new GUIStyle(GUI.skin.label);
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
             labelStyle.alignment = TextAnchor.MiddleLeft;
 
             EditorGUILayout.LabelField(string.Format("{0} Total Images", imageCount), labelStyle,
@@ -332,15 +296,15 @@ namespace GoogleARCoreInternal
             EditorGUILayout.LabelField(
                 "Page", labelStyle, GUILayout.Height(42), GUILayout.Width(30));
 
-            var textStyle = new GUIStyle(GUI.skin.textField);
+            GUIStyle textStyle = new GUIStyle(GUI.skin.textField);
             textStyle.margin = new RectOffset(0, 0, 15, 0);
-            var pageString = EditorGUILayout.TextField(
+            string pageString = EditorGUILayout.TextField(
                 (m_PageIndex + 1).ToString(), textStyle, GUILayout.Width(30));
             int pageNumber;
             int.TryParse(pageString, out pageNumber);
             m_PageIndex = Mathf.Clamp(pageNumber - 1, 0, lastPageIndex);
 
-            var buttonStyle = new GUIStyle(GUI.skin.button);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
             buttonStyle.margin = new RectOffset(10, 10, 13, 0);
 
             GUI.enabled = m_PageIndex > 0;

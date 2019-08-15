@@ -18,102 +18,87 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Runtime.InteropServices;
     using GoogleARCore;
     using GoogleARCoreInternal.CrossPlatform;
     using UnityEngine;
 
-    internal class AnchorApi
-    {
+    internal class AnchorApi {
         private NativeSession m_NativeSession;
 
-        public AnchorApi(NativeSession nativeSession)
-        {
+        public AnchorApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public Pose GetPose(IntPtr anchorHandle)
-        {
-            var poseHandle = m_NativeSession.PoseApi.Create();
+        public Pose GetPose(IntPtr anchorHandle) {
+            IntPtr poseHandle = m_NativeSession.PoseApi.Create();
             ExternApi.ArAnchor_getPose(m_NativeSession.SessionHandle, anchorHandle, poseHandle);
             Pose resultPose = m_NativeSession.PoseApi.ExtractPoseValue(poseHandle);
             m_NativeSession.PoseApi.Destroy(poseHandle);
             return resultPose;
         }
 
-        public TrackingState GetTrackingState(IntPtr anchorHandle)
-        {
+        public TrackingState GetTrackingState(IntPtr anchorHandle) {
             ApiTrackingState trackingState = ApiTrackingState.Stopped;
             ExternApi.ArAnchor_getTrackingState(m_NativeSession.SessionHandle, anchorHandle,
                 ref trackingState);
             return trackingState.ToTrackingState();
         }
 
-        public ApiCloudAnchorState GetCloudAnchorState(IntPtr anchorHandle)
-        {
+        public ApiCloudAnchorState GetCloudAnchorState(IntPtr anchorHandle) {
             ApiCloudAnchorState cloudState = ApiCloudAnchorState.None;
             ExternApi.ArAnchor_getCloudAnchorState(
                 m_NativeSession.SessionHandle, anchorHandle, ref cloudState);
             return cloudState;
         }
 
-        public string GetCloudAnchorId(IntPtr anchorHandle)
-        {
+        public string GetCloudAnchorId(IntPtr anchorHandle) {
             IntPtr cloudIdHandle = IntPtr.Zero;
             ExternApi.ArAnchor_acquireCloudAnchorId(
                 m_NativeSession.SessionHandle, anchorHandle, ref cloudIdHandle);
 
-            var result = Marshal.PtrToStringAnsi(cloudIdHandle);
+            string result = Marshal.PtrToStringAnsi(cloudIdHandle);
             ExternApi.ArString_release(cloudIdHandle);
             return result;
         }
 
-        public void Detach(IntPtr anchorHandle)
-        {
-            if (LifecycleManager.Instance.NativeSession == m_NativeSession)
-            {
+        public void Detach(IntPtr anchorHandle) {
+            if (LifecycleManager.Instance.NativeSession == m_NativeSession) {
                 ExternApi.ArAnchor_detach(m_NativeSession.SessionHandle, anchorHandle);
             }
         }
 
-        public void Release(IntPtr anchorHandle)
-        {
+        public void Release(IntPtr anchorHandle) {
             ExternApi.ArAnchor_release(anchorHandle);
         }
 
-        public IntPtr CreateList()
-        {
+        public IntPtr CreateList() {
             IntPtr listHandle = IntPtr.Zero;
             ExternApi.ArAnchorList_create(m_NativeSession.SessionHandle, ref listHandle);
             return listHandle;
         }
 
-        public int GetListSize(IntPtr anchorListHandle)
-        {
+        public int GetListSize(IntPtr anchorListHandle) {
             int size = 0;
             ExternApi.ArAnchorList_getSize(
                 m_NativeSession.SessionHandle, anchorListHandle, ref size);
             return size;
         }
 
-        public IntPtr AcquireListItem(IntPtr anchorListHandle, int index)
-        {
+        public IntPtr AcquireListItem(IntPtr anchorListHandle, int index) {
             IntPtr anchorHandle = IntPtr.Zero;
             ExternApi.ArAnchorList_acquireItem(
                 m_NativeSession.SessionHandle, anchorListHandle, index, ref anchorHandle);
             return anchorHandle;
         }
 
-        public void DestroyList(IntPtr anchorListHandle)
-        {
+        public void DestroyList(IntPtr anchorListHandle) {
             ExternApi.ArAnchorList_destroy(anchorListHandle);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAnchor_getPose(
                 IntPtr sessionHandle, IntPtr anchorHandle, IntPtr poseHandle);

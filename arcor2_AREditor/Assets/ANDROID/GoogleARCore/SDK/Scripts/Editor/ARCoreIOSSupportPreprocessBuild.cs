@@ -18,22 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
+namespace GoogleARCoreInternal {
     using UnityEditor;
-    using UnityEditor.Build;
     using UnityEngine;
 
-    internal class ARCoreIOSSupportPreprocessBuild : PreprocessBuildBase
-    {
-        public override void OnPreprocessBuild(BuildTarget target, string path)
-        {
-            if (target == BuildTarget.iOS)
-            {
+    internal class ARCoreIOSSupportPreprocessBuild : PreprocessBuildBase {
+        public override void OnPreprocessBuild(BuildTarget target, string path) {
+            if (target == BuildTarget.iOS) {
                 bool arcoreiOSEnabled = ARCoreProjectSettings.Instance.IsIOSSupportEnabled;
                 Debug.LogFormat("Building application with ARCore SDK for Unity iOS support {0}",
                     arcoreiOSEnabled ? "ENABLED" : "DISABLED");

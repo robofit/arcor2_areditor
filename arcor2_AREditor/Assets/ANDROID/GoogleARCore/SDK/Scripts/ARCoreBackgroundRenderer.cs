@@ -18,10 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
-    using System.Collections;
-    using System.Collections.Generic;
+namespace GoogleARCore {
     using GoogleARCoreInternal;
     using UnityEngine;
     using UnityEngine.Rendering;
@@ -34,8 +31,7 @@ namespace GoogleARCore
     [RequireComponent(typeof(Camera))]
     [HelpURL("https://developers.google.com/ar/reference/unity/class/GoogleARCore/" +
              "ARCoreBackgroundRenderer")]
-    public class ARCoreBackgroundRenderer : MonoBehaviour
-    {
+    public class ARCoreBackgroundRenderer : MonoBehaviour {
         /// <summary>
         /// A material used to render the AR background image.
         /// </summary>
@@ -62,17 +58,14 @@ namespace GoogleARCore
 
         private CommandBuffer m_CommandBuffer = null;
 
-        private enum BackgroundTransitionState
-        {
+        private enum BackgroundTransitionState {
             BlackScreen = 0,
             FadingIn = 1,
             CameraImage = 2,
         }
 
-        private void OnEnable()
-        {
-            if (BackgroundMaterial == null)
-            {
+        private void OnEnable() {
+            if (BackgroundMaterial == null) {
                 Debug.LogError("ArCameraBackground:: No material assigned.");
                 return;
             }
@@ -87,8 +80,7 @@ namespace GoogleARCore
             EnableARBackgroundRendering();
         }
 
-        private void OnDisable()
-        {
+        private void OnDisable() {
             LifecycleManager.Instance.OnSessionSetEnabled -= _OnSessionSetEnabled;
             m_TransitionState = BackgroundTransitionState.BlackScreen;
             m_CurrentStateElapsed = 0.0f;
@@ -98,67 +90,51 @@ namespace GoogleARCore
             DisableARBackgroundRendering();
         }
 
-        private void OnPreRender()
-        {
+        private void OnPreRender() {
             m_UserInvertCullingValue = GL.invertCulling;
-            var sessionComponent = LifecycleManager.Instance.SessionComponent;
+            ARCoreSession sessionComponent = LifecycleManager.Instance.SessionComponent;
             if (sessionComponent != null &&
-                sessionComponent.DeviceCameraDirection == DeviceCameraDirection.FrontFacing)
-            {
+                sessionComponent.DeviceCameraDirection == DeviceCameraDirection.FrontFacing) {
                 GL.invertCulling = true;
             }
         }
 
-        private void OnPostRender()
-        {
+        private void OnPostRender() {
             GL.invertCulling = m_UserInvertCullingValue;
         }
 
-        private void Update()
-        {
+        private void Update() {
             m_CurrentStateElapsed += Time.deltaTime;
             _UpdateState();
             _UpdateShaderVariables();
         }
 
-        private void _UpdateState()
-        {
-            if (!m_SessionEnabled && m_TransitionState != BackgroundTransitionState.BlackScreen)
-            {
+        private void _UpdateState() {
+            if (!m_SessionEnabled && m_TransitionState != BackgroundTransitionState.BlackScreen) {
                 m_TransitionState = BackgroundTransitionState.BlackScreen;
                 m_CurrentStateElapsed = 0.0f;
-            }
-            else if (m_SessionEnabled &&
-                     m_TransitionState == BackgroundTransitionState.BlackScreen &&
-                     m_CurrentStateElapsed > k_BlackScreenDuration)
-            {
+            } else if (m_SessionEnabled &&
+                       m_TransitionState == BackgroundTransitionState.BlackScreen &&
+                       m_CurrentStateElapsed > k_BlackScreenDuration) {
                 m_TransitionState = BackgroundTransitionState.FadingIn;
                 m_CurrentStateElapsed = 0.0f;
-            }
-            else if (m_SessionEnabled &&
-                     m_TransitionState == BackgroundTransitionState.FadingIn &&
-                     m_CurrentStateElapsed > k_FadingInDuration)
-            {
+            } else if (m_SessionEnabled &&
+                       m_TransitionState == BackgroundTransitionState.FadingIn &&
+                       m_CurrentStateElapsed > k_FadingInDuration) {
                 m_TransitionState = BackgroundTransitionState.CameraImage;
                 m_CurrentStateElapsed = 0.0f;
             }
         }
 
-        private void _UpdateShaderVariables()
-        {
+        private void _UpdateShaderVariables() {
             const string brightnessVar = "_Brightness";
-            if (m_TransitionState == BackgroundTransitionState.BlackScreen)
-            {
+            if (m_TransitionState == BackgroundTransitionState.BlackScreen) {
                 BackgroundMaterial.SetFloat(brightnessVar, 0.0f);
-            }
-            else if (m_TransitionState == BackgroundTransitionState.FadingIn)
-            {
+            } else if (m_TransitionState == BackgroundTransitionState.FadingIn) {
                 BackgroundMaterial.SetFloat(
                     brightnessVar,
                     _CosineLerp(m_CurrentStateElapsed, k_FadingInDuration));
-            }
-            else
-            {
+            } else {
                 BackgroundMaterial.SetFloat(brightnessVar, 1.0f);
             }
 
@@ -170,8 +146,7 @@ namespace GoogleARCore
             // Background texture should not be rendered when the session is disabled or
             // there is no camera image texture available.
             if (m_TransitionState == BackgroundTransitionState.BlackScreen ||
-                Frame.CameraImage.Texture == null)
-            {
+                Frame.CameraImage.Texture == null) {
                 return;
             }
 
@@ -181,7 +156,7 @@ namespace GoogleARCore
 
             BackgroundMaterial.SetTexture(mainTexVar, Frame.CameraImage.Texture);
 
-            var uvQuad = Frame.CameraImage.TextureDisplayUvs;
+            DisplayUvCoords uvQuad = Frame.CameraImage.TextureDisplayUvs;
             BackgroundMaterial.SetVector(
                 topLeftRightVar,
                 new Vector4(
@@ -195,18 +170,15 @@ namespace GoogleARCore
                 m_Camera.nearClipPlane, m_Camera.farClipPlane);
         }
 
-        private void _OnSessionSetEnabled(bool sessionEnabled)
-        {
+        private void _OnSessionSetEnabled(bool sessionEnabled) {
             m_SessionEnabled = sessionEnabled;
-            if (!m_SessionEnabled)
-            {
+            if (!m_SessionEnabled) {
                 _UpdateState();
                 _UpdateShaderVariables();
             }
         }
 
-        private float _CosineLerp(float elapsed, float duration)
-        {
+        private float _CosineLerp(float elapsed, float duration) {
             float clampedElapsed = Mathf.Clamp(elapsed, 0.0f, duration);
             return Mathf.Cos(((clampedElapsed / duration) - 1) * (Mathf.PI / 2));
         }
@@ -219,23 +191,20 @@ namespace GoogleARCore
         /// textureUv.y = transform[2] * screenUv.y + transform[3].
         /// </summary>
         /// <returns>The transform.</returns>
-        private Vector4 _TextureTransform()
-        {
+        private Vector4 _TextureTransform() {
             float transitionWidthTransform = (m_TransitionImageTexture.width - Screen.width) /
                 (2.0f * m_TransitionImageTexture.width);
             float transitionHeightTransform = (m_TransitionImageTexture.height - Screen.height) /
                 (2.0f * m_TransitionImageTexture.height);
             return new Vector4(
-                (float)Screen.width / m_TransitionImageTexture.width,
+                (float) Screen.width / m_TransitionImageTexture.width,
                 transitionWidthTransform,
-                (float)Screen.height / m_TransitionImageTexture.height,
+                (float) Screen.height / m_TransitionImageTexture.height,
                 transitionHeightTransform);
         }
 
-        private void EnableARBackgroundRendering()
-        {
-            if (BackgroundMaterial == null || m_Camera == null)
-            {
+        private void EnableARBackgroundRendering() {
+            if (BackgroundMaterial == null || m_Camera == null) {
                 return;
             }
 
@@ -251,10 +220,8 @@ namespace GoogleARCore
             m_Camera.AddCommandBuffer(CameraEvent.BeforeGBuffer, m_CommandBuffer);
         }
 
-        private void DisableARBackgroundRendering()
-        {
-            if (m_CommandBuffer == null || m_Camera == null)
-            {
+        private void DisableARBackgroundRendering() {
+            if (m_CommandBuffer == null || m_Camera == null) {
                 return;
             }
 

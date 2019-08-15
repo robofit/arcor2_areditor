@@ -19,21 +19,16 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System;
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
     using GoogleARCore;
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
     Justification = "Internal")]
-    public static class ApiFeaturePointOrientationModeExtensions
-    {
+    public static class ApiFeaturePointOrientationModeExtensions {
         public static FeaturePointOrientationMode ToFeaturePointOrientationMode(
-            this ApiFeaturePointOrientationMode apiMode)
-        {
-            switch (apiMode)
-            {
+            this ApiFeaturePointOrientationMode apiMode) {
+            switch (apiMode) {
                 case ApiFeaturePointOrientationMode.Identity:
                     return FeaturePointOrientationMode.Identity;
                 case ApiFeaturePointOrientationMode.SurfaceNormal:

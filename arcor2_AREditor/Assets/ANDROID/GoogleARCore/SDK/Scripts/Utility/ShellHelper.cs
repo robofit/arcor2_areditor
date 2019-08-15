@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.IO;
     using System.Text;
     using UnityEngine;
@@ -31,8 +30,7 @@ namespace GoogleARCoreInternal
     /// <summary>
     /// Misc helper methods for running shell commands.
     /// </summary>
-    public static class ShellHelper
-    {
+    public static class ShellHelper {
         /// <summary>
         /// Run a shell command.
         /// </summary>
@@ -41,19 +39,17 @@ namespace GoogleARCoreInternal
         /// <param name="output">Filled out with the result as printed to stdout.</param>
         /// <param name="error">Filled out with the result as printed to stderr.</param>
         public static void RunCommand(
-            string fileName, string arguments, out string output, out string error)
-        {
-            using (var process = new System.Diagnostics.Process())
-            {
-                var startInfo = new System.Diagnostics.ProcessStartInfo(fileName, arguments);
+            string fileName, string arguments, out string output, out string error) {
+            using (System.Diagnostics.Process process = new System.Diagnostics.Process()) {
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo(fileName, arguments);
                 startInfo.UseShellExecute = false;
                 startInfo.RedirectStandardError = true;
                 startInfo.RedirectStandardOutput = true;
                 startInfo.CreateNoWindow = true;
                 process.StartInfo = startInfo;
 
-                var outputBuilder = new StringBuilder();
-                var errorBuilder = new StringBuilder();
+                StringBuilder outputBuilder = new StringBuilder();
+                StringBuilder errorBuilder = new StringBuilder();
                 process.OutputDataReceived += (sender, ef) => outputBuilder.AppendLine(ef.Data);
                 process.ErrorDataReceived += (sender, ef) => errorBuilder.AppendLine(ef.Data);
 
@@ -76,21 +72,19 @@ namespace GoogleARCoreInternal
         /// This function only works while in the Unity editor and returns null otherwise.
         /// </remarks>
         /// <returns> String that contains the path to adb that the Unity editor uses. </returns>
-        public static string GetAdbPath()
-        {
+        public static string GetAdbPath() {
             string sdkRoot = null;
 #if UNITY_EDITOR
             // Gets adb path and starts instant preview server.
             sdkRoot = EditorPrefs.GetString("AndroidSdkRoot");
 #endif // UNITY_EDITOR
 
-            if (string.IsNullOrEmpty(sdkRoot))
-            {
+            if (string.IsNullOrEmpty(sdkRoot)) {
                 return null;
             }
 
             // Gets adb path from known directory.
-            var adbPath = Path.Combine(Path.GetFullPath(sdkRoot),
+            string adbPath = Path.Combine(Path.GetFullPath(sdkRoot),
                                        Path.Combine("platform-tools", GetAdbFileName()));
 
             return adbPath;
@@ -101,12 +95,10 @@ namespace GoogleARCoreInternal
         /// On macOS this function will return "adb" and on Windows it will return "adb.exe".
         /// </summary>
         /// <returns> Returns adb's executable name based on platform.
-        public static string GetAdbFileName()
-        {
-            var adbName = "adb";
+        public static string GetAdbFileName() {
+            string adbName = "adb";
 
-            if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
+            if (Application.platform == RuntimePlatform.WindowsEditor) {
                 adbName = Path.ChangeExtension(adbName, "exe");
             }
 

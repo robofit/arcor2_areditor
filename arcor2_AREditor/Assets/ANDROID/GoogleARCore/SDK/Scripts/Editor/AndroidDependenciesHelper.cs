@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.IO;
     using System.Reflection;
@@ -30,8 +29,7 @@ namespace GoogleARCoreInternal
     /// This handles the addition and removal android dependencies, and run PlayServicesResolver
     /// plugin.
     /// </summary>
-    internal static class AndroidDependenciesHelper
-    {
+    internal static class AndroidDependenciesHelper {
         private static readonly string k_TemplateFileExtension = ".template";
         private static readonly string k_PlayServiceDependencyFileExtension = ".xml";
 
@@ -42,19 +40,16 @@ namespace GoogleARCoreInternal
         /// <param name="enabledDependencies">If set to <c>true</c> enabled dependencies.</param>
         /// <param name="dependenciesManifestGuid">Dependencies manifest GUID.</param>
         public static void SetAndroidPluginEnabled(bool enabledDependencies,
-            string dependenciesManifestGuid)
-        {
+            string dependenciesManifestGuid) {
             string manifestAssetPath = AssetDatabase.GUIDToAssetPath(dependenciesManifestGuid);
-            if (manifestAssetPath == null)
-            {
+            if (manifestAssetPath == null) {
                 Debug.LogErrorFormat("ARCore: Could not locate dependencies manifest plugin.");
                 return;
             }
 
             PluginImporter pluginImporter =
                 AssetImporter.GetAtPath(manifestAssetPath) as PluginImporter;
-            if (pluginImporter == null)
-            {
+            if (pluginImporter == null) {
                 Debug.LogErrorFormat("ARCore: Could not locate dependencies manifest plugin {0}.",
                     Path.GetFileName(manifestAssetPath));
                 return;
@@ -71,12 +66,10 @@ namespace GoogleARCoreInternal
         /// <param name="enabledDependencies">If set to <c>true</c> enabled dependencies.</param>
         /// <param name="dependenciesTemplateGuid">Dependencies template GUID.</param>
         public static void UpdateAndroidDependencies(bool enabledDependencies,
-            string dependenciesTemplateGuid)
-        {
+            string dependenciesTemplateGuid) {
             string dependenciesTemplatePath =
                 AssetDatabase.GUIDToAssetPath(dependenciesTemplateGuid);
-            if (dependenciesTemplatePath == null)
-            {
+            if (dependenciesTemplatePath == null) {
                 Debug.LogError(
                     "Failed to enable ARCore SDK for Unity Android dependencies xml. " +
                     "Template file is missing.");
@@ -86,16 +79,13 @@ namespace GoogleARCoreInternal
             string dependenciesXMLPath = dependenciesTemplatePath.Replace(
                 k_TemplateFileExtension, k_PlayServiceDependencyFileExtension);
 
-            if (enabledDependencies && !File.Exists(dependenciesXMLPath))
-            {
+            if (enabledDependencies && !File.Exists(dependenciesXMLPath)) {
                 Debug.LogFormat(
                     "Adding {0}.", Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
 
                 File.Copy(dependenciesTemplatePath, dependenciesXMLPath);
                 AssetDatabase.Refresh();
-            }
-            else if (!enabledDependencies && File.Exists(dependenciesXMLPath))
-            {
+            } else if (!enabledDependencies && File.Exists(dependenciesXMLPath)) {
                 Debug.LogFormat(
                     "Removing {0}.", Path.GetFileNameWithoutExtension(dependenciesTemplatePath));
 
@@ -109,43 +99,33 @@ namespace GoogleARCoreInternal
         /// Uses reflection to find the GooglePlayServices.PlayServicesResolver class and invoke
         /// the public static method, MenuResolve() in order to resolve dependencies change.
         /// </summary>
-        public static void DoPlayServicesResolve()
-        {
+        public static void DoPlayServicesResolve() {
             const string namespaceName = "GooglePlayServices";
             const string className = "PlayServicesResolver";
             const string methodName = "MenuResolve";
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            foreach (var assembly in assemblies)
-            {
-                try
-                {
-                    if (assembly.GetTypes() == null)
-                    {
+            foreach (Assembly assembly in assemblies) {
+                try {
+                    if (assembly.GetTypes() == null) {
                         continue;
                     }
-                }
-                catch (ReflectionTypeLoadException)
-                {
+                } catch (ReflectionTypeLoadException) {
                     // Could not get the Assembly types; skip it.
                     continue;
                 }
 
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (!type.IsClass || type.Namespace != namespaceName)
-                    {
+                foreach (Type type in assembly.GetTypes()) {
+                    if (!type.IsClass || type.Namespace != namespaceName) {
                         continue;
                     }
 
-                    if (type.Name == className)
-                    {
+                    if (type.Name == className) {
                         // We found the class we're looking for. Attempt to call the method and
                         // then return.
-                        var menuResolveMethod = type.GetMethod(methodName,
+                        MethodInfo menuResolveMethod = type.GetMethod(methodName,
                             BindingFlags.Public | BindingFlags.Static);
-                        if (menuResolveMethod == null)
-                        {
+                        if (menuResolveMethod == null) {
                             Debug.LogErrorFormat("ARCore SDK for Unity: Error finding public " +
                                                  "static method {0} on {1}.{2}.",
                                                  methodName, namespaceName, className);

@@ -18,11 +18,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Text;
     using Google.Protobuf;
     using GoogleARCoreInternal.Proto;
     using UnityEditor;
@@ -33,8 +31,7 @@ namespace GoogleARCoreInternal
     [Serializable]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
      Justification = "Internal")]
-    public class ARCoreAnalytics
-    {
+    public class ARCoreAnalytics {
         public bool EnableAnalytics;
         private const string k_EnableAnalyticsKey = "EnableGoogleARCoreAnalytics";
         private const string k_GoogleAnalyticsHost = "https://play.googleapis.com/log";
@@ -48,8 +45,7 @@ namespace GoogleARCoreInternal
         /// <summary>
         /// Static constructor permits a once-on-load analytics collection event.
         /// </summary>
-        static ARCoreAnalytics()
-        {
+        static ARCoreAnalytics() {
             // Create the new instance.
             Instance = new ARCoreAnalytics();
             Instance.Load();
@@ -62,21 +58,21 @@ namespace GoogleARCoreInternal
                 new EditorApplication.CallbackFunction(Instance._OnAnalyticsUpdate);
         }
 
-        public static ARCoreAnalytics Instance { get; private set; }
+        public static ARCoreAnalytics Instance {
+            get; private set;
+        }
 
         /// <summary>
         /// Loads analytics settings.
         /// </summary>
-        public void Load()
-        {
+        public void Load() {
             EnableAnalytics = EditorPrefs.GetBool(k_EnableAnalyticsKey, true);
         }
 
         /// <summary>
         /// Saves current analytics preferences.
         /// </summary>
-        public void Save()
-        {
+        public void Save() {
             EditorPrefs.SetBool(k_EnableAnalyticsKey, EnableAnalytics);
         }
 
@@ -86,17 +82,14 @@ namespace GoogleARCoreInternal
         /// <param name="analyticsHost">Address of host to send the analytics to.</param>
         /// <param name="logRequest">Data to send to the analytics server.</param>
         /// <param name="verbose">If true, display debug messages in the console.</param>
-        public void SendAnalytics(string analyticsHost, LogRequest logRequest, bool verbose)
-        {
+        public void SendAnalytics(string analyticsHost, LogRequest logRequest, bool verbose) {
 #if UNITY_2017_1_OR_NEWER
             // Save the time sending was last attempted.
             m_LastUpdateTicks = DateTime.Now.Ticks;
 
             // Only send if analytics is enabled.
-            if (EnableAnalytics == false)
-            {
-                if (verbose == true)
-                {
+            if (EnableAnalytics == false) {
+                if (verbose == true) {
                     Debug.Log("Google ARCore SDK for Unity analytics is disabled, not sending.");
                 }
 
@@ -104,10 +97,8 @@ namespace GoogleARCoreInternal
             }
 
             // Only allow one instance of the request at a time.
-            if (m_WebRequest != null)
-            {
-                if (verbose == true)
-                {
+            if (m_WebRequest != null) {
+                if (verbose == true) {
                     Debug.Log("Google ARCore SDK for Unity analytics is already sending data.");
                 }
 
@@ -124,8 +115,7 @@ namespace GoogleARCoreInternal
 
             // Set the verbosity preference for this request.
             m_Verbose = verbose;
-            if (verbose == true)
-            {
+            if (verbose == true) {
                 Debug.Log("Sending Google ARCore SDK for Unity analytics.");
             }
 
@@ -138,29 +128,21 @@ namespace GoogleARCoreInternal
         /// Periodically checks back to update the current logging request, or if
         /// enough time has passed, initiate a new logging request.
         /// </summary>
-        private void _OnAnalyticsUpdate()
-        {
+        private void _OnAnalyticsUpdate() {
 #if UNITY_2017_1_OR_NEWER
             // Nothing to do if Analytics isn't enabled.
-            if (EnableAnalytics == false)
-            {
+            if (EnableAnalytics == false) {
                 return;
             }
 
             // Process the current web request.
-            if (m_WebRequest != null)
-            {
-                if (m_WebRequest.isDone == true)
-                {
-                    if (m_Verbose == true)
-                    {
-                        if (m_WebRequest.isNetworkError == true)
-                        {
+            if (m_WebRequest != null) {
+                if (m_WebRequest.isDone == true) {
+                    if (m_Verbose == true) {
+                        if (m_WebRequest.isNetworkError == true) {
                             Debug.Log("Error sending Google ARCore SDK for Unity analytics: " +
                                       m_WebRequest.error);
-                        }
-                        else
-                        {
+                        } else {
                             Debug.Log("Google ARCore SDK for Unity analytics sent: " +
                                       m_WebRequest.downloadHandler.text);
                         }
@@ -171,8 +153,7 @@ namespace GoogleARCoreInternal
             }
 
             // Resend analytics periodically (once per week if the editor remains open.)
-            if (DateTime.Now.Ticks - m_LastUpdateTicks >= k_AnalyticsResendDelayTicks)
-            {
+            if (DateTime.Now.Ticks - m_LastUpdateTicks >= k_AnalyticsResendDelayTicks) {
                 Instance.SendAnalytics(
                     k_GoogleAnalyticsHost, LogRequestUtils.BuildLogRequest(), false);
             }

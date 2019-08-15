@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Possible tracking states for ARCore.
     /// </summary>
-    public enum TrackingState
-    {
+    public enum TrackingState {
         /// <summary>
         /// The entity is actively being tracked.
         /// </summary>

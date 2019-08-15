@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiPlaneTypeExtensions
-    {
-        public static DetectedPlaneType ToDetectedPlaneType(this ApiPlaneType apiPlaneType)
-        {
-            switch (apiPlaneType)
-            {
+    internal static class ApiPlaneTypeExtensions {
+        public static DetectedPlaneType ToDetectedPlaneType(this ApiPlaneType apiPlaneType) {
+            switch (apiPlaneType) {
                 case ApiPlaneType.HorizontalUpwardFacing:
                     return DetectedPlaneType.HorizontalUpwardFacing;
                 case ApiPlaneType.HorizontalDownwardFacing:

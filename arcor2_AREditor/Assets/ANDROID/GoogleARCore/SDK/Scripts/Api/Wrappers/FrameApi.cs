@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
@@ -31,48 +30,40 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class FrameApi
-    {
+    internal class FrameApi {
         private NativeSession m_NativeSession;
 
         private float[,] m_AmbientSH = new float[9, 3];
 
-        public FrameApi(NativeSession nativeSession)
-        {
+        public FrameApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public void Release(IntPtr frameHandle)
-        {
+        public void Release(IntPtr frameHandle) {
             ExternApi.ArFrame_release(frameHandle);
         }
 
-        public long GetTimestamp()
-        {
+        public long GetTimestamp() {
             long timestamp = 0;
             ExternApi.ArFrame_getTimestamp(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle, ref timestamp);
             return timestamp;
         }
 
-        public IntPtr AcquireCamera()
-        {
+        public IntPtr AcquireCamera() {
             IntPtr cameraHandle = IntPtr.Zero;
             ExternApi.ArFrame_acquireCamera(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle, ref cameraHandle);
             return cameraHandle;
         }
 
-        public CameraImageBytes AcquireCameraImageBytes()
-        {
+        public CameraImageBytes AcquireCameraImageBytes() {
             IntPtr cameraImageHandle = IntPtr.Zero;
             ApiArStatus status = ExternApi.ArFrame_acquireCameraImage(m_NativeSession.SessionHandle,
                 m_NativeSession.FrameHandle, ref cameraImageHandle);
-            if (status != ApiArStatus.Success)
-            {
+            if (status != ApiArStatus.Success) {
                 Debug.LogWarningFormat("Failed to acquire camera image with status {0}.", status);
                 return new CameraImageBytes(IntPtr.Zero);
             }
@@ -80,13 +71,11 @@ namespace GoogleARCoreInternal
             return new CameraImageBytes(cameraImageHandle);
         }
 
-        public bool TryAcquirePointCloudHandle(out IntPtr pointCloudHandle)
-        {
+        public bool TryAcquirePointCloudHandle(out IntPtr pointCloudHandle) {
             pointCloudHandle = IntPtr.Zero;
             ApiArStatus status = ExternApi.ArFrame_acquirePointCloud(m_NativeSession.SessionHandle,
                 m_NativeSession.FrameHandle, ref pointCloudHandle);
-            if (status != ApiArStatus.Success)
-            {
+            if (status != ApiArStatus.Success) {
                 Debug.LogWarningFormat("Failed to acquire point cloud with status {0}", status);
                 return false;
             }
@@ -94,12 +83,10 @@ namespace GoogleARCoreInternal
             return true;
         }
 
-        public bool AcquireImageMetadata(ref IntPtr imageMetadataHandle)
-        {
-            var status = ExternApi.ArFrame_acquireImageMetadata(m_NativeSession.SessionHandle,
+        public bool AcquireImageMetadata(ref IntPtr imageMetadataHandle) {
+            ApiArStatus status = ExternApi.ArFrame_acquireImageMetadata(m_NativeSession.SessionHandle,
                 m_NativeSession.FrameHandle, ref imageMetadataHandle);
-            if (status != ApiArStatus.Success)
-            {
+            if (status != ApiArStatus.Success) {
                 Debug.LogErrorFormat(
                     "Failed to aquire camera image metadata with status {0}", status);
                 return false;
@@ -108,8 +95,7 @@ namespace GoogleARCoreInternal
             return true;
         }
 
-        public LightEstimate GetLightEstimate()
-        {
+        public LightEstimate GetLightEstimate() {
             IntPtr lightEstimateHandle = m_NativeSession.LightEstimateApi.Create();
             ExternApi.ArFrame_getLightEstimate(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle, lightEstimateHandle);
@@ -135,15 +121,13 @@ namespace GoogleARCoreInternal
                 mainLightRotation, mainLightColor, m_AmbientSH, timestamp);
         }
 
-        public Cubemap GetReflectionCubemap()
-        {
+        public Cubemap GetReflectionCubemap() {
             IntPtr lightEstimateHandle = m_NativeSession.LightEstimateApi.Create();
             ExternApi.ArFrame_getLightEstimate(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle, lightEstimateHandle);
             LightEstimateState state =
                 m_NativeSession.LightEstimateApi.GetState(lightEstimateHandle);
-            if (state != LightEstimateState.Valid)
-            {
+            if (state != LightEstimateState.Valid) {
                 return null;
             }
 
@@ -154,8 +138,7 @@ namespace GoogleARCoreInternal
             return cubemap;
         }
 
-        public void TransformDisplayUvCoords(ref ApiDisplayUvCoords uv)
-        {
+        public void TransformDisplayUvCoords(ref ApiDisplayUvCoords uv) {
             ApiDisplayUvCoords uvOut = new ApiDisplayUvCoords();
             ExternApi.ArFrame_transformDisplayUvCoords(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle,
@@ -165,8 +148,7 @@ namespace GoogleARCoreInternal
         }
 
         public void TransformCoordinates2d(ref Vector2 uv, DisplayUvCoordinateType inputType,
-            DisplayUvCoordinateType outputType)
-        {
+            DisplayUvCoordinateType outputType) {
             Vector2 uvOut = new Vector2(uv.x, uv.y);
             ExternApi.ArFrame_transformCoordinates2d(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle,
@@ -176,8 +158,7 @@ namespace GoogleARCoreInternal
             uv = uvOut;
         }
 
-        public void GetUpdatedTrackables(List<Trackable> trackables)
-        {
+        public void GetUpdatedTrackables(List<Trackable> trackables) {
             IntPtr listHandle = m_NativeSession.TrackableListApi.Create();
             ExternApi.ArFrame_getUpdatedTrackables(
                 m_NativeSession.SessionHandle, m_NativeSession.FrameHandle,
@@ -185,27 +166,22 @@ namespace GoogleARCoreInternal
 
             trackables.Clear();
             int count = m_NativeSession.TrackableListApi.GetCount(listHandle);
-            for (int i = 0; i < count; i++)
-            {
+            for (int i = 0; i < count; i++) {
                 IntPtr trackableHandle =
                     m_NativeSession.TrackableListApi.AcquireItem(listHandle, i);
 
                 // TODO:: Remove conditional when b/75291352 is fixed.
                 ApiTrackableType trackableType =
                     m_NativeSession.TrackableApi.GetType(trackableHandle);
-                if ((int)trackableType == 0x41520105)
-                {
+                if ((int) trackableType == 0x41520105) {
                     m_NativeSession.TrackableApi.Release(trackableHandle);
                     continue;
                 }
 
                 Trackable trackable = m_NativeSession.TrackableFactory(trackableHandle);
-                if (trackable != null)
-                {
+                if (trackable != null) {
                     trackables.Add(trackable);
-                }
-                else
-                {
+                } else {
                     m_NativeSession.TrackableApi.Release(trackableHandle);
                 }
             }
@@ -213,8 +189,7 @@ namespace GoogleARCoreInternal
             m_NativeSession.TrackableListApi.Destroy(listHandle);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArFrame_release(IntPtr frame);
 

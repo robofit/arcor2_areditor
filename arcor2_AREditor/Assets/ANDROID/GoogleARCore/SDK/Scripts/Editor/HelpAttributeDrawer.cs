@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEditor;
     using UnityEngine;
 
@@ -27,8 +26,7 @@ namespace GoogleARCoreInternal
     /// HelpAttribute drawer that draws a HelpBox below the property to display the help content.
     /// </summary>
     [CustomPropertyDrawer(typeof(HelpAttribute))]
-    internal class HelpAttributeDrawer : PropertyDrawer
-    {
+    internal class HelpAttributeDrawer : PropertyDrawer {
         private const float k_HelpBoxPadding = 5;
         private const float k_IconOffset = 40;
 
@@ -39,10 +37,8 @@ namespace GoogleARCoreInternal
         /// <param name="property">The SerializedProperty to make the custom GUI for.</param>
         /// <param name="label">The label of this property.</param>
         /// <returns>The height in pixels.</returns>
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            if (_IsHelpBoxEmpty())
-            {
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+            if (_IsHelpBoxEmpty()) {
                 return _GetOriginalPropertyHeight(property, label);
             }
 
@@ -56,8 +52,7 @@ namespace GoogleARCoreInternal
         /// <param name="position">Rectangle on the screen to use for the property GUI.</param>
         /// <param name="property">The SerializedProperty to make the custom GUI for.</param>
         /// <param name="label">The label of this property.</param>
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             EditorGUI.BeginProperty(position, label, property);
             Rect labelPosition = position;
             float labelHeight = base.GetPropertyHeight(property, label);
@@ -66,26 +61,20 @@ namespace GoogleARCoreInternal
 
             // Draw property based on defualt Unity GUI behavior.
             string warningMessage = _GetIncompatibleAttributeWarning(property);
-            if (!string.IsNullOrEmpty(warningMessage))
-            {
-                var warningContent = new GUIContent(warningMessage);
+            if (!string.IsNullOrEmpty(warningMessage)) {
+                GUIContent warningContent = new GUIContent(warningMessage);
                 EditorGUI.LabelField(labelPosition, label, warningContent);
-            }
-            else if (_GetPropertyAttribute<TextAreaAttribute>() != null)
-            {
+            } else if (_GetPropertyAttribute<TextAreaAttribute>() != null) {
                 Rect textAreaPosition = position;
                 textAreaPosition.y += labelHeight;
                 textAreaPosition.height = propertyHeight - labelHeight;
                 EditorGUI.LabelField(labelPosition, label);
                 EditorGUI.BeginChangeCheck();
                 string text = EditorGUI.TextArea(textAreaPosition, property.stringValue);
-                if (EditorGUI.EndChangeCheck())
-                {
+                if (EditorGUI.EndChangeCheck()) {
                     property.stringValue = text;
                 }
-            }
-            else if (_GetPropertyAttribute<MultilineAttribute>() != null)
-            {
+            } else if (_GetPropertyAttribute<MultilineAttribute>() != null) {
                 Rect multilinePosition = position;
                 multilinePosition.x += EditorGUIUtility.labelWidth;
                 multilinePosition.width -= EditorGUIUtility.labelWidth;
@@ -93,84 +82,68 @@ namespace GoogleARCoreInternal
                 EditorGUI.LabelField(labelPosition, label);
                 EditorGUI.BeginChangeCheck();
                 string text = EditorGUI.TextArea(multilinePosition, property.stringValue);
-                if (EditorGUI.EndChangeCheck())
-                {
+                if (EditorGUI.EndChangeCheck()) {
                     property.stringValue = text;
                 }
-            }
-            else if (_GetPropertyAttribute<RangeAttribute>() != null)
-            {
-                var rangeAttribute = _GetPropertyAttribute<RangeAttribute>();
-                if (property.propertyType == SerializedPropertyType.Integer)
-                {
+            } else if (_GetPropertyAttribute<RangeAttribute>() != null) {
+                RangeAttribute rangeAttribute = _GetPropertyAttribute<RangeAttribute>();
+                if (property.propertyType == SerializedPropertyType.Integer) {
                     EditorGUI.IntSlider(labelPosition, property,
-                        (int)rangeAttribute.min, (int)rangeAttribute.max, label);
-                }
-                else
-                {
+                        (int) rangeAttribute.min, (int) rangeAttribute.max, label);
+                } else {
                     EditorGUI.Slider(labelPosition, property,
                         rangeAttribute.min, rangeAttribute.max, label);
                 }
-            }
-            else
-            {
+            } else {
                 EditorGUI.PropertyField(labelPosition, property);
             }
 
-            if (!_IsHelpBoxEmpty())
-            {
-                var helpBoxPosition = position;
+            if (!_IsHelpBoxEmpty()) {
+                Rect helpBoxPosition = position;
                 helpBoxPosition.y += propertyHeight + k_HelpBoxPadding;
                 helpBoxPosition.height = _GetHelpAttributeHeight();
                 EditorGUI.HelpBox(helpBoxPosition, _GetHelpAttribute().HelpMessage,
-                    (MessageType)_GetHelpAttribute().MessageType);
+                    (MessageType) _GetHelpAttribute().MessageType);
             }
 
             EditorGUI.EndProperty();
         }
 
-        private HelpAttribute _GetHelpAttribute()
-        {
+        private HelpAttribute _GetHelpAttribute() {
             return attribute as HelpAttribute;
         }
 
-        private bool _IsHelpBoxEmpty()
-        {
+        private bool _IsHelpBoxEmpty() {
             return string.IsNullOrEmpty(_GetHelpAttribute().HelpMessage);
         }
 
-        private bool _IsIconVisible()
-        {
+        private bool _IsIconVisible() {
             return _GetHelpAttribute().MessageType != HelpAttribute.HelpMessageType.None;
         }
 
-        private T _GetPropertyAttribute<T>() where T : PropertyAttribute
-        {
-            var attributes = fieldInfo.GetCustomAttributes(typeof(T), true);
-            return attributes != null && attributes.Length > 0 ? (T)attributes[0] : null;
+        private T _GetPropertyAttribute<T>() where T : PropertyAttribute {
+            object[] attributes = fieldInfo.GetCustomAttributes(typeof(T), true);
+            return attributes != null && attributes.Length > 0 ? (T) attributes[0] : null;
         }
 
-        private float _GetOriginalPropertyHeight(SerializedProperty property, GUIContent label)
-        {
+        private float _GetOriginalPropertyHeight(SerializedProperty property, GUIContent label) {
             float labelHeight = base.GetPropertyHeight(property, label);
             string warningMessage = _GetIncompatibleAttributeWarning(property);
-            if (!string.IsNullOrEmpty(warningMessage))
-            {
+            if (!string.IsNullOrEmpty(warningMessage)) {
                 return labelHeight;
             }
 
             // Calculate property height for TextArea attribute.
             // TextArea is below property label.
-            var textAreaAttribute = _GetPropertyAttribute<TextAreaAttribute>();
-            if (textAreaAttribute != null)
-            {
-                var textAreaContent = new GUIContent(property.stringValue);
-                var textAreaStyle = new GUIStyle(EditorStyles.textArea);
-                var minHeight = (textAreaAttribute.minLines * textAreaStyle.lineHeight) +
+            TextAreaAttribute textAreaAttribute = _GetPropertyAttribute<TextAreaAttribute>();
+            if (textAreaAttribute != null) {
+                GUIContent textAreaContent = new GUIContent(property.stringValue);
+                GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea);
+                float minHeight = (textAreaAttribute.minLines * textAreaStyle.lineHeight) +
                     textAreaStyle.margin.top + textAreaStyle.margin.bottom;
-                var maxHeight = (textAreaAttribute.maxLines * textAreaStyle.lineHeight) +
+                float maxHeight = (textAreaAttribute.maxLines * textAreaStyle.lineHeight) +
                     textAreaStyle.margin.top + textAreaStyle.margin.bottom;
-                var textAreaHeight = textAreaStyle.CalcHeight(
+                float textAreaHeight = textAreaStyle.CalcHeight(
                     textAreaContent, EditorGUIUtility.currentViewWidth);
                 textAreaHeight = Mathf.Max(textAreaHeight, minHeight);
                 textAreaHeight = Mathf.Min(textAreaHeight, maxHeight);
@@ -180,11 +153,10 @@ namespace GoogleARCoreInternal
 
             // Calculate property height for Multiline attribute.
             // Multiline is on the same line of property label.
-            var multilineAttribute = _GetPropertyAttribute<MultilineAttribute>();
-            if (multilineAttribute != null)
-            {
-                var textFieldStyle = new GUIStyle(EditorStyles.textField);
-                var multilineHeight = (textFieldStyle.lineHeight * multilineAttribute.lines) +
+            MultilineAttribute multilineAttribute = _GetPropertyAttribute<MultilineAttribute>();
+            if (multilineAttribute != null) {
+                GUIStyle textFieldStyle = new GUIStyle(EditorStyles.textField);
+                float multilineHeight = (textFieldStyle.lineHeight * multilineAttribute.lines) +
                     textFieldStyle.margin.top + textFieldStyle.margin.bottom;
 
                 return Mathf.Max(labelHeight, multilineHeight);
@@ -193,16 +165,14 @@ namespace GoogleARCoreInternal
             return labelHeight;
         }
 
-        private float _GetHelpAttributeHeight()
-        {
+        private float _GetHelpAttributeHeight() {
             float attributeHeight = 0;
-            if (_IsHelpBoxEmpty())
-            {
+            if (_IsHelpBoxEmpty()) {
                 return attributeHeight;
             }
 
-            var content = new GUIContent(_GetHelpAttribute().HelpMessage);
-            var iconOffset = _IsIconVisible() ? k_IconOffset : 0;
+            GUIContent content = new GUIContent(_GetHelpAttribute().HelpMessage);
+            float iconOffset = _IsIconVisible() ? k_IconOffset : 0;
 
             // When HelpBox icon is visble, part of the width is occupied by the icon.
             attributeHeight = EditorStyles.helpBox.CalcHeight(content,
@@ -215,25 +185,21 @@ namespace GoogleARCoreInternal
             return attributeHeight;
         }
 
-        private string _GetIncompatibleAttributeWarning(SerializedProperty property)
-        {
+        private string _GetIncompatibleAttributeWarning(SerializedProperty property) {
             // Based on Unity default behavior, potential incompatible attributes have
             // following priorities: TextAreaAttribute > MultilineAttribute > RangeAttribute.
             // If higher priority exists, lower one will be ignored.
-            if (_GetPropertyAttribute<TextAreaAttribute>() != null)
-            {
+            if (_GetPropertyAttribute<TextAreaAttribute>() != null) {
                 return property.propertyType == SerializedPropertyType.String ?
                     null : "Use TextArea with string.";
             }
 
-            if (_GetPropertyAttribute<MultilineAttribute>() != null)
-            {
+            if (_GetPropertyAttribute<MultilineAttribute>() != null) {
                 return property.propertyType == SerializedPropertyType.String ?
                     null : "Use Multiline with string.";
             }
 
-            if (_GetPropertyAttribute<RangeAttribute>() != null)
-            {
+            if (_GetPropertyAttribute<RangeAttribute>() != null) {
                 return property.propertyType == SerializedPropertyType.Float ||
                     property.propertyType == SerializedPropertyType.Integer ?
                     null : "Use Range with float or int.";

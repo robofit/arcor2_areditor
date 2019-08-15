@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using UnityEngine;
 
     /// <summary>
     /// Stores UV display coordinates for mapping the four corners of the display.
     /// </summary>
-    public struct DisplayUvCoords
-    {
+    public struct DisplayUvCoords {
         /// <summary>
         /// Gets full screen uv coordinates.
         /// </summary>
@@ -61,8 +59,7 @@ namespace GoogleARCore
         /// <param name="bottomLeft">The bottom-left UV coordinates for the display.</param>
         /// <param name="bottomRight">The bottom-right UV coordinates for the display.</param>
         public DisplayUvCoords(
-            Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight)
-        {
+            Vector2 topLeft, Vector2 topRight, Vector2 bottomLeft, Vector2 bottomRight) {
             TopLeft = topLeft;
             TopRight = topRight;
             BottomLeft = bottomLeft;
@@ -78,8 +75,7 @@ namespace GoogleARCore
             "SA1600:ElementsMustBeDocumented",
             Justification = "Deprecated")]
         public static implicit operator GoogleARCoreInternal.ApiDisplayUvCoords(
-            DisplayUvCoords coords)
-        {
+            DisplayUvCoords coords) {
             return new GoogleARCoreInternal.ApiDisplayUvCoords(
                 coords.TopLeft, coords.TopRight, coords.BottomLeft, coords.BottomRight);
         }

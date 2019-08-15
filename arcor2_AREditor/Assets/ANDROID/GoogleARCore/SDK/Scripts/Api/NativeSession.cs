@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
     using GoogleARCore;
-    using UnityEngine;
 
-    internal class NativeSession
-    {
+    internal class NativeSession {
 #pragma warning disable 414
         private static bool s_ReportedEngineType = false;
 #pragma warning restore 414
@@ -36,8 +32,7 @@ namespace GoogleARCoreInternal
 
         private TrackableManager m_TrackableManager = null;
 
-        public NativeSession(IntPtr sessionHandle, IntPtr frameHandle)
-        {
+        public NativeSession(IntPtr sessionHandle, IntPtr frameHandle) {
             IsDestroyed = false;
             SessionHandle = sessionHandle;
             FrameHandle = frameHandle;
@@ -75,89 +70,129 @@ namespace GoogleARCoreInternal
 #endif
         }
 
-        public bool IsDestroyed { get; private set; }
+        public bool IsDestroyed {
+            get; private set;
+        }
 
-        public IntPtr SessionHandle { get; private set; }
+        public IntPtr SessionHandle {
+            get; private set;
+        }
 
-        public IntPtr FrameHandle { get; private set; }
+        public IntPtr FrameHandle {
+            get; private set;
+        }
 
-        public IntPtr PointCloudHandle
-        {
-            get
-            {
+        public IntPtr PointCloudHandle {
+            get {
                 return m_PointCloudManager.PointCloudHandle;
             }
         }
 
-        public bool IsPointCloudNew
-        {
-            get
-            {
+        public bool IsPointCloudNew {
+            get {
                 return m_PointCloudManager.IsPointCloudNew;
             }
         }
 
-        public AnchorApi AnchorApi { get; private set; }
+        public AnchorApi AnchorApi {
+            get; private set;
+        }
 
-        public AugmentedFaceApi AugmentedFaceApi { get; private set; }
+        public AugmentedFaceApi AugmentedFaceApi {
+            get; private set;
+        }
 
-        public AugmentedImageApi AugmentedImageApi { get; private set; }
+        public AugmentedImageApi AugmentedImageApi {
+            get; private set;
+        }
 
-        public AugmentedImageDatabaseApi AugmentedImageDatabaseApi { get; private set; }
+        public AugmentedImageDatabaseApi AugmentedImageDatabaseApi {
+            get; private set;
+        }
 
-        public CameraApi CameraApi { get; private set; }
+        public CameraApi CameraApi {
+            get; private set;
+        }
 
-        public CameraConfigApi CameraConfigApi { get; private set; }
+        public CameraConfigApi CameraConfigApi {
+            get; private set;
+        }
 
-        public CameraConfigFilterApi CameraConfigFilterApi { get; private set; }
+        public CameraConfigFilterApi CameraConfigFilterApi {
+            get; private set;
+        }
 
-        public CameraConfigListApi CameraConfigListApi { get; private set; }
+        public CameraConfigListApi CameraConfigListApi {
+            get; private set;
+        }
 
-        public CameraMetadataApi CameraMetadataApi { get; private set; }
+        public CameraMetadataApi CameraMetadataApi {
+            get; private set;
+        }
 
-        public FrameApi FrameApi { get; private set; }
+        public FrameApi FrameApi {
+            get; private set;
+        }
 
-        public HitTestApi HitTestApi { get; private set; }
+        public HitTestApi HitTestApi {
+            get; private set;
+        }
 
-        public ImageApi ImageApi { get; private set; }
+        public ImageApi ImageApi {
+            get; private set;
+        }
 
-        public LightEstimateApi LightEstimateApi { get; private set; }
+        public LightEstimateApi LightEstimateApi {
+            get; private set;
+        }
 
-        public PlaneApi PlaneApi { get; private set; }
+        public PlaneApi PlaneApi {
+            get; private set;
+        }
 
-        public PointApi PointApi { get; private set; }
+        public PointApi PointApi {
+            get; private set;
+        }
 
-        public PointCloudApi PointCloudApi { get; private set; }
+        public PointCloudApi PointCloudApi {
+            get; private set;
+        }
 
-        public PoseApi PoseApi { get; private set; }
+        public PoseApi PoseApi {
+            get; private set;
+        }
 
-        public SessionApi SessionApi { get; private set; }
+        public SessionApi SessionApi {
+            get; private set;
+        }
 
-        public SessionConfigApi SessionConfigApi { get; private set; }
+        public SessionConfigApi SessionConfigApi {
+            get; private set;
+        }
 
-        public TrackableApi TrackableApi { get; private set; }
+        public TrackableApi TrackableApi {
+            get; private set;
+        }
 
-        public TrackableListApi TrackableListApi { get; private set; }
+        public TrackableListApi TrackableListApi {
+            get; private set;
+        }
 
-        public Trackable TrackableFactory(IntPtr nativeHandle)
-        {
+        public Trackable TrackableFactory(IntPtr nativeHandle) {
             return m_TrackableManager.TrackableFactory(nativeHandle);
         }
 
         public void GetTrackables<T>(List<T> trackables, TrackableQueryFilter filter)
-            where T : Trackable
-        {
+            where T : Trackable {
             m_TrackableManager.GetTrackables<T>(trackables, filter);
         }
 
-        public void OnUpdate(IntPtr frameHandle)
-        {
+        public void OnUpdate(IntPtr frameHandle) {
             FrameHandle = frameHandle;
             m_PointCloudManager.OnUpdate();
         }
 
-        public void MarkDestroyed()
-        {
+        public void MarkDestroyed() {
             IsDestroyed = true;
         }
     }

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Defines possible modes for AugmentedFace detection.
     /// </summary>
-    public enum AugmentedFaceMode
-    {
+    public enum AugmentedFaceMode {
         /// <summary>
         /// A mode where AugmentedFace detection is disabled.
         /// </summary>

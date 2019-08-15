@@ -1,25 +1,16 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-
-using System.Threading;
-
-using System.Net;
 using System.Net.WebSockets;
-
-
-using UnityEngine.Networking;
-
-using System;
 using System.Text;
-using System.Globalization;
+using System.Threading;
+using UnityEngine;
 
 
 namespace Base {
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
 
-        private ClientWebSocket clientWebSocket;        
+        private ClientWebSocket clientWebSocket;
 
         private List<string> actionObjectsToBeUpdated = new List<string>();
         private Queue<string> sendingQueue = new Queue<string>();
@@ -40,7 +31,7 @@ namespace Base {
             receivedData = "";
             waitingForObjectActions = "";
         }
-        
+
         void Start() {
 
         }
@@ -55,8 +46,7 @@ namespace Base {
                 await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
 
                 Debug.Log("[WS][connect]:" + "Connected");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Debug.Log("[WS][exception]:" + e.Message);
                 if (e.InnerException != null) {
                     Debug.Log("[WS][inner exception]:" + e.InnerException.Message);
@@ -70,8 +60,7 @@ namespace Base {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
                 if (updateObjects)
                     UpdateObjectTypes();
-            }
-            else {
+            } else {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             }
         }
@@ -90,8 +79,7 @@ namespace Base {
                 return;
             if (clientWebSocket.State == WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Disconnected) {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            }
-            else if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
+            } else if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             }
 
@@ -225,8 +213,7 @@ namespace Base {
                                 Debug.Log(ConnectedPuck.transform.GetComponentInParent<Puck>());
                                 con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Puck>().id);
 
-                            }
-                            else {
+                            } else {
                                 con.AddField("default", "start");
                             }
                             input_connection.Add(con);
@@ -241,8 +228,7 @@ namespace Base {
 
                                 con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Puck>().id);
 
-                            }
-                            else {
+                            } else {
                                 con.AddField("default", "end");
                             }
                             output_connection.Add(con);
@@ -311,8 +297,7 @@ namespace Base {
                         HandleGetObjectActions(jsonData);
                         break;
                 }
-            }
-            else if (jsonDict.ContainsKey("event")) {
+            } else if (jsonDict.ContainsKey("event")) {
                 switch (jsonData["event"].str) {
                     case "sceneChanged":
                         HandleSceneChanged(jsonData);
@@ -344,8 +329,7 @@ namespace Base {
                 GameManager.Instance.ProjectUpdated(obj["data"]);
 
 
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleProjectChanged()");
 
             }
@@ -363,8 +347,7 @@ namespace Base {
 
 
 
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleProjectChanged()");
                 return;
             }
@@ -389,8 +372,7 @@ namespace Base {
                 GameManager.Instance.SceneUpdated(data);
 
 
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleSceneChanged()");
                 Debug.Log(obj);
             }
@@ -435,8 +417,7 @@ namespace Base {
                     ActionsManager.Instance.UpdateObjectActionMenu(ao.Type);
                     waitingForObjectActions = "";
                 }
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleGetObjectActions()");
             }
         }
@@ -456,8 +437,7 @@ namespace Base {
 
                 ActionsManager.Instance.UpdateObjects(NewActionObjects);
                 Debug.Log(ActionsManager.Instance.ActionObjectMetadata.Count);
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleGetObjecTypes()");
             }
         }
@@ -469,8 +449,7 @@ namespace Base {
                 if (!obj["result"].b)
                     return false;
 
-            }
-            catch (NullReferenceException e) {
+            } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleGetObjecTypes()");
                 return false;
             }

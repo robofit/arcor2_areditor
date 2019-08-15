@@ -18,17 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiTrackingFailureReasonExtensions
-    {
+    internal static class ApiTrackingFailureReasonExtensions {
         public static LostTrackingReason ToLostTrackingReason(
-            this ApiTrackingFailureReason apiTrackingFailureReason)
-        {
-            switch (apiTrackingFailureReason)
-            {
+            this ApiTrackingFailureReason apiTrackingFailureReason) {
+            switch (apiTrackingFailureReason) {
                 case ApiTrackingFailureReason.None:
                     return LostTrackingReason.None;
                 case ApiTrackingFailureReason.BadState:

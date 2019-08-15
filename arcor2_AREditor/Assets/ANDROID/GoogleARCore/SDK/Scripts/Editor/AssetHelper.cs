@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Diagnostics.CodeAnalysis;
+namespace GoogleARCoreInternal {
     using System.IO;
     using UnityEditor;
     using UnityEditor.Build;
-    using UnityEngine;
 
-    internal class AssetHelper
-    {
+    internal class AssetHelper {
         /// <summary>
         /// Get a PluginImporter object for a specific plugin file, anywhere in the project.
         ///
@@ -36,38 +32,30 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <param name="name">File name of the plugin including its extension.</param>
         /// <returns>The PluginImporter.</returns>
-        public static PluginImporter GetPluginImporterByName(string name)
-        {
+        public static PluginImporter GetPluginImporterByName(string name) {
             string[] guids = AssetDatabase.FindAssets(Path.GetFileNameWithoutExtension(name));
 
             PluginImporter pluginImporter = null;
             int foundCount = 0;
-            foreach (string guid in guids)
-            {
+            foreach (string guid in guids) {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (Path.GetFileName(path) == name)
-                {
+                if (Path.GetFileName(path) == name) {
                     pluginImporter = AssetImporter.GetAtPath(path) as PluginImporter;
                     ++foundCount;
                 }
             }
 
-            if (foundCount == 0)
-            {
+            if (foundCount == 0) {
                 throw new BuildFailedException(
                     string.Format(
                         "ARCore could not find plugin {0}. Was it removed from the ARCore SDK?",
                         name));
-            }
-            else if (foundCount != 1)
-            {
+            } else if (foundCount != 1) {
                 throw new BuildFailedException(
                     string.Format(
                         "ARCore found multiple plugins named {0}. This project should only " +
                         "contain one such plugin and it should be inside the ARCore SDK", name));
-            }
-            else if (pluginImporter == null)
-            {
+            } else if (pluginImporter == null) {
                 throw new BuildFailedException(
                     string.Format("Found {0} file, but it is not a plugin.", name));
             }

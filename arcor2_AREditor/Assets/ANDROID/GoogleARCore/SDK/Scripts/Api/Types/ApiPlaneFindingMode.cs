@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiPlaneFindingMode
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiPlaneFindingMode {
         Disabled = 0,
         Horizontal = 1,
         Vertical = 2,

@@ -18,9 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
-    using System.Collections.Generic;
+namespace GoogleARCore.Examples.CloudAnchors {
     using UnityEngine;
 
 #if ARCORE_IOS_SUPPORT
@@ -33,8 +31,7 @@ namespace GoogleARCore.Examples.CloudAnchors
     /// <summary>
     /// A helper class to interact with the ARKit plugin.
     /// </summary>
-    public class ARKitHelper
-    {
+    public class ARKitHelper {
 #if ARCORE_IOS_SUPPORT
         private List<ARHitTestResult> m_HitResultList = new List<ARHitTestResult>();
 #endif
@@ -46,8 +43,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <param name="y">The y screen position.</param>
         /// <param name="hitPose">The resulting hit pose if the method returns <c>true</c>.</param>
         /// <returns><c>true</c> if a plane was hit. Otherwise <c>false</c>.</returns>
-        public bool RaycastPlane(Camera camera, float x, float y, out Pose hitPose)
-        {
+        public bool RaycastPlane(Camera camera, float x, float y, out Pose hitPose) {
             hitPose = new Pose();
 #if ARCORE_IOS_SUPPORT
             var session = UnityARSessionNativeInterface.GetARSessionNativeInterface();
@@ -97,10 +93,9 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         /// <param name="pose">The pose for the new anchor.</param>
         /// <returns>A newly created ARKit anchor.</returns>
-        public UnityARUserAnchorComponent CreateAnchor(Pose pose)
-        {
-            var anchorGO = new GameObject("User Anchor");
-            var anchor = anchorGO.AddComponent<UnityARUserAnchorComponent>();
+        public UnityARUserAnchorComponent CreateAnchor(Pose pose) {
+            GameObject anchorGO = new GameObject("User Anchor");
+            UnityARUserAnchorComponent anchor = anchorGO.AddComponent<UnityARUserAnchorComponent>();
             anchorGO.transform.position = pose.position;
             anchorGO.transform.rotation = pose.rotation;
             return anchor;
@@ -110,8 +105,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Sets the world origin.
         /// </summary>
         /// <param name="transform">Transform of the new world origin.</param>
-        public void SetWorldOrigin(Transform transform)
-        {
+        public void SetWorldOrigin(Transform transform) {
 #if ARCORE_IOS_SUPPORT
             UnityARSessionNativeInterface.GetARSessionNativeInterface().SetWorldOrigin(transform);
 #endif

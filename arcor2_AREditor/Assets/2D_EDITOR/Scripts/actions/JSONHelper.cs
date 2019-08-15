@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections;
-using Unity;
-using UnityEditor;
 using UnityEngine;
 
-public static class JSONHelper
-{ 
+public static class JSONHelper {
 
-    public static JSONObject CreatePose(Vector3 position, Quaternion orientation)
-    {
+    public static JSONObject CreatePose(Vector3 position, Quaternion orientation) {
         JSONObject poseJson = new JSONObject(JSONObject.Type.OBJECT);
         JSONObject positionJson = CreateVector3JSON(position);
         JSONObject orientationJson = CreateQuaternionJSON(orientation);
@@ -17,8 +12,7 @@ public static class JSONHelper
         return poseJson;
     }
 
-    public static JSONObject CreateVector3JSON(Vector3 v)
-    {
+    public static JSONObject CreateVector3JSON(Vector3 v) {
         JSONObject position = new JSONObject(JSONObject.Type.OBJECT);
         position.AddField("x", v.x);
         position.AddField("y", v.y);
@@ -26,8 +20,7 @@ public static class JSONHelper
         return position;
     }
 
-    public static JSONObject CreateQuaternionJSON(Quaternion q)
-    {
+    public static JSONObject CreateQuaternionJSON(Quaternion q) {
         JSONObject quaternion = new JSONObject(JSONObject.Type.OBJECT);
         quaternion.AddField("x", q.x);
         quaternion.AddField("y", q.y);
@@ -36,61 +29,43 @@ public static class JSONHelper
         return quaternion;
     }
 
-    public static bool GetBoolValue(JSONObject obj, string objId, bool defaultValue)
-    {
-        try
-        {
+    public static bool GetBoolValue(JSONObject obj, string objId, bool defaultValue) {
+        try {
             return obj[objId].b;
-        }
-        catch (NullReferenceException e)
-        {
+        } catch (NullReferenceException e) {
             Debug.Log("Parse error in bool value for object: " + obj.ToString(true));
             return defaultValue;
         }
     }
 
-    public static string GetStringValue(JSONObject obj, string objId, string defaultValue)
-    {
-        try
-        {
+    public static string GetStringValue(JSONObject obj, string objId, string defaultValue) {
+        try {
             return obj[objId].str;
-        }
-        catch (NullReferenceException e)
-        {
+        } catch (NullReferenceException e) {
             return defaultValue;
         }
     }
 
-    public static long GetIntegerValue(JSONObject obj, string objId, long defaultValue)
-    {
-        try
-        {
+    public static long GetIntegerValue(JSONObject obj, string objId, long defaultValue) {
+        try {
             return obj[objId].i;
-        }
-        catch (NullReferenceException e)
-        {
+        } catch (NullReferenceException e) {
             return defaultValue;
         }
     }
 
-    public static float GetFloatValue(JSONObject obj, string objId, float defaultValue)
-    {
-        try
-        {
+    public static float GetFloatValue(JSONObject obj, string objId, float defaultValue) {
+        try {
             return obj[objId].f;
-        }
-        catch (NullReferenceException e)
-        {
+        } catch (NullReferenceException e) {
             return defaultValue;
         }
     }
 
-    public static bool TryGetPose(JSONObject pose, out Vector3 position, out Quaternion orientation)
-    {
+    public static bool TryGetPose(JSONObject pose, out Vector3 position, out Quaternion orientation) {
         position = new Vector3();
         orientation = new Quaternion();
-        try
-        {
+        try {
             JSONObject positionJson = pose["position"];
             JSONObject orientationJson = pose["orientation"];
             position.x = positionJson["x"].f;
@@ -101,9 +76,7 @@ public static class JSONHelper
             orientation.y = orientationJson["y"].f;
             orientation.z = orientationJson["z"].f;
             orientation.w = orientationJson["w"].f;
-        }
-        catch (NullReferenceException e)
-        {
+        } catch (NullReferenceException e) {
             return false;
         }
         return true;

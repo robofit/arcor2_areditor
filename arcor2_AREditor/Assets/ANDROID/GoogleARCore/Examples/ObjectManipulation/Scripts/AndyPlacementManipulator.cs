@@ -18,16 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore;
     using UnityEngine;
 
     /// <summary>
     /// Controls the placement of Andy objects via a tap gesture.
     /// </summary>
-    public class AndyPlacementManipulator : Manipulator
-    {
+    public class AndyPlacementManipulator : Manipulator {
         /// <summary>
         /// The first-person camera being used to render the passthrough camera image (i.e. AR
         /// background).
@@ -49,10 +47,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(TapGesture gesture)
-        {
-            if (gesture.TargetObject == null)
-            {
+        protected override bool CanStartManipulationForGesture(TapGesture gesture) {
+            if (gesture.TargetObject == null) {
                 return true;
             }
 
@@ -63,16 +59,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnEndManipulation(TapGesture gesture)
-        {
-            if (gesture.WasCancelled)
-            {
+        protected override void OnEndManipulation(TapGesture gesture) {
+            if (gesture.WasCancelled) {
                 return;
             }
 
             // If gesture is targeting an existing object we are done.
-            if (gesture.TargetObject != null)
-            {
+            if (gesture.TargetObject != null) {
                 return;
             }
 
@@ -81,23 +74,19 @@ namespace GoogleARCore.Examples.ObjectManipulation
             TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon;
 
             if (Frame.Raycast(
-                gesture.StartPosition.x, gesture.StartPosition.y, raycastFilter, out hit))
-            {
+                gesture.StartPosition.x, gesture.StartPosition.y, raycastFilter, out hit)) {
                 // Use hit pose and camera pose to check if hittest is from the
                 // back of the plane, if it is, no need to create the anchor.
                 if ((hit.Trackable is DetectedPlane) &&
                     Vector3.Dot(FirstPersonCamera.transform.position - hit.Pose.position,
-                        hit.Pose.rotation * Vector3.up) < 0)
-                {
+                        hit.Pose.rotation * Vector3.up) < 0) {
                     Debug.Log("Hit at back of the current DetectedPlane");
-                }
-                else
-                {
+                } else {
                     // Instantiate Andy model at the hit pose.
-                    var andyObject = Instantiate(AndyPrefab, hit.Pose.position, hit.Pose.rotation);
+                    GameObject andyObject = Instantiate(AndyPrefab, hit.Pose.position, hit.Pose.rotation);
 
                     // Instantiate manipulator.
-                    var manipulator =
+                    GameObject manipulator =
                         Instantiate(ManipulatorPrefab, hit.Pose.position, hit.Pose.rotation);
 
                     // Make Andy model a child of the manipulator.
@@ -105,7 +94,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
 
                     // Create an anchor to allow ARCore to track the hitpoint as understanding of
                     // the physical world evolves.
-                    var anchor = hit.Trackable.CreateAnchor(hit.Pose);
+                    Anchor anchor = hit.Trackable.CreateAnchor(hit.Pose);
 
                     // Make manipulator a child of the anchor.
                     manipulator.transform.parent = anchor.transform;

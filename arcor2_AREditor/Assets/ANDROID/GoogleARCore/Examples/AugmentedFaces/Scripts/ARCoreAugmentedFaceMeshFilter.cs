@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.AugmentedFaces
-{
+namespace GoogleARCore.Examples.AugmentedFaces {
     using System.Collections.Generic;
     using GoogleARCore;
     using UnityEngine;
@@ -28,8 +27,7 @@ namespace GoogleARCore.Examples.AugmentedFaces
     /// Helper component to update face mesh data.
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
-    public class ARCoreAugmentedFaceMeshFilter : MonoBehaviour
-    {
+    public class ARCoreAugmentedFaceMeshFilter : MonoBehaviour {
         /// <summary>
         /// If true, this component will update itself using the first AugmentedFace detected by ARCore.
         /// </summary>
@@ -49,15 +47,12 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// Gets or sets the ARCore AugmentedFace object that will be used to update the face mesh data.
         /// </summary>
-        public AugmentedFace AumgnetedFace
-        {
-            get
-            {
+        public AugmentedFace AumgnetedFace {
+            get {
                 return m_AugmentedFace;
             }
 
-            set
-            {
+            set {
                 m_AugmentedFace = value;
                 Update();
             }
@@ -66,8 +61,7 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             m_Mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = m_Mesh;
             m_AugmentedFaceList = new List<AugmentedFace>();
@@ -76,20 +70,16 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
-            if (AutoBind && m_AugmentedFace == null)
-            {
+        public void Update() {
+            if (AutoBind && m_AugmentedFace == null) {
                 m_AugmentedFaceList.Clear();
                 Session.GetTrackables<AugmentedFace>(m_AugmentedFaceList, TrackableQueryFilter.All);
-                if (m_AugmentedFaceList.Count != 0)
-                {
+                if (m_AugmentedFaceList.Count != 0) {
                     m_AugmentedFace = m_AugmentedFaceList[0];
                 }
             }
 
-            if (m_AugmentedFace == null)
-            {
+            if (m_AugmentedFace == null) {
                 return;
             }
 
@@ -103,13 +93,11 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// Update mesh with a face mesh vertices, texture coordinates and indices.
         /// </summary>
-        private void _UpdateMesh()
-        {
+        private void _UpdateMesh() {
             m_AugmentedFace.GetVertices(m_MeshVertices);
             m_AugmentedFace.GetNormals(m_MeshNormals);
 
-            if (!m_MeshInitialized)
-            {
+            if (!m_MeshInitialized) {
                 m_AugmentedFace.GetTextureCoordinates(m_MeshUVs);
                 m_AugmentedFace.GetTriangleIndices(m_MeshIndices);
 

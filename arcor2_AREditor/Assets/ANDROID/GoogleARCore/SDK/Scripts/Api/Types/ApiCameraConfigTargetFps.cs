@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
 
     [Flags]
-    internal enum ApiCameraConfigTargetFps
-    {
+    internal enum ApiCameraConfigTargetFps {
         TargetFps30 = 0x0001,
         TargetFps60 = 0x0002,
     }

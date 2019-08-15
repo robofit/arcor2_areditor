@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Possible states for <see cref="LightEstimate"/>.
     /// </summary>
-    public enum LightEstimateState
-    {
+    public enum LightEstimateState {
         /// <summary>
         /// Estimate is not valid and should not be used.
         /// </summary>

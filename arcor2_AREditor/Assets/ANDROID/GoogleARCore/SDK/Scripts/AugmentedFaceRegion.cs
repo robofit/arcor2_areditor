@@ -18,14 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Defines face regions for which the pose can be queried. Left and right of an Augmented Face
     /// are defined relative to the person that the mesh belongs to.
     /// </summary>
-    public enum AugmentedFaceRegion
-    {
+    public enum AugmentedFaceRegion {
         /// <summary>
         /// A region around the nose of the AugmentedFace.
         /// </summary>

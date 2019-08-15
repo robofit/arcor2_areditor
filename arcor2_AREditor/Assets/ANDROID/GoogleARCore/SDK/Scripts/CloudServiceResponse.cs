@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
+namespace GoogleARCore.CrossPlatform {
     /// <summary>
     /// A response from an AR cloud service request.
     /// </summary>
-    public enum CloudServiceResponse
-    {
+    public enum CloudServiceResponse {
         /// <summary>
         /// The request was completed successfully.
         /// </summary>

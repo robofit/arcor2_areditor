@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -38,8 +37,7 @@ namespace GoogleARCore
     /// An image database supports up to 1000 images. Only one image database can be in use at any
     /// given time.
     /// </summary>
-    public class AugmentedImageDatabase : ScriptableObject
-    {
+    public class AugmentedImageDatabase : ScriptableObject {
         private IntPtr m_ArPrestoDatabase = IntPtr.Zero;
 
         [SerializeField]
@@ -63,20 +61,16 @@ namespace GoogleARCore
         /// <summary>
         /// Constructs a new <c>AugmentedImageDatabase</c>.
         /// </summary>
-        public AugmentedImageDatabase()
-        {
+        public AugmentedImageDatabase() {
             m_IsDirty = true;
         }
 
         /// <summary>
         /// Gets the number of images in the database.
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                lock (m_Images)
-                {
+        public int Count {
+            get {
+                lock (m_Images) {
                     return m_Images.Count;
                 }
             }
@@ -86,20 +80,18 @@ namespace GoogleARCore
         /// Gets a value indicating whether the AugmentedImageDatabase is dirty and has to be reset
         /// in ArCore.
         /// </summary>
-        internal bool m_IsDirty { get; private set; }
+        internal bool m_IsDirty {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets or sets the native handle for an associated ArPrestoAugmentedImageDatabase.
         /// <summary>
-        internal IntPtr m_ArPrestoDatabaseHandle
-        {
-            get
-            {
-                if (m_ArPrestoDatabase == IntPtr.Zero)
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+        internal IntPtr m_ArPrestoDatabaseHandle {
+            get {
+                if (m_ArPrestoDatabase == IntPtr.Zero) {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return IntPtr.Zero;
                     }
 
@@ -112,8 +104,7 @@ namespace GoogleARCore
                 return m_ArPrestoDatabase;
             }
 
-            private set
-            {
+            private set {
                 m_ArPrestoDatabase = value;
             }
         }
@@ -125,26 +116,21 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="index">The zero-based index of the image entry to get or set.</param>
         /// <returns>The image entry at <c>index</c>.</returns>
-        public AugmentedImageDatabaseEntry this[int index]
-        {
-            get
-            {
-                lock (m_Images)
-                {
+        public AugmentedImageDatabaseEntry this[int index] {
+            get {
+                lock (m_Images) {
                     return m_Images[index];
                 }
             }
 
 #if UNITY_EDITOR
-            set
-            {
-                var oldValue = m_Images[index];
+            set {
+                AugmentedImageDatabaseEntry oldValue = m_Images[index];
                 m_Images[index] = value;
 
                 if (oldValue.TextureGUID != m_Images[index].TextureGUID
                     || oldValue.Name != m_Images[index].Name
-                    || oldValue.Width != m_Images[index].Width)
-                {
+                    || oldValue.Width != m_Images[index].Width) {
                     m_IsRawDataDirty = true;
                 }
 
@@ -166,21 +152,17 @@ namespace GoogleARCore
         /// <returns>The index of the added image in this database or -1 if there was an
         /// error.</returns>
         [SuppressMemoryAllocationError(Reason = "Allocates memory for the image.")]
-        public Int32 AddImage(string name, Texture2D image, float width = 0)
-        {
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+        public int AddImage(string name, Texture2D image, float width = 0) {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return -1;
             }
 
-            Int32 imageIndex = nativeSession.AugmentedImageDatabaseApi.AddImageAtRuntime(
+            int imageIndex = nativeSession.AugmentedImageDatabaseApi.AddImageAtRuntime(
                 m_ArPrestoDatabaseHandle, name, image, width);
 
-            if (imageIndex != -1)
-            {
-                lock (m_Images)
-                {
+            if (imageIndex != -1) {
+                lock (m_Images) {
                     m_Images.Add(new AugmentedImageDatabaseEntry(name, width));
                     m_IsDirty = true;
                 }
@@ -194,8 +176,7 @@ namespace GoogleARCore
         /// Adds an image entry to the end of the database.
         /// </summary>
         /// <param name="entry">The image entry to add.</param>
-        public void Add(AugmentedImageDatabaseEntry entry)
-        {
+        public void Add(AugmentedImageDatabaseEntry entry) {
             m_Images.Add(entry);
             m_IsRawDataDirty = true;
             EditorUtility.SetDirty(this);
@@ -205,8 +186,7 @@ namespace GoogleARCore
         /// Removes an image entry at a specified zero-based index.
         /// </summary>
         /// <param name="index">The index of the image entry to remove.</param>
-        public void RemoveAt(int index)
-        {
+        public void RemoveAt(int index) {
             m_Images.RemoveAt(index);
             m_IsRawDataDirty = true;
             EditorUtility.SetDirty(this);
@@ -218,8 +198,7 @@ namespace GoogleARCore
         /// </summary>
         /// <returns><c>true</c> if the database needs to be rebuilt, <c>false</c>
         /// otherwise.</returns>
-        public bool IsBuildNeeded()
-        {
+        public bool IsBuildNeeded() {
             return m_IsRawDataDirty;
         }
         /// @endcond
@@ -231,31 +210,26 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="error">An error string that will be set if the build was
         /// unsuccessful.</param>
-        public void BuildIfNeeded(out string error)
-        {
+        public void BuildIfNeeded(out string error) {
             error = "";
-            if (!m_IsRawDataDirty)
-            {
+            if (!m_IsRawDataDirty) {
                 return;
             }
 
             string cliBinaryPath;
-            if (!FindCliBinaryPath(out cliBinaryPath))
-            {
+            if (!FindCliBinaryPath(out cliBinaryPath)) {
                 return;
             }
 
-            var tempDirectoryPath = FileUtil.GetUniqueTempPathInProject();
+            string tempDirectoryPath = FileUtil.GetUniqueTempPathInProject();
             Directory.CreateDirectory(tempDirectoryPath);
-            var inputImagesFile = Path.Combine(tempDirectoryPath, "inputImages");
+            string inputImagesFile = Path.Combine(tempDirectoryPath, "inputImages");
             string[] fileLines = new string[m_Images.Count];
-            for (int i = 0; i < m_Images.Count; i++)
-            {
-                var imagePath = AssetDatabase.GetAssetPath(m_Images[i].Texture);
+            for (int i = 0; i < m_Images.Count; i++) {
+                string imagePath = AssetDatabase.GetAssetPath(m_Images[i].Texture);
                 StringBuilder sb = new StringBuilder();
                 sb.Append(m_Images[i].Name).Append('|').Append(imagePath);
-                if (m_Images[i].Width > 0)
-                {
+                if (m_Images[i].Width > 0) {
                     sb.Append('|').Append(m_Images[i].Width);
                 }
 
@@ -263,7 +237,7 @@ namespace GoogleARCore
             }
 
             File.WriteAllLines(inputImagesFile, fileLines);
-            var rawDatabasePath = Path.Combine(tempDirectoryPath, "out_database");
+            string rawDatabasePath = Path.Combine(tempDirectoryPath, "out_database");
             string output;
 #if !UNITY_EDITOR_WIN
             ShellHelper.RunCommand("chmod", "+x \"" + cliBinaryPath + "\"", out output, out error);
@@ -277,8 +251,7 @@ namespace GoogleARCore
                 string.Format(
                     "build-db --input_image_list_path {0} --output_db_path {1}",
                     inputImagesFile, rawDatabasePath), out output, out error);
-            if (!string.IsNullOrEmpty(error))
-            {
+            if (!string.IsNullOrEmpty(error)) {
                 return;
             }
 
@@ -292,7 +265,7 @@ namespace GoogleARCore
             const int BYTES_IN_KBYTE = 1024;
             Debug.LogFormat(
                 "Built AugmentedImageDatabase '{0}' ({1} Images, {2} KBytes)", name, Count,
-                m_RawData.Length/BYTES_IN_KBYTE);
+                m_RawData.Length / BYTES_IN_KBYTE);
 
             // TODO:: Remove this log when all errors/warnings are moved to stderr for CLI tool.
             Debug.Log(output);
@@ -305,12 +278,10 @@ namespace GoogleARCore
         /// </summary>
         /// <returns>A list of image entries that require updating of the image quality
         /// score.</returns>
-        public List<AugmentedImageDatabaseEntry> GetDirtyQualityEntries()
-        {
-            var dirtyEntries = new List<AugmentedImageDatabaseEntry>();
+        public List<AugmentedImageDatabaseEntry> GetDirtyQualityEntries() {
+            List<AugmentedImageDatabaseEntry> dirtyEntries = new List<AugmentedImageDatabaseEntry>();
             string cliBinaryPath;
-            if (!FindCliBinaryPath(out cliBinaryPath))
-            {
+            if (!FindCliBinaryPath(out cliBinaryPath)) {
                 return dirtyEntries;
             }
 
@@ -328,8 +299,7 @@ namespace GoogleARCore
 #endif
                 ShellHelper.RunCommand(cliBinaryPath, "version", out currentCliVersion, out error);
 
-                if (!string.IsNullOrEmpty(error))
-                {
+                if (!string.IsNullOrEmpty(error)) {
                     Debug.LogWarning(error);
                     return dirtyEntries;
                 }
@@ -337,10 +307,8 @@ namespace GoogleARCore
 
             bool cliUpdated = m_CliVersion != currentCliVersion;
             // When CLI is updated, mark all entries dirty.
-            if (cliUpdated)
-            {
-                for (int i = 0; i < m_Images.Count; ++i)
-                {
+            if (cliUpdated) {
+                for (int i = 0; i < m_Images.Count; ++i) {
                     AugmentedImageDatabaseEntry updatedImage = m_Images[i];
                     updatedImage.Quality = string.Empty;
                     m_Images[i] = updatedImage;
@@ -350,10 +318,8 @@ namespace GoogleARCore
                 EditorUtility.SetDirty(this);
             }
 
-            for (int i = 0; i < m_Images.Count; ++i)
-            {
-                if (!string.IsNullOrEmpty(m_Images[i].Quality))
-                {
+            for (int i = 0; i < m_Images.Count; ++i) {
+                if (!string.IsNullOrEmpty(m_Images[i].Quality)) {
                     continue;
                 }
 
@@ -371,12 +337,10 @@ namespace GoogleARCore
         /// <param name="path">The path to the command-line tool that will be set if a valid path
         /// was found.</param>
         /// <returns><c>true</c> if a valid path was found, <c>false</c> otherwise.</returns>
-        public static bool FindCliBinaryPath(out string path)
-        {
-            var binaryName = ApiConstants.AugmentedImageCliBinaryName;
+        public static bool FindCliBinaryPath(out string path) {
+            string binaryName = ApiConstants.AugmentedImageCliBinaryName;
             string[] cliBinaryGuid = AssetDatabase.FindAssets(binaryName);
-            if (cliBinaryGuid.Length == 0)
-            {
+            if (cliBinaryGuid.Length == 0) {
                 Debug.LogErrorFormat(
                     "Could not find required tool for building AugmentedImageDatabase: {0}. " +
                     "Was it removed from the ARCore SDK?", binaryName);

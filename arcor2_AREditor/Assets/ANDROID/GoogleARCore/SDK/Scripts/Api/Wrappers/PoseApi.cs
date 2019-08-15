@@ -18,28 +18,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Runtime.InteropServices;
     using UnityEngine;
 
-    internal class PoseApi
-    {
+    internal class PoseApi {
         private NativeSession m_NativeSession;
 
-        public PoseApi(NativeSession nativeSession)
-        {
+        public PoseApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public IntPtr Create()
-        {
+        public IntPtr Create() {
             return Create(Pose.identity);
         }
 
-        public IntPtr Create(Pose pose)
-        {
+        public IntPtr Create(Pose pose) {
             ApiPoseData rawPose = new ApiPoseData(pose);
 
             IntPtr poseHandle = IntPtr.Zero;
@@ -47,20 +42,17 @@ namespace GoogleARCoreInternal
             return poseHandle;
         }
 
-        public void Destroy(IntPtr nativePose)
-        {
+        public void Destroy(IntPtr nativePose) {
             ExternApi.ArPose_destroy(nativePose);
         }
 
-        public Pose ExtractPoseValue(IntPtr poseHandle)
-        {
+        public Pose ExtractPoseValue(IntPtr poseHandle) {
             ApiPoseData poseValue = new ApiPoseData(Pose.identity);
             ExternApi.ArPose_getPoseRaw(m_NativeSession.SessionHandle, poseHandle, ref poseValue);
             return poseValue.ToUnityPose();
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArPose_create(
                 IntPtr session, ref ApiPoseData rawPose, ref IntPtr poseHandle);

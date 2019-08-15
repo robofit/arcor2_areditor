@@ -18,41 +18,33 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
-    using GoogleARCore;
-    using UnityEngine;
 
-    internal class PointCloudManager
-    {
+    internal class PointCloudManager {
         private NativeSession m_NativeSession = null;
 
         private float m_LastReleasedPointcloudTimestamp = 0.0f;
 
-        public PointCloudManager(NativeSession session)
-        {
+        public PointCloudManager(NativeSession session) {
             m_NativeSession = session;
         }
 
-        public IntPtr PointCloudHandle { get; private set; }
+        public IntPtr PointCloudHandle {
+            get; private set;
+        }
 
-        public bool IsPointCloudNew
-        {
-            get
-            {
+        public bool IsPointCloudNew {
+            get {
                 return m_NativeSession.PointCloudApi.GetTimestamp(PointCloudHandle) !=
                     m_LastReleasedPointcloudTimestamp;
             }
         }
 
-        public void OnUpdate()
-        {
+        public void OnUpdate() {
 #if UNITY_EDITOR || UNITY_ANDROID
             // After first frame, release previous frame's point cloud.
-            if (PointCloudHandle != IntPtr.Zero)
-            {
+            if (PointCloudHandle != IntPtr.Zero) {
                 m_LastReleasedPointcloudTimestamp = m_NativeSession.PointCloudApi.GetTimestamp(PointCloudHandle);
                 m_NativeSession.PointCloudApi.Release(PointCloudHandle);
                 PointCloudHandle = IntPtr.Zero;

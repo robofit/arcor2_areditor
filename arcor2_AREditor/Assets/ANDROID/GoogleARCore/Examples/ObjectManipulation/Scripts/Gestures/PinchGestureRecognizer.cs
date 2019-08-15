@@ -18,31 +18,25 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
     /// <summary>
     /// Gesture Recognizer for when the user performs a two-finger pinch motion on the touch screen.
     /// </summary>
-    public class PinchGestureRecognizer : GestureRecognizer<PinchGesture>
-    {
+    public class PinchGestureRecognizer : GestureRecognizer<PinchGesture> {
         private const float k_SlopInches = 0.05f;
         private const float k_SlopMotionDirectionDegrees = 30.0f;
 
-        internal float m_SlopInches
-        {
-            get
-            {
+        internal float m_SlopInches {
+            get {
                 return k_SlopInches;
             }
         }
 
-        internal float m_SlopMotionDirectionDegrees
-        {
-            get
-            {
+        internal float m_SlopMotionDirectionDegrees {
+            get {
                 return k_SlopMotionDirectionDegrees;
             }
         }
@@ -53,16 +47,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <param name="touch1">The first touch that started this gesture.</param>
         /// <param name="touch2">The second touch that started this gesture.</param>
         /// <returns>The created Tap gesture.</returns>
-        internal PinchGesture CreateGesture(Touch touch1, Touch touch2)
-        {
+        internal PinchGesture CreateGesture(Touch touch1, Touch touch2) {
             return new PinchGesture(this, touch1, touch2);
         }
 
         /// <summary>
         /// Tries to create a Pinch Gesture.
         /// </summary>
-        protected internal override void TryCreateGestures()
-        {
+        protected internal override void TryCreateGestures() {
             TryCreateTwoFingerGestureOnTouchBegan(CreateGesture);
         }
     }

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// The orientation mode for a FeaturePoint.
     /// </summary>
-    public enum FeaturePointOrientationMode
-    {
+    public enum FeaturePointOrientationMode {
         Identity = 0,
         SurfaceNormal = 1,
     }

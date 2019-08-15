@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEditor;
     using UnityEngine;
 
-    internal class ARCoreAnalyticsGUI
-    {
+    internal class ARCoreAnalyticsGUI {
         // Use public static properties here, so that labels are automatically extracted by
         // GetSearchKeywordsFromGUIContentProperties() in ARCoreAnalyticsProvider.
         public static readonly GUIContent SDKAnalytics =
@@ -34,14 +32,12 @@ namespace GoogleARCoreInternal
 
         // Render ARCore Analytics Settings for ARCoreAnalyticsProvider and
         // ARCoreAnalyticsPreferences.
-        internal static void OnGUI()
-        {
+        internal static void OnGUI() {
             EditorGUIUtility.labelWidth = s_GroupLabelWidth;
             ARCoreAnalytics.Instance.EnableAnalytics =
                 EditorGUILayout.Toggle(SDKAnalytics, ARCoreAnalytics.Instance.EnableAnalytics);
 
-            if (GUI.changed)
-            {
+            if (GUI.changed) {
                 ARCoreAnalytics.Instance.Save();
             }
         }

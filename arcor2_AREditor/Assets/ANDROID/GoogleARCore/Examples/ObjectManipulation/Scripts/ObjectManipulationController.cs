@@ -18,9 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
-    using System.Collections.Generic;
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore;
     using UnityEngine;
 
@@ -32,8 +30,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
     /// <summary>
     /// Controls the HelloObjectManipulation example.
     /// </summary>
-    public class ObjectManipulationController : MonoBehaviour
-    {
+    public class ObjectManipulationController : MonoBehaviour {
         /// <summary>
         /// True if the app is in the process of quitting due to an ARCore connection error,
         /// otherwise false.
@@ -43,16 +40,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             _UpdateApplicationLifecycle();
         }
 
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             // Enable ARCore to target 60fps camera capture frame rate on supported devices.
             // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
@@ -61,39 +56,30 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Check and update the application lifecycle.
         /// </summary>
-        private void _UpdateApplicationLifecycle()
-        {
+        private void _UpdateApplicationLifecycle() {
             // Exit the app when the 'back' button is pressed.
-            if (Input.GetKey(KeyCode.Escape))
-            {
+            if (Input.GetKey(KeyCode.Escape)) {
                 Application.Quit();
             }
 
             // Only allow the screen to sleep when not tracking.
-            if (Session.Status != SessionStatus.Tracking)
-            {
+            if (Session.Status != SessionStatus.Tracking) {
                 Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            }
-            else
-            {
+            } else {
                 Screen.sleepTimeout = SleepTimeout.NeverSleep;
             }
 
-            if (m_IsQuitting)
-            {
+            if (m_IsQuitting) {
                 return;
             }
 
             // Quit if ARCore was unable to connect and give Unity some time for the toast to
             // appear.
-            if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
-            {
+            if (Session.Status == SessionStatus.ErrorPermissionNotGranted) {
                 _ShowAndroidToastMessage("Camera permission is needed to run this application.");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 0.5f);
-            }
-            else if (Session.Status.IsError())
-            {
+            } else if (Session.Status.IsError()) {
                 _ShowAndroidToastMessage(
                     "ARCore encountered a problem connecting.  Please start the app again.");
                 m_IsQuitting = true;
@@ -104,8 +90,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Actually quit the application.
         /// </summary>
-        private void _DoQuit()
-        {
+        private void _DoQuit() {
             Application.Quit();
         }
 
@@ -113,17 +98,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Show an Android toast message.
         /// </summary>
         /// <param name="message">Message string to show in the toast.</param>
-        private void _ShowAndroidToastMessage(string message)
-        {
+        private void _ShowAndroidToastMessage(string message) {
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             AndroidJavaObject unityActivity =
                 unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-            if (unityActivity != null)
-            {
+            if (unityActivity != null) {
                 AndroidJavaClass toastClass = new AndroidJavaClass("android.widget.Toast");
-                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
-                {
+                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
                     AndroidJavaObject toastObject =
                         toastClass.CallStatic<AndroidJavaObject>(
                             "makeText", unityActivity, message, 0);

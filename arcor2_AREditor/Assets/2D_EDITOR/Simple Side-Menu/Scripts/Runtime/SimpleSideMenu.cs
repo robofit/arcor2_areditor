@@ -7,11 +7,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace DanielLochner.Assets.SimpleSideMenu
-{
+namespace DanielLochner.Assets.SimpleSideMenu {
     [AddComponentMenu("UI/Simple Side-Menu")]
-    public class SimpleSideMenu : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IInitializePotentialDragHandler
-    {
+    public class SimpleSideMenu : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IInitializePotentialDragHandler {
         #region Fields
         private Vector2 closedPosition, openPosition, startPosition, previousPosition, releaseVelocity, dragVelocity;
         private GameObject overlay;
@@ -35,74 +33,71 @@ namespace DanielLochner.Assets.SimpleSideMenu
         #endregion
 
         #region Properties
-        public State CurrentState { get { return currentState; } }
-        public State TargetState { get { return targetState; } }
-        public float StateProgress { get { return ((rectTransform.anchoredPosition - closedPosition).magnitude / ((placement == Placement.Left || placement == Placement.Right) ? rectTransform.rect.width : rectTransform.rect.height)); } }
+        public State CurrentState {
+            get {
+                return currentState;
+            }
+        }
+        public State TargetState {
+            get {
+                return targetState;
+            }
+        }
+        public float StateProgress {
+            get {
+                return ((rectTransform.anchoredPosition - closedPosition).magnitude / ((placement == Placement.Left || placement == Placement.Right) ? rectTransform.rect.width : rectTransform.rect.height));
+            }
+        }
         #endregion
 
         #region Enumerators
-        public enum Placement
-        {
+        public enum Placement {
             Left,
             Right,
             Top,
             Bottom
         }
-        public enum State
-        {
+        public enum State {
             Closed,
             Open
         }
         #endregion
 
         #region Methods
-        private void Awake()
-        {
-            if (Validate())
-            {
+        private void Awake() {
+            if (Validate()) {
                 Setup();
-            }
-            else
-            {
+            } else {
                 throw new Exception("Invalid inspector input.");
             }
         }
-        private void Update()
-        {
+        private void Update() {
             OnStateUpdate();
             OnOverlayUpdate();
         }
 
-        public void OnInitializePotentialDrag(PointerEventData eventData)
-        {
+        public void OnInitializePotentialDrag(PointerEventData eventData) {
             potentialDrag = (handleDraggable && eventData.pointerEnter == handle) || (menuDraggable && eventData.pointerEnter == gameObject);
         }
-        public void OnBeginDrag(PointerEventData eventData)
-        {
+        public void OnBeginDrag(PointerEventData eventData) {
             dragging = potentialDrag;
             startPosition = previousPosition = eventData.position;
         }
-        public void OnEndDrag(PointerEventData eventData)
-        {
+        public void OnEndDrag(PointerEventData eventData) {
             dragging = false;
             releaseVelocity = dragVelocity;
             OnTargetUpdate();
         }
-        public void OnDrag(PointerEventData eventData)
-        {
-            if (dragging)
-            {
+        public void OnDrag(PointerEventData eventData) {
+            if (dragging) {
                 CanvasScaler canvasScaler = FindObjectOfType<Canvas>().GetComponent<CanvasScaler>();
                 Vector2 referenceResolution;
                 Vector2 displacement;
 
-                if (canvasScaler != null)
-                {
+                if (canvasScaler != null) {
                     referenceResolution = canvasScaler.referenceResolution;
                     displacement = ((targetState == State.Closed) ? closedPosition : openPosition) + (eventData.position - startPosition) * new Vector2(referenceResolution.x / Screen.width, referenceResolution.y / Screen.height);
-                }
-                else
-                {
+                } else {
                     displacement = ((targetState == State.Closed) ? closedPosition : openPosition) + (eventData.position - startPosition);
                 }
 
@@ -117,37 +112,31 @@ namespace DanielLochner.Assets.SimpleSideMenu
             }
         }
 
-        private bool Validate()
-        {
+        private bool Validate() {
             bool valid = true;
             rectTransform = GetComponent<RectTransform>();
 
-            if (transitionSpeed <= 0)
-            {
+            if (transitionSpeed <= 0) {
                 Debug.LogError("<b>[SimpleSideMenu]</b> Transition speed cannot be less than or equal to zero.", gameObject);
                 valid = false;
             }
-            if (handle != null && handleDraggable && handle.transform.parent != rectTransform)
-            {
+            if (handle != null && handleDraggable && handle.transform.parent != rectTransform) {
                 Debug.LogError("<b>[SimpleSideMenu]</b> The drag handle must be a child of the side menu in order for it to be draggable.", gameObject);
                 valid = false;
             }
-            if (handleToggleStateOnPressed && handle.GetComponent<Button>() == null)
-            {
+            if (handleToggleStateOnPressed && handle.GetComponent<Button>() == null) {
                 Debug.LogError("<b>[SimpleSideMenu]</b> The handle must have a \"Button\" component attached to it in order for it to be able to toggle the state of the side menu when pressed.", gameObject);
                 valid = false;
             }
             return valid;
         }
-        private void Setup()
-        {
+        private void Setup() {
             //Placement
             Vector2 anchorMin = Vector2.zero;
             Vector2 anchorMax = Vector2.zero;
             Vector2 pivot = Vector2.zero;
 
-            switch (placement)
-            {
+            switch (placement) {
                 case Placement.Left:
                     anchorMin = new Vector2(0, 0.5f);
                     anchorMax = new Vector2(0, 0.5f);
@@ -188,22 +177,21 @@ namespace DanielLochner.Assets.SimpleSideMenu
             rectTransform.anchoredPosition = (defaultState == State.Closed) ? closedPosition : openPosition;
 
             //Drag Handle
-            if (handle != null)
-            {
+            if (handle != null) {
                 //Toggle State on Pressed
-                if (handleToggleStateOnPressed)
-                {
-                    handle.GetComponent<Button>().onClick.AddListener(delegate { ToggleState(); });
+                if (handleToggleStateOnPressed) {
+                    handle.GetComponent<Button>().onClick.AddListener(delegate {
+                        ToggleState();
+                    });
                 }
-                foreach (Text text in handle.GetComponentsInChildren<Text>())
-                {
-                    if (text.gameObject != handle) text.raycastTarget = false;
+                foreach (Text text in handle.GetComponentsInChildren<Text>()) {
+                    if (text.gameObject != handle)
+                        text.raycastTarget = false;
                 }
             }
 
             //Overlay
-            if (useOverlay)
-            {
+            if (useOverlay) {
                 overlay = Instantiate(new GameObject(), transform.parent);
                 overlay.name = gameObject.name + " (Overlay)";
                 overlay.transform.SetSiblingIndex(transform.GetSiblingIndex());
@@ -218,111 +206,81 @@ namespace DanielLochner.Assets.SimpleSideMenu
                 overlayImage.raycastTarget = overlayCloseOnPressed;
                 Button overlayButton = overlay.AddComponent<Button>();
                 overlayButton.transition = Selectable.Transition.None;
-                overlayButton.onClick.AddListener(delegate { Close(); });
+                overlayButton.onClick.AddListener(delegate {
+                    Close();
+                });
             }
         }
 
-        private void OnTargetUpdate()
-        {
-            if (releaseVelocity.magnitude > thresholdDragSpeed)
-            {
-                if (placement == Placement.Left)
-                {
-                    if (releaseVelocity.x > 0)
-                    {
+        private void OnTargetUpdate() {
+            if (releaseVelocity.magnitude > thresholdDragSpeed) {
+                if (placement == Placement.Left) {
+                    if (releaseVelocity.x > 0) {
                         Open();
+                    } else {
+                        Close();
                     }
-                    else
-                    {
+                } else if (placement == Placement.Right) {
+                    if (releaseVelocity.x < 0) {
+                        Open();
+                    } else {
+                        Close();
+                    }
+                } else if (placement == Placement.Top) {
+                    if (releaseVelocity.y < 0) {
+                        Open();
+                    } else {
+                        Close();
+                    }
+                } else {
+                    if (releaseVelocity.y > 0) {
+                        Open();
+                    } else {
                         Close();
                     }
                 }
-                else if (placement == Placement.Right)
-                {
-                    if (releaseVelocity.x < 0)
-                    {
-                        Open();
-                    }
-                    else
-                    {
-                        Close();
-                    }
-                }
-                else if (placement == Placement.Top)
-                {
-                    if (releaseVelocity.y < 0)
-                    {
-                        Open();
-                    }
-                    else
-                    {
-                        Close();
-                    }
-                }
-                else
-                {
-                    if (releaseVelocity.y > 0)
-                    {
-                        Open();
-                    }
-                    else
-                    {
-                        Close();
-                    }
-                }
-            }
-            else
-            {
+            } else {
                 float nextStateProgress = (targetState == State.Open) ? 1 - StateProgress : StateProgress;
 
-                if (nextStateProgress > thresholdDraggedFraction)
-                {
+                if (nextStateProgress > thresholdDraggedFraction) {
                     ToggleState();
                 }
-            }   
+            }
         }
-        private void OnStateUpdate()
-        {
-            if (dragging)
-            {
+        private void OnStateUpdate() {
+            if (dragging) {
                 Vector2 mousePosition = Input.mousePosition;
                 dragVelocity = (mousePosition - previousPosition) / (Time.time - previousTime);
                 previousPosition = mousePosition;
                 previousTime = Time.time;
-            }
-            else
-            {
+            } else {
                 Vector2 targetPosition = (targetState == State.Closed) ? closedPosition : openPosition;
 
                 rectTransform.anchoredPosition = Vector2.Lerp(rectTransform.anchoredPosition, targetPosition, Time.deltaTime * transitionSpeed);
-                if ((rectTransform.anchoredPosition - targetPosition).magnitude <= thresholdStateChangeDistance)
-                {
+                if ((rectTransform.anchoredPosition - targetPosition).magnitude <= thresholdStateChangeDistance) {
                     currentState = targetState;
                 }
             }
         }
-        private void OnOverlayUpdate()
-        {
-            if (useOverlay)
-            {
+        private void OnOverlayUpdate() {
+            if (useOverlay) {
                 overlay.GetComponent<Image>().raycastTarget = overlayCloseOnPressed && (targetState == State.Open);
                 overlay.GetComponent<Image>().color = new Color(overlayColour.r, overlayColour.g, overlayColour.b, overlayColour.a * StateProgress);
             }
         }
 
-        public void ToggleState()
-        {
-            if (targetState == State.Closed) Open();
-            else if (targetState == State.Open) Close();
+        public void ToggleState() {
+            if (targetState == State.Closed)
+                Open();
+            else if (targetState == State.Open)
+                Close();
         }
-        public void Open()
-        {
+        public void Open() {
             targetState = State.Open;
         }
-        public void Close()
-        {
+        public void Close() {
             targetState = State.Closed;
-        }     
+        }
         #endregion
     }
 }

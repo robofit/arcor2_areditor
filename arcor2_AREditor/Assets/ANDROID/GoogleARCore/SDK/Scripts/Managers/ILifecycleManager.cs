@@ -18,31 +18,39 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using GoogleARCore;
 
     [SuppressMessage("UnityRules.UnityStyleRules", "US1101:NonPublicFieldsMustHavePrefixM",
      Justification = "This is an interface so fields are already public.")]
-    internal interface ILifecycleManager
-    {
+    internal interface ILifecycleManager {
         event Action UpdateSessionFeatures;
 
         event Action EarlyUpdate;
 
         event Action<bool> OnSessionSetEnabled;
 
-        SessionStatus SessionStatus { get; }
+        SessionStatus SessionStatus {
+            get;
+        }
 
-        LostTrackingReason LostTrackingReason { get; }
+        LostTrackingReason LostTrackingReason {
+            get;
+        }
 
-        ARCoreSession SessionComponent { get; }
+        ARCoreSession SessionComponent {
+            get;
+        }
 
-        NativeSession NativeSession { get; }
+        NativeSession NativeSession {
+            get;
+        }
 
-        bool IsSessionChangedThisFrame { get; }
+        bool IsSessionChangedThisFrame {
+            get;
+        }
 
         AsyncTask<ApkAvailabilityStatus> CheckApkAvailability();
 

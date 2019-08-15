@@ -18,16 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
     /// <summary>
     /// Gesture for when the user performs a two finger vertical swipe motion on the touch screen.
     /// </summary>
-    public class TwoFingerDragGesture : Gesture<TwoFingerDragGesture>
-    {
+    public class TwoFingerDragGesture : Gesture<TwoFingerDragGesture> {
         /// <summary>
         /// Constructs a two finger drag gesture.
         /// </summary>
@@ -36,8 +34,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <param name="touch2">The second touch that started this gesture.</param>
         public TwoFingerDragGesture(
             TwoFingerDragGestureRecognizer recognizer, Touch touch1, Touch touch2) :
-                base(recognizer)
-        {
+                base(recognizer) {
             FingerId1 = touch1.fingerId;
             StartPosition1 = touch1.position;
             FingerId2 = touch2.fingerId;
@@ -48,42 +45,52 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the id of the first finger used in this gesture.
         /// </summary>
-        public int FingerId1 { get; private set; }
+        public int FingerId1 {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the id of the second finger used in this gesture.
         /// </summary>
-        public int FingerId2 { get; private set; }
+        public int FingerId2 {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the screen position of the first finger where the gesture started.
         /// </summary>
-        public Vector2 StartPosition1 { get; private set; }
+        public Vector2 StartPosition1 {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the screen position of the second finger where the gesture started.
         /// </summary>
-        public Vector2 StartPosition2 { get; private set; }
+        public Vector2 StartPosition2 {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the current screen position of the gesture.
         /// </summary>
-        public Vector2 Position { get; private set; }
+        public Vector2 Position {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the delta screen position of the gesture.
         /// </summary>
-        public Vector2 Delta { get; private set; }
+        public Vector2 Delta {
+            get; private set;
+        }
 
         /// <summary>
         /// Returns true if this gesture can start.
         /// </summary>
         /// <returns>True if the gesture can start.</returns>
-        protected internal override bool CanStart()
-        {
+        protected internal override bool CanStart() {
             if (GestureTouchesUtility.IsFingerIdRetained(FingerId1) ||
-                GestureTouchesUtility.IsFingerIdRetained(FingerId2))
-            {
+                GestureTouchesUtility.IsFingerIdRetained(FingerId2)) {
                 Cancel();
                 return false;
             }
@@ -93,15 +100,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
             foundTouches =
                 GestureTouchesUtility.TryFindTouch(FingerId2, out touch2) && foundTouches;
 
-            if (!foundTouches)
-            {
+            if (!foundTouches) {
                 Cancel();
                 return false;
             }
 
             // Check that at least one finger is moving.
-            if (touch1.deltaPosition == Vector2.zero && touch2.deltaPosition == Vector2.zero)
-            {
+            if (touch1.deltaPosition == Vector2.zero && touch2.deltaPosition == Vector2.zero) {
                 return false;
             }
 
@@ -111,8 +116,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
             float diff2 = (pos2 - StartPosition2).magnitude;
             float slopInches = (m_Recognizer as TwoFingerDragGestureRecognizer).m_SlopInches;
             if (GestureTouchesUtility.PixelsToInches(diff1) < slopInches ||
-                GestureTouchesUtility.PixelsToInches(diff2) < slopInches)
-            {
+                GestureTouchesUtility.PixelsToInches(diff2) < slopInches) {
                 return false;
             }
 
@@ -122,8 +126,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
             // Check both fingers move in the same direction.
             float dot =
                 Vector3.Dot(touch1.deltaPosition.normalized, touch2.deltaPosition.normalized);
-            if (dot < Mathf.Cos(recognizer.m_AngleThresholdRadians))
-            {
+            if (dot < Mathf.Cos(recognizer.m_AngleThresholdRadians)) {
                 return false;
             }
 
@@ -133,26 +136,20 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Action to be performed when this gesture is started.
         /// </summary>
-        protected internal override void OnStart()
-        {
+        protected internal override void OnStart() {
             GestureTouchesUtility.LockFingerId(FingerId1);
             GestureTouchesUtility.LockFingerId(FingerId2);
 
             RaycastHit hit1;
             RaycastHit hit2;
-            if (GestureTouchesUtility.RaycastFromCamera(StartPosition1, out hit1))
-            {
-                var gameObject = hit1.transform.gameObject;
-                if (gameObject != null)
-                {
+            if (GestureTouchesUtility.RaycastFromCamera(StartPosition1, out hit1)) {
+                GameObject gameObject = hit1.transform.gameObject;
+                if (gameObject != null) {
                     TargetObject = gameObject.GetComponentInParent<Manipulator>().gameObject;
                 }
-            }
-            else if (GestureTouchesUtility.RaycastFromCamera(StartPosition2, out hit2))
-            {
-                var gameObject = hit2.transform.gameObject;
-                if (gameObject != null)
-                {
+            } else if (GestureTouchesUtility.RaycastFromCamera(StartPosition2, out hit2)) {
+                GameObject gameObject = hit2.transform.gameObject;
+                if (gameObject != null) {
                     TargetObject = gameObject.GetComponentInParent<Manipulator>().gameObject;
                 }
             }
@@ -168,33 +165,28 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Updates this gesture.
         /// </summary>
         /// <returns>True if the update was successful.</returns>
-        protected internal override bool UpdateGesture()
-        {
+        protected internal override bool UpdateGesture() {
             Touch touch1, touch2;
             bool foundTouches = GestureTouchesUtility.TryFindTouch(FingerId1, out touch1);
             foundTouches =
                 GestureTouchesUtility.TryFindTouch(FingerId2, out touch2) && foundTouches;
 
-            if (!foundTouches)
-            {
+            if (!foundTouches) {
                 Cancel();
                 return false;
             }
 
-            if (touch1.phase == TouchPhase.Canceled || touch2.phase == TouchPhase.Canceled)
-            {
+            if (touch1.phase == TouchPhase.Canceled || touch2.phase == TouchPhase.Canceled) {
                 Cancel();
                 return false;
             }
 
-            if (touch1.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended)
-            {
+            if (touch1.phase == TouchPhase.Ended || touch2.phase == TouchPhase.Ended) {
                 Complete();
                 return false;
             }
 
-            if (touch1.phase == TouchPhase.Moved || touch2.phase == TouchPhase.Moved)
-            {
+            if (touch1.phase == TouchPhase.Moved || touch2.phase == TouchPhase.Moved) {
                 Delta = ((touch1.position + touch2.position) / 2) - Position;
                 Position = (touch1.position + touch2.position) / 2;
                 return true;
@@ -206,15 +198,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Action to be performed when this gesture is cancelled.
         /// </summary>
-        protected internal override void OnCancel()
-        {
+        protected internal override void OnCancel() {
         }
 
         /// <summary>
         /// Action to be performed when this gesture is finished.
         /// </summary>
-        protected internal override void OnFinish()
-        {
+        protected internal override void OnFinish() {
             GestureTouchesUtility.ReleaseFingerId(FingerId1);
             GestureTouchesUtility.ReleaseFingerId(FingerId2);
         }

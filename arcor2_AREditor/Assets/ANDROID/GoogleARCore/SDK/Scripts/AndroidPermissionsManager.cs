@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using GoogleARCoreInternal;
     using UnityEngine;
@@ -27,8 +26,7 @@ namespace GoogleARCore
     /// <summary>
     /// Manages Android permissions for the Unity application.
     /// </summary>
-    public class AndroidPermissionsManager : AndroidJavaProxy
-    {
+    public class AndroidPermissionsManager : AndroidJavaProxy {
         private static AndroidPermissionsManager s_Instance;
         private static AndroidJavaObject s_Activity;
         private static AndroidJavaObject s_PermissionService;
@@ -40,8 +38,7 @@ namespace GoogleARCore
         /// Constructs a new AndroidPermissionsManager.
         /// </summary>
         public AndroidPermissionsManager() : base(
-            "com.unity3d.plugin.UnityAndroidPermissions$IPermissionRequestResult")
-        {
+            "com.unity3d.plugin.UnityAndroidPermissions$IPermissionRequestResult") {
         }
 
         /// @endcond
@@ -55,10 +52,8 @@ namespace GoogleARCore
         /// <c>false</c>.</returns>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Allocates new objects the first time is called")]
-        public static bool IsPermissionGranted(string permissionName)
-        {
-            if (Application.isEditor)
-            {
+        public static bool IsPermissionGranted(string permissionName) {
+            if (Application.isEditor) {
                 return true;
             }
 
@@ -78,17 +73,14 @@ namespace GoogleARCore
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Allocates new objects the first time is called")]
         public static AsyncTask<AndroidPermissionsRequestResult> RequestPermission(
-            string permissionName)
-        {
-            if (AndroidPermissionsManager.IsPermissionGranted(permissionName))
-            {
+            string permissionName) {
+            if (AndroidPermissionsManager.IsPermissionGranted(permissionName)) {
                 return new AsyncTask<AndroidPermissionsRequestResult>(
                     new AndroidPermissionsRequestResult(
                         new string[] { permissionName }, new bool[] { true }));
             }
 
-            if (s_CurrentRequest != null)
-            {
+            if (s_CurrentRequest != null) {
                 ARDebug.LogError("Attempted to make simultaneous Android permissions requests.");
                 return null;
             }
@@ -108,8 +100,7 @@ namespace GoogleARCore
         /// <param name="permissionName">The name of the permission that was granted.</param>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Implements java object interface.")]
-        public virtual void OnPermissionGranted(string permissionName)
-        {
+        public virtual void OnPermissionGranted(string permissionName) {
             _OnPermissionResult(permissionName, true);
         }
 
@@ -122,8 +113,7 @@ namespace GoogleARCore
         /// <param name="permissionName">The name of the permission that was denied.</param>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Implements java object interface.")]
-        public virtual void OnPermissionDenied(string permissionName)
-        {
+        public virtual void OnPermissionDenied(string permissionName) {
             _OnPermissionResult(permissionName, false);
         }
 
@@ -136,24 +126,19 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Implements java object interface.")]
-        public virtual void OnActivityResult()
-        {
+        public virtual void OnActivityResult() {
         }
 
-        private static AndroidPermissionsManager GetInstance()
-        {
-            if (s_Instance == null)
-            {
+        private static AndroidPermissionsManager GetInstance() {
+            if (s_Instance == null) {
                 s_Instance = new AndroidPermissionsManager();
             }
 
             return s_Instance;
         }
 
-        private static AndroidJavaObject GetUnityActivity()
-        {
-            if (s_Activity == null)
-            {
+        private static AndroidJavaObject GetUnityActivity() {
+            if (s_Activity == null) {
                 AndroidJavaClass unityPlayer =
                     new AndroidJavaClass("com.unity3d.player.UnityPlayer");
                 s_Activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
@@ -162,10 +147,8 @@ namespace GoogleARCore
             return s_Activity;
         }
 
-        private static AndroidJavaObject GetPermissionsService()
-        {
-            if (s_PermissionService == null)
-            {
+        private static AndroidJavaObject GetPermissionsService() {
+            if (s_PermissionService == null) {
                 s_PermissionService =
                     new AndroidJavaObject("com.unity3d.plugin.UnityAndroidPermissions");
             }
@@ -180,10 +163,8 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="permissionName">The name of the permission.</param>
         /// <param name="granted">If permission is granted or not.</param>
-        private void _OnPermissionResult(string permissionName, bool granted)
-        {
-            if (s_OnPermissionsRequestFinished == null)
-            {
+        private void _OnPermissionResult(string permissionName, bool granted) {
+            if (s_OnPermissionsRequestFinished == null) {
                 Debug.LogErrorFormat(
                     "AndroidPermissionsManager received an unexpected permissions result {0}",
                     permissionName);
@@ -191,7 +172,7 @@ namespace GoogleARCore
             }
 
             // Cache completion method and reset request state.
-            var onRequestFinished = s_OnPermissionsRequestFinished;
+            Action<AndroidPermissionsRequestResult> onRequestFinished = s_OnPermissionsRequestFinished;
             s_CurrentRequest = null;
             s_OnPermissionsRequestFinished = null;
 

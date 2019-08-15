@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// The direction the device camera used by the session is facing.
     /// </summary>
-    public enum DeviceCameraDirection
-    {
+    public enum DeviceCameraDirection {
         /// <summary>
         /// The device camera faces the world.
         /// </summary>

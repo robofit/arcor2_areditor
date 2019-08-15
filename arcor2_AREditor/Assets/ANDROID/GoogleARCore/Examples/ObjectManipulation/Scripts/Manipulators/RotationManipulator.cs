@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using UnityEngine;
 
     /// <summary>
@@ -27,8 +26,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
     /// If an object is selected, then dragging along the horizontal axis
     /// or performing a twist gesture will rotate along the y-axis of the item.
     /// </summary>
-    public class RotationManipulator : Manipulator
-    {
+    public class RotationManipulator : Manipulator {
         private const float k_RotationRateDegreesDrag = 100.0f;
         private const float k_RotationRateDegreesTwist = 2.5f;
 
@@ -37,15 +35,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(DragGesture gesture)
-        {
-            if (!IsSelected())
-            {
+        protected override bool CanStartManipulationForGesture(DragGesture gesture) {
+            if (!IsSelected()) {
                 return false;
             }
 
-            if (gesture.TargetObject != null)
-            {
+            if (gesture.TargetObject != null) {
                 return false;
             }
 
@@ -57,15 +52,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(TwistGesture gesture)
-        {
-            if (!IsSelected())
-            {
+        protected override bool CanStartManipulationForGesture(TwistGesture gesture) {
+            if (!IsSelected()) {
                 return false;
             }
 
-            if (gesture.TargetObject != null)
-            {
+            if (gesture.TargetObject != null) {
                 return false;
             }
 
@@ -76,8 +68,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Rotates the object around the y-axis via a Drag gesture.
         /// </summary>
         /// <param name="gesture">The current drag gesture.</param>
-        protected override void OnContinueManipulation(DragGesture gesture)
-        {
+        protected override void OnContinueManipulation(DragGesture gesture) {
             float sign = -1.0f;
             Vector3 forward = Camera.main.transform.TransformPoint(Vector3.forward);
             Quaternion WorldToVerticalOrientedDevice =
@@ -93,8 +84,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Rotates the object around the y-axis via a Twist gesture.
         /// </summary>
         /// <param name="gesture">The current twist gesture.</param>
-        protected override void OnContinueManipulation(TwistGesture gesture)
-        {
+        protected override void OnContinueManipulation(TwistGesture gesture) {
             float rotationAmount = -gesture.DeltaRotation * k_RotationRateDegreesTwist;
             transform.Rotate(0.0f, rotationAmount, 0.0f);
         }

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Selects the behavior of the plane detection subsystem.
     /// </summary>
-    public enum DetectedPlaneFindingMode
-    {
+    public enum DetectedPlaneFindingMode {
         /// <summary>
         /// Plane detection is disabled.
         /// </summary>

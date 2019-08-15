@@ -4,10 +4,8 @@
 
 using UnityEngine;
 
-namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom
-{
-    public class SimpleZoom : MonoBehaviour
-    {
+namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom {
+    public class SimpleZoom : MonoBehaviour {
         #region Fields
         private RectTransform rectTransform;
 
@@ -26,15 +24,30 @@ namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom
         #endregion
 
         #region Properties
-        public float MinSize { get { return minSize; } }
-        public float MaxSize { get { return maxSize; } }
-        public float ZoomRate { get { return zoomRate; } }
-        public float Zoom { get { return zoom; } }
+        public float MinSize {
+            get {
+                return minSize;
+            }
+        }
+        public float MaxSize {
+            get {
+                return maxSize;
+            }
+        }
+        public float ZoomRate {
+            get {
+                return zoomRate;
+            }
+        }
+        public float Zoom {
+            get {
+                return zoom;
+            }
+        }
         #endregion
 
         #region Enumerators
-        public enum ZoomTarget
-        {
+        public enum ZoomTarget {
             Mouse,
             TopLeft,
             TopCentre,
@@ -49,32 +62,25 @@ namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom
         #endregion
 
         #region Methods
-        private void Awake()
-        {
+        private void Awake() {
             rectTransform = GetComponent<RectTransform>();
         }
-        private void Update()
-        {
+        private void Update() {
             float scrollWheel = -Input.GetAxis("Mouse ScrollWheel");
-            if (scrollWheel != 0)
-            {
+            if (scrollWheel != 0) {
                 ChangePivotAndZoom(scrollWheel);
             }
         }
 
-        private void ChangePivotAndZoom(float scrollWheel)
-        {
+        private void ChangePivotAndZoom(float scrollWheel) {
             //Change Pivot
-            if ((scrollWheel > 0 && zoom != minSize) || (scrollWheel < 0 && zoom != maxSize))
-            {
+            if ((scrollWheel > 0 && zoom != minSize) || (scrollWheel < 0 && zoom != maxSize)) {
                 Vector2 pivot = Vector2.zero;
 
-                switch (zoomTarget)
-                {
+                switch (zoomTarget) {
                     case ZoomTarget.Mouse:
                         Vector2 mouseScreenPosition = Input.mousePosition;
-                        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mouseScreenPosition, Camera.main, out mouseLocalPosition))
-                        {
+                        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, mouseScreenPosition, Camera.main, out mouseLocalPosition)) {
                             float x = rectTransform.pivot.x + (mouseLocalPosition.x / rectTransform.rect.width);
                             float y = rectTransform.pivot.y + (mouseLocalPosition.y / rectTransform.rect.height);
                             pivot = new Vector2(x, y);
@@ -113,17 +119,13 @@ namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom
 
             //Change Zoom
             float rate = 1 + zoomRate * Time.unscaledDeltaTime;
-            if (scrollWheel > 0)
-            {
+            if (scrollWheel > 0) {
                 SetZoom(Mathf.Clamp(transform.localScale.x / rate, minSize, maxSize));
-            }
-            else
-            {
+            } else {
                 SetZoom(Mathf.Clamp(transform.localScale.x * rate, minSize, maxSize));
             }
         }
-        public void SetPivot(RectTransform rectTransform, Vector2 pivot)
-        {
+        public void SetPivot(RectTransform rectTransform, Vector2 pivot) {
             Vector3 deltaPosition = rectTransform.pivot - pivot;    // get change in pivot
             deltaPosition.Scale(rectTransform.rect.size);           // apply sizing
             deltaPosition.Scale(rectTransform.localScale);          // apply scaling
@@ -132,8 +134,7 @@ namespace DanielLochner.Assets.SimpleSideMenu.SimpleZoom
             rectTransform.pivot = pivot;                            // change the pivot
             rectTransform.localPosition -= deltaPosition;           // reverse the position change
         }
-        private void SetZoom(float targetSize)
-        {
+        private void SetZoom(float targetSize) {
             transform.localScale = new Vector3(targetSize, targetSize, 1);
             zoom = transform.localScale.x;
         }

@@ -18,23 +18,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Diagnostics;
-    using UnityEngine;
 
     /// <summary>
     /// A custom class similar to Unity's Debug.
     /// </summary>
-    public class ARDebug
-    {
+    public class ARDebug {
         /// <summary>
         /// Logs an error with a stack trace.
         /// </summary>
         /// <param name="message">The error message.</param>
-        public static void LogError(object message)
-        {
+        public static void LogError(object message) {
             UnityEngine.Debug.LogErrorFormat(message + "\n{0}", new StackTrace(1));
         }
 
@@ -43,8 +39,7 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <param name="format">The string format.</param>
         /// <param name="args">The output arguments.</param>
-        public static void LogErrorFormat(string format, params object[] args)
-        {
+        public static void LogErrorFormat(string format, params object[] args) {
             object[] newArgs = new object[args.Length + 1];
             Array.Copy(args, newArgs, args.Length);
             newArgs[args.Length] = new StackTrace(1);

@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using UnityEngine;
 
     /// <summary>
     /// A struct to provide camera intrinsics in ARCore.
     /// </summary>
-    public struct CameraIntrinsics
-    {
+    public struct CameraIntrinsics {
         /// <summary>
         /// The focal length in pixels.
         /// Focal length is conventionally represented in pixels. For a detailed
@@ -48,8 +46,7 @@ namespace GoogleARCore
         public Vector2Int ImageDimensions;
 
         internal CameraIntrinsics(
-            Vector2 focalLength, Vector2 principalPoint, Vector2Int imageDimensions)
-        {
+            Vector2 focalLength, Vector2 principalPoint, Vector2Int imageDimensions) {
             FocalLength = focalLength;
             PrincipalPoint = principalPoint;
             ImageDimensions = imageDimensions;

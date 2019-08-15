@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
     using UnityEngine;
     using UnityEngine.Serialization;
@@ -31,8 +30,7 @@ namespace GoogleARCore
         fileName = "ARCoreSessionConfig", menuName = "Google ARCore/SessionConfig", order = 1)]
     [HelpURL(
         "https://developers.google.com/ar/reference/unity/class/GoogleARCore/ARCoreSessionConfig")]
-    public class ARCoreSessionConfig : ScriptableObject
-    {
+    public class ARCoreSessionConfig : ScriptableObject {
         [Header("Performance")]
 
         /// <summary>
@@ -123,15 +121,12 @@ namespace GoogleARCore
         [System.Obsolete(
             "This field has be replaced by ARCoreSessionConfig.DetectedPlaneFindingMode. See " +
             "https://github.com/google-ar/arcore-unity-sdk/releases/tag/v1.2.0")]
-        public bool EnablePlaneFinding
-        {
-            get
-            {
+        public bool EnablePlaneFinding {
+            get {
                 return PlaneFindingMode != DetectedPlaneFindingMode.Disabled;
             }
 
-            set
-            {
+            set {
                 PlaneFindingMode = value ? DetectedPlaneFindingMode.HorizontalAndVertical :
                     DetectedPlaneFindingMode.Disabled;
             }
@@ -145,15 +140,12 @@ namespace GoogleARCore
         [System.Obsolete(
             "This field has been replaced by ARCoreSessionConfig.LightEstimationMode. See " +
             "https://github.com/google-ar/arcore-unity-sdk/releases/tag/v1.10.0")]
-        public bool EnableLightEstimation
-        {
-            get
-            {
+        public bool EnableLightEstimation {
+            get {
                 return LightEstimationMode != LightEstimationMode.Disabled;
             }
 
-            set
-            {
+            set {
                 LightEstimationMode = value ? LightEstimationMode.AmbientIntensity :
                     LightEstimationMode.Disabled;
             }
@@ -165,11 +157,9 @@ namespace GoogleARCore
         /// <param name="other">The other SessionConfig.</param>
         /// <returns>True if the two SessionConfig objects are value-type equal, otherwise
         /// false.</returns>
-        public override bool Equals(object other)
-        {
+        public override bool Equals(object other) {
             ARCoreSessionConfig otherConfig = other as ARCoreSessionConfig;
-            if (other == null)
-            {
+            if (other == null) {
                 return false;
             }
 
@@ -179,8 +169,7 @@ namespace GoogleARCore
                 EnableCloudAnchor != otherConfig.EnableCloudAnchor ||
                 AugmentedImageDatabase != otherConfig.AugmentedImageDatabase ||
                 CameraFocusMode != otherConfig.CameraFocusMode ||
-                AugmentedFaceMode != otherConfig.AugmentedFaceMode)
-            {
+                AugmentedFaceMode != otherConfig.AugmentedFaceMode) {
                 return false;
             }
 
@@ -191,8 +180,7 @@ namespace GoogleARCore
         /// Return a hash code for this object.
         /// </summary>
         /// <returns>A hash code value.</returns>
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return base.GetHashCode();
         }
 
@@ -200,8 +188,7 @@ namespace GoogleARCore
         /// ValueType copy from another SessionConfig object into this one.
         /// </summary>
         /// <param name="other">The SessionConfig to copy from.</param>
-        public void CopyFrom(ARCoreSessionConfig other)
-        {
+        public void CopyFrom(ARCoreSessionConfig other) {
             MatchCameraFramerate = other.MatchCameraFramerate;
             PlaneFindingMode = other.PlaneFindingMode;
             LightEstimationMode = other.LightEstimationMode;
@@ -214,12 +201,10 @@ namespace GoogleARCore
         /// <summary>
         /// Unity OnValidate.
         /// </summary>
-        public void OnValidate()
-        {
+        public void OnValidate() {
             if ((LightEstimationMode == LightEstimationMode.EnvironmentalHDRWithoutReflections ||
                 LightEstimationMode == LightEstimationMode.EnvironmentalHDRWithReflections) &&
-                AugmentedFaceMode != AugmentedFaceMode.Disabled)
-            {
+                AugmentedFaceMode != AugmentedFaceMode.Disabled) {
                 Debug.LogErrorFormat("LightEstimationMode.{0} is incompatible with " +
                     "AugmentedFaceMode.{1}, please use other LightEstimationMode or disable " +
                     "Augmented Face.", LightEstimationMode, AugmentedFaceMode);

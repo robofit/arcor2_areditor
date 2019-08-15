@@ -18,20 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.AugmentedImage
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.InteropServices;
+namespace GoogleARCore.Examples.AugmentedImage {
     using GoogleARCore;
-    using GoogleARCoreInternal;
     using UnityEngine;
 
     /// <summary>
     /// Uses 4 frame corner objects to visualize an AugmentedImage.
     /// </summary>
-    public class AugmentedImageVisualizer : MonoBehaviour
-    {
+    public class AugmentedImageVisualizer : MonoBehaviour {
         /// <summary>
         /// The AugmentedImage to visualize.
         /// </summary>
@@ -60,10 +54,8 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// The Unity Update method.
         /// </summary>
-        public void Update()
-        {
-            if (Image == null || Image.TrackingState != TrackingState.Tracking)
-            {
+        public void Update() {
+            if (Image == null || Image.TrackingState != TrackingState.Tracking) {
                 FrameLowerLeft.SetActive(false);
                 FrameLowerRight.SetActive(false);
                 FrameUpperLeft.SetActive(false);

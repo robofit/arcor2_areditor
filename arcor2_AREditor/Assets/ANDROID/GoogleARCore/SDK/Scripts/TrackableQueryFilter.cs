@@ -18,18 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
-    using System;
-    using System.Collections.Generic;
-    using GoogleARCoreInternal;
-    using UnityEngine;
-
+namespace GoogleARCore {
     /// <summary>
     /// A filter for trackable queries.
     /// </summary>
-    public enum TrackableQueryFilter
-    {
+    public enum TrackableQueryFilter {
         /// <summary>
         /// Indicates available trackables.
         /// </summary>

@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
     using UnityEngine;
     using UnityEngine.Rendering;
@@ -28,8 +27,7 @@ namespace GoogleARCore
     /// An estimate of lighting conditions in the environment corresponding to
     /// an AR frame.
     /// </summary>
-    public struct LightEstimate
-    {
+    public struct LightEstimate {
         private float m_PixelIntensity;
         private Color m_ColorCorrection;
 
@@ -56,8 +54,7 @@ namespace GoogleARCore
              "Please use new constructor instead.")]
         public LightEstimate(
             LightEstimateState state, float pixelIntensity, Color colorCorrection) :
-            this(state, pixelIntensity, colorCorrection, Quaternion.identity, Color.black, null, -1)
-        {
+            this(state, pixelIntensity, colorCorrection, Quaternion.identity, Color.black, null, -1) {
         }
 
         /// <summary>
@@ -82,8 +79,7 @@ namespace GoogleARCore
         public LightEstimate(
             LightEstimateState state, float pixelIntensity, Color colorCorrection,
             Quaternion directionalLightRotation, Color directionalLightColor,
-            float[,] ambientSHCoefficients, long timestamp) : this()
-        {
+            float[,] ambientSHCoefficients, long timestamp) : this() {
             _InitializeLightEstimateMode();
             State = state;
             Timestamp = timestamp;
@@ -100,13 +96,10 @@ namespace GoogleARCore
             m_DirectionalLightColor = m_DirectionalLightColor.gamma;
 
             // Unity spherical harmonics is in linear space.
-            var ambientProbe = new SphericalHarmonicsL2();
-            if (ambientSHCoefficients != null)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    for (int j = 0; j < 9; j++)
-                    {
+            SphericalHarmonicsL2 ambientProbe = new SphericalHarmonicsL2();
+            if (ambientSHCoefficients != null) {
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 9; j++) {
                         ambientProbe[i, j] = ambientSHCoefficients[j, i];
                     }
                 }
@@ -120,23 +113,24 @@ namespace GoogleARCore
         /// Gets the light estimation mode for the current session.
         /// </summary>
         /// <value>The light estimation mode.</value>
-        public LightEstimationMode Mode { get; private set; }
+        public LightEstimationMode Mode {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the state of the current estimate.
         /// </summary>
-        public LightEstimateState State { get; private set; }
+        public LightEstimateState State {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets an average pixel intensity. Values range from 0.0 to 1.0, where 0.0
         /// represents black and 1.0 represents white.
         /// </summary>
-        public float PixelIntensity
-        {
-            get
-            {
-                if (Mode != LightEstimationMode.AmbientIntensity)
-                {
+        public float PixelIntensity {
+            get {
+                if (Mode != LightEstimationMode.AmbientIntensity) {
                     Debug.LogWarning("PixelIntensity value is not meaningful when " +
                         "LightEstimationMode is not AmbientIntensity.");
                 }
@@ -144,8 +138,7 @@ namespace GoogleARCore
                 return m_PixelIntensity;
             }
 
-            private set
-            {
+            private set {
                 m_PixelIntensity = value;
             }
         }
@@ -157,12 +150,9 @@ namespace GoogleARCore
         /// scales the red and blue channels accordingly. In this way the overall intensity
         /// will not be significantly changed.
         /// </summary>
-        public Color ColorCorrection
-        {
-            get
-            {
-                if (Mode != LightEstimationMode.AmbientIntensity)
-                {
+        public Color ColorCorrection {
+            get {
+                if (Mode != LightEstimationMode.AmbientIntensity) {
                     Debug.LogWarning("ColorCorrection value is not meaningful when " +
                         "LightEstimationMode is not AmbientIntensity.");
                 }
@@ -170,8 +160,7 @@ namespace GoogleARCore
                 return m_ColorCorrection;
             }
 
-            private set
-            {
+            private set {
                 m_ColorCorrection = value;
             }
         }
@@ -181,13 +170,10 @@ namespace GoogleARCore
         /// ARCore. It will return Quaternion.identity when the LightEstimateState is invalid
         /// or LightEstimationMode is not one of the Environmental HDR modes.
         /// </summary>
-        public Quaternion DirectionalLightRotation
-        {
-            get
-            {
+        public Quaternion DirectionalLightRotation {
+            get {
                 if (Mode != LightEstimationMode.EnvironmentalHDRWithoutReflections &&
-                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections) {
                     Debug.LogWarning("DirectionalLightRotation value is not meaningful when " +
                         "LightEstimationMode is not one of the Environmental HDR modes.");
                 }
@@ -195,8 +181,7 @@ namespace GoogleARCore
                 return m_DirectionalLightRotation;
             }
 
-            private set
-            {
+            private set {
                 m_DirectionalLightRotation = value;
             }
         }
@@ -206,13 +191,10 @@ namespace GoogleARCore
         /// It will return black when the LightEstimateState is invalid or LightEstimationMode is
         /// not one of the Environmental HDR modes.
         /// </summary>
-        public Color DirectionalLightColor
-        {
-            get
-            {
+        public Color DirectionalLightColor {
+            get {
                 if (Mode != LightEstimationMode.EnvironmentalHDRWithoutReflections &&
-                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections) {
                     Debug.LogWarning("DirectionalLightColor value is not meaningful when " +
                         "LightEstimationMode is not one of the Environmental HDR modes.");
                 }
@@ -220,8 +202,7 @@ namespace GoogleARCore
                 return m_DirectionalLightColor;
             }
 
-            private set
-            {
+            private set {
                 m_DirectionalLightColor = value;
             }
         }
@@ -231,13 +212,10 @@ namespace GoogleARCore
         /// harmonic probe with all 27 coefficients set to zero when the LightEstimateState is
         /// invalid or LightEstimationMode is not one of the Environmental HDR modes.
         /// </summary>
-        public SphericalHarmonicsL2 AmbientProbe
-        {
-            get
-            {
+        public SphericalHarmonicsL2 AmbientProbe {
+            get {
                 if (Mode != LightEstimationMode.EnvironmentalHDRWithoutReflections &&
-                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+                    Mode != LightEstimationMode.EnvironmentalHDRWithReflections) {
                     Debug.LogWarning("AmbientProbe value is not meaningful when " +
                         "LightEstimationMode is not one of the Environmental HDR modes.");
                 }
@@ -245,8 +223,7 @@ namespace GoogleARCore
                 return m_AmbientProbe;
             }
 
-            private set
-            {
+            private set {
                 m_AmbientProbe = value;
             }
         }
@@ -258,23 +235,18 @@ namespace GoogleARCore
         /// when the LightEstimateState is invalid or LightEstimationMode is not one of
         /// the Environmental HDR modes.
         /// </summary>
-        public Cubemap ReflectionProbe
-        {
-            get
-            {
-                if (Mode != LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+        public Cubemap ReflectionProbe {
+            get {
+                if (Mode != LightEstimationMode.EnvironmentalHDRWithReflections) {
                     Debug.LogWarning("ReflectionProbe value is not meaningful when " +
                         "LightEstimationMode is not EnvironmentalHDRWithReflections.");
 
                     return null;
                 }
 
-                if (m_CachedCubemap == null)
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+                if (m_CachedCubemap == null) {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return null;
                     }
 
@@ -292,13 +264,13 @@ namespace GoogleARCore
         /// Unity environmental reflections are only updated when ReflectionCubemap has changed.
         /// </summary>
         /// <value>The timestamp of the LightEstimate.</value>
-        public long Timestamp { get; private set; }
+        public long Timestamp {
+            get; private set;
+        }
 
-        private void _InitializeLightEstimateMode()
-        {
+        private void _InitializeLightEstimateMode() {
             Mode = LightEstimationMode.Disabled;
-            if (LifecycleManager.Instance.SessionComponent != null)
-            {
+            if (LifecycleManager.Instance.SessionComponent != null) {
                 Mode =
                     LifecycleManager.Instance.SessionComponent.SessionConfig.LightEstimationMode;
             }

@@ -1,61 +1,45 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using System.IO;
+﻿using UnityEngine;
 
-public class InputOutput : MonoBehaviour
-{
+public class InputOutput : MonoBehaviour {
     protected ConnectionManagerArcoro _ConnectionManagerArcoro;
     public Connection Connection;
     GameManager GameManager;
 
-    protected virtual void Start()
-    {
+    protected virtual void Start() {
         _ConnectionManagerArcoro = GameObject.Find("_ConnectionManager").GetComponent<ConnectionManagerArcoro>();
         GameManager = GameObject.Find("_GameManager").GetComponent<GameManager>();
     }
 
     // Update is called once per frame
-    protected virtual void Update()
-    {
-        
-    }
-
-    protected virtual void Touch()
-    {
-        
+    protected virtual void Update() {
 
     }
 
-    private void OnMouseUp()
-    {
-        if (_ConnectionManagerArcoro.IsConnecting())
-        {
+    protected virtual void Touch() {
 
-            if (Connection == null)
-            {
+
+    }
+
+    private void OnMouseUp() {
+        if (_ConnectionManagerArcoro.IsConnecting()) {
+
+            if (Connection == null) {
                 Connection = _ConnectionManagerArcoro.ConnectVirtualConnectionToObject(gameObject);
                 GameManager.UpdateProject();
             }
 
-        } else
-        {
-            if (Connection == null)
-            { 
+        } else {
+            if (Connection == null) {
                 Connection = _ConnectionManagerArcoro.CreateConnectionToMouse(gameObject);
-            }
-            else
-            {
+            } else {
                 Connection = _ConnectionManagerArcoro.AttachConnectionToMouse(Connection, gameObject);
                 Connection = null;
             }
         }
-        
+
     }
 
-    public Connection GetConneciton()
-    {
+    public Connection GetConneciton() {
         return Connection;
     }
 }

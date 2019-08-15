@@ -18,17 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
 
-    internal static class DisplayUvCoordinateTypeExtension
-    {
+    internal static class DisplayUvCoordinateTypeExtension {
         public static ApiCoordinates2dType ToApiCoordinates2dType(
-            this DisplayUvCoordinateType coordinateType)
-        {
-            switch (coordinateType)
-            {
+            this DisplayUvCoordinateType coordinateType) {
+            switch (coordinateType) {
                 case DisplayUvCoordinateType.BackgroundImage:
                     return ApiCoordinates2dType.ImageNormalized;
                 case DisplayUvCoordinateType.BackgroundTexture:

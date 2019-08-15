@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
+namespace GoogleARCore.Examples.CloudAnchors {
     using System;
     using UnityEngine;
     using UnityEngine.Networking;
@@ -51,8 +50,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         {
             base.OnClientConnect(conn);
             Debug.Log("Successfully connected to server: " + conn.lastError);
-            if (OnClientConnected != null)
-            {
+            if (OnClientConnected != null) {
                 OnClientConnected();
             }
         }
@@ -67,8 +65,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         {
             base.OnClientDisconnect(conn);
             Debug.Log("Disconnected from the server: " + conn.lastError);
-            if (OnClientDisconnected != null)
-            {
+            if (OnClientDisconnected != null) {
                 OnClientDisconnected();
             }
         }

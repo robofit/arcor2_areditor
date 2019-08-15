@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Describes the reason for a loss in motion tracking.
     /// </summary>
-    public enum LostTrackingReason
-    {
+    public enum LostTrackingReason {
         /// <summary>
         /// Motion tracking is working properly.
         /// </summary>

@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Security.Cryptography;
@@ -31,8 +30,7 @@ namespace GoogleARCoreInternal
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
      Justification = "Internal")]
-    public class LogRequestUtils
-    {
+    public class LogRequestUtils {
         private const string k_GoogleAnalyticsId = "GoogleAnalyticsId";
         private static string s_SessionId = string.Empty;
 
@@ -40,25 +38,21 @@ namespace GoogleARCoreInternal
         /// Generates a new LogRequest using the current system configuration.
         /// </summary>
         /// <returns>A valid LogRequest.</returns>
-        public static LogRequest BuildLogRequest()
-        {
+        public static LogRequest BuildLogRequest() {
             // Determine Unity engine information.
             ArCoreSdkLog.Types.UnityEngine.Types.EditionType editionType
                 = ArCoreSdkLog.Types.UnityEngine.Types.EditionType.Personal;
-            if (Application.HasProLicense() == true)
-            {
+            if (Application.HasProLicense() == true) {
                 editionType = ArCoreSdkLog.Types.UnityEngine.Types.EditionType.Professional;
             }
 
-            ArCoreSdkLog.Types.UnityEngine engine = new ArCoreSdkLog.Types.UnityEngine()
-            {
+            ArCoreSdkLog.Types.UnityEngine engine = new ArCoreSdkLog.Types.UnityEngine() {
                 Version = Application.unityVersion,
                 EditionType = editionType,
             };
 
             // Collect the set of information to be sent to Google.
-            ArCoreSdkLog logSDK = new ArCoreSdkLog()
-            {
+            ArCoreSdkLog logSDK = new ArCoreSdkLog() {
                 SdkInstanceId = _UniqueId(),
                 OsVersion = SystemInfo.operatingSystem,
                 ArcoreSdkVersion = GoogleARCore.VersionInfo.Version,
@@ -67,16 +61,14 @@ namespace GoogleARCoreInternal
             };
 
             // Assemble the Clearcut log event data.
-            LogEvent logEvent = new LogEvent()
-            {
+            LogEvent logEvent = new LogEvent() {
                 EventTimeMs = _GetCurrentUnixEpochTimeMs(),
                 EventUptimeMs = _GetSystemUptimeMs(),
                 SourceExtension = logSDK.ToByteString(),
             };
 
             // Package all data in a log request.
-            LogRequest logRequest = new LogRequest()
-            {
+            LogRequest logRequest = new LogRequest() {
                 RequestTimeMs = _GetCurrentUnixEpochTimeMs(),
                 RequestUptimeMs = _GetSystemUptimeMs(),
                 LogSourceVal = LogRequest.Types.LogSource.ArcoreSdk,
@@ -91,12 +83,10 @@ namespace GoogleARCoreInternal
         /// in Unity's EditorPrefs, subsequent calls return the retrieved value.
         /// </summary>
         /// <returns>A unique string representing this client.</returns>
-        private static string _UniqueId()
-        {
+        private static string _UniqueId() {
             // Check to see if the id already exists.
             string id = EditorPrefs.GetString(k_GoogleAnalyticsId, string.Empty);
-            if (id != string.Empty)
-            {
+            if (id != string.Empty) {
                 return id;
             }
 
@@ -108,8 +98,7 @@ namespace GoogleARCoreInternal
 
             // Convert the byte stream to a string.
             StringBuilder str = new StringBuilder();
-            foreach (byte b in hash)
-            {
+            foreach (byte b in hash) {
                 str.Append(b.ToString("x2"));
             }
 
@@ -126,11 +115,9 @@ namespace GoogleARCoreInternal
         /// used while the current project remains open.
         /// </summary>
         /// <returns>The current session id.</returns>
-        private static string _SessionId()
-        {
+        private static string _SessionId() {
             // Generate on first request.
-            if (s_SessionId == string.Empty)
-            {
+            if (s_SessionId == string.Empty) {
                 s_SessionId = Guid.NewGuid().ToString();
             }
 
@@ -141,8 +128,7 @@ namespace GoogleARCoreInternal
         /// Current UTC coordinated time.
         /// </summary>
         /// <returns>Current UTC time in milliseconds.</returns>
-        private static long _GetCurrentUnixEpochTimeMs()
-        {
+        private static long _GetCurrentUnixEpochTimeMs() {
             // UTC Epoch Time (0h 00m 00.00s Jan 1, 1970).
             DateTimeOffset epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
             TimeSpan offset = DateTimeOffset.UtcNow - epoch;
@@ -157,8 +143,7 @@ namespace GoogleARCoreInternal
         /// The time since the system was booted in millseconds.
         /// </summary>
         /// <returns>Current system uptime in milliseconds.</returns>
-        private static long _GetSystemUptimeMs()
-        {
+        private static long _GetSystemUptimeMs() {
             return Environment.TickCount;
         }
     }

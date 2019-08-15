@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
+namespace GoogleARCore.Examples.CloudAnchors {
     using UnityEngine;
 
     /// <summary>
@@ -27,20 +26,15 @@ namespace GoogleARCore.Examples.CloudAnchors
     /// prefab will be spawn across all clients. To allow different meshes for different platforms (which might be
     /// useful for light estimation for example), this script selects the corresponding mesh for the runtime platform.
     /// </summary>
-    public class MultiplatformMeshSelector : MonoBehaviour
-    {
+    public class MultiplatformMeshSelector : MonoBehaviour {
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
-        public void Start()
-        {
-            if (Application.platform != RuntimePlatform.IPhonePlayer)
-            {
+        public void Start() {
+            if (Application.platform != RuntimePlatform.IPhonePlayer) {
                 transform.Find("ARCoreMesh").gameObject.SetActive(true);
                 transform.Find("ARKitMesh").gameObject.SetActive(false);
-            }
-            else
-            {
+            } else {
                 transform.Find("ARCoreMesh").gameObject.SetActive(false);
                 transform.Find("ARKitMesh").gameObject.SetActive(true);
             }

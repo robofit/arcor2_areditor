@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using GoogleARCore;
@@ -30,11 +29,9 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class ARPrestoCallbackManager
-    {
+    internal class ARPrestoCallbackManager {
         private static ARPrestoCallbackManager s_Instance;
 
         private CheckApkAvailabilityResultCallback m_CheckApkAvailabilityResultCallback;
@@ -81,12 +78,9 @@ namespace GoogleARCoreInternal
 
         public event Action<IntPtr> BeforeResumeSession;
 
-        public static ARPrestoCallbackManager Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
+        public static ARPrestoCallbackManager Instance {
+            get {
+                if (s_Instance == null) {
                     s_Instance = new ARPrestoCallbackManager();
                     s_Instance._Initialize();
                 }
@@ -95,14 +89,12 @@ namespace GoogleARCoreInternal
             }
         }
 
-        public AsyncTask<ApkAvailabilityStatus> CheckApkAvailability()
-        {
+        public AsyncTask<ApkAvailabilityStatus> CheckApkAvailability() {
             Action<ApkAvailabilityStatus> onComplete;
             AsyncTask<ApkAvailabilityStatus> task =
                 new AsyncTask<ApkAvailabilityStatus>(out onComplete);
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("determine ARCore APK " +
                     "availability");
                 return task;
@@ -116,14 +108,12 @@ namespace GoogleARCoreInternal
             return task;
         }
 
-        public AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested)
-        {
+        public AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested) {
             Action<ApkInstallationStatus> onComplete;
             AsyncTask<ApkInstallationStatus> task =
                 new AsyncTask<ApkInstallationStatus>(out onComplete);
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("request installation of ARCore " +
                     "APK");
                 return task;
@@ -139,61 +129,49 @@ namespace GoogleARCoreInternal
 
         [AOT.MonoPInvokeCallback(typeof(CheckApkAvailabilityResultCallback))]
         private static void _OnCheckApkAvailabilityResultTrampoline(
-            ApiAvailability status, IntPtr context)
-        {
+            ApiAvailability status, IntPtr context) {
             Instance._OnCheckApkAvailabilityResult(status.ToApkAvailabilityStatus());
         }
 
         [AOT.MonoPInvokeCallback(typeof(RequestApkInstallationResultCallback))]
         private static void _OnApkInstallationResultTrampoline(
-            ApiApkInstallationStatus status, IntPtr context)
-        {
+            ApiApkInstallationStatus status, IntPtr context) {
             Instance._OnRequestApkInstallationResult(status.ToApkInstallationStatus());
         }
 
         [AOT.MonoPInvokeCallback(typeof(CameraPermissionRequestProvider))]
         private static void _RequestCameraPermissionTrampoline(
-            CameraPermissionsResultCallback onComplete, IntPtr context)
-        {
+            CameraPermissionsResultCallback onComplete, IntPtr context) {
             Instance._RequestCameraPermission(onComplete, context);
         }
 
         [AOT.MonoPInvokeCallback(typeof(EarlyUpdateCallback))]
-        private static void _EarlyUpdateTrampoline()
-        {
-            if (Instance.EarlyUpdate != null)
-            {
+        private static void _EarlyUpdateTrampoline() {
+            if (Instance.EarlyUpdate != null) {
                 Instance.EarlyUpdate();
             }
         }
 
         [AOT.MonoPInvokeCallback(typeof(OnBeforeSetConfigurationCallback))]
         private static void _BeforeSetConfigurationTrampoline(
-            IntPtr sessionHandle, IntPtr configHandle)
-        {
+            IntPtr sessionHandle, IntPtr configHandle) {
             ExperimentManager.Instance.OnBeforeSetConfiguration(sessionHandle, configHandle);
         }
 
         [AOT.MonoPInvokeCallback(typeof(OnBeforeResumeSessionCallback))]
-        private static void _BeforeResumeSessionTrampoline(IntPtr sessionHandle)
-        {
-            if (Instance.BeforeResumeSession != null)
-            {
+        private static void _BeforeResumeSessionTrampoline(IntPtr sessionHandle) {
+            if (Instance.BeforeResumeSession != null) {
                 Instance.BeforeResumeSession(sessionHandle);
             }
         }
 
-        private void _Initialize()
-        {
+        private void _Initialize() {
             m_EarlyUpdateCallback = new EarlyUpdateCallback(_EarlyUpdateTrampoline);
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 // Instant preview does not support updated function signature returning 'bool'.
                 ExternApi.ArCoreUnity_setArPrestoInitialized(m_EarlyUpdateCallback);
-            }
-            else if (!ExternApi.ArCoreUnity_setArPrestoInitialized(m_EarlyUpdateCallback))
-            {
+            } else if (!ExternApi.ArCoreUnity_setArPrestoInitialized(m_EarlyUpdateCallback)) {
                 Debug.LogError(
                     "Missing Unity Engine ARCore support.  Please ensure that the Unity project " +
                     "has the 'Player Settings > XR Settings > ARCore Supported' checkbox enabled.");
@@ -223,20 +201,16 @@ namespace GoogleARCoreInternal
                 m_OnBeforeSetConfigurationCallback, m_OnBeforeResumeSessionCallback);
         }
 
-        private void _OnCheckApkAvailabilityResult(ApkAvailabilityStatus status)
-        {
-            foreach (var onComplete in m_PendingAvailabilityCheckCallbacks)
-            {
+        private void _OnCheckApkAvailabilityResult(ApkAvailabilityStatus status) {
+            foreach (Action<ApkAvailabilityStatus> onComplete in m_PendingAvailabilityCheckCallbacks) {
                 onComplete(status);
             }
 
             m_PendingAvailabilityCheckCallbacks.Clear();
         }
 
-        private void _OnRequestApkInstallationResult(ApkInstallationStatus status)
-        {
-            foreach (var onComplete in m_PendingInstallationRequestCallbacks)
-            {
+        private void _OnRequestApkInstallationResult(ApkInstallationStatus status) {
+            foreach (Action<ApkInstallationStatus> onComplete in m_PendingInstallationRequestCallbacks) {
                 onComplete(status);
             }
 
@@ -244,18 +218,15 @@ namespace GoogleARCoreInternal
         }
 
         private void _RequestCameraPermission(CameraPermissionsResultCallback onComplete,
-            IntPtr context)
-        {
+            IntPtr context) {
             const string cameraPermissionName = "android.permission.CAMERA";
             AndroidPermissionsManager.RequestPermission(cameraPermissionName)
-                .ThenAction((grantResult) =>
-                {
+                .ThenAction((grantResult) => {
                     onComplete(grantResult.IsAllGranted, context);
                 });
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreShimApi)]
             public static extern void ArCoreUnity_getJniInfo(

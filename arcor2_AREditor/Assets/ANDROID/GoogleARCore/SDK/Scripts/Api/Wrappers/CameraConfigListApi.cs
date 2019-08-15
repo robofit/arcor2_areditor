@@ -18,59 +18,47 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
-    using GoogleARCore;
-    using UnityEngine;
 
 #if UNITY_IOS
     using AndroidImport = GoogleARCoreInternal.DllImportNoop;
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class CameraConfigListApi
-    {
+    internal class CameraConfigListApi {
         private NativeSession m_NativeSession;
 
-        public CameraConfigListApi(NativeSession nativeSession)
-        {
+        public CameraConfigListApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public IntPtr Create()
-        {
+        public IntPtr Create() {
             IntPtr cameraConfigListHandle = IntPtr.Zero;
             ExternApi.ArCameraConfigList_create(
                 m_NativeSession.SessionHandle, ref cameraConfigListHandle);
             return cameraConfigListHandle;
         }
 
-        public void Destroy(IntPtr cameraConfigListHandle)
-        {
+        public void Destroy(IntPtr cameraConfigListHandle) {
             ExternApi.ArCameraConfigList_destroy(cameraConfigListHandle);
         }
 
-        public int GetSize(IntPtr cameraConfigListHandle)
-        {
+        public int GetSize(IntPtr cameraConfigListHandle) {
             int size = 0;
             ExternApi.ArCameraConfigList_getSize(
                 m_NativeSession.SessionHandle, cameraConfigListHandle, ref size);
             return size;
         }
 
-        public void GetItemAt(IntPtr cameraConfigListHandle, int index, IntPtr cameraConfigHandle)
-        {
+        public void GetItemAt(IntPtr cameraConfigListHandle, int index, IntPtr cameraConfigHandle) {
             ExternApi.ArCameraConfigList_getItem(
                 m_NativeSession.SessionHandle, cameraConfigListHandle, index, cameraConfigHandle);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfigList_create(IntPtr sessionHandle,

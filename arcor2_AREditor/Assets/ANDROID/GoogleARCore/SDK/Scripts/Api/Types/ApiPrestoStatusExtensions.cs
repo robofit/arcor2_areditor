@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiPrestoStatusExtensions
-    {
-        public static SessionStatus ToSessionStatus(this ApiPrestoStatus prestoStatus)
-        {
-            switch (prestoStatus)
-            {
+    internal static class ApiPrestoStatusExtensions {
+        public static SessionStatus ToSessionStatus(this ApiPrestoStatus prestoStatus) {
+            switch (prestoStatus) {
                 case ApiPrestoStatus.Uninitialized:
                     return SessionStatus.None;
                 case ApiPrestoStatus.RequestingApkInstall:

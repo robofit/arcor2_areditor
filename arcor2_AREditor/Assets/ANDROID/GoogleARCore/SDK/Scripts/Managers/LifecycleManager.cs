@@ -18,28 +18,18 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System;
-    using GoogleARCore;
+namespace GoogleARCoreInternal {
     using UnityEngine;
 
-    internal class LifecycleManager
-    {
+    internal class LifecycleManager {
         private static ILifecycleManager s_Instance;
 
-        public static ILifecycleManager Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    if (Application.platform == RuntimePlatform.IPhonePlayer)
-                    {
+        public static ILifecycleManager Instance {
+            get {
+                if (s_Instance == null) {
+                    if (Application.platform == RuntimePlatform.IPhonePlayer) {
                         s_Instance = ARCoreIOSLifecycleManager.Instance;
-                    }
-                    else
-                    {
+                    } else {
                         s_Instance = ARCoreAndroidLifecycleManager.Instance;
                     }
                 }

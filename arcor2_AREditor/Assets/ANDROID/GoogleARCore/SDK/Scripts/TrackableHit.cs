@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using UnityEngine;
 
     /// <summary>
     /// Contains information about a raycast hit against a physical object tracked by ARCore.
     /// </summary>
-    public struct TrackableHit
-    {
+    public struct TrackableHit {
         /// <summary>
         /// Constructs a TrackableHit.
         /// </summary>
@@ -35,8 +33,7 @@ namespace GoogleARCore
         /// <param name="flags">Type of the hit.</param>
         /// <param name="trackable">Trackable object of the hit.</param>
         internal TrackableHit(
-            Pose pose, float distance, TrackableHitFlags flags, Trackable trackable) : this()
-        {
+            Pose pose, float distance, TrackableHitFlags flags, Trackable trackable) : this() {
             Pose = pose;
             Distance = distance;
             Flags = flags;
@@ -46,22 +43,30 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the pose where the raycast hit the object in Unity world coordinates.
         /// </summary>
-        public Pose Pose { get; private set; }
+        public Pose Pose {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the distance from the origin of the ray to the hit.
         /// </summary>
-        public float Distance { get; private set; }
+        public float Distance {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a bitmask where set TrackableHitFlag flags correspond to categories of objects
         /// the hit belongs to.
         /// </summary>
-        public TrackableHitFlags Flags { get; private set; }
+        public TrackableHitFlags Flags {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the hit's trackable object.
         /// </summary>
-        public Trackable Trackable { get; private set; }
+        public Trackable Trackable {
+            get; private set;
+        }
     }
 }

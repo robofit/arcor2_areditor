@@ -18,27 +18,21 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
+namespace GoogleARCoreInternal.CrossPlatform {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using GoogleARCore.CrossPlatform;
     using UnityEngine;
 
-    internal class CloudServiceManager
-    {
+    internal class CloudServiceManager {
         private static CloudServiceManager s_Instance;
 
         private List<CloudAnchorRequest> m_CloudAnchorRequests = new List<CloudAnchorRequest>();
 
-        public static CloudServiceManager Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
+        public static CloudServiceManager Instance {
+            get {
+                if (s_Instance == null) {
                     s_Instance = new CloudServiceManager();
                     LifecycleManager.Instance.EarlyUpdate += s_Instance._OnEarlyUpdate;
                 }
@@ -48,12 +42,10 @@ namespace GoogleARCoreInternal.CrossPlatform
         }
 
         public GoogleARCore.AsyncTask<CloudAnchorResult> CreateCloudAnchor(
-            GoogleARCore.Anchor anchor)
-        {
+            GoogleARCore.Anchor anchor) {
             Action<CloudAnchorResult> onComplete;
             GoogleARCore.AsyncTask<CloudAnchorResult> task;
-            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task))
-            {
+            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task)) {
                 return task;
             }
 
@@ -62,17 +54,15 @@ namespace GoogleARCoreInternal.CrossPlatform
             return task;
         }
 
-        public GoogleARCore.AsyncTask<CloudAnchorResult> CreateCloudAnchor(UnityEngine.Pose pose)
-        {
+        public GoogleARCore.AsyncTask<CloudAnchorResult> CreateCloudAnchor(UnityEngine.Pose pose) {
             Action<CloudAnchorResult> onComplete;
             GoogleARCore.AsyncTask<CloudAnchorResult> task;
-            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task))
-            {
+            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task)) {
                 return task;
             }
 
             // Create an native Pose and Anchor.
-            var poseHandle = LifecycleManager.Instance.NativeSession.PoseApi.Create(pose);
+            IntPtr poseHandle = LifecycleManager.Instance.NativeSession.PoseApi.Create(pose);
             IntPtr arkitAnchorHandle = IntPtr.Zero;
             ExternApi.ARKitAnchor_create(poseHandle, ref arkitAnchorHandle);
 
@@ -85,23 +75,19 @@ namespace GoogleARCoreInternal.CrossPlatform
             return task;
         }
 
-        public GoogleARCore.AsyncTask<CloudAnchorResult> ResolveCloudAnchor(String cloudAnchorId)
-        {
+        public GoogleARCore.AsyncTask<CloudAnchorResult> ResolveCloudAnchor(string cloudAnchorId) {
             Action<CloudAnchorResult> onComplete;
             GoogleARCore.AsyncTask<CloudAnchorResult> task;
-            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task))
-            {
+            if (!_CreateCloudAnchorResultAsyncTask(out onComplete, out task)) {
                 return task;
             }
 
             IntPtr cloudAnchorHandle = IntPtr.Zero;
-            var status = LifecycleManager.Instance.NativeSession.SessionApi
+            ApiArStatus status = LifecycleManager.Instance.NativeSession.SessionApi
                 .ResolveCloudAnchor(cloudAnchorId, out cloudAnchorHandle);
 
-            if (status != ApiArStatus.Success)
-            {
-                onComplete(new CloudAnchorResult()
-                {
+            if (status != ApiArStatus.Success) {
+                onComplete(new CloudAnchorResult() {
                     Response = status.ToCloudServiceResponse(),
                     Anchor = null,
                 });
@@ -124,15 +110,12 @@ namespace GoogleARCoreInternal.CrossPlatform
         /// creation should abort.</returns>
         protected internal bool _CreateCloudAnchorResultAsyncTask(
             out Action<CloudAnchorResult> onComplete,
-            out GoogleARCore.AsyncTask<CloudAnchorResult> task)
-        {
+            out GoogleARCore.AsyncTask<CloudAnchorResult> task) {
             // Action<CloudAnchorResult> onComplete;
             task = new GoogleARCore.AsyncTask<CloudAnchorResult>(out onComplete);
 
-            if (LifecycleManager.Instance.NativeSession == null)
-            {
-                onComplete(new CloudAnchorResult()
-                {
+            if (LifecycleManager.Instance.NativeSession == null) {
+                onComplete(new CloudAnchorResult() {
                     Response = CloudServiceResponse.ErrorNotSupportedByConfiguration,
                     Anchor = null,
                 });
@@ -150,14 +133,11 @@ namespace GoogleARCoreInternal.CrossPlatform
         /// <param name="onComplete">The on complete Action that was created for the
         /// AsyncTask<CloudAnchorResult>.</param>
         protected internal void _CreateAndTrackCloudAnchorRequest(IntPtr cloudAnchorHandle,
-            Action<CloudAnchorResult> onComplete, String cloudAnchorId = null)
-        {
-            if (LifecycleManager.Instance.NativeSession == null || cloudAnchorHandle == IntPtr.Zero)
-            {
+            Action<CloudAnchorResult> onComplete, string cloudAnchorId = null) {
+            if (LifecycleManager.Instance.NativeSession == null || cloudAnchorHandle == IntPtr.Zero) {
                 Debug.LogError("Cannot create cloud anchor request when NativeSession is null or " +
                     "cloud anchor handle is IntPtr.Zero.");
-                onComplete(new CloudAnchorResult()
-                {
+                onComplete(new CloudAnchorResult() {
                     Response = CloudServiceResponse.ErrorInternal,
                     Anchor = null,
                 });
@@ -165,8 +145,7 @@ namespace GoogleARCoreInternal.CrossPlatform
                 return;
             }
 
-            var request = new CloudAnchorRequest()
-            {
+            CloudAnchorRequest request = new CloudAnchorRequest() {
                 IsComplete = false,
                 NativeSession = LifecycleManager.Instance.NativeSession,
                 CloudAnchorId = cloudAnchorId,
@@ -184,16 +163,13 @@ namespace GoogleARCoreInternal.CrossPlatform
         ///  AsyncTask<CloudAnchorResult>.</param>
         /// <param name="anchorNativeHandle">The native handle for the anchor.</param>
         protected internal void _CreateCloudAnchor(Action<CloudAnchorResult> onComplete,
-            IntPtr anchorNativeHandle)
-        {
+            IntPtr anchorNativeHandle) {
             IntPtr cloudAnchorHandle = IntPtr.Zero;
-            var status = LifecycleManager.Instance.NativeSession.SessionApi
+            ApiArStatus status = LifecycleManager.Instance.NativeSession.SessionApi
                 .CreateCloudAnchor(anchorNativeHandle, out cloudAnchorHandle);
 
-            if (status != ApiArStatus.Success)
-            {
-                onComplete(new CloudAnchorResult()
-                {
+            if (status != ApiArStatus.Success) {
+                onComplete(new CloudAnchorResult() {
                     Response = status.ToCloudServiceResponse(),
                     Anchor = null,
                 });
@@ -205,21 +181,17 @@ namespace GoogleARCoreInternal.CrossPlatform
             return;
         }
 
-        protected internal void _CancelCloudAnchorRequest(String cloudAnchorId)
-        {
+        protected internal void _CancelCloudAnchorRequest(string cloudAnchorId) {
             bool cancelledCloudAnchorRequest = false;
-            foreach (var request in m_CloudAnchorRequests)
-            {
-                if (request.CloudAnchorId == null || !request.CloudAnchorId.Equals(cloudAnchorId))
-                {
+            foreach (CloudAnchorRequest request in m_CloudAnchorRequests) {
+                if (request.CloudAnchorId == null || !request.CloudAnchorId.Equals(cloudAnchorId)) {
                     continue;
                 }
 
                 request.NativeSession.AnchorApi.Detach(request.AnchorHandle);
                 request.NativeSession.AnchorApi.Release(request.AnchorHandle);
 
-                var result = new CloudAnchorResult()
-                {
+                CloudAnchorResult result = new CloudAnchorResult() {
                     // TODO (b/128930901): Change to "ErrorRequestCancelled" for API promotion.
                     Response = CloudServiceResponse.ErrorCloudIdNotFound,
                     Anchor = null,
@@ -232,17 +204,14 @@ namespace GoogleARCoreInternal.CrossPlatform
 
             m_CloudAnchorRequests.RemoveAll(x => x.IsComplete);
 
-            if (!cancelledCloudAnchorRequest)
-            {
+            if (!cancelledCloudAnchorRequest) {
                 Debug.LogWarning("Didn't find pending operation for cloudAnchorId: " +
                     cloudAnchorId);
             }
         }
 
-        private void _OnEarlyUpdate()
-        {
-            foreach (var request in m_CloudAnchorRequests)
-            {
+        private void _OnEarlyUpdate() {
+            foreach (CloudAnchorRequest request in m_CloudAnchorRequests) {
                 _UpdateCloudAnchorRequest(request);
             }
 
@@ -250,56 +219,44 @@ namespace GoogleARCoreInternal.CrossPlatform
         }
 
         private void _UpdateCloudAnchorRequest(
-            CloudAnchorRequest request, bool isNewRequest = false)
-        {
-            var cloudState =
+            CloudAnchorRequest request, bool isNewRequest = false) {
+            ApiCloudAnchorState cloudState =
                 request.NativeSession.AnchorApi.GetCloudAnchorState(request.AnchorHandle);
 
-            if (cloudState == ApiCloudAnchorState.Success)
-            {
+            if (cloudState == ApiCloudAnchorState.Success) {
                 XPAnchor xpAnchor = null;
                 CloudServiceResponse response = CloudServiceResponse.Success;
-                try
-                {
+                try {
                     xpAnchor = XPAnchor.Factory(request.NativeSession, request.AnchorHandle);
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogError("Failed to create XP Anchor: " + e.Message);
                     response = CloudServiceResponse.ErrorInternal;
                 }
 
-                var result = new CloudAnchorResult()
-                {
+                CloudAnchorResult result = new CloudAnchorResult() {
                     Response = response,
                     Anchor = xpAnchor,
                 };
 
                 request.OnTaskComplete(result);
                 request.IsComplete = true;
-            }
-            else if (cloudState != ApiCloudAnchorState.TaskInProgress)
-            {
+            } else if (cloudState != ApiCloudAnchorState.TaskInProgress) {
                 request.NativeSession.AnchorApi.Detach(request.AnchorHandle);
                 request.NativeSession.AnchorApi.Release(request.AnchorHandle);
 
-                var result = new CloudAnchorResult()
-                {
+                CloudAnchorResult result = new CloudAnchorResult() {
                     Response = cloudState.ToCloudServiceResponse(),
                     Anchor = null
                 };
 
                 request.OnTaskComplete(result);
                 request.IsComplete = true;
-            }
-            else if (isNewRequest)
-            {
+            } else if (isNewRequest) {
                 m_CloudAnchorRequests.Add(request);
             }
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ARKitAnchor_create(
                 IntPtr poseHandle, ref IntPtr arkitAnchorHandle);
@@ -308,13 +265,12 @@ namespace GoogleARCoreInternal.CrossPlatform
             public static extern void ARKitAnchor_release(IntPtr arkitAnchorHandle);
         }
 
-        private class CloudAnchorRequest
-        {
+        private class CloudAnchorRequest {
             public bool IsComplete;
 
             public NativeSession NativeSession;
 
-            public String CloudAnchorId;
+            public string CloudAnchorId;
 
             public IntPtr AnchorHandle;
 

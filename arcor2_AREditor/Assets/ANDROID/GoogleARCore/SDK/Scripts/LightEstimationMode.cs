@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Defines possible modes for ARCore real-world light estimation.
     /// </summary>
-    public enum LightEstimationMode
-    {
+    public enum LightEstimationMode {
         /// <summary>
         /// A mode where light estimation is disabled.
         /// </summary>

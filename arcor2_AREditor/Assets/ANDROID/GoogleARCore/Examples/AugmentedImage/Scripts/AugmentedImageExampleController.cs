@@ -18,13 +18,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.AugmentedImage
-{
+namespace GoogleARCore.Examples.AugmentedImage {
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
     using GoogleARCore;
     using UnityEngine;
-    using UnityEngine.UI;
 
     /// <summary>
     /// Controller for AugmentedImage example.
@@ -38,8 +35,7 @@ namespace GoogleARCore.Examples.AugmentedImage
     /// See details in <a href="https://developers.google.com/ar/develop/c/augmented-images/">
     /// Recognize and Augment Images</a>
     /// </remarks>
-    public class AugmentedImageExampleController : MonoBehaviour
-    {
+    public class AugmentedImageExampleController : MonoBehaviour {
         /// <summary>
         /// A prefab for visualizing an AugmentedImage.
         /// </summary>
@@ -58,8 +54,7 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             // Enable ARCore to target 60fps camera capture frame rate on supported devices.
             // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
@@ -68,21 +63,16 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// The Unity Update method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             // Exit the app when the 'back' button is pressed.
-            if (Input.GetKey(KeyCode.Escape))
-            {
+            if (Input.GetKey(KeyCode.Escape)) {
                 Application.Quit();
             }
 
             // Only allow the screen to sleep when not tracking.
-            if (Session.Status != SessionStatus.Tracking)
-            {
+            if (Session.Status != SessionStatus.Tracking) {
                 Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            }
-            else
-            {
+            } else {
                 Screen.sleepTimeout = SleepTimeout.NeverSleep;
             }
 
@@ -92,31 +82,25 @@ namespace GoogleARCore.Examples.AugmentedImage
 
             // Create visualizers and anchors for updated augmented images that are tracking and do
             // not previously have a visualizer. Remove visualizers for stopped images.
-            foreach (var image in m_TempAugmentedImages)
-            {
+            foreach (AugmentedImage image in m_TempAugmentedImages) {
                 AugmentedImageVisualizer visualizer = null;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-                if (image.TrackingState == TrackingState.Tracking && visualizer == null)
-                {
+                if (image.TrackingState == TrackingState.Tracking && visualizer == null) {
                     // Create an anchor to ensure that ARCore keeps tracking this augmented image.
                     Anchor anchor = image.CreateAnchor(image.CenterPose);
-                    visualizer = (AugmentedImageVisualizer)Instantiate(
+                    visualizer = (AugmentedImageVisualizer) Instantiate(
                         AugmentedImageVisualizerPrefab, anchor.transform);
                     visualizer.Image = image;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);
-                }
-                else if (image.TrackingState == TrackingState.Stopped && visualizer != null)
-                {
+                } else if (image.TrackingState == TrackingState.Stopped && visualizer != null) {
                     m_Visualizers.Remove(image.DatabaseIndex);
                     GameObject.Destroy(visualizer.gameObject);
                 }
             }
 
             // Show the fit-to-scan overlay if there are no images that are Tracking.
-            foreach (var visualizer in m_Visualizers.Values)
-            {
-                if (visualizer.Image.TrackingState == TrackingState.Tracking)
-                {
+            foreach (AugmentedImageVisualizer visualizer in m_Visualizers.Values) {
+                if (visualizer.Image.TrackingState == TrackingState.Tracking) {
                     FitToScanOverlay.SetActive(false);
                     return;
                 }

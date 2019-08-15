@@ -18,16 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulationInternal
-{
+namespace GoogleARCore.Examples.ObjectManipulationInternal {
     using GoogleARCore;
     using UnityEngine;
 
     /// <summary>
     /// Provides helper functions for common functionality for transforming objects in AR.
     /// </summary>
-    public static class TransformationUtility
-    {
+    public static class TransformationUtility {
         /// <summary>
         /// Slight offset of the down ray used in GetBestPlacementPosition to ensure that the
         /// current groundingPlane is included in the hit results.
@@ -50,8 +48,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <summary>
         /// Translation mode.
         /// </summary>
-        public enum TranslationMode
-        {
+        public enum TranslationMode {
             Horizontal,
             Vertical,
             Any,
@@ -86,8 +83,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             float groundingPlaneHeight,
             float hoverOffset,
             float maxTranslationDistance,
-            TranslationMode translationMode)
-        {
+            TranslationMode translationMode) {
             Placement result = new Placement();
             result.UpdatedGroundingPlaneHeight = groundingPlaneHeight;
 
@@ -113,26 +109,21 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             // Get the ray to cast into the scene from the perspective of the camera.
             TrackableHit hit;
             if (Frame.Raycast(
-                screenPos.x, screenPos.y, TrackableHitFlags.PlaneWithinBounds, out hit))
-            {
-                if (hit.Trackable is DetectedPlane)
-                {
+                screenPos.x, screenPos.y, TrackableHitFlags.PlaneWithinBounds, out hit)) {
+                if (hit.Trackable is DetectedPlane) {
                     DetectedPlane plane = hit.Trackable as DetectedPlane;
-                    if (IsPlaneTypeAllowed(translationMode, plane.PlaneType))
-                    {
+                    if (IsPlaneTypeAllowed(translationMode, plane.PlaneType)) {
                         // Avoid detecting the back of existing planes.
                         if ((hit.Trackable is DetectedPlane) &&
                             Vector3.Dot(Camera.main.transform.position - hit.Pose.position,
-                                        hit.Pose.rotation * Vector3.up) < 0)
-                        {
+                                        hit.Pose.rotation * Vector3.up) < 0) {
                             Debug.Log("Hit at back of the current DetectedPlane");
                             return result;
                         }
 
                         // Don't allow hovering for vertical or horizontal downward facing planes.
                         if (plane.PlaneType == DetectedPlaneType.Vertical ||
-                            plane.PlaneType == DetectedPlaneType.HorizontalDownwardFacing)
-                        {
+                            plane.PlaneType == DetectedPlaneType.HorizontalDownwardFacing) {
                             // Limit the translation to maxTranslationDistance.
                             groundingPoint = LimitTranslation(
                                 hit.Pose.position, currentAnchorPosition, maxTranslationDistance);
@@ -146,11 +137,9 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
                         }
 
                         // Allow hovering for horizontal upward facing planes.
-                        if (plane.PlaneType == DetectedPlaneType.HorizontalUpwardFacing)
-                        {
+                        if (plane.PlaneType == DetectedPlaneType.HorizontalUpwardFacing) {
                             // Return early if the camera is pointing upwards.
-                            if (angle < 0f)
-                            {
+                            if (angle < 0f) {
                                 return result;
                             }
 
@@ -166,37 +155,29 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
                             // position is used to replace the current groundingPlane. Otherwise,
                             // the hit is ignored because hits are only detected on lower planes by
                             // casting straight downwards in world space.
-                            if (groundingPoint.y > groundingPlaneHeight)
-                            {
+                            if (groundingPoint.y > groundingPlaneHeight) {
                                 result.PlacementPlane = hit;
                                 result.PlacementPosition = groundingPoint;
                                 result.UpdatedGroundingPlaneHeight = hit.Pose.position.y;
                                 result.PlacementRotation = hit.Pose.rotation;
                                 return result;
                             }
-                        }
-                        else
-                        {
+                        } else {
                             // Not supported plane type.
                             return result;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // Plane type not allowed.
                         return result;
                     }
-                }
-                else
-                {
+                } else {
                     // Hit is not a plane.
                     return result;
                 }
             }
 
             // Return early if the camera is pointing upwards.
-            if (angle < 0f)
-            {
+            if (angle < 0f) {
                 return result;
             }
 
@@ -210,15 +191,12 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             // Find the hovering position by casting from the camera onto the grounding plane
             // and offsetting the result by the hover offset.
             float enter;
-            if (groundingPlane.Raycast(cameraRay, out enter))
-            {
+            if (groundingPlane.Raycast(cameraRay, out enter)) {
                 groundingPoint = LimitTranslation(
                     cameraRay.GetPoint(enter), currentAnchorPosition, maxTranslationDistance);
 
                 result.HoveringPosition = groundingPoint + (Vector3.up * hoverOffset);
-            }
-            else
-            {
+            } else {
                 // If we can't successfully cast onto the groundingPlane, just return early.
                 return result;
             }
@@ -226,8 +204,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             // Cast straight down onto AR planes that are lower than the current grounding plane.
             if (Frame.Raycast(
                     groundingPoint + (Vector3.up * k_DownRayOffset), Vector3.down,
-                    out hit, Mathf.Infinity, TrackableHitFlags.PlaneWithinBounds))
-            {
+                    out hit, Mathf.Infinity, TrackableHitFlags.PlaneWithinBounds)) {
                 result.PlacementPosition = hit.Pose.position;
                 result.PlacementPlane = hit;
                 result.PlacementRotation = hit.Pose.rotation;
@@ -246,10 +223,8 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <param name="currentPosition">Current position.</param>
         /// <param name="maxTranslationDistance">Max translation distance.</param>
         private static Vector3 LimitTranslation(Vector3 desiredPosition, Vector3 currentPosition,
-                                                float maxTranslationDistance)
-        {
-            if ((desiredPosition - currentPosition).magnitude > maxTranslationDistance)
-            {
+                                                float maxTranslationDistance) {
+            if ((desiredPosition - currentPosition).magnitude > maxTranslationDistance) {
                 return currentPosition + (
                     (desiredPosition - currentPosition).normalized * maxTranslationDistance);
             }
@@ -258,23 +233,19 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         }
 
         private static bool IsPlaneTypeAllowed(
-            TranslationMode translationMode, DetectedPlaneType planeType)
-        {
-            if (translationMode == TranslationMode.Any)
-            {
+            TranslationMode translationMode, DetectedPlaneType planeType) {
+            if (translationMode == TranslationMode.Any) {
                 return true;
             }
 
             if (translationMode == TranslationMode.Horizontal &&
                (planeType == DetectedPlaneType.HorizontalDownwardFacing ||
-                planeType == DetectedPlaneType.HorizontalUpwardFacing))
-            {
+                planeType == DetectedPlaneType.HorizontalUpwardFacing)) {
                 return true;
             }
 
             if (translationMode == TranslationMode.Vertical &&
-               planeType == DetectedPlaneType.Vertical)
-            {
+               planeType == DetectedPlaneType.Vertical) {
                 return true;
             }
 
@@ -285,8 +256,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// Result of the function GetBestPlacementPosition that indicates if a placementPosition
         /// was found and information about the placement position.
         /// </summary>
-        public struct Placement
-        {
+        public struct Placement {
             /// <summary>
             /// The position that the object should be displayed at before the placement has been
             /// confirmed.

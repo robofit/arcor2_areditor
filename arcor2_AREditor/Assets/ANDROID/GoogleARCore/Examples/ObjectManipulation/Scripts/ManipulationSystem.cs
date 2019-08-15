@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using UnityEngine;
 
     /// <summary>
@@ -30,8 +29,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
     /// To enable it add one ManipulationSystem to your scene and one Manipulator as parent of each
     /// of your virtual objects.
     /// </summary>
-    public class ManipulationSystem : MonoBehaviour
-    {
+    public class ManipulationSystem : MonoBehaviour {
         private static ManipulationSystem s_Instance = null;
 
         private DragGestureRecognizer m_DragGestureRecognizer = new DragGestureRecognizer();
@@ -48,19 +46,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the ManipulationSystem instance.
         /// </summary>
-        public static ManipulationSystem Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    var manipulationSystems = FindObjectsOfType<ManipulationSystem>();
-                    if (manipulationSystems.Length > 0)
-                    {
+        public static ManipulationSystem Instance {
+            get {
+                if (s_Instance == null) {
+                    ManipulationSystem[] manipulationSystems = FindObjectsOfType<ManipulationSystem>();
+                    if (manipulationSystems.Length > 0) {
                         s_Instance = manipulationSystems[0];
-                    }
-                    else
-                    {
+                    } else {
                         Debug.LogError("No instance of ManipulationSystem exists in the scene.");
                     }
                 }
@@ -72,10 +64,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the Drag gesture recognizer.
         /// </summary>
-        public DragGestureRecognizer DragGestureRecognizer
-        {
-            get
-            {
+        public DragGestureRecognizer DragGestureRecognizer {
+            get {
                 return m_DragGestureRecognizer;
             }
         }
@@ -83,10 +73,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the Pinch gesture recognizer.
         /// </summary>
-        public PinchGestureRecognizer PinchGestureRecognizer
-        {
-            get
-            {
+        public PinchGestureRecognizer PinchGestureRecognizer {
+            get {
                 return m_PinchGestureRecognizer;
             }
         }
@@ -94,10 +82,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the two finger drag gesture recognizer.
         /// </summary>
-        public TwoFingerDragGestureRecognizer TwoFingerDragGestureRecognizer
-        {
-            get
-            {
+        public TwoFingerDragGestureRecognizer TwoFingerDragGestureRecognizer {
+            get {
                 return m_TwoFingerDragGestureRecognizer;
             }
         }
@@ -105,10 +91,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the Tap gesture recognizer.
         /// </summary>
-        public TapGestureRecognizer TapGestureRecognizer
-        {
-            get
-            {
+        public TapGestureRecognizer TapGestureRecognizer {
+            get {
                 return m_TapGestureRecognizer;
             }
         }
@@ -116,10 +100,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the Twist gesture recognizer.
         /// </summary>
-        public TwistGestureRecognizer TwistGestureRecognizer
-        {
-            get
-            {
+        public TwistGestureRecognizer TwistGestureRecognizer {
+            get {
                 return m_TwistGestureRecognizer;
             }
         }
@@ -127,15 +109,15 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the current selected object.
         /// </summary>
-        public GameObject SelectedObject { get; private set;  }
+        public GameObject SelectedObject {
+            get; private set;
+        }
 
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
-            if (Instance != this)
-            {
+        public void Awake() {
+            if (Instance != this) {
                 Debug.LogWarning("Multiple instances of ManipulationSystem detected in the scene." +
                                  " Only one instance can exist at a time. The duplicate instances" +
                                  " will be destroyed.");
@@ -149,8 +131,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             DragGestureRecognizer.Update();
             PinchGestureRecognizer.Update();
             TwoFingerDragGestureRecognizer.Update();
@@ -161,8 +142,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Deselects the selected object if any.
         /// </summary>
-        internal void Deselect()
-        {
+        internal void Deselect() {
             SelectedObject = null;
         }
 
@@ -170,10 +150,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Select an object.
         /// </summary>
         /// <param name="target">The object to select.</param>
-        internal void Select(GameObject target)
-        {
-            if (SelectedObject == target)
-            {
+        internal void Select(GameObject target) {
+            if (SelectedObject == target) {
                 return;
             }
 

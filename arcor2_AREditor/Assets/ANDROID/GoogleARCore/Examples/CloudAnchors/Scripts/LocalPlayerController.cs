@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
+namespace GoogleARCore.Examples.CloudAnchors {
     using UnityEngine;
     using UnityEngine.Networking;
 
@@ -43,8 +42,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Unity OnStartLocalPlayer() method.
         /// </summary>
-        public override void OnStartLocalPlayer()
-        {
+        public override void OnStartLocalPlayer() {
             base.OnStartLocalPlayer();
 
             // A Name is provided to the Game Object so it can be found by other Scripts, since this
@@ -58,10 +56,9 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <param name="position">Position of the object to be instantiated.</param>
         /// <param name="rotation">Rotation of the object to be instantiated.</param>
         /// <param name="anchor">The ARCore Anchor to be hosted.</param>
-        public void SpawnAnchor(Vector3 position, Quaternion rotation, Component anchor)
-        {
+        public void SpawnAnchor(Vector3 position, Quaternion rotation, Component anchor) {
             // Instantiate Anchor model at the hit pose.
-            var anchorObject = Instantiate(AnchorPrefab, position, rotation);
+            GameObject anchorObject = Instantiate(AnchorPrefab, position, rotation);
 
             // Anchor must be hosted in the device.
             anchorObject.GetComponent<AnchorController>().HostLastPlacedAnchor(anchor);
@@ -81,10 +78,9 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning disable 618
         [Command]
 #pragma warning restore 618
-        public void CmdSpawnStar(Vector3 position, Quaternion rotation)
-        {
+        public void CmdSpawnStar(Vector3 position, Quaternion rotation) {
             // Instantiate Star model at the hit pose.
-            var starObject = Instantiate(StarPrefab, position, rotation);
+            GameObject starObject = Instantiate(StarPrefab, position, rotation);
 
             // Spawn the object in all clients.
 #pragma warning disable 618

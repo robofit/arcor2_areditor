@@ -18,36 +18,28 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
     using GoogleARCore;
-    using UnityEngine;
 
 #if UNITY_IOS
     using AndroidImport = GoogleARCoreInternal.DllImportNoop;
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class CameraConfigApi
-    {
+    internal class CameraConfigApi {
         private NativeSession m_NativeSession;
 
-        public CameraConfigApi(NativeSession nativeSession)
-        {
+        public CameraConfigApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public IntPtr Create()
-        {
+        public IntPtr Create() {
             IntPtr cameraConfigHandle = IntPtr.Zero;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("create ARCamera config");
                 return cameraConfigHandle;
             }
@@ -56,18 +48,15 @@ namespace GoogleARCoreInternal
             return cameraConfigHandle;
         }
 
-        public void Destroy(IntPtr cameraConfigHandle)
-        {
+        public void Destroy(IntPtr cameraConfigHandle) {
             ExternApi.ArCameraConfig_destroy(cameraConfigHandle);
         }
 
-        public void GetImageDimensions(IntPtr cameraConfigHandle, out int width, out int height)
-        {
+        public void GetImageDimensions(IntPtr cameraConfigHandle, out int width, out int height) {
             width = 0;
             height = 0;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("access ARCamera image dimensions");
                 return;
             }
@@ -76,13 +65,11 @@ namespace GoogleARCoreInternal
                 m_NativeSession.SessionHandle, cameraConfigHandle, ref width, ref height);
         }
 
-        public void GetTextureDimensions(IntPtr cameraConfigHandle, out int width, out int height)
-        {
+        public void GetTextureDimensions(IntPtr cameraConfigHandle, out int width, out int height) {
             width = 0;
             height = 0;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage(
                     "access ARCamera texture dimensions");
                 return;
@@ -92,12 +79,10 @@ namespace GoogleARCoreInternal
                 m_NativeSession.SessionHandle, cameraConfigHandle, ref width, ref height);
         }
 
-        public ApiCameraConfigFacingDirection GetFacingDirection(IntPtr cameraConfigHandle)
-        {
+        public ApiCameraConfigFacingDirection GetFacingDirection(IntPtr cameraConfigHandle) {
             ApiCameraConfigFacingDirection direction = ApiCameraConfigFacingDirection.Back;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("access ARCamera facing direction");
                 return direction;
             }
@@ -108,13 +93,11 @@ namespace GoogleARCoreInternal
             return direction;
         }
 
-        public void GetFpsRange(IntPtr cameraConfigHandle, out int minFps, out int maxFps)
-        {
+        public void GetFpsRange(IntPtr cameraConfigHandle, out int minFps, out int maxFps) {
             minFps = 0;
             maxFps = 0;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("access ARCamera FpsRange");
                 return;
             }
@@ -123,23 +106,20 @@ namespace GoogleARCoreInternal
                 m_NativeSession.SessionHandle, cameraConfigHandle, ref minFps, ref maxFps);
         }
 
-        public CameraConfigDepthSensorUsages GetDepthSensorUsage(IntPtr cameraConfigHandle)
-        {
-            int depthSensorUsage = (int)CameraConfigDepthSensorUsages.DoNotUse;
+        public CameraConfigDepthSensorUsages GetDepthSensorUsage(IntPtr cameraConfigHandle) {
+            int depthSensorUsage = (int) CameraConfigDepthSensorUsages.DoNotUse;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("access ARCamera DepthSensorUsage");
-                return (CameraConfigDepthSensorUsages)depthSensorUsage;
+                return (CameraConfigDepthSensorUsages) depthSensorUsage;
             }
 
             ExternApi.ArCameraConfig_getDepthSensorUsage(
                 m_NativeSession.SessionHandle, cameraConfigHandle, ref depthSensorUsage);
-            return (CameraConfigDepthSensorUsages)depthSensorUsage;
+            return (CameraConfigDepthSensorUsages) depthSensorUsage;
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfig_create(IntPtr sessionHandle,

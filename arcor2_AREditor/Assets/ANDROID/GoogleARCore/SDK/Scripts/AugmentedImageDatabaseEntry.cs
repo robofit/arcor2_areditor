@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using UnityEngine;
 #if UNITY_EDITOR
@@ -30,8 +29,7 @@ namespace GoogleARCore
     /// An entry in a AugmentedImageDatabase.
     /// </summary>
     [Serializable]
-    public struct AugmentedImageDatabaseEntry
-    {
+    public struct AugmentedImageDatabaseEntry {
         /// <summary>
         /// The name assigned to the tracked image.
         /// </summary>
@@ -57,8 +55,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="name">The image name.</param>
         /// <param name="width">The image width in meters or 0 if the width is unknown.</param>
-        public AugmentedImageDatabaseEntry(string name, float width)
-        {
+        public AugmentedImageDatabaseEntry(string name, float width) {
             Name = name;
             TextureGUID = string.Empty;
             Width = width;
@@ -67,8 +64,7 @@ namespace GoogleARCore
         }
 
 #if UNITY_EDITOR
-        public AugmentedImageDatabaseEntry(string name, Texture2D texture, float width)
-        {
+        public AugmentedImageDatabaseEntry(string name, Texture2D texture, float width) {
             Name = name;
             TextureGUID = string.Empty;
             Width = width;
@@ -77,8 +73,7 @@ namespace GoogleARCore
         }
 
 
-        public AugmentedImageDatabaseEntry(string name, Texture2D texture)
-        {
+        public AugmentedImageDatabaseEntry(string name, Texture2D texture) {
             Name = name;
             TextureGUID = string.Empty;
             Width = 0;
@@ -86,8 +81,7 @@ namespace GoogleARCore
             Texture = texture;
         }
 
-        public AugmentedImageDatabaseEntry(Texture2D texture)
-        {
+        public AugmentedImageDatabaseEntry(Texture2D texture) {
             Name = "Unnamed";
             TextureGUID = string.Empty;
             Width = 0;
@@ -95,14 +89,11 @@ namespace GoogleARCore
             Texture = texture;
         }
 
-        public Texture2D Texture
-        {
-            get
-            {
+        public Texture2D Texture {
+            get {
                 return AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(TextureGUID));
             }
-            set
-            {
+            set {
                 TextureGUID = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(value));
             }
         }

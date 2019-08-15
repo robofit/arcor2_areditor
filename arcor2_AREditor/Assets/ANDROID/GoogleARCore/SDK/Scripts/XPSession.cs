@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
+namespace GoogleARCore.CrossPlatform {
     using GoogleARCoreInternal.CrossPlatform;
-    using UnityEngine;
 
 #if ARCORE_IOS_SUPPORT
     using UnityEngine.XR.iOS;
@@ -30,8 +28,7 @@ namespace GoogleARCore.CrossPlatform
     /// <summary>
     /// Represents a cross-platform ARCore session.
     /// </summary>
-    public static class XPSession
-    {
+    public static class XPSession {
         /// <summary>
         /// Attempts to asynchronously host a new cloud anchor.
         /// </summary>
@@ -39,8 +36,7 @@ namespace GoogleARCore.CrossPlatform
         /// <returns>A task that will complete when the attempt to host a new cloud anchor has
         /// finished.  The result will be a <c>CloudAnchorResult</c> associated with the operation.
         /// </returns>
-        public static AsyncTask<CloudAnchorResult> CreateCloudAnchor(Anchor anchor)
-        {
+        public static AsyncTask<CloudAnchorResult> CreateCloudAnchor(Anchor anchor) {
             return CloudServiceManager.Instance.CreateCloudAnchor(anchor);
         }
 
@@ -67,8 +63,7 @@ namespace GoogleARCore.CrossPlatform
         /// <returns>A task that will complete when the attempt to host a new cloud anchor has
         /// finished.  The result will be a <c>CloudAnchorResult</c> associated with the operation.
         /// </returns>
-        public static AsyncTask<CloudAnchorResult> ResolveCloudAnchor(string cloudAnchorId)
-        {
+        public static AsyncTask<CloudAnchorResult> ResolveCloudAnchor(string cloudAnchorId) {
             return CloudServiceManager.Instance.ResolveCloudAnchor(cloudAnchorId);
         }
     }

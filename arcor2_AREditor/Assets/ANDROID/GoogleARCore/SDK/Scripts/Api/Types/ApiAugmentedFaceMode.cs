@@ -17,10 +17,8 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCoreInternal
-{
-    internal enum ApiAugmentedFaceMode
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiAugmentedFaceMode {
         Disabled = 0,
         Mesh3D = 2,
     }

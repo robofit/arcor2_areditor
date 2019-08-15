@@ -1,16 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 
-public class InteractiveObject : MonoBehaviour
-{
+public class InteractiveObject : MonoBehaviour {
     public string type;
     [System.NonSerialized]
     public Vector3 position;
     [System.NonSerialized]
-    public Quaternion orientation = new Quaternion(0,0,0,1);
+    public Quaternion orientation = new Quaternion(0, 0, 0, 1);
     [System.NonSerialized]
     public GameObject InteractiveObjectMenu;
     [System.NonSerialized]
@@ -27,14 +23,13 @@ public class InteractiveObject : MonoBehaviour
 
     public ActionObjectMetadata ActionObjectMetadata;
 
-    public string Id { get => id; set
-        {
+    public string Id {
+        get => id; set {
             id = value;
         }
     }
 
-    private void Start()
-    {
+    private void Start() {
         GameManager = GameObject.Find("_GameManager").GetComponent<GameManager>();
         _ActionPoints = transform.Find("ActionPoints").gameObject;
         _MenuManager = GameObject.Find("_MenuManager").gameObject.GetComponent<MenuManager>();
@@ -42,41 +37,34 @@ public class InteractiveObject : MonoBehaviour
         ConnectionPrefab = GameManager.ConnectionPrefab;
     }
 
-    void Update()
-    {
+    void Update() {
 
     }
 
-    void Touch()
-    {
+    void Touch() {
         _MenuManager.ShowMenu(InteractiveObjectMenu, Id);
         InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
     }
 
-    
 
-    void OnMouseDown()
-    {
-       
+
+    void OnMouseDown() {
+
         offset = gameObject.transform.position -
             Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f));
     }
 
-    void OnMouseDrag()
-    {
+    void OnMouseDrag() {
         Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f);
         transform.position = Camera.main.ScreenToWorldPoint(newPosition) + offset;
     }
 
-    void OnMouseUp()
-    {
+    void OnMouseUp() {
         GameManager.UpdateScene();
     }
 
-    public void DeleteIO(bool updateScene=true)
-    {
-        foreach (ActionPoint ap in GetComponentsInChildren<ActionPoint>())
-        {
+    public void DeleteIO(bool updateScene = true) {
+        foreach (ActionPoint ap in GetComponentsInChildren<ActionPoint>()) {
             ap.DeleteAP(false);
         }
         gameObject.SetActive(false);

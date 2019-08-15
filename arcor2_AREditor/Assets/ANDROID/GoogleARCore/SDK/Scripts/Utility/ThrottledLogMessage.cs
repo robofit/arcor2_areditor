@@ -18,20 +18,17 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEngine;
 
     /// <summary>
     /// Helper class that rate limits messages logged to at most one per specified interval.
     /// </summary>
-    internal class ThrottledLogMessage
-    {
+    internal class ThrottledLogMessage {
         private float m_LastMessageTime;
         private float m_MinLogIntervalSeconds;
 
-        public ThrottledLogMessage(float minLogIntervalSeconds)
-        {
+        public ThrottledLogMessage(float minLogIntervalSeconds) {
             m_MinLogIntervalSeconds = minLogIntervalSeconds;
             m_LastMessageTime = -minLogIntervalSeconds - 1f;
         }
@@ -41,19 +38,15 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">Format arguments.</param>
-        public void ThrottledLogWarningFormat(string format, params object[] args)
-        {
-            if (ShouldLog())
-            {
+        public void ThrottledLogWarningFormat(string format, params object[] args) {
+            if (ShouldLog()) {
                 Debug.LogWarningFormat(format, args);
             }
         }
 
-        private bool ShouldLog()
-        {
+        private bool ShouldLog() {
             float now = Time.realtimeSinceStartup;
-            if (now - m_LastMessageTime > m_MinLogIntervalSeconds)
-            {
+            if (now - m_LastMessageTime > m_MinLogIntervalSeconds) {
                 m_LastMessageTime = now;
                 return true;
             }

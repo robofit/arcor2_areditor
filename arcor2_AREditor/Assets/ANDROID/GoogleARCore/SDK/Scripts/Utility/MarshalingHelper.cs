@@ -18,18 +18,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using GoogleARCore;
 
     /// <summary>
     /// A helper class for mashalling data.
     /// </summary>
-    public class MarshalingHelper
-    {
+    public class MarshalingHelper {
         /// <summary>
         /// Adds the contents of an unmanaged struct array to a list.
         /// </summary>
@@ -38,16 +35,13 @@ namespace GoogleARCoreInternal
         /// <param name="list">A list to append array elements to.</param>
         /// <typeparam name="T">The type contained by the unmanaged array.</typeparam>
         public static void AddUnmanagedStructArrayToList<T>(
-            IntPtr arrayPtr, int arrayLength, List<T> list) where T : struct
-        {
-            if (arrayPtr == IntPtr.Zero || list == null)
-            {
+            IntPtr arrayPtr, int arrayLength, List<T> list) where T : struct {
+            if (arrayPtr == IntPtr.Zero || list == null) {
                 return;
             }
 
-            for (int i = 0; i < arrayLength; i++)
-            {
-                list.Add((T)Marshal.PtrToStructure(
+            for (int i = 0; i < arrayLength; i++) {
+                list.Add((T) Marshal.PtrToStructure(
                     GetPtrToUnmanagedArrayElement<T>(arrayPtr, i), typeof(T)));
             }
         }
@@ -60,8 +54,7 @@ namespace GoogleARCoreInternal
         /// <param name="arrayIndex">The index of the desired element pointer.</param>
         /// <typeparam name="T">The type contained by the unmanaged array.</typeparam>
         public static IntPtr GetPtrToUnmanagedArrayElement<T>(IntPtr arrayPtr, int arrayIndex)
-            where T : struct
-        {
+            where T : struct {
             return new IntPtr(arrayPtr.ToInt64() + (Marshal.SizeOf(typeof(T)) * arrayIndex));
         }
     }

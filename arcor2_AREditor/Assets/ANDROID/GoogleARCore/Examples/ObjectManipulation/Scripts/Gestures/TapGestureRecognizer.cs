@@ -18,26 +18,22 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
     /// <summary>
     /// Gesture Recognizer for when the user performs a tap on the touch screen.
     /// </summary>
-    public class TapGestureRecognizer : GestureRecognizer<TapGesture>
-    {
+    public class TapGestureRecognizer : GestureRecognizer<TapGesture> {
         private const float k_SlopInches = 0.1f;
         private const float k_TimeSeconds = 0.3f;
 
         /// <summary>
         /// Gets the edge slop distance to filter tap gestures.
         /// </summary>
-        internal float m_SlopInches
-        {
-            get
-            {
+        internal float m_SlopInches {
+            get {
                 return k_SlopInches;
             }
         }
@@ -45,10 +41,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Gets the max time to be considered a Tap gesture.
         /// </summary>
-        internal float m_TimeSeconds
-        {
-            get
-            {
+        internal float m_TimeSeconds {
+            get {
                 return k_TimeSeconds;
             }
         }
@@ -58,16 +52,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="touch">The touch that started this gesture.</param>
         /// <returns>The created Tap gesture.</returns>
-        internal TapGesture CreateGesture(Touch touch)
-        {
+        internal TapGesture CreateGesture(Touch touch) {
             return new TapGesture(this, touch);
         }
 
         /// <summary>
         /// Tries to create a Tap Gesture.
         /// </summary>
-        protected internal override void TryCreateGestures()
-        {
+        protected internal override void TryCreateGestures() {
             TryCreateOneFingerGestureOnTouchBegan(CreateGesture);
         }
     }

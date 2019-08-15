@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Possible statuses for the ARCore APK availability on a device.
     /// </summary>
-    public enum ApkAvailabilityStatus
-    {
+    public enum ApkAvailabilityStatus {
         UnknownError = 0,
         UnknownChecking = 1,
         UnknownTimedOut = 2,

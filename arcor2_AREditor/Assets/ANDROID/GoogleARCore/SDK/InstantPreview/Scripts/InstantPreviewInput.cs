@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
@@ -31,8 +30,7 @@ namespace GoogleARCore
     /// Helper class that provides touch input in lieu of Input.GetTouch when
     /// running the Unity Editor.
     /// </summary>
-    public static class InstantPreviewInput
-    {
+    public static class InstantPreviewInput {
         private static Touch[] s_Touches = new Touch[0];
         private static List<Touch> s_TouchList = new List<Touch>();
 
@@ -41,10 +39,8 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden field.")]
-        public static string inputString
-        {
-            get
-            {
+        public static string inputString {
+            get {
                 return Input.inputString;
             }
         }
@@ -55,10 +51,8 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden field.")]
-        public static Touch[] touches
-        {
-            get
-            {
+        public static Touch[] touches {
+            get {
                 NativeApi.UnityGotTouches();
                 return s_Touches;
             }
@@ -70,10 +64,8 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden field.")]
-        public static int touchCount
-        {
-            get
-            {
+        public static int touchCount {
+            get {
                 return touches.Length;
             }
         }
@@ -83,10 +75,8 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden field.")]
-        public static Vector3 mousePosition
-        {
-            get
-            {
+        public static Vector3 mousePosition {
+            get {
                 return Input.mousePosition;
             }
         }
@@ -96,10 +86,8 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden field.")]
-        public static bool mousePresent
-        {
-            get
-            {
+        public static bool mousePresent {
+            get {
                 return Input.mousePresent;
             }
         }
@@ -109,8 +97,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="index">Index of touch input to get.</param>
         /// <returns>Touch data.</returns>
-        public static Touch GetTouch(int index)
-        {
+        public static Touch GetTouch(int index) {
             return touches[index];
         }
 
@@ -119,8 +106,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="keyCode">Key parameter to pass to Input.GetKey.</param>
         /// <returns>Key state returned from Input.GetKey.</returns>
-        public static bool GetKey(KeyCode keyCode)
-        {
+        public static bool GetKey(KeyCode keyCode) {
             return Input.GetKey(keyCode);
         }
 
@@ -129,8 +115,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="button">Button index.</param>
         /// <returns>Return value of Input.GetMouseButton.</returns>
-        public static bool GetMouseButton(int button)
-        {
+        public static bool GetMouseButton(int button) {
             return Input.GetMouseButton(button);
         }
 
@@ -139,8 +124,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="button">Button index.</param>
         /// <returns>Return value of Input.GetMouseButtonDown.</returns>
-        public static bool GetMouseButtonDown(int button)
-        {
+        public static bool GetMouseButtonDown(int button) {
             return Input.GetMouseButtonDown(button);
         }
 
@@ -149,8 +133,7 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="button">Button index.</param>
         /// <returns>Return value of Input.GetMouseButtonUp.</returns>
-        public static bool GetMouseButtonUp(int button)
-        {
+        public static bool GetMouseButtonUp(int button) {
             return Input.GetMouseButtonUp(button);
         }
 
@@ -158,24 +141,20 @@ namespace GoogleARCore
         /// Refreshes touch inputs from Instant Preview to reflect the state
         /// since the last time Update was called.
         /// </summary>
-        public static void Update()
-        {
-            if (!Application.isEditor)
-            {
+        public static void Update() {
+            if (!Application.isEditor) {
                 return;
             }
 
             // Removes ended touches, and converts moves to stationary.
-            for (int i = 0; i < s_TouchList.Count; ++i)
-            {
-                if (s_TouchList[i].phase == TouchPhase.Ended)
-                {
+            for (int i = 0; i < s_TouchList.Count; ++i) {
+                if (s_TouchList[i].phase == TouchPhase.Ended) {
                     s_TouchList.RemoveAt(i);
                     --i;
                     continue;
                 }
 
-                var curTouch = s_TouchList[i];
+                Touch curTouch = s_TouchList[i];
                 curTouch.phase = TouchPhase.Stationary;
                 curTouch.deltaPosition = Vector2.zero;
                 s_TouchList[i] = curTouch;
@@ -186,15 +165,13 @@ namespace GoogleARCore
             int nativeTouchCount;
             NativeApi.GetTouches(out nativeTouchesPtr, out nativeTouchCount);
 
-            var structSize = Marshal.SizeOf(typeof(NativeTouch));
-            for (var i = 0; i < nativeTouchCount; ++i)
-            {
-                var source = new IntPtr(nativeTouchesPtr.ToInt64() + (i * structSize));
+            int structSize = Marshal.SizeOf(typeof(NativeTouch));
+            for (int i = 0; i < nativeTouchCount; ++i) {
+                IntPtr source = new IntPtr(nativeTouchesPtr.ToInt64() + (i * structSize));
                 NativeTouch nativeTouch =
-                    (NativeTouch)Marshal.PtrToStructure(source, typeof(NativeTouch));
+                    (NativeTouch) Marshal.PtrToStructure(source, typeof(NativeTouch));
 
-                var newTouch = new Touch()
-                {
+                Touch newTouch = new Touch() {
                     fingerId = nativeTouch.Id,
                     phase = nativeTouch.Phase,
                     pressure = nativeTouch.Pressure,
@@ -206,16 +183,13 @@ namespace GoogleARCore
                         Screen.width * nativeTouch.X, Screen.height * (1f - nativeTouch.Y)),
                 };
 
-                var index = s_TouchList.FindIndex(touch => touch.fingerId == newTouch.fingerId);
+                int index = s_TouchList.FindIndex(touch => touch.fingerId == newTouch.fingerId);
 
                 // Adds touch if not found, otherwise updates it.
-                if (index < 0)
-                {
+                if (index < 0) {
                     s_TouchList.Add(newTouch);
-                }
-                else
-                {
-                    var prevTouch = s_TouchList[index];
+                } else {
+                    Touch prevTouch = s_TouchList[index];
                     newTouch.deltaPosition += newTouch.position - prevTouch.position;
                     s_TouchList[index] = newTouch;
                 }
@@ -224,8 +198,7 @@ namespace GoogleARCore
             s_Touches = s_TouchList.ToArray();
         }
 
-        private struct NativeTouch
-        {
+        private struct NativeTouch {
 #pragma warning disable 649
             public TouchPhase Phase;
             public float X;
@@ -235,8 +208,7 @@ namespace GoogleARCore
 #pragma warning restore 649
         }
 
-        private struct NativeApi
-        {
+        private struct NativeApi {
             [DllImport(InstantPreviewManager.InstantPreviewNativeApi)]
             public static extern void GetTouches(out IntPtr touches, out int count);
 

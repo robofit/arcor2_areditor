@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiCoordinates2dType
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiCoordinates2dType {
         TexturePixels = 0,
         TextureNormalized = 1,
         ImagePixels = 2,

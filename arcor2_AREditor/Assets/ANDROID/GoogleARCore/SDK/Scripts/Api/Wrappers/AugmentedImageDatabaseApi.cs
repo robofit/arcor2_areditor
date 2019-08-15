@@ -18,14 +18,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
-    using GoogleARCore;
-    using GoogleARCoreInternal;
     using UnityEngine;
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -33,19 +28,14 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class AugmentedImageDatabaseApi
-    {
-        public AugmentedImageDatabaseApi(NativeSession nativeSession)
-        {
+    internal class AugmentedImageDatabaseApi {
+        public AugmentedImageDatabaseApi(NativeSession nativeSession) {
         }
 
-        public IntPtr CreateArPrestoAugmentedImageDatabase(byte[] rawData)
-        {
-            if (Application.isEditor)
-            {
+        public IntPtr CreateArPrestoAugmentedImageDatabase(byte[] rawData) {
+            if (Application.isEditor) {
                 // ArPrestoAugmentedImageDatabase_create() not supported in editor.
                 return IntPtr.Zero;
             }
@@ -53,10 +43,9 @@ namespace GoogleARCoreInternal
             IntPtr outDatabaseHandle = IntPtr.Zero;
             GCHandle handle = new GCHandle();
             IntPtr rawDataHandle = IntPtr.Zero;
-            Int32 length = 0;
+            int length = 0;
 
-            if (rawData != null)
-            {
+            if (rawData != null) {
                 handle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
                 rawDataHandle = handle.AddrOfPinnedObject();
                 length = rawData.Length;
@@ -65,29 +54,25 @@ namespace GoogleARCoreInternal
             ExternApi.ArPrestoAugmentedImageDatabase_create(
                 rawDataHandle, length, ref outDatabaseHandle);
 
-            if (handle.IsAllocated)
-            {
+            if (handle.IsAllocated) {
                 handle.Free();
             }
 
             return outDatabaseHandle;
         }
 
-        public Int32 AddImageAtRuntime(
-            IntPtr databaseHandle, string name, Texture2D image, float width)
-        {
-            Int32 outIndex = -1;
+        public int AddImageAtRuntime(
+            IntPtr databaseHandle, string name, Texture2D image, float width) {
+            int outIndex = -1;
 
-            if (InstantPreviewManager.IsProvidingPlatform)
-            {
+            if (InstantPreviewManager.IsProvidingPlatform) {
                 InstantPreviewManager.LogLimitedSupportMessage("add images to Augmented Image " +
                     "database");
                 return outIndex;
             }
 
             GCHandle grayscaleBytesHandle = _ConvertTextureToGrayscaleBytes(image);
-            if (grayscaleBytesHandle.AddrOfPinnedObject() == IntPtr.Zero)
-            {
+            if (grayscaleBytesHandle.AddrOfPinnedObject() == IntPtr.Zero) {
                 return -1;
             }
 
@@ -95,13 +80,11 @@ namespace GoogleARCoreInternal
                 databaseHandle, name, grayscaleBytesHandle.AddrOfPinnedObject(), image.width,
                 image.height, image.width, width, ref outIndex);
 
-            if (grayscaleBytesHandle.IsAllocated)
-            {
+            if (grayscaleBytesHandle.IsAllocated) {
                 grayscaleBytesHandle.Free();
             }
 
-            if (status != ApiArStatus.Success)
-            {
+            if (status != ApiArStatus.Success) {
                 Debug.LogWarningFormat(
                     "Failed to add aumented image at runtime with status {0}", status);
                 return -1;
@@ -110,40 +93,33 @@ namespace GoogleARCoreInternal
             return outIndex;
         }
 
-        private GCHandle _ConvertTextureToGrayscaleBytes(Texture2D image)
-        {
+        private GCHandle _ConvertTextureToGrayscaleBytes(Texture2D image) {
             byte[] grayscaleBytes = null;
 
-            if (image.format == TextureFormat.RGB24 || image.format == TextureFormat.RGBA32)
-            {
+            if (image.format == TextureFormat.RGB24 || image.format == TextureFormat.RGBA32) {
                 Color[] pixels = image.GetPixels();
                 grayscaleBytes = new byte[pixels.Length];
-                for (int i = 0; i < image.height; i++)
-                {
-                    for (int j = 0; j < image.width; j++)
-                    {
+                for (int i = 0; i < image.height; i++) {
+                    for (int j = 0; j < image.width; j++) {
                         grayscaleBytes[(i * image.width) + j] =
-                            (byte)((
+                            (byte) ((
                             (0.213 * pixels[((image.height - 1 - i) * image.width) + j].r) +
                             (0.715 * pixels[((image.height - 1 - i) * image.width) + j].g) +
                             (0.072 * pixels[((image.height - 1 - i) * image.width) + j].b)) * 255);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 Debug.LogError("Unsupported texture format " + image.format);
             }
 
             return GCHandle.Alloc(grayscaleBytes, GCHandleType.Pinned);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARPrestoApi)]
             public static extern void ArPrestoAugmentedImageDatabase_create(IntPtr rawBytes,
-                Int64 rawBytesSize, ref IntPtr outAugmentedImageDatabaseHandle);
+                long rawBytesSize, ref IntPtr outAugmentedImageDatabaseHandle);
 
             [AndroidImport(ApiConstants.ARPrestoApi)]
             public static extern void ArPrestoAugmentedImageDatabase_destroy(
@@ -154,11 +130,11 @@ namespace GoogleARCoreInternal
                 IntPtr augmentedImageDatabaseHandle,
                 string imageName,
                 IntPtr imageBytes,
-                Int32 imageWidth,
-                Int32 imageHeight,
-                Int32 imageStride,
+                int imageWidth,
+                int imageHeight,
+                int imageStride,
                 float imageWidthInMeters,
-                ref Int32 outIndex);
+                ref int outIndex);
 #pragma warning restore 626
         }
     }

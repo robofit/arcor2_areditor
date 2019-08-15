@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiTrackingState
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiTrackingState {
         Tracking = 0,
         Paused = 1,
         Stopped = 2,

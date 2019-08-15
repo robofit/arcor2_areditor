@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// This enum follows the layout of NdkCameraMetadataTags.
     /// The values in the file are used for requesting / marshaling camera image's metadata.
@@ -27,8 +26,7 @@ namespace GoogleARCore
     /// NdkCameraMetadataTags.h for documentation:
     /// https://developer.android.com/ndk/reference/ndk_camera_metadata_tags_8h.html .
     /// </summary>
-    public enum CameraMetadataTag
-    {
+    public enum CameraMetadataTag {
         SectionColorCorrection = 0,
         SectionControl = 1,
         SectionEdge = 3,

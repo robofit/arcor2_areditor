@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
+namespace GoogleARCore.CrossPlatform {
     /// <summary>
     /// The status of an ARCore cross-platform session.
     /// </summary>
-    public enum XPSessionStatus
-    {
+    public enum XPSessionStatus {
         /// <summary>
         /// The session has not been initialized.
         /// </summary>

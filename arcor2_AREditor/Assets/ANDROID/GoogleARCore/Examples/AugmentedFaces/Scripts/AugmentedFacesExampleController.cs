@@ -18,18 +18,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.AugmentedFaces
-{
+namespace GoogleARCore.Examples.AugmentedFaces {
     using System.Collections.Generic;
     using GoogleARCore;
     using UnityEngine;
-    using UnityEngine.UI;
 
     /// <summary>
     /// Controller for the AugmentedFaces sample scene.
     /// </summary>
-    public class AugmentedFacesExampleController : MonoBehaviour
-    {
+    public class AugmentedFacesExampleController : MonoBehaviour {
         /// <summary>
         /// The game object that renders the face attachment on an Augmented Face.
         /// </summary>
@@ -46,8 +43,7 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             // Enable ARCore to target 60fps camera capture frame rate on supported devices.
             // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
@@ -56,21 +52,17 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// The Unity Update method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             _UpdateApplicationLifecycle();
 
             // Gets all Augmented Faces.
             Session.GetTrackables<AugmentedFace>(m_TempAugmentedFaces, TrackableQueryFilter.All);
 
             // Only allows the screen to sleep when ARCore can't detect a face.
-            if (m_TempAugmentedFaces.Count == 0)
-            {
+            if (m_TempAugmentedFaces.Count == 0) {
                 Screen.sleepTimeout = SleepTimeout.SystemSetting;
                 FaceAttachment.SetActive(false);
-            }
-            else
-            {
+            } else {
                 Screen.sleepTimeout = SleepTimeout.NeverSleep;
                 FaceAttachment.SetActive(true);
             }
@@ -79,29 +71,23 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// Check and update the application lifecycle.
         /// </summary>
-        private void _UpdateApplicationLifecycle()
-        {
+        private void _UpdateApplicationLifecycle() {
             // Exit the app when the 'back' button is pressed.
-            if (Input.GetKey(KeyCode.Escape))
-            {
+            if (Input.GetKey(KeyCode.Escape)) {
                 Application.Quit();
             }
 
-            if (m_IsQuitting)
-            {
+            if (m_IsQuitting) {
                 return;
             }
 
             // Quit if ARCore was unable to connect and give Unity some time for the toast to
             // appear.
-            if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
-            {
+            if (Session.Status == SessionStatus.ErrorPermissionNotGranted) {
                 _ShowAndroidToastMessage("Camera permission is needed to run this application.");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 0.5f);
-            }
-            else if (Session.Status.IsError())
-            {
+            } else if (Session.Status.IsError()) {
                 _ShowAndroidToastMessage(
                     "ARCore encountered a problem connecting.  Please start the app again.");
                 m_IsQuitting = true;
@@ -112,8 +98,7 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// <summary>
         /// Actually quit the application.
         /// </summary>
-        private void _DoQuit()
-        {
+        private void _DoQuit() {
             Application.Quit();
         }
 
@@ -121,18 +106,15 @@ namespace GoogleARCore.Examples.AugmentedFaces
         /// Show an Android toast message.
         /// </summary>
         /// <param name="message">Message string to show in the toast.</param>
-        private void _ShowAndroidToastMessage(string message)
-        {
+        private void _ShowAndroidToastMessage(string message) {
             AndroidJavaClass unityPlayer =
                 new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             AndroidJavaObject unityActivity =
                 unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-            if (unityActivity != null)
-            {
+            if (unityActivity != null) {
                 AndroidJavaClass toastClass = new AndroidJavaClass("android.widget.Toast");
-                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
-                {
+                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
                     AndroidJavaObject toastObject = toastClass.CallStatic<AndroidJavaObject>(
                         "makeText", unityActivity, message, 0);
                     toastObject.Call("show");

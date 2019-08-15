@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulationInternal
-{
+namespace GoogleARCore.Examples.ObjectManipulationInternal {
     using System;
     using UnityEngine;
 
@@ -32,14 +31,12 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
     /// Gestures are created and updated by BaseGestureRecognizer's.
     /// </summary>
     /// <typeparam name="T">The actual gesture.</typeparam>
-    public abstract class Gesture<T> where T : Gesture<T>
-    {
+    public abstract class Gesture<T> where T : Gesture<T> {
         /// <summary>
         /// Constructs a Gesture with a given recognizer.
         /// </summary>
         /// <param name="recognizer">The gesture recognizer.</param>
-        internal Gesture(GestureRecognizer<T> recognizer)
-        {
+        internal Gesture(GestureRecognizer<T> recognizer) {
             m_Recognizer = recognizer;
         }
 
@@ -61,35 +58,39 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <summary>
         /// Gets a value indicating whether the gesture was cancelled.
         /// </summary>
-        public bool WasCancelled { get; private set; }
+        public bool WasCancelled {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets or sets the object this gesture is targeting.
         /// </summary>
-        public GameObject TargetObject { get; protected set; }
+        public GameObject TargetObject {
+            get; protected set;
+        }
 
         /// <summary>
         /// Gets the gesture recognizer.
         /// </summary>
-        protected internal GestureRecognizer<T> m_Recognizer { get; private set; }
+        protected internal GestureRecognizer<T> m_Recognizer {
+            get; private set;
+        }
 
-        private bool m_HasStarted { get; set; }
+        private bool m_HasStarted {
+            get; set;
+        }
 
         /// <summary>
         /// Updates this gesture.
         /// </summary>
-        internal void Update()
-        {
-            if (!m_HasStarted && CanStart())
-            {
+        internal void Update() {
+            if (!m_HasStarted && CanStart()) {
                 Start();
                 return;
             }
 
-            if (m_HasStarted)
-            {
-                if (UpdateGesture() && onUpdated != null)
-                {
+            if (m_HasStarted) {
+                if (UpdateGesture() && onUpdated != null) {
                     onUpdated(this as T);
                 }
             }
@@ -98,8 +99,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <summary>
         /// Cancels this gesture.
         /// </summary>
-        internal void Cancel()
-        {
+        internal void Cancel() {
             WasCancelled = true;
             OnCancel();
             Complete();
@@ -135,21 +135,17 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <summary>
         /// Completes this gesture.
         /// </summary>
-        protected internal void Complete()
-        {
+        protected internal void Complete() {
             OnFinish();
-            if (onFinished != null)
-            {
+            if (onFinished != null) {
                 onFinished(this as T);
             }
         }
 
-        private void Start()
-        {
+        private void Start() {
             m_HasStarted = true;
             OnStart();
-            if (onStart != null)
-            {
+            if (onStart != null) {
                 onStart(this as T);
             }
         }

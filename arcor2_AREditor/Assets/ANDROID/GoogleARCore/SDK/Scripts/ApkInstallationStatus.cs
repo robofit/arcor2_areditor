@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Possible statuses for an ARCore APK installation request on a device.
     /// </summary>
-    public enum ApkInstallationStatus
-    {
+    public enum ApkInstallationStatus {
         Uninitialized = 0,
         Requested = 1,
         Success = 100,

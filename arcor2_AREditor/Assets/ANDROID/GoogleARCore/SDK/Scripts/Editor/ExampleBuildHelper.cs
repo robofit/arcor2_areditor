@@ -18,57 +18,41 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using UnityEditor;
-    using UnityEditor.Build;
     using UnityEngine;
 
-    internal class ExampleBuildHelper : PreprocessBuildBase
-    {
+    internal class ExampleBuildHelper : PreprocessBuildBase {
         private List<ExampleScene> m_ExampleScenes = new List<ExampleScene>();
 
-        internal List<ExampleScene> m_AllExampleScenes
-        {
-            get
-            {
+        internal List<ExampleScene> m_AllExampleScenes {
+            get {
                 return m_ExampleScenes;
             }
         }
 
-        public override void OnPreprocessBuild(BuildTarget target, string path)
-        {
+        public override void OnPreprocessBuild(BuildTarget target, string path) {
         }
 
-        protected void _AddExampleScene(ExampleScene scene)
-        {
+        protected void _AddExampleScene(ExampleScene scene) {
             m_ExampleScenes.Add(scene);
         }
 
-        protected void _DoPreprocessBuild(BuildTarget target, string path)
-        {
+        protected void _DoPreprocessBuild(BuildTarget target, string path) {
             BuildTargetGroup buildTargetGroup;
-            if (target == BuildTarget.Android)
-            {
+            if (target == BuildTarget.Android) {
                 buildTargetGroup = BuildTargetGroup.Android;
-            }
-            else if (target == BuildTarget.iOS)
-            {
+            } else if (target == BuildTarget.iOS) {
                 buildTargetGroup = BuildTargetGroup.iOS;
-            }
-            else
-            {
+            } else {
                 return;
             }
 
             EditorBuildSettingsScene enabledBuildScene = null;
             int enabledSceneCount = 0;
-            foreach (var buildScene in EditorBuildSettings.scenes)
-            {
-                if (!buildScene.enabled)
-                {
+            foreach (EditorBuildSettingsScene buildScene in EditorBuildSettings.scenes) {
+                if (!buildScene.enabled) {
                     continue;
                 }
 
@@ -76,15 +60,13 @@ namespace GoogleARCoreInternal
                 enabledSceneCount++;
             }
 
-            if (enabledSceneCount != 1)
-            {
+            if (enabledSceneCount != 1) {
                 return;
             }
 
             List<Texture2D> exampleSceneIcons = new List<Texture2D>();
             List<string> exampleProductNames = new List<string>();
-            foreach (var exampleScene in m_ExampleScenes)
-            {
+            foreach (ExampleScene exampleScene in m_ExampleScenes) {
                 exampleSceneIcons.Add(AssetDatabase.LoadAssetAtPath<Texture2D>(
                     AssetDatabase.GUIDToAssetPath(exampleScene.IconGuid)));
                 exampleProductNames.Add(exampleScene.ProductName);
@@ -93,33 +75,27 @@ namespace GoogleARCoreInternal
             string[] projectFolders = Application.dataPath.Split('/');
             string defaultProductName = projectFolders[projectFolders.Length - 2];
             if (PlayerSettings.productName != defaultProductName
-                  && !exampleProductNames.Contains(PlayerSettings.productName))
-            {
+                  && !exampleProductNames.Contains(PlayerSettings.productName)) {
                 return;
             }
 
             Texture2D[] applicationIcons =
                 PlayerSettings.GetIconsForTargetGroup(buildTargetGroup, IconKind.Application);
 
-            for (int i = 0; i < applicationIcons.Length; i++)
-            {
-                if (applicationIcons[i] != null && !exampleSceneIcons.Contains(applicationIcons[i]))
-                {
+            for (int i = 0; i < applicationIcons.Length; i++) {
+                if (applicationIcons[i] != null && !exampleSceneIcons.Contains(applicationIcons[i])) {
                     return;
                 }
             }
 
-            foreach (var exampleScene in m_ExampleScenes)
-            {
-                if (enabledBuildScene.guid.ToString() == exampleScene.SceneGuid)
-                {
+            foreach (ExampleScene exampleScene in m_ExampleScenes) {
+                if (enabledBuildScene.guid.ToString() == exampleScene.SceneGuid) {
                     PlayerSettings.productName = exampleScene.ProductName;
 
                     Texture2D exampleIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(
                         AssetDatabase.GUIDToAssetPath(exampleScene.IconGuid));
 
-                    for (int i = 0; i < applicationIcons.Length; i++)
-                    {
+                    for (int i = 0; i < applicationIcons.Length; i++) {
                         applicationIcons[i] = exampleIcon;
                     }
 
@@ -130,8 +106,7 @@ namespace GoogleARCoreInternal
             }
         }
 
-        internal struct ExampleScene
-        {
+        internal struct ExampleScene {
             public string ProductName;
             public string PackageName;
             public string SceneGuid;

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Selects the auto focus behavior of the camera.
     /// </summary>
-    public enum CameraFocusMode
-    {
+    public enum CameraFocusMode {
         /// <summary>
         /// Fixed camera focus mode.
         /// </summary>

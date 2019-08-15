@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiAvailability
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiAvailability {
         UnknownError = 0,
         UnknownChecking = 1,
         UnknownTimedOut = 2,

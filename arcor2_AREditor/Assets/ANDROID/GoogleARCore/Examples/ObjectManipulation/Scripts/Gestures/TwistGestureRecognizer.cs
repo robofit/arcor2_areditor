@@ -18,25 +18,21 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
     /// <summary>
     /// Gesture Recognizer for when the user performs a two-finger twist motion on the touch screen.
     /// </summary>
-    public class TwistGestureRecognizer : GestureRecognizer<TwistGesture>
-    {
+    public class TwistGestureRecognizer : GestureRecognizer<TwistGesture> {
         private const float k_SlopRotation = 10.0f;
 
-        internal float m_SlopRotation
-        {
-            get
-            {
+        internal float m_SlopRotation {
+            get {
                 return k_SlopRotation;
             }
-        } 
+        }
 
         /// <summary>
         /// Creates a Twist gesture with the given touches.
@@ -44,16 +40,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <param name="touch1">The first touch that started this gesture.</param>
         /// <param name="touch2">The second touch that started this gesture.</param>
         /// <returns>The created Tap gesture.</returns>
-        internal TwistGesture CreateGesture(Touch touch1, Touch touch2)
-        {
+        internal TwistGesture CreateGesture(Touch touch1, Touch touch2) {
             return new TwistGesture(this, touch1, touch2);
         }
 
         /// <summary>
         /// Tries to create a Twist Gesture.
         /// </summary>
-        protected internal override void TryCreateGestures()
-        {
+        protected internal override void TryCreateGestures() {
             TryCreateTwoFingerGestureOnTouchBegan(CreateGesture);
         }
     }

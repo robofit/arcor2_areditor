@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
@@ -28,8 +27,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
     /// If not selected, the object will be selected when the drag gesture starts.
     /// </summary>
     [RequireComponent(typeof(SelectionManipulator))]
-    public class TranslationManipulator : Manipulator
-    {
+    public class TranslationManipulator : Manipulator {
         /// <summary>
         /// The translation mode of this object.
         /// </summary>
@@ -53,16 +51,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// The Unity's Start method.
         /// </summary>
-        protected void Start()
-        {
+        protected void Start() {
             m_DesiredLocalPosition = new Vector3(0, 0, 0);
         }
 
         /// <summary>
         /// The Unity's Update method.
         /// </summary>
-        protected override void Update()
-        {
+        protected override void Update() {
             base.Update();
             UpdatePosition();
         }
@@ -72,16 +68,13 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(DragGesture gesture)
-        {
-            if (gesture.TargetObject == null)
-            {
+        protected override bool CanStartManipulationForGesture(DragGesture gesture) {
+            if (gesture.TargetObject == null) {
                 return false;
             }
 
             // If the gesture isn't targeting this item, don't start manipulating.
-            if (gesture.TargetObject != gameObject)
-            {
+            if (gesture.TargetObject != gameObject) {
                 return false;
             }
 
@@ -95,8 +88,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is started.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnStartManipulation(DragGesture gesture)
-        {
+        protected override void OnStartManipulation(DragGesture gesture) {
             m_GroundingPlaneHeight = transform.parent.position.y;
         }
 
@@ -104,8 +96,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Continues the translation.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnContinueManipulation(DragGesture gesture)
-        {
+        protected override void OnContinueManipulation(DragGesture gesture) {
             m_IsActive = true;
 
             TransformationUtility.Placement desiredPlacement =
@@ -114,8 +105,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
                     MaxTranslationDistance, ObjectTranslationMode);
 
             if (desiredPlacement.HoveringPosition.HasValue &&
-                desiredPlacement.PlacementPosition.HasValue)
-            {
+                desiredPlacement.PlacementPosition.HasValue) {
                 // If desired position is lower than current position, don't drop it until it's
                 // finished.
                 m_DesiredLocalPosition = transform.parent.InverseTransformPoint(
@@ -125,22 +115,17 @@ namespace GoogleARCore.Examples.ObjectManipulation
 
                 m_GroundingPlaneHeight = desiredPlacement.UpdatedGroundingPlaneHeight;
 
-                if (desiredPlacement.PlacementRotation.HasValue)
-                {
+                if (desiredPlacement.PlacementRotation.HasValue) {
                     // Rotate if the plane direction has changed.
                     if (((desiredPlacement.PlacementRotation.Value * Vector3.up) - transform.up)
-                        .magnitude > k_DiffThreshold)
-                    {
+                        .magnitude > k_DiffThreshold) {
                         m_DesiredRotation = desiredPlacement.PlacementRotation.Value;
-                    }
-                    else
-                    {
+                    } else {
                         m_DesiredRotation = transform.rotation;
                     }
                 }
 
-                if (desiredPlacement.PlacementPlane.HasValue)
-                {
+                if (desiredPlacement.PlacementPlane.HasValue) {
                     m_LastHit = desiredPlacement.PlacementPlane.Value;
                 }
             }
@@ -150,8 +135,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Finishes the translation.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnEndManipulation(DragGesture gesture)
-        {
+        protected override void OnEndManipulation(DragGesture gesture) {
             GameObject oldAnchor = transform.parent.gameObject;
 
             Pose desiredPose = new Pose(m_DesiredAnchorPosition, m_LastHit.Pose.rotation);
@@ -159,8 +143,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
             Vector3 desiredLocalPosition =
                 transform.parent.InverseTransformPoint(desiredPose.position);
 
-            if (desiredLocalPosition.magnitude > MaxTranslationDistance)
-            {
+            if (desiredLocalPosition.magnitude > MaxTranslationDistance) {
                 desiredLocalPosition = desiredLocalPosition.normalized * MaxTranslationDistance;
             }
 
@@ -174,12 +157,9 @@ namespace GoogleARCore.Examples.ObjectManipulation
             m_DesiredLocalPosition = Vector3.zero;
 
             // Rotate if the plane direction has changed.
-            if (((desiredPose.rotation * Vector3.up) - transform.up).magnitude > k_DiffThreshold)
-            {
+            if (((desiredPose.rotation * Vector3.up) - transform.up).magnitude > k_DiffThreshold) {
                 m_DesiredRotation = desiredPose.rotation;
-            }
-            else
-            {
+            } else {
                 m_DesiredRotation = transform.rotation;
             }
 
@@ -187,10 +167,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
             m_IsActive = true;
         }
 
-        private void UpdatePosition()
-        {
-            if (!m_IsActive)
-            {
+        private void UpdatePosition() {
+            if (!m_IsActive) {
                 return;
             }
 
@@ -200,8 +178,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
                 oldLocalPosition, m_DesiredLocalPosition, Time.deltaTime * k_PositionSpeed);
 
             float diffLenght = (m_DesiredLocalPosition - newLocalPosition).magnitude;
-            if (diffLenght < k_DiffThreshold)
-            {
+            if (diffLenght < k_DiffThreshold) {
                 newLocalPosition = m_DesiredLocalPosition;
                 m_IsActive = false;
             }

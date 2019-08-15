@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
@@ -29,8 +28,7 @@ namespace GoogleARCoreInternal
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
     Justification = "Internal")]
     [StructLayout(LayoutKind.Sequential)]
-    internal struct ApiPrestoConfig
-    {
+    internal struct ApiPrestoConfig {
         public ApiUpdateMode UpdateMode;
         public ApiPlaneFindingMode PlaneFindingMode;
         public ApiLightEstimationMode LightEstimationMode;
@@ -43,24 +41,22 @@ namespace GoogleARCoreInternal
         /// Wrap an ARCoreSessionConfig in an API config.
         /// </summary>
         /// <param name="config">Config to wrap.</param>
-        public ApiPrestoConfig(ARCoreSessionConfig config)
-        {
+        public ApiPrestoConfig(ARCoreSessionConfig config) {
             UpdateMode = config.MatchCameraFramerate ?
                 ApiUpdateMode.Blocking : ApiUpdateMode.LatestCameraImage;
-            var planeFindingMode = ApiPlaneFindingMode.Disabled;
-            switch (config.PlaneFindingMode)
-            {
-            case DetectedPlaneFindingMode.Horizontal:
-                planeFindingMode = ApiPlaneFindingMode.Horizontal;
-                break;
-            case DetectedPlaneFindingMode.Vertical:
-                planeFindingMode = ApiPlaneFindingMode.Vertical;
-                break;
-            case DetectedPlaneFindingMode.HorizontalAndVertical:
-                planeFindingMode = ApiPlaneFindingMode.HorizontalAndVertical;
-                break;
-            default:
-                break;
+            ApiPlaneFindingMode planeFindingMode = ApiPlaneFindingMode.Disabled;
+            switch (config.PlaneFindingMode) {
+                case DetectedPlaneFindingMode.Horizontal:
+                    planeFindingMode = ApiPlaneFindingMode.Horizontal;
+                    break;
+                case DetectedPlaneFindingMode.Vertical:
+                    planeFindingMode = ApiPlaneFindingMode.Vertical;
+                    break;
+                case DetectedPlaneFindingMode.HorizontalAndVertical:
+                    planeFindingMode = ApiPlaneFindingMode.HorizontalAndVertical;
+                    break;
+                default:
+                    break;
             }
 
             PlaneFindingMode = planeFindingMode;
@@ -68,18 +64,14 @@ namespace GoogleARCoreInternal
             CloudAnchorMode = config.EnableCloudAnchor ?
                 ApiCloudAnchorMode.Enabled : ApiCloudAnchorMode.Disabled;
 
-            if (config.AugmentedImageDatabase != null)
-            {
+            if (config.AugmentedImageDatabase != null) {
                 ArPrestoAugmentedImageDatabase =
                     config.AugmentedImageDatabase.m_ArPrestoDatabaseHandle;
-            }
-            else
-            {
+            } else {
                 ArPrestoAugmentedImageDatabase = IntPtr.Zero;
             }
 
-            switch (config.CameraFocusMode)
-            {
+            switch (config.CameraFocusMode) {
                 case GoogleARCore.CameraFocusMode.Fixed:
                     CameraFocusMode = ApiCameraFocusMode.Fixed;
                     break;
@@ -91,8 +83,7 @@ namespace GoogleARCoreInternal
                     break;
             }
 
-            switch (config.AugmentedFaceMode)
-            {
+            switch (config.AugmentedFaceMode) {
                 case AugmentedFaceMode.Disabled:
                     FaceMode = ApiAugmentedFaceMode.Disabled;
                     break;

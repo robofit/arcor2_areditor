@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
-    internal enum ApiTrackingFailureReason
-    {
+namespace GoogleARCore {
+    internal enum ApiTrackingFailureReason {
         None = 0,
         BadState = 1,
         InsufficientLight = 2,

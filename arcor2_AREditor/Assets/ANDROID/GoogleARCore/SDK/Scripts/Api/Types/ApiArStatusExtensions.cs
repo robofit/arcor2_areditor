@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
+namespace GoogleARCoreInternal.CrossPlatform {
     using GoogleARCore.CrossPlatform;
 
-    internal static class ApiArStatusExtensions
-    {
-        public static CloudServiceResponse ToCloudServiceResponse(this ApiArStatus status)
-        {
-            switch (status)
-            {
+    internal static class ApiArStatusExtensions {
+        public static CloudServiceResponse ToCloudServiceResponse(this ApiArStatus status) {
+            switch (status) {
                 case ApiArStatus.Success:
                     return CloudServiceResponse.Success;
                 case ApiArStatus.ErrorCloudAnchorsNotConfigured:

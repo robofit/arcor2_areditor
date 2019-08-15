@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
@@ -30,8 +29,7 @@ namespace GoogleARCoreInternal
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
      Justification = "Internal")]
-    public static class AugmentedImageDatabaseContextMenu
-    {
+    public static class AugmentedImageDatabaseContextMenu {
         private const string k_SupportedImageFormatListMessage = "PNG and JPEG";
 
         private static readonly List<string> k_SupportedImageExtensions = new List<string>()
@@ -45,62 +43,52 @@ namespace GoogleARCoreInternal
         };
 
         [MenuItem("Assets/Create/Google ARCore/AugmentedImageDatabase", false, 2)]
-        private static void AddAssetsToNewAugmentedImageDatabase()
-        {
-            var selectedImagePaths = new List<string>();
+        private static void AddAssetsToNewAugmentedImageDatabase() {
+            List<string> selectedImagePaths = new List<string>();
             bool unsupportedImagesSelected = false;
 
             selectedImagePaths = _GetSelectedImagePaths(out unsupportedImagesSelected);
-            if (unsupportedImagesSelected)
-            {
-                var message = string.Format(
+            if (unsupportedImagesSelected) {
+                string message = string.Format(
                     "One or more selected images could not be added to the " +
                     "AugmentedImageDatabase because they are not in a supported format. " +
                     "Supported image formats are: {0}",
                     k_SupportedImageFormatListMessage);
                 Debug.LogWarningFormat(message);
                 EditorUtility.DisplayDialog("Unsupported Images Selected", message, "Ok");
-            }
-            else if (selectedImagePaths.Count == 0)
-            {
-                var message = "Please select one or more images before using 'Create > " +
+            } else if (selectedImagePaths.Count == 0) {
+                string message = "Please select one or more images before using 'Create > " +
                     "Google ARCore > AugmentedImageDatabase'.";
                 Debug.LogWarningFormat(message);
                 EditorUtility.DisplayDialog("No Image Selected", message, "Ok");
             }
 
-            if (selectedImagePaths.Count > 0)
-            {
-                var newDatabase = ScriptableObject.CreateInstance<AugmentedImageDatabase>();
+            if (selectedImagePaths.Count > 0) {
+                AugmentedImageDatabase newDatabase = ScriptableObject.CreateInstance<AugmentedImageDatabase>();
 
-                var newEntries = new List<AugmentedImageDatabaseEntry>();
-                foreach (var imagePath in selectedImagePaths)
-                {
-                    var fileName = Path.GetFileName(imagePath);
-                    var imageName = fileName.Replace(Path.GetExtension(fileName), string.Empty);
+                List<AugmentedImageDatabaseEntry> newEntries = new List<AugmentedImageDatabaseEntry>();
+                foreach (string imagePath in selectedImagePaths) {
+                    string fileName = Path.GetFileName(imagePath);
+                    string imageName = fileName.Replace(Path.GetExtension(fileName), string.Empty);
                     newEntries.Add(new AugmentedImageDatabaseEntry(imageName,
                         AssetDatabase.LoadAssetAtPath<Texture2D>(imagePath)));
                 }
 
                 newEntries = newEntries.OrderBy(x => x.Name).ToList();
 
-                foreach (var entry in newEntries)
-                {
+                foreach (AugmentedImageDatabaseEntry entry in newEntries) {
                     newDatabase.Add(entry);
                 }
 
                 string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-                if (selectedPath == string.Empty)
-                {
+                if (selectedPath == string.Empty) {
                     selectedPath = "Assets";
-                }
-                else if (Path.GetExtension(selectedPath) != string.Empty)
-                {
+                } else if (Path.GetExtension(selectedPath) != string.Empty) {
                     selectedPath =
                         selectedPath.Replace(Path.GetFileName(selectedPath), string.Empty);
                 }
 
-                var newAssetPath = AssetDatabase.GenerateUniqueAssetPath(
+                string newAssetPath = AssetDatabase.GenerateUniqueAssetPath(
                     Path.Combine(selectedPath, "New Database.asset"));
                 AssetDatabase.CreateAsset(newDatabase, newAssetPath);
                 EditorUtility.FocusProjectWindow();
@@ -108,22 +96,17 @@ namespace GoogleARCoreInternal
             }
         }
 
-        private static List<string> _GetSelectedImagePaths(out bool unsupportedImagesSelected)
-        {
-            var selectedImagePaths = new List<string>();
+        private static List<string> _GetSelectedImagePaths(out bool unsupportedImagesSelected) {
+            List<string> selectedImagePaths = new List<string>();
 
             unsupportedImagesSelected = false;
-            foreach (var GUID in Selection.assetGUIDs)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(GUID);
-                var extension = Path.GetExtension(path).ToLower();
+            foreach (string GUID in Selection.assetGUIDs) {
+                string path = AssetDatabase.GUIDToAssetPath(GUID);
+                string extension = Path.GetExtension(path).ToLower();
 
-                if (k_SupportedImageExtensions.Contains(extension))
-                {
+                if (k_SupportedImageExtensions.Contains(extension)) {
                     selectedImagePaths.Add(AssetDatabase.GUIDToAssetPath(GUID));
-                }
-                else if (k_UnsupportedImageExtensions.Contains(extension))
-                {
+                } else if (k_UnsupportedImageExtensions.Contains(extension)) {
                     unsupportedImagesSelected = true;
                 }
             }

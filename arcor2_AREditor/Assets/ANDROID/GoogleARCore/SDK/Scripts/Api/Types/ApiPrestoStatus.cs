@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiPrestoStatus
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiPrestoStatus {
         Uninitialized = 0,
         RequestingApkInstall = 1,
         RequestingPermission = 2,

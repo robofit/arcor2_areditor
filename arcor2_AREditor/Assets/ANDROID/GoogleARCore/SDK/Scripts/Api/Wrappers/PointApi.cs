@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using GoogleARCore;
     using UnityEngine;
@@ -29,29 +28,24 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class PointApi
-    {
+    internal class PointApi {
         private NativeSession m_NativeSession;
 
-        public PointApi(NativeSession nativeSession)
-        {
+        public PointApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public Pose GetPose(IntPtr pointHandle)
-        {
-            var poseHandle = m_NativeSession.PoseApi.Create();
+        public Pose GetPose(IntPtr pointHandle) {
+            IntPtr poseHandle = m_NativeSession.PoseApi.Create();
             ExternApi.ArPoint_getPose(m_NativeSession.SessionHandle, pointHandle, poseHandle);
             Pose resultPose = m_NativeSession.PoseApi.ExtractPoseValue(poseHandle);
             m_NativeSession.PoseApi.Destroy(poseHandle);
             return resultPose;
         }
 
-        public FeaturePointOrientationMode GetOrientationMode(IntPtr pointHandle)
-        {
+        public FeaturePointOrientationMode GetOrientationMode(IntPtr pointHandle) {
             ApiFeaturePointOrientationMode orientationMode =
                 ApiFeaturePointOrientationMode.Identity;
             ExternApi.ArPoint_getOrientationMode(m_NativeSession.SessionHandle, pointHandle,
@@ -59,8 +53,7 @@ namespace GoogleARCoreInternal
             return orientationMode.ToFeaturePointOrientationMode();
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArPoint_getPose(

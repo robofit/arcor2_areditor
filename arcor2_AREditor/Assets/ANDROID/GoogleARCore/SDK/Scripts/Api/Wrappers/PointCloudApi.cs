@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
     using GoogleARCore;
     using UnityEngine;
 
@@ -30,32 +28,27 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
     using Marshal = System.Runtime.InteropServices.Marshal;
 
-    internal class PointCloudApi
-    {
+    internal class PointCloudApi {
         private NativeSession m_NativeSession;
 
         private float[] m_CachedVector = new float[4];
 
-        public PointCloudApi(NativeSession nativeSession)
-        {
+        public PointCloudApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public long GetTimestamp(IntPtr pointCloudHandle)
-        {
+        public long GetTimestamp(IntPtr pointCloudHandle) {
             long timestamp = 0;
             ExternApi.ArPointCloud_getTimestamp(
                 m_NativeSession.SessionHandle, pointCloudHandle, ref timestamp);
             return timestamp;
         }
 
-        public int GetNumberOfPoints(IntPtr pointCloudHandle)
-        {
+        public int GetNumberOfPoints(IntPtr pointCloudHandle) {
             int pointCount = 0;
             ExternApi.ArPointCloud_getNumberOfPoints(
                 m_NativeSession.SessionHandle, pointCloudHandle, ref pointCount);
@@ -63,8 +56,7 @@ namespace GoogleARCoreInternal
             return pointCount;
         }
 
-        public PointCloudPoint GetPoint(IntPtr pointCloudHandle, int index)
-        {
+        public PointCloudPoint GetPoint(IntPtr pointCloudHandle, int index) {
             // Get a reference to the pointcloud data to extract position and condfidence of point
             // at index.
             IntPtr pointCloudDataHandle = IntPtr.Zero;
@@ -82,8 +74,7 @@ namespace GoogleARCoreInternal
             return new PointCloudPoint(_GetPointId(pointCloudHandle, index), position, confidence);
         }
 
-        public void Release(IntPtr pointCloudHandle)
-        {
+        public void Release(IntPtr pointCloudHandle) {
             ExternApi.ArPointCloud_release(pointCloudHandle);
         }
 
@@ -98,14 +89,12 @@ namespace GoogleARCoreInternal
             return Marshal.ReadInt32(pointIdHandle);
         }
 #else
-        private int _GetPointId(IntPtr pointCloudHandle, int index)
-        {
+        private int _GetPointId(IntPtr pointCloudHandle, int index) {
             return 0;
         }
 #endif
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArPointCloud_getTimestamp(

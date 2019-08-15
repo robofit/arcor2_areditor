@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiCameraConfigFacingDirection
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiCameraConfigFacingDirection {
         Back = 0,
         Front = 1,
     }

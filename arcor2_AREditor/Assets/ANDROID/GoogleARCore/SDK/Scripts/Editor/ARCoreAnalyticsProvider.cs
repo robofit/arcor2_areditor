@@ -22,21 +22,17 @@
 // options to the common dialog. See also ARCoreAnalyticsPreferences.
 #if UNITY_2018_3_OR_NEWER
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEditor;
 
-    internal class ARCoreAnalyticsProvider : SettingsProvider
-    {
+    internal class ARCoreAnalyticsProvider : SettingsProvider {
         public ARCoreAnalyticsProvider(string path, SettingsScope scope)
-            : base(path, scope)
-        {
+            : base(path, scope) {
         }
 
         [SettingsProvider]
-        public static SettingsProvider CreateARCoreAnalyticsProvider()
-        {
-            var provider =
+        public static SettingsProvider CreateARCoreAnalyticsProvider() {
+            ARCoreAnalyticsProvider provider =
                 new ARCoreAnalyticsProvider("Preferences/Google ARCore", SettingsScope.User);
 
             // Automatically extract all keywords from public static GUI content.
@@ -46,8 +42,7 @@ namespace GoogleARCoreInternal
             return provider;
         }
 
-        public override void OnGUI(string searchContext)
-        {
+        public override void OnGUI(string searchContext) {
             ARCoreAnalyticsGUI.OnGUI();
         }
     }

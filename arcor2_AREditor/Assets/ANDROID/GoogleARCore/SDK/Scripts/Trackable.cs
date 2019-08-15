@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
     using GoogleARCoreInternal;
@@ -28,8 +27,7 @@ namespace GoogleARCore
     /// <summary>
     /// An object ARCore is tracking in the real world.
     /// </summary>
-    public abstract class Trackable
-    {
+    public abstract class Trackable {
         /// <summary>
         /// A native handle for the ARCore trackable.
         /// </summary>
@@ -40,18 +38,15 @@ namespace GoogleARCore
         /// </summary>
         internal NativeSession m_NativeSession;
 
-        internal Trackable()
-        {
+        internal Trackable() {
         }
 
-        internal Trackable(IntPtr trackableNativeHandle, NativeSession nativeSession)
-        {
+        internal Trackable(IntPtr trackableNativeHandle, NativeSession nativeSession) {
             m_TrackableNativeHandle = trackableNativeHandle;
             m_NativeSession = nativeSession;
         }
 
-        ~Trackable()
-        {
+        ~Trackable() {
             m_NativeSession.TrackableApi.Release(m_TrackableNativeHandle);
         }
 
@@ -59,14 +54,11 @@ namespace GoogleARCore
         /// Gets the tracking state of for the Trackable in the current frame.
         /// </summary>
         /// <returns>The tracking state of for the Trackable in the current frame.</returns>
-        public virtual TrackingState TrackingState
-        {
+        public virtual TrackingState TrackingState {
             [SuppressMemoryAllocationError(
                 IsWarning = true, Reason = "Requires further investigation.")]
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+            get {
+                if (_IsSessionDestroyed()) {
                     // Trackables from another session are considered stopped.
                     return TrackingState.Stopped;
                 }
@@ -85,10 +77,8 @@ namespace GoogleARCore
         /// <param name="pose">The Pose of the location to create the anchor.</param>
         /// <returns>An Anchor attached to the Trackable at <c>Pose</c>.</returns>
         [SuppressMemoryAllocationError(Reason = "Could allocate a new Anchor object")]
-        public virtual Anchor CreateAnchor(Pose pose)
-        {
-            if (_IsSessionDestroyed())
-            {
+        public virtual Anchor CreateAnchor(Pose pose) {
+            if (_IsSessionDestroyed()) {
                 Debug.LogError(
                     "CreateAnchor:: Trying to access a session that has already been destroyed.");
                 return null;
@@ -96,8 +86,7 @@ namespace GoogleARCore
 
             IntPtr anchorHandle;
             if (!m_NativeSession.TrackableApi.AcquireNewAnchor(
-                m_TrackableNativeHandle, pose, out anchorHandle))
-            {
+                m_TrackableNativeHandle, pose, out anchorHandle)) {
                 Debug.Log("Failed to create anchor on trackable.");
                 return null;
             }
@@ -110,10 +99,8 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="anchors">A list of anchors to be filled by the method.</param>
         [SuppressMemoryAllocationError(Reason = "List could be resized.")]
-        public virtual void GetAllAnchors(List<Anchor> anchors)
-        {
-            if (_IsSessionDestroyed())
-            {
+        public virtual void GetAllAnchors(List<Anchor> anchors) {
+            if (_IsSessionDestroyed()) {
                 Debug.LogError(
                     "GetAllAnchors:: Trying to access a session that has already been destroyed.");
                 anchors.Clear();
@@ -128,8 +115,7 @@ namespace GoogleARCore
         /// </summary>
         /// <returns><c>true</c> if the session this Trackable belongs to was destroyed,
         /// <c>false</c> otherwise.</returns>
-        protected bool _IsSessionDestroyed()
-        {
+        protected bool _IsSessionDestroyed() {
             return m_NativeSession.IsDestroyed;
         }
     }

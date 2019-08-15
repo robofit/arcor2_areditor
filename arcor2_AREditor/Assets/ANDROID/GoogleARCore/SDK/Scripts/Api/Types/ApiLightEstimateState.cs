@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiLightEstimateState
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiLightEstimateState {
         NotValid = 0,
         Valid = 1,
     }

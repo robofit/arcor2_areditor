@@ -18,11 +18,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
+namespace GoogleARCore.Examples.CloudAnchors {
     using System.Collections.Generic;
     using UnityEngine;
-    using UnityEngine.Networking;
     using UnityEngine.Networking.Match;
     using UnityEngine.Networking.Types;
     using UnityEngine.UI;
@@ -33,8 +31,7 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning disable 618
     [RequireComponent(typeof(CloudAnchorsNetworkManager))]
 #pragma warning restore 618
-    public class NetworkManagerUIController : MonoBehaviour
-    {
+    public class NetworkManagerUIController : MonoBehaviour {
         /// <summary>
         /// The Lobby Screen to see Available Rooms or create a new one.
         /// </summary>
@@ -95,11 +92,9 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             // Initialize the pool of Join Room buttons.
-            for (int i = 0; i < k_MatchPageSize; i++)
-            {
+            for (int i = 0; i < k_MatchPageSize; i++) {
                 GameObject button = Instantiate(JoinRoomListRowPrefab);
                 button.transform.SetParent(RoomListPanel.transform, false);
                 button.GetComponent<RectTransform>().anchoredPosition =
@@ -127,8 +122,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// Handles the user intent to create a new room.
         /// </summary>
-        public void OnCreateRoomClicked()
-        {
+        public void OnCreateRoomClicked() {
             m_Manager.matchMaker.CreateMatch(m_Manager.matchName, m_Manager.matchSize,
                                            true, string.Empty, string.Empty, string.Empty,
                                            0, 0, _OnMatchCreate);
@@ -137,8 +131,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// Handles the user intent to refresh the room list.
         /// </summary>
-        public void OnRefhreshRoomListClicked()
-        {
+        public void OnRefhreshRoomListClicked() {
             m_Manager.matchMaker.ListMatches(
                 startPageNumber: 0,
                 resultPageSize: k_MatchPageSize,
@@ -154,14 +147,10 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// made.
         /// </summary>
         /// <param name="isHost">Indicates whether this player is the host.</param>
-        public void OnAnchorInstantiated(bool isHost)
-        {
-            if (isHost)
-            {
+        public void OnAnchorInstantiated(bool isHost) {
+            if (isHost) {
                 SnackbarText.text = "Hosting Cloud Anchor...";
-            }
-            else
-            {
+            } else {
                 SnackbarText.text =
                     "Cloud Anchor added to session! Attempting to resolve anchor...";
             }
@@ -173,14 +162,10 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was hosted
         /// successfully.</param>
         /// <param name="response">The response string received.</param>
-        public void OnAnchorHosted(bool success, string response)
-        {
-            if (success)
-            {
+        public void OnAnchorHosted(bool success, string response) {
+            if (success) {
                 SnackbarText.text = "Cloud Anchor successfully hosted! Tap to place more stars.";
-            }
-            else
-            {
+            } else {
                 SnackbarText.text = "Cloud Anchor could not be hosted. " + response;
             }
         }
@@ -191,14 +176,10 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <param name="success">If set to <c>true</c> indicates the Cloud Anchor was resolved
         /// successfully.</param>
         /// <param name="response">The response string received.</param>
-        public void OnAnchorResolved(bool success, string response)
-        {
-            if (success)
-            {
+        public void OnAnchorResolved(bool success, string response) {
+            if (success) {
                 SnackbarText.text = "Cloud Anchor successfully resolved! Tap to place more stars.";
-            }
-            else
-            {
+            } else {
                 SnackbarText.text =
                     "Cloud Anchor could not be resolved. Will attempt again. " + response;
             }
@@ -208,8 +189,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Use the snackbar to display the error message.
         /// </summary>
         /// <param name="debugMessage">The debug message to be displayed on the snackbar.</param>
-        public void ShowDebugMessage(string debugMessage)
-        {
+        public void ShowDebugMessage(string debugMessage) {
             SnackbarText.text = debugMessage;
         }
 
@@ -241,17 +221,14 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning restore 618
         {
             m_Manager.OnMatchList(success, extendedInfo, matches);
-            if (!success)
-            {
+            if (!success) {
                 SnackbarText.text = "Could not list matches: " + extendedInfo;
                 return;
             }
 
-            if (m_Manager.matches != null)
-            {
+            if (m_Manager.matches != null) {
                 // Reset all buttons in the pool.
-                foreach (GameObject button in m_JoinRoomButtonsPool)
-                {
+                foreach (GameObject button in m_JoinRoomButtonsPool) {
                     button.SetActive(false);
                     button.GetComponentInChildren<Button>().onClick.RemoveAllListeners();
                     button.GetComponentInChildren<Text>().text = string.Empty;
@@ -262,15 +239,14 @@ namespace GoogleARCore.Examples.CloudAnchors
                 // Add buttons for each existing match.
                 int i = 0;
 #pragma warning disable 618
-                foreach (var match in m_Manager.matches)
+                foreach (MatchInfoSnapshot match in m_Manager.matches)
 #pragma warning restore 618
                 {
-                    if (i >= k_MatchPageSize)
-                    {
+                    if (i >= k_MatchPageSize) {
                         break;
                     }
 
-                    var text = "Room " + _GetRoomNumberFromNetworkId(match.networkId);
+                    string text = "Room " + _GetRoomNumberFromNetworkId(match.networkId);
                     GameObject button = m_JoinRoomButtonsPool[i++];
                     button.GetComponentInChildren<Text>().text = text;
                     button.GetComponentInChildren<Button>().onClick.AddListener(() =>
@@ -294,8 +270,7 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning restore 618
         {
             m_Manager.OnMatchCreate(success, extendedInfo, matchInfo);
-            if (!success)
-            {
+            if (!success) {
                 SnackbarText.text = "Could not create match: " + extendedInfo;
                 return;
             }
@@ -318,8 +293,7 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning restore 618
         {
             m_Manager.OnMatchJoined(success, extendedInfo, matchInfo);
-            if (!success)
-            {
+            if (!success) {
                 SnackbarText.text = "Could not join to match: " + extendedInfo;
                 return;
             }
@@ -335,19 +309,16 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// </summary>
         /// <param name="visible">If set to <c>true</c> the lobby UI will be visible. It will be
         /// hidden otherwise.</param>
-        private void _ChangeLobbyUIVisibility(bool visible)
-        {
+        private void _ChangeLobbyUIVisibility(bool visible) {
             LobbyScreen.gameObject.SetActive(visible);
             CurrentRoomLabel.gameObject.SetActive(!visible);
-            foreach (GameObject button in m_JoinRoomButtonsPool)
-            {
+            foreach (GameObject button in m_JoinRoomButtonsPool) {
                 bool active = visible && button.GetComponentInChildren<Text>().text != string.Empty;
                 button.SetActive(active);
             }
         }
 
-        private string _GetRoomNumberFromNetworkId(NetworkID networkID)
-        {
+        private string _GetRoomNumberFromNetworkId(NetworkID networkID) {
             return (System.Convert.ToInt64(networkID.ToString()) % 10000).ToString();
         }
     }

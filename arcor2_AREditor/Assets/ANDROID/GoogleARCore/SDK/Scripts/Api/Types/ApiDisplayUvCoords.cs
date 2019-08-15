@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using UnityEngine;
@@ -30,8 +29,7 @@ namespace GoogleARCoreInternal
     [StructLayout(LayoutKind.Sequential)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
         Justification = "Internal")]
-    public struct ApiDisplayUvCoords
-    {
+    public struct ApiDisplayUvCoords {
         /// <summary>
         /// Number of floats contained in this struct.
         /// </summary>
@@ -43,8 +41,7 @@ namespace GoogleARCoreInternal
         public Vector2 BottomRight;
 
         public ApiDisplayUvCoords(Vector2 topLeft, Vector2 topRight,
-            Vector2 bottomLeft, Vector2 bottomRight)
-        {
+            Vector2 bottomLeft, Vector2 bottomRight) {
             TopLeft = topLeft;
             TopRight = topRight;
             BottomLeft = bottomLeft;

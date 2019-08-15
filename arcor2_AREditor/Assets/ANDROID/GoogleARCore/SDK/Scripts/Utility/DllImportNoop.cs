@@ -18,12 +18,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal class DllImportNoop : System.Attribute
-    {
-        public DllImportNoop(string dllName)
-        {
+namespace GoogleARCoreInternal {
+    internal class DllImportNoop : System.Attribute {
+        public DllImportNoop(string dllName) {
         }
     }
 }

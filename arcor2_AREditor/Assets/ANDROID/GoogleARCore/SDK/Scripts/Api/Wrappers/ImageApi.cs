@@ -18,25 +18,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using GoogleARCore;
 
 #if UNITY_IOS && !UNITY_EDITOR
     using AndroidImport = GoogleARCoreInternal.DllImportNoop;
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class ImageApi
-    {
+    internal class ImageApi {
         public void GetImageBuffer(
             IntPtr imageHandle, out int width, out int height, out IntPtr yPlane, out IntPtr uPlane,
-            out IntPtr vPlane, out int yRowStride, out int uvPixelStride, out int uvRowStride)
-        {
+            out IntPtr vPlane, out int yRowStride, out int uvPixelStride, out int uvRowStride) {
             IntPtr ndkImageHandle = IntPtr.Zero;
             ExternApi.ArImage_getNdkImage(imageHandle, ref ndkImageHandle);
 
@@ -70,13 +65,11 @@ namespace GoogleARCoreInternal
             ExternApi.AImage_getPlaneRowStride(ndkImageHandle, U_PLANE, ref uvRowStride);
         }
 
-        public void Release(IntPtr imageHandle)
-        {
+        public void Release(IntPtr imageHandle) {
             ExternApi.ArImage_release(imageHandle);
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArImage_getNdkImage(IntPtr imageHandle, ref IntPtr ndkImage);

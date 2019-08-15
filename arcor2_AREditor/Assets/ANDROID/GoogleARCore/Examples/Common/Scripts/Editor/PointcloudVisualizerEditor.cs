@@ -17,8 +17,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.Common
-{
+namespace GoogleARCore.Examples.Common {
     using System;
     using System.Reflection;
     using UnityEditor;
@@ -29,8 +28,7 @@ namespace GoogleARCore.Examples.Common
     /// </summary>
     [CustomEditor(typeof(PointcloudVisualizer))]
     [CanEditMultipleObjects]
-    public class PointcloudVisualizerEditor : Editor
-    {
+    public class PointcloudVisualizerEditor : Editor {
         private SerializedProperty m_Script;
         private SerializedProperty m_PointColor;
         private SerializedProperty m_DefaultSize;
@@ -43,8 +41,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity OnEnable() method.
         /// </summary>
-        public void OnEnable()
-        {
+        public void OnEnable() {
             m_Script = serializedObject.FindProperty("m_Script");
             m_PointColor = serializedObject.FindProperty("PointColor");
             m_DefaultSize = serializedObject.FindProperty("m_DefaultSize");
@@ -58,15 +55,14 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity OnInspectorGUI() method.
         /// </summary>
-        public override void OnInspectorGUI()
-        {
+        public override void OnInspectorGUI() {
             serializedObject.Update();
 
             GUI.enabled = false;
             EditorGUILayout.PropertyField(m_Script, true, new GUILayoutOption[0]);
             GUI.enabled = true;
 
-            var pointcloudVisualizerScript = target as PointcloudVisualizer;
+            PointcloudVisualizer pointcloudVisualizerScript = target as PointcloudVisualizer;
 
             EditorGUILayout.PropertyField(
                 m_PointColor,
@@ -93,11 +89,9 @@ namespace GoogleARCore.Examples.Common
                     _GetTooltip(pointcloudVisualizerScript, "EnablePopAnimation")));
 
             // Hide animation related fields if the pop animation is disabled.
-            using (var group = new EditorGUILayout.FadeGroupScope(
-                Convert.ToSingle(pointcloudVisualizerScript.EnablePopAnimation)))
-            {
-                if (group.visible == true)
-                {
+            using (EditorGUILayout.FadeGroupScope group = new EditorGUILayout.FadeGroupScope(
+                Convert.ToSingle(pointcloudVisualizerScript.EnablePopAnimation))) {
+                if (group.visible == true) {
                     EditorGUI.indentLevel++;
 
                     EditorGUILayout.PropertyField(
@@ -131,8 +125,7 @@ namespace GoogleARCore.Examples.Common
         /// <returns>The string of the tooltip attribute.</returns>
         /// <param name="obj">The object containing the field.</param>
         /// <param name="fieldName">The field name.</param>
-        private string _GetTooltip(object obj, string fieldName)
-        {
+        private string _GetTooltip(object obj, string fieldName) {
             FieldInfo field =
                 obj.GetType().GetField(
                     fieldName,
@@ -141,7 +134,7 @@ namespace GoogleARCore.Examples.Common
             TooltipAttribute[] attributes =
                 field.GetCustomAttributes(typeof(TooltipAttribute), true) as TooltipAttribute[];
 
-            return attributes.Length > 0 ? attributes[0].tooltip : String.Empty;
+            return attributes.Length > 0 ? attributes[0].tooltip : string.Empty;
         }
     }
 }

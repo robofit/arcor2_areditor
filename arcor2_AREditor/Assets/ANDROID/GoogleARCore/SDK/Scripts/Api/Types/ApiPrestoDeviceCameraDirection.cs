@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiPrestoDeviceCameraDirection
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiPrestoDeviceCameraDirection {
         BackFacing = 0,
         FrontFacing = 1,
     }

@@ -18,14 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
     Justification = "Internal")]
-    public enum ApiFeaturePointOrientationMode
-    {
+    public enum ApiFeaturePointOrientationMode {
         Identity = 0,
         SurfaceNormal = 1,
     }

@@ -17,8 +17,7 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCore.Examples.ComputerVision
-{
+namespace GoogleARCore.Examples.ComputerVision {
     using System;
     using GoogleARCore;
     using UnityEngine;
@@ -26,8 +25,7 @@ namespace GoogleARCore.Examples.ComputerVision
     /// <summary>
     /// Component that provides CPU access to ArCore GPU texture.
     /// </summary>
-    public class TextureReader : MonoBehaviour
-    {
+    public class TextureReader : MonoBehaviour {
         /// <summary>
         /// Output image width, in pixels.
         /// </summary>
@@ -78,8 +76,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// Options to sample the output image.
         /// </summary>
-        public enum SampleMode
-        {
+        public enum SampleMode {
             /// <summary>
             /// Keeps the same aspect ratio as the GPU texture. Crop image if necessary.
             /// </summary>
@@ -92,8 +89,7 @@ namespace GoogleARCore.Examples.ComputerVision
             CoverFullViewport
         }
 
-        private enum CommandType
-        {
+        private enum CommandType {
             None,
             ProcessNextFrame,
             Create,
@@ -105,10 +101,8 @@ namespace GoogleARCore.Examples.ComputerVision
         /// Start is called on the frame when a script is enabled just before
         /// any of the Update methods is called the first time.
         /// </summary>
-        public void Start()
-        {
-            if (m_TextureReaderApi == null)
-            {
+        public void Start() {
+            if (m_TextureReaderApi == null) {
                 m_TextureReaderApi = new TextureReaderApi();
                 m_Command = CommandType.Create;
                 m_ImageBufferIndex = -1;
@@ -118,81 +112,70 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// This function should be called after any public property is changed.
         /// </summary>
-        public void Apply()
-        {
+        public void Apply() {
             m_Command = CommandType.Reset;
         }
 
         /// <summary>
         /// Update is called every frame, if the MonoBehaviour is enabled.
         /// </summary>
-        public void Update()
-        {
-            if (!enabled)
-            {
+        public void Update() {
+            if (!enabled) {
                 return;
             }
 
             // Process command.
-            switch (m_Command)
-            {
-            case CommandType.Create:
-            {
-                m_TextureReaderApi.Create(
-                    ImageFormat, ImageWidth, ImageHeight,
-                    ImageSampleMode == SampleMode.KeepAspectRatio);
-                break;
-            }
-
-            case CommandType.Reset:
-            {
-                m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
-                m_TextureReaderApi.Destroy();
-                m_TextureReaderApi.Create(
-                    ImageFormat, ImageWidth, ImageHeight,
-                    ImageSampleMode == SampleMode.KeepAspectRatio);
-                m_ImageBufferIndex = -1;
-                break;
-            }
-
-            case CommandType.ReleasePreviousBuffer:
-            {
-                // Clear previously used buffer, and submits a new request.
-                m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
-                m_ImageBufferIndex = -1;
-                break;
-            }
-
-            case CommandType.ProcessNextFrame:
-            {
-                if (m_ImageBufferIndex >= 0)
-                {
-                    // Get image pixels from previously submitted request.
-                    int bufferSize = 0;
-                    IntPtr pixelBuffer =
-                        m_TextureReaderApi.AcquireFrame(m_ImageBufferIndex, ref bufferSize);
-
-                    if (pixelBuffer != IntPtr.Zero && OnImageAvailableCallback != null)
-                    {
-                        OnImageAvailableCallback(
-                            ImageFormat, ImageWidth, ImageHeight, pixelBuffer, bufferSize);
+            switch (m_Command) {
+                case CommandType.Create: {
+                        m_TextureReaderApi.Create(
+                            ImageFormat, ImageWidth, ImageHeight,
+                            ImageSampleMode == SampleMode.KeepAspectRatio);
+                        break;
                     }
 
-                    // Release the texture reader internal buffer.
-                    m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
-                }
+                case CommandType.Reset: {
+                        m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
+                        m_TextureReaderApi.Destroy();
+                        m_TextureReaderApi.Create(
+                            ImageFormat, ImageWidth, ImageHeight,
+                            ImageSampleMode == SampleMode.KeepAspectRatio);
+                        m_ImageBufferIndex = -1;
+                        break;
+                    }
 
-                break;
-            }
+                case CommandType.ReleasePreviousBuffer: {
+                        // Clear previously used buffer, and submits a new request.
+                        m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
+                        m_ImageBufferIndex = -1;
+                        break;
+                    }
 
-            case CommandType.None:
-            default:
-                break;
+                case CommandType.ProcessNextFrame: {
+                        if (m_ImageBufferIndex >= 0) {
+                            // Get image pixels from previously submitted request.
+                            int bufferSize = 0;
+                            IntPtr pixelBuffer =
+                                m_TextureReaderApi.AcquireFrame(m_ImageBufferIndex, ref bufferSize);
+
+                            if (pixelBuffer != IntPtr.Zero && OnImageAvailableCallback != null) {
+                                OnImageAvailableCallback(
+                                    ImageFormat, ImageWidth, ImageHeight, pixelBuffer, bufferSize);
+                            }
+
+                            // Release the texture reader internal buffer.
+                            m_TextureReaderApi.ReleaseFrame(m_ImageBufferIndex);
+                        }
+
+                        break;
+                    }
+
+                case CommandType.None:
+                default:
+                    break;
             }
 
             // Submit reading request for the next frame.
-            if (Frame.CameraImage.Texture != null)
-            {
+            if (Frame.CameraImage.Texture != null) {
                 int textureId = Frame.CameraImage.Texture.GetNativeTexturePtr().ToInt32();
                 m_ImageBufferIndex = m_TextureReaderApi.SubmitFrame(
                     textureId, k_ARCoreTextureWidth, k_ARCoreTextureHeight);
@@ -205,10 +188,8 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// This function is called when the MonoBehaviour will be destroyed.
         /// </summary>
-        private void OnDestroy()
-        {
-            if (m_TextureReaderApi != null)
-            {
+        private void OnDestroy() {
+            if (m_TextureReaderApi != null) {
                 m_TextureReaderApi.Destroy();
                 m_TextureReaderApi = null;
             }
@@ -217,8 +198,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// This function is called when the behaviour becomes disabled or inactive.
         /// </summary>
-        private void OnDisable()
-        {
+        private void OnDisable() {
             // Force to release previously used buffer.
             m_Command = CommandType.ReleasePreviousBuffer;
         }

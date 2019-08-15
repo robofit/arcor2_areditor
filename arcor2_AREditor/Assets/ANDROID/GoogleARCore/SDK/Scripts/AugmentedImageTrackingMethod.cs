@@ -17,14 +17,12 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Indicates whether an image is being tracked using the camera image,
     /// or is being tracked based on its last known pose.
     /// </summary>
-    public enum AugmentedImageTrackingMethod
-    {
+    public enum AugmentedImageTrackingMethod {
         /// <summary>
         /// The Augmented Image is not currently being tracked.
         /// This state indicates that the image's <see cref="TrackingState"/> is

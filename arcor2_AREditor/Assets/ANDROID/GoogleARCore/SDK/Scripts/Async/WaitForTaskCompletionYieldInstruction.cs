@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
     using GoogleARCore;
     using UnityEngine;
@@ -28,8 +27,7 @@ namespace GoogleARCoreInternal
     /// A yield instruction that blocks a coroutine until an AsyncTask has completed.
     /// </summary>
     /// <typeparam name="T">The type of the AsyncTask result.</typeparam>
-    public class WaitForTaskCompletionYieldInstruction<T> : CustomYieldInstruction
-    {
+    public class WaitForTaskCompletionYieldInstruction<T> : CustomYieldInstruction {
         /// <summary>
         /// The AsyncTask the yield instruction waits on.
         /// </summary>
@@ -39,8 +37,7 @@ namespace GoogleARCoreInternal
         /// Constructor for WaitForTaskCompletionYieldInstruction.
         /// </summary>
         /// <param name="task">The task to wait for completion.</param>
-        public WaitForTaskCompletionYieldInstruction(AsyncTask<T> task)
-        {
+        public WaitForTaskCompletionYieldInstruction(AsyncTask<T> task) {
             m_Task = task;
         }
 
@@ -50,10 +47,8 @@ namespace GoogleARCoreInternal
         /// <value><c>true</c> if the task is incomplete, otherwise <c>false</c>.</value>
         [SuppressMessage("UnityRules.UnityStyleRules", "US1000:FieldsMustBeUpperCamelCase",
          Justification = "Overridden method.")]
-        public override bool keepWaiting
-        {
-            get
-            {
+        public override bool keepWaiting {
+            get {
                 return !m_Task.IsComplete;
             }
         }

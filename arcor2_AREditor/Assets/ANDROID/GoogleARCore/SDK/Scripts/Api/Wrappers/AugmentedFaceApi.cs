@@ -18,12 +18,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using GoogleARCoreInternal;
     using UnityEngine;
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -31,25 +29,21 @@ namespace GoogleARCoreInternal
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class AugmentedFaceApi
-    {
+    internal class AugmentedFaceApi {
         private NativeSession m_NativeSession;
         private float[] m_TempVertices;
         private float[] m_TempNormals;
         private float[] m_TempUVs;
         private short[] m_TempIndices;
 
-        public AugmentedFaceApi(NativeSession nativeSession)
-        {
+        public AugmentedFaceApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public Pose GetCenterPose(IntPtr faceHandle)
-        {
-            var poseHandle = m_NativeSession.PoseApi.Create();
+        public Pose GetCenterPose(IntPtr faceHandle) {
+            IntPtr poseHandle = m_NativeSession.PoseApi.Create();
             ExternApi.ArAugmentedFace_getCenterPose(
                 m_NativeSession.SessionHandle, faceHandle, poseHandle);
             Pose resultPose = m_NativeSession.PoseApi.ExtractPoseValue(poseHandle);
@@ -57,9 +51,8 @@ namespace GoogleARCoreInternal
             return resultPose;
         }
 
-        public Pose GetRegionPose(IntPtr faceHandle, ApiAugmentedFaceRegionType regionType)
-        {
-            var poseHandle = m_NativeSession.PoseApi.Create();
+        public Pose GetRegionPose(IntPtr faceHandle, ApiAugmentedFaceRegionType regionType) {
+            IntPtr poseHandle = m_NativeSession.PoseApi.Create();
             ExternApi.ArAugmentedFace_getRegionPose(
                 m_NativeSession.SessionHandle, faceHandle, regionType, poseHandle);
             Pose resultPose = m_NativeSession.PoseApi.ExtractPoseValue(poseHandle);
@@ -67,15 +60,13 @@ namespace GoogleARCoreInternal
             return resultPose;
         }
 
-        public void GetVertices(IntPtr faceHandle, List<Vector3> vertices)
-        {
+        public void GetVertices(IntPtr faceHandle, List<Vector3> vertices) {
             IntPtr verticesHandle = IntPtr.Zero;
             int verticesNum = 0;
             ExternApi.ArAugmentedFace_getMeshVertices(m_NativeSession.SessionHandle, faceHandle,
                 ref verticesHandle, ref verticesNum);
             int floatNum = verticesNum * 3;
-            if (m_TempVertices == null || m_TempVertices.Length != floatNum)
-            {
+            if (m_TempVertices == null || m_TempVertices.Length != floatNum) {
                 m_TempVertices = new float[floatNum];
             }
 
@@ -83,22 +74,19 @@ namespace GoogleARCoreInternal
 
             vertices.Clear();
             vertices.Capacity = verticesNum;
-            for (int i = 0; i < floatNum; i += 3)
-            {
+            for (int i = 0; i < floatNum; i += 3) {
                 vertices.Add(
                     new Vector3(m_TempVertices[i], m_TempVertices[i + 1], -m_TempVertices[i + 2]));
             }
         }
 
-        public void GetNormals(IntPtr faceHandle, List<Vector3> normals)
-        {
+        public void GetNormals(IntPtr faceHandle, List<Vector3> normals) {
             IntPtr normalsHandle = IntPtr.Zero;
             int verticesNum = 0;
             ExternApi.ArAugmentedFace_getMeshNormals(m_NativeSession.SessionHandle, faceHandle,
                 ref normalsHandle, ref verticesNum);
             int floatNum = verticesNum * 3;
-            if (m_TempNormals == null || m_TempNormals.Length != floatNum)
-            {
+            if (m_TempNormals == null || m_TempNormals.Length != floatNum) {
                 m_TempNormals = new float[floatNum];
             }
 
@@ -106,22 +94,19 @@ namespace GoogleARCoreInternal
 
             normals.Clear();
             normals.Capacity = verticesNum;
-            for (int i = 0; i < floatNum; i += 3)
-            {
+            for (int i = 0; i < floatNum; i += 3) {
                 normals.Add(
                     new Vector3(m_TempNormals[i], m_TempNormals[i + 1], -m_TempNormals[i + 2]));
             }
         }
 
-        public void GetTextureCoordinates(IntPtr faceHandle, List<Vector2> textureCoordinates)
-        {
+        public void GetTextureCoordinates(IntPtr faceHandle, List<Vector2> textureCoordinates) {
             IntPtr textureCoordinatesHandle = IntPtr.Zero;
             int uvNum = 0;
             ExternApi.ArAugmentedFace_getMeshTextureCoordinates(
                 m_NativeSession.SessionHandle, faceHandle, ref textureCoordinatesHandle, ref uvNum);
             int floatNum = uvNum * 2;
-            if (m_TempUVs == null || m_TempUVs.Length != floatNum)
-            {
+            if (m_TempUVs == null || m_TempUVs.Length != floatNum) {
                 m_TempUVs = new float[floatNum];
             }
 
@@ -129,22 +114,19 @@ namespace GoogleARCoreInternal
 
             textureCoordinates.Clear();
             textureCoordinates.Capacity = uvNum;
-            for (int i = 0; i < floatNum; i += 2)
-            {
+            for (int i = 0; i < floatNum; i += 2) {
                 textureCoordinates.Add(new Vector2(m_TempUVs[i], m_TempUVs[i + 1]));
             }
         }
 
-        public void GetTriangleIndices(IntPtr faceHandle, List<int> indices)
-        {
+        public void GetTriangleIndices(IntPtr faceHandle, List<int> indices) {
             IntPtr triangleIndicesHandle = IntPtr.Zero;
             int triangleNum = 0;
             ExternApi.ArAugmentedFace_getMeshTriangleIndices(
                 m_NativeSession.SessionHandle, faceHandle, ref triangleIndicesHandle,
                 ref triangleNum);
             int indicesNum = triangleNum * 3;
-            if (m_TempIndices == null || m_TempIndices.Length != indicesNum)
-            {
+            if (m_TempIndices == null || m_TempIndices.Length != indicesNum) {
                 m_TempIndices = new short[indicesNum];
             }
 
@@ -152,16 +134,14 @@ namespace GoogleARCoreInternal
 
             indices.Clear();
             indices.Capacity = indicesNum;
-            for (int i = 0; i < indicesNum; i += 3)
-            {
+            for (int i = 0; i < indicesNum; i += 3) {
                 indices.Add(m_TempIndices[i]);
                 indices.Add(m_TempIndices[i + 2]);
                 indices.Add(m_TempIndices[i + 1]);
             }
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
@@ -171,22 +151,22 @@ namespace GoogleARCoreInternal
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAugmentedFace_getMeshVertices(
                 IntPtr sessionHandle, IntPtr faceHandle, ref IntPtr vertices,
-                ref Int32 numberOfVertices);
+                ref int numberOfVertices);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAugmentedFace_getMeshNormals(
                 IntPtr sessionHandle, IntPtr faceHandle, ref IntPtr normals,
-                ref Int32 numberOfVertices);
+                ref int numberOfVertices);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAugmentedFace_getMeshTextureCoordinates(
                 IntPtr sessionHandle, IntPtr faceHandle, ref IntPtr uvs,
-                ref Int32 numberOfVertices);
+                ref int numberOfVertices);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAugmentedFace_getMeshTriangleIndices(
                 IntPtr sessionHandle, IntPtr faceHandle, ref IntPtr indices,
-                ref Int32 numberOfTriangles);
+                ref int numberOfTriangles);
 
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArAugmentedFace_getRegionPose(

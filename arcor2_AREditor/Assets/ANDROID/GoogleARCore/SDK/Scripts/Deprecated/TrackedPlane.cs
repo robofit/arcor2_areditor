@@ -17,11 +17,9 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using GoogleARCoreInternal;
-    using UnityEngine;
 
     /// <summary>
     /// Deprecated version of DetectedPlane.
@@ -29,27 +27,23 @@ namespace GoogleARCore
     [System.Obsolete(
         "This class has been renamed to DetectedPlane. See " +
         "https://github.com/google-ar/arcore-unity-sdk/releases/tag/v1.2.0")]
-    public class TrackedPlane : DetectedPlane
-    {
+    public class TrackedPlane : DetectedPlane {
         /// <summary>
         /// Construct TrackedPlane from a native handle.
         /// </summary>
         /// <param name="nativeHandle">A handle to the native ARCore API Trackable.</param>
         /// <param name="nativeApi">The ARCore native api.</param>
         internal TrackedPlane(IntPtr nativeHandle, NativeSession nativeApi)
-            : base(nativeHandle, nativeApi)
-        {
+            : base(nativeHandle, nativeApi) {
         }
 
         /// <summary>
         /// Gets a reference to the plane subsuming this plane, if any.  If not null, only the
         /// subsuming plane should be considered valid for rendering.
         /// </summary>
-        public new TrackedPlane SubsumedBy
-        {
-            get
-            {
-                return (TrackedPlane)base.SubsumedBy;
+        public new TrackedPlane SubsumedBy {
+            get {
+                return (TrackedPlane) base.SubsumedBy;
             }
         }
     }

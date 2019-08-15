@@ -17,8 +17,7 @@
 //
 // </copyright>
 //-----------------------------------------------------------------------
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using GoogleARCoreInternal;
 
@@ -28,26 +27,22 @@ namespace GoogleARCore
     [System.Obsolete(
         "This class has been renamed to FeaturePoint. See " +
         "https://github.com/google-ar/arcore-unity-sdk/releases/tag/v1.2.0")]
-    public class TrackedPoint : FeaturePoint
-    {
+    public class TrackedPoint : FeaturePoint {
         /// <summary>
         /// Construct TrackedPoint from a native handle.
         /// </summary>
         /// <param name="nativeHandle">A handle to the native ARCore API Trackable.</param>
         /// <param name="nativeApi">The ARCore native api.</param>
         internal TrackedPoint(IntPtr nativeHandle, NativeSession nativeApi) :
-            base(nativeHandle, nativeApi)
-        {
+            base(nativeHandle, nativeApi) {
         }
 
         /// <summary>
         /// Gets the orientation mode of the TrackedPoint.
         /// </summary>
-        public new TrackedPointOrientationMode OrientationMode
-        {
-            get
-            {
-                return (TrackedPointOrientationMode)base.OrientationMode;
+        public new TrackedPointOrientationMode OrientationMode {
+            get {
+                return (TrackedPointOrientationMode) base.OrientationMode;
             }
         }
     }

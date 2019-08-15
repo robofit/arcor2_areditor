@@ -17,23 +17,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.Common
-{
-    using System.Collections;
+namespace GoogleARCore.Examples.Common {
     using UnityEngine;
 
     /// <summary>
     /// A helper component that scale the UI rect to the same size as the safe area.
     /// </summary>
-    public class SafeAreaScaler : MonoBehaviour
-    {
+    public class SafeAreaScaler : MonoBehaviour {
         private Rect m_ScreenSafeArea = new Rect(0, 0, 0, 0);
 
         /// <summary>
         /// Unity's Awake() method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             Rect safeArea;
 #if UNITY_2017_2_OR_NEWER
             safeArea = Screen.safeArea;
@@ -41,15 +37,13 @@ namespace GoogleARCore.Examples.Common
             safeArea = new Rect(0, 0, Screen.width, Screen.height);
 #endif
 
-            if (m_ScreenSafeArea != safeArea)
-            {
+            if (m_ScreenSafeArea != safeArea) {
                 m_ScreenSafeArea = safeArea;
                 _MatchRectTransformToSafeArea();
             }
         }
 
-        private void _MatchRectTransformToSafeArea()
-        {
+        private void _MatchRectTransformToSafeArea() {
             RectTransform rectTransform = GetComponent<RectTransform>();
 
             // lower left corner offset

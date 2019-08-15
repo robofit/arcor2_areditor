@@ -17,8 +17,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.Common
-{
+namespace GoogleARCore.Examples.Common {
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -28,8 +27,7 @@ namespace GoogleARCore.Examples.Common
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
-    public class PointcloudVisualizer : MonoBehaviour
-    {
+    public class PointcloudVisualizer : MonoBehaviour {
         /// <summary>
         /// The color of the feature points.
         /// </summary>
@@ -120,12 +118,10 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
-        public void Start()
-        {
+        public void Start() {
             m_MeshRenderer = GetComponent<MeshRenderer>();
             m_Mesh = GetComponent<MeshFilter>().mesh;
-            if (m_Mesh == null)
-            {
+            if (m_Mesh == null) {
                 m_Mesh = new Mesh();
             }
 
@@ -148,41 +144,33 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// The Unity OnDisable() method.
         /// </summary>
-        public void OnDisable()
-        {
+        public void OnDisable() {
             _ClearCachedPoints();
         }
 
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             // If ARCore is not tracking, clear the caches and don't update.
-            if (Session.Status != SessionStatus.Tracking)
-            {
+            if (Session.Status != SessionStatus.Tracking) {
                 _ClearCachedPoints();
                 return;
             }
 
             if (Screen.currentResolution.height != m_CachedResolution.height
-                || Screen.currentResolution.width != m_CachedResolution.width)
-            {
+                || Screen.currentResolution.width != m_CachedResolution.width) {
                 _UpdateResolution();
             }
 
-            if (m_CachedColor != PointColor)
-            {
+            if (m_CachedColor != PointColor) {
                 _UpdateColor();
             }
 
-            if (EnablePopAnimation)
-            {
+            if (EnablePopAnimation) {
                 _AddPointsIncrementallyToCache();
                 _UpdatePointSize();
-            }
-            else
-            {
+            } else {
                 _AddAllPointsToCache();
             }
 
@@ -192,8 +180,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Clears all cached feature points.
         /// </summary>
-        private void _ClearCachedPoints()
-        {
+        private void _ClearCachedPoints() {
             m_CachedPoints.Clear();
             m_Mesh.Clear();
         }
@@ -201,11 +188,9 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Updates the screen resolution.
         /// </summary>
-        private void _UpdateResolution()
-        {
+        private void _UpdateResolution() {
             m_CachedResolution = Screen.currentResolution;
-            if (m_MeshRenderer != null)
-            {
+            if (m_MeshRenderer != null) {
                 m_MeshRenderer.GetPropertyBlock(m_PropertyBlock);
                 m_PropertyBlock.SetFloat(m_ScreenWidthId, m_CachedResolution.width);
                 m_PropertyBlock.SetFloat(m_ScreenHeightId, m_CachedResolution.height);
@@ -216,8 +201,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Updates the color of the feature points.
         /// </summary>
-        private void _UpdateColor()
-        {
+        private void _UpdateColor() {
             m_CachedColor = PointColor;
             m_MeshRenderer.GetPropertyBlock(m_PropertyBlock);
             m_PropertyBlock.SetColor("_Color", m_CachedColor);
@@ -227,13 +211,10 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Adds points incrementally to the cache, by selecting points at random each frame.
         /// </summary>
-        private void _AddPointsIncrementallyToCache()
-        {
-            if (Frame.PointCloud.PointCount > 0 && Frame.PointCloud.IsUpdatedThisFrame)
-            {
+        private void _AddPointsIncrementallyToCache() {
+            if (Frame.PointCloud.PointCount > 0 && Frame.PointCloud.IsUpdatedThisFrame) {
                 int iterations = Mathf.Min(MaxPointsToAddPerFrame, Frame.PointCloud.PointCount);
-                for (int i = 0; i < iterations; i++)
-                {
+                for (int i = 0; i < iterations; i++) {
                     Vector3 point = Frame.PointCloud.GetPointAsStruct(
                         Random.Range(0, Frame.PointCloud.PointCount - 1));
 
@@ -245,12 +226,9 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Adds all points from this frame's pointcloud to the cache.
         /// </summary>
-        private void _AddAllPointsToCache()
-        {
-            if (Frame.PointCloud.IsUpdatedThisFrame)
-            {
-                for (int i = 0; i < Frame.PointCloud.PointCount; i++)
-                {
+        private void _AddAllPointsToCache() {
+            if (Frame.PointCloud.IsUpdatedThisFrame) {
+                for (int i = 0; i < Frame.PointCloud.PointCount; i++) {
                     _AddPointToCache(Frame.PointCloud.GetPointAsStruct(i));
                 }
             }
@@ -260,10 +238,8 @@ namespace GoogleARCore.Examples.Common
         /// Adds the specified point to cache.
         /// </summary>
         /// <param name="point">A feature point to be added.</param>
-        private void _AddPointToCache(Vector3 point)
-        {
-            if (m_CachedPoints.Count >= m_MaxPointCount)
-            {
+        private void _AddPointToCache(Vector3 point) {
+            if (m_CachedPoints.Count >= m_MaxPointCount) {
                 m_CachedPoints.RemoveFirst();
             }
 
@@ -275,32 +251,25 @@ namespace GoogleARCore.Examples.Common
         /// Updates the size of the feature points, producing a pop animation where the size
         /// increases to a maximum size and then goes back to the original size.
         /// </summary>
-        private void _UpdatePointSize()
-        {
-            if (m_CachedPoints.Count <= 0 || !EnablePopAnimation)
-            {
+        private void _UpdatePointSize() {
+            if (m_CachedPoints.Count <= 0 || !EnablePopAnimation) {
                 return;
             }
 
             LinkedListNode<PointInfo> pointNode;
 
-            for (pointNode = m_CachedPoints.First; pointNode != null; pointNode = pointNode.Next)
-            {
+            for (pointNode = m_CachedPoints.First; pointNode != null; pointNode = pointNode.Next) {
                 float timeSinceAdded = Time.time - pointNode.Value.CreationTime;
-                if (timeSinceAdded >= AnimationDuration)
-                {
+                if (timeSinceAdded >= AnimationDuration) {
                     continue;
                 }
 
                 float value = timeSinceAdded / AnimationDuration;
                 float size = 0f;
 
-                if (value < 0.5f)
-                {
+                if (value < 0.5f) {
                     size = Mathf.Lerp(m_DefaultSize, m_PopSize, value * 2f);
-                }
-                else
-                {
+                } else {
                     size = Mathf.Lerp(m_PopSize, m_DefaultSize, (value - 0.5f) * 2f);
                 }
 
@@ -312,8 +281,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Updates the mesh, adding the feature points.
         /// </summary>
-        private void _UpdateMesh()
-        {
+        private void _UpdateMesh() {
             m_Mesh.Clear();
             m_Mesh.vertices = m_CachedPoints.Select(p => p.Position).ToArray();
             m_Mesh.uv = m_CachedPoints.Select(p => p.Size).ToArray();
@@ -324,8 +292,7 @@ namespace GoogleARCore.Examples.Common
         /// <summary>
         /// Contains the information of a feature point.
         /// </summary>
-        private struct PointInfo
-        {
+        private struct PointInfo {
             /// <summary>
             /// The position of the point.
             /// </summary>
@@ -341,8 +308,7 @@ namespace GoogleARCore.Examples.Common
             /// </summary>
             public float CreationTime;
 
-            public PointInfo(Vector3 position, Vector2 size, float creationTime)
-            {
+            public PointInfo(Vector3 position, Vector2 size, float creationTime) {
                 Position = position;
                 Size = size;
                 CreationTime = creationTime;

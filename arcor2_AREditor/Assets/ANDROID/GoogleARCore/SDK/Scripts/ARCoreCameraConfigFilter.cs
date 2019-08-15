@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using UnityEngine;
 
@@ -42,8 +41,7 @@ namespace GoogleARCore
         fileName = "ARCoreCameraConfigFilter",
         menuName = "Google ARCore/CameraConfigFilter",
         order = 2)]
-    public class ARCoreCameraConfigFilter : ScriptableObject
-    {
+    public class ARCoreCameraConfigFilter : ScriptableObject {
         /// <summary>
         /// Camera Frame Rates Filter.
         /// </summary>
@@ -57,27 +55,20 @@ namespace GoogleARCore
         /// <summary>
         /// Unity OnValidate().
         /// </summary>
-        public void OnValidate()
-        {
-            if (!TargetCameraFramerate.Target30FPS && !TargetCameraFramerate.Target60FPS)
-            {
+        public void OnValidate() {
+            if (!TargetCameraFramerate.Target30FPS && !TargetCameraFramerate.Target60FPS) {
                 Debug.LogError("No options in Target Camera Framerate are selected, " +
                     "there will be no camera configs and this app will fail to run.");
-            }
-            else if (!TargetCameraFramerate.Target30FPS)
-            {
+            } else if (!TargetCameraFramerate.Target30FPS) {
                 Debug.LogWarning("Framerate30FPS is not selected, this may cause " +
                     "no camera config be available for this filter and " +
                     "the app may not run on all devices.");
             }
 
-            if (!DepthSensorUsage.DoNotUse && !DepthSensorUsage.RequireAndUse)
-            {
+            if (!DepthSensorUsage.DoNotUse && !DepthSensorUsage.RequireAndUse) {
                 Debug.LogError("No options in Depth Senor Usage are selected, " +
                     "there will be no camera configs and this app will fail to run.");
-            }
-            else if (!DepthSensorUsage.DoNotUse)
-            {
+            } else if (!DepthSensorUsage.DoNotUse) {
                 Debug.LogWarning("DoNotUseDepthSensor is not selected, this may cause " +
                     "no camera config be available for this filter and " +
                     "the app may not run on all devices.");
@@ -88,8 +79,7 @@ namespace GoogleARCore
         /// Target Camera Frame Rates.
         /// </summary>
         [Serializable]
-        public class TargetCameraFramerateFilter
-        {
+        public class TargetCameraFramerateFilter {
             /// <summary>
             /// Target 30fps camera capture frame rate.
             ///
@@ -116,8 +106,7 @@ namespace GoogleARCore
         /// Depth Sensor Usage.
         /// </summary>
         [Serializable]
-        public class DepthSensorUsageFilter
-        {
+        public class DepthSensorUsageFilter {
             /// <summary>
             /// Filters for camera configs that require a depth sensor to be present on the device,
             /// and that will be used by ARCore.

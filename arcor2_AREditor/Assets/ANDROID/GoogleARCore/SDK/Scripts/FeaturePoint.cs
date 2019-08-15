@@ -18,38 +18,30 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using GoogleARCoreInternal;
     using UnityEngine;
 
     /// <summary>
     /// A point in the real world tracked by ARCore.
     /// </summary>
-    public class FeaturePoint : Trackable
-    {
+    public class FeaturePoint : Trackable {
         /// <summary>
         /// Construct FeaturePoint from a native handle.
         /// </summary>
         /// <param name="nativeHandle">A handle to the native ARCore API Trackable.</param>
         /// <param name="nativeApi">The ARCore native api.</param>
         internal FeaturePoint(IntPtr nativeHandle, NativeSession nativeApi) :
-            base(nativeHandle, nativeApi)
-        {
+            base(nativeHandle, nativeApi) {
         }
 
         /// <summary>
         /// Gets the pose of the FeaturePoint.
         /// </summary>
-        public Pose Pose
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public Pose Pose {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "Pose:: Trying to access a session that has already been destroyed.");
                     return new Pose();
@@ -62,14 +54,11 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the orientation mode of the FeaturePoint.
         /// </summary>
-        public FeaturePointOrientationMode OrientationMode
-        {
+        public FeaturePointOrientationMode OrientationMode {
             [SuppressMemoryAllocationError(
                 IsWarning = true, Reason = "Requires further investigation.")]
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "OrientationMode:: Trying to access a session that has already been " +
                         "destroyed.");

@@ -18,16 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-
+namespace GoogleARCore {
     /// <summary>
     /// Extension methods for the SessionStatus enumeration.
     /// </summary>
-    public static class SessionStatusExtensions
-    {
+    public static class SessionStatusExtensions {
         private const int k_NotInitializedGroupStart = 0;
         private const int k_ValidSessionGroupStart = 100;
         private const int k_ErrorGroupStart = 200;
@@ -38,9 +33,8 @@ namespace GoogleARCore
         /// <param name="status">The SessionStatus to check.</param>
         /// <returns><c>true</c> if the SessionStatus is not initialized, otherwise
         /// <c>false</c>.</returns>
-        public static bool IsNotInitialized(this SessionStatus status)
-        {
-            int normalizedValue = (int)status - k_NotInitializedGroupStart;
+        public static bool IsNotInitialized(this SessionStatus status) {
+            int normalizedValue = (int) status - k_NotInitializedGroupStart;
             return normalizedValue >= 0 && normalizedValue < 100;
         }
 
@@ -50,9 +44,8 @@ namespace GoogleARCore
         /// <param name="status">The SessionStatus to check.</param>
         /// <returns><c>true</c> if the SessionStatus is initialized and valid,
         /// otherwise <c>false</c>.</returns>
-        public static bool IsValid(this SessionStatus status)
-        {
-            int normalizedValue = (int)status - k_ValidSessionGroupStart;
+        public static bool IsValid(this SessionStatus status) {
+            int normalizedValue = (int) status - k_ValidSessionGroupStart;
             return normalizedValue >= 0 && normalizedValue < 100;
         }
 
@@ -62,9 +55,8 @@ namespace GoogleARCore
         /// <param name="status">The SessionStatus to check.</param>
         /// <returns><c>true</c> if the SessionStatus is an error,
         /// otherwise <c>false</c>.</returns>
-        public static bool IsError(this SessionStatus status)
-        {
-            int normalizedValue = (int)status - k_ErrorGroupStart;
+        public static bool IsError(this SessionStatus status) {
+            int normalizedValue = (int) status - k_ErrorGroupStart;
             return normalizedValue >= 0 && normalizedValue < 100;
         }
     }

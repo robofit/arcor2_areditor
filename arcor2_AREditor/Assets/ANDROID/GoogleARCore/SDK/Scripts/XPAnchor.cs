@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
+namespace GoogleARCore.CrossPlatform {
     using System;
     using System.Collections.Generic;
     using GoogleARCoreInternal;
@@ -31,8 +30,7 @@ namespace GoogleARCore.CrossPlatform
     /// </summary>
     [HelpURL("https://developers.google.com/ar/reference/unity/class/GoogleARCore/CrossPlatform/" +
              "XPAnchor")]
-    public class XPAnchor : MonoBehaviour
-    {
+    public class XPAnchor : MonoBehaviour {
         private static Dictionary<IntPtr, XPAnchor> s_AnchorDict =
             new Dictionary<IntPtr, XPAnchor>(new GoogleARCoreInternal.IntPtrEqualityComparer());
 
@@ -45,17 +43,16 @@ namespace GoogleARCore.CrossPlatform
         /// created via <c>XPSession.CreateCloudAnchor</c> and <c>XPSession.ResolveCloudAnchor</c>
         /// will have a cloud id.
         /// </summary>
-        public string CloudId { get; private set; }
+        public string CloudId {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the tracking state of the cross-platform anchor.
         /// </summary>
-        public XPTrackingState TrackingState
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public XPTrackingState TrackingState {
+            get {
+                if (_IsSessionDestroyed()) {
                     // Anchors from another session are considered stopped.
                     return XPTrackingState.Stopped;
                 }
@@ -65,37 +62,37 @@ namespace GoogleARCore.CrossPlatform
             }
         }
 
-        internal NativeSession m_NativeSession { get; private set; }
+        internal NativeSession m_NativeSession {
+            get; private set;
+        }
 
-        internal IntPtr m_NativeHandle { get; private set; }
+        internal IntPtr m_NativeHandle {
+            get; private set;
+        }
 
         internal static XPAnchor Factory(NativeSession nativeSession, IntPtr anchorHandle,
-            bool isCreate = true)
-        {
-            if (anchorHandle == IntPtr.Zero)
-            {
+            bool isCreate = true) {
+            if (anchorHandle == IntPtr.Zero) {
                 return null;
             }
 
             XPAnchor result;
-            if (s_AnchorDict.TryGetValue(anchorHandle, out result))
-            {
+            if (s_AnchorDict.TryGetValue(anchorHandle, out result)) {
                 // Release acquired handle and return cached result
                 result.m_NativeSession.AnchorApi.Release(anchorHandle);
                 return result;
             }
 
-            if (isCreate)
-            {
-               XPAnchor anchor = (new GameObject()).AddComponent<XPAnchor>();
-               anchor.gameObject.name = "XPAnchor";
-               anchor.CloudId = nativeSession.AnchorApi.GetCloudAnchorId(anchorHandle);
-               anchor.m_NativeHandle = anchorHandle;
-               anchor.m_NativeSession = nativeSession;
-               anchor.Update();
+            if (isCreate) {
+                XPAnchor anchor = (new GameObject()).AddComponent<XPAnchor>();
+                anchor.gameObject.name = "XPAnchor";
+                anchor.CloudId = nativeSession.AnchorApi.GetCloudAnchorId(anchorHandle);
+                anchor.m_NativeHandle = anchorHandle;
+                anchor.m_NativeSession = nativeSession;
+                anchor.Update();
 
-               s_AnchorDict.Add(anchorHandle, anchor);
-               return anchor;
+                s_AnchorDict.Add(anchorHandle, anchor);
+                return anchor;
             }
 
             return null;
@@ -104,31 +101,26 @@ namespace GoogleARCore.CrossPlatform
         /// <summary>
         /// The Unity Update method.
         /// </summary>
-        private void Update()
-        {
-            if (m_NativeHandle == IntPtr.Zero)
-            {
+        private void Update() {
+            if (m_NativeHandle == IntPtr.Zero) {
                 Debug.LogError(
                     "Anchor components instantiated outside of ARCore are not supported. " +
                     "Please use a 'Create' method within ARCore to instantiate anchors.");
                 return;
             }
 
-            if (_IsSessionDestroyed())
-            {
+            if (_IsSessionDestroyed()) {
                 return;
             }
 
-            var pose = m_NativeSession.AnchorApi.GetPose(m_NativeHandle);
+            Pose pose = m_NativeSession.AnchorApi.GetPose(m_NativeHandle);
             transform.position = pose.position;
             transform.rotation = pose.rotation;
 
-            var currentFrameTrackingState = TrackingState;
-            if (m_LastFrameTrackingState != currentFrameTrackingState)
-            {
+            XPTrackingState currentFrameTrackingState = TrackingState;
+            if (m_LastFrameTrackingState != currentFrameTrackingState) {
                 bool isAnchorTracking = currentFrameTrackingState == XPTrackingState.Tracking;
-                foreach (Transform child in transform)
-                {
+                foreach (Transform child in transform) {
                     child.gameObject.SetActive(isAnchorTracking);
                 }
 
@@ -136,10 +128,8 @@ namespace GoogleARCore.CrossPlatform
             }
         }
 
-        private void OnDestroy()
-        {
-            if (m_NativeHandle == IntPtr.Zero)
-            {
+        private void OnDestroy() {
+            if (m_NativeHandle == IntPtr.Zero) {
                 return;
             }
 
@@ -148,13 +138,10 @@ namespace GoogleARCore.CrossPlatform
             m_NativeSession.AnchorApi.Release(m_NativeHandle);
         }
 
-        private bool _IsSessionDestroyed()
-        {
-            if (!m_IsSessionDestroyed)
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession != m_NativeSession)
-                {
+        private bool _IsSessionDestroyed() {
+            if (!m_IsSessionDestroyed) {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession != m_NativeSession) {
                     Debug.LogErrorFormat(
                         "The session which created this anchor has been destroyed. " +
                         "The anchor on GameObject {0} can no longer update.",

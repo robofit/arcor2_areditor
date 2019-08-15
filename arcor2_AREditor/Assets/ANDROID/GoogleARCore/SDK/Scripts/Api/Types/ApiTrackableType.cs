@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiTrackableType
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiTrackableType {
         Invalid = 0,
         BaseTrackable = 0x41520100,
         Plane = 0x41520101,

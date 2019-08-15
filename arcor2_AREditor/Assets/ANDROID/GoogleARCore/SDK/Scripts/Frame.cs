@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
     using GoogleARCoreInternal;
@@ -31,8 +30,7 @@ namespace GoogleARCore
     /// pose of the camera relative to the world, estimated lighting parameters, and information on
     /// updates to objects (like Planes or Point Clouds) that ARCore is tracking.
     /// </summary>
-    public class Frame
-    {
+    public class Frame {
         //// @cond EXCLUDE_FROM_DOXYGEN
 
         private static List<TrackableHit> s_TmpTrackableHitList = new List<TrackableHit>();
@@ -42,17 +40,14 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the pose of the ARCore device for the frame in Unity world coordinates.
         /// </summary>
-        public static Pose Pose
-        {
-            get
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+        public static Pose Pose {
+            get {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     return Pose.identity;
                 }
 
-                var cameraHandle = nativeSession.FrameApi.AcquireCamera();
+                IntPtr cameraHandle = nativeSession.FrameApi.AcquireCamera();
                 Pose result = nativeSession.CameraApi.GetPose(cameraHandle);
                 nativeSession.CameraApi.Release(cameraHandle);
                 return result;
@@ -62,16 +57,13 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the current light estimate for this frame.
         /// </summary>
-        public static LightEstimate LightEstimate
-        {
-            get
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                var sessionComponent = LifecycleManager.Instance.SessionComponent;
+        public static LightEstimate LightEstimate {
+            get {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                ARCoreSession sessionComponent = LifecycleManager.Instance.SessionComponent;
                 if (nativeSession == null || sessionComponent == null ||
                     sessionComponent.SessionConfig.LightEstimationMode ==
-                    LightEstimationMode.Disabled)
-                {
+                    LightEstimationMode.Disabled) {
                     return new LightEstimate(LightEstimateState.NotValid, 0.0f, Color.black,
                         Quaternion.LookRotation(Vector3.down), Color.white, null, -1);
                 }
@@ -96,12 +88,10 @@ namespace GoogleARCore
         /// <returns><c>true</c> if the raycast had a hit, otherwise <c>false</c>.</returns>
         [SuppressMemoryAllocationError(IsWarning = true, Reason = "List could be resized")]
         public static bool Raycast(float x, float y, TrackableHitFlags filter,
-            out TrackableHit hitResult)
-        {
+            out TrackableHit hitResult) {
             hitResult = new TrackableHit();
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return false;
             }
 
@@ -109,8 +99,7 @@ namespace GoogleARCore
             bool foundHit = nativeSession.HitTestApi.Raycast(
                 nativeSession.FrameHandle, x, Screen.height - y, filter, s_TmpTrackableHitList);
 
-            if (foundHit && s_TmpTrackableHitList.Count != 0)
-            {
+            if (foundHit && s_TmpTrackableHitList.Count != 0) {
                 hitResult = s_TmpTrackableHitList[0];
             }
 
@@ -134,12 +123,10 @@ namespace GoogleARCore
         public static bool Raycast(
             Vector3 origin, Vector3 direction, out TrackableHit hitResult,
             float maxDistance = Mathf.Infinity,
-            TrackableHitFlags filter = TrackableHitFlags.Default)
-        {
+            TrackableHitFlags filter = TrackableHitFlags.Default) {
             hitResult = new TrackableHit();
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return false;
             }
 
@@ -148,8 +135,7 @@ namespace GoogleARCore
                     nativeSession.FrameHandle, origin, direction, maxDistance, filter,
                     s_TmpTrackableHitList);
 
-            if (foundHit && s_TmpTrackableHitList.Count != 0)
-            {
+            if (foundHit && s_TmpTrackableHitList.Count != 0) {
                 hitResult = s_TmpTrackableHitList[0];
             }
 
@@ -172,12 +158,10 @@ namespace GoogleARCore
         /// <returns><c>true</c> if the raycast had a hit, otherwise <c>false</c>.</returns>
         [SuppressMemoryAllocationError(IsWarning = true, Reason = "List could be resized")]
         public static bool RaycastAll(
-            float x, float y, TrackableHitFlags filter, List<TrackableHit> hitResults)
-        {
+            float x, float y, TrackableHitFlags filter, List<TrackableHit> hitResults) {
             hitResults.Clear();
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return false;
             }
 
@@ -202,12 +186,10 @@ namespace GoogleARCore
         public static bool RaycastAll(
             Vector3 origin, Vector3 direction, List<TrackableHit> hitResults,
             float maxDistance = Mathf.Infinity,
-            TrackableHitFlags filter = TrackableHitFlags.Default)
-        {
+            TrackableHitFlags filter = TrackableHitFlags.Default) {
             hitResults.Clear();
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return false;
             }
 
@@ -218,8 +200,7 @@ namespace GoogleARCore
         /// <summary>
         /// Container for state related to the ARCore camera image metadata for the Frame.
         /// </summary>
-        public static class CameraMetadata
-        {
+        public static class CameraMetadata {
             /// <summary>
             /// Get camera image metadata value. The querying value type needs to match the returned
             /// type.
@@ -230,22 +211,19 @@ namespace GoogleARCore
             /// <returns><c>true</c> if getting metadata value successfully, otherwise
             /// <c>false</c>.</returns>
             public static bool TryGetValues(
-                CameraMetadataTag metadataTag, List<CameraMetadataValue> outMetadataList)
-            {
+                CameraMetadataTag metadataTag, List<CameraMetadataValue> outMetadataList) {
                 outMetadataList.Clear();
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     return false;
                 }
 
                 IntPtr metadataHandle = IntPtr.Zero;
-                if (!nativeSession.FrameApi.AcquireImageMetadata(ref metadataHandle))
-                {
+                if (!nativeSession.FrameApi.AcquireImageMetadata(ref metadataHandle)) {
                     return false;
                 }
 
-                var isSuccess = nativeSession.CameraMetadataApi.TryGetValues(
+                bool isSuccess = nativeSession.CameraMetadataApi.TryGetValues(
                     metadataHandle, metadataTag, outMetadataList);
                 nativeSession.CameraMetadataApi.Release(metadataHandle);
                 return isSuccess;
@@ -256,22 +234,19 @@ namespace GoogleARCore
             /// </summary>
             /// <param name="outMetadataTags">Result list of the tags.</param>
             /// <returns><c>true</c> if getting tags successfully, otherwise <c>false</c>.</returns>
-            public static bool GetAllCameraMetadataTags(List<CameraMetadataTag> outMetadataTags)
-            {
+            public static bool GetAllCameraMetadataTags(List<CameraMetadataTag> outMetadataTags) {
                 outMetadataTags.Clear();
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     return false;
                 }
 
                 IntPtr metadataHandle = IntPtr.Zero;
-                if (!nativeSession.FrameApi.AcquireImageMetadata(ref metadataHandle))
-                {
+                if (!nativeSession.FrameApi.AcquireImageMetadata(ref metadataHandle)) {
                     return false;
                 }
 
-                var isSuccess =
+                bool isSuccess =
                     nativeSession.CameraMetadataApi.GetAllCameraMetadataTags(
                         metadataHandle, outMetadataTags);
                 nativeSession.CameraMetadataApi.Release(metadataHandle);
@@ -282,26 +257,21 @@ namespace GoogleARCore
         /// <summary>
         /// Container for state related to the ARCore point cloud for the Frame.
         /// </summary>
-        public static class PointCloud
-        {
+        public static class PointCloud {
             /// <summary>
             /// Gets a value indicating whether new point cloud data became available in the current
             /// frame.
             /// </summary>
             /// <returns><c>true</c> if new point cloud data became available in the current frame,
             /// otherwise <c>false</c>.</returns>
-            public static bool IsUpdatedThisFrame
-            {
-                get
-                {
-                    if (LifecycleManager.Instance.IsSessionChangedThisFrame)
-                    {
+            public static bool IsUpdatedThisFrame {
+                get {
+                    if (LifecycleManager.Instance.IsSessionChangedThisFrame) {
                         return true;
                     }
 
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return false;
                     }
 
@@ -312,18 +282,15 @@ namespace GoogleARCore
             /// <summary>
             /// Gets the count of point cloud points in the frame.
             /// </summary>
-            public static int PointCount
-            {
-                get
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+            public static int PointCount {
+                get {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return 0;
                     }
 
-                     return nativeSession.PointCloudApi.GetNumberOfPoints(
-                         nativeSession.PointCloudHandle);
+                    return nativeSession.PointCloudApi.GetNumberOfPoints(
+                        nativeSession.PointCloudHandle);
                 }
             }
 
@@ -340,9 +307,8 @@ namespace GoogleARCore
 
             [System.Obsolete("Frame.PointCloud.GetPoint has been deprecated. " +
              "Please use Frame.PointCloud.GetPointAsStruct instead.")]
-            public static Vector4 GetPoint(int index)
-            {
-                var point = GetPointAsStruct(index);
+            public static Vector4 GetPoint(int index) {
+                PointCloudPoint point = GetPointAsStruct(index);
                 return new Vector4(
                     point.Position.x, point.Position.y, point.Position.z, point.Confidence);
             }
@@ -354,11 +320,9 @@ namespace GoogleARCore
             /// </summary>
             /// <param name="index">The index of the point cloud point to get.</param>
             /// <returns>The point from the point cloud at <c>index</c>.</returns>
-            public static PointCloudPoint GetPointAsStruct(int index)
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null || index >= PointCount)
-                {
+            public static PointCloudPoint GetPointAsStruct(int index) {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null || index >= PointCount) {
                     return new PointCloudPoint(PointCloudPoint.InvalidPointId, Vector3.zero, 0.0f);
                 }
 
@@ -376,18 +340,15 @@ namespace GoogleARCore
             /// @deprecated Please copy points manually instead.
             [System.Obsolete("Frame.PointCloud.CopyPoints has been deprecated. " +
                              "Please copy points manually instead.")]
-            public static void CopyPoints(List<Vector4> points)
-            {
+            public static void CopyPoints(List<Vector4> points) {
                 points.Clear();
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     return;
                 }
 
-                for (int i = 0; i < PointCount; i++)
-                {
-                    var point = GetPointAsStruct(i);
+                for (int i = 0; i < PointCount; i++) {
+                    PointCloudPoint point = GetPointAsStruct(i);
                     points.Add(new Vector4(
                         point.Position.x, point.Position.y, point.Position.z, point.Confidence));
                 }
@@ -397,18 +358,14 @@ namespace GoogleARCore
         /// <summary>
         /// Container for state related to the ARCore camera for the frame.
         /// </summary>
-        public static class CameraImage
-        {
+        public static class CameraImage {
             /// <summary>
             /// Gets a texture used from the device's rear camera.
             /// </summary>
-            public static Texture Texture
-            {
-                get
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null || nativeSession.FrameApi.GetTimestamp() == 0)
-                    {
+            public static Texture Texture {
+                get {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null || nativeSession.FrameApi.GetTimestamp() == 0) {
                         return null;
                     }
 
@@ -422,10 +379,8 @@ namespace GoogleARCore
                 "This field has been deprecated. Please use Frame.CameraImage.TextureDisplayUvs.")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules",
                 "SA1600:ElementsMustBeDocumented", Justification = "Deprecated")]
-            public static DisplayUvCoords DisplayUvCoords
-            {
-                get
-                {
+            public static DisplayUvCoords DisplayUvCoords {
+                get {
                     return TextureDisplayUvs;
                 }
             }
@@ -436,22 +391,18 @@ namespace GoogleARCore
             /// Gets UVs that map the orientation and aspect ratio of
             /// <see cref="Frame.CameraImage.Texture"/> to those of the device's display.
             /// </summary>
-            public static DisplayUvCoords TextureDisplayUvs
-            {
-                get
-                {
+            public static DisplayUvCoords TextureDisplayUvs {
+                get {
                     DisplayUvCoords displayUvCoords = DisplayUvCoords.FullScreenUvCoords;
 
                     // Use deprecated 'TransformDisplayUvCoords' when running Instant Preview.
-                    if (InstantPreviewManager.IsProvidingPlatform)
-                    {
-                        var nativeSession = LifecycleManager.Instance.NativeSession;
-                        if (nativeSession == null)
-                        {
+                    if (InstantPreviewManager.IsProvidingPlatform) {
+                        NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                        if (nativeSession == null) {
                             return new DisplayUvCoords();
                         }
 
-                        var apiCoords = new ApiDisplayUvCoords(
+                        ApiDisplayUvCoords apiCoords = new ApiDisplayUvCoords(
                             displayUvCoords.TopLeft, displayUvCoords.TopRight,
                             displayUvCoords.BottomLeft, displayUvCoords.BottomRight);
                         nativeSession.FrameApi.TransformDisplayUvCoords(ref apiCoords);
@@ -483,12 +434,9 @@ namespace GoogleARCore
             /// Gets UVs that map the orientation and aspect ratio of the image returned by
             /// <see cref="Frame.CameraImage.AcquireCameraImageBytes"/> to that of the device's display.
             /// </summary>
-            public static DisplayUvCoords ImageDisplayUvs
-            {
-                get
-                {
-                    if (InstantPreviewManager.IsProvidingPlatform)
-                    {
+            public static DisplayUvCoords ImageDisplayUvs {
+                get {
+                    if (InstantPreviewManager.IsProvidingPlatform) {
                         InstantPreviewManager.LogLimitedSupportMessage(
                             "access CPU image display UVs");
                         return DisplayUvCoords.FullScreenUvCoords;
@@ -520,17 +468,14 @@ namespace GoogleARCore
             /// <summary>
             /// Gets the unrotated and uncropped intrinsics for the texture (GPU) stream.
             /// </summary>
-            public static CameraIntrinsics TextureIntrinsics
-            {
-                get
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+            public static CameraIntrinsics TextureIntrinsics {
+                get {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return new CameraIntrinsics();
                     }
 
-                    var cameraHandle = nativeSession.FrameApi.AcquireCamera();
+                    IntPtr cameraHandle = nativeSession.FrameApi.AcquireCamera();
                     CameraIntrinsics result =
                         nativeSession.CameraApi.GetTextureIntrinsics(cameraHandle);
                     nativeSession.CameraApi.Release(cameraHandle);
@@ -541,17 +486,14 @@ namespace GoogleARCore
             /// <summary>
             /// Gets the unrotated and uncropped intrinsics for the image (CPU) stream.
             /// </summary>
-            public static CameraIntrinsics ImageIntrinsics
-            {
-                get
-                {
-                    var nativeSession = LifecycleManager.Instance.NativeSession;
-                    if (nativeSession == null)
-                    {
+            public static CameraIntrinsics ImageIntrinsics {
+                get {
+                    NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                    if (nativeSession == null) {
                         return new CameraIntrinsics();
                     }
 
-                    var cameraHandle = nativeSession.FrameApi.AcquireCamera();
+                    IntPtr cameraHandle = nativeSession.FrameApi.AcquireCamera();
                     CameraIntrinsics result =
                         nativeSession.CameraApi.GetImageIntrinsics(cameraHandle);
                     nativeSession.CameraApi.Release(cameraHandle);
@@ -575,18 +517,15 @@ namespace GoogleARCore
             /// <returns>A corresponding position in the target frame.</returns>
             public static Vector2 TransformCoordinate(
                 Vector2 coordinate, DisplayUvCoordinateType sourceType,
-                DisplayUvCoordinateType targetType)
-            {
-                if (InstantPreviewManager.IsProvidingPlatform)
-                {
+                DisplayUvCoordinateType targetType) {
+                if (InstantPreviewManager.IsProvidingPlatform) {
                     InstantPreviewManager.LogLimitedSupportMessage(
                         "access 'Frame.TransformCoordinate'");
                     return Vector2.zero;
                 }
 
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     Debug.LogError("Cannot transform coordinate when native session is null.");
                     return Vector2.zero;
                 }
@@ -607,11 +546,9 @@ namespace GoogleARCore
             /// <returns>A <c>CameraImageBytes</c> struct with <c>IsAvailable</c> property set to
             /// <c>true</c> if successful and <c>false</c> if the image could not be
             /// acquired.</returns>
-            public static GoogleARCore.CameraImageBytes AcquireCameraImageBytes()
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null)
-                {
+            public static GoogleARCore.CameraImageBytes AcquireCameraImageBytes() {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null) {
                     return new CameraImageBytes(IntPtr.Zero);
                 }
 
@@ -625,16 +562,14 @@ namespace GoogleARCore
             /// matrix.</param>
             /// <param name="farClipping">The far clipping plane for the projection matrix.</param>
             /// <returns>The projection matrix for the frame.</returns>
-            public static Matrix4x4 GetCameraProjectionMatrix(float nearClipping, float farClipping)
-            {
-                var nativeSession = LifecycleManager.Instance.NativeSession;
-                if (nativeSession == null || Texture == null)
-                {
+            public static Matrix4x4 GetCameraProjectionMatrix(float nearClipping, float farClipping) {
+                NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+                if (nativeSession == null || Texture == null) {
                     return Matrix4x4.identity;
                 }
 
-                var cameraHandle = nativeSession.FrameApi.AcquireCamera();
-                var result = nativeSession.CameraApi.GetProjectionMatrix(
+                IntPtr cameraHandle = nativeSession.FrameApi.AcquireCamera();
+                Matrix4x4 result = nativeSession.CameraApi.GetProjectionMatrix(
                     cameraHandle, nearClipping, farClipping);
                 nativeSession.CameraApi.Release(cameraHandle);
                 return result;

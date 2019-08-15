@@ -18,17 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
+namespace GoogleARCoreInternal.CrossPlatform {
     using GoogleARCore.CrossPlatform;
 
-    internal static class ApiCloudAnchorStateExtensions
-    {
+    internal static class ApiCloudAnchorStateExtensions {
         public static CloudServiceResponse ToCloudServiceResponse(
-            this ApiCloudAnchorState anchorState)
-        {
-            switch (anchorState)
-            {
+            this ApiCloudAnchorState anchorState) {
+            switch (anchorState) {
                 case ApiCloudAnchorState.Success:
                     return CloudServiceResponse.Success;
                 case ApiCloudAnchorState.ErrorServiceUnavailable:

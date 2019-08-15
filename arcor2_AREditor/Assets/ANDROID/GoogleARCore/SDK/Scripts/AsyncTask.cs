@@ -18,11 +18,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
-    using System.Threading;
     using GoogleARCoreInternal;
     using UnityEngine;
 
@@ -30,8 +28,7 @@ namespace GoogleARCore
     /// A class used for monitoring the status of an asynchronous task.
     /// </summary>
     /// <typeparam name="T">The resultant type of the task.</typeparam>
-    public class AsyncTask<T>
-    {
+    public class AsyncTask<T> {
         private static bool s_IsInitialized = false;
 
         /// <summary>
@@ -44,26 +41,20 @@ namespace GoogleARCore
         /// </summary>
         /// <param name="asyncOperationComplete">A callback that, when invoked, changes the status of the task to
         /// complete and sets the result based on the argument supplied.</param>
-        internal AsyncTask(out Action<T> asyncOperationComplete)
-        {
+        internal AsyncTask(out Action<T> asyncOperationComplete) {
             // Register for early update event.
-            if (!s_IsInitialized)
-            {
+            if (!s_IsInitialized) {
                 LifecycleManager.Instance.EarlyUpdate += AsyncTask.OnUpdate;
                 s_IsInitialized = true;
             }
 
             IsComplete = false;
-            asyncOperationComplete = delegate(T result)
-            {
+            asyncOperationComplete = delegate (T result) {
                 this.Result = result;
                 IsComplete = true;
-                if (m_ActionsUponTaskCompletion != null)
-                {
-                    AsyncTask.PerformActionInUpdate(() =>
-                    {
-                        for (int i = 0; i < m_ActionsUponTaskCompletion.Count; i++)
-                        {
+                if (m_ActionsUponTaskCompletion != null) {
+                    AsyncTask.PerformActionInUpdate(() => {
+                        for (int i = 0; i < m_ActionsUponTaskCompletion.Count; i++) {
                             m_ActionsUponTaskCompletion[i](result);
                         }
                     });
@@ -75,8 +66,7 @@ namespace GoogleARCore
         /// Constructor for AsyncTask that creates a completed task.
         /// </summary>
         /// <param name="result">The result of the completed task.</param>
-        internal AsyncTask(T result)
-        {
+        internal AsyncTask(T result) {
             Result = result;
             IsComplete = true;
         }
@@ -85,21 +75,24 @@ namespace GoogleARCore
         /// Gets a value indicating whether the task is complete.
         /// </summary>
         /// <value><c>true</c> if the task is complete, otherwise <c>false</c>.</value>
-        public bool IsComplete { get; private set; }
+        public bool IsComplete {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the result of a completed task.
         /// </summary>
         /// <value>The result of the completed task.</value>
-        public T Result { get; private set; }
+        public T Result {
+            get; private set;
+        }
 
         /// <summary>
         /// Returns a yield instruction that monitors this task for completion within a coroutine.
         /// </summary>
         /// <returns>A yield instruction that monitors this task for completion.</returns>
         [SuppressMemoryAllocationError(Reason = "Creates a new CustomYieldInstruction")]
-        public CustomYieldInstruction WaitForCompletion()
-        {
+        public CustomYieldInstruction WaitForCompletion() {
             return new WaitForTaskCompletionYieldInstruction<T>(this);
         }
 
@@ -110,18 +103,15 @@ namespace GoogleARCore
         /// be passed as an argument to the action.</param>
         /// <returns>The invoking asynchronous task.</returns>
         [SuppressMemoryAllocationError(Reason = "Could allocate new List")]
-        public AsyncTask<T> ThenAction(Action<T> doAfterTaskComplete)
-        {
+        public AsyncTask<T> ThenAction(Action<T> doAfterTaskComplete) {
             // Perform action now if task is already complete.
-            if (IsComplete)
-            {
+            if (IsComplete) {
                 doAfterTaskComplete(Result);
                 return this;
             }
 
             // Allocate list if needed (avoids allocation if then is not used).
-            if (m_ActionsUponTaskCompletion == null)
-            {
+            if (m_ActionsUponTaskCompletion == null) {
                 m_ActionsUponTaskCompletion = new List<Action<T>>();
             }
 
@@ -133,8 +123,7 @@ namespace GoogleARCore
     /// <summary>
     /// Helper methods for dealing with asynchronous tasks.
     /// </summary>
-    internal class AsyncTask
-    {
+    internal class AsyncTask {
         private static Queue<Action> s_UpdateActionQueue = new Queue<Action>();
         private static object s_LockObject = new object();
 
@@ -142,10 +131,8 @@ namespace GoogleARCore
         /// Queues an action to be performed on Unity thread in Update().  This method can be called by any thread.
         /// </summary>
         /// <param name="action">The action to perform.</param>
-        public static void PerformActionInUpdate(Action action)
-        {
-            lock (s_LockObject)
-            {
+        public static void PerformActionInUpdate(Action action) {
+            lock (s_LockObject) {
                 s_UpdateActionQueue.Enqueue(action);
             }
         }
@@ -153,12 +140,9 @@ namespace GoogleARCore
         /// <summary>
         /// An Update handler called each frame.
         /// </summary>
-        public static void OnUpdate()
-        {
-            lock (s_LockObject)
-            {
-                while (s_UpdateActionQueue.Count > 0)
-                {
+        public static void OnUpdate() {
+            lock (s_LockObject) {
+                while (s_UpdateActionQueue.Count > 0) {
                     Action action = s_UpdateActionQueue.Dequeue();
                     action();
                 }

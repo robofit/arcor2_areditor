@@ -18,20 +18,17 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEngine;
 
     /// <summary>
     /// Static stateless Utility methods for performing native Android calls.
     /// </summary>
-    public class AndroidNativeHelper
-    {
+    public class AndroidNativeHelper {
         /// <summary>
         /// Mirrors Android <c>Surface</c> constants for display rotation.
         /// </summary>
-        public enum AndroidSurfaceRotation
-        {
+        public enum AndroidSurfaceRotation {
             Rotation0 = 0,
             Rotation90 = 1,
             Rotation180 = 2,
@@ -42,10 +39,8 @@ namespace GoogleARCoreInternal
         /// Gets the current Android display rotation.
         /// </summary>
         /// <returns>The current Android display rotation.</returns>
-        public static AndroidSurfaceRotation GetDisplayRotation()
-        {
-            if (Application.platform != RuntimePlatform.Android)
-            {
+        public static AndroidSurfaceRotation GetDisplayRotation() {
+            if (Application.platform != RuntimePlatform.Android) {
                 return AndroidSurfaceRotation.Rotation0;
             }
 
@@ -59,7 +54,7 @@ namespace GoogleARCoreInternal
                     "getSystemService", contextClass.GetStatic<string>("WINDOW_SERVICE"));
 
             return
-                (AndroidSurfaceRotation)windowManager.Call<AndroidJavaObject>("getDefaultDisplay")
+                (AndroidSurfaceRotation) windowManager.Call<AndroidJavaObject>("getDefaultDisplay")
                     .Call<int>("getRotation");
         }
     }

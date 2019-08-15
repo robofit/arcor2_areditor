@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
-    internal enum ApiCloudAnchorState
-    {
+namespace GoogleARCoreInternal.CrossPlatform {
+    internal enum ApiCloudAnchorState {
         None = 0,
         TaskInProgress = 1,
         Success = 2,

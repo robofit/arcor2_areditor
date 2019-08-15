@@ -18,24 +18,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
-    using UnityEngine;
 
     /// <summary>
     /// Structure holding data summarizing the result of an Android permissions request.
     /// </summary>
-    public struct AndroidPermissionsRequestResult
-    {
+    public struct AndroidPermissionsRequestResult {
         /// <summary>
         /// Constructs a new AndroidPermissionsRequestResult.
         /// </summary>
         /// <param name="permissionNames">The value for PermissionNames.</param>
         /// <param name="grantResults">The value for GrantResults.</param>
         public AndroidPermissionsRequestResult(
-            string[] permissionNames, bool[] grantResults) : this()
-        {
+            string[] permissionNames, bool[] grantResults) : this() {
             PermissionNames = permissionNames;
             GrantResults = grantResults;
         }
@@ -43,31 +39,30 @@ namespace GoogleARCore
         /// <summary>
         /// Gets a collection of permissions requested.
         /// </summary>
-        public string[] PermissionNames { get; private set; }
+        public string[] PermissionNames {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a collection of results corresponding to <see cref="PermissionNames"/>.
         /// </summary>
-        public bool[] GrantResults { get; private set; }
+        public bool[] GrantResults {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a value indicating whether all permissions are granted.
         /// </summary>
-        public bool IsAllGranted
-        {
+        public bool IsAllGranted {
             [SuppressMemoryAllocationError(
                 IsWarning = true, Reason = "Requires further investigation.")]
-            get
-            {
-                if (PermissionNames == null || GrantResults == null)
-                {
+            get {
+                if (PermissionNames == null || GrantResults == null) {
                     return false;
                 }
 
-                for (int i = 0; i < GrantResults.Length; i++)
-                {
-                    if (!GrantResults[i])
-                    {
+                for (int i = 0; i < GrantResults.Length; i++) {
+                    if (!GrantResults[i]) {
                         return false;
                     }
                 }

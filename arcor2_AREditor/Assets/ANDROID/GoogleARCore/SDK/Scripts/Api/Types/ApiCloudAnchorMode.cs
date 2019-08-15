@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
-    internal enum ApiCloudAnchorMode
-    {
+namespace GoogleARCoreInternal.CrossPlatform {
+    internal enum ApiCloudAnchorMode {
         Disabled = 0,
         Enabled = 1,
     }

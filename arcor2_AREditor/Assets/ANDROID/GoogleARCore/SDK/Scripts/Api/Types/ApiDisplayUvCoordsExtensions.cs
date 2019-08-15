@@ -18,16 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Diagnostics.CodeAnalysis;
+namespace GoogleARCoreInternal {
     using GoogleARCore;
-    using UnityEngine;
 
-    internal static class ApiDisplayUvCoordsExtensions
-    {
-        public static DisplayUvCoords ToDisplayUvCoords(this ApiDisplayUvCoords apiCoords)
-        {
+    internal static class ApiDisplayUvCoordsExtensions {
+        public static DisplayUvCoords ToDisplayUvCoords(this ApiDisplayUvCoords apiCoords) {
             return new DisplayUvCoords(apiCoords.TopLeft, apiCoords.TopRight,
                 apiCoords.BottomLeft, apiCoords.BottomRight);
         }

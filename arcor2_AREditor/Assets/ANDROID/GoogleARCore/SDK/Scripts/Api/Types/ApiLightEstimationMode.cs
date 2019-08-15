@@ -18,14 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
     Justification = "Internal")]
-    public enum ApiLightEstimationMode
-    {
+    public enum ApiLightEstimationMode {
         Disabled = 0,
         AmbientIntensity = 1,
         EnvironmentalHDR = 2,

@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiAugmentedFaceRegionType
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiAugmentedFaceRegionType {
         Nose = 0,
         ForeheadLeft = 1,
         ForeheadRight = 2,

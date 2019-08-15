@@ -7,11 +7,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace DanielLochner.Assets.SimpleSideMenu
-{
+namespace DanielLochner.Assets.SimpleSideMenu {
     [CustomEditor(typeof(SimpleSideMenu))]
-    public class SimpleSideMenuEditor : Editor
-    {
+    public class SimpleSideMenuEditor : Editor {
         #region Fields
         private bool showBasicSettings = true, showDragSettings = true, showOverlaySettings = true;
         private SerializedProperty placement, defaultState, transitionSpeed, thresholdDragSpeed, thresholdDraggedFraction, handle, handleDraggable, handleToggleStateOnPressed, menuDraggable, useOverlay, overlayColour, overlaySwipe, overlayRetractOnPressed;
@@ -20,8 +18,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
         #endregion
 
         #region Methods
-        private void OnEnable()
-        {
+        private void OnEnable() {
             simpleSideMenu = target as SimpleSideMenu;
 
             //Serialized Properties
@@ -38,8 +35,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
             overlayColour = serializedObject.FindProperty("overlayColour");
             overlayRetractOnPressed = serializedObject.FindProperty("overlayCloseOnPressed");
         }
-        public override void OnInspectorGUI()
-        {
+        public override void OnInspectorGUI() {
             serializedObject.Update();
 
             HeaderInformation();
@@ -53,36 +49,30 @@ namespace DanielLochner.Assets.SimpleSideMenu
             PrefabUtility.RecordPrefabInstancePropertyModifications(simpleSideMenu);
         }
 
-        private void HeaderInformation()
-        {
+        private void HeaderInformation() {
             GUILayout.BeginVertical("HelpBox");
             GUILayout.Label("Simple Side-Menu", new GUIStyle() { fontSize = 30, alignment = TextAnchor.MiddleCenter });
             GUILayout.Label("Version: 1.0.0", new GUIStyle() { fontSize = 14, alignment = TextAnchor.MiddleCenter });
             GUILayout.Label("Author: Daniel Lochner", new GUIStyle() { fontSize = 14, alignment = TextAnchor.MiddleCenter });
             GUILayout.EndVertical();
         }
-        private void CurrentStateSettings()
-        {
+        private void CurrentStateSettings() {
             editorState = (Application.isPlaying) ? simpleSideMenu.TargetState : simpleSideMenu.defaultState;
             #region Close
             EditorGUILayout.BeginHorizontal();
-            using (new EditorGUI.DisabledScope(editorState == SimpleSideMenu.State.Closed))
-            {
-                if (GUILayout.Button("Close"))
-                {
+            using (new EditorGUI.DisabledScope(editorState == SimpleSideMenu.State.Closed)) {
+                if (GUILayout.Button("Close")) {
                     simpleSideMenu.Close();
-                    if (!Application.isPlaying) simpleSideMenu.defaultState = SimpleSideMenu.State.Closed;
+                    if (!Application.isPlaying)
+                        simpleSideMenu.defaultState = SimpleSideMenu.State.Closed;
                 }
             }
             #endregion
             #region Toggle State
-            if (GUILayout.Button("Toggle State"))
-            {
+            if (GUILayout.Button("Toggle State")) {
                 simpleSideMenu.ToggleState();
-                if (!Application.isPlaying)
-                {
-                    switch (simpleSideMenu.defaultState)
-                    {
+                if (!Application.isPlaying) {
+                    switch (simpleSideMenu.defaultState) {
                         case SimpleSideMenu.State.Closed:
                             simpleSideMenu.defaultState = SimpleSideMenu.State.Open;
                             break;
@@ -94,12 +84,11 @@ namespace DanielLochner.Assets.SimpleSideMenu
             }
             #endregion
             #region Open
-            using (new EditorGUI.DisabledScope(editorState == SimpleSideMenu.State.Open))
-            {
-                if (GUILayout.Button("Open"))
-                {
+            using (new EditorGUI.DisabledScope(editorState == SimpleSideMenu.State.Open)) {
+                if (GUILayout.Button("Open")) {
                     simpleSideMenu.Open();
-                    if (!Application.isPlaying) simpleSideMenu.defaultState = SimpleSideMenu.State.Open;
+                    if (!Application.isPlaying)
+                        simpleSideMenu.defaultState = SimpleSideMenu.State.Open;
                 }
             }
             EditorGUILayout.EndHorizontal();
@@ -107,14 +96,12 @@ namespace DanielLochner.Assets.SimpleSideMenu
             #endregion
         }
 
-        private void BasicSettings()
-        {
+        private void BasicSettings() {
             EditorStyles.foldout.fontStyle = FontStyle.Bold;
             showBasicSettings = EditorGUILayout.Foldout(showBasicSettings, "Basic Settings", true);
             EditorStyles.foldout.fontStyle = FontStyle.Normal;
 
-            if (showBasicSettings)
-            {
+            if (showBasicSettings) {
                 EditorGUILayout.PropertyField(placement, new GUIContent("Placement", "The position at which the menu will be placed, which determines how the menu will be opened and closed."));
                 EditorGUILayout.PropertyField(defaultState, new GUIContent("Default State", "Determines whether the menu will be open or closed by default."));
                 EditorGUILayout.PropertyField(transitionSpeed, new GUIContent("Transition Speed", "The speed at which the menu will snap into position when transitioning to the next state."));
@@ -122,19 +109,16 @@ namespace DanielLochner.Assets.SimpleSideMenu
 
             EditorGUILayout.Space();
         }
-        private void DragSettings()
-        {
+        private void DragSettings() {
             EditorStyles.foldout.fontStyle = FontStyle.Bold;
             showDragSettings = EditorGUILayout.Foldout(showDragSettings, "Drag Settings", true);
             EditorStyles.foldout.fontStyle = FontStyle.Normal;
 
-            if (showDragSettings)
-            {
+            if (showDragSettings) {
                 EditorGUILayout.PropertyField(thresholdDragSpeed, new GUIContent("Threshold Drag Speed", "The minimum speed required when dragging that will allow a transition to the next state to occur."));
                 EditorGUILayout.Slider(thresholdDraggedFraction, 0f, 1f, new GUIContent("Threshold Dragged Fraction", "The fraction of the fully opened menu that must be dragged before a transition will occur to the next state if the current drag speed does not exceed the threshold drag speed set."));
                 EditorGUILayout.ObjectField(handle, typeof(GameObject), new GUIContent("Handle", "(Optional) GameObject used to open and close the side menu by dragging or pressing (when a \"Button\" component has been added)."));
-                if (simpleSideMenu.handle != null)
-                {
+                if (simpleSideMenu.handle != null) {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.PropertyField(handleDraggable, new GUIContent("Draggable", "Should the handle be able to be used to drag the Side-Menu?"));
                     EditorGUILayout.PropertyField(handleToggleStateOnPressed, new GUIContent("Toggle State on Pressed", "Should the Side-Menu toggle its state (open/close) when the handle is pressed?"));
@@ -145,17 +129,14 @@ namespace DanielLochner.Assets.SimpleSideMenu
 
             EditorGUILayout.Space();
         }
-        private void OverlaySettings()
-        {
+        private void OverlaySettings() {
             EditorStyles.foldout.fontStyle = FontStyle.Bold;
             showOverlaySettings = EditorGUILayout.Foldout(showOverlaySettings, "Overlay Settings", true);
             EditorStyles.foldout.fontStyle = FontStyle.Normal;
 
-            if (showOverlaySettings)
-            {
+            if (showOverlaySettings) {
                 EditorGUILayout.PropertyField(useOverlay, new GUIContent("Use Overlay", "Should an overlay be used when the Side-Menu is opened/closed?"));
-                if (simpleSideMenu.useOverlay)
-                {
+                if (simpleSideMenu.useOverlay) {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.PropertyField(overlayColour, new GUIContent("Colour", "The colour of the overlay when fully opened."));
                     EditorGUILayout.PropertyField(overlayRetractOnPressed, new GUIContent("Close on Pressed", "Should the Side-Menu be closed when the overlay is pressed?"));
@@ -167,12 +148,10 @@ namespace DanielLochner.Assets.SimpleSideMenu
         }
 
         [MenuItem("GameObject/UI/Simple Side-Menu/Left Side-Menu", false)]
-        private static void CreateLeftSideMenu()
-        {
+        private static void CreateLeftSideMenu() {
             // Canvas
             Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas == null)
-            {
+            if (canvas == null) {
                 GameObject canvasObject = new GameObject("Canvas");
                 canvas = canvasObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -207,8 +186,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
             GameObjectUtility.SetParentAndAlign(sideMenuHandle, sideMenu);
 
             // Event System
-            if (!FindObjectOfType<EventSystem>())
-            {
+            if (!FindObjectOfType<EventSystem>()) {
                 GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem));
                 eventObject.AddComponent<StandaloneInputModule>();
                 Undo.RegisterCreatedObjectUndo(eventObject, "Create " + eventObject.name);
@@ -219,12 +197,10 @@ namespace DanielLochner.Assets.SimpleSideMenu
             Undo.RegisterCreatedObjectUndo(sideMenu, "Create " + sideMenu.name);
         }
         [MenuItem("GameObject/UI/Simple Side-Menu/Right Side-Menu", false)]
-        private static void CreateRightSideMenu()
-        {
+        private static void CreateRightSideMenu() {
             // Canvas
             Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas == null)
-            {
+            if (canvas == null) {
                 GameObject canvasObject = new GameObject("Canvas");
                 canvas = canvasObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -260,8 +236,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
             GameObjectUtility.SetParentAndAlign(sideMenuHandle, sideMenu);
 
             // Event System
-            if (!FindObjectOfType<EventSystem>())
-            {
+            if (!FindObjectOfType<EventSystem>()) {
                 GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem));
                 eventObject.AddComponent<StandaloneInputModule>();
                 Undo.RegisterCreatedObjectUndo(eventObject, "Create " + eventObject.name);
@@ -272,12 +247,10 @@ namespace DanielLochner.Assets.SimpleSideMenu
             Undo.RegisterCreatedObjectUndo(sideMenu, "Create " + sideMenu.name);
         }
         [MenuItem("GameObject/UI/Simple Side-Menu/Top Side-Menu", false)]
-        private static void CreateTopSideMenu()
-        {
+        private static void CreateTopSideMenu() {
             // Canvas
             Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas == null)
-            {
+            if (canvas == null) {
                 GameObject canvasObject = new GameObject("Canvas");
                 canvas = canvasObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -313,8 +286,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
             GameObjectUtility.SetParentAndAlign(sideMenuHandle, sideMenu);
 
             // Event System
-            if (!FindObjectOfType<EventSystem>())
-            {
+            if (!FindObjectOfType<EventSystem>()) {
                 GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem));
                 eventObject.AddComponent<StandaloneInputModule>();
                 Undo.RegisterCreatedObjectUndo(eventObject, "Create " + eventObject.name);
@@ -325,12 +297,10 @@ namespace DanielLochner.Assets.SimpleSideMenu
             Undo.RegisterCreatedObjectUndo(sideMenu, "Create " + sideMenu.name);
         }
         [MenuItem("GameObject/UI/Simple Side-Menu/Bottom Side-Menu", false)]
-        private static void CreateBottomSideMenu()
-        {
+        private static void CreateBottomSideMenu() {
             // Canvas
             Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas == null)
-            {
+            if (canvas == null) {
                 GameObject canvasObject = new GameObject("Canvas");
                 canvas = canvasObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -366,8 +336,7 @@ namespace DanielLochner.Assets.SimpleSideMenu
             GameObjectUtility.SetParentAndAlign(sideMenuHandle, sideMenu);
 
             // Event System
-            if (!FindObjectOfType<EventSystem>())
-            {
+            if (!FindObjectOfType<EventSystem>()) {
                 GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem));
                 eventObject.AddComponent<StandaloneInputModule>();
                 Undo.RegisterCreatedObjectUndo(eventObject, "Create " + eventObject.name);

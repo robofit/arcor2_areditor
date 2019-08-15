@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using GoogleARCore;
 
@@ -27,14 +26,12 @@ namespace GoogleARCoreInternal
     /// A base class allowing an experiment to subscribe to internal SDK events by implementing
     /// a subclass that will be automatically found via reflection.
     /// </summary>
-    internal abstract class ExperimentBase
-    {
+    internal abstract class ExperimentBase {
         /// <summary>
         /// Called to get a experiment's experimental feature flags.
         /// </summary>
         /// <returns>The experiment's experimental feature flags.</returns>
-        public virtual int GetExperimentalFeatureFlags()
-        {
+        public virtual int GetExperimentalFeatureFlags() {
             return 0;
         }
 
@@ -42,15 +39,13 @@ namespace GoogleARCoreInternal
         /// Called before lifecycle manager call ArPresto_update to update session features
         /// that requre session recreation.
         /// </summary>
-        public virtual void OnUpdateSessionFeatures()
-        {
+        public virtual void OnUpdateSessionFeatures() {
         }
 
         /// <summary>
         /// Called at the beginnging of the frame.
         /// </summary>
-        public virtual void OnEarlyUpdate()
-        {
+        public virtual void OnEarlyUpdate() {
         }
 
         /// <summary>
@@ -58,8 +53,7 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <returns><c>true</c> if the experiment configuration is dirty, otherwise
         /// <c>false</c>.</returns>
-        public virtual bool IsConfigurationDirty()
-        {
+        public virtual bool IsConfigurationDirty() {
             return false;
         }
 
@@ -68,8 +62,7 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <param name="sessionHandle">The session handle the config is being set on.</param>
         /// <param name="configHandle">The handle to the native configuration.</param>
-        public virtual void OnBeforeSetConfiguration(IntPtr sessionHandle, IntPtr configHandle)
-        {
+        public virtual void OnBeforeSetConfiguration(IntPtr sessionHandle, IntPtr configHandle) {
         }
 
         /// <summary>
@@ -78,8 +71,7 @@ namespace GoogleARCoreInternal
         /// <param name="trackableType">The unknown trackable type.</param>
         /// <returns><c>true</c> if the subsriber manages the type, otherwise
         /// <c>false</c>.</returns>
-        public virtual bool IsManagingTrackableType(int trackableType)
-        {
+        public virtual bool IsManagingTrackableType(int trackableType) {
             return false;
         }
 
@@ -89,8 +81,7 @@ namespace GoogleARCoreInternal
         /// </summary>
         /// <param name="trackableType">The trackable type.</param>
         /// <returns>TrackableHitFlags value for the associated trackable.</returns>
-        public virtual TrackableHitFlags GetTrackableHitFlags(int trackableType)
-        {
+        public virtual TrackableHitFlags GetTrackableHitFlags(int trackableType) {
             return TrackableHitFlags.None;
         }
 
@@ -100,8 +91,7 @@ namespace GoogleARCoreInternal
         /// <param name="trackableType">The trackable type to create.</param>
         /// <param name="trackableHandle">The handle for the trackable to create.</param>
         /// <returns>The managed Trackable associated with trackableHandle.</returns>
-        public virtual Trackable TrackableFactory(int trackableType, IntPtr trackableHandle)
-        {
+        public virtual Trackable TrackableFactory(int trackableType, IntPtr trackableHandle) {
             return null;
         }
     }

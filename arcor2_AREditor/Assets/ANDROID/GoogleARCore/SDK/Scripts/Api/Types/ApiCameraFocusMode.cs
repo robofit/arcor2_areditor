@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiCameraFocusMode
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiCameraFocusMode {
         Fixed = 0,
         Auto = 1,
     }

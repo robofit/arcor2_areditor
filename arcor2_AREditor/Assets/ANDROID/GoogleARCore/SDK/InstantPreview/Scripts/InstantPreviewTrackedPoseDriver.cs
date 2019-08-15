@@ -18,24 +18,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using UnityEngine;
 
     /// <summary>
     /// Drives cameras when using Instant Preview, since there is no easy way to
     /// provide data to Unity's TrackedPoseDriver.
     /// </summary>
-    public class InstantPreviewTrackedPoseDriver : MonoBehaviour
-    {
+    public class InstantPreviewTrackedPoseDriver : MonoBehaviour {
         /// <summary>
         /// Updates the game object's local transform to that of the latest pose
         /// received by Instant Preview.
         /// </summary>
-        public void Update()
-        {
-            if (!Application.isEditor)
-            {
+        public void Update() {
+            if (!Application.isEditor) {
                 return;
             }
 

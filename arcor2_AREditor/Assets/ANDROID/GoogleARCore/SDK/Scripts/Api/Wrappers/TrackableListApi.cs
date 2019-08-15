@@ -18,59 +18,47 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
-    using GoogleARCore;
-    using UnityEngine;
 
 #if UNITY_IOS && !UNITY_EDITOR
     using AndroidImport = GoogleARCoreInternal.DllImportNoop;
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class TrackableListApi
-    {
+    internal class TrackableListApi {
         private NativeSession m_NativeSession;
 
-        public TrackableListApi(NativeSession nativeSession)
-        {
+        public TrackableListApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public IntPtr Create()
-        {
+        public IntPtr Create() {
             IntPtr handle = IntPtr.Zero;
             ExternApi.ArTrackableList_create(m_NativeSession.SessionHandle, ref handle);
             return handle;
         }
 
-        public void Destroy(IntPtr listHandle)
-        {
+        public void Destroy(IntPtr listHandle) {
             ExternApi.ArTrackableList_destroy(listHandle);
         }
 
-        public int GetCount(IntPtr listHandle)
-        {
+        public int GetCount(IntPtr listHandle) {
             int count = 0;
             ExternApi.ArTrackableList_getSize(m_NativeSession.SessionHandle, listHandle, ref count);
             return count;
         }
 
-        public IntPtr AcquireItem(IntPtr listHandle, int index)
-        {
+        public IntPtr AcquireItem(IntPtr listHandle, int index) {
             IntPtr trackableHandle = IntPtr.Zero;
             ExternApi.ArTrackableList_acquireItem(
                 m_NativeSession.SessionHandle, listHandle, index, ref trackableHandle);
             return trackableHandle;
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArTrackableList_create(

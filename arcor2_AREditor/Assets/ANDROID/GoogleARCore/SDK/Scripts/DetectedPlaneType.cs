@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Simple summary of the normal vector of a plane.
     /// </summary>
-    public enum DetectedPlaneType
-    {
+    public enum DetectedPlaneType {
         /// <summary>
         /// A horizontal plane facing upward.
         /// </summary>

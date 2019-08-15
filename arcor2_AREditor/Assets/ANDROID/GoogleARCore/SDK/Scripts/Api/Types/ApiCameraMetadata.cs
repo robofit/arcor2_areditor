@@ -21,15 +21,11 @@
 [module: System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules",
  "SA1649:FileHeaderFileNameDocumentationMustMatchTypeName", Justification = "Internal.")]
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
-    using UnityEngine;
 
-    internal enum NdkCameraMetadataType
-    {
+    internal enum NdkCameraMetadataType {
         Byte = 0,
         Int32 = 1,
         Float = 2,
@@ -39,8 +35,7 @@ namespace GoogleARCoreInternal
         NumTypes,
     }
 
-    internal enum NdkCameraStatus
-    {
+    internal enum NdkCameraStatus {
         Ok = 0,
         ErrorBase = -10000,
         ErrorUnknown = ErrorBase,
@@ -49,8 +44,7 @@ namespace GoogleARCoreInternal
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct NdkCameraMetadata
-    {
+    internal struct NdkCameraMetadata {
         [FieldOffset(0)]
         [MarshalAs(UnmanagedType.I4)]
         public int Tag;

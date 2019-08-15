@@ -18,20 +18,16 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.Collections.Generic;
 
-    internal class IntPtrEqualityComparer : IEqualityComparer<IntPtr>
-    {
-        public bool Equals(IntPtr intPtr1, IntPtr intPtr2)
-        {
+    internal class IntPtrEqualityComparer : IEqualityComparer<IntPtr> {
+        public bool Equals(IntPtr intPtr1, IntPtr intPtr2) {
             return intPtr1 == intPtr2;
         }
 
-        public int GetHashCode(IntPtr intPtr)
-        {
+        public int GetHashCode(IntPtr intPtr) {
             return intPtr.GetHashCode();
         }
     }

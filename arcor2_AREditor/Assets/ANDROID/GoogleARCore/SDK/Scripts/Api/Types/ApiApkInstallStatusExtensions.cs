@@ -18,18 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Collections.Generic;
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiApkInstallStatusExtensions
-    {
+    internal static class ApiApkInstallStatusExtensions {
         public static ApkInstallationStatus ToApkInstallationStatus(
-            this ApiApkInstallationStatus apiStatus)
-        {
-            switch (apiStatus)
-            {
+            this ApiApkInstallationStatus apiStatus) {
+            switch (apiStatus) {
                 case ApiApkInstallationStatus.Uninitialized:
                     return ApkInstallationStatus.Uninitialized;
                 case ApiApkInstallationStatus.Requested:

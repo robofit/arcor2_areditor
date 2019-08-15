@@ -18,17 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using System.Runtime.InteropServices;
     using GoogleARCore;
     using UnityEngine;
 
-    internal class ARCoreIOSLifecycleManager : ILifecycleManager
-    {
+    internal class ARCoreIOSLifecycleManager : ILifecycleManager {
         private const string k_CloudServicesApiKeyPath = "RuntimeSettings/CloudServicesApiKey";
 
         private static ARCoreIOSLifecycleManager s_Instance;
@@ -52,12 +47,9 @@ namespace GoogleARCoreInternal
         public event Action<bool> OnSessionSetEnabled;
 #pragma warning restore 67, 414
 
-        public static ARCoreIOSLifecycleManager Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
+        public static ARCoreIOSLifecycleManager Instance {
+            get {
+                if (s_Instance == null) {
                     s_Instance = new ARCoreIOSLifecycleManager();
                     s_Instance._Initialize();
                     s_Instance.m_CloudServicesApiKey =
@@ -72,29 +64,36 @@ namespace GoogleARCoreInternal
             }
         }
 
-        public SessionStatus SessionStatus { get; private set; }
+        public SessionStatus SessionStatus {
+            get; private set;
+        }
 
-        public LostTrackingReason LostTrackingReason { get; private set; }
+        public LostTrackingReason LostTrackingReason {
+            get; private set;
+        }
 
-        public ARCoreSession SessionComponent { get; private set; }
+        public ARCoreSession SessionComponent {
+            get; private set;
+        }
 
-        public NativeSession NativeSession { get; private set; }
+        public NativeSession NativeSession {
+            get; private set;
+        }
 
-        public bool IsSessionChangedThisFrame { get; private set; }
+        public bool IsSessionChangedThisFrame {
+            get; private set;
+        }
 
-        public AsyncTask<ApkAvailabilityStatus> CheckApkAvailability()
-        {
+        public AsyncTask<ApkAvailabilityStatus> CheckApkAvailability() {
             return new AsyncTask<ApkAvailabilityStatus>(
                 ApkAvailabilityStatus.UnsupportedDeviceNotCapable);
         }
 
-        public AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested)
-        {
+        public AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested) {
             return new AsyncTask<ApkInstallationStatus>(ApkInstallationStatus.Error);
         }
 
-        public void CreateSession(ARCoreSession sessionComponent)
-        {
+        public void CreateSession(ARCoreSession sessionComponent) {
 #if ARCORE_IOS_SUPPORT
             if (SessionComponent != null)
             {
@@ -123,24 +122,19 @@ namespace GoogleARCoreInternal
 #endif
         }
 
-        public void EnableSession()
-        {
+        public void EnableSession() {
             m_SessionEnabled = true;
             SessionStatus = SessionStatus.Tracking;
         }
 
-        public void DisableSession()
-        {
+        public void DisableSession() {
             m_SessionEnabled = false;
             SessionStatus = SessionStatus.NotTracking;
         }
 
-        public void ResetSession()
-        {
-            if (m_SessionHandle != IntPtr.Zero)
-            {
-                if (m_FrameHandle != IntPtr.Zero)
-                {
+        public void ResetSession() {
+            if (m_SessionHandle != IntPtr.Zero) {
+                if (m_FrameHandle != IntPtr.Zero) {
                     NativeSession.FrameApi.Release(m_FrameHandle);
                     m_FrameHandle = IntPtr.Zero;
                 }
@@ -181,16 +175,14 @@ namespace GoogleARCoreInternal
         }
 #endif
 
-        private void _Initialize()
-        {
+        private void _Initialize() {
             m_SessionEnabled = false;
             SessionStatus = SessionStatus.NotTracking;
             LostTrackingReason = LostTrackingReason.None;
             IsSessionChangedThisFrame = false;
         }
 
-        private IntPtr _GetSessionHandleFromArkitPlugin()
-        {
+        private IntPtr _GetSessionHandleFromArkitPlugin() {
             IntPtr result = IntPtr.Zero;
 #if ARCORE_IOS_SUPPORT
             var m_session =
@@ -204,8 +196,7 @@ namespace GoogleARCoreInternal
             return result;
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #if UNITY_IOS
             [DllImport(ApiConstants.ARCoreARKitIntegrationApi)]
             public static extern IntPtr ARCoreARKitIntegration_castUnitySessionToARKitSession(
@@ -227,29 +218,24 @@ namespace GoogleARCoreInternal
                 IntPtr sessionHandle, IntPtr arkitFrameHandle, ref IntPtr arFrame);
 #else
             public static IntPtr ARCoreARKitIntegration_castUnitySessionToARKitSession(
-                IntPtr sessionToCast)
-            {
+                IntPtr sessionToCast) {
                 return IntPtr.Zero;
             }
 
-            public static IntPtr ARCoreARKitIntegration_getCurrentFrame(IntPtr arkitSessionHandle)
-            {
+            public static IntPtr ARCoreARKitIntegration_getCurrentFrame(IntPtr arkitSessionHandle) {
                 return IntPtr.Zero;
             }
 
             public static ApiArStatus ArSession_create(string apiKey, string bundleIdentifier,
-                ref IntPtr sessionHandle)
-            {
+                ref IntPtr sessionHandle) {
                 return ApiArStatus.Success;
             }
 
-            public static void ArSession_destroy(IntPtr session)
-            {
+            public static void ArSession_destroy(IntPtr session) {
             }
 
             public static ApiArStatus ArSession_updateAndAcquireArFrame(IntPtr sessionHandle,
-                IntPtr arkitFrameHandle, ref IntPtr arFrame)
-            {
+                IntPtr arkitFrameHandle, ref IntPtr arFrame) {
                 return ApiArStatus.Success;
             }
 #endif

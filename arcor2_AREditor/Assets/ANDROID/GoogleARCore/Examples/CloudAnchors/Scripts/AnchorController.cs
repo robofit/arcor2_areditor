@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.CloudAnchors
-{
+namespace GoogleARCore.Examples.CloudAnchors {
     using GoogleARCore;
     using GoogleARCore.CrossPlatform;
     using UnityEngine;
@@ -59,8 +58,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
-        public void Start()
-        {
+        public void Start() {
             m_CloudAnchorsExampleController =
                 GameObject.Find("CloudAnchorsExampleController")
                     .GetComponent<CloudAnchorsExampleController>();
@@ -69,10 +67,8 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Unity OnStartClient() method.
         /// </summary>
-        public override void OnStartClient()
-        {
-            if (m_CloudAnchorId != string.Empty)
-            {
+        public override void OnStartClient() {
+            if (m_CloudAnchorId != string.Empty) {
                 m_ShouldResolve = true;
             }
         }
@@ -80,10 +76,8 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
-            if (m_ShouldResolve)
-            {
+        public void Update() {
+            if (m_ShouldResolve) {
                 _ResolveAnchorFromId(m_CloudAnchorId);
             }
         }
@@ -95,8 +89,7 @@ namespace GoogleARCore.Examples.CloudAnchors
 #pragma warning disable 618
         [Command]
 #pragma warning restore 618
-        public void CmdSetCloudAnchorId(string cloudAnchorId)
-        {
+        public void CmdSetCloudAnchorId(string cloudAnchorId) {
             m_CloudAnchorId = cloudAnchorId;
         }
 
@@ -104,8 +97,7 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Gets the Cloud Anchor Id.
         /// </summary>
         /// <returns>The Cloud Anchor Id.</returns>
-        public string GetCloudAnchorId()
-        {
+        public string GetCloudAnchorId() {
             return m_CloudAnchorId;
         }
 
@@ -113,21 +105,18 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Hosts the user placed cloud anchor and associates the resulting Id with this object.
         /// </summary>
         /// <param name="lastPlacedAnchor">The last placed anchor.</param>
-        public void HostLastPlacedAnchor(Component lastPlacedAnchor)
-        {
+        public void HostLastPlacedAnchor(Component lastPlacedAnchor) {
             m_IsHost = true;
 
 #if !UNITY_IOS
-            var anchor = (Anchor)lastPlacedAnchor;
+            Anchor anchor = (Anchor) lastPlacedAnchor;
 #elif ARCORE_IOS_SUPPORT
             var anchor = (UnityEngine.XR.iOS.UnityARUserAnchorComponent)lastPlacedAnchor;
 #endif
 
 #if !UNITY_IOS || ARCORE_IOS_SUPPORT
-            XPSession.CreateCloudAnchor(anchor).ThenAction(result =>
-            {
-                if (result.Response != CloudServiceResponse.Success)
-                {
+            XPSession.CreateCloudAnchor(anchor).ThenAction(result => {
+                if (result.Response != CloudServiceResponse.Success) {
                     Debug.Log(string.Format("Failed to host Cloud Anchor: {0}", result.Response));
 
                     m_CloudAnchorsExampleController.OnAnchorHosted(
@@ -148,50 +137,45 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Resolves an anchor id and instantiates an Anchor prefab on it.
         /// </summary>
         /// <param name="cloudAnchorId">Cloud anchor id to be resolved.</param>
-        private void _ResolveAnchorFromId(string cloudAnchorId)
-        {
+        private void _ResolveAnchorFromId(string cloudAnchorId) {
             m_CloudAnchorsExampleController.OnAnchorInstantiated(false);
 
             // If device is not tracking, let's wait to try to resolve the anchor.
-            if (Session.Status != SessionStatus.Tracking)
-            {
+            if (Session.Status != SessionStatus.Tracking) {
                 return;
             }
 
             m_ShouldResolve = false;
 
             XPSession.ResolveCloudAnchor(cloudAnchorId).ThenAction(
-                (System.Action<CloudAnchorResult>)(result =>
-                    {
-                        if (result.Response != CloudServiceResponse.Success)
-                        {
-                            Debug.LogError(string.Format(
-                                "Client could not resolve Cloud Anchor {0}: {1}",
-                                cloudAnchorId, result.Response));
-
-                            m_CloudAnchorsExampleController.OnAnchorResolved(
-                                false, result.Response.ToString());
-                            m_ShouldResolve = true;
-                            return;
-                        }
-
-                        Debug.Log(string.Format(
-                            "Client successfully resolved Cloud Anchor {0}.",
-                            cloudAnchorId));
+                (System.Action<CloudAnchorResult>) (result => {
+                    if (result.Response != CloudServiceResponse.Success) {
+                        Debug.LogError(string.Format(
+                            "Client could not resolve Cloud Anchor {0}: {1}",
+                            cloudAnchorId, result.Response));
 
                         m_CloudAnchorsExampleController.OnAnchorResolved(
-                            true, result.Response.ToString());
-                        _OnResolved(result.Anchor.transform);
-                    }));
+                            false, result.Response.ToString());
+                        m_ShouldResolve = true;
+                        return;
+                    }
+
+                    Debug.Log(string.Format(
+                        "Client successfully resolved Cloud Anchor {0}.",
+                        cloudAnchorId));
+
+                    m_CloudAnchorsExampleController.OnAnchorResolved(
+                        true, result.Response.ToString());
+                    _OnResolved(result.Anchor.transform);
+                }));
         }
 
         /// <summary>
         /// Callback invoked once the Cloud Anchor is resolved.
         /// </summary>
         /// <param name="anchorTransform">Transform of the resolved Cloud Anchor.</param>
-        private void _OnResolved(Transform anchorTransform)
-        {
-            var cloudAnchorController = GameObject.Find("CloudAnchorsExampleController")
+        private void _OnResolved(Transform anchorTransform) {
+            CloudAnchorsExampleController cloudAnchorController = GameObject.Find("CloudAnchorsExampleController")
                                                   .GetComponent<CloudAnchorsExampleController>();
             cloudAnchorController.SetWorldOrigin(anchorTransform);
         }
@@ -200,10 +184,8 @@ namespace GoogleARCore.Examples.CloudAnchors
         /// Callback invoked once the Cloud Anchor Id changes.
         /// </summary>
         /// <param name="newId">New identifier.</param>
-        private void _OnChangeId(string newId)
-        {
-            if (!m_IsHost && newId != string.Empty)
-            {
+        private void _OnChangeId(string newId) {
+            if (!m_IsHost && newId != string.Empty) {
                 m_CloudAnchorId = newId;
                 m_ShouldResolve = true;
             }

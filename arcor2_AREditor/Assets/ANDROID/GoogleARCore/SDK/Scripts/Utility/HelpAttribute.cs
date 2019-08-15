@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEngine;
 
     /// <summary>
@@ -31,8 +30,7 @@ namespace GoogleARCoreInternal
     /// a scrollbar.
     /// HelpAttribute is incompatible with a custom type.
     /// </summary>
-    public class HelpAttribute : PropertyAttribute
-    {
+    public class HelpAttribute : PropertyAttribute {
         /// <summary>
         /// The help message that displays in a help box.
         /// </summary>
@@ -50,8 +48,7 @@ namespace GoogleARCoreInternal
         /// <param name="helpMessage">Help message.</param>
         /// <param name="messageType">Message type.</param>
         public HelpAttribute(string helpMessage,
-            HelpMessageType messageType = HelpMessageType.None)
-        {
+            HelpMessageType messageType = HelpMessageType.None) {
             HelpMessage = helpMessage;
             MessageType = messageType;
         }
@@ -59,8 +56,7 @@ namespace GoogleARCoreInternal
         /// <summary>
         /// User message types.
         /// </summary>
-        public enum HelpMessageType
-        {
+        public enum HelpMessageType {
             /// <summary>
             /// Neutral message.
             /// </summary>

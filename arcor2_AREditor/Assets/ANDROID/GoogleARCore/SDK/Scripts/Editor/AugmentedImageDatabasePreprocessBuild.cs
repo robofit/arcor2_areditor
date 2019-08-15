@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System.Diagnostics.CodeAnalysis;
     using GoogleARCore;
     using UnityEditor;
@@ -27,20 +26,16 @@ namespace GoogleARCoreInternal
 
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
      Justification = "Internal")]
-    internal class AugmentedImageDatabasePreprocessBuild : PreprocessBuildBase
-    {
-        public override void OnPreprocessBuild(BuildTarget target, string path)
-        {
-            var augmentedImageDatabaseGuids = AssetDatabase.FindAssets("t:AugmentedImageDatabase");
-            foreach (var databaseGuid in augmentedImageDatabaseGuids)
-            {
-                var database = AssetDatabase.LoadAssetAtPath<AugmentedImageDatabase>(
+    internal class AugmentedImageDatabasePreprocessBuild : PreprocessBuildBase {
+        public override void OnPreprocessBuild(BuildTarget target, string path) {
+            string[] augmentedImageDatabaseGuids = AssetDatabase.FindAssets("t:AugmentedImageDatabase");
+            foreach (string databaseGuid in augmentedImageDatabaseGuids) {
+                AugmentedImageDatabase database = AssetDatabase.LoadAssetAtPath<AugmentedImageDatabase>(
                     AssetDatabase.GUIDToAssetPath(databaseGuid));
 
                 string error;
                 database.BuildIfNeeded(out error);
-                if (!string.IsNullOrEmpty(error))
-                {
+                if (!string.IsNullOrEmpty(error)) {
                     throw new BuildFailedException(error);
                 }
             }

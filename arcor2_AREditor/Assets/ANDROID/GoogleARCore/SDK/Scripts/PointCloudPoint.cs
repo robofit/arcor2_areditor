@@ -18,16 +18,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using GoogleARCoreInternal;
     using UnityEngine;
 
     /// <summary>
     /// A point in a point cloud.
     /// </summary>
-    public struct PointCloudPoint
-    {
+    public struct PointCloudPoint {
         /// <summary>
         /// A number that represents an invalid point id.
         /// </summary>
@@ -41,8 +39,7 @@ namespace GoogleARCore
         /// <param name="id">The id of the point within the session.</param>
         /// <param name="position">The position of the point in world space.</param>
         /// <param name="confidence">The normalized confidence of the point.</param>
-        public PointCloudPoint(int id, Vector3 position, float confidence) : this()
-        {
+        public PointCloudPoint(int id, Vector3 position, float confidence) : this() {
             this.Id = id;
             this.Position = position;
             this.Confidence = confidence;
@@ -56,12 +53,9 @@ namespace GoogleARCore
         /// </summary>
         /// <value>A number that identifies the point within a point cloud and ARCore
         /// session.</value>
-        public int Id
-        {
-            get
-            {
-                if (InstantPreviewManager.IsProvidingPlatform)
-                {
+        public int Id {
+            get {
+                if (InstantPreviewManager.IsProvidingPlatform) {
                     InstantPreviewManager.LogLimitedSupportMessage("access Point Cloud IDs");
                     return 0;
                 }
@@ -69,8 +63,7 @@ namespace GoogleARCore
                 return m_Id;
             }
 
-            set
-            {
+            set {
                 m_Id = value;
             }
         }
@@ -78,19 +71,22 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the position of the point in world space.
         /// </summary>
-        public Vector3 Position { get; private set; }
+        public Vector3 Position {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a normalized confidence value for the point.
         /// </summary>
-        public float Confidence { get; private set; }
+        public float Confidence {
+            get; private set;
+        }
 
         /// <summary>
         /// Implicitly converts a PointCloudPoint to a Vector3 that represents its position.
         /// </summary>
         /// <param name="point">The point to convert.</param>
-        public static implicit operator Vector3(PointCloudPoint point)
-        {
+        public static implicit operator Vector3(PointCloudPoint point) {
             return point.Position;
         }
     }

@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiLightEstimateStateExtensions
-    {
-        public static LightEstimateState ToLightEstimateState(this ApiLightEstimateState apiState)
-        {
-            switch (apiState)
-            {
+    internal static class ApiLightEstimateStateExtensions {
+        public static LightEstimateState ToLightEstimateState(this ApiLightEstimateState apiState) {
+            switch (apiState) {
                 case ApiLightEstimateState.NotValid:
                     return LightEstimateState.NotValid;
                 case ApiLightEstimateState.Valid:

@@ -18,31 +18,25 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
     /// <summary>
     /// Gesture Recognizer for when the user performs a two finger drag motion on the touch screen.
     /// </summary>
-    public class TwoFingerDragGestureRecognizer : GestureRecognizer<TwoFingerDragGesture>
-    {
+    public class TwoFingerDragGestureRecognizer : GestureRecognizer<TwoFingerDragGesture> {
         private const float k_SlopInches = 0.1f;
         private const float k_AngleThresholdRadians = Mathf.PI / 6;
 
-        internal float m_SlopInches
-        {
-            get
-            {
+        internal float m_SlopInches {
+            get {
                 return k_SlopInches;
             }
         }
 
-        internal float m_AngleThresholdRadians
-        {
-            get
-            {
+        internal float m_AngleThresholdRadians {
+            get {
                 return k_AngleThresholdRadians;
             }
         }
@@ -53,16 +47,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <param name="touch1">The first touch that started this gesture.</param>
         /// <param name="touch2">The second touch that started this gesture.</param>
         /// <returns>The created Swipe gesture.</returns>
-        internal TwoFingerDragGesture CreateGesture(Touch touch1, Touch touch2)
-        {
+        internal TwoFingerDragGesture CreateGesture(Touch touch1, Touch touch2) {
             return new TwoFingerDragGesture(this, touch1, touch2);
         }
 
         /// <summary>
         /// Tries to create a two finger drag gesture.
         /// </summary>
-        protected internal override void TryCreateGestures()
-        {
+        protected internal override void TryCreateGestures() {
             TryCreateTwoFingerGestureOnTouchBegan(CreateGesture);
         }
     }

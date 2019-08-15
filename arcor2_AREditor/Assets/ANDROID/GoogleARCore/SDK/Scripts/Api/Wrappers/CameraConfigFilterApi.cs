@@ -18,38 +18,30 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
-    using System.Collections.Generic;
     using GoogleARCore;
-    using UnityEngine;
 
 #if UNITY_IOS
     using AndroidImport = GoogleARCoreInternal.DllImportNoop;
     using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
 #else
     using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
-    using IOSImport = GoogleARCoreInternal.DllImportNoop;
 #endif
 
-    internal class CameraConfigFilterApi
-    {
+    internal class CameraConfigFilterApi {
         private NativeSession m_NativeSession;
 
-        public CameraConfigFilterApi(NativeSession nativeSession)
-        {
+        public CameraConfigFilterApi(NativeSession nativeSession) {
             m_NativeSession = nativeSession;
         }
 
-        public IntPtr Create(ARCoreCameraConfigFilter filter)
-        {
+        public IntPtr Create(ARCoreCameraConfigFilter filter) {
             IntPtr cameraConfigFilterHandle = IntPtr.Zero;
             ExternApi.ArCameraConfigFilter_create(
                 m_NativeSession.SessionHandle, ref cameraConfigFilterHandle);
 
-            if (filter != null)
-            {
+            if (filter != null) {
                 ExternApi.ArCameraConfigFilter_setTargetFps(m_NativeSession.SessionHandle,
                     cameraConfigFilterHandle, _ConvertToFpsFilter(filter.TargetCameraFramerate));
                 ExternApi.ArCameraConfigFilter_setDepthSensorUsage(m_NativeSession.SessionHandle,
@@ -59,47 +51,39 @@ namespace GoogleARCoreInternal
             return cameraConfigFilterHandle;
         }
 
-        public void Destroy(IntPtr cameraConfigListHandle)
-        {
+        public void Destroy(IntPtr cameraConfigListHandle) {
             ExternApi.ArCameraConfigFilter_destroy(cameraConfigListHandle);
         }
 
         private int _ConvertToFpsFilter(
-            ARCoreCameraConfigFilter.TargetCameraFramerateFilter targetCameraFramerate)
-        {
+            ARCoreCameraConfigFilter.TargetCameraFramerateFilter targetCameraFramerate) {
             int fpsFilter = 0;
-            if (targetCameraFramerate.Target30FPS)
-            {
-                fpsFilter |= (int)ApiCameraConfigTargetFps.TargetFps30;
+            if (targetCameraFramerate.Target30FPS) {
+                fpsFilter |= (int) ApiCameraConfigTargetFps.TargetFps30;
             }
 
-            if (targetCameraFramerate.Target60FPS)
-            {
-                fpsFilter |= (int)ApiCameraConfigTargetFps.TargetFps60;
+            if (targetCameraFramerate.Target60FPS) {
+                fpsFilter |= (int) ApiCameraConfigTargetFps.TargetFps60;
             }
 
             return fpsFilter;
         }
 
         private int _ConvertToDepthFilter(
-            ARCoreCameraConfigFilter.DepthSensorUsageFilter depthSensorUsage)
-        {
+            ARCoreCameraConfigFilter.DepthSensorUsageFilter depthSensorUsage) {
             int depthFilter = 0;
-            if (depthSensorUsage.RequireAndUse)
-            {
-                depthFilter |= (int)CameraConfigDepthSensorUsages.RequireAndUse;
+            if (depthSensorUsage.RequireAndUse) {
+                depthFilter |= (int) CameraConfigDepthSensorUsages.RequireAndUse;
             }
 
-            if (depthSensorUsage.DoNotUse)
-            {
-                depthFilter |= (int)CameraConfigDepthSensorUsages.DoNotUse;
+            if (depthSensorUsage.DoNotUse) {
+                depthFilter |= (int) CameraConfigDepthSensorUsages.DoNotUse;
             }
 
             return depthFilter;
         }
 
-        private struct ExternApi
-        {
+        private struct ExternApi {
 #pragma warning disable 626
             [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArCameraConfigFilter_create(IntPtr sessionHandle,

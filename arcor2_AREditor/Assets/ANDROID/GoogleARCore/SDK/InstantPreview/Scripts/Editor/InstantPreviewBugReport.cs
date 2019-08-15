@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using System;
     using System.IO;
     using System.Runtime.InteropServices;
@@ -27,13 +26,11 @@ namespace GoogleARCoreInternal
     using UnityEditor;
     using UnityEngine;
 
-    internal static class InstantPreviewBugReport
-    {
+    internal static class InstantPreviewBugReport {
         private const string k_FileNamePrefix = "arcore_unity_editor_bug_report_";
 
         [MenuItem("Help/Capture ARCore Bug Report")]
-        private static void CaptureBugReport()
-        {
+        private static void CaptureBugReport() {
             string desktopPath = Environment.GetFolderPath(
                            Environment.SpecialFolder.Desktop);
             DateTime timeStamp = DateTime.Now;
@@ -43,8 +40,7 @@ namespace GoogleARCoreInternal
             StreamWriter writer;
 
             // Operating system and hardware info have to be handled separately based on OS
-            switch (SystemInfo.operatingSystemFamily)
-            {
+            switch (SystemInfo.operatingSystemFamily) {
                 case OperatingSystemFamily.MacOSX:
                     writer = File.CreateText(filePath);
 
@@ -133,8 +129,7 @@ namespace GoogleARCoreInternal
         }
 
         // Writes the fields that don't have to be handled differently based on Operating System
-        private static void WriteOsIndependentFields(StreamWriter writer)
-        {
+        private static void WriteOsIndependentFields(StreamWriter writer) {
             writer.WriteLine("*** UNITY VERSION ***");
             writer.WriteLine(Application.unityVersion);
             writer.WriteLine();
@@ -176,39 +171,30 @@ namespace GoogleARCoreInternal
             WriteCommand(adbPath, "version", writer);
         }
 
-        private static void WriteAdbPathVersions(string[] pathDirs, StreamWriter writer)
-        {
+        private static void WriteAdbPathVersions(string[] pathDirs, StreamWriter writer) {
             // Search through directories in PATH to find the version of adb used from PATH
-            foreach (var path in pathDirs)
-            {
+            foreach (string path in pathDirs) {
                 string fullAdbPath = Path.Combine(path, ShellHelper.GetAdbFileName());
-                if (File.Exists(fullAdbPath))
-                {
+                if (File.Exists(fullAdbPath)) {
                     WriteCommand(fullAdbPath, "version", writer);
                 }
             }
         }
 
-        private static void WriteCommand(string program, string arguments, StreamWriter writer)
-        {
-            if (string.IsNullOrEmpty(program))
-            {
+        private static void WriteCommand(string program, string arguments, StreamWriter writer) {
+            if (string.IsNullOrEmpty(program)) {
                 writer.WriteLine("error: program path was null");
-            }
-            else
-            {
+            } else {
                 string stdOut;
                 string stdErr;
 
                 ShellHelper.RunCommand(program, arguments, out stdOut, out stdErr);
 
-                if (!string.IsNullOrEmpty(stdOut))
-                {
+                if (!string.IsNullOrEmpty(stdOut)) {
                     writer.WriteLine(stdOut);
                 }
 
-                if (!string.IsNullOrEmpty(stdErr))
-                {
+                if (!string.IsNullOrEmpty(stdErr)) {
                     writer.WriteLine(stdErr);
                 }
             }
@@ -217,14 +203,10 @@ namespace GoogleARCoreInternal
         }
 
         private static void WritePackageVersionString(
-            string adbPath, string package, StreamWriter writer)
-        {
-            if (string.IsNullOrEmpty(adbPath))
-            {
+            string adbPath, string package, StreamWriter writer) {
+            if (string.IsNullOrEmpty(adbPath)) {
                 writer.WriteLine("error: adb path was null");
-            }
-            else
-            {
+            } else {
                 string stdOut;
                 string stdErr;
                 string arguments = "shell pm dump " + package + " | " +
@@ -233,20 +215,14 @@ namespace GoogleARCoreInternal
                 ShellHelper.RunCommand(adbPath, arguments, out stdOut, out stdErr);
 
                 // If stdOut is populated, the device is connected and the app is installed
-                if (!string.IsNullOrEmpty(stdOut))
-                {
+                if (!string.IsNullOrEmpty(stdOut)) {
                     writer.WriteLine(stdOut);
-                }
-                else
-                {
+                } else {
                     // If stdErr isn't empty, then either the device isn't connected or something
                     // else went wrong, such as adb not being installed.
-                    if (!string.IsNullOrEmpty(stdErr))
-                    {
+                    if (!string.IsNullOrEmpty(stdErr)) {
                         writer.WriteLine(stdErr);
-                    }
-                    else
-                    {
+                    } else {
                         // If stdErr is empty, then the device is connected and the app isn't
                         // installed
                         writer.WriteLine(package + " is not installed on device");
@@ -257,8 +233,7 @@ namespace GoogleARCoreInternal
             writer.WriteLine();
         }
 
-        private struct NativeApi
-        {
+        private struct NativeApi {
 #pragma warning disable 626
             [DllImport(InstantPreviewManager.InstantPreviewNativeApi)]
             public static extern bool InitializeInstantPreview(

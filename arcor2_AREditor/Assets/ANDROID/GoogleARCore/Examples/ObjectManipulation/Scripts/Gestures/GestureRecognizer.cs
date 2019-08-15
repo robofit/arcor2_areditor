@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulationInternal
-{
+namespace GoogleARCore.Examples.ObjectManipulationInternal {
     using System;
     using System.Collections.Generic;
     using UnityEngine;
@@ -39,8 +38,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
     /// gesture object.
     /// </summary>
     /// <typeparam name="T">The actual gesture.</typeparam>
-    public abstract class GestureRecognizer<T> where T : Gesture<T>
-    {
+    public abstract class GestureRecognizer<T> where T : Gesture<T> {
         /// <summary>
         /// List of current active gestures.
         /// </summary>
@@ -56,8 +54,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <summary>
         /// Updates this gesture recognizer.
         /// </summary>
-        public void Update()
-        {
+        public void Update() {
             // Instantiate gestures based on touch input.
             // Just because a gesture was created, doesn't mean that it is started.
             // For example, a DragGesture is created when the user touch's down,
@@ -65,8 +62,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             TryCreateGestures();
 
             // Update gestures and determine if they should start.
-            for (int i = 0; i < m_Gestures.Count; i++)
-            {
+            for (int i = 0; i < m_Gestures.Count; i++) {
                 Gesture<T> gesture = m_Gestures[i];
 
                 gesture.Update();
@@ -84,15 +80,12 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <typeparam name="createGestureFunction">Function to be executed to create the
         /// gesture.</param>
         protected internal void TryCreateOneFingerGestureOnTouchBegan(
-            Func<Touch, T> createGestureFunction)
-        {
-            for (int i = 0; i < Input.touches.Length; i++)
-            {
+            Func<Touch, T> createGestureFunction) {
+            for (int i = 0; i < Input.touches.Length; i++) {
                 Touch touch = Input.touches[i];
                 if (touch.phase == TouchPhase.Began
                     && !GestureTouchesUtility.IsFingerIdRetained(touch.fingerId)
-                    && !GestureTouchesUtility.IsTouchOffScreenEdge(touch))
-                {
+                    && !GestureTouchesUtility.IsTouchOffScreenEdge(touch)) {
                     T gesture = createGestureFunction(touch);
                     gesture.onStart += OnStart;
                     gesture.onFinished += OnFinished;
@@ -107,53 +100,43 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <typeparam name="createGestureFunction">Function to be executed to create the
         /// gesture.</param>
         protected internal void TryCreateTwoFingerGestureOnTouchBegan(
-            Func<Touch, Touch, T> createGestureFunction)
-        {
-            if (Input.touches.Length < 2)
-            {
+            Func<Touch, Touch, T> createGestureFunction) {
+            if (Input.touches.Length < 2) {
                 return;
             }
 
-            for (int i = 0; i < Input.touches.Length; i++)
-            {
+            for (int i = 0; i < Input.touches.Length; i++) {
                 TryCreateGestureTwoFingerGestureOnTouchBeganForTouchIndex(i, createGestureFunction);
             }
         }
 
         private void TryCreateGestureTwoFingerGestureOnTouchBeganForTouchIndex(
             int touchIndex,
-            Func<Touch, Touch, T> createGestureFunction)
-        {
-            if (Input.touches[touchIndex].phase != TouchPhase.Began)
-            {
+            Func<Touch, Touch, T> createGestureFunction) {
+            if (Input.touches[touchIndex].phase != TouchPhase.Began) {
                 return;
             }
 
             Touch touch = Input.touches[touchIndex];
             if (GestureTouchesUtility.IsFingerIdRetained(touch.fingerId)
-                || GestureTouchesUtility.IsTouchOffScreenEdge(touch))
-            {
+                || GestureTouchesUtility.IsTouchOffScreenEdge(touch)) {
                 return;
             }
 
-            for (int i = 0; i < Input.touches.Length; i++)
-            {
-                if (i == touchIndex)
-                {
+            for (int i = 0; i < Input.touches.Length; i++) {
+                if (i == touchIndex) {
                     continue;
                 }
 
                 // Prevents the same two touches from creating two gestures if both touches began on
                 // the same frame.
-                if (i < touchIndex && Input.touches[i].phase == TouchPhase.Began)
-                {
+                if (i < touchIndex && Input.touches[i].phase == TouchPhase.Began) {
                     continue;
                 }
 
                 Touch otherTouch = Input.touches[i];
                 if (GestureTouchesUtility.IsFingerIdRetained(otherTouch.fingerId)
-                    || GestureTouchesUtility.IsTouchOffScreenEdge(otherTouch))
-                {
+                    || GestureTouchesUtility.IsTouchOffScreenEdge(otherTouch)) {
                     continue;
                 }
 
@@ -164,16 +147,13 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
             }
         }
 
-        private void OnStart(T gesture)
-        {
-            if (onGestureStarted != null)
-            {
+        private void OnStart(T gesture) {
+            if (onGestureStarted != null) {
                 onGestureStarted(gesture);
             }
         }
 
-        private void OnFinished(T gesture)
-        {
+        private void OnFinished(T gesture) {
             m_Gestures.Remove(gesture);
         }
     }

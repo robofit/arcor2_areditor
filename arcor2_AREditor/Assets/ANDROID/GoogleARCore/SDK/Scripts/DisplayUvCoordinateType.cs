@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Types of UV coordinates used for the display.
     /// </summary>
-    public enum DisplayUvCoordinateType
-    {
+    public enum DisplayUvCoordinateType {
         /// <summary>
         /// The background texture used to display the pass-through camera available from
         /// <see cref="GoogleARCore.Frame.CameraImage.Texture"/>.

@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using GoogleARCoreInternal;
     using UnityEngine;
@@ -33,11 +32,9 @@ namespace GoogleARCore
     /// will help speed up the initial pose and physical size estimation process. Note that an AugmentedImage
     /// can have tracking state Paused even if the session state is Tracking.
     /// </summary>
-    public class AugmentedImage : Trackable
-    {
+    public class AugmentedImage : Trackable {
         internal AugmentedImage(IntPtr nativeHandle, NativeSession nativeApi)
-            : base(nativeHandle, nativeApi)
-        {
+            : base(nativeHandle, nativeApi) {
         }
 
         /// <summary>
@@ -47,10 +44,8 @@ namespace GoogleARCore
         /// This index serves as the unique identifier for the image
         /// in the database.
         /// </summary>
-        public int DatabaseIndex
-        {
-            get
-            {
+        public int DatabaseIndex {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetDatabaseIndex(m_TrackableNativeHandle);
             }
         }
@@ -60,11 +55,9 @@ namespace GoogleARCore
         ///
         /// The image name is not guaranteed to be unique.
         /// </summary>
-        public string Name
-        {
+        public string Name {
             [SuppressMemoryAllocationError(IsWarning = true, Reason = "Allocates new string")]
-            get
-            {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetName(m_TrackableNativeHandle);
             }
         }
@@ -77,10 +70,8 @@ namespace GoogleARCore
         /// If the tracking state is Paused/Stopped, this returns the pose when the image state was last Tracking,
         /// or the identity pose if the image state has never been Tracking.
         /// </summary>
-        public Pose CenterPose
-        {
-            get
-            {
+        public Pose CenterPose {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetCenterPose(m_TrackableNativeHandle);
             }
         }
@@ -97,10 +88,8 @@ namespace GoogleARCore
         /// If the tracking state is Paused/Stopped, this returns the estimated width when the image state was
         /// last Tracking, or <c>0</c> if the image state has never been Tracking.
         /// </summary>
-        public float ExtentX
-        {
-            get
-            {
+        public float ExtentX {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetExtentX(m_TrackableNativeHandle);
             }
         }
@@ -116,10 +105,8 @@ namespace GoogleARCore
         /// If the tracking state is Paused/Stopped, this returns the estimated height when the image state was
         /// last Tracking, or <c>0</c> if the image state has never been Tracking.
         /// </summary>
-        public float ExtentZ
-        {
-            get
-            {
+        public float ExtentZ {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetExtentZ(m_TrackableNativeHandle);
             }
         }
@@ -128,10 +115,8 @@ namespace GoogleARCore
         /// Gets the current method being used to track this Augmented Image.
         /// </summary>
         /// <value>The current tracking method being used.</value>
-        public AugmentedImageTrackingMethod TrackingMethod
-        {
-            get
-            {
+        public AugmentedImageTrackingMethod TrackingMethod {
+            get {
                 return m_NativeSession.AugmentedImageApi.GetTrackingMethod(m_TrackableNativeHandle);
             }
         }

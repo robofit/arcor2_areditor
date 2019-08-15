@@ -18,27 +18,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using GoogleARCoreInternal;
     using UnityEngine;
 
     /// <summary>
     /// A planar surface in the real world detected and tracked by ARCore.
     /// </summary>
-    public class DetectedPlane : Trackable
-    {
+    public class DetectedPlane : Trackable {
         /// <summary>
         /// Construct DetectedPlane from a native handle.
         /// </summary>
         /// <param name="nativeHandle">A handle to the native ARCore API Trackable.</param>
         /// <param name="nativeApi">The ARCore native api.</param>
         internal DetectedPlane(IntPtr nativeHandle, NativeSession nativeApi)
-            : base(nativeHandle, nativeApi)
-        {
+            : base(nativeHandle, nativeApi) {
             m_TrackableNativeHandle = nativeHandle;
             m_NativeSession = nativeApi;
         }
@@ -47,12 +43,9 @@ namespace GoogleARCore
         /// Gets a reference to the plane subsuming this plane, if any. If not null, only the
         /// subsuming plane should be considered valid for rendering.
         /// </summary>
-        public DetectedPlane SubsumedBy
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public DetectedPlane SubsumedBy {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "SubsumedBy:: Trying to access a session that has already been destroyed.");
                     return null;
@@ -65,12 +58,9 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the position and orientation of the plane's center in Unity world space.
         /// </summary>
-        public Pose CenterPose
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public Pose CenterPose {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "CenterPose:: Trying to access a session that has already been destroyed.");
                     return new Pose();
@@ -83,12 +73,9 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the extent of the plane in the X dimension, centered on the plane position.
         /// </summary>
-        public float ExtentX
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public float ExtentX {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "ExtentX:: Trying to access a session that has already been destroyed.");
                     return 0f;
@@ -101,12 +88,9 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the extent of the plane in the Z dimension, centered on the plane position.
         /// </summary>
-        public float ExtentZ
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public float ExtentZ {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "ExtentZ:: Trying to access a session that has already been destroyed.");
                     return 0f;
@@ -119,12 +103,9 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the type of the plane.
         /// </summary>
-        public DetectedPlaneType PlaneType
-        {
-            get
-            {
-                if (_IsSessionDestroyed())
-                {
+        public DetectedPlaneType PlaneType {
+            get {
+                if (_IsSessionDestroyed()) {
                     Debug.LogError(
                         "PlaneType:: Trying to access a session that has already been destroyed.");
                     return DetectedPlaneType.HorizontalUpwardFacing;
@@ -141,10 +122,8 @@ namespace GoogleARCore
         /// <param name="boundaryPolygonPoints">A list of <b>Vector3</b> to be filled by the method
         /// call.</param>
         [SuppressMemoryAllocationError(Reason = "List could be resized.")]
-        public void GetBoundaryPolygon(List<Vector3> boundaryPolygonPoints)
-        {
-            if (_IsSessionDestroyed())
-            {
+        public void GetBoundaryPolygon(List<Vector3> boundaryPolygonPoints) {
+            if (_IsSessionDestroyed()) {
                 Debug.LogError(
                     "GetBoundaryPolygon:: Trying to access a session that has already been " +
                     "destroyed.");

@@ -18,18 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
-    using System;
-    using System.Collections.Generic;
-    using GoogleARCoreInternal;
-    using UnityEngine;
-
+namespace GoogleARCore.CrossPlatform {
     /// <summary>
     /// The result of a cloud service operation that returns a cloud anchor.
     /// </summary>
-    public struct CloudAnchorResult
-    {
+    public struct CloudAnchorResult {
         /// <summary>
         /// The response from the cloud service.
         /// </summary>

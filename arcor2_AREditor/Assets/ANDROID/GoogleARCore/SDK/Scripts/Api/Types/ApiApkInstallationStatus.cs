@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiApkInstallationStatus
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiApkInstallationStatus {
         Uninitialized = 0,
         Requested = 1,
         Success = 100,

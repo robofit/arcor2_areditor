@@ -20,12 +20,10 @@
 
 // Certain versions of 2018.1 fail to define UNITY_2017_4_OR_NEWER.
 #if !UNITY_2017_4_OR_NEWER && !UNITY_2018_1_OR_NEWER && !ARCORE_SKIP_MIN_VERSION_CHECK
-  #error ARCore SDK for Unity requires Unity 2017.4 or later.
+#error ARCore SDK for Unity requires Unity 2017.4 or later.
 #endif  // !UNITY_2017_4_OR_NEWER && !UNITY_2018_1_OR_NEWER
 
-namespace GoogleARCore
-{
-    using System;
+namespace GoogleARCore {
     using System.Collections.Generic;
     using GoogleARCoreInternal;
     using UnityEngine;
@@ -36,15 +34,12 @@ namespace GoogleARCore
     /// ARCore, manages tracking of Anchors and Planes, and performs hit tests
     /// against objects ARCore is tracking in the world.
     /// </summary>
-    public static class Session
-    {
+    public static class Session {
         /// <summary>
         /// Gets current session status.
         /// </summary>
-        public static SessionStatus Status
-        {
-            get
-            {
+        public static SessionStatus Status {
+            get {
                 return LifecycleManager.Instance.SessionStatus;
             }
         }
@@ -52,10 +47,8 @@ namespace GoogleARCore
         /// <summary>
         /// Gets the reason for ARCore having lost tracking.
         /// </summary>
-        public static LostTrackingReason LostTrackingReason
-        {
-            get
-            {
+        public static LostTrackingReason LostTrackingReason {
+            get {
                 return LifecycleManager.Instance.LostTrackingReason;
             }
         }
@@ -71,20 +64,15 @@ namespace GoogleARCore
         /// <param name="trackable">The Trackable to attach the Anchor to.</param>
         /// <returns>The newly created anchor or null.</returns>
         [SuppressMemoryAllocationError(Reason = "Could allocate a new Anchor object")]
-        public static Anchor CreateAnchor(Pose pose, Trackable trackable = null)
-        {
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+        public static Anchor CreateAnchor(Pose pose, Trackable trackable = null) {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return null;
             }
 
-            if (trackable == null)
-            {
+            if (trackable == null) {
                 return nativeSession.SessionApi.CreateAnchor(pose);
-            }
-            else
-            {
+            } else {
                 return trackable.CreateAnchor(pose);
             }
         }
@@ -99,12 +87,10 @@ namespace GoogleARCore
         [SuppressMemoryAllocationError(Reason = "List could be resized.")]
         public static void GetTrackables<T>(
             List<T> trackables, TrackableQueryFilter filter = TrackableQueryFilter.All)
-            where T : Trackable
-        {
+            where T : Trackable {
             trackables.Clear();
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return;
             }
 
@@ -116,11 +102,9 @@ namespace GoogleARCore
         /// </summary>
         /// <returns>The CameraConfig that the ARCore session is currently running with. The value
         /// is only correct when there is a valid running ARCore session. </returns>
-        public static CameraConfig GetCameraConfig()
-        {
-            var nativeSession = LifecycleManager.Instance.NativeSession;
-            if (nativeSession == null)
-            {
+        public static CameraConfig GetCameraConfig() {
+            NativeSession nativeSession = LifecycleManager.Instance.NativeSession;
+            if (nativeSession == null) {
                 return new CameraConfig();
             }
 
@@ -133,8 +117,7 @@ namespace GoogleARCore
         /// <returns>An AsyncTask that completes with an ApkAvailabilityStatus when the availability
         /// is known.</returns>
         [SuppressMemoryAllocationError(Reason = "Creates a new AsyncTask")]
-        public static AsyncTask<ApkAvailabilityStatus> CheckApkAvailability()
-        {
+        public static AsyncTask<ApkAvailabilityStatus> CheckApkAvailability() {
             return LifecycleManager.Instance.CheckApkAvailability();
         }
 
@@ -146,8 +129,7 @@ namespace GoogleARCore
         /// <returns>An AsyncTask that completes with an ApkInstallationStatus when the installation
         /// status is resolved.</returns>
         [SuppressMemoryAllocationError(Reason = "Creates a new AsyncTask")]
-        public static AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested)
-        {
+        public static AsyncTask<ApkInstallationStatus> RequestApkInstallation(bool userRequested) {
             return LifecycleManager.Instance.RequestApkInstallation(userRequested);
         }
     }

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.CrossPlatform
-{
+namespace GoogleARCore.CrossPlatform {
     /// <summary>
     /// The tracking state for a cross-platform ARCore entity.
     /// </summary>
-    public enum XPTrackingState
-    {
+    public enum XPTrackingState {
         /// <summary>
         /// The entity is actively being tracked.
         /// </summary>

@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiTrackingStateExtensions
-    {
-        public static TrackingState ToTrackingState(this ApiTrackingState apiTrackingState)
-        {
-            switch (apiTrackingState)
-            {
+    internal static class ApiTrackingStateExtensions {
+        public static TrackingState ToTrackingState(this ApiTrackingState apiTrackingState) {
+            switch (apiTrackingState) {
                 case ApiTrackingState.Tracking:
                     return TrackingState.Tracking;
                 case ApiTrackingState.Paused:

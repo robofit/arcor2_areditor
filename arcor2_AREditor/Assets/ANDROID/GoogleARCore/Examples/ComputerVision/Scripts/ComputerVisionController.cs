@@ -18,25 +18,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ComputerVision
-{
+namespace GoogleARCore.Examples.ComputerVision {
     using System;
     using System.Collections.Generic;
     using GoogleARCore;
     using UnityEngine;
     using UnityEngine.UI;
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     // Set up touch input propagation while using Instant Preview in the editor.
     using Input = InstantPreviewInput;
-    #endif  // UNITY_EDITOR
+#endif  // UNITY_EDITOR
 
     /// <summary>
     /// Controller for the ComputerVision example that accesses the CPU camera image (i.e. image
     /// bytes), performs edge detection on the image, and renders an overlay to the screen.
     /// </summary>
-    public class ComputerVisionController : MonoBehaviour
-    {
+    public class ComputerVisionController : MonoBehaviour {
         /// <summary>
         /// The ARCoreSession monobehavior that manages the ARCore session.
         /// </summary>
@@ -120,8 +118,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
-        public void Awake()
-        {
+        public void Awake() {
             // Lock screen to portrait.
             Screen.autorotateToLandscapeLeft = false;
             Screen.autorotateToLandscapeRight = false;
@@ -141,8 +138,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// The Unity Start() method.
         /// </summary>
-        public void Start()
-        {
+        public void Start() {
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
             ImageTextureToggle.OnPointClickDetected += _OnBackgroundClicked;
@@ -163,10 +159,8 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        public void Update()
-        {
-            if (Input.GetKey(KeyCode.Escape))
-            {
+        public void Update() {
+            if (Input.GetKey(KeyCode.Escape)) {
                 Application.Quit();
             }
 
@@ -179,22 +173,19 @@ namespace GoogleARCore.Examples.ComputerVision
             m_ImageTextureToggleText.text = EdgeDetectionBackgroundImage.enabled ?
                     "Switch to GPU Texture" : "Switch to CPU Image";
 
-            if (!Session.Status.IsValid())
-            {
+            if (!Session.Status.IsValid()) {
                 return;
             }
 
-            using (var image = Frame.CameraImage.AcquireCameraImageBytes())
-            {
-                if (!image.IsAvailable)
-                {
+            using (CameraImageBytes image = Frame.CameraImage.AcquireCameraImageBytes()) {
+                if (!image.IsAvailable) {
                     return;
                 }
 
                 _OnImageAvailable(image.Width, image.Height, image.YRowStride, image.Y, 0);
             }
 
-            var cameraIntrinsics = EdgeDetectionBackgroundImage.enabled
+            CameraIntrinsics cameraIntrinsics = EdgeDetectionBackgroundImage.enabled
                 ? Frame.CameraImage.ImageIntrinsics : Frame.CameraImage.TextureIntrinsics;
             string intrinsicsType =
                 EdgeDetectionBackgroundImage.enabled ? "CPU Image" : "GPU Texture";
@@ -206,8 +197,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// Handles the low resolution checkbox toggle changing.
         /// </summary>
         /// <param name="newValue">The new value for the checkbox.</param>
-        public void OnLowResolutionCheckboxValueChanged(bool newValue)
-        {
+        public void OnLowResolutionCheckboxValueChanged(bool newValue) {
             m_UseHighResCPUTexture = !newValue;
             HighResConfigToggle.isOn = !newValue;
 
@@ -220,8 +210,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// Handles the high resolution checkbox toggle changing.
         /// </summary>
         /// <param name="newValue">The new value for the checkbox.</param>
-        public void OnHighResolutionCheckboxValueChanged(bool newValue)
-        {
+        public void OnHighResolutionCheckboxValueChanged(bool newValue) {
             m_UseHighResCPUTexture = newValue;
             LowResConfigToggle.isOn = !newValue;
 
@@ -234,11 +223,9 @@ namespace GoogleARCore.Examples.ComputerVision
         /// Hanldes the auto focus checkbox value changed.
         /// </summary>
         /// <param name="autoFocusEnabled">If set to <c>true</c> auto focus will be enabled.</param>
-        public void OnAutoFocusCheckboxValueChanged(bool autoFocusEnabled)
-        {
-            var config = ARSessionManager.SessionConfig;
-            if (config != null)
-            {
+        public void OnAutoFocusCheckboxValueChanged(bool autoFocusEnabled) {
+            ARCoreSessionConfig config = ARSessionManager.SessionConfig;
+            if (config != null) {
                 config.CameraFocusMode =
                     autoFocusEnabled ? CameraFocusMode.Auto : CameraFocusMode.Fixed;
             }
@@ -247,17 +234,14 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// Function get called when the background image got clicked.
         /// </summary>
-        private void _OnBackgroundClicked()
-        {
+        private void _OnBackgroundClicked() {
             EdgeDetectionBackgroundImage.enabled = !EdgeDetectionBackgroundImage.enabled;
         }
 
-        private void _UpdateFrameRate()
-        {
+        private void _UpdateFrameRate() {
             m_FrameCounter++;
             m_FramePassedTime += Time.deltaTime;
-            if (m_FramePassedTime > s_FrameRateUpdateInterval)
-            {
+            if (m_FramePassedTime > s_FrameRateUpdateInterval) {
                 m_RenderingFrameTime = 1000 * m_FramePassedTime / m_FrameCounter;
                 m_RenderingFrameRate = 1000 / m_RenderingFrameTime;
                 m_FramePassedTime = 0f;
@@ -274,18 +258,15 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <param name="pixelBuffer">Pointer to raw image buffer.</param>
         /// <param name="bufferSize">The size of the image buffer, in bytes.</param>
         private void _OnImageAvailable(
-            int width, int height, int rowStride, IntPtr pixelBuffer, int bufferSize)
-        {
-            if (!EdgeDetectionBackgroundImage.enabled)
-            {
+            int width, int height, int rowStride, IntPtr pixelBuffer, int bufferSize) {
+            if (!EdgeDetectionBackgroundImage.enabled) {
                 return;
             }
 
             if (m_EdgeDetectionBackgroundTexture == null ||
                 m_EdgeDetectionResultImage == null ||
                 m_EdgeDetectionBackgroundTexture.width != width ||
-                m_EdgeDetectionBackgroundTexture.height != height)
-            {
+                m_EdgeDetectionBackgroundTexture.height != height) {
                 m_EdgeDetectionBackgroundTexture =
                     new Texture2D(width, height, TextureFormat.R8, false, false);
                 m_EdgeDetectionResultImage = new byte[width * height];
@@ -294,8 +275,7 @@ namespace GoogleARCore.Examples.ComputerVision
 
             if (m_CachedOrientation != Screen.orientation ||
                 m_CachedScreenDimensions.x != Screen.width ||
-                m_CachedScreenDimensions.y != Screen.height)
-            {
+                m_CachedScreenDimensions.y != Screen.height) {
                 m_CameraImageToDisplayUvTransformation = Frame.CameraImage.ImageDisplayUvs;
                 m_CachedOrientation = Screen.orientation;
                 m_CachedScreenDimensions = new Vector2(Screen.width, Screen.height);
@@ -303,8 +283,7 @@ namespace GoogleARCore.Examples.ComputerVision
 
             // Detect edges within the image.
             if (EdgeDetector.Detect(
-                m_EdgeDetectionResultImage, pixelBuffer, width, height, rowStride))
-            {
+                m_EdgeDetectionResultImage, pixelBuffer, width, height, rowStride)) {
                 // Update the rendering texture with the edge image.
                 m_EdgeDetectionBackgroundTexture.LoadRawTextureData(m_EdgeDetectionResultImage);
                 m_EdgeDetectionBackgroundTexture.Apply();
@@ -329,23 +308,18 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// Quit the application if there was a connection error for the ARCore session.
         /// </summary>
-        private void _QuitOnConnectionErrors()
-        {
-            if (m_IsQuitting)
-            {
+        private void _QuitOnConnectionErrors() {
+            if (m_IsQuitting) {
                 return;
             }
 
             // Quit if ARCore was unable to connect and give Unity some time for the toast to
             // appear.
-            if (Session.Status == SessionStatus.ErrorPermissionNotGranted)
-            {
+            if (Session.Status == SessionStatus.ErrorPermissionNotGranted) {
                 _ShowAndroidToastMessage("Camera permission is needed to run this application.");
                 m_IsQuitting = true;
                 Invoke("_DoQuit", 0.5f);
-            }
-            else if (Session.Status == SessionStatus.FatalError)
-            {
+            } else if (Session.Status == SessionStatus.FatalError) {
                 _ShowAndroidToastMessage(
                     "ARCore encountered a problem connecting.  Please start the app again.");
                 m_IsQuitting = true;
@@ -357,17 +331,14 @@ namespace GoogleARCore.Examples.ComputerVision
         /// Show an Android toast message.
         /// </summary>
         /// <param name="message">Message string to show in the toast.</param>
-        private void _ShowAndroidToastMessage(string message)
-        {
+        private void _ShowAndroidToastMessage(string message) {
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             AndroidJavaObject unityActivity =
                 unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-            if (unityActivity != null)
-            {
+            if (unityActivity != null) {
                 AndroidJavaClass toastClass = new AndroidJavaClass("android.widget.Toast");
-                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
-                {
+                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
                     AndroidJavaObject toastObject =
                         toastClass.CallStatic<AndroidJavaObject>(
                             "makeText", unityActivity, message, 0);
@@ -379,8 +350,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <summary>
         /// Actually quit the application.
         /// </summary>
-        private void _DoQuit()
-        {
+        private void _DoQuit() {
             Application.Quit();
         }
 
@@ -391,8 +361,7 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <param name="intrinsicsType">The string that describe the type of the
         /// intrinsics.</param>
         /// <returns>The generated string.</returns>
-        private string _CameraIntrinsicsToString(CameraIntrinsics intrinsics, string intrinsicsType)
-        {
+        private string _CameraIntrinsicsToString(CameraIntrinsics intrinsics, string intrinsicsType) {
             float fovX = 2.0f * Mathf.Rad2Deg * Mathf.Atan2(
                 intrinsics.ImageDimensions.x, 2 * intrinsics.FocalLength.x);
             float fovY = 2.0f * Mathf.Rad2Deg * Mathf.Atan2(
@@ -423,23 +392,19 @@ namespace GoogleARCore.Examples.ComputerVision
         /// <param name="supportedConfigurations">A list of all supported camera
         /// configuration.</param>
         /// <returns>The desired configuration index.</returns>
-        private int _ChooseCameraConfiguration(List<CameraConfig> supportedConfigurations)
-        {
-            if (!m_Resolutioninitialized)
-            {
+        private int _ChooseCameraConfiguration(List<CameraConfig> supportedConfigurations) {
+            if (!m_Resolutioninitialized) {
                 m_HighestResolutionConfigIndex = 0;
                 m_LowestResolutionConfigIndex = 0;
                 CameraConfig maximalConfig = supportedConfigurations[0];
                 CameraConfig minimalConfig = supportedConfigurations[0];
-                for (int index = 1; index < supportedConfigurations.Count; index++)
-                {
+                for (int index = 1; index < supportedConfigurations.Count; index++) {
                     CameraConfig config = supportedConfigurations[index];
                     if ((config.ImageSize.x > maximalConfig.ImageSize.x &&
                          config.ImageSize.y > maximalConfig.ImageSize.y) ||
                         (config.ImageSize.x == maximalConfig.ImageSize.x &&
                          config.ImageSize.y == maximalConfig.ImageSize.y &&
-                         config.MaxFPS > maximalConfig.MaxFPS))
-                    {
+                         config.MaxFPS > maximalConfig.MaxFPS)) {
                         m_HighestResolutionConfigIndex = index;
                         maximalConfig = config;
                     }
@@ -448,8 +413,7 @@ namespace GoogleARCore.Examples.ComputerVision
                          config.ImageSize.y < minimalConfig.ImageSize.y) ||
                         (config.ImageSize.x == minimalConfig.ImageSize.x &&
                          config.ImageSize.y == minimalConfig.ImageSize.y &&
-                         config.MaxFPS > minimalConfig.MaxFPS))
-                    {
+                         config.MaxFPS > minimalConfig.MaxFPS)) {
                         m_LowestResolutionConfigIndex = index;
                         minimalConfig = config;
                     }
@@ -468,8 +432,7 @@ namespace GoogleARCore.Examples.ComputerVision
                 m_Resolutioninitialized = true;
             }
 
-            if (m_UseHighResCPUTexture)
-            {
+            if (m_UseHighResCPUTexture) {
                 return m_HighestResolutionConfigIndex;
             }
 

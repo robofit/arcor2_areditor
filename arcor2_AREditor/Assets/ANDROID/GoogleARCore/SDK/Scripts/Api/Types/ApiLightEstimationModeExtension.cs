@@ -18,16 +18,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using GoogleARCore;
 
-    internal static class ApiLightEstimationModeExtension
-    {
-        public static ApiLightEstimationMode ToApiLightEstimationMode(this LightEstimationMode mode)
-        {
-            switch (mode)
-            {
+    internal static class ApiLightEstimationModeExtension {
+        public static ApiLightEstimationMode ToApiLightEstimationMode(this LightEstimationMode mode) {
+            switch (mode) {
                 case LightEstimationMode.Disabled:
                     return ApiLightEstimationMode.Disabled;
                 case LightEstimationMode.AmbientIntensity:

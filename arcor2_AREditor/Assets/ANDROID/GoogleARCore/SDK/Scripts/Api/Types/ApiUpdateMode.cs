@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiUpdateMode
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiUpdateMode {
         Blocking = 0,
         LatestCameraImage = 1,
     }

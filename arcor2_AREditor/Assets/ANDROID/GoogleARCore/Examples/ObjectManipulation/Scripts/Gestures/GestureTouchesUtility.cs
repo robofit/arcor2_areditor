@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulationInternal
-{
+namespace GoogleARCore.Examples.ObjectManipulationInternal {
     using System.Collections.Generic;
     using UnityEngine;
 
@@ -37,8 +36,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
     /// 4. Provides helper functions for converting touch coordinates
     ///    and performing raycasts based on touches.
     /// </summary>
-    internal class GestureTouchesUtility
-    {
+    internal class GestureTouchesUtility {
         private const float k_EdgeThresholdInches = 0.1f;
         private static GestureTouchesUtility s_Instance;
 
@@ -48,8 +46,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// Initializes a new instance of the GestureTouchesUtility class. Intended for private use
         /// since this class is a Singleton.
         /// </summary>
-        private GestureTouchesUtility()
-        {
+        private GestureTouchesUtility() {
         }
 
         /// <summary>
@@ -58,12 +55,9 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <param name="fingerId">The finger id to find the touch.</param>
         /// <param name="touch">The output touch.</param>
         /// <returns>True if a touch was found.</returns>
-        public static bool TryFindTouch(int fingerId, out Touch touch)
-        {
-            for (int i = 0; i < Input.touches.Length; i++)
-            {
-                if (Input.touches[i].fingerId == fingerId)
-                {
+        public static bool TryFindTouch(int fingerId, out Touch touch) {
+            for (int i = 0; i < Input.touches.Length; i++) {
+                if (Input.touches[i].fingerId == fingerId) {
                     touch = Input.touches[i];
                     return true;
                 }
@@ -78,8 +72,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// </summary>
         /// <param name="pixels">The amount to convert in pixels.</param>
         /// <returns>The converted amount in inches.</returns>
-        public static float PixelsToInches(float pixels)
-        {
+        public static float PixelsToInches(float pixels) {
             return pixels / Screen.dpi;
         }
 
@@ -88,8 +81,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// </summary>
         /// <param name="inches">The amount to convert in inches.</param>
         /// <returns>The converted amount in pixels.</returns>
-        public static float InchesToPixels(float inches)
-        {
+        public static float InchesToPixels(float inches) {
             return inches * Screen.dpi;
         }
 
@@ -100,8 +92,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// </summary>
         /// <param name="touch">The touch to check.</param>
         /// <returns>True if the touch is off screen edge.</returns>
-        public static bool IsTouchOffScreenEdge(Touch touch)
-        {
+        public static bool IsTouchOffScreenEdge(Touch touch) {
             float slopPixels = InchesToPixels(k_EdgeThresholdInches);
 
             bool result = touch.position.x <= slopPixels;
@@ -118,18 +109,15 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// <param name="screenPos">The screen position to perform the raycast from.</param>
         /// <param name="result">The RaycastHit result.</param>
         /// <returns>True if an object was hit.</returns>
-        public static bool RaycastFromCamera(Vector2 screenPos, out RaycastHit result)
-        {
-            if (Camera.main == null)
-            {
+        public static bool RaycastFromCamera(Vector2 screenPos, out RaycastHit result) {
+            if (Camera.main == null) {
                 result = new RaycastHit();
                 return false;
             }
 
             Ray ray = Camera.main.ScreenPointToRay(screenPos);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
+            if (Physics.Raycast(ray, out hit)) {
                 result = hit;
                 return true;
             }
@@ -142,10 +130,8 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// Locks a finger Id.
         /// </summary>
         /// <param name="fingerId">The finger id to lock.</param>
-        public static void LockFingerId(int fingerId)
-        {
-            if (!IsFingerIdRetained(fingerId))
-            {
+        public static void LockFingerId(int fingerId) {
+            if (!IsFingerIdRetained(fingerId)) {
                 _GetInstance().m_RetainedFingerIds.Add(fingerId);
             }
         }
@@ -154,10 +140,8 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// Releases a finger Id.
         /// </summary>
         /// <param name="fingerId">The finger id to release.</param>
-        public static void ReleaseFingerId(int fingerId)
-        {
-            if (IsFingerIdRetained(fingerId))
-            {
+        public static void ReleaseFingerId(int fingerId) {
+            if (IsFingerIdRetained(fingerId)) {
                 _GetInstance().m_RetainedFingerIds.Remove(fingerId);
             }
         }
@@ -167,8 +151,7 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// </summary>
         /// <param name="fingerId">The finger id to check.</param>
         /// <returns>True if the finger is retained.</returns>
-        public static bool IsFingerIdRetained(int fingerId)
-        {
+        public static bool IsFingerIdRetained(int fingerId) {
             return _GetInstance().m_RetainedFingerIds.Contains(fingerId);
         }
 
@@ -176,10 +159,8 @@ namespace GoogleARCore.Examples.ObjectManipulationInternal
         /// Initializes the GestureTouchesUtility singleton if needed and returns a valid instance.
         /// </summary>
         /// <returns>The instance of GestureTouchesUtility.</returns>
-        private static GestureTouchesUtility _GetInstance()
-        {
-            if (s_Instance == null)
-            {
+        private static GestureTouchesUtility _GetInstance() {
+            if (s_Instance == null) {
                 s_Instance = new GestureTouchesUtility();
             }
 

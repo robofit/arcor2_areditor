@@ -18,10 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    internal enum ApiPlaneType
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiPlaneType {
         HorizontalUpwardFacing = 0,
         HorizontalDownwardFacing = 1,
         Vertical = 2,

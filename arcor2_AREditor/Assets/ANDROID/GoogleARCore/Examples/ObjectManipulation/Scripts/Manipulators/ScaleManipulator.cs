@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using GoogleARCore.Examples.ObjectManipulationInternal;
     using UnityEngine;
 
@@ -28,8 +27,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
     /// If an object is selected, then doing a pinch/zoom modify the scale
     /// of the object.
     /// </summary>
-    public class ScaleManipulator : Manipulator
-    {
+    public class ScaleManipulator : Manipulator {
         /// <summary>
         /// The minimum scale of the object.
         /// </summary>
@@ -49,12 +47,9 @@ namespace GoogleARCore.Examples.ObjectManipulation
         private float m_CurrentScaleRatio;
         private bool m_IsScaling;
 
-        private float m_ScaleDelta
-        {
-            get
-            {
-                if (MinScale > MaxScale)
-                {
+        private float m_ScaleDelta {
+            get {
+                if (MinScale > MaxScale) {
                     Debug.LogError("minScale must be smaller than maxScale.");
                     return 0.0f;
                 }
@@ -63,18 +58,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
             }
         }
 
-        private float m_ClampedScaleRatio
-        {
-            get
-            {
+        private float m_ClampedScaleRatio {
+            get {
                 return Mathf.Clamp01(m_CurrentScaleRatio);
             }
         }
 
-        private float m_CurrentScale
-        {
-            get
-            {
+        private float m_CurrentScale {
+            get {
                 float elasticScaleRatio = m_ClampedScaleRatio + ElasticDelta();
                 float elasticScale = MinScale + (elasticScaleRatio * m_ScaleDelta);
                 return elasticScale;
@@ -84,8 +75,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Enabled the scale controller.
         /// </summary>
-        protected override void OnEnable()
-        {
+        protected override void OnEnable() {
             base.OnEnable();
             m_CurrentScaleRatio = (transform.localScale.x - MinScale) / m_ScaleDelta;
         }
@@ -95,15 +85,12 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(PinchGesture gesture)
-        {
-            if (!IsSelected())
-            {
+        protected override bool CanStartManipulationForGesture(PinchGesture gesture) {
+            if (!IsSelected()) {
                 return false;
             }
 
-            if (gesture.TargetObject != null)
-            {
+            if (gesture.TargetObject != null) {
                 return false;
             }
 
@@ -114,8 +101,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Recalculates the current scale ratio in case local scale, min or max scale were changed.
         /// </summary>
         /// <param name="gesture">The gesture that started this transformation.</param>
-        protected override void OnStartManipulation(PinchGesture gesture)
-        {
+        protected override void OnStartManipulation(PinchGesture gesture) {
             m_IsScaling = true;
             m_CurrentScaleRatio = (transform.localScale.x - MinScale) / m_ScaleDelta;
         }
@@ -124,8 +110,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Continues the scaling of the object.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnContinueManipulation(PinchGesture gesture)
-        {
+        protected override void OnContinueManipulation(PinchGesture gesture) {
             m_CurrentScaleRatio +=
                 k_Sensitivity * GestureTouchesUtility.PixelsToInches(gesture.GapDelta);
 
@@ -135,8 +120,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
             // If we've tried to scale too far beyond the limit, then cancel the gesture
             // to snap back within the scale range.
             if (m_CurrentScaleRatio < -k_ElasticRatioLimit
-                || m_CurrentScaleRatio > (1.0f + k_ElasticRatioLimit))
-            {
+                || m_CurrentScaleRatio > (1.0f + k_ElasticRatioLimit)) {
                 gesture.Cancel();
             }
         }
@@ -145,24 +129,17 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Finishes the scaling of the object.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnEndManipulation(PinchGesture gesture)
-        {
+        protected override void OnEndManipulation(PinchGesture gesture) {
             m_IsScaling = false;
         }
 
-        private float ElasticDelta()
-        {
+        private float ElasticDelta() {
             float overRatio = 0.0f;
-            if (m_CurrentScaleRatio > 1.0f)
-            {
+            if (m_CurrentScaleRatio > 1.0f) {
                 overRatio = m_CurrentScaleRatio - 1.0f;
-            }
-            else if (m_CurrentScaleRatio < 0.0f)
-            {
+            } else if (m_CurrentScaleRatio < 0.0f) {
                 overRatio = m_CurrentScaleRatio;
-            }
-            else
-            {
+            } else {
                 return 0.0f;
             }
 
@@ -170,10 +147,8 @@ namespace GoogleARCore.Examples.ObjectManipulation
             * Mathf.Sign(overRatio);
         }
 
-        private void LateUpdate()
-        {
-            if (!m_IsScaling)
-            {
+        private void LateUpdate() {
+            if (!m_IsScaling) {
                 m_CurrentScaleRatio =
                     Mathf.Lerp(m_CurrentScaleRatio, m_ClampedScaleRatio, Time.deltaTime * 8.0f);
                 float currentScale = m_CurrentScale;

@@ -1,29 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class SideMenuControll : MonoBehaviour
-{
+public class SideMenuControll : MonoBehaviour {
     public MenuManager _MenuManager;
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         _MenuManager = GameObject.Find("_MenuManager").gameObject.GetComponent<MenuManager>();
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
+    void Update() {
+
     }
 
-    public void Hide()
-    {
+    public void Hide() {
         _MenuManager.HideMenu();
     }
 
-    void Touch()
-    {
+    void Touch() {
 
     }
 }

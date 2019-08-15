@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
+namespace GoogleARCoreInternal {
     using UnityEditor;
     using UnityEngine;
 
     // Common GUI for ARCore Project Settings, used by ARCoreProjectSettingsWindow and
     // ARCoreProjectSettingsProvider.
-    internal class ARCoreProjectSettingsGUI
-    {
+    internal class ARCoreProjectSettingsGUI {
         // Use public static properties here, so that labels are automatically extracted by
         // GetSearchKeywordsFromGUIContentProperties() in ARCoreProjectSettingsProvider.
         public static readonly GUIContent ARCoreRequired = new GUIContent("ARCore Required");
@@ -48,8 +46,7 @@ namespace GoogleARCoreInternal
 
         // Render ARCore Project Settings for ARCoreProjectSettingsWindow and
         // ARCoreProjectSettingsProvider.
-        internal static void OnGUI(bool renderForStandaloneWindow)
-        {
+        internal static void OnGUI(bool renderForStandaloneWindow) {
             ARCoreProjectSettings.Instance.IsARCoreRequired =
                 EditorGUILayout.Toggle(ARCoreRequired,
                     ARCoreProjectSettings.Instance.IsARCoreRequired);
@@ -67,8 +64,7 @@ namespace GoogleARCoreInternal
 
             s_FoldoutCloudAnchorAPIKeys =
                 EditorGUILayout.Foldout(s_FoldoutCloudAnchorAPIKeys, CloudAnchorAPIKeys);
-            if (s_FoldoutCloudAnchorAPIKeys)
-            {
+            if (s_FoldoutCloudAnchorAPIKeys) {
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(s_GroupLabelIndent);
                 EditorGUILayout.LabelField(Android, GUILayout.Width(s_GroupFieldIndent));
@@ -87,10 +83,8 @@ namespace GoogleARCoreInternal
                 GUILayout.Space(10);
             }
 
-            if (GUI.changed)
-            {
-                if (newARCoreIOSEnabled != ARCoreProjectSettings.Instance.IsIOSSupportEnabled)
-                {
+            if (GUI.changed) {
+                if (newARCoreIOSEnabled != ARCoreProjectSettings.Instance.IsIOSSupportEnabled) {
                     ARCoreProjectSettings.Instance.IsIOSSupportEnabled = newARCoreIOSEnabled;
                     ARCoreIOSSupportHelper.SetARCoreIOSSupportEnabled(newARCoreIOSEnabled);
                 }

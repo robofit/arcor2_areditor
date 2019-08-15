@@ -18,8 +18,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System.Collections.Generic;
     using GoogleARCoreInternal;
     using UnityEngine;
@@ -28,8 +27,7 @@ namespace GoogleARCore
     /// A component that manages the ARCore Session in a Unity scene.
     /// </summary>
     [HelpURL("https://developers.google.com/ar/reference/unity/class/GoogleARCore/ARCoreSession")]
-    public class ARCoreSession : MonoBehaviour
-    {
+    public class ARCoreSession : MonoBehaviour {
         /// <summary>
         /// The direction of the device camera used by the session.
         /// </summary>
@@ -77,12 +75,10 @@ namespace GoogleARCore
         /// Unity Awake.
         /// </summary>
         [SuppressMemoryAllocationError(Reason = "Could create new LifecycleManager")]
-        public virtual void Awake()
-        {
+        public virtual void Awake() {
             if (SessionConfig != null &&
                 SessionConfig.LightEstimationMode != LightEstimationMode.Disabled &&
-                Object.FindObjectsOfType<EnvironmentalLight>().Length == 0)
-            {
+                Object.FindObjectsOfType<EnvironmentalLight>().Length == 0) {
                 Debug.Log("Light Estimation may not work properly when EnvironmentalLight is not" +
                     " attached to the scene.");
             }
@@ -95,8 +91,7 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Requires further investigation.")]
-        public virtual void OnDestroy()
-        {
+        public virtual void OnDestroy() {
             LifecycleManager.Instance.ResetSession();
         }
 
@@ -105,8 +100,7 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             Reason = "Enabling session creates a new ARSessionConfiguration")]
-        public void OnEnable()
-        {
+        public void OnEnable() {
             LifecycleManager.Instance.EnableSession();
         }
 
@@ -115,58 +109,48 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Requires further investigation.")]
-        public void OnDisable()
-        {
+        public void OnDisable() {
             LifecycleManager.Instance.DisableSession();
         }
 
         /// <summary>
         /// Unity OnValidate.
         /// </summary>
-        public void OnValidate()
-        {
-            if (DeviceCameraDirection == DeviceCameraDirection.FrontFacing && SessionConfig != null)
-            {
-                if (SessionConfig.PlaneFindingMode != DetectedPlaneFindingMode.Disabled)
-                {
+        public void OnValidate() {
+            if (DeviceCameraDirection == DeviceCameraDirection.FrontFacing && SessionConfig != null) {
+                if (SessionConfig.PlaneFindingMode != DetectedPlaneFindingMode.Disabled) {
                     Debug.LogErrorFormat("Plane Finding requires back-facing camera.");
                 }
 
                 if (SessionConfig.LightEstimationMode ==
                         LightEstimationMode.EnvironmentalHDRWithoutReflections ||
                     SessionConfig.LightEstimationMode ==
-                        LightEstimationMode.EnvironmentalHDRWithReflections)
-                {
+                        LightEstimationMode.EnvironmentalHDRWithReflections) {
                     Debug.LogErrorFormat("LightEstimationMode.{0} is incompatible with" +
                         "front-facing (selfie) camera.", SessionConfig.LightEstimationMode);
                 }
 
-                if (SessionConfig.EnableCloudAnchor)
-                {
+                if (SessionConfig.EnableCloudAnchor) {
                     Debug.LogErrorFormat("Cloud Anchors require back-facing camera.");
                 }
 
-                if (SessionConfig.AugmentedImageDatabase != null)
-                {
+                if (SessionConfig.AugmentedImageDatabase != null) {
                     Debug.LogErrorFormat("Augmented Images require back-facing camera.");
                 }
             }
 
             if (DeviceCameraDirection == DeviceCameraDirection.BackFacing &&
                 SessionConfig != null && SessionConfig.AugmentedFaceMode !=
-                    AugmentedFaceMode.Disabled)
-            {
+                    AugmentedFaceMode.Disabled) {
                 Debug.LogErrorFormat("AugmentedFaceMode.{0} requires front-facing (selfie) camera.",
                     SessionConfig.AugmentedFaceMode);
             }
 
-            if (SessionConfig == null)
-            {
+            if (SessionConfig == null) {
                 Debug.LogError("SessionConfig is required by ARCoreSession.");
             }
 
-            if (CameraConfigFilter == null)
-            {
+            if (CameraConfigFilter == null) {
                 Debug.LogError("CameraConfigFilter is required by ARCoreSession. " +
                     "To get all available configurations, set CameraConfigFilter to " +
                     "a filter with all options selected.");
@@ -187,13 +171,11 @@ namespace GoogleARCore
         /// <param name="onChooseCameraConfiguration">The callback to register for selecting a
         /// camera configuration.</param>
         public void RegisterChooseCameraConfigurationCallback(
-            OnChooseCameraConfigurationDelegate onChooseCameraConfiguration)
-        {
+            OnChooseCameraConfigurationDelegate onChooseCameraConfiguration) {
             m_OnChooseCameraConfiguration = onChooseCameraConfiguration;
         }
 
-        internal OnChooseCameraConfigurationDelegate GetChooseCameraConfigurationCallback()
-        {
+        internal OnChooseCameraConfigurationDelegate GetChooseCameraConfigurationCallback() {
             return m_OnChooseCameraConfiguration;
         }
     }

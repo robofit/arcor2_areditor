@@ -18,13 +18,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Collections;
-    using UnityEngine;
-
-    internal enum ApiArStatus
-    {
+namespace GoogleARCoreInternal {
+    internal enum ApiArStatus {
         // The operation was successful.
         Success = 0,
 

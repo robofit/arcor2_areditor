@@ -18,25 +18,19 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using GoogleARCoreInternal;
-    using UnityEngine;
 
     /// <summary>
     /// An ARCore camera image with its data accessible from the CPU in YUV-420-888 format.
     /// </summary>
-    public struct CameraImageBytes : IDisposable
-    {
+    public struct CameraImageBytes : IDisposable {
         private IntPtr m_ImageHandle;
 
-        internal CameraImageBytes(IntPtr imageHandle) : this()
-        {
+        internal CameraImageBytes(IntPtr imageHandle) : this() {
             m_ImageHandle = imageHandle;
-            if (m_ImageHandle != IntPtr.Zero)
-            {
+            if (m_ImageHandle != IntPtr.Zero) {
                 int width, height;
                 IntPtr y, u, v;
                 int yRowStride, uvPixelStride, uvRowStride;
@@ -53,9 +47,7 @@ namespace GoogleARCore
                 YRowStride = yRowStride;
                 UVPixelStride = uvPixelStride;
                 UVRowStride = uvRowStride;
-            }
-            else
-            {
+            } else {
                 IsAvailable = false;
                 Width = Height = 0;
                 Y = U = V = IntPtr.Zero;
@@ -67,59 +59,75 @@ namespace GoogleARCore
         /// Gets a value indicating whether the image bytes are available. The struct should not be
         /// accessed if this value is <c>false</c>.
         /// </summary>
-        public bool IsAvailable { get; private set; }
+        public bool IsAvailable {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the width of the image.
         /// </summary>
-        public int Width { get; private set; }
+        public int Width {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the height of the image.
         /// </summary>
-        public int Height { get; private set; }
+        public int Height {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a pointer to the Y buffer with a pixel stride of 1 and a row stride of
         /// <c>YRowStride</c>.
         /// </summary>
-        public IntPtr Y { get; private set; }
+        public IntPtr Y {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a pointer to the U buffer with a pixel stride of <c>UVPixelStride</c> and a row
         /// stride of <c>UVRowStride</c>.
         /// </summary>
-        public IntPtr U { get; private set; }
+        public IntPtr U {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets a pointer to the V buffer with a pixel stride of <c>UVPixelStride</c> and a row
         /// stride of <c>UVRowStride</c>.
         /// </summary>
-        public IntPtr V { get; private set; }
+        public IntPtr V {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the row stride of the Y plane.
         /// </summary>
-        public int YRowStride { get; private set; }
+        public int YRowStride {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the pixel stride of the U and V planes.
         /// </summary>
-        public int UVPixelStride { get; private set; }
+        public int UVPixelStride {
+            get; private set;
+        }
 
         /// <summary>
         /// Gets the row stride of the U and V planes.
         /// </summary>
-        public int UVRowStride { get; private set; }
+        public int UVRowStride {
+            get; private set;
+        }
 
         /// <summary>
         /// Releases the camera image and associated resources, and signifies the developer will no
         /// longer access those resources.
         /// </summary>
-        public void Release()
-        {
-            if (m_ImageHandle != IntPtr.Zero)
-            {
+        public void Release() {
+            if (m_ImageHandle != IntPtr.Zero) {
                 LifecycleManager.Instance.NativeSession.ImageApi.Release(m_ImageHandle);
                 m_ImageHandle = IntPtr.Zero;
             }
@@ -130,8 +138,7 @@ namespace GoogleARCore
         /// </summary>
         [SuppressMemoryAllocationError(
             IsWarning = true, Reason = "Requires further investigation.")]
-        public void Dispose()
-        {
+        public void Dispose() {
             Release();
         }
     }

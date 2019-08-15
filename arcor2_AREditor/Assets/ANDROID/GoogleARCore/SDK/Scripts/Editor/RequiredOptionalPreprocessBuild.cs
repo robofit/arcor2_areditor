@@ -18,19 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
+namespace GoogleARCoreInternal {
     using UnityEditor;
-    using UnityEditor.Build;
     using UnityEngine;
 
-    internal class RequiredOptionalPreprocessBuild : PreprocessBuildBase
-    {
-        public override void OnPreprocessBuild(BuildTarget target, string path)
-        {
-            var isARCoreRequired = ARCoreProjectSettings.Instance.IsARCoreRequired;
+    internal class RequiredOptionalPreprocessBuild : PreprocessBuildBase {
+        public override void OnPreprocessBuild(BuildTarget target, string path) {
+            bool isARCoreRequired = ARCoreProjectSettings.Instance.IsARCoreRequired;
 
             Debug.LogFormat(
                 "Building \"{0}\" app. Use 'Edit > Project Settings > ARCore' to adjust " +

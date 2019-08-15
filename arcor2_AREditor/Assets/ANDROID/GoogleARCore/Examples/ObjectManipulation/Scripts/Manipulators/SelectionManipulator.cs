@@ -18,15 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.ObjectManipulation
-{
+namespace GoogleARCore.Examples.ObjectManipulation {
     using UnityEngine;
 
     /// <summary>
     /// Controls the selection of an object through Tap gesture.
     /// </summary>
-    public class SelectionManipulator : Manipulator
-    {
+    public class SelectionManipulator : Manipulator {
         /// <summary>
         /// The visualization game object that will become active when the object is selected.
         /// </summary>
@@ -40,8 +38,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// has, independently of the scale.
         /// </summary>
         /// <param name="elevation">The current object's elevation.</param>
-        public void OnElevationChanged(float elevation)
-        {
+        public void OnElevationChanged(float elevation) {
             m_ScaledElevation = elevation * transform.localScale.y;
             SelectionVisualization.transform.localPosition = new Vector3(0, -elevation, 0);
         }
@@ -53,8 +50,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="scaledElevation">The current object's elevation scaled with the local y
         /// scale.</param>
-        public void OnElevationChangedScaled(float scaledElevation)
-        {
+        public void OnElevationChangedScaled(float scaledElevation) {
             m_ScaledElevation = scaledElevation;
             SelectionVisualization.transform.localPosition =
                 new Vector3(0, -scaledElevation / transform.localScale.y, 0);
@@ -63,11 +59,9 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// The Unity Update() method.
         /// </summary>
-        protected override void Update()
-        {
+        protected override void Update() {
             base.Update();
-            if (transform.hasChanged)
-            {
+            if (transform.hasChanged) {
                 float height = -m_ScaledElevation / transform.localScale.y;
                 SelectionVisualization.transform.localPosition = new Vector3(0, height, 0);
             }
@@ -78,8 +72,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
         /// <returns>True if the manipulation can be started.</returns>
-        protected override bool CanStartManipulationForGesture(TapGesture gesture)
-        {
+        protected override bool CanStartManipulationForGesture(TapGesture gesture) {
             return true;
         }
 
@@ -87,21 +80,17 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// Function called when the manipulation is ended.
         /// </summary>
         /// <param name="gesture">The current gesture.</param>
-        protected override void OnEndManipulation(TapGesture gesture)
-        {
-            if (gesture.WasCancelled)
-            {
+        protected override void OnEndManipulation(TapGesture gesture) {
+            if (gesture.WasCancelled) {
                 return;
             }
 
-            if (ManipulationSystem.Instance == null)
-            {
+            if (ManipulationSystem.Instance == null) {
                 return;
             }
 
             GameObject target = gesture.TargetObject;
-            if (target == gameObject)
-            {
+            if (target == gameObject) {
                 Select();
             }
 
@@ -110,8 +99,7 @@ namespace GoogleARCore.Examples.ObjectManipulation
             TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon;
 
             if (!Frame.Raycast(
-                gesture.StartPosition.x, gesture.StartPosition.y, raycastFilter, out hit))
-            {
+                gesture.StartPosition.x, gesture.StartPosition.y, raycastFilter, out hit)) {
                 Deselect();
             }
         }
@@ -119,16 +107,14 @@ namespace GoogleARCore.Examples.ObjectManipulation
         /// <summary>
         /// Function called when this game object is deselected if it was the Selected Object.
         /// </summary>
-        protected override void OnSelected()
-        {
+        protected override void OnSelected() {
             SelectionVisualization.SetActive(true);
         }
 
         /// <summary>
         /// Function called when this game object is deselected if it was the Selected Object.
         /// </summary>
-        protected override void OnDeselected()
-        {
+        protected override void OnDeselected() {
             SelectionVisualization.SetActive(false);
         }
     }

@@ -18,13 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore
-{
+namespace GoogleARCore {
     /// <summary>
     /// Possible states for the ARCore session.
     /// </summary>
-    public enum SessionStatus
-    {
+    public enum SessionStatus {
         /// <summary>
         /// The ARCore session has not been initialized.
         /// </summary>

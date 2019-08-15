@@ -18,17 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal.CrossPlatform
-{
+namespace GoogleARCoreInternal.CrossPlatform {
     using GoogleARCore;
     using GoogleARCore.CrossPlatform;
 
-    internal static class ApiTrackingStateXPExtensions
-    {
-        public static XPTrackingState ToXPTrackingState(this TrackingState apiTrackingState)
-        {
-            switch (apiTrackingState)
-            {
+    internal static class ApiTrackingStateXPExtensions {
+        public static XPTrackingState ToXPTrackingState(this TrackingState apiTrackingState) {
+            switch (apiTrackingState) {
                 case TrackingState.Tracking:
                     return XPTrackingState.Tracking;
                 case TrackingState.Paused:

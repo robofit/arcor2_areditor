@@ -18,19 +18,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal
-{
-    using System.Diagnostics.CodeAnalysis;
+namespace GoogleARCoreInternal {
     using GoogleARCore;
-    using UnityEngine;
 
-    internal static class ApiCameraConfigFacingDirectionExtensions
-    {
+    internal static class ApiCameraConfigFacingDirectionExtensions {
         public static DeviceCameraDirection ToDeviceCameraDirection(
-            this ApiCameraConfigFacingDirection direction)
-        {
-            switch (direction)
-            {
+            this ApiCameraConfigFacingDirection direction) {
+            switch (direction) {
                 case ApiCameraConfigFacingDirection.Front:
                     return DeviceCameraDirection.FrontFacing;
                 case ApiCameraConfigFacingDirection.Back:
