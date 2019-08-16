@@ -3,11 +3,12 @@ using UnityEngine;
 
 namespace Base {
     public class Action : MonoBehaviour {
-        private string _id;
         private ActionMetadata _metadata;
         private ActionObject _actionObject;
 
         private Dictionary<string, ActionParameter> _parameters = new Dictionary<string, ActionParameter>();
+
+        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action();
         public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, bool updateProject = true) {
             _metadata = metadata;
             _actionObject = ap.ActionObject;
@@ -31,7 +32,7 @@ namespace Base {
         }
 
         public virtual void UpdateId(string newId, bool updateProject = true) {
-            _id = newId;
+            Data.Id = newId;
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }
@@ -56,9 +57,7 @@ namespace Base {
         public ActionObject ActionObject {
             get => _actionObject; set => _actionObject = value;
         }
-        public string Id {
-            get => _id; set => _id = value;
-        }
+        
     }
 
 }

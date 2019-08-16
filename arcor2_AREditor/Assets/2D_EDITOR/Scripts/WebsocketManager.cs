@@ -218,7 +218,7 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
                         if (connectedPuck != null && connectedPuck.name != "VirtualPointer") {
                             Debug.Log(connectedPuck);
                             Debug.Log(connectedPuck.transform.GetComponentInParent<Base.Action>());
-                            con.AddField("default", connectedPuck.transform.GetComponentInParent<Base.Action>().Id);
+                            con.AddField("default", connectedPuck.transform.GetComponentInParent<Base.Action>().Data.Id);
 
                         } else {
                             con.AddField("default", "start");
@@ -233,7 +233,7 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
                         JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
                         if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
 
-                            con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Base.Action>().Id);
+                            con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Base.Action>().Data.Id);
 
                         } else {
                             con.AddField("default", "end");

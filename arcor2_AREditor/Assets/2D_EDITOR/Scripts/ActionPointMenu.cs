@@ -43,7 +43,7 @@ public class ActionPointMenu : MonoBehaviour {
             }
         }
         topText.GetComponentInChildren<Text>().text = actionPoint.Data.Id;
-        interactiveObjectType.GetComponent<Text>().text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Type;
+        interactiveObjectType.GetComponent<Text>().text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
 
         foreach (KeyValuePair<Base.ActionObject, List<Base.ActionMetadata>> keyval in ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
             foreach (Base.ActionMetadata am in keyval.Value) {

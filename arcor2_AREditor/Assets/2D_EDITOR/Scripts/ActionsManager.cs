@@ -41,7 +41,7 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
             kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
         }
         foreach (Base.ActionObject ao in InteractiveObjects.GetComponentsInChildren<Base.ActionObject>()) {
-            if (!ActionObjectMetadata.ContainsKey(ao.Type)) {
+            if (!ActionObjectMetadata.ContainsKey(ao.Data.Type)) {
                 Destroy(ao.gameObject);
             }
         }
@@ -74,13 +74,13 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
         Dictionary<Base.ActionObject, List<Base.ActionMetadata>> actionsMetadata = new Dictionary<Base.ActionObject, List<Base.ActionMetadata>>();
         foreach (Base.ActionObject ao in InteractiveObjects.GetComponentsInChildren<Base.ActionObject>()) {
             if (ao == interactiveObject) {
-                if (!_ActionObjectsMetadata.TryGetValue(ao.Type, out Base.ActionObjectMetadata aom)) {
+                if (!_ActionObjectsMetadata.TryGetValue(ao.Data.Type, out Base.ActionObjectMetadata aom)) {
                     continue;
                 }
                 actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();
             } else {
                 List<Base.ActionMetadata> freeActions = new List<Base.ActionMetadata>();
-                if (!_ActionObjectsMetadata.TryGetValue(ao.Type, out Base.ActionObjectMetadata aom)) {
+                if (!_ActionObjectsMetadata.TryGetValue(ao.Data.Type, out Base.ActionObjectMetadata aom)) {
                     continue;
                 }
                 foreach (Base.ActionMetadata am in aom.ActionsMetadata.Values) {

@@ -14,7 +14,7 @@ public class Puck2D : Base.Action {
 
     public override void UpdateId(string newId, bool updateProject = true) {
         base.UpdateId(newId, updateProject);
-        gameObject.GetComponentInChildren<Text>().text = Id;
+        gameObject.GetComponentInChildren<Text>().text = Data.Id;
     }
 
     void Touch() {

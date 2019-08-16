@@ -2,23 +2,17 @@ using UnityEngine;
 
 namespace Base {
     public class ActionObject : MonoBehaviour {
-        public string Type;
-        [System.NonSerialized]
-        public Vector3 Position;
-        [System.NonSerialized]
-        public Quaternion Orientation = new Quaternion(0, 0, 0, 1);
         [System.NonSerialized]
         public GameObject InteractiveObjectMenu;
         [System.NonSerialized]
         public GameObject ConnectionPrefab;
 
         public GameObject ActionPoints;
-       [System.NonSerialized]
+        [System.NonSerialized]
         public int CounterAP = 0;
-        protected Vector3 offset;
         private string id;
 
-        public IO.Swagger.Model.SceneObject Data;
+        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject();
         public ActionObjectMetadata ActionObjectMetadata;
 
         public string Id {

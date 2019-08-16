@@ -2,10 +2,11 @@ using UnityEngine;
 
 
     public class ActionObject2D : Base.ActionObject {
-        
-        
 
-        private void Touch() {
+
+    private Vector3 offset;
+
+    private void Touch() {
             MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Id);
             InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
         }

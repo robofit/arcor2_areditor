@@ -23,7 +23,7 @@ public class PuckMenu : MonoBehaviour {
                 Destroy(o.gameObject);
             }
         }
-        transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Id;
+        transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Data.Id;
         transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.ActionObject.Id + "/" + action.Metadata.Name;
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
             Debug.Log(parameter.ToString());

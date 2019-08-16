@@ -105,7 +105,7 @@ public class GameManager : Base.Singleton<GameManager> {
         }
         obj.transform.localScale = new Vector3(1f, 1f, 1f);
         obj.transform.position = SpawnPoint.transform.position;
-        obj.GetComponent<Base.ActionObject>().Type = type;
+        obj.GetComponent<Base.ActionObject>().Data.Type = type;
         if (id == "")
             obj.GetComponent<Base.ActionObject>().Id = GetFreeIOName(type);
         else
@@ -218,7 +218,7 @@ public class GameManager : Base.Singleton<GameManager> {
                 return;
             }
             if (interactiveObjects.TryGetValue(id, out Base.ActionObject ao)) {
-                if (type != ao.Type) {
+                if (type != ao.Data.Type) {
                     // type has changed, what now? delete object and create a new one?
                     Destroy(ao.gameObject);
                     // TODO: create a new one with new type
@@ -312,7 +312,7 @@ public class GameManager : Base.Singleton<GameManager> {
                     Dictionary<string, Base.Action> pucks = new Dictionary<string, Base.Action>();
 
                     foreach (Base.Action a in ap.transform.Find("Pucks").GetComponentsInChildren<Base.Action>()) {
-                        pucks[a.Id] = a;
+                        pucks[a.Data.Id] = a;
                     }
 
                     foreach (JSONObject actionjson in actions.list) {
@@ -343,7 +343,7 @@ public class GameManager : Base.Singleton<GameManager> {
 
                         }
                         Debug.Log("got all data");
-                        action.Id = puck_id;
+                        action.Data.Id = puck_id;
                         Debug.Log(inputs);
                         foreach (JSONObject inputs_json in inputs) {
                             string def;
@@ -418,8 +418,8 @@ public class GameManager : Base.Singleton<GameManager> {
     public GameObject FindPuck(string id) {
 
         foreach (Base.Action action in ActionObjects.GetComponentsInChildren<Base.Action>()) {
-            Debug.Log(action.Id);
-            if (action.Id == id)
+            Debug.Log(action.Data.Id);
+            if (action.Data.Id == id)
                 return action.gameObject;
         }
         return new GameObject();

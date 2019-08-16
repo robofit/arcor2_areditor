@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using Newtonsoft.Json;
 
 
 namespace Base {
@@ -160,24 +161,32 @@ namespace Base {
         }
 
         public void UpdateScene(List<ActionObject> actionObjects) {
-            JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
-
-            message.AddField("event", "sceneChanged");
-            JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
-            data.AddField("id", "jabloPCB");
-            JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
+            
             foreach (ActionObject io in actionObjects) {
-                JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
-                iojson.AddField("id", io.Id);
-                JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
-                iojson.AddField("pose", pose);
-                obj.Add(iojson);
+
+                foreach (ActionObject ao in actionObjects) {
+                    Debug.LogError(ao.Data.ToJson());
+                    
+                }
             }
-            data.AddField("objects", obj);
-            message.AddField("data", data);
-            Debug.Log(message.ToString());
-            SendDataToServer(message.ToString());
-        }
+                JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+
+                message.AddField("event", "sceneChanged");
+                JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
+                data.AddField("id", "jabloPCB");
+                JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
+                foreach (ActionObject io in actionObjects) {
+                    JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
+                    iojson.AddField("id", io.Id);
+                    JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
+                    iojson.AddField("pose", pose);
+                    obj.Add(iojson);
+                }
+                data.AddField("objects", obj);
+                message.AddField("data", data);
+                Debug.Log(message.ToString());
+                SendDataToServer(message.ToString());
+            }
 
         // TODO: add action parameters
         public void UpdateProject(List<ActionObject> actionObjects, GameObject scene) {
@@ -211,7 +220,7 @@ namespace Base {
                             if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
                                 Debug.Log(ConnectedPuck);
                                 Debug.Log(ConnectedPuck.transform.GetComponentInParent<Action>());
-                                con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Action>().Id);
+                                con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Action>().Data.Id);
 
                             } else {
                                 con.AddField("default", "start");
@@ -226,7 +235,7 @@ namespace Base {
                             JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
                             if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
 
-                                con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Action>().Id);
+                                con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Action>().Data.Id);
 
                             } else {
                                 con.AddField("default", "end");
