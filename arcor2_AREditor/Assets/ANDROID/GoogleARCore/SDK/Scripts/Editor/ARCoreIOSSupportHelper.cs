@@ -18,87 +18,103 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using System.IO;
-    using UnityEditor;
-    using UnityEngine;
+namespace GoogleARCoreInternal
+{
+	using System.IO;
+	using UnityEditor;
+	using UnityEngine;
 
-    internal class ARCoreIOSSupportHelper {
-        private const string k_ARCoreEditorFolderGuid = "3efa82e8eae0d4459a41fa9c799ea3f8";
-        private const string k_ARCoreIOSDependencyFileName = "ARCoreiOSDependencies";
+	internal class ARCoreIOSSupportHelper
+	{
+		private const string k_ARCoreEditorFolderGuid = "3efa82e8eae0d4459a41fa9c799ea3f8";
+		private const string k_ARCoreIOSDependencyFileName = "ARCoreiOSDependencies";
 
-        public static void SetARCoreIOSSupportEnabled(bool arcoreIOSEnabled) {
-            if (arcoreIOSEnabled) {
-                Debug.Log(
-                    "Enabling Google ARCore SDK for Unity iOS Support. " +
-                    "Note that you will need to add ARKit Unity SDK " +
-                    "to your project to make ARCore work on iOS.");
-            } else {
-                Debug.Log("Disabling ARCore iOS support.");
-            }
+		public static void SetARCoreIOSSupportEnabled(bool arcoreIOSEnabled)
+		{
+			if (arcoreIOSEnabled)
+			{
+				Debug.Log(
+					"Enabling Google ARCore SDK for Unity iOS Support. " +
+					"Note that you will need to add ARKit Unity SDK " +
+					"to your project to make ARCore work on iOS.");
+			}
+			else
+			{
+				Debug.Log("Disabling ARCore iOS support.");
+			}
 
-            _UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
-            _UpdateIOSPodDependencies(arcoreIOSEnabled);
-            _UpdateARCoreARKitIntegrationPlugin(arcoreIOSEnabled);
-        }
+			_UpdateIOSScriptingDefineSymbols(arcoreIOSEnabled);
+			_UpdateIOSPodDependencies(arcoreIOSEnabled);
+			_UpdateARCoreARKitIntegrationPlugin(arcoreIOSEnabled);
+		}
 
-        private static void _UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled) {
-            string iOSScriptingDefineSymbols =
-                PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS);
-            bool iOSSupportDefined = iOSScriptingDefineSymbols.Contains("ARCORE_IOS_SUPPORT");
+		private static void _UpdateIOSScriptingDefineSymbols(bool arcoreIOSEnabled)
+		{
+			string iOSScriptingDefineSymbols =
+				PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS);
+			bool iOSSupportDefined = iOSScriptingDefineSymbols.Contains("ARCORE_IOS_SUPPORT");
 
-            if (arcoreIOSEnabled && !iOSSupportDefined) {
-                Debug.Log("Adding ARCORE_IOS_SUPPORT define symbol.");
-                iOSScriptingDefineSymbols += ";ARCORE_IOS_SUPPORT";
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
-            } else if (!arcoreIOSEnabled && iOSSupportDefined) {
-                Debug.Log("Removing ARCORE_IOS_SUPPORT define symbol.");
-                iOSScriptingDefineSymbols =
-                    iOSScriptingDefineSymbols.Replace("ARCORE_IOS_SUPPORT", string.Empty);
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(
-                    BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
-            }
-        }
+			if (arcoreIOSEnabled && !iOSSupportDefined)
+			{
+				Debug.Log("Adding ARCORE_IOS_SUPPORT define symbol.");
+				iOSScriptingDefineSymbols += ";ARCORE_IOS_SUPPORT";
+				PlayerSettings.SetScriptingDefineSymbolsForGroup(
+					BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
+			}
+			else if (!arcoreIOSEnabled && iOSSupportDefined)
+			{
+				Debug.Log("Removing ARCORE_IOS_SUPPORT define symbol.");
+				iOSScriptingDefineSymbols =
+					iOSScriptingDefineSymbols.Replace("ARCORE_IOS_SUPPORT", string.Empty);
+				PlayerSettings.SetScriptingDefineSymbolsForGroup(
+					BuildTargetGroup.iOS, iOSScriptingDefineSymbols);
+			}
+		}
 
-        private static void _UpdateIOSPodDependencies(bool arcoreIOSEnabled) {
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string arcoreEditorPath = Path.Combine(currentDirectory,
-              AssetDatabase.GUIDToAssetPath(k_ARCoreEditorFolderGuid));
+		private static void _UpdateIOSPodDependencies(bool arcoreIOSEnabled)
+		{
+			string currentDirectory = Directory.GetCurrentDirectory();
+			string arcoreEditorPath = Path.Combine(currentDirectory,
+			  AssetDatabase.GUIDToAssetPath(k_ARCoreEditorFolderGuid));
 
-            string iOSPodDependencyTemplatePath =
-                Path.Combine(arcoreEditorPath, k_ARCoreIOSDependencyFileName + ".template");
-            string iOSPodDependencyXMLPath =
-                Path.Combine(arcoreEditorPath, k_ARCoreIOSDependencyFileName + ".xml");
+			string iOSPodDependencyTemplatePath =
+				Path.Combine(arcoreEditorPath, k_ARCoreIOSDependencyFileName + ".template");
+			string iOSPodDependencyXMLPath =
+				Path.Combine(arcoreEditorPath, k_ARCoreIOSDependencyFileName + ".xml");
 
-            if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath)) {
-                Debug.Log("Adding ARCoreiOSDependencies.");
+			if (arcoreIOSEnabled && !File.Exists(iOSPodDependencyXMLPath))
+			{
+				Debug.Log("Adding ARCoreiOSDependencies.");
 
-                if (!File.Exists(iOSPodDependencyTemplatePath)) {
-                    Debug.LogError(
-                        "Failed to enable ARCore iOS dependency xml. Template file is missing.");
-                    return;
-                }
+				if (!File.Exists(iOSPodDependencyTemplatePath))
+				{
+					Debug.LogError(
+						"Failed to enable ARCore iOS dependency xml. Template file is missing.");
+					return;
+				}
 
-                File.Copy(iOSPodDependencyTemplatePath, iOSPodDependencyXMLPath);
+				File.Copy(iOSPodDependencyTemplatePath, iOSPodDependencyXMLPath);
 
-                AssetDatabase.Refresh();
-            } else if (!arcoreIOSEnabled && File.Exists(iOSPodDependencyXMLPath)) {
-                Debug.Log("Removing ARCoreiOSDependencies.");
+				AssetDatabase.Refresh();
+			}
+			else if (!arcoreIOSEnabled && File.Exists(iOSPodDependencyXMLPath))
+			{
+				Debug.Log("Removing ARCoreiOSDependencies.");
 
-                File.Delete(iOSPodDependencyXMLPath);
-                File.Delete(iOSPodDependencyXMLPath + ".meta");
+				File.Delete(iOSPodDependencyXMLPath);
+				File.Delete(iOSPodDependencyXMLPath + ".meta");
 
-                AssetDatabase.Refresh();
-            }
-        }
+				AssetDatabase.Refresh();
+			}
+		}
 
-        private static void _UpdateARCoreARKitIntegrationPlugin(bool arcoreIOSEnabled) {
-            string enableString = arcoreIOSEnabled ? "Enabling" : "Disabling";
-            Debug.LogFormat("{0} ARCoreARKitIntegrationPlugin.", enableString);
+		private static void _UpdateARCoreARKitIntegrationPlugin(bool arcoreIOSEnabled)
+		{
+			string enableString = arcoreIOSEnabled ? "Enabling" : "Disabling";
+			Debug.LogFormat("{0} ARCoreARKitIntegrationPlugin.", enableString);
 
-            AssetHelper.GetPluginImporterByName("arcore_arkit_integration.mm")
-               .SetCompatibleWithPlatform(BuildTarget.iOS, arcoreIOSEnabled);
-        }
-    }
+			AssetHelper.GetPluginImporterByName("arcore_arkit_integration.mm")
+			   .SetCompatibleWithPlatform(BuildTarget.iOS, arcoreIOSEnabled);
+		}
+	}
 }

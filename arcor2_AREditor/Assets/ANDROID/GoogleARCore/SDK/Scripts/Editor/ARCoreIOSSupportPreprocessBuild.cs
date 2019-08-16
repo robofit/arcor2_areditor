@@ -18,19 +18,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using UnityEditor;
-    using UnityEngine;
+namespace GoogleARCoreInternal
+{
+	using UnityEditor;
+	using UnityEngine;
 
-    internal class ARCoreIOSSupportPreprocessBuild : PreprocessBuildBase {
-        public override void OnPreprocessBuild(BuildTarget target, string path) {
-            if (target == BuildTarget.iOS) {
-                bool arcoreiOSEnabled = ARCoreProjectSettings.Instance.IsIOSSupportEnabled;
-                Debug.LogFormat("Building application with ARCore SDK for Unity iOS support {0}",
-                    arcoreiOSEnabled ? "ENABLED" : "DISABLED");
+	internal class ARCoreIOSSupportPreprocessBuild : PreprocessBuildBase
+	{
+		public override void OnPreprocessBuild(BuildTarget target, string path)
+		{
+			if (target == BuildTarget.iOS)
+			{
+				bool arcoreiOSEnabled = ARCoreProjectSettings.Instance.IsIOSSupportEnabled;
+				Debug.LogFormat("Building application with ARCore SDK for Unity iOS support {0}",
+					arcoreiOSEnabled ? "ENABLED" : "DISABLED");
 
-                ARCoreIOSSupportHelper.SetARCoreIOSSupportEnabled(arcoreiOSEnabled);
-            }
-        }
-    }
+				ARCoreIOSSupportHelper.SetARCoreIOSSupportEnabled(arcoreiOSEnabled);
+			}
+		}
+	}
 }

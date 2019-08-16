@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
@@ -33,9 +33,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public void DestroyConnectionToMouse() {
-        int i = GetIndexByType(VirtualConnectionToMouse, typeof(InputOutput));
+        int i = GetIndexByType(VirtualConnectionToMouse, typeof(Base.InputOutput));
         if (i >= 0) {
-            VirtualConnectionToMouse.target[i].GetComponent<InputOutput>().Connection = null;
+            VirtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
         }
         Destroy(VirtualConnectionToMouse.gameObject);
         _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
@@ -50,7 +50,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         if (i < 0) {
             return null;
         }
-        if (VirtualConnectionToMouse.target[1 - i].gameObject.GetComponent<InputOutput>().GetType() != o.GetComponent<InputOutput>().GetType()) {
+        if (VirtualConnectionToMouse.target[1 - i].gameObject.GetComponent<Base.InputOutput>().GetType() != o.GetComponent<Base.InputOutput>().GetType()) {
             VirtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
         } else {
             return null;
@@ -66,7 +66,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         if (i < 0)
             return null;
         c.target[i] = VirtualPointer.GetComponent<RectTransform>();
-        o.GetComponent<InputOutput>().Connection = null;
+        o.GetComponent<Base.InputOutput>().Connection = null;
         VirtualConnectionToMouse = c;
         _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
         return VirtualConnectionToMouse;
@@ -91,9 +91,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     private int GetIndexByType(Connection c, System.Type type) {
-        if (c.target[0] != null && c.target[0].gameObject.GetComponent<InputOutput>() != null && c.target[0].gameObject.GetComponent<InputOutput>().GetType() == type)
+        if (c.target[0] != null && c.target[0].gameObject.GetComponent<Base.InputOutput>() != null && c.target[0].gameObject.GetComponent<Base.InputOutput>().GetType() == type)
             return 0;
-        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<InputOutput>() != null && c.target[1].gameObject.GetComponent<InputOutput>().GetType() == type)
+        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<Base.InputOutput>() != null && c.target[1].gameObject.GetComponent<Base.InputOutput>().GetType() == type)
             return 1;
         else
             return -1;
@@ -115,7 +115,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ValidateConnection(Connection c) {
         if (c == null)
             return false;
-        int input = GetIndexByType(c, typeof(PuckInput)), output = GetIndexByType(c, typeof(PuckOutput));
+        int input = GetIndexByType(c, typeof(Base.PuckInput)), output = GetIndexByType(c, typeof(Base.PuckOutput));
         if (input < 0 || output < 0)
             return false;
         return input + output == 1;

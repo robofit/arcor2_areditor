@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class InteractiveObjectMenu : MonoBehaviour {
     public GameObject APPrefab, CurrentObject;
@@ -6,7 +6,7 @@ public class InteractiveObjectMenu : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-        GameManager = GameObject.Find("_GameManager").GetComponent<GameManager>();
+
     }
 
     // Update is called once per frame
@@ -18,17 +18,17 @@ public class InteractiveObjectMenu : MonoBehaviour {
         if (CurrentObject == null) {
             return;
         }
-        GameManager.SpawnActionPoint(CurrentObject.GetComponent<InteractiveObject>());
+        GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>());
 
     }
 
     public void SaveID(string new_id) {
-        CurrentObject.GetComponent<InteractiveObject>().Id = new_id;
-        GameManager.UpdateScene();
+        CurrentObject.GetComponent<Base.ActionObject>().Id = new_id;
+        GameManager.Instance.UpdateScene();
     }
 
     public void DeleteIO() {
-        CurrentObject.GetComponent<InteractiveObject>().DeleteIO();
+        CurrentObject.GetComponent<Base.ActionObject>().DeleteIO();
         CurrentObject = null;
     }
 }

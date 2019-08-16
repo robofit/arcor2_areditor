@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class ActionsManager : Base.Singleton<ActionsManager> {
-    Dictionary<string, ActionObjectMetadata> _ActionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
+    Dictionary<string, Base.ActionObjectMetadata> _ActionObjectsMetadata = new Dictionary<string, Base.ActionObjectMetadata>();
     public GameObject Scene, InteractiveObjects, World, PuckPrefab;
 
     public bool ActionsReady;
 
-    public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
+    public Dictionary<string, Base.ActionObjectMetadata> ActionObjectMetadata {
         get => _ActionObjectsMetadata; set => _ActionObjectsMetadata = value;
     }
 
@@ -25,7 +25,7 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
     void Update() {
         if (!ActionsReady && _ActionObjectsMetadata.Count > 0) {
 
-            foreach (ActionObjectMetadata ao in _ActionObjectsMetadata.Values) {
+            foreach (Base.ActionObjectMetadata ao in _ActionObjectsMetadata.Values) {
                 if (!ao.ActionsLoaded) {
                     return;
                 }
@@ -35,14 +35,14 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
         }
     }
 
-    public void UpdateObjects(Dictionary<string, ActionObjectMetadata> NewActionObjectsMetadata) {
+    public void UpdateObjects(Dictionary<string, Base.ActionObjectMetadata> NewActionObjectsMetadata) {
         _ActionObjectsMetadata = NewActionObjectsMetadata;
-        foreach (KeyValuePair<string, ActionObjectMetadata> kv in _ActionObjectsMetadata) {
+        foreach (KeyValuePair<string, Base.ActionObjectMetadata> kv in _ActionObjectsMetadata) {
             kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
         }
-        foreach (InteractiveObject o in InteractiveObjects.GetComponentsInChildren<InteractiveObject>()) {
-            if (!ActionObjectMetadata.ContainsKey(o.type)) {
-                Destroy(o.gameObject);
+        foreach (Base.ActionObject ao in InteractiveObjects.GetComponentsInChildren<Base.ActionObject>()) {
+            if (!ActionObjectMetadata.ContainsKey(ao.Type)) {
+                Destroy(ao.gameObject);
             }
         }
         World.BroadcastMessage("ActionObjectsUpdated");
@@ -50,12 +50,12 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
         enabled = true;
     }
 
-    private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {
+    private bool IsDescendantOfType(string type, Base.ActionObjectMetadata actionObjectMetadata) {
         if (actionObjectMetadata.Type == type)
             return true;
         if (actionObjectMetadata.Type == "Generic")
             return false;
-        foreach (KeyValuePair<string, ActionObjectMetadata> kv in _ActionObjectsMetadata) {
+        foreach (KeyValuePair<string, Base.ActionObjectMetadata> kv in _ActionObjectsMetadata) {
             if (kv.Key == actionObjectMetadata.BaseObject) {
                 return IsDescendantOfType(type, kv.Value);
             }
@@ -64,68 +64,35 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
     }
 
     public void UpdateObjectActionMenu(string objectType) {
-        if (_ActionObjectsMetadata.TryGetValue(objectType, out ActionObjectMetadata ao)) {
+        if (_ActionObjectsMetadata.TryGetValue(objectType, out Base.ActionObjectMetadata ao)) {
             MenuManager.Instance.UpdateActionObjectMenu(ao);
         }
 
     }
 
-    public Dictionary<InteractiveObject, List<ActionMetadata>> GetAllActionsOfObject(InteractiveObject interactiveObject) {
-        Dictionary<InteractiveObject, List<ActionMetadata>> actionsMetadata = new Dictionary<InteractiveObject, List<ActionMetadata>>();
-
-        foreach (InteractiveObject io in InteractiveObjects.GetComponentsInChildren<InteractiveObject>()) {
-            if (io == interactiveObject) {
-                if (!_ActionObjectsMetadata.TryGetValue(io.type, out ActionObjectMetadata aom)) {
+    public Dictionary<Base.ActionObject, List<Base.ActionMetadata>> GetAllActionsOfObject(Base.ActionObject interactiveObject) {
+        Dictionary<Base.ActionObject, List<Base.ActionMetadata>> actionsMetadata = new Dictionary<Base.ActionObject, List<Base.ActionMetadata>>();
+        foreach (Base.ActionObject ao in InteractiveObjects.GetComponentsInChildren<Base.ActionObject>()) {
+            if (ao == interactiveObject) {
+                if (!_ActionObjectsMetadata.TryGetValue(ao.Type, out Base.ActionObjectMetadata aom)) {
                     continue;
                 }
-                actionsMetadata[io] = aom.ActionsMetadata.Values.ToList();
+                actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();
             } else {
-                List<ActionMetadata> freeActions = new List<ActionMetadata>();
-                if (!_ActionObjectsMetadata.TryGetValue(io.type, out ActionObjectMetadata aom)) {
+                List<Base.ActionMetadata> freeActions = new List<Base.ActionMetadata>();
+                if (!_ActionObjectsMetadata.TryGetValue(ao.Type, out Base.ActionObjectMetadata aom)) {
                     continue;
                 }
-                foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
+                foreach (Base.ActionMetadata am in aom.ActionsMetadata.Values) {
                     if (am.Free)
                         freeActions.Add(am);
                 }
                 if (freeActions.Count > 0) {
-                    actionsMetadata[io] = freeActions;
+                    actionsMetadata[ao] = freeActions;
                 }
             }
         }
-        /*
-        foreach (ActionObjectMetadata aom in _ActionObjectsMetadata.Values)
-        {
-            if (aom.Type == interactiveObject.type)
-            {
-                actionsMetadata[interactiveObject] = aom.ActionsMetadata.Values.ToList(); ;
-                
-                    
-            } else
-            {
-                Dictionary<InteractiveObject, ActionMetadata> freeActions = new Dictionary<InteractiveObject, ActionMetadata>();
-                List<ActionMetadata> actions = new List<ActionMetadata>();
-                foreach (ActionMetadata action in aom.ActionsMetadata.Values)
-                {
-                    if (action.Free)
-                    {
-                        foreach (InteractiveObject io in InteractiveObjects.GetComponentsInChildren<InteractiveObject>())
-                        {
-                            if (io.type == aom.Type)
-                            {
-                                
-                            }
-                        }
-                        actions.Add(action);
-                        
-                    }
-                }
-                if (actions.Count > 0)
-                {
-                    actionsMetadata[io] = actions;
-                }
-            }
-        }*/
+       
         return actionsMetadata;
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
@@ -162,17 +162,17 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
         SendDataToServer(getObjectActions.ToString());
     }
 
-    public void UpdateScene(List<InteractiveObject> interactiveObjects) {
+    public void UpdateScene(List<Base.ActionObject> actionObjects) {
         JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
 
         message.AddField("event", "sceneChanged");
         JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
         data.AddField("id", "jabloPCB");
         JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-        foreach (InteractiveObject io in interactiveObjects) {
-            JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
-            iojson.AddField("id", io.Id);
-            JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
+        foreach (Base.ActionObject ao in actionObjects) {
+            JSONObject iojson = new JSONObject(JsonUtility.ToJson(ao).ToString());
+            iojson.AddField("id", ao.Id);
+            JSONObject pose = JSONHelper.CreatePose(new Vector3(ao.gameObject.transform.localPosition.x, ao.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
             iojson.AddField("pose", pose);
             obj.Add(iojson);
         }
@@ -187,7 +187,7 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
 
 
     // TODO: add action parameters
-    public void UpdateProject(List<InteractiveObject> interactiveObjects, GameObject scene) {
+    public void UpdateProject(List<Base.ActionObject> actionobjects, GameObject scene) {
         JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
 
         message.AddField("event", "projectChanged");
@@ -195,30 +195,30 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
         data.AddField("id", "demo_v0");
         data.AddField("scene_id", "jabloPCB");
         JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-        foreach (InteractiveObject io in interactiveObjects) {
+        foreach (Base.ActionObject io in actionobjects) {
             JSONObject iojson = new JSONObject(JSONObject.Type.OBJECT);
             iojson.AddField("id", io.Id);
             JSONObject apArray = new JSONObject(JSONObject.Type.ARRAY);
-            foreach (ActionPoint ap in io.transform.Find("ActionPoints").gameObject.GetComponentsInChildren<ActionPoint>()) {
+            foreach (Base.ActionPoint ap in io.transform.Find("ActionPoints").gameObject.GetComponentsInChildren<Base.ActionPoint>()) {
                 JSONObject apjson = new JSONObject(JsonUtility.ToJson(ap).ToString());
 
 
                 apjson.AddField("pose", JSONHelper.CreatePose(ap.GetScenePosition(), ap.transform.rotation));
                 JSONObject puckArray = new JSONObject(JSONObject.Type.ARRAY);
-                foreach (Puck puck in ap.GetComponentsInChildren<Puck>()) {
-                    JSONObject puckjson = new JSONObject(JsonUtility.ToJson(puck).ToString());
-                    puckjson.AddField("type", puck.Action.InteractiveObject.Id + "/" + puck.Action.Metadata.Name);
-                    puckjson.AddField("pose", JSONHelper.CreatePose(puck.transform.localPosition, puck.transform.rotation));
+                foreach (Base.Action action in ap.GetComponentsInChildren<Base.Action>()) {
+                    JSONObject puckjson = new JSONObject(JsonUtility.ToJson(action).ToString());
+                    puckjson.AddField("type", action.ActionObject.Id + "/" + action.Metadata.Name);
+                    puckjson.AddField("pose", JSONHelper.CreatePose(action.transform.localPosition, action.transform.rotation));
 
-                    if (puck.GetComponentInChildren<PuckInput>() != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*/) {
+                    if (action.GetComponentInChildren<Base.Action> () != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*/) {
                         JSONObject input_connection = new JSONObject(JSONObject.Type.ARRAY);
-                        GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckInput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckInput>().gameObject);
+                        GameObject connectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(action.GetComponentInChildren<Base.PuckInput>().GetConneciton(), action.gameObject.GetComponentInChildren<Base.PuckInput>().gameObject);
 
                         JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
-                        if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
-                            Debug.Log(ConnectedPuck);
-                            Debug.Log(ConnectedPuck.transform.GetComponentInParent<Puck>());
-                            con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Puck>().id);
+                        if (connectedPuck != null && connectedPuck.name != "VirtualPointer") {
+                            Debug.Log(connectedPuck);
+                            Debug.Log(connectedPuck.transform.GetComponentInParent<Base.Action>());
+                            con.AddField("default", connectedPuck.transform.GetComponentInParent<Base.Action>().Id);
 
                         } else {
                             con.AddField("default", "start");
@@ -227,13 +227,13 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
                         puckjson.AddField("inputs", input_connection);
 
                     }
-                    if (puck.GetComponentInChildren<PuckOutput>()/* != null && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckOutput>().GetConneciton())*/) {
+                    if (action.GetComponentInChildren<Base.PuckOutput>()/* != null && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckOutput>().GetConneciton())*/) {
                         JSONObject output_connection = new JSONObject(JSONObject.Type.OBJECT);
-                        GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckOutput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckOutput>().gameObject);
+                        GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(action.GetComponentInChildren<Base.PuckOutput>().GetConneciton(), action.gameObject.GetComponentInChildren<Base.PuckOutput>().gameObject);
                         JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
                         if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
 
-                            con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Puck>().id);
+                            con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Base.Action>().Id);
 
                         } else {
                             con.AddField("default", "end");
@@ -242,22 +242,22 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
                         puckjson.AddField("outputs", output_connection);
                     }
                     JSONObject parameters = new JSONObject(JSONObject.Type.ARRAY);
-                    foreach (ActionParameter parameter in puck.Action.Parameters.Values) {
+                    foreach (Base.ActionParameter parameter in action.Parameters.Values) {
                         JSONObject param = new JSONObject(JSONObject.Type.OBJECT);
                         param.AddField("id", parameter.ActionParameterMetadata.Name);
                         param.AddField("type", parameter.ActionParameterMetadata.GetStringType());
                         //
                         switch (parameter.ActionParameterMetadata.Type) {
-                            case ActionParameterMetadata.Types.ActionPoint:
-                            case ActionParameterMetadata.Types.String:
+                            case Base.ActionParameterMetadata.Types.ActionPoint:
+                            case Base.ActionParameterMetadata.Types.String:
                                 parameter.GetValue(out string stringValue, "");
                                 param.AddField("value", stringValue);
                                 break;
-                            case ActionParameterMetadata.Types.Integer:
+                            case Base.ActionParameterMetadata.Types.Integer:
                                 parameter.GetValue(out long intValue, 0);
                                 param.AddField("value", intValue);
                                 break;
-                            case ActionParameterMetadata.Types.Bool:
+                            case Base.ActionParameterMetadata.Types.Bool:
                                 parameter.GetValue(out bool boolValue, false);
                                 param.AddField("value", boolValue);
                                 break;
@@ -400,7 +400,7 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
             }
 
             JSONObject data = obj["data"];
-            if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(WaitngForObjectActions, out ActionObjectMetadata ao)) {
+            if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(WaitngForObjectActions, out Base.ActionObjectMetadata ao)) {
                 JSONObject defaultValueStr = new JSONObject(JSONObject.Type.OBJECT);
                 defaultValueStr.AddField("value", "");
                 JSONObject defaultValueInt = new JSONObject(JSONObject.Type.OBJECT);
@@ -409,17 +409,17 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
                 //handle actions for actionobject here
                 foreach (JSONObject o in data.list) {
                     JSONObject metaData = o["meta"];
-                    ActionMetadata a = new ActionMetadata(o["name"].str, JSONHelper.GetBoolValue(metaData, "blocking", false), JSONHelper.GetBoolValue(metaData, "free", false), JSONHelper.GetBoolValue(metaData, "composite", false), JSONHelper.GetBoolValue(metaData, "blackbox", false));
+                    Base.ActionMetadata a = new Base.ActionMetadata(o["name"].str, JSONHelper.GetBoolValue(metaData, "blocking", false), JSONHelper.GetBoolValue(metaData, "free", false), JSONHelper.GetBoolValue(metaData, "composite", false), JSONHelper.GetBoolValue(metaData, "blackbox", false));
 
                     ao.ActionsMetadata[a.Name] = a;
                     foreach (JSONObject args in o["action_args"].list) {
                         switch (args["type"].str) {
                             case "int":
-                                a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueInt);
+                                a.Parameters[args["name"].str] = new Base.ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueInt);
                                 break;
                             case "str":
                             case "ActionPoint":
-                                a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueStr);
+                                a.Parameters[args["name"].str] = new Base.ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueStr);
                                 break;
                         }
 
@@ -441,9 +441,9 @@ public class WebsocketManager : Base.Singleton<WebsocketManager> {
             if (!CheckHeaders(obj, "getObjectTypes"))
                 return;
             JSONObject data = obj["data"];
-            Dictionary<string, ActionObjectMetadata> NewActionObjects = new Dictionary<string, ActionObjectMetadata>();
+            Dictionary<string, Base.ActionObjectMetadata> NewActionObjects = new Dictionary<string, Base.ActionObjectMetadata>();
             foreach (JSONObject o in data.list) {
-                ActionObjectMetadata ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str);
+                Base.ActionObjectMetadata ao = new Base.ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str);
                 NewActionObjects[ao.Type] = ao;
                 ActionObjectsToBeUpdated.Add(ao.Type);
             }

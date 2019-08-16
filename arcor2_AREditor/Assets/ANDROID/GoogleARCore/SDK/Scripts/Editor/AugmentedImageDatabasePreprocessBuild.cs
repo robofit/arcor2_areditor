@@ -18,27 +18,32 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using System.Diagnostics.CodeAnalysis;
-    using GoogleARCore;
-    using UnityEditor;
-    using UnityEditor.Build;
+namespace GoogleARCoreInternal
+{
+	using GoogleARCore;
+	using System.Diagnostics.CodeAnalysis;
+	using UnityEditor;
+	using UnityEditor.Build;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-     Justification = "Internal")]
-    internal class AugmentedImageDatabasePreprocessBuild : PreprocessBuildBase {
-        public override void OnPreprocessBuild(BuildTarget target, string path) {
-            string[] augmentedImageDatabaseGuids = AssetDatabase.FindAssets("t:AugmentedImageDatabase");
-            foreach (string databaseGuid in augmentedImageDatabaseGuids) {
-                AugmentedImageDatabase database = AssetDatabase.LoadAssetAtPath<AugmentedImageDatabase>(
-                    AssetDatabase.GUIDToAssetPath(databaseGuid));
+	[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
+	 Justification = "Internal")]
+	internal class AugmentedImageDatabasePreprocessBuild : PreprocessBuildBase
+	{
+		public override void OnPreprocessBuild(BuildTarget target, string path)
+		{
+			string[] augmentedImageDatabaseGuids = AssetDatabase.FindAssets("t:AugmentedImageDatabase");
+			foreach (string databaseGuid in augmentedImageDatabaseGuids)
+			{
+				AugmentedImageDatabase database = AssetDatabase.LoadAssetAtPath<AugmentedImageDatabase>(
+					AssetDatabase.GUIDToAssetPath(databaseGuid));
 
-                string error;
-                database.BuildIfNeeded(out error);
-                if (!string.IsNullOrEmpty(error)) {
-                    throw new BuildFailedException(error);
-                }
-            }
-        }
-    }
+				string error;
+				database.BuildIfNeeded(out error);
+				if (!string.IsNullOrEmpty(error))
+				{
+					throw new BuildFailedException(error);
+				}
+			}
+		}
+	}
 }

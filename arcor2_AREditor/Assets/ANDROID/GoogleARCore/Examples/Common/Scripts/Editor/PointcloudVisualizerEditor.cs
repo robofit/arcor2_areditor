@@ -17,124 +17,131 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCore.Examples.Common {
-    using System;
-    using System.Reflection;
-    using UnityEditor;
-    using UnityEngine;
+namespace GoogleARCore.Examples.Common
+{
+	using System;
+	using System.Reflection;
+	using UnityEditor;
+	using UnityEngine;
 
-    /// <summary>
-    /// Controls how the PointcloudVisualizer component will be rendered in the Editor GUI.
-    /// </summary>
-    [CustomEditor(typeof(PointcloudVisualizer))]
-    [CanEditMultipleObjects]
-    public class PointcloudVisualizerEditor : Editor {
-        private SerializedProperty m_Script;
-        private SerializedProperty m_PointColor;
-        private SerializedProperty m_DefaultSize;
-        private SerializedProperty m_MaxPointCount;
-        private SerializedProperty m_EnablePopAnimation;
-        private SerializedProperty m_MaxPointsToAddPerFrame;
-        private SerializedProperty m_AnimationDuration;
-        private SerializedProperty m_PopSize;
+	/// <summary>
+	/// Controls how the PointcloudVisualizer component will be rendered in the Editor GUI.
+	/// </summary>
+	[CustomEditor(typeof(PointcloudVisualizer))]
+	[CanEditMultipleObjects]
+	public class PointcloudVisualizerEditor : Editor
+	{
+		private SerializedProperty m_Script;
+		private SerializedProperty m_PointColor;
+		private SerializedProperty m_DefaultSize;
+		private SerializedProperty m_MaxPointCount;
+		private SerializedProperty m_EnablePopAnimation;
+		private SerializedProperty m_MaxPointsToAddPerFrame;
+		private SerializedProperty m_AnimationDuration;
+		private SerializedProperty m_PopSize;
 
-        /// <summary>
-        /// The Unity OnEnable() method.
-        /// </summary>
-        public void OnEnable() {
-            m_Script = serializedObject.FindProperty("m_Script");
-            m_PointColor = serializedObject.FindProperty("PointColor");
-            m_DefaultSize = serializedObject.FindProperty("m_DefaultSize");
-            m_MaxPointCount = serializedObject.FindProperty("m_MaxPointCount");
-            m_EnablePopAnimation = serializedObject.FindProperty("EnablePopAnimation");
-            m_MaxPointsToAddPerFrame = serializedObject.FindProperty("MaxPointsToAddPerFrame");
-            m_AnimationDuration = serializedObject.FindProperty("AnimationDuration");
-            m_PopSize = serializedObject.FindProperty("m_PopSize");
-        }
+		/// <summary>
+		/// The Unity OnEnable() method.
+		/// </summary>
+		public void OnEnable()
+		{
+			m_Script = serializedObject.FindProperty("m_Script");
+			m_PointColor = serializedObject.FindProperty("PointColor");
+			m_DefaultSize = serializedObject.FindProperty("m_DefaultSize");
+			m_MaxPointCount = serializedObject.FindProperty("m_MaxPointCount");
+			m_EnablePopAnimation = serializedObject.FindProperty("EnablePopAnimation");
+			m_MaxPointsToAddPerFrame = serializedObject.FindProperty("MaxPointsToAddPerFrame");
+			m_AnimationDuration = serializedObject.FindProperty("AnimationDuration");
+			m_PopSize = serializedObject.FindProperty("m_PopSize");
+		}
 
-        /// <summary>
-        /// The Unity OnInspectorGUI() method.
-        /// </summary>
-        public override void OnInspectorGUI() {
-            serializedObject.Update();
+		/// <summary>
+		/// The Unity OnInspectorGUI() method.
+		/// </summary>
+		public override void OnInspectorGUI()
+		{
+			serializedObject.Update();
 
-            GUI.enabled = false;
-            EditorGUILayout.PropertyField(m_Script, true, new GUILayoutOption[0]);
-            GUI.enabled = true;
+			GUI.enabled = false;
+			EditorGUILayout.PropertyField(m_Script, true, new GUILayoutOption[0]);
+			GUI.enabled = true;
 
-            PointcloudVisualizer pointcloudVisualizerScript = target as PointcloudVisualizer;
+			PointcloudVisualizer pointcloudVisualizerScript = target as PointcloudVisualizer;
 
-            EditorGUILayout.PropertyField(
-                m_PointColor,
-                new GUIContent(
-                    "Point Color",
-                    _GetTooltip(pointcloudVisualizerScript, "PointColor")));
+			EditorGUILayout.PropertyField(
+				m_PointColor,
+				new GUIContent(
+					"Point Color",
+					_GetTooltip(pointcloudVisualizerScript, "PointColor")));
 
-            EditorGUILayout.PropertyField(
-                m_DefaultSize,
-                new GUIContent(
-                    "Default Size",
-                    _GetTooltip(pointcloudVisualizerScript, "m_DefaultSize")));
+			EditorGUILayout.PropertyField(
+				m_DefaultSize,
+				new GUIContent(
+					"Default Size",
+					_GetTooltip(pointcloudVisualizerScript, "m_DefaultSize")));
 
-            EditorGUILayout.PropertyField(
-                m_MaxPointCount,
-                new GUIContent(
-                    "Max Point Count",
-                    _GetTooltip(pointcloudVisualizerScript, "m_MaxPointCount")));
+			EditorGUILayout.PropertyField(
+				m_MaxPointCount,
+				new GUIContent(
+					"Max Point Count",
+					_GetTooltip(pointcloudVisualizerScript, "m_MaxPointCount")));
 
-            EditorGUILayout.PropertyField(
-                m_EnablePopAnimation,
-                new GUIContent(
-                    "Enable Pop Animation",
-                    _GetTooltip(pointcloudVisualizerScript, "EnablePopAnimation")));
+			EditorGUILayout.PropertyField(
+				m_EnablePopAnimation,
+				new GUIContent(
+					"Enable Pop Animation",
+					_GetTooltip(pointcloudVisualizerScript, "EnablePopAnimation")));
 
-            // Hide animation related fields if the pop animation is disabled.
-            using (EditorGUILayout.FadeGroupScope group = new EditorGUILayout.FadeGroupScope(
-                Convert.ToSingle(pointcloudVisualizerScript.EnablePopAnimation))) {
-                if (group.visible == true) {
-                    EditorGUI.indentLevel++;
+			// Hide animation related fields if the pop animation is disabled.
+			using (EditorGUILayout.FadeGroupScope group = new EditorGUILayout.FadeGroupScope(
+				Convert.ToSingle(pointcloudVisualizerScript.EnablePopAnimation)))
+			{
+				if (group.visible == true)
+				{
+					EditorGUI.indentLevel++;
 
-                    EditorGUILayout.PropertyField(
-                        m_MaxPointsToAddPerFrame,
-                        new GUIContent(
-                            "Max Points To Add Per Frame",
-                            _GetTooltip(pointcloudVisualizerScript, "MaxPointsToAddPerFrame")));
+					EditorGUILayout.PropertyField(
+						m_MaxPointsToAddPerFrame,
+						new GUIContent(
+							"Max Points To Add Per Frame",
+							_GetTooltip(pointcloudVisualizerScript, "MaxPointsToAddPerFrame")));
 
-                    EditorGUILayout.PropertyField(
-                        m_AnimationDuration,
-                        new GUIContent(
-                            "Animation Duration",
-                            _GetTooltip(pointcloudVisualizerScript, "AnimationDuration")));
+					EditorGUILayout.PropertyField(
+						m_AnimationDuration,
+						new GUIContent(
+							"Animation Duration",
+							_GetTooltip(pointcloudVisualizerScript, "AnimationDuration")));
 
-                    EditorGUILayout.PropertyField(
-                        m_PopSize,
-                        new GUIContent(
-                            "Pop Size",
-                            _GetTooltip(pointcloudVisualizerScript, "m_PopSize")));
+					EditorGUILayout.PropertyField(
+						m_PopSize,
+						new GUIContent(
+							"Pop Size",
+							_GetTooltip(pointcloudVisualizerScript, "m_PopSize")));
 
-                    EditorGUI.indentLevel--;
-                }
-            }
+					EditorGUI.indentLevel--;
+				}
+			}
 
-            serializedObject.ApplyModifiedProperties();
-        }
+			serializedObject.ApplyModifiedProperties();
+		}
 
-        /// <summary>
-        /// Gets the tooltip attribute from a field.
-        /// </summary>
-        /// <returns>The string of the tooltip attribute.</returns>
-        /// <param name="obj">The object containing the field.</param>
-        /// <param name="fieldName">The field name.</param>
-        private string _GetTooltip(object obj, string fieldName) {
-            FieldInfo field =
-                obj.GetType().GetField(
-                    fieldName,
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		/// <summary>
+		/// Gets the tooltip attribute from a field.
+		/// </summary>
+		/// <returns>The string of the tooltip attribute.</returns>
+		/// <param name="obj">The object containing the field.</param>
+		/// <param name="fieldName">The field name.</param>
+		private string _GetTooltip(object obj, string fieldName)
+		{
+			FieldInfo field =
+				obj.GetType().GetField(
+					fieldName,
+					BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-            TooltipAttribute[] attributes =
-                field.GetCustomAttributes(typeof(TooltipAttribute), true) as TooltipAttribute[];
+			TooltipAttribute[] attributes =
+				field.GetCustomAttributes(typeof(TooltipAttribute), true) as TooltipAttribute[];
 
-            return attributes.Length > 0 ? attributes[0].tooltip : string.Empty;
-        }
-    }
+			return attributes.Length > 0 ? attributes[0].tooltip : string.Empty;
+		}
+	}
 }

@@ -159,14 +159,14 @@ namespace Base {
             SendDataToServer(getObjectActions.ToString());
         }
 
-        public void UpdateScene(List<InteractiveObject> interactiveObjects) {
+        public void UpdateScene(List<ActionObject> actionObjects) {
             JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
 
             message.AddField("event", "sceneChanged");
             JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
             data.AddField("id", "jabloPCB");
             JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-            foreach (InteractiveObject io in interactiveObjects) {
+            foreach (ActionObject io in actionObjects) {
                 JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
                 iojson.AddField("id", io.Id);
                 JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
@@ -180,7 +180,7 @@ namespace Base {
         }
 
         // TODO: add action parameters
-        public void UpdateProject(List<InteractiveObject> interactiveObjects, GameObject scene) {
+        public void UpdateProject(List<ActionObject> actionObjects, GameObject scene) {
             JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
 
             message.AddField("event", "projectChanged");
@@ -188,7 +188,7 @@ namespace Base {
             data.AddField("id", "demo_v0");
             data.AddField("scene_id", "jabloPCB");
             JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-            foreach (InteractiveObject io in interactiveObjects) {
+            foreach (ActionObject io in actionObjects) {
                 JSONObject iojson = new JSONObject(JSONObject.Type.OBJECT);
                 iojson.AddField("id", io.Id);
                 JSONObject apArray = new JSONObject(JSONObject.Type.ARRAY);
@@ -198,9 +198,9 @@ namespace Base {
 
                     apjson.AddField("pose", JSONHelper.CreatePose(ap.GetScenePosition(), ap.transform.rotation));
                     JSONObject puckArray = new JSONObject(JSONObject.Type.ARRAY);
-                    foreach (Puck puck in ap.GetComponentsInChildren<Puck>()) {
+                    foreach (Action puck in ap.GetComponentsInChildren<Action>()) {
                         JSONObject puckjson = new JSONObject(JsonUtility.ToJson(puck).ToString());
-                        puckjson.AddField("type", puck.Action.InteractiveObject.Id + "/" + puck.Action.Metadata.Name);
+                        puckjson.AddField("type", puck.ActionObject.Id + "/" + puck.Metadata.Name);
                         puckjson.AddField("pose", JSONHelper.CreatePose(puck.transform.localPosition, puck.transform.rotation));
 
                         if (puck.GetComponentInChildren<PuckInput>() != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*/) {
@@ -210,8 +210,8 @@ namespace Base {
                             JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
                             if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
                                 Debug.Log(ConnectedPuck);
-                                Debug.Log(ConnectedPuck.transform.GetComponentInParent<Puck>());
-                                con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Puck>().id);
+                                Debug.Log(ConnectedPuck.transform.GetComponentInParent<Action>());
+                                con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Action>().Id);
 
                             } else {
                                 con.AddField("default", "start");
@@ -226,7 +226,7 @@ namespace Base {
                             JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
                             if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
 
-                                con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Puck>().id);
+                                con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Action>().Id);
 
                             } else {
                                 con.AddField("default", "end");
@@ -235,7 +235,7 @@ namespace Base {
                             puckjson.AddField("outputs", output_connection);
                         }
                         JSONObject parameters = new JSONObject(JSONObject.Type.ARRAY);
-                        foreach (ActionParameter parameter in puck.Action.Parameters.Values) {
+                        foreach (ActionParameter parameter in puck.Parameters.Values) {
                             JSONObject param = new JSONObject(JSONObject.Type.OBJECT);
                             param.AddField("id", parameter.ActionParameterMetadata.Name);
                             param.AddField("type", parameter.ActionParameterMetadata.GetStringType());

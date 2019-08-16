@@ -18,28 +18,32 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using UnityEditor;
-    using UnityEngine;
+namespace GoogleARCoreInternal
+{
+	using UnityEditor;
+	using UnityEngine;
 
-    internal class ARCoreAnalyticsGUI {
-        // Use public static properties here, so that labels are automatically extracted by
-        // GetSearchKeywordsFromGUIContentProperties() in ARCoreAnalyticsProvider.
-        public static readonly GUIContent SDKAnalytics =
-                    new GUIContent("Enable Google ARCore SDK Analytics");
+	internal class ARCoreAnalyticsGUI
+	{
+		// Use public static properties here, so that labels are automatically extracted by
+		// GetSearchKeywordsFromGUIContentProperties() in ARCoreAnalyticsProvider.
+		public static readonly GUIContent SDKAnalytics =
+					new GUIContent("Enable Google ARCore SDK Analytics");
 
-        private static float s_GroupLabelWidth = 260;
+		private static float s_GroupLabelWidth = 260;
 
-        // Render ARCore Analytics Settings for ARCoreAnalyticsProvider and
-        // ARCoreAnalyticsPreferences.
-        internal static void OnGUI() {
-            EditorGUIUtility.labelWidth = s_GroupLabelWidth;
-            ARCoreAnalytics.Instance.EnableAnalytics =
-                EditorGUILayout.Toggle(SDKAnalytics, ARCoreAnalytics.Instance.EnableAnalytics);
+		// Render ARCore Analytics Settings for ARCoreAnalyticsProvider and
+		// ARCoreAnalyticsPreferences.
+		internal static void OnGUI()
+		{
+			EditorGUIUtility.labelWidth = s_GroupLabelWidth;
+			ARCoreAnalytics.Instance.EnableAnalytics =
+				EditorGUILayout.Toggle(SDKAnalytics, ARCoreAnalytics.Instance.EnableAnalytics);
 
-            if (GUI.changed) {
-                ARCoreAnalytics.Instance.Save();
-            }
-        }
-    }
+			if (GUI.changed)
+			{
+				ARCoreAnalytics.Instance.Save();
+			}
+		}
+	}
 }

@@ -18,25 +18,28 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using UnityEditor;
-    using UnityEngine;
+namespace GoogleARCoreInternal
+{
+	using UnityEditor;
+	using UnityEngine;
 
-    internal class RequiredOptionalPreprocessBuild : PreprocessBuildBase {
-        public override void OnPreprocessBuild(BuildTarget target, string path) {
-            bool isARCoreRequired = ARCoreProjectSettings.Instance.IsARCoreRequired;
+	internal class RequiredOptionalPreprocessBuild : PreprocessBuildBase
+	{
+		public override void OnPreprocessBuild(BuildTarget target, string path)
+		{
+			bool isARCoreRequired = ARCoreProjectSettings.Instance.IsARCoreRequired;
 
-            Debug.LogFormat(
-                "Building \"{0}\" app. Use 'Edit > Project Settings > ARCore' to adjust " +
-                "ARCore SDK for Unity settings.\n" +
-                "See {1} for more information.",
-                isARCoreRequired ? "AR Required" : "AR Optional",
-                "https://developers.google.com/ar/develop/unity/enable-arcore");
+			Debug.LogFormat(
+				"Building \"{0}\" app. Use 'Edit > Project Settings > ARCore' to adjust " +
+				"ARCore SDK for Unity settings.\n" +
+				"See {1} for more information.",
+				isARCoreRequired ? "AR Required" : "AR Optional",
+				"https://developers.google.com/ar/develop/unity/enable-arcore");
 
-            AssetHelper.GetPluginImporterByName("google_ar_required.aar")
-                .SetCompatibleWithPlatform(BuildTarget.Android, isARCoreRequired);
-            AssetHelper.GetPluginImporterByName("google_ar_optional.aar")
-                .SetCompatibleWithPlatform(BuildTarget.Android, !isARCoreRequired);
-        }
-    }
+			AssetHelper.GetPluginImporterByName("google_ar_required.aar")
+				.SetCompatibleWithPlatform(BuildTarget.Android, isARCoreRequired);
+			AssetHelper.GetPluginImporterByName("google_ar_optional.aar")
+				.SetCompatibleWithPlatform(BuildTarget.Android, !isARCoreRequired);
+		}
+	}
 }

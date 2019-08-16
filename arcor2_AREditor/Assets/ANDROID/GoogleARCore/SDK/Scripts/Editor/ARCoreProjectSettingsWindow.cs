@@ -18,10 +18,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
+namespace GoogleARCoreInternal
+{
 
-    // Only add 'Edit > Project Settings > Google ARCore' menu item in Unity versions prior to 2018.3.
-    // In 2018.3 and later, settings are instead made available by ARCoreProjectSettingsProvider.
+	// Only add 'Edit > Project Settings > Google ARCore' menu item in Unity versions prior to 2018.3.
+	// In 2018.3 and later, settings are instead made available by ARCoreProjectSettingsProvider.
 #if !UNITY_2018_3_OR_NEWER
     internal class ARCoreProjectSettingsWindow : EditorWindow
     {

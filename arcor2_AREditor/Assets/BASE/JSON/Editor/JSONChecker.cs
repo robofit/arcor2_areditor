@@ -28,8 +28,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-public class JSONChecker : EditorWindow {
-    string JSON = @"{
+public class JSONChecker : EditorWindow
+{
+	string JSON = @"{
 	""TestObject"": {
 		""SomeText"": ""Blah"",
 		""SomeObject"": {
@@ -44,16 +45,19 @@ public class JSONChecker : EditorWindow {
 		""EmbeddedObject"": ""{\""field\"":\""Value with \\\""escaped quotes\\\""\""}""
 	}
 }";   //dat string literal...
-    string URL = "";
-    JSONObject j;
-    [MenuItem("Window/JSONChecker")]
-    static void Init() {
-        GetWindow(typeof(JSONChecker));
-    }
-    void OnGUI() {
-        JSON = EditorGUILayout.TextArea(JSON);
-        GUI.enabled = !string.IsNullOrEmpty(JSON);
-        if (GUILayout.Button("Check JSON")) {
+	string URL = "";
+	JSONObject j;
+	[MenuItem("Window/JSONChecker")]
+	static void Init()
+	{
+		GetWindow(typeof(JSONChecker));
+	}
+	void OnGUI()
+	{
+		JSON = EditorGUILayout.TextArea(JSON);
+		GUI.enabled = !string.IsNullOrEmpty(JSON);
+		if (GUILayout.Button("Check JSON"))
+		{
 #if PERFTEST
             Profiler.BeginSample("JSONParse");
 			j = JSONObject.Create(JSON);
@@ -62,43 +66,48 @@ public class JSONChecker : EditorWindow {
             j.ToString(true);
             Profiler.EndSample();
 #else
-            j = JSONObject.Create(JSON);
+			j = JSONObject.Create(JSON);
 #endif
-            Debug.Log(j.ToString(true));
-        }
-        EditorGUILayout.Separator();
-        URL = EditorGUILayout.TextField("URL", URL);
-        if (GUILayout.Button("Get JSON")) {
-            Debug.Log(URL);
+			Debug.Log(j.ToString(true));
+		}
+		EditorGUILayout.Separator();
+		URL = EditorGUILayout.TextField("URL", URL);
+		if (GUILayout.Button("Get JSON"))
+		{
+			Debug.Log(URL);
 #if UNITY_2017_1_OR_NEWER
-            UnityWebRequest test = new UnityWebRequest(URL);
-            test.SendWebRequest();
-            while (!test.isDone && !test.isNetworkError)
-                ;
+			UnityWebRequest test = new UnityWebRequest(URL);
+			test.SendWebRequest();
+			while (!test.isDone && !test.isNetworkError)
+				;
 #else
 			var test = new WWW(URL);
  			while (!test.isDone) ;
 #endif
-            if (!string.IsNullOrEmpty(test.error)) {
-                Debug.Log(test.error);
-            } else {
+			if (!string.IsNullOrEmpty(test.error))
+			{
+				Debug.Log(test.error);
+			}
+			else
+			{
 #if UNITY_2017_1_OR_NEWER
-                string text = test.downloadHandler.text;
+				string text = test.downloadHandler.text;
 #else
 				var text = test.text;
 #endif
-                Debug.Log(text);
-                j = new JSONObject(text);
-                Debug.Log(j.ToString(true));
-            }
-        }
-        if (j) {
-            //Debug.Log(System.GC.GetTotalMemory(false) + "");
-            if (j.type == JSONObject.Type.NULL)
-                GUILayout.Label("JSON fail:\n" + j.ToString(true));
-            else
-                GUILayout.Label("JSON success:\n" + j.ToString(true));
+				Debug.Log(text);
+				j = new JSONObject(text);
+				Debug.Log(j.ToString(true));
+			}
+		}
+		if (j)
+		{
+			//Debug.Log(System.GC.GetTotalMemory(false) + "");
+			if (j.type == JSONObject.Type.NULL)
+				GUILayout.Label("JSON fail:\n" + j.ToString(true));
+			else
+				GUILayout.Label("JSON success:\n" + j.ToString(true));
 
-        }
-    }
+		}
+	}
 }

@@ -18,48 +18,56 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace GoogleARCoreInternal {
-    using System.Diagnostics.CodeAnalysis;
-    using UnityEditor;
-    using UnityEditor.Build;
-    using UnityEngine;
+namespace GoogleARCoreInternal
+{
+	using System.Diagnostics.CodeAnalysis;
+	using UnityEditor;
+	using UnityEditor.Build;
+	using UnityEngine;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-        Justification = "Internal")]
-    internal class ARCoreSupportedPreprocessBuild : PreprocessBuildBase
+	[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
+		Justification = "Internal")]
+	internal class ARCoreSupportedPreprocessBuild : PreprocessBuildBase
 #if UNITY_2017_4_OR_NEWER
-        , IActiveBuildTargetChanged
+		, IActiveBuildTargetChanged
 #endif
-    {
-        public override void OnPreprocessBuild(BuildTarget target, string path) {
-            if (target == BuildTarget.Android) {
-                CheckARCoreSupported();
-            }
+	{
+		public override void OnPreprocessBuild(BuildTarget target, string path)
+		{
+			if (target == BuildTarget.Android)
+			{
+				CheckARCoreSupported();
+			}
 
 #if UNITY_2018_1_OR_NEWER
-            if (UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null) {
-                Debug.LogWarning(
-                    "Custom Rendering Pipeline Asset is not supported by ARCore SDK for Unity. " +
-                    "To ensure ARCore works correctly, set Rendering Pipeline Asset to None in " +
-                    "'Project Settings > Graphics > Scriptable Render Pipeline Settings'.");
-            }
+			if (UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset != null)
+			{
+				Debug.LogWarning(
+					"Custom Rendering Pipeline Asset is not supported by ARCore SDK for Unity. " +
+					"To ensure ARCore works correctly, set Rendering Pipeline Asset to None in " +
+					"'Project Settings > Graphics > Scriptable Render Pipeline Settings'.");
+			}
 #endif // UNITY_2018_1_OR_NEWER
-        }
+		}
 
-        public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget) {
-            if (newTarget == BuildTarget.Android) {
-                CheckARCoreSupported();
-            }
-        }
+		public void OnActiveBuildTargetChanged(BuildTarget previousTarget, BuildTarget newTarget)
+		{
+			if (newTarget == BuildTarget.Android)
+			{
+				CheckARCoreSupported();
+			}
+		}
 
-        private void CheckARCoreSupported() {
-            // `PlayerSettings.Android.ARCoreEnabled` is reliably available in 2018.2.1 and later.
+		private void CheckARCoreSupported()
+		{
+			// `PlayerSettings.Android.ARCoreEnabled` is reliably available in 2018.2.1 and later.
 #if UNITY_2018_2_OR_NEWER && !UNITY_2018_2_0
-            if (!PlayerSettings.Android.ARCoreEnabled) {
-                Debug.LogWarning("ARCore SDK support is disabled. To use ARCore SDK for Unity on " +
-                    "Android, 'XR Settings > ARCore Supported' must be enabled.");
-            }
+			if (!PlayerSettings.Android.ARCoreEnabled)
+			{
+				Debug.LogWarning("ARCore SDK support is disabled. To use ARCore SDK for Unity on " +
+					"Android, 'XR Settings > ARCore Supported' must be enabled.");
+			}
 #endif  //UNITY_2018_2_OR_NEWER && !UNITY_2018_2_0
-        }
-    }
+		}
+	}
 }
