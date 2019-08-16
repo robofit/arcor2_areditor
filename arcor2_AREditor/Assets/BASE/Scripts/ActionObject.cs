@@ -13,14 +13,12 @@ namespace Base {
         public GameObject ConnectionPrefab;
 
         public GameObject ActionPoints;
-        private MenuManager menuManager;
-        [System.NonSerialized]
+       [System.NonSerialized]
         public int CounterAP = 0;
-        private Vector3 offset;
-        private GameManager gameManager;
+        protected Vector3 offset;
         private string id;
 
-
+        public IO.Swagger.Model.SceneObject Data;
         public ActionObjectMetadata ActionObjectMetadata;
 
         public string Id {
@@ -28,36 +26,19 @@ namespace Base {
         }
 
         private void Start() {
-            gameManager = GameObject.Find("_GameManager").GetComponent<GameManager>();
             ActionPoints = transform.Find("ActionPoints").gameObject;
-            menuManager = GameObject.Find("_MenuManager").gameObject.GetComponent<MenuManager>();
-            InteractiveObjectMenu = menuManager.InteractiveObjectMenu;
-            ConnectionPrefab = gameManager.ConnectionPrefab;
+            InteractiveObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
+            ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
-        private void Touch() {
-            menuManager.ShowMenu(InteractiveObjectMenu, Id);
-            InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
-        }
-
-        private void OnMouseDown() => offset = gameObject.transform.position -
-                Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f));
-
-        private void OnMouseDrag() {
-            Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f);
-            transform.position = Camera.main.ScreenToWorldPoint(newPosition) + offset;
-        }
-
-        private void OnMouseUp() => gameManager.UpdateScene();
-
-        public void DeleteIO(bool updateScene = true) {
+       public void DeleteIO(bool updateScene = true) {
             foreach (Base.ActionPoint ap in GetComponentsInChildren<Base.ActionPoint>()) {
                 ap.DeleteAP(false);
             }
             gameObject.SetActive(false);
             Destroy(gameObject);
             if (updateScene)
-                gameManager.UpdateScene();
+                GameManager.Instance.UpdateScene();
         }
 
     }
