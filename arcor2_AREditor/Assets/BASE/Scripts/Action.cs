@@ -16,7 +16,7 @@ namespace Base {
                 ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
                 if (actionParameter.ActionParameterMetadata.Type == ActionParameterMetadata.Types.ActionPoint) {
                     JSONObject value = new JSONObject(JSONObject.Type.OBJECT);
-                    value.AddField("value", ap.ActionObject.Id + "." + ap.Data.Id);
+                    value.AddField("value", ap.ActionObject.Data.Id + "." + ap.Data.Id);
                     actionParameter.Value = value;
                 } else {
                     actionParameter.Value = actionParameter.ActionParameterMetadata.DefaultValue;

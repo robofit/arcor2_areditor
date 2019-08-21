@@ -24,7 +24,7 @@ public class PuckMenu : MonoBehaviour {
             }
         }
         transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Data.Id;
-        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.ActionObject.Id + "/" + action.Metadata.Name;
+        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.ActionObject.Data.Id + "/" + action.Metadata.Name;
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
             Debug.Log(parameter.ToString());
             GameObject paramGO = InitializeParameter(parameter);
@@ -97,7 +97,7 @@ public class PuckMenu : MonoBehaviour {
 
         foreach (Base.ActionPoint ap in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
             Dropdown.OptionData option = new Dropdown.OptionData {
-                text = ap.ActionObject.GetComponent<Base.ActionObject>().Id + "." + ap.Data.Id
+                text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id
             };
             dropdown.options.Add(option);
             if (option.text == selectedActionId) {

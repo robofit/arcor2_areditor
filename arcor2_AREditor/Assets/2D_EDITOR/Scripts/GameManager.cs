@@ -16,7 +16,7 @@ public class GameManager : Base.Singleton<GameManager> {
     public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
     public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
     private string loadedScene;
-    private JSONObject projectJSON, sceneJSON;
+    private JSONObject projectJSON, newScene;
     private bool sceneReady;
 
     public enum ConnectionStatusEnum {
@@ -44,8 +44,8 @@ public class GameManager : Base.Singleton<GameManager> {
 
     // Update is called once per frame
     private void Update() {
-        if (sceneJSON != null && ActionsManager.Instance.ActionsReady)
-            SceneUpdated(sceneJSON);
+       // if (newScene != null && ActionsManager.Instance.ActionsReady)
+           // SceneUpdated(newScene);
     }
 
     public void UpdateScene() {
@@ -103,13 +103,17 @@ public class GameManager : Base.Singleton<GameManager> {
                 obj = Instantiate(UnknownPrefab, ActionObjects.transform);
                 break;
         }
+        
         obj.transform.localScale = new Vector3(1f, 1f, 1f);
         obj.transform.position = SpawnPoint.transform.position;
         obj.GetComponent<Base.ActionObject>().Data.Type = type;
         if (id == "")
-            obj.GetComponent<Base.ActionObject>().Id = GetFreeIOName(type);
+            obj.GetComponent<Base.ActionObject>().Data.Id = GetFreeIOName(type);
         else
-            obj.GetComponent<Base.ActionObject>().Id = id;
+            obj.GetComponent<Base.ActionObject>().Data.Id = id;
+        //obj.GetComponent<Base.ActionObject>().Data.Pose = DataHelper.CreatePose(obj.GetComponent<Base.ActionObject>().GetScenePosition, )
+        obj.GetComponent<Base.ActionObject>().SetScenePosition(transform.position);
+        obj.GetComponent<Base.ActionObject>().SetSceneOrientation(transform.rotation);
 
 
         obj.GetComponent<Base.ActionObject>().ActionObjectMetadata = aom;
@@ -125,7 +129,7 @@ public class GameManager : Base.Singleton<GameManager> {
         do {
             hasFreeName = true;
             foreach (Base.ActionObject io in ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-                if (io.Id == freeName) {
+                if (io.Data.Id == freeName) {
                     hasFreeName = false;
                 }
             }
@@ -171,14 +175,16 @@ public class GameManager : Base.Singleton<GameManager> {
         return AP;
     }
 
-    public void SceneUpdated(JSONObject data) {
+    public void SceneUpdated(IO.Swagger.Model.Scene scene) {
         sceneReady = false;
-        sceneJSON = null;
+        newScene = null;
         if (!ActionsManager.Instance.ActionsReady) {
-            sceneJSON = data;
+            newScene = data;
             return;
         }
 
+
+        /*
         string scene_id;
         JSONObject objects;
         try {
@@ -198,7 +204,7 @@ public class GameManager : Base.Singleton<GameManager> {
             loadedScene = scene_id;
         } else {
             foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
-                interactiveObjects[ao.Id] = ao;
+                interactiveObjects[ao.Data.Id] = ao;
             }
         }
 
@@ -233,11 +239,11 @@ public class GameManager : Base.Singleton<GameManager> {
         sceneReady = true;
         if (projectJSON != null) {
             ProjectUpdated(projectJSON);
-        }
+        }*/
     }
 
     public void ProjectUpdated(JSONObject data) {
-        projectJSON = null;
+        /*projectJSON = null;
         JSONObject objects;
         string scene_id;
         try {
@@ -411,7 +417,7 @@ public class GameManager : Base.Singleton<GameManager> {
             c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
             input.Connection = c.GetComponent<Connection>();
             output.Connection = c.GetComponent<Connection>();
-        }
+        }*/
 
     }
 

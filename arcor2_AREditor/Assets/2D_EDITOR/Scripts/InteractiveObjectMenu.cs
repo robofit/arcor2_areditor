@@ -23,7 +23,7 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     public void SaveID(string new_id) {
-        CurrentObject.GetComponent<Base.ActionObject>().Id = new_id;
+        CurrentObject.GetComponent<Base.ActionObject>().Data.Id = new_id;
         GameManager.Instance.UpdateScene();
     }
 

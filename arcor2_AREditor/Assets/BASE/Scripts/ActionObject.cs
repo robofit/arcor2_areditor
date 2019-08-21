@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace Base {
-    public class ActionObject : MonoBehaviour {
+    public abstract class ActionObject : MonoBehaviour {
         [System.NonSerialized]
         public GameObject InteractiveObjectMenu;
         [System.NonSerialized]
@@ -10,13 +10,14 @@ namespace Base {
         public GameObject ActionPoints;
         [System.NonSerialized]
         public int CounterAP = 0;
-        private string id;
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject();
         public ActionObjectMetadata ActionObjectMetadata;
 
-        public string Id {
-            get => id; set => id = value;
+
+        protected virtual void Awake() {
+            Data.Pose = DataHelper.CreatePose(new Vector3(), new Quaternion());
+            GameManager.Instance.Scene.GetComponent<Scene>().Data.Objects.Add(Data);
         }
 
         private void Start() {
@@ -25,7 +26,15 @@ namespace Base {
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
-       public void DeleteIO(bool updateScene = true) {
+        protected virtual void Update() {
+            if (gameObject.transform.hasChanged) {
+                SetScenePosition(transform.position);
+                SetSceneOrientation(transform.rotation);
+                transform.hasChanged = false;
+            }
+        }
+
+        public void DeleteIO(bool updateScene = true) {
             foreach (Base.ActionPoint ap in GetComponentsInChildren<Base.ActionPoint>()) {
                 ap.DeleteAP(false);
             }
@@ -34,6 +43,14 @@ namespace Base {
             if (updateScene)
                 GameManager.Instance.UpdateScene();
         }
+
+        public abstract Vector3 GetScenePosition();
+
+        public abstract void SetScenePosition(Vector3 position);
+
+        public abstract Quaternion GetSceneOrientation();
+
+        public abstract void SetSceneOrientation(Quaternion orientation);
 
     }
 

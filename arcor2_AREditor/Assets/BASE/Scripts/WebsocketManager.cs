@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 
 namespace Base {
@@ -161,36 +162,36 @@ namespace Base {
         }
 
         public void UpdateScene(List<ActionObject> actionObjects) {
-            
-            foreach (ActionObject io in actionObjects) {
+            ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged {
+                Scene = GameManager.Instance.Scene.GetComponent<Scene>().Data
+            };
+            Debug.LogError(eventData.ToJson());
+            SendDataToServer(eventData.ToJson());
 
-                foreach (ActionObject ao in actionObjects) {
-                    Debug.LogError(ao.Data.ToJson());
-                    
-                }
-            }
-                JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+            //Debug.LogError(GameManager.Instance.Scene.GetComponent<Scene>().Data.ToJson());
 
-                message.AddField("event", "sceneChanged");
-                JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
-                data.AddField("id", "jabloPCB");
-                JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-                foreach (ActionObject io in actionObjects) {
-                    JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
-                    iojson.AddField("id", io.Id);
-                    JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
-                    iojson.AddField("pose", pose);
-                    obj.Add(iojson);
-                }
-                data.AddField("objects", obj);
-                message.AddField("data", data);
-                Debug.Log(message.ToString());
-                SendDataToServer(message.ToString());
-            }
+            /* JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+
+             message.AddField("event", "sceneChanged");
+             JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
+             data.AddField("id", "jabloPCB");
+             JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
+             foreach (ActionObject io in actionObjects) {
+                 JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
+                 iojson.AddField("id", io.Id);
+                 JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
+                 iojson.AddField("pose", pose);
+                 obj.Add(iojson);
+             }
+             data.AddField("objects", obj);
+             message.AddField("data", data);
+             Debug.Log(message.ToString());
+             SendDataToServer(message.ToString());*/
+        }
 
         // TODO: add action parameters
         public void UpdateProject(List<ActionObject> actionObjects, GameObject scene) {
-            JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+           /* JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
 
             message.AddField("event", "projectChanged");
             JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
@@ -212,7 +213,7 @@ namespace Base {
                         puckjson.AddField("type", puck.ActionObject.Id + "/" + puck.Metadata.Name);
                         puckjson.AddField("pose", JSONHelper.CreatePose(puck.transform.localPosition, puck.transform.rotation));
 
-                        if (puck.GetComponentInChildren<PuckInput>() != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*/) {
+                        if (puck.GetComponentInChildren<PuckInput>() != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*//*) {
                             JSONObject input_connection = new JSONObject(JSONObject.Type.ARRAY);
                             GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckInput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckInput>().gameObject);
 
@@ -229,7 +230,7 @@ namespace Base {
                             puckjson.AddField("inputs", input_connection);
 
                         }
-                        if (puck.GetComponentInChildren<PuckOutput>()/* != null && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckOutput>().GetConneciton())*/) {
+                        if (puck.GetComponentInChildren<PuckOutput>()/* != null && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckOutput>().GetConneciton())*//*) {
                             JSONObject output_connection = new JSONObject(JSONObject.Type.OBJECT);
                             GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckOutput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckOutput>().gameObject);
                             JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
@@ -285,7 +286,7 @@ namespace Base {
             Debug.Log(message.ToString(true));
             ignoreProjectChanged = true;
 
-            SendDataToServer(message.ToString());
+            SendDataToServer(message.ToString());*/
         }
 
 
@@ -375,10 +376,8 @@ namespace Base {
                     Debug.Log("Wrong headers");
                     return;
                 }
-
-                JSONObject data = obj["data"];
-
-                GameManager.Instance.SceneUpdated(data);
+                ARServer.Models.EventSceneChanged eventSceneChanged = JsonConvert.DeserializeObject<ARServer.Models.EventSceneChanged>(obj.ToString());
+                GameManager.Instance.SceneUpdated(eventSceneChanged.Scene);
 
 
             } catch (NullReferenceException e) {

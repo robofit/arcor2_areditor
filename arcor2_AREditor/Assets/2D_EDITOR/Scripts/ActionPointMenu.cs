@@ -9,13 +9,14 @@ public class ActionPointMenu : MonoBehaviour {
 
     [SerializeField]
     private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList;
+
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
 
     }
 
     // Update is called once per frame
-    void Update() {
+    private void Update() {
 
     }
 
@@ -51,7 +52,7 @@ public class ActionPointMenu : MonoBehaviour {
                 btnGO.transform.SetParent(dynamicContent.transform);
                 btnGO.transform.localScale = new Vector3(1, 1, 1);
                 Button btn = btnGO.GetComponent<Button>();
-                btn.GetComponentInChildren<Text>().text = keyval.Key.Id + "/" + am.Name;
+                btn.GetComponentInChildren<Text>().text = keyval.Key.Data.Id + "/" + am.Name;
                 btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
             }
 
@@ -61,8 +62,9 @@ public class ActionPointMenu : MonoBehaviour {
         dropdown.captionText.text = "";
         foreach (Base.ActionObject actionObject in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
             if (actionObject.ActionObjectMetadata.Robot) {
-                Dropdown.OptionData option = new Dropdown.OptionData();
-                option.text = actionObject.Id;
+                Dropdown.OptionData option = new Dropdown.OptionData {
+                    text = actionObject.Data.Id
+                };
                 dropdown.options.Add(option);
             }
         }
