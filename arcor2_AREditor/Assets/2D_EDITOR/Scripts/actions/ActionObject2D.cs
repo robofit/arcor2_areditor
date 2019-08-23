@@ -24,21 +24,15 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     public override Vector3 GetScenePosition() {
-        //Vector3 position = Vector3.Scale(GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
-        //    new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1));
-        return DataHelper.PositionToVector3(Data.Pose.Position);
+        Vector3 v = GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
+             new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));
+        return v;
     }
 
     public override void SetScenePosition(Vector3 position) {
-        //transform.position =
-        ;
-
-        //Data.Pose.Position = DataHelper.Vector3ToPosition(GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(position, new Vector3(1000, 1000, 1)) +
-        //    new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0)));
+        
         Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
             new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));
-
-        Debug.LogWarning(Data.Pose.Position);
     }
 
     protected override void Update() {        

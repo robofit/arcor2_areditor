@@ -48,14 +48,7 @@ public class PuckMenu : MonoBehaviour {
     GameObject InitializeParameter(Base.ActionParameter actionParameter) {
         switch (actionParameter.ActionParameterMetadata.Type) {
             case Base.ActionParameterMetadata.Types.String:
-                string value;
-                try {
-                    value = actionParameter.Value["value"].str;
-                } catch (NullReferenceException e) {
-                    Debug.Log(actionParameter.Value);
-                    Debug.Log("Parse error in InitializeActionPointParameter()");
-                    value = "";
-                }
+                actionParameter.GetValue(out string value);       
                 return InitializeStringParameter(actionParameter.ActionParameterMetadata.Name, value);
             case Base.ActionParameterMetadata.Types.ActionPoint:
                 return InitializeActionPointParameter(actionParameter);
@@ -85,14 +78,8 @@ public class PuckMenu : MonoBehaviour {
         Dropdown dropdown = actionInput.transform.Find("Dropdown").GetComponent<Dropdown>();
         dropdown.options.Clear();
 
-        string selectedActionId;
-        try {
-            selectedActionId = actionParameter.Value["value"].str;
-        } catch (NullReferenceException e) {
-            Debug.Log(actionParameter.Value);
-            Debug.Log("Parse error in InitializeActionPointParameter()");
-            selectedActionId = "";
-        }
+        actionParameter.GetValue(out string selectedActionId);
+
         int selectedValue = -1;
 
         foreach (Base.ActionPoint ap in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
@@ -130,19 +117,14 @@ public class PuckMenu : MonoBehaviour {
     public void OnChangeStringParameterHandler(string parameterId, string newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        JSONObject value = new JSONObject(JSONObject.Type.OBJECT);
-        value.AddField("value", newValue);
-        parameter.Value = value;
+        parameter.Data.Value = newValue;
         GameManager.Instance.UpdateProject();
     }
 
     public void OnChangeIntegerParameterHandler(string parameterId, long newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        JSONObject value = new JSONObject(JSONObject.Type.OBJECT);
-        value.AddField("value", newValue);
-        parameter.Value = value;
-
+        parameter.Data.Value = newValue;
         GameManager.Instance.UpdateProject();
     }
 

@@ -16,7 +16,8 @@ public class GameManager : Base.Singleton<GameManager> {
     public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
     public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
     private string loadedScene;
-    private JSONObject projectJSON, newScene;
+    private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project();
+    private IO.Swagger.Model.Scene newScene;
     private bool sceneReady;
 
     public enum ConnectionStatusEnum {
@@ -33,7 +34,9 @@ public class GameManager : Base.Singleton<GameManager> {
     }
 
     private void Awake() {
-
+        currentProject.Objects = new List<IO.Swagger.Model.ProjectObject>();
+        currentProject.Desc = "";
+        currentProject.Id = "JabloPCB";
     }
 
     private void Start() {
@@ -44,15 +47,16 @@ public class GameManager : Base.Singleton<GameManager> {
 
     // Update is called once per frame
     private void Update() {
-       // if (newScene != null && ActionsManager.Instance.ActionsReady)
-           // SceneUpdated(newScene);
+        if (newScene != null && ActionsManager.Instance.ActionsReady)
+            SceneUpdated(newScene);
     }
 
     public void UpdateScene() {
-        List<Base.ActionObject> list = new List<Base.ActionObject>();
-        list.AddRange(ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>());
-        Base.WebsocketManager.Instance.UpdateScene(list);
-
+        Scene.GetComponent<Base.Scene>().Data.Objects.Clear();
+        foreach (Base.ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>().ToList()) {
+            Scene.GetComponent<Base.Scene>().Data.Objects.Add(actionObject.Data);
+        }
+        Base.WebsocketManager.Instance.UpdateScene(Scene.GetComponent<Base.Scene>().Data);
     }
 
     private void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
@@ -103,7 +107,7 @@ public class GameManager : Base.Singleton<GameManager> {
                 obj = Instantiate(UnknownPrefab, ActionObjects.transform);
                 break;
         }
-        
+
         obj.transform.localScale = new Vector3(1f, 1f, 1f);
         obj.transform.position = SpawnPoint.transform.position;
         obj.GetComponent<Base.ActionObject>().Data.Type = type;
@@ -170,6 +174,8 @@ public class GameManager : Base.Singleton<GameManager> {
         c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
         AP.GetComponent<Base.ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
         AP.GetComponent<Base.ActionPoint>().SetActionObject(ActionObject);
+        AP.GetComponent<Base.ActionPoint>().SetScenePosition(transform.position);
+        AP.GetComponent<Base.ActionPoint>().SetSceneOrientation(transform.rotation);
         if (updateProject)
             UpdateProject();
         return AP;
@@ -179,70 +185,90 @@ public class GameManager : Base.Singleton<GameManager> {
         sceneReady = false;
         newScene = null;
         if (!ActionsManager.Instance.ActionsReady) {
-            newScene = data;
+            newScene = scene;
             return;
         }
-
-
-        /*
-        string scene_id;
-        JSONObject objects;
-        try {
-            scene_id = data["id"].str;
-            objects = data["objects"];
-        } catch (NullReferenceException e) {
-            Debug.Log(data.ToString(true));
-            Debug.Log("Parse error in SceneUpdated()");
-            return;
-        }
-
-        Dictionary<string, Base.ActionObject> interactiveObjects = new Dictionary<string, Base.ActionObject>();
-        if (loadedScene != scene_id) {
+        Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
+        if (loadedScene != scene.Id) {
             foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
                 Destroy(ao.gameObject);
             }
-            loadedScene = scene_id;
+            loadedScene = scene.Id;
         } else {
             foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
-                interactiveObjects[ao.Data.Id] = ao;
+                actionObjects[ao.Data.Id] = ao;
             }
         }
 
-        foreach (JSONObject aojson in objects.list) {
-            string id;
-            string type;
-            Vector3 position;
-            try {
-                id = aojson["id"].str;
-                type = aojson["type"].str;
-                JSONObject pjson = aojson["pose"];
-                if (!JSONHelper.TryGetPose(pjson, out position, out Quaternion orientation)) {
-                    throw new NullReferenceException();
-                }
-            } catch (NullReferenceException e) {
-                Debug.Log("Parse error in SceneUpdated()");
-                return;
-            }
-            if (interactiveObjects.TryGetValue(id, out Base.ActionObject ao)) {
-                if (type != ao.Data.Type) {
+        foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
+            if (actionObjects.TryGetValue(actionObject.Id, out Base.ActionObject ao)) {
+                if (actionObject.Type != ao.Data.Type) {
                     // type has changed, what now? delete object and create a new one?
                     Destroy(ao.gameObject);
                     // TODO: create a new one with new type
                 }
-                ao.gameObject.transform.localPosition = position;
-            } else {
-                GameObject new_ao = SpawnActionObject(type, false, id);
-                new_ao.transform.localPosition = position;
 
+                ao.Data = actionObject;
+                ao.gameObject.transform.position = ao.GetScenePosition();
+                ao.gameObject.transform.rotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
+            } else {
+                GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
+                new_ao.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
+                new_ao.GetComponent<Base.ActionObject>().Data = actionObject;
+                new_ao.gameObject.transform.position = new_ao.GetComponent<Base.ActionObject>().GetScenePosition();
             }
         }
+
+
         sceneReady = true;
-        if (projectJSON != null) {
-            ProjectUpdated(projectJSON);
-        }*/
+        if (newProject != null) {
+            ProjectUpdated(newProject);
+
+        }
+
+
     }
 
-    public void ProjectUpdated(JSONObject data) {
+    public void ProjectUpdated(IO.Swagger.Model.Project project) {
+        if (project.SceneId != loadedScene || !sceneReady) {
+            newProject = project;
+            return;
+        }
+        currentProject = project;
+
+        Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
+
+        foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+            actionObjects[ao.Data.Id] = ao;
+        }
+
+
+        foreach (IO.Swagger.Model.ProjectObject projectObject in currentProject.Objects) {
+            if (actionObjects.TryGetValue(projectObject.Id, out Base.ActionObject actionObject)) {
+
+                Dictionary<string, Base.ActionPoint> actionPoints = new Dictionary<string, Base.ActionPoint>();
+                foreach (Base.ActionPoint ap in actionObject.transform.GetComponentsInChildren<Base.ActionPoint>()) {
+                    actionPoints[ap.Data.Id] = ap;
+                }
+
+                foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
+                    if (actionPoints.TryGetValue(projectActionPoint.Id, out Base.ActionPoint actionPoint)) {
+                        actionPoint.Data = new IO.Swagger.Model.ActionPoint {
+                            Id = projectActionPoint.Id,
+                            Pose = projectActionPoint.Pose
+                        };
+                        actionPoint.transform.position = actionPoint.GetScenePosition();
+                        actionPoint.transform.rotation = actionPoint.GetSceneOrientation();
+                    } else {
+                        // init new ap
+                    }
+                }
+                
+            } else {
+                //object not exist? 
+            }
+
+        }
         /*projectJSON = null;
         JSONObject objects;
         string scene_id;
@@ -436,8 +462,38 @@ public class GameManager : Base.Singleton<GameManager> {
     public void UpdateProject() {
         List<Base.ActionObject> list = new List<Base.ActionObject>();
         list.AddRange(ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>());
+        currentProject.Objects.Clear();
+        currentProject.SceneId = Scene.GetComponent<Base.Scene>().Data.Id;
+        foreach (Base.ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+            IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
+            foreach (Base.ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<Base.ActionPoint>()) {
+                IO.Swagger.Model.ProjectActionPoint projectActionPoint = DataHelper.ActionPointToProjectActionPoint(actionPoint.Data);
+                foreach (Base.Action action in actionPoint.GetComponentsInChildren<Base.Action>()) {
+                    IO.Swagger.Model.Action projectAction = action.Data;
+                    projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
+                    foreach (Base.ActionParameter parameter in action.Parameters.Values) {
+                        IO.Swagger.Model.ActionParameter projectParameter = parameter.Data;
+                        projectAction.Parameters.Add(projectParameter);
+                    }
+                    projectAction.Inputs = new List<IO.Swagger.Model.ActionIO>();
+                    projectAction.Outputs = new List<IO.Swagger.Model.ActionIO>();
+                    foreach (Base.InputOutput inputOutput in action.GetComponentsInChildren<Base.InputOutput>()) {
+                        if (inputOutput.GetType() == typeof(Base.PuckInput)) {
+                            projectAction.Inputs.Add(inputOutput.Data);
+                        } else {
+                            projectAction.Outputs.Add(inputOutput.Data);
+                        }
+                    }
 
-        Base.WebsocketManager.Instance.UpdateProject(list, Scene);
+                    projectActionPoint.Actions.Add(projectAction);
+                }
+                projectObject.ActionPoints.Add(projectActionPoint);
+            }
+            currentProject.Objects.Add(projectObject);
+        }
+
+
+        Base.WebsocketManager.Instance.UpdateProject(currentProject);
     }
 
     public void SaveProject() {

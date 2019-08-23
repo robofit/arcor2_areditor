@@ -36,6 +36,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         int i = GetIndexByType(VirtualConnectionToMouse, typeof(Base.InputOutput));
         if (i >= 0) {
             VirtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
+            VirtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
         Destroy(VirtualConnectionToMouse.gameObject);
         _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
@@ -67,6 +68,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return null;
         c.target[i] = VirtualPointer.GetComponent<RectTransform>();
         o.GetComponent<Base.InputOutput>().Connection = null;
+        o.GetComponent<Base.InputOutput>().InitData();
         VirtualConnectionToMouse = c;
         _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
         return VirtualConnectionToMouse;
@@ -91,9 +93,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     private int GetIndexByType(Connection c, System.Type type) {
-        if (c.target[0] != null && c.target[0].gameObject.GetComponent<Base.InputOutput>() != null && c.target[0].gameObject.GetComponent<Base.InputOutput>().GetType() == type)
+        if (c.target[0] != null && c.target[0].gameObject.GetComponent<Base.InputOutput>() != null && c.target[0].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
             return 0;
-        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<Base.InputOutput>() != null && c.target[1].gameObject.GetComponent<Base.InputOutput>().GetType() == type)
+        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<Base.InputOutput>() != null && c.target[1].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
             return 1;
         else
             return -1;

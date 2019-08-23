@@ -3,23 +3,22 @@ using UnityEngine;
 
 namespace Base {
     public class Action : MonoBehaviour {
-        private ActionMetadata _metadata;
-        private ActionObject _actionObject;
+        private ActionMetadata metadata;
+        private ActionObject actionObject;
 
-        private Dictionary<string, ActionParameter> _parameters = new Dictionary<string, ActionParameter>();
+        private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action();
         public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, bool updateProject = true) {
-            _metadata = metadata;
-            _actionObject = ap.ActionObject;
-            foreach (ActionParameterMetadata actionParameterMetadata in _metadata.Parameters.Values) {
+            this.metadata = metadata;
+            Data.Type = metadata.Name;
+            actionObject = ap.ActionObject;
+            foreach (ActionParameterMetadata actionParameterMetadata in this.metadata.Parameters.Values) {
                 ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
                 if (actionParameter.ActionParameterMetadata.Type == ActionParameterMetadata.Types.ActionPoint) {
-                    JSONObject value = new JSONObject(JSONObject.Type.OBJECT);
-                    value.AddField("value", ap.ActionObject.Data.Id + "." + ap.Data.Id);
-                    actionParameter.Value = value;
+                    actionParameter.Data.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
                 } else {
-                    actionParameter.Value = actionParameter.ActionParameterMetadata.DefaultValue;
+                    actionParameter.Data.Value = actionParameter.ActionParameterMetadata.DefaultValue;
                 }
                 Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
             }
@@ -49,13 +48,13 @@ namespace Base {
         }
 
         public Dictionary<string, ActionParameter> Parameters {
-            get => _parameters; set => _parameters = value;
+            get => parameters; set => parameters = value;
         }
         public ActionMetadata Metadata {
-            get => _metadata; set => _metadata = value;
+            get => metadata; set => metadata = value;
         }
         public ActionObject ActionObject {
-            get => _actionObject; set => _actionObject = value;
+            get => actionObject; set => actionObject = value;
         }
         
     }

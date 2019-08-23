@@ -17,7 +17,7 @@ namespace Base {
 
         protected virtual void Awake() {
             Data.Pose = DataHelper.CreatePose(new Vector3(), new Quaternion());
-            GameManager.Instance.Scene.GetComponent<Scene>().Data.Objects.Add(Data);
+            //GameManager.Instance.Scene.GetComponent<Scene>().Data.Objects.Add(Data);
         }
 
         private void Start() {

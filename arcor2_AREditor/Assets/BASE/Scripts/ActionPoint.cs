@@ -2,7 +2,7 @@ using UnityEngine;
 
 
 namespace Base {
-    public class ActionPoint : MonoBehaviour {
+    public abstract class ActionPoint : MonoBehaviour {
         public ActionObject ActionObject;
         protected Vector3 offset;
         [System.NonSerialized]
@@ -10,15 +10,24 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint();
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint {
+            Pose = new IO.Swagger.Model.Pose {
+                Position = new IO.Swagger.Model.Position(),
+                Orientation = new IO.Swagger.Model.Orientation()
+            }
+        };
 
 
         protected virtual void Awake() {
 
         }
 
-        void Update() {
-
+        protected virtual void Update() {
+            if (gameObject.transform.hasChanged) {
+                SetScenePosition(transform.position);
+                SetSceneOrientation(transform.rotation);
+                transform.hasChanged = false;
+            }
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -37,6 +46,12 @@ namespace Base {
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }
+
+        public abstract Vector3 GetScenePosition();
+        public abstract void SetScenePosition(Vector3 position);
+        public abstract Quaternion GetSceneOrientation();
+
+        public abstract void SetSceneOrientation(Quaternion orientation);
 
     }
 

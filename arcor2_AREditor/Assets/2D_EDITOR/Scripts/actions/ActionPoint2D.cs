@@ -2,14 +2,9 @@ using UnityEngine;
 
 public class ActionPoint2D : Base.ActionPoint {
 
-    private void Awake() {
-
-
-    }
-
-    void Update() {
-
-    }
+    protected override void Awake() {
+        base.Awake();
+    }    
 
     void OnMouseDown() {
         offset = gameObject.transform.position -
@@ -22,7 +17,6 @@ public class ActionPoint2D : Base.ActionPoint {
     }
 
     void OnMouseUp() {
-        Data.Pose = DataHelper.CreatePose(GetScenePosition(), transform.rotation);
         GameManager.Instance.UpdateProject();
     }
 
@@ -33,16 +27,23 @@ public class ActionPoint2D : Base.ActionPoint {
 
     }
 
-    public Vector3 GetScenePosition() {
-        Vector3 position = Vector3.Scale(GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
-            new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1));
-        position.z = 0.7f;
-        return position;
+    public override Vector3 GetScenePosition() {
+        return GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
+             new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));
     }
 
-    public void SetScenePosition(Vector3 position) => transform.position = GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(position, new Vector3(1000f, 1000f, 1)) -
-        new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));
+    public override void SetScenePosition(Vector3 position) {
+        Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
+            new Vector3(GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));
+    }
 
+    public override Quaternion GetSceneOrientation() {
+        return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+    }
+
+    public override void SetSceneOrientation(Quaternion orientation) {
+        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+    }
 
 
 }

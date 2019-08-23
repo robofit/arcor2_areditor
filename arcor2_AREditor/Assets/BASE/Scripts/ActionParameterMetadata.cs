@@ -3,13 +3,13 @@ namespace Base {
     public class ActionParameterMetadata {
         string _name;
         Types _type;
-        JSONObject _defaultValue;
+        object _defaultValue;
 
         public enum Types {
             Integer, Double, String, ActionPoint, Bool, Unknown
         }
 
-        public ActionParameterMetadata(string name, string type, JSONObject defaultValue) {
+        public ActionParameterMetadata(string name, string type, object defaultValue) {
             _name = name;
             _type = StringToType(type);
             _defaultValue = defaultValue;
@@ -64,7 +64,7 @@ namespace Base {
         public Types Type {
             get => _type; set => _type = value;
         }
-        public JSONObject DefaultValue {
+        public object DefaultValue {
             get => _defaultValue; set => _defaultValue = value;
         }
     }

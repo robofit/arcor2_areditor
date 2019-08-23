@@ -2,21 +2,50 @@ using System;
 
 namespace Base {
     public class ActionParameter {
-        private JSONObject value;
-        private ActionParameterMetadata actionParameterMetadata;
+        public ActionParameterMetadata ActionParameterMetadata;
+        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter();
 
 
         public ActionParameter(ActionParameterMetadata actionParameterMetadata) {
-            Value = actionParameterMetadata.DefaultValue;
+            ActionParameterMetadata = actionParameterMetadata;
+            Data.Id = ActionParameterMetadata.Name;
+            Data.Type = ActionParameterMetadata.TypeToString(ActionParameterMetadata.Type);
+            Data.Value = ActionParameterMetadata.DefaultValue;
+        }
+
+        public ActionParameter(object value, ActionParameterMetadata actionParameterMetadata) {
+            Data.Value = value;
             ActionParameterMetadata = actionParameterMetadata;
         }
 
-        public ActionParameter(JSONObject value, ActionParameterMetadata actionParameterMetadata) {
-            Value = value;
-            this.actionParameterMetadata = actionParameterMetadata;
+        public void GetValue(out string value, string def = "") {
+            try {
+
+                value = (string) Data.Value;
+            } catch (NullReferenceException e) {
+                value = def;
+            }
+        }
+
+        public void GetValue(out long value, long def = 0) {
+            try {
+                value = (long) Data.Value;
+            } catch (NullReferenceException e) {
+                value = def;
+            }
+        }
+
+        public void GetValue(out bool value, bool def = false) {
+            try {
+
+                value = (bool) Data.Value;
+            } catch (NullReferenceException e) {
+                value = def;
+            }
         }
 
 
+        /*
         public void GetValue(out string value, string def = "") {
             try {
 
@@ -63,7 +92,7 @@ namespace Base {
         }
         public JSONObject Value {
             get => value; set => this.value = value;
-        }
+        }*/
     }
 
 }
