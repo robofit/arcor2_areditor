@@ -21,8 +21,6 @@ public class CameraMove : MonoBehaviour {
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
             if (hit) {
                 hit.collider.gameObject.SendMessage("Touch");
-                Debug.Log("Touch");
-                Debug.Log(hit.collider.gameObject);
             }
             if (DrawVirtualConnection) {
                 DrawVirtualConnection = false;

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// ActionParameter(id:str, type:str, value:Union[str, float])
+  /// Describes parameter of action.
   /// </summary>
   [DataContract]
   public class ActionParameter {

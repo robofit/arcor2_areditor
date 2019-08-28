@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject _ConnectionPrefab, VirtualPointer, _CameraManager;
-    private Connection VirtualConnectionToMouse;
+    public GameObject ConnectionPrefab, VirtualPointer, CameraManager;
+    private Connection virtualConnectionToMouse;
 
     // Start is called before the first frame update
     void Start() {
@@ -16,7 +16,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
-        GameObject c = Instantiate(_ConnectionPrefab);
+        GameObject c = Instantiate(ConnectionPrefab);
         c.transform.SetParent(transform);
         c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
         c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
@@ -24,41 +24,41 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnectionToMouse(GameObject o) {
-        if (VirtualConnectionToMouse != null)
-            Destroy(VirtualConnectionToMouse.gameObject);
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        VirtualConnectionToMouse = CreateConnection(o, VirtualPointer);
+        if (virtualConnectionToMouse != null)
+            Destroy(virtualConnectionToMouse.gameObject);
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        virtualConnectionToMouse = CreateConnection(o, VirtualPointer);
 
-        return VirtualConnectionToMouse;
+        return virtualConnectionToMouse;
     }
 
     public void DestroyConnectionToMouse() {
-        int i = GetIndexByType(VirtualConnectionToMouse, typeof(Base.InputOutput));
+        int i = GetIndexByType(virtualConnectionToMouse, typeof(Base.InputOutput));
         if (i >= 0) {
-            VirtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
-            VirtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
+            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
+            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
-        Destroy(VirtualConnectionToMouse.gameObject);
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        Destroy(virtualConnectionToMouse.gameObject);
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
     }
 
     public Connection ConnectVirtualConnectionToObject(GameObject o) {
-        if (VirtualConnectionToMouse == null)
+        if (virtualConnectionToMouse == null)
             return null;
 
 
-        int i = GetIndexOf(VirtualConnectionToMouse, VirtualPointer);
+        int i = GetIndexOf(virtualConnectionToMouse, VirtualPointer);
         if (i < 0) {
             return null;
         }
-        if (VirtualConnectionToMouse.target[1 - i].gameObject.GetComponent<Base.InputOutput>().GetType() != o.GetComponent<Base.InputOutput>().GetType()) {
-            VirtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
+        if (virtualConnectionToMouse.target[1 - i].gameObject.GetComponent<Base.InputOutput>().GetType() != o.GetComponent<Base.InputOutput>().GetType()) {
+            virtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
         } else {
             return null;
         }
-        Connection c = VirtualConnectionToMouse;
-        VirtualConnectionToMouse = null;
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        Connection c = virtualConnectionToMouse;
+        virtualConnectionToMouse = null;
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
         return c;
     }
 
@@ -69,17 +69,17 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         c.target[i] = VirtualPointer.GetComponent<RectTransform>();
         o.GetComponent<Base.InputOutput>().Connection = null;
         o.GetComponent<Base.InputOutput>().InitData();
-        VirtualConnectionToMouse = c;
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        return VirtualConnectionToMouse;
+        virtualConnectionToMouse = c;
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        return virtualConnectionToMouse;
     }
 
     public bool IsConnecting() {
-        return VirtualConnectionToMouse != null;
+        return virtualConnectionToMouse != null;
     }
 
     public Connection GetVirtualConnectionToMouse() {
-        return VirtualConnectionToMouse;
+        return virtualConnectionToMouse;
     }
 
     private int GetIndexOf(Connection c, GameObject o) {

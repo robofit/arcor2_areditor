@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// ProjectObject(id:str, action_points:List[arcor2.data.ProjectActionPoint]&#x3D;&amp;lt;factory&amp;gt;)
+  /// Model of project object with list of project action points.
   /// </summary>
   [DataContract]
   public class ProjectObject {
@@ -16,8 +16,8 @@ namespace IO.Swagger.Model {
     /// Gets or Sets ActionPoints
     /// </summary>
     /// <value>Gets or Sets ActionPoints</value>
-    [DataMember(Name="action_points", EmitDefaultValue=false)]
-    [JsonProperty(PropertyName = "action_points")]
+    [DataMember(Name="actionPoints", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "actionPoints")]
     public List<ProjectActionPoint> ActionPoints { get; set; }
 
     /// <summary>

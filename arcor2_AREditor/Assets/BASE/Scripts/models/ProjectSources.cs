@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// ProjectSources(id:str, resources:str, script:str)
+  /// Model of project sources with script and resources.
   /// </summary>
   [DataContract]
   public class ProjectSources {

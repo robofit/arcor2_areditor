@@ -8,17 +8,17 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Position(x:float, y:float, z:float)
+  /// Model of position.
   /// </summary>
   [DataContract]
   public class Position {
     /// <summary>
-    /// B              Gets or Sets X
+    /// Gets or Sets X
     /// </summary>
-    /// <value>B              Gets or Sets X</value>
+    /// <value>Gets or Sets X</value>
     [DataMember(Name="x", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "x")]
-    public double? X { get; set; }
+    public float? X { get; set; }
 
     /// <summary>
     /// Gets or Sets Y
@@ -26,7 +26,7 @@ namespace IO.Swagger.Model {
     /// <value>Gets or Sets Y</value>
     [DataMember(Name="y", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "y")]
-    public double? Y { get; set; }
+    public float? Y { get; set; }
 
     /// <summary>
     /// Gets or Sets Z
@@ -34,7 +34,7 @@ namespace IO.Swagger.Model {
     /// <value>Gets or Sets Z</value>
     [DataMember(Name="z", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "z")]
-    public double? Z { get; set; }
+    public float? Z { get; set; }
 
 
     /// <summary>

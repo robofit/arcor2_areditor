@@ -45,5 +45,7 @@ public class ActionPoint2D : Base.ActionPoint {
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
     }
 
-
+    public override void SetScenePosition(IO.Swagger.Model.Position position) {
+        Data.Pose.Position = position;
+    }
 }

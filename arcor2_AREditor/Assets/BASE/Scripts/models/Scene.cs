@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Scene(id:str, objects:List[arcor2.data.SceneObject]&#x3D;&amp;lt;factory&amp;gt;, desc:str&#x3D;&amp;lt;factory&amp;gt;)
+  /// Model of scene.
   /// </summary>
   [DataContract]
   public class Scene {

@@ -26,6 +26,13 @@ namespace Base {
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
+        public void UpdateId(string newId) {
+            Data.Id = newId;
+            //foreach (Action action in GetComponentsInChildren<Action>()) {
+            //    action.UpdateType();
+            //}
+        }
+
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 SetScenePosition(transform.position);

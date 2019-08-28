@@ -8,10 +8,18 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Object type, as it is stored in DB.
+  /// Model of Object type contain id, source, model and description.
   /// </summary>
   [DataContract]
   public class ObjectType {
+    /// <summary>
+    /// Gets or Sets Desc
+    /// </summary>
+    /// <value>Gets or Sets Desc</value>
+    [DataMember(Name="desc", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "desc")]
+    public string Desc { get; set; }
+
     /// <summary>
     /// Gets or Sets Id
     /// </summary>
@@ -28,6 +36,14 @@ namespace IO.Swagger.Model {
     [JsonProperty(PropertyName = "source")]
     public string Source { get; set; }
 
+    /// <summary>
+    /// Gets or Sets model info
+    /// </summary>
+    /// <value>Gets or Sets model info</value>
+    [DataMember(Name="model", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "model")]
+    public MetaModel3d Model { get; set; }
+
 
     /// <summary>
     /// Get the string presentation of the object
@@ -36,8 +52,10 @@ namespace IO.Swagger.Model {
     public override string ToString()  {
       var sb = new StringBuilder();
       sb.Append("class ObjectType {\n");
+      sb.Append("  Desc: ").Append(Desc).Append("\n");
       sb.Append("  Id: ").Append(Id).Append("\n");
       sb.Append("  Source: ").Append(Source).Append("\n");
+      sb.Append("  Model: ").Append(Model).Append("\n");
       sb.Append("}\n");
       return sb.ToString();
     }

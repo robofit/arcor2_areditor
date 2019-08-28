@@ -8,22 +8,30 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Model for info with id and description.
+  /// Model of sphere.
   /// </summary>
   [DataContract]
-  public class IdDesc {
+  public class Sphere {
     /// <summary>
-    /// Gets or Sets Desc
+    /// Gets or sets sphere radius.
     /// </summary>
-    /// <value>Gets or Sets Desc</value>
-    [DataMember(Name="desc", EmitDefaultValue=false)]
-    [JsonProperty(PropertyName = "desc")]
-    public string Desc { get; set; }
+    /// <value>Gets or sets sphere radius.</value>
+    [DataMember(Name="radius", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "radius")]
+    public float? Radius { get; set; }
 
     /// <summary>
-    /// Gets or Sets Id
+    /// Gets or sets pose.
     /// </summary>
-    /// <value>Gets or Sets Id</value>
+    /// <value>Gets or sets pose.</value>
+    [DataMember(Name="pose", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "pose")]
+    public Pose Pose { get; set; }
+
+    /// <summary>
+    /// Gets or sets id.
+    /// </summary>
+    /// <value>Gets or sets id.</value>
     [DataMember(Name="id", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "id")]
     public string Id { get; set; }
@@ -35,8 +43,9 @@ namespace IO.Swagger.Model {
     /// <returns>String presentation of the object</returns>
     public override string ToString()  {
       var sb = new StringBuilder();
-      sb.Append("class IdDesc {\n");
-      sb.Append("  Desc: ").Append(Desc).Append("\n");
+      sb.Append("class Sphere {\n");
+      sb.Append("  Radius: ").Append(Radius).Append("\n");
+      sb.Append("  Pose: ").Append(Pose).Append("\n");
       sb.Append("  Id: ").Append(Id).Append("\n");
       sb.Append("}\n");
       return sb.ToString();

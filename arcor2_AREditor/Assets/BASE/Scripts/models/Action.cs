@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Action(id:str, type:str, parameters:List[arcor2.data.ActionParameter]&#x3D;&amp;lt;factory&amp;gt;, inputs:List[arcor2.data.ActionIO]&#x3D;&amp;lt;factory&amp;gt;, outputs:List[arcor2.data.ActionIO]&#x3D;&amp;lt;factory&amp;gt;)
+  /// Describes the action that can be executed by Pick Master.
   /// </summary>
   [DataContract]
   public class Action {

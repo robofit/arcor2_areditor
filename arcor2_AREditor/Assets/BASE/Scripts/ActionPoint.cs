@@ -49,6 +49,7 @@ namespace Base {
 
         public abstract Vector3 GetScenePosition();
         public abstract void SetScenePosition(Vector3 position);
+        public abstract void SetScenePosition(IO.Swagger.Model.Position position);
         public abstract Quaternion GetSceneOrientation();
 
         public abstract void SetSceneOrientation(Quaternion orientation);

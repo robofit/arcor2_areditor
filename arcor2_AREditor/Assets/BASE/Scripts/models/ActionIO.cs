@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// ActionIO(default:str)
+  /// Represents the action that controls a robot&#39;s input or output.
   /// </summary>
   [DataContract]
   public class ActionIO {

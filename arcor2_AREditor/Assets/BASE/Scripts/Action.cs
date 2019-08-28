@@ -9,25 +9,35 @@ namespace Base {
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action();
-        public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, bool updateProject = true) {
+        public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, ActionObject originalActionObject, bool generateData, bool updateProject = true) {
             this.metadata = metadata;
-            Data.Type = metadata.Name;
-            actionObject = ap.ActionObject;
-            foreach (ActionParameterMetadata actionParameterMetadata in this.metadata.Parameters.Values) {
-                ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
-                if (actionParameter.ActionParameterMetadata.Type == ActionParameterMetadata.Types.ActionPoint) {
-                    actionParameter.Data.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
-                } else {
-                    actionParameter.Data.Value = actionParameter.ActionParameterMetadata.DefaultValue;
+            
+            actionObject = originalActionObject;
+            if (generateData) {
+                foreach (ActionParameterMetadata actionParameterMetadata in this.metadata.Parameters.Values) {
+                    ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
+                    if (actionParameter.ActionParameterMetadata.Type == ActionParameterMetadata.Types.ActionPoint) {
+                        actionParameter.Data.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
+                    } else {
+                        actionParameter.Data.Value = actionParameter.ActionParameterMetadata.DefaultValue;
+                    }
+                    Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
                 }
-                Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
-            }
+                foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
+                    io.InitData();
+                }
+            }           
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
             }
 
             UpdateId(id, updateProject);
+            UpdateType();
+        }
+
+        public void UpdateType() {
+            Data.Type = actionObject.Data.Id + "/" + metadata.Name;
         }
 
         public virtual void UpdateId(string newId, bool updateProject = true) {

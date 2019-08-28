@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// IdDescList(items:List[arcor2.data.IdDesc]&#x3D;&amp;lt;factory&amp;gt;)
+  /// Model of list with info.
   /// </summary>
   [DataContract]
   public class IdDescList {

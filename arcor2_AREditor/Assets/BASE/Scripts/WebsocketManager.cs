@@ -186,8 +186,6 @@ namespace Base {
         private void HandleReceivedData(string data) {
             JSONObject jsonData = new JSONObject(data);
             Debug.Log("Received new data");
-            Debug.Log(data);
-            Debug.Log(jsonData);
             Dictionary<string, string> jsonDict = jsonData.ToDictionary();
             if (jsonDict == null)
                 return;
@@ -209,7 +207,6 @@ namespace Base {
                         HandleCurrentAction(jsonData);
                         break;
                     case "projectChanged":
-                        Debug.Log(ignoreProjectChanged);
                         if (ignoreProjectChanged)
                             ignoreProjectChanged = false;
                         else
@@ -400,15 +397,25 @@ namespace Base {
             SendDataToServer(request.ToString());
         }
 
-        public void UpdateActionPointPosition(string actionPointId, string robotId) {
+        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId) {
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
             request.AddField("request", "updateActionPointPose");
             JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
             args.AddField("id", actionPointId);
             args.AddField("robot", robotId);
-            args.AddField("end_effector", "neumime");
+            args.AddField("end_effector", endEffectorId);
             request.AddField("args", args);
-            Debug.Log(request.ToString(true));
+            SendDataToServer(request.ToString());
+        }
+
+        public void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+            JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
+            request.AddField("request", "updateActionObjectPose");
+            JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
+            args.AddField("id", actionObjectId);
+            args.AddField("robot", robotId);
+            args.AddField("end_effector", endEffectorId);
+            request.AddField("args", args);
             SendDataToServer(request.ToString());
         }
     }

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Pose(position:arcor2.data.Position, orientation:arcor2.data.Orientation)
+  /// Model of pose.
   /// </summary>
   [DataContract]
   public class Pose {

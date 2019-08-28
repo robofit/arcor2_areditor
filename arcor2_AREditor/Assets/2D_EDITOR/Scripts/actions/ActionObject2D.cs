@@ -9,6 +9,7 @@ public class ActionObject2D : Base.ActionObject {
     private void Touch() {
         MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Data.Id);
         InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
+        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().UpdateMenu();
     }
 
     private void OnMouseDown() => offset = gameObject.transform.position -

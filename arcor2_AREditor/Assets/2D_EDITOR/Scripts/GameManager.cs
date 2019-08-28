@@ -13,7 +13,7 @@ public class GameManager : Base.Singleton<GameManager> {
 
 
     public GameObject ActionObjects, Scene, SpawnPoint;
-    public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
+    public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
     public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
     private string loadedScene;
     private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project();
@@ -49,6 +49,7 @@ public class GameManager : Base.Singleton<GameManager> {
     private void Update() {
         if (newScene != null && ActionsManager.Instance.ActionsReady)
             SceneUpdated(newScene);
+       
     }
 
     public void UpdateScene() {
@@ -144,7 +145,7 @@ public class GameManager : Base.Singleton<GameManager> {
         return freeName;
     }
 
-    public GameObject SpawnPuck(string action_id, Base.ActionPoint ap, Base.ActionObject actionObject, bool updateProject = true) {
+    public GameObject SpawnPuck(string action_id, Base.ActionPoint ap, Base.ActionObject actionObject, bool generateData, bool updateProject = true) {
         if (!actionObject.ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out Base.ActionMetadata am)) {
             Debug.LogError("Action " + action_id + " not supported by action object " + ap.ActionObject.name);
             return null;
@@ -157,23 +158,25 @@ public class GameManager : Base.Singleton<GameManager> {
         for (int j = 0; j < 4; j++) {
             newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
         }
-        puck.GetComponent<Puck2D>().Init(newId, am, ap, updateProject);
+        puck.GetComponent<Puck2D>().Init(newId, am, ap, actionObject, generateData, updateProject);
 
         puck.transform.localScale = new Vector3(1f, 1f, 1f);
-        if (updateProject)
+        if (updateProject) {
             UpdateProject();
+        }
         return puck;
     }
 
-    public GameObject SpawnActionPoint(Base.ActionObject ActionObject, bool updateProject = true) {
-        GameObject AP = Instantiate(ActionPointPrefab, ActionObject.transform.Find("ActionPoints"));
-        AP.transform.position = ActionObject.transform.Find("ActionPoints").position + new Vector3(1f, 0f, 0f);
+    public GameObject SpawnActionPoint(Base.ActionObject actionObject, bool updateProject = true) {
+        GameObject AP = Instantiate(ActionPointPrefab, actionObject.transform.Find("ActionPoints"));
+        AP.transform.position = actionObject.transform.Find("ActionPoints").position + new Vector3(1f, 0f, 0f);
         GameObject c = Instantiate(ConnectionPrefab);
+        c.GetComponent<LineRenderer>().enabled = true;
         c.transform.SetParent(ConnectionManager.Instance.transform);
-        c.GetComponent<Connection>().target[0] = ActionObject.GetComponent<RectTransform>();
+        c.GetComponent<Connection>().target[0] = actionObject.GetComponent<RectTransform>();
         c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
         AP.GetComponent<Base.ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
-        AP.GetComponent<Base.ActionPoint>().SetActionObject(ActionObject);
+        AP.GetComponent<Base.ActionPoint>().SetActionObject(actionObject);
         AP.GetComponent<Base.ActionPoint>().SetScenePosition(transform.position);
         AP.GetComponent<Base.ActionPoint>().SetSceneOrientation(transform.rotation);
         if (updateProject)
@@ -234,6 +237,7 @@ public class GameManager : Base.Singleton<GameManager> {
             newProject = project;
             return;
         }
+        
         currentProject = project;
 
         Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
@@ -242,198 +246,59 @@ public class GameManager : Base.Singleton<GameManager> {
             actionObjects[ao.Data.Id] = ao;
         }
 
+        Dictionary<string, string> connections = new Dictionary<string, string>();
 
         foreach (IO.Swagger.Model.ProjectObject projectObject in currentProject.Objects) {
             if (actionObjects.TryGetValue(projectObject.Id, out Base.ActionObject actionObject)) {
 
-                Dictionary<string, Base.ActionPoint> actionPoints = new Dictionary<string, Base.ActionPoint>();
                 foreach (Base.ActionPoint ap in actionObject.transform.GetComponentsInChildren<Base.ActionPoint>()) {
-                    actionPoints[ap.Data.Id] = ap;
+                    ap.DeleteAP(false);
                 }
-
                 foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
-                    if (actionPoints.TryGetValue(projectActionPoint.Id, out Base.ActionPoint actionPoint)) {
-                        actionPoint.Data = new IO.Swagger.Model.ActionPoint {
-                            Id = projectActionPoint.Id,
-                            Pose = projectActionPoint.Pose
-                        };
-                        actionPoint.transform.position = actionPoint.GetScenePosition();
-                        actionPoint.transform.rotation = actionPoint.GetSceneOrientation();
-                    } else {
-                        // init new ap
+                    GameObject actionPoint = SpawnActionPoint(actionObject, false);
+                    actionPoint.GetComponent<Base.ActionPoint>().Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
+
+                    actionPoint.transform.position = actionPoint.GetComponent<Base.ActionPoint>().GetScenePosition();
+
+                    foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
+                        string originalIOName = projectAction.Type.Split('/').First();
+                        string action_type = projectAction.Type.Split('/').Last();
+                        if (actionObjects.TryGetValue(originalIOName, out Base.ActionObject originalActionObject)) {
+                            GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<Base.ActionPoint>(), originalActionObject, false, false);
+                            action.GetComponent<Base.Action>().Data = projectAction;
+                            
+                            foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
+                                if (action.GetComponent<Base.Action>().Metadata.Parameters.TryGetValue(projectActionParameter.Id, out Base.ActionParameterMetadata actionParameterMetadata)) {
+                                    Base.ActionParameter actionParameter = new Base.ActionParameter {
+                                        ActionParameterMetadata = actionParameterMetadata,
+                                        Data = projectActionParameter
+                                    };
+                                    action.GetComponent<Base.Action>().Parameters.Add(actionParameter.Data.Id, actionParameter);
+                                }
+                            }
+
+                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
+                                if (actionIO.Default != "start") {
+                                    connections[projectAction.Id] = actionIO.Default;
+                                }
+                                action.GetComponentInChildren<Base.PuckInput>().Data = actionIO;
+                            }
+
+                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                                action.GetComponentInChildren<Base.PuckOutput>().Data = actionIO;
+                            }
+
+                        }
+
                     }
                 }
-                
+
+
             } else {
                 //object not exist? 
             }
 
         }
-        /*projectJSON = null;
-        JSONObject objects;
-        string scene_id;
-        try {
-            objects = data["objects"];
-            scene_id = data["scene_id"].str;
-        } catch (NullReferenceException e) {
-            Debug.Log(data);
-            Debug.Log("Parse error in ProjectUpdated()");
-            return;
-        }
-
-        if (scene_id != loadedScene || !sceneReady) {
-            projectJSON = data;
-            return;
-        }
-
-        Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
-        foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
-            actionObjects[ao.Id] = ao;
-        }
-
-        Dictionary<string, string> connections = new Dictionary<string, string>();
-
-        foreach (JSONObject iojson in objects.list) {
-            string id;
-
-            try {
-                id = iojson["id"].str;
-            } catch (NullReferenceException e) {
-                Debug.Log("Parse error in ProjectUpdated()");
-                return;
-            }
-            if (actionObjects.TryGetValue(id, out Base.ActionObject ao)) {
-                Dictionary<string, Base.ActionPoint> actionPoints = new Dictionary<string, Base.ActionPoint>();
-                JSONObject action_points;
-                foreach (Base.ActionPoint ap in ao.transform.Find("ActionPoints").GetComponentsInChildren<Base.ActionPoint>()) {
-                    actionPoints[ap.Data.Id] = ap;
-                }
-                string io_id;
-                try {
-                    io_id = iojson["id"].str;
-                    action_points = iojson["action_points"];
-                } catch (NullReferenceException e) {
-                    Debug.Log("Parse error in ProjectUpdated()");
-                    return;
-                }
-
-                foreach (JSONObject apjson in action_points.list) {
-                    string ap_id;
-                    JSONObject actions;
-
-                    Vector3 ap_position;
-                    try {
-                        ap_id = apjson["id"].str;
-                        actions = apjson["actions"];
-                        if (!JSONHelper.TryGetPose(apjson["pose"], out ap_position, out Quaternion orientation)) {
-                            throw new NullReferenceException();
-                        }
-                    } catch (NullReferenceException e) {
-                        Debug.Log(apjson.ToString(true));
-                        Debug.Log("Parse error in ProjectUpdated()");
-                        return;
-                    }
-
-                    if (!actionPoints.TryGetValue(ap_id, out Base.ActionPoint ap)) {
-                        ap = SpawnActionPoint(ao, false).GetComponent<Base.ActionPoint>();
-                    }
-
-                    ap.SetScenePosition(ap_position);
-
-
-                    Dictionary<string, Base.Action> pucks = new Dictionary<string, Base.Action>();
-
-                    foreach (Base.Action a in ap.transform.Find("Pucks").GetComponentsInChildren<Base.Action>()) {
-                        pucks[a.Data.Id] = a;
-                    }
-
-                    foreach (JSONObject actionjson in actions.list) {
-                        Debug.Log(actionjson);
-                        string puck_id, puck_type, originalIOName;
-                        JSONObject inputs, outputs, parameters;
-                        try {
-                            puck_id = actionjson["id"].str;
-                            originalIOName = actionjson["type"].str.Split('/').First();
-                            puck_type = actionjson["type"].str.Split('/').Last();
-                            inputs = actionjson["inputs"];
-                            outputs = actionjson["outputs"];
-                            parameters = actionjson["parameters"];
-                        } catch (NullReferenceException e) {
-                            Debug.Log(actionjson.ToString(true));
-                            Debug.Log("Parse error in ProjectUpdated()");
-                            return;
-                        }
-
-                        if (!pucks.TryGetValue(puck_id, out Base.Action action)) {
-                            Debug.Log("Should spawn puck");
-                            GameObject puckGO = SpawnPuck(puck_type, ap, ao, false);
-                            if (puckGO == null) {
-                                continue;
-                            } else {
-                                action = puckGO.GetComponent<Base.Action>();
-                            }
-
-                        }
-                        Debug.Log("got all data");
-                        action.Data.Id = puck_id;
-                        Debug.Log(inputs);
-                        foreach (JSONObject inputs_json in inputs) {
-                            string def;
-                            try {
-                                def = inputs_json["default"].str;
-
-                            } catch (NullReferenceException e) {
-                                Debug.Log(actionjson.ToString(true));
-                                Debug.Log("Parse error in ProjectUpdated()");
-                                return;
-                            }
-                            if (def != "start") {
-                                connections[puck_id] = def;
-                            }
-
-                        }
-                        foreach (JSONObject json_param in parameters) {
-                            string param_id, param_type;
-                            JSONObject param_value = new JSONObject(JSONObject.Type.OBJECT);
-                            try {
-                                param_id = json_param["id"].str;
-                                param_type = json_param["type"].str;
-
-                                switch (Base.ActionParameterMetadata.StringToType(param_type)) {
-                                    case Base.ActionParameterMetadata.Types.Integer:
-                                        param_value.AddField("value", json_param["value"].i);
-                                        break;
-                                    case Base.ActionParameterMetadata.Types.String:
-                                    case Base.ActionParameterMetadata.Types.ActionPoint:
-                                        param_value.AddField("value", json_param["value"].str);
-                                        break;
-                                    case Base.ActionParameterMetadata.Types.Bool:
-                                        param_value.AddField("value", json_param["value"].b);
-                                        break;
-                                }
-                            } catch (NullReferenceException e) {
-                                Debug.Log(actionjson.ToString(true));
-                                Debug.Log("Parse error in ProjectUpdated()");
-                                continue;
-                            }
-                            if (!action.Parameters.TryGetValue(param_id, out Base.ActionParameter parameter))
-                                continue;
-                            parameter.Value = param_value;
-                        }
-
-
-                    }
-
-                }
-
-            } else {
-                //unknown object
-                continue;
-            }
-
-
-        }
-        Debug.Log(connections.Count);
         foreach (KeyValuePair<string, string> connection in connections) {
             Base.PuckInput input = FindPuck(connection.Key).transform.GetComponentInChildren<Base.PuckInput>();
             Base.PuckOutput output = FindPuck(connection.Value).transform.GetComponentInChildren<Base.PuckOutput>();
@@ -441,10 +306,10 @@ public class GameManager : Base.Singleton<GameManager> {
             c.transform.SetParent(ConnectionManager.Instance.transform);
             c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
             c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
+            //input.GetComponentInParent<Base.Action>().Data.
             input.Connection = c.GetComponent<Connection>();
             output.Connection = c.GetComponent<Connection>();
-        }*/
-
+        }
     }
 
     public GameObject FindPuck(string id) {
@@ -529,7 +394,8 @@ public class GameManager : Base.Singleton<GameManager> {
 
     public void ExitApp() => Application.Quit();
 
-    public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId);
+    public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
+    public void UpdateActionObjectPosition(Base.ActionObject ao, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
 
 
 

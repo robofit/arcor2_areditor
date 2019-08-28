@@ -5,7 +5,9 @@ namespace Base {
         public ActionParameterMetadata ActionParameterMetadata;
         public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter();
 
+        public ActionParameter() {
 
+        }
         public ActionParameter(ActionParameterMetadata actionParameterMetadata) {
             ActionParameterMetadata = actionParameterMetadata;
             Data.Id = ActionParameterMetadata.Name;
