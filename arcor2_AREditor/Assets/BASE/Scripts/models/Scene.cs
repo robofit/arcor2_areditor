@@ -28,11 +28,21 @@ namespace IO.Swagger.Model {
     [JsonProperty(PropertyName = "id")]
     public string Id { get; set; }
 
-    /// <summary>
-    /// Gets or Sets Objects
-    /// </summary>
-    /// <value>Gets or Sets Objects</value>
-    [DataMember(Name="objects", EmitDefaultValue=false)]
+        /// <summary>
+        /// Gets or Sets RobotSystemId
+        /// </summary>
+        /// <value>Gets or Sets RobotSystemId</value>
+        [DataMember(Name = "robotSystemId", EmitDefaultValue = false)]
+        [JsonProperty(PropertyName = "robotSystemId")]
+        public string RobotSystemId {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets or Sets Objects
+        /// </summary>
+        /// <value>Gets or Sets Objects</value>
+        [DataMember(Name="objects", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "objects")]
     public List<SceneObject> Objects { get; set; }
 

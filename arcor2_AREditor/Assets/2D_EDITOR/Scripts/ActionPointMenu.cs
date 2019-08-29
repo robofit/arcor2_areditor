@@ -83,8 +83,11 @@ public class ActionPointMenu : MonoBehaviour {
 
 
         endEffectorDropdown.options.Clear();
-        endEffectorDropdown.captionText.text = "EE_Big";
+        endEffectorDropdown.captionText.text = "EE";
         endEffectorDropdown.value = 0;
+            endEffectorDropdown.options.Add(new Dropdown.OptionData {
+                text = "EE"
+            });
         endEffectorDropdown.options.Add(new Dropdown.OptionData {
             text = "EE_Big"
         });

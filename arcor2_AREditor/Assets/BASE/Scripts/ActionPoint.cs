@@ -25,7 +25,6 @@ namespace Base {
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 SetScenePosition(transform.position);
-                SetSceneOrientation(transform.rotation);
                 transform.hasChanged = false;
             }
         }

@@ -145,7 +145,7 @@ public class GameManager : Base.Singleton<GameManager> {
         return freeName;
     }
 
-    public GameObject SpawnPuck(string action_id, Base.ActionPoint ap, Base.ActionObject actionObject, bool generateData, bool updateProject = true) {
+    public GameObject SpawnPuck(string action_id, Base.ActionPoint ap, Base.ActionObject actionObject, bool generateData, bool updateProject = true, string puck_id = "") {
         if (!actionObject.ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out Base.ActionMetadata am)) {
             Debug.LogError("Action " + action_id + " not supported by action object " + ap.ActionObject.name);
             return null;
@@ -154,10 +154,13 @@ public class GameManager : Base.Singleton<GameManager> {
         puck.transform.SetParent(ap.transform.Find("Pucks"));
         puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<Base.ActionPoint>().PuckCounter++ * 0.8f + 1f, 0f);
         const string glyphs = "0123456789";
-        string newId = action_id;
-        for (int j = 0; j < 4; j++) {
-            newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
-        }
+        string newId = puck_id;
+        if (newId == "") {
+            newId = action_id;
+            for (int j = 0; j < 4; j++) {
+                newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
+            }
+        }        
         puck.GetComponent<Puck2D>().Init(newId, am, ap, actionObject, generateData, updateProject);
 
         puck.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -264,7 +267,7 @@ public class GameManager : Base.Singleton<GameManager> {
                         string originalIOName = projectAction.Type.Split('/').First();
                         string action_type = projectAction.Type.Split('/').Last();
                         if (actionObjects.TryGetValue(originalIOName, out Base.ActionObject originalActionObject)) {
-                            GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<Base.ActionPoint>(), originalActionObject, false, false);
+                            GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<Base.ActionPoint>(), originalActionObject, false, false, projectAction.Id);
                             action.GetComponent<Base.Action>().Data = projectAction;
                             
                             foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {

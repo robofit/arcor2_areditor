@@ -10,7 +10,8 @@ namespace Base {
             Data = new IO.Swagger.Model.Scene {
                 Objects = new List<IO.Swagger.Model.SceneObject>(),
                 Desc = "",
-                Id = "JabloPCB"
+                Id = "JabloPCB",
+                RobotSystemId = "test_it_off_demo"
             };            
         }
 

@@ -365,7 +365,7 @@ namespace Base {
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
             request.AddField("request", "loadProject");
             JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
-            args.AddField("id", "demo_v0");
+            args.AddField("id", "JabloPCB");
             request.AddField("args", args);
             SendDataToServer(request.ToString());
         }
