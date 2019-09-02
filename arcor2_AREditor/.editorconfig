@@ -44,7 +44,7 @@ csharp_style_var_when_type_is_apparent                             = false : war
 csharp_style_var_elsewhere                                         = false : warning
 
 # Expression-bodied members: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference#expression_bodied_members
-csharp_style_expression_bodied_methods                             = true : warning
+csharp_style_expression_bodied_methods                             = false : silent
 csharp_style_expression_bodied_constructor                         = true : warning
 csharp_style_expression_bodied_operators                           = true : warning
 csharp_style_expression_bodied_properties                          = true : warning
