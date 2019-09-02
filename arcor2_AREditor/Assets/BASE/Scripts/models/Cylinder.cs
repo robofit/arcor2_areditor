@@ -8,33 +8,41 @@ using Newtonsoft.Json;
 namespace IO.Swagger.Model {
 
   /// <summary>
-  /// Model of scene object with pose and reference to type of object.
+  /// Model of cylinder.
   /// </summary>
   [DataContract]
-  public class SceneObject {
+  public class Cylinder {
     /// <summary>
-    /// Gets or Sets Id
+    /// Gets or sets cylinder radius.
     /// </summary>
-    /// <value>Gets or Sets Id</value>
-    [DataMember(Name="id", EmitDefaultValue=false)]
-    [JsonProperty(PropertyName = "id")]
-    public string Id { get; set; }
+    /// <value>Gets or sets cylinder radius.</value>
+    [DataMember(Name="radius", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "radius")]
+    public float? Radius { get; set; }
 
     /// <summary>
-    /// Gets or Sets Pose
+    /// Gets or sets height of cylinder.
     /// </summary>
-    /// <value>Gets or Sets Pose</value>
+    /// <value>Gets or sets height of cylinder.</value>
+    [DataMember(Name="height", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "height")]
+    public float? Height { get; set; }
+
+    /// <summary>
+    /// Gets or sets pose.
+    /// </summary>
+    /// <value>Gets or sets pose.</value>
     [DataMember(Name="pose", EmitDefaultValue=false)]
     [JsonProperty(PropertyName = "pose")]
     public Pose Pose { get; set; }
 
     /// <summary>
-    /// Gets or Sets Type
+    /// Gets or sets id.
     /// </summary>
-    /// <value>Gets or Sets Type</value>
-    [DataMember(Name="type", EmitDefaultValue=false)]
-    [JsonProperty(PropertyName = "type")]
-    public string Type { get; set; }
+    /// <value>Gets or sets id.</value>
+    [DataMember(Name="id", EmitDefaultValue=false)]
+    [JsonProperty(PropertyName = "id")]
+    public string Id { get; set; }
 
 
     /// <summary>
@@ -43,10 +51,11 @@ namespace IO.Swagger.Model {
     /// <returns>String presentation of the object</returns>
     public override string ToString()  {
       var sb = new StringBuilder();
-      sb.Append("class SceneObject {\n");
-      sb.Append("  Id: ").Append(Id).Append("\n");
+      sb.Append("class Cylinder {\n");
+      sb.Append("  Radius: ").Append(Radius).Append("\n");
+      sb.Append("  Height: ").Append(Height).Append("\n");
       sb.Append("  Pose: ").Append(Pose).Append("\n");
-      sb.Append("  Type: ").Append(Type).Append("\n");
+      sb.Append("  Id: ").Append(Id).Append("\n");
       sb.Append("}\n");
       return sb.ToString();
     }
