@@ -395,6 +395,10 @@ public class GameManager : Base.Singleton<GameManager> {
         OnResumeProject?.Invoke(this, EventArgs.Empty);
     }
 
+    public void ShowNewObjectTypeMenu() {
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
+    }
+
     public void ExitApp() => Application.Quit();
 
     public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public GameObject InteractiveObjectMenu, ActionPointMenuTester, ActionPointMenu, PuckMenu, MainMenu;
+    public GameObject InteractiveObjectMenu, ActionPointMenuTester, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu;
     GameObject MenuOpened;
     ActionsManager ActionsManager;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
