@@ -47,15 +47,15 @@ public class PuckMenu : MonoBehaviour {
 
     GameObject InitializeParameter(Base.ActionParameter actionParameter) {
         switch (actionParameter.ActionParameterMetadata.Type) {
-            case Base.ActionParameterMetadata.Types.String:
+            case IO.Swagger.Model.ActionParameter.TypeEnum.String:
                 actionParameter.GetValue(out string value);       
                 return InitializeStringParameter(actionParameter.ActionParameterMetadata.Name, value);
-            case Base.ActionParameterMetadata.Types.ActionPoint:
+            case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
                 return InitializeActionPointParameter(actionParameter);
-            case Base.ActionParameterMetadata.Types.Integer:
+            case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
                 actionParameter.GetValue(out long longValue);
                 return InitializeIntegerParameter(actionParameter.ActionParameterMetadata.Name, longValue);
-            case Base.ActionParameterMetadata.Types.Double:
+            case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
                 return InitializeDoubleParameter(actionParameter);
 
         }

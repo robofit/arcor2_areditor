@@ -122,6 +122,7 @@ namespace Base {
         }
 
         public void SendDataToServer(string data) {
+            Debug.Log(data);
             sendingQueue.Enqueue(data);
         }
 
@@ -162,14 +163,14 @@ namespace Base {
         }
 
         public void UpdateScene(IO.Swagger.Model.Scene scene) {
-            
+
             ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged {
                 Scene = scene
             };
-            
+
             SendDataToServer(eventData.ToJson());
 
-           
+
         }
 
         // TODO: add action parameters
@@ -179,13 +180,14 @@ namespace Base {
             };
             Debug.LogError(eventData.ToJson());
             SendDataToServer(eventData.ToJson());
-           
+
         }
 
 
         private void HandleReceivedData(string data) {
             JSONObject jsonData = new JSONObject(data);
             Debug.Log("Received new data");
+            Debug.Log(data);
             Dictionary<string, string> jsonDict = jsonData.ToDictionary();
             if (jsonDict == null)
                 return;
@@ -259,18 +261,17 @@ namespace Base {
         }
 
         void HandleSceneChanged(JSONObject obj) {
-
-
             try {
                 if (obj["event"].str != "sceneChanged") {
                     Debug.Log("Wrong headers");
                     return;
                 }
                 ARServer.Models.EventSceneChanged eventSceneChanged = JsonConvert.DeserializeObject<ARServer.Models.EventSceneChanged>(obj.ToString());
+                Debug.Log(eventSceneChanged.Scene.Objects[0]);
                 GameManager.Instance.SceneUpdated(eventSceneChanged.Scene);
 
 
-            } catch (NullReferenceException e) {
+            } catch (NullReferenceException) {
                 Debug.Log("Parse error in HandleSceneChanged()");
                 Debug.Log(obj);
             }
@@ -316,19 +317,25 @@ namespace Base {
         }
 
         private void HandleGetObjecTypes(JSONObject obj) {
-
+            Debug.LogWarning("HandleGetObjecTypes");
             try {
                 if (!CheckHeaders(obj, "getObjectTypes"))
                     return;
                 JSONObject data = obj["data"];
-                Dictionary<string, ActionObjectMetadata> NewActionObjects = new Dictionary<string, ActionObjectMetadata>();
+                Dictionary<string, ActionObjectMetadata> newActionObjects = new Dictionary<string, ActionObjectMetadata>();
                 foreach (JSONObject o in data.list) {
-                    ActionObjectMetadata ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str);
-                    NewActionObjects[ao.Type] = ao;
+                    ActionObjectMetadata ao;
+                    if (o.keys.Contains("object_model")) {
+                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, JsonConvert.DeserializeObject<ARServer.Models.RequestNewObjectTypeArgsModel>(o["object_model"].ToString()));
+                    } else {
+                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, null);
+                    }                       
+                    
+                    newActionObjects[ao.Type] = ao;
                     actionObjectsToBeUpdated.Add(ao.Type);
                 }
 
-                ActionsManager.Instance.UpdateObjects(NewActionObjects);
+                ActionsManager.Instance.UpdateObjects(newActionObjects);
                 Debug.Log(ActionsManager.Instance.ActionObjectMetadata.Count);
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleGetObjecTypes()");
@@ -417,6 +424,27 @@ namespace Base {
             args.AddField("end_effector", endEffectorId);
             request.AddField("args", args);
             SendDataToServer(request.ToString());
+        }
+
+        public void CreateNewObjectType(ARServer.Models.RequestNewObjectTypeArgs objectType) {
+            ARServer.Models.RequestNewObjectType requestData = new ARServer.Models.RequestNewObjectType {
+                Args = objectType
+            };
+            Debug.LogWarning(requestData.ToJson());
+            SendDataToServer(requestData.ToJson());
+            UpdateObjectTypes();
+        }
+
+        public void StartObjectFocusing() {
+
+        }
+
+        public void SavePosition() {
+
+        }
+
+        public void FocusObjectDone() {
+
         }
     }
 }

@@ -11,13 +11,12 @@ namespace Base {
         [System.NonSerialized]
         public int CounterAP = 0;
 
-        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject();
+        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
 
 
         protected virtual void Awake() {
-            Data.Pose = DataHelper.CreatePose(new Vector3(), new Quaternion());
-            //GameManager.Instance.Scene.GetComponent<Scene>().Data.Objects.Add(Data);
+            
         }
 
         private void Start() {
@@ -28,9 +27,6 @@ namespace Base {
 
         public void UpdateId(string newId) {
             Data.Id = newId;
-            //foreach (Action action in GetComponentsInChildren<Action>()) {
-            //    action.UpdateType();
-            //}
         }
 
         protected virtual void Update() {
@@ -42,7 +38,7 @@ namespace Base {
         }
 
         public void DeleteIO(bool updateScene = true) {
-            foreach (Base.ActionPoint ap in GetComponentsInChildren<Base.ActionPoint>()) {
+            foreach (ActionPoint ap in GetComponentsInChildren<ActionPoint>()) {
                 ap.DeleteAP(false);
             }
             gameObject.SetActive(false);

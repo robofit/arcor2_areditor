@@ -10,12 +10,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint {
-            Pose = new IO.Swagger.Model.Pose {
-                Position = new IO.Swagger.Model.Position(),
-                Orientation = new IO.Swagger.Model.Orientation()
-            }
-        };
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
 
 
         protected virtual void Awake() {

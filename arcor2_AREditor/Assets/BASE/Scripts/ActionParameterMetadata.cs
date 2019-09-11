@@ -1,49 +1,42 @@
 
 namespace Base {
     public class ActionParameterMetadata {
-        string _name;
-        Types _type;
-        object _defaultValue;
+        private string name;
+        private IO.Swagger.Model.ActionParameter.TypeEnum type;
+        private object defaultValue;
 
-        public enum Types {
-            Integer, Double, String, ActionPoint, Bool, Unknown
-        }
+        
 
         public ActionParameterMetadata(string name, string type, object defaultValue) {
-            _name = name;
-            _type = StringToType(type);
-            _defaultValue = defaultValue;
+            this.name = name;
+            this.type = StringToType(type);
+            this.defaultValue = defaultValue;
         }
 
-        static public Types StringToType(string type) {
+        static public IO.Swagger.Model.ActionParameter.TypeEnum StringToType(string type) {
             switch (type) {
                 case "str":
-                    return Types.String;
-                case "int":
-                    return Types.Integer;
-                case "ActionPoint":
-                    return Types.ActionPoint;
+                    return IO.Swagger.Model.ActionParameter.TypeEnum.String;
                 case "double":
-                    return Types.Double;
-                case "bool":
-                    return Types.Bool;
-                default:
-                    return Types.Unknown;
+                    return IO.Swagger.Model.ActionParameter.TypeEnum.Double;
+                case "int":
+                    return IO.Swagger.Model.ActionParameter.TypeEnum.Integer;
+                case "ActionPoint":
+                    return IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint;
             }
+            return new IO.Swagger.Model.ActionParameter.TypeEnum();
         }
 
-        static public string TypeToString(Types type) {
+        static public string TypeToString(IO.Swagger.Model.ActionParameter.TypeEnum type) {
             switch (type) {
-                case Types.String:
+                case IO.Swagger.Model.ActionParameter.TypeEnum.String:
                     return "str";
-                case Types.Integer:
-                    return "int";
-                case Types.ActionPoint:
+                case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
                     return "ActionPoint";
-                case Types.Double:
+                case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
                     return "double";
-                case Types.Bool:
-                    return "bool";
+                case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
+                    return "int";
                 default:
                     return "unknown";
             }
@@ -59,13 +52,13 @@ namespace Base {
 
 
         public string Name {
-            get => _name; set => _name = value;
+            get => name; set => name = value;
         }
-        public Types Type {
-            get => _type; set => _type = value;
+        public IO.Swagger.Model.ActionParameter.TypeEnum Type {
+            get => type; set => type = value;
         }
         public object DefaultValue {
-            get => _defaultValue; set => _defaultValue = value;
+            get => defaultValue; set => defaultValue = value;
         }
     }
 

@@ -8,7 +8,7 @@ namespace Base {
 
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
 
-        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action();
+        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
         public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, ActionObject originalActionObject, bool generateData, bool updateProject = true) {
             this.metadata = metadata;
             
@@ -16,7 +16,7 @@ namespace Base {
             if (generateData) {
                 foreach (ActionParameterMetadata actionParameterMetadata in this.metadata.Parameters.Values) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
-                    if (actionParameter.ActionParameterMetadata.Type == ActionParameterMetadata.Types.ActionPoint) {
+                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint) {
                         actionParameter.Data.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
                     } else {
                         actionParameter.Data.Value = actionParameter.ActionParameterMetadata.DefaultValue;

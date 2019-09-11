@@ -1,17 +1,21 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Base {
     public class ActionObjectMetadata {
 
-        string type, description, baseObject;
-        bool actionsLoaded, robot;
-        Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
+        private string type, description, baseObject;
+        private bool actionsLoaded, robot;
+        private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
+        private ARServer.Models.RequestNewObjectTypeArgsModel Model;
 
-        public ActionObjectMetadata(string type, string description, string baseObject) {
+        
+        public ActionObjectMetadata(string type, string description, string baseObject, ARServer.Models.RequestNewObjectTypeArgsModel model) {
             Type = type;
             Description = description;
             BaseObject = baseObject;
             ActionsLoaded = false;
+            Model = model;
         }
 
         public string Type {

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Base {
     public class InputOutput : MonoBehaviour {
         public Connection Connection;
-        public IO.Swagger.Model.ActionIO Data = new IO.Swagger.Model.ActionIO();
+        public IO.Swagger.Model.ActionIO Data = new IO.Swagger.Model.ActionIO("");
 
         protected virtual void Awake() {
         }

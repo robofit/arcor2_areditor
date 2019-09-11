@@ -16,7 +16,7 @@ public class GameManager : Base.Singleton<GameManager> {
     public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
     public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
     private string loadedScene;
-    private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project();
+    private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project("", "JabloPCB", new List<IO.Swagger.Model.ProjectObject>(), "JabloPCB");
     private IO.Swagger.Model.Scene newScene;
     private bool sceneReady;
 
@@ -34,9 +34,6 @@ public class GameManager : Base.Singleton<GameManager> {
     }
 
     private void Awake() {
-        currentProject.Objects = new List<IO.Swagger.Model.ProjectObject>();
-        currentProject.Desc = "";
-        currentProject.Id = "JabloPCB";
     }
 
     private void Start() {
@@ -399,11 +396,25 @@ public class GameManager : Base.Singleton<GameManager> {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
     }
 
+    public void CreateNewObjectType(ARServer.Models.RequestNewObjectTypeArgs objectType) {
+        Base.WebsocketManager.Instance.CreateNewObjectType(objectType);
+    }
+
     public void ExitApp() => Application.Quit();
 
     public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
     public void UpdateActionObjectPosition(Base.ActionObject ao, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
 
+    public void StartObjectFocusing() {
+        Base.WebsocketManager.Instance.StartObjectFocusing();
+    }
 
+    public void SavePosition() {
+        Base.WebsocketManager.Instance.SavePosition();
+    }
+
+    public void FocusObjectDone() {
+        Base.WebsocketManager.Instance.FocusObjectDone();
+    }
 
 }

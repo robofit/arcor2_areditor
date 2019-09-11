@@ -3,7 +3,7 @@ using System;
 namespace Base {
     public class ActionParameter {
         public ActionParameterMetadata ActionParameterMetadata;
-        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter();
+        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter("", new IO.Swagger.Model.ActionParameter.TypeEnum(), "");
 
         public ActionParameter() {
 
@@ -11,7 +11,7 @@ namespace Base {
         public ActionParameter(ActionParameterMetadata actionParameterMetadata) {
             ActionParameterMetadata = actionParameterMetadata;
             Data.Id = ActionParameterMetadata.Name;
-            Data.Type = ActionParameterMetadata.TypeToString(ActionParameterMetadata.Type);
+            Data.Type = ActionParameterMetadata.Type;
             Data.Value = ActionParameterMetadata.DefaultValue;
         }
 

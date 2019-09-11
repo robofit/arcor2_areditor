@@ -38,6 +38,7 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
     }
 
     public void UpdateObjects(Dictionary<string, Base.ActionObjectMetadata> newActionObjectsMetadata) {
+        Debug.LogError("UpdateObjects");
         actionObjectsMetadata = newActionObjectsMetadata;
         foreach (KeyValuePair<string, Base.ActionObjectMetadata> kv in actionObjectsMetadata) {
             kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);

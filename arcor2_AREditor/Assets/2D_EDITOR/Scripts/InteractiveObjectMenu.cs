@@ -4,7 +4,8 @@ using UnityEngine.UI;
 public class InteractiveObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab, robotsList, endEffectorList, updatePositionButton;
+    private GameObject aPPrefab, robotsList, endEffectorList, updatePositionButton, StartObjectFocusingButton,
+        SavePositionButton, CurrentPointLabel, NextButton, PreviousButtons, FocusObjectDoneButton;
 
     // Start is called before the first frame update
     void Start() {
@@ -59,7 +60,7 @@ public class InteractiveObjectMenu : MonoBehaviour {
             updatePositionButton.GetComponent<Button>().interactable = false;
         }
 
-
+        /*
         endEffectorDropdown.options.Clear();
         endEffectorDropdown.captionText.text = "EE_Big";
         endEffectorDropdown.value = 0;
@@ -68,7 +69,10 @@ public class InteractiveObjectMenu : MonoBehaviour {
         });
         endEffectorDropdown.options.Add(new Dropdown.OptionData {
             text = "EE_Small"
-        });
+        });*/
+
+        //ActionsManager.Instance.ActionObjectMetadata
+        //if (CurrentObject.GetComponent<ActionObject2D>().Data)
     }
 
     public void UpdateActionPointPosition() {
@@ -76,4 +80,25 @@ public class InteractiveObjectMenu : MonoBehaviour {
         Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
         GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
     }
+
+    public void StartObjectFocusing() {
+        GameManager.Instance.StartObjectFocusing();
+    }
+
+    public void SavePosition() {
+        GameManager.Instance.SavePosition();
+    }
+
+    public void FocusObjectDone() {
+        GameManager.Instance.FocusObjectDone();
+    }
+
+    public void NextPoint() {
+
+    }
+
+    public void PreviousPoint() {
+
+    }
+
 }
