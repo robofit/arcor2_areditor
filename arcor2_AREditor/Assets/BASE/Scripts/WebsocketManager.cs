@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 
 namespace Base {
@@ -120,6 +122,7 @@ namespace Base {
         }
 
         public void SendDataToServer(string data) {
+            Debug.Log(data);
             sendingQueue.Enqueue(data);
         }
 
@@ -159,124 +162,25 @@ namespace Base {
             SendDataToServer(getObjectActions.ToString());
         }
 
-        public void UpdateScene(List<InteractiveObject> interactiveObjects) {
-            JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+        public void UpdateScene(IO.Swagger.Model.Scene scene) {
 
-            message.AddField("event", "sceneChanged");
-            JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
-            data.AddField("id", "jabloPCB");
-            JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-            foreach (InteractiveObject io in interactiveObjects) {
-                JSONObject iojson = new JSONObject(JsonUtility.ToJson(io).ToString());
-                iojson.AddField("id", io.Id);
-                JSONObject pose = JSONHelper.CreatePose(new Vector3(io.gameObject.transform.localPosition.x, io.gameObject.transform.localPosition.y, 0), new Quaternion(0, 0, 0, 1));
-                iojson.AddField("pose", pose);
-                obj.Add(iojson);
-            }
-            data.AddField("objects", obj);
-            message.AddField("data", data);
-            Debug.Log(message.ToString());
-            SendDataToServer(message.ToString());
+            ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged {
+                Scene = scene
+            };
+
+            SendDataToServer(eventData.ToJson());
+
+
         }
 
         // TODO: add action parameters
-        public void UpdateProject(List<InteractiveObject> interactiveObjects, GameObject scene) {
-            JSONObject message = new JSONObject(JSONObject.Type.OBJECT);
+        public void UpdateProject(IO.Swagger.Model.Project project) {
+            ARServer.Models.EventProjectChanged eventData = new ARServer.Models.EventProjectChanged {
+                Project = project
+            };
+            Debug.LogError(eventData.ToJson());
+            SendDataToServer(eventData.ToJson());
 
-            message.AddField("event", "projectChanged");
-            JSONObject data = new JSONObject(JSONObject.Type.OBJECT);
-            data.AddField("id", "demo_v0");
-            data.AddField("scene_id", "jabloPCB");
-            JSONObject obj = new JSONObject(JSONObject.Type.ARRAY);
-            foreach (InteractiveObject io in interactiveObjects) {
-                JSONObject iojson = new JSONObject(JSONObject.Type.OBJECT);
-                iojson.AddField("id", io.Id);
-                JSONObject apArray = new JSONObject(JSONObject.Type.ARRAY);
-                foreach (ActionPoint ap in io.transform.Find("ActionPoints").gameObject.GetComponentsInChildren<ActionPoint>()) {
-                    JSONObject apjson = new JSONObject(JsonUtility.ToJson(ap).ToString());
-
-
-                    apjson.AddField("pose", JSONHelper.CreatePose(ap.GetScenePosition(), ap.transform.rotation));
-                    JSONObject puckArray = new JSONObject(JSONObject.Type.ARRAY);
-                    foreach (Puck puck in ap.GetComponentsInChildren<Puck>()) {
-                        JSONObject puckjson = new JSONObject(JsonUtility.ToJson(puck).ToString());
-                        puckjson.AddField("type", puck.Action.InteractiveObject.Id + "/" + puck.Action.Metadata.Name);
-                        puckjson.AddField("pose", JSONHelper.CreatePose(puck.transform.localPosition, puck.transform.rotation));
-
-                        if (puck.GetComponentInChildren<PuckInput>() != null/* && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckInput>().GetConneciton())*/) {
-                            JSONObject input_connection = new JSONObject(JSONObject.Type.ARRAY);
-                            GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckInput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckInput>().gameObject);
-
-                            JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
-                            if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
-                                Debug.Log(ConnectedPuck);
-                                Debug.Log(ConnectedPuck.transform.GetComponentInParent<Puck>());
-                                con.AddField("default", ConnectedPuck.transform.GetComponentInParent<Puck>().id);
-
-                            } else {
-                                con.AddField("default", "start");
-                            }
-                            input_connection.Add(con);
-                            puckjson.AddField("inputs", input_connection);
-
-                        }
-                        if (puck.GetComponentInChildren<PuckOutput>()/* != null && ConnectionManager.GetComponent<ConnectionManagerArcoro>().ValidateConnection(puck.GetComponentInChildren<PuckOutput>().GetConneciton())*/) {
-                            JSONObject output_connection = new JSONObject(JSONObject.Type.OBJECT);
-                            GameObject ConnectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(puck.GetComponentInChildren<PuckOutput>().GetConneciton(), puck.gameObject.GetComponentInChildren<PuckOutput>().gameObject);
-                            JSONObject con = new JSONObject(JSONObject.Type.OBJECT);
-                            if (ConnectedPuck != null && ConnectedPuck.name != "VirtualPointer") {
-
-                                con.AddField("default", ConnectedPuck.transform.parent.GetComponent<Puck>().id);
-
-                            } else {
-                                con.AddField("default", "end");
-                            }
-                            output_connection.Add(con);
-                            puckjson.AddField("outputs", output_connection);
-                        }
-                        JSONObject parameters = new JSONObject(JSONObject.Type.ARRAY);
-                        foreach (ActionParameter parameter in puck.Action.Parameters.Values) {
-                            JSONObject param = new JSONObject(JSONObject.Type.OBJECT);
-                            param.AddField("id", parameter.ActionParameterMetadata.Name);
-                            param.AddField("type", parameter.ActionParameterMetadata.GetStringType());
-                            //
-                            switch (parameter.ActionParameterMetadata.Type) {
-                                case ActionParameterMetadata.Types.ActionPoint:
-                                case ActionParameterMetadata.Types.String:
-                                    parameter.GetValue(out string stringValue, "");
-                                    param.AddField("value", stringValue);
-                                    break;
-                                case ActionParameterMetadata.Types.Integer:
-                                    parameter.GetValue(out long intValue, 0);
-                                    param.AddField("value", intValue);
-                                    break;
-                                case ActionParameterMetadata.Types.Bool:
-                                    parameter.GetValue(out bool boolValue, false);
-                                    param.AddField("value", boolValue);
-                                    break;
-                                default:
-                                    param.AddField("value", "");
-                                    break;
-                            }
-                            parameters.Add(param);
-                        }
-
-                        puckjson.AddField("parameters", parameters);
-                        puckArray.Add(puckjson);
-                    }
-                    apjson.AddField("actions", puckArray);
-                    apArray.Add(apjson);
-                }
-                iojson.AddField("action_points", apArray);
-                obj.Add(iojson);
-            }
-            data.AddField("objects", obj);
-            message.AddField("data", data);
-            Debug.Log("To send: ");
-            Debug.Log(message.ToString(true));
-            ignoreProjectChanged = true;
-
-            SendDataToServer(message.ToString());
         }
 
 
@@ -284,7 +188,6 @@ namespace Base {
             JSONObject jsonData = new JSONObject(data);
             Debug.Log("Received new data");
             Debug.Log(data);
-            Debug.Log(jsonData);
             Dictionary<string, string> jsonDict = jsonData.ToDictionary();
             if (jsonDict == null)
                 return;
@@ -306,7 +209,6 @@ namespace Base {
                         HandleCurrentAction(jsonData);
                         break;
                     case "projectChanged":
-                        Debug.Log(ignoreProjectChanged);
                         if (ignoreProjectChanged)
                             ignoreProjectChanged = false;
                         else
@@ -325,8 +227,8 @@ namespace Base {
                 }
 
 
-
-                GameManager.Instance.ProjectUpdated(obj["data"]);
+                ARServer.Models.EventProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<ARServer.Models.EventProjectChanged>(obj.ToString());
+                GameManager.Instance.ProjectUpdated(eventProjectChanged.Project);
 
 
             } catch (NullReferenceException e) {
@@ -359,20 +261,17 @@ namespace Base {
         }
 
         void HandleSceneChanged(JSONObject obj) {
-
-
             try {
                 if (obj["event"].str != "sceneChanged") {
                     Debug.Log("Wrong headers");
                     return;
                 }
+                ARServer.Models.EventSceneChanged eventSceneChanged = JsonConvert.DeserializeObject<ARServer.Models.EventSceneChanged>(obj.ToString());
+                Debug.Log(eventSceneChanged.Scene.Objects[0]);
+                GameManager.Instance.SceneUpdated(eventSceneChanged.Scene);
 
-                JSONObject data = obj["data"];
 
-                GameManager.Instance.SceneUpdated(data);
-
-
-            } catch (NullReferenceException e) {
+            } catch (NullReferenceException) {
                 Debug.Log("Parse error in HandleSceneChanged()");
                 Debug.Log(obj);
             }
@@ -388,11 +287,6 @@ namespace Base {
 
                 JSONObject data = obj["data"];
                 if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(waitingForObjectActions, out ActionObjectMetadata ao)) {
-                    JSONObject defaultValueStr = new JSONObject(JSONObject.Type.OBJECT);
-                    defaultValueStr.AddField("value", "");
-                    JSONObject defaultValueInt = new JSONObject(JSONObject.Type.OBJECT);
-                    defaultValueInt.AddField("value", 0);
-
                     //handle actions for actionobject here
                     foreach (JSONObject o in data.list) {
                         JSONObject metaData = o["meta"];
@@ -402,11 +296,11 @@ namespace Base {
                         foreach (JSONObject args in o["action_args"].list) {
                             switch (args["type"].str) {
                                 case "int":
-                                    a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueInt);
+                                    a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, (long) 0);
                                     break;
                                 case "str":
                                 case "ActionPoint":
-                                    a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, defaultValueStr);
+                                    a.Parameters[args["name"].str] = new ActionParameterMetadata(args["name"].str, args["type"].str, "");
                                     break;
                             }
 
@@ -423,19 +317,25 @@ namespace Base {
         }
 
         private void HandleGetObjecTypes(JSONObject obj) {
-
+            Debug.LogWarning("HandleGetObjecTypes");
             try {
                 if (!CheckHeaders(obj, "getObjectTypes"))
                     return;
                 JSONObject data = obj["data"];
-                Dictionary<string, ActionObjectMetadata> NewActionObjects = new Dictionary<string, ActionObjectMetadata>();
+                Dictionary<string, ActionObjectMetadata> newActionObjects = new Dictionary<string, ActionObjectMetadata>();
                 foreach (JSONObject o in data.list) {
-                    ActionObjectMetadata ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str);
-                    NewActionObjects[ao.Type] = ao;
+                    ActionObjectMetadata ao;
+                    if (o.keys.Contains("object_model")) {
+                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, JsonConvert.DeserializeObject<ARServer.Models.ResponseGetObjectTypesModel>(o["object_model"].ToString()));
+                    } else {
+                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, null);
+                    }                       
+                    
+                    newActionObjects[ao.Type] = ao;
                     actionObjectsToBeUpdated.Add(ao.Type);
                 }
 
-                ActionsManager.Instance.UpdateObjects(NewActionObjects);
+                ActionsManager.Instance.UpdateObjects(newActionObjects);
                 Debug.Log(ActionsManager.Instance.ActionObjectMetadata.Count);
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleGetObjecTypes()");
@@ -472,7 +372,7 @@ namespace Base {
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
             request.AddField("request", "loadProject");
             JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
-            args.AddField("id", "demo_v0");
+            args.AddField("id", "JabloPCB");
             request.AddField("args", args);
             SendDataToServer(request.ToString());
         }
@@ -504,16 +404,68 @@ namespace Base {
             SendDataToServer(request.ToString());
         }
 
-        public void UpdateActionPointPosition(string actionPointId, string robotId) {
+        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId) {
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
             request.AddField("request", "updateActionPointPose");
             JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
             args.AddField("id", actionPointId);
             args.AddField("robot", robotId);
-            args.AddField("end_effector", "neumime");
+            args.AddField("end_effector", endEffectorId);
             request.AddField("args", args);
-            Debug.Log(request.ToString(true));
             SendDataToServer(request.ToString());
+        }
+
+        public void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+            JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
+            request.AddField("request", "updateActionObjectPose");
+            JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
+            args.AddField("id", actionObjectId);
+            args.AddField("robot", robotId);
+            args.AddField("end_effector", endEffectorId);
+            request.AddField("args", args);
+            SendDataToServer(request.ToString());
+        }
+
+        public void CreateNewObjectType(ARServer.Models.RequestNewObjectTypeArgs objectType) {
+            ARServer.Models.RequestNewObjectType requestData = new ARServer.Models.RequestNewObjectType {
+                Args = objectType
+            };
+            Debug.LogWarning(requestData.ToJson());
+            SendDataToServer(requestData.ToJson());
+            UpdateObjectTypes();
+        }
+
+        public void StartObjectFocusing(string objectId, string robotId, string endEffector) {
+            ARServer.Models.RequestFocusObjectStartArgs args = new ARServer.Models.RequestFocusObjectStartArgs {
+                ObjectId = objectId,
+                EndEffector = endEffector,
+                RobotId = robotId
+            };
+            ARServer.Models.RequestFocusObjectStart request = new ARServer.Models.RequestFocusObjectStart {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
+        }
+
+        public void SavePosition(string objectId, int pointIdx) {
+            ARServer.Models.RequestFocusObjectArgs args = new ARServer.Models.RequestFocusObjectArgs {
+                ObjectId = objectId,
+                PointIdx = pointIdx
+            };
+            ARServer.Models.RequestFocusObject request = new ARServer.Models.RequestFocusObject {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
+        }
+
+        public void FocusObjectDone(string objectId) {
+            ARServer.Models.RequestFocusObjectDoneArgs args = new ARServer.Models.RequestFocusObjectDoneArgs {
+                ObjectId = objectId
+            };
+            ARServer.Models.RequestFocusObjectDone request = new ARServer.Models.RequestFocusObjectDone {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
         }
     }
 }

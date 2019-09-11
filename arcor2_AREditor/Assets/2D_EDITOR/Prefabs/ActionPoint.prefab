@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 9208328394151070523}
   - component: {fileID: 1811158122181076760}
   - component: {fileID: 4146649868581017836}
-  - component: {fileID: 4190972039779483839}
+  - component: {fileID: 4428151417158829317}
   m_Layer: 0
   m_Name: ActionPoint
   m_TagString: Untagged
@@ -81,7 +81,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1378982012839607747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -101,6 +101,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &1811158122181076760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,7 +140,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 30, y: 30}
   m_EdgeRadius: 0
---- !u!114 &4190972039779483839
+--- !u!114 &4428151417158829317
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -148,11 +149,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1378982012839607747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdedb7cde7ab8794b81677ce298cff76, type: 3}
+  m_Script: {fileID: 11500000, guid: 4be24d49bad3bf447a43b5487ac26976, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 
-  IntObj: {fileID: 0}
+  Id: 
+  ActionObject: {fileID: 0}
   ConnectionToIO: {fileID: 0}
 --- !u!1 &8332948428621415534
 GameObject:
@@ -208,7 +209,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8332948428621415534}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}

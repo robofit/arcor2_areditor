@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject _ConnectionPrefab, VirtualPointer, _CameraManager;
-    private Connection VirtualConnectionToMouse;
+    public GameObject ConnectionPrefab, VirtualPointer, CameraManager;
+    private Connection virtualConnectionToMouse;
 
     // Start is called before the first frame update
     void Start() {
@@ -16,7 +16,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
-        GameObject c = Instantiate(_ConnectionPrefab);
+        GameObject c = Instantiate(ConnectionPrefab);
         c.transform.SetParent(transform);
         c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
         c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
@@ -24,40 +24,41 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnectionToMouse(GameObject o) {
-        if (VirtualConnectionToMouse != null)
-            Destroy(VirtualConnectionToMouse.gameObject);
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        VirtualConnectionToMouse = CreateConnection(o, VirtualPointer);
+        if (virtualConnectionToMouse != null)
+            Destroy(virtualConnectionToMouse.gameObject);
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        virtualConnectionToMouse = CreateConnection(o, VirtualPointer);
 
-        return VirtualConnectionToMouse;
+        return virtualConnectionToMouse;
     }
 
     public void DestroyConnectionToMouse() {
-        int i = GetIndexByType(VirtualConnectionToMouse, typeof(InputOutput));
+        int i = GetIndexByType(virtualConnectionToMouse, typeof(Base.InputOutput));
         if (i >= 0) {
-            VirtualConnectionToMouse.target[i].GetComponent<InputOutput>().Connection = null;
+            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
+            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
-        Destroy(VirtualConnectionToMouse.gameObject);
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        Destroy(virtualConnectionToMouse.gameObject);
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
     }
 
     public Connection ConnectVirtualConnectionToObject(GameObject o) {
-        if (VirtualConnectionToMouse == null)
+        if (virtualConnectionToMouse == null)
             return null;
 
 
-        int i = GetIndexOf(VirtualConnectionToMouse, VirtualPointer);
+        int i = GetIndexOf(virtualConnectionToMouse, VirtualPointer);
         if (i < 0) {
             return null;
         }
-        if (VirtualConnectionToMouse.target[1 - i].gameObject.GetComponent<InputOutput>().GetType() != o.GetComponent<InputOutput>().GetType()) {
-            VirtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
+        if (virtualConnectionToMouse.target[1 - i].gameObject.GetComponent<Base.InputOutput>().GetType() != o.GetComponent<Base.InputOutput>().GetType()) {
+            virtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
         } else {
             return null;
         }
-        Connection c = VirtualConnectionToMouse;
-        VirtualConnectionToMouse = null;
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        Connection c = virtualConnectionToMouse;
+        virtualConnectionToMouse = null;
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
         return c;
     }
 
@@ -66,18 +67,19 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         if (i < 0)
             return null;
         c.target[i] = VirtualPointer.GetComponent<RectTransform>();
-        o.GetComponent<InputOutput>().Connection = null;
-        VirtualConnectionToMouse = c;
-        _CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        return VirtualConnectionToMouse;
+        o.GetComponent<Base.InputOutput>().Connection = null;
+        o.GetComponent<Base.InputOutput>().InitData();
+        virtualConnectionToMouse = c;
+        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        return virtualConnectionToMouse;
     }
 
     public bool IsConnecting() {
-        return VirtualConnectionToMouse != null;
+        return virtualConnectionToMouse != null;
     }
 
     public Connection GetVirtualConnectionToMouse() {
-        return VirtualConnectionToMouse;
+        return virtualConnectionToMouse;
     }
 
     private int GetIndexOf(Connection c, GameObject o) {
@@ -91,9 +93,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     private int GetIndexByType(Connection c, System.Type type) {
-        if (c.target[0] != null && c.target[0].gameObject.GetComponent<InputOutput>() != null && c.target[0].gameObject.GetComponent<InputOutput>().GetType() == type)
+        if (c.target[0] != null && c.target[0].gameObject.GetComponent<Base.InputOutput>() != null && c.target[0].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
             return 0;
-        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<InputOutput>() != null && c.target[1].gameObject.GetComponent<InputOutput>().GetType() == type)
+        else if (c.target[1] != null && c.target[1].gameObject.GetComponent<Base.InputOutput>() != null && c.target[1].gameObject.GetComponent<Base.InputOutput>().GetType().IsSubclassOf(type))
             return 1;
         else
             return -1;
@@ -115,7 +117,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ValidateConnection(Connection c) {
         if (c == null)
             return false;
-        int input = GetIndexByType(c, typeof(PuckInput)), output = GetIndexByType(c, typeof(PuckOutput));
+        int input = GetIndexByType(c, typeof(Base.PuckInput)), output = GetIndexByType(c, typeof(Base.PuckOutput));
         if (input < 0 || output < 0)
             return false;
         return input + output == 1;

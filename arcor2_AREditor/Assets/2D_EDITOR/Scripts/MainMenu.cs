@@ -38,7 +38,7 @@ public class MainMenu : MonoBehaviour {
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<Text>().text = ao_name;
-            btn.onClick.AddListener(() => GameManager.SpawnInteractiveObject(ao_name));
+            btn.onClick.AddListener(() => GameManager.SpawnActionObject(ao_name));
             btnGO.transform.SetAsFirstSibling();
         }
 

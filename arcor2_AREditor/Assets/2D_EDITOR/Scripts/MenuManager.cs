@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DanielLochner.Assets.SimpleSideMenu;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public GameObject InteractiveObjectMenu, ActionPointMenuTester, ActionPointMenu, PuckMenu, MainMenu;
+    public GameObject InteractiveObjectMenu, ActionPointMenuTester, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu;
     GameObject MenuOpened;
     ActionsManager ActionsManager;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
@@ -20,7 +20,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
 
     }
 
-    public void UpdateActionObjectMenu(ActionObjectMetadata ao) {
+    public void UpdateActionObjectMenu(Base.ActionObjectMetadata ao) {
         /*if (!ActionObjectsMenus.TryGetValue(ao.Type, out GameObject menu))
         {
             menu = Instantiate(ActionPointMenuPrefab);
