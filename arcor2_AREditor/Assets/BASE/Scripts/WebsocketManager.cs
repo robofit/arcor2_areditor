@@ -326,7 +326,7 @@ namespace Base {
                 foreach (JSONObject o in data.list) {
                     ActionObjectMetadata ao;
                     if (o.keys.Contains("object_model")) {
-                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, JsonConvert.DeserializeObject<ARServer.Models.RequestNewObjectTypeArgsModel>(o["object_model"].ToString()));
+                        ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, JsonConvert.DeserializeObject<ARServer.Models.ResponseGetObjectTypesModel>(o["object_model"].ToString()));
                     } else {
                         ao = new ActionObjectMetadata(o["type"].str, o["description"].str, o["base"].str, null);
                     }                       
@@ -435,16 +435,37 @@ namespace Base {
             UpdateObjectTypes();
         }
 
-        public void StartObjectFocusing() {
-
+        public void StartObjectFocusing(string objectId, string robotId, string endEffector) {
+            ARServer.Models.RequestFocusObjectStartArgs args = new ARServer.Models.RequestFocusObjectStartArgs {
+                ObjectId = objectId,
+                EndEffector = endEffector,
+                RobotId = robotId
+            };
+            ARServer.Models.RequestFocusObjectStart request = new ARServer.Models.RequestFocusObjectStart {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
         }
 
-        public void SavePosition() {
-
+        public void SavePosition(string objectId, int pointIdx) {
+            ARServer.Models.RequestFocusObjectArgs args = new ARServer.Models.RequestFocusObjectArgs {
+                ObjectId = objectId,
+                PointIdx = pointIdx
+            };
+            ARServer.Models.RequestFocusObject request = new ARServer.Models.RequestFocusObject {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
         }
 
-        public void FocusObjectDone() {
-
+        public void FocusObjectDone(string objectId) {
+            ARServer.Models.RequestFocusObjectDoneArgs args = new ARServer.Models.RequestFocusObjectDoneArgs {
+                ObjectId = objectId
+            };
+            ARServer.Models.RequestFocusObjectDone request = new ARServer.Models.RequestFocusObjectDone {
+                Args = args
+            };
+            SendDataToServer(request.ToJson());
         }
     }
 }

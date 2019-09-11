@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ARServer.Models;
 using UnityEngine;
 
 namespace Base {
@@ -7,10 +8,10 @@ namespace Base {
         private string type, description, baseObject;
         private bool actionsLoaded, robot;
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private ARServer.Models.RequestNewObjectTypeArgsModel Model;
+        private ARServer.Models.ResponseGetObjectTypesModel model;
 
-        
-        public ActionObjectMetadata(string type, string description, string baseObject, ARServer.Models.RequestNewObjectTypeArgsModel model) {
+
+        public ActionObjectMetadata(string type, string description, string baseObject, ARServer.Models.ResponseGetObjectTypesModel model) {
             Type = type;
             Description = description;
             BaseObject = baseObject;
@@ -35,6 +36,10 @@ namespace Base {
         }
         public string BaseObject {
             get => baseObject; set => baseObject = value;
+        }
+        public ResponseGetObjectTypesModel Model {
+            get => model;
+            set => model = value;
         }
     }
 

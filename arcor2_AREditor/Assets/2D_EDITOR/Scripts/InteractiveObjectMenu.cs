@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class InteractiveObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab, robotsList, endEffectorList, updatePositionButton, StartObjectFocusingButton,
-        SavePositionButton, CurrentPointLabel, NextButton, PreviousButtons, FocusObjectDoneButton;
+    private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,
+        SavePositionButton, CurrentPointLabel, NextButton, PreviousButton, FocusObjectDoneButton;
+
+    int currentFocusPoint = -1;
 
     // Start is called before the first frame update
     void Start() {
@@ -49,15 +52,15 @@ public class InteractiveObjectMenu : MonoBehaviour {
             }
         }
         dropdown.value = 0;
-        if (dropdown.options.Count > 0) {
+        if (dropdown.options.Count > 0 && CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.MetaModel3d.TypeEnum.Mesh) {
             endEffectorDropdown.interactable = true;
             dropdown.interactable = true;
-            updatePositionButton.GetComponent<Button>().interactable = true;
+            EnableFocusControls();
             dropdown.captionText.text = dropdown.options[dropdown.value].text;
         } else {
             endEffectorDropdown.interactable = false;
-            dropdown.interactable = false;
-            updatePositionButton.GetComponent<Button>().interactable = false;
+            dropdown.interactable = false;            
+            DisableFocusControls();
         }
 
         /*
@@ -75,6 +78,22 @@ public class InteractiveObjectMenu : MonoBehaviour {
         //if (CurrentObject.GetComponent<ActionObject2D>().Data)
     }
 
+    private void EnableFocusControls() {
+        SavePositionButton.GetComponent<Button>().interactable = true;
+        StartObjectFocusingButton.GetComponent<Button>().interactable = true;
+        NextButton.GetComponent<Button>().interactable = true;
+        PreviousButton.GetComponent<Button>().interactable = true;
+        FocusObjectDoneButton.GetComponent<Button>().interactable = true;
+    }
+
+    private void DisableFocusControls() {
+        SavePositionButton.GetComponent<Button>().interactable = false;
+        StartObjectFocusingButton.GetComponent<Button>().interactable = false;
+        NextButton.GetComponent<Button>().interactable = false;
+        PreviousButton.GetComponent<Button>().interactable = false;
+        FocusObjectDoneButton.GetComponent<Button>().interactable = false;
+    }
+
     public void UpdateActionPointPosition() {
         Dropdown dropdown = robotsList.GetComponent<Dropdown>();
         Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
@@ -82,23 +101,48 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     public void StartObjectFocusing() {
-        GameManager.Instance.StartObjectFocusing();
+        Dropdown robotList = robotsList.GetComponent<Dropdown>();
+        Dropdown eeList = endEffectorList.GetComponent<Dropdown>();
+        string robotId = robotList.options[robotList.value].text;
+        string endEffector = eeList.options[eeList.value].text;
+        GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<ActionObject2D>().Data.Id, robotId, endEffector);
+        currentFocusPoint = 0;
+        UpdateCurrentPointLabel();
     }
 
     public void SavePosition() {
-        GameManager.Instance.SavePosition();
+        if (currentFocusPoint < 0)
+            return;
+        GameManager.Instance.SavePosition(CurrentObject.GetComponent<ActionObject2D>().Data.Id, currentFocusPoint);
     }
 
     public void FocusObjectDone() {
-        GameManager.Instance.FocusObjectDone();
+        GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<ActionObject2D>().Data.Id);
+        CurrentPointLabel.GetComponent<Text>().text = "";
     }
 
     public void NextPoint() {
-
+        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count - 1);
+        if (currentFocusPoint == CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count - 1) {
+            NextButton.GetComponent<Button>().interactable = false;
+        } else {
+            NextButton.GetComponent<Button>().interactable = true;
+        }
+        UpdateCurrentPointLabel();
     }
 
     public void PreviousPoint() {
+        currentFocusPoint = Math.Max(currentFocusPoint - 1, 0);
+        if (currentFocusPoint == 0) {
+            PreviousButton.GetComponent<Button>().interactable = false;
+        } else {
+            PreviousButton.GetComponent<Button>().interactable = true;
+        }
+        UpdateCurrentPointLabel();
+    }
 
+    private void UpdateCurrentPointLabel() {
+        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count.ToString();
     }
 
 }

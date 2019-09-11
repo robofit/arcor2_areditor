@@ -6,23 +6,19 @@ using Newtonsoft.Json;
 namespace ARServer.Models {
 
     [DataContract]
-    public class RequestFocusObjectStart : RequestModel {
+    public class RequestFocusObjectDoneArgs {
 
-        public RequestFocusObjectStart() {
-            Request = "focusObjectStart";
-        }
-
-        [DataMember(Name = "args", EmitDefaultValue = false)]
-        [JsonProperty(PropertyName = "args")]
-        public RequestFocusObjectStartArgs Args {
+       
+        [DataMember(Name = "object_id", EmitDefaultValue = false)]
+        [JsonProperty(PropertyName = "object_id")]
+        public string ObjectId {
             get; set;
         }
+                       
 
         public override string ToString() {
             var sb = new StringBuilder();
             sb.Append("class Event {\n");
-            sb.Append("  Request: ").Append(Request).Append("\n");
-            sb.Append("  Args: ").Append(Args).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }

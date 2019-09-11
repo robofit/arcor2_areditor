@@ -405,16 +405,16 @@ public class GameManager : Base.Singleton<GameManager> {
     public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
     public void UpdateActionObjectPosition(Base.ActionObject ao, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
 
-    public void StartObjectFocusing() {
-        Base.WebsocketManager.Instance.StartObjectFocusing();
+    public void StartObjectFocusing(string objectId, string robotId, string endEffector) {
+        Base.WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
     }
 
-    public void SavePosition() {
-        Base.WebsocketManager.Instance.SavePosition();
+    public void SavePosition(string objectId, int pointIdx) {
+        Base.WebsocketManager.Instance.SavePosition(objectId, pointIdx);
     }
 
-    public void FocusObjectDone() {
-        Base.WebsocketManager.Instance.FocusObjectDone();
+    public void FocusObjectDone(string objectId) {
+        Base.WebsocketManager.Instance.FocusObjectDone(objectId);
     }
 
 }
