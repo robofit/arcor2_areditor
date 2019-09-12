@@ -370,7 +370,7 @@ namespace Base {
 
         public void LoadProject() {
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
-            request.AddField("request", "loadProject");
+            request.AddField("request", "openProject");
             JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
             args.AddField("id", "JabloPCB");
             request.AddField("args", args);
@@ -381,6 +381,9 @@ namespace Base {
             //Arrow.SetActive(true);
             JSONObject request = new JSONObject(JSONObject.Type.OBJECT);
             request.AddField("request", "runProject");
+            JSONObject args = new JSONObject(JSONObject.Type.ARRAY);
+            args.AddField("id", "JabloPCB");
+            request.AddField("args", args);
             SendDataToServer(request.ToString());
         }
 
