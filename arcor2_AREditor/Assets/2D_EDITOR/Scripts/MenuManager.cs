@@ -58,7 +58,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     }
 
     public void ShowMenu(GameObject Menu, string Headline = "") {
-        Debug.Log(Menu);
+        //Debug.Log(Menu); 
         if (Menu == null)
             return;
         HideAllMenus();

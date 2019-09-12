@@ -27,8 +27,8 @@ namespace ARServer.Models {
             get; set;
         }
 
-        [DataMember(Name = "model", EmitDefaultValue = false)]
-        [JsonProperty(PropertyName = "model")]
+        [DataMember(Name = "object_model", EmitDefaultValue = false)]
+        [JsonProperty(PropertyName = "object_model")]
         public RequestNewObjectTypeArgsModel Model {
             get; set;
         }
