@@ -38,7 +38,6 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
     }
 
     public void UpdateObjects(Dictionary<string, Base.ActionObjectMetadata> newActionObjectsMetadata) {
-        Debug.LogError("UpdateObjects");
         actionObjectsMetadata = newActionObjectsMetadata;
         foreach (KeyValuePair<string, Base.ActionObjectMetadata> kv in actionObjectsMetadata) {
             kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
@@ -67,12 +66,6 @@ public class ActionsManager : Base.Singleton<ActionsManager> {
         return false;
     }
 
-    public void UpdateObjectActionMenu(string objectType) {
-        if (actionObjectsMetadata.TryGetValue(objectType, out Base.ActionObjectMetadata ao)) {
-            MenuManager.Instance.UpdateActionObjectMenu(ao);
-        }
-
-    }
 
     public Dictionary<Base.ActionObject, List<Base.ActionMetadata>> GetAllActionsOfObject(Base.ActionObject interactiveObject) {
         Dictionary<Base.ActionObject, List<Base.ActionMetadata>> actionsMetadata = new Dictionary<Base.ActionObject, List<Base.ActionMetadata>>();

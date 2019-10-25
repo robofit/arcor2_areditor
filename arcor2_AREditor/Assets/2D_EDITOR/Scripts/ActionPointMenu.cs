@@ -21,8 +21,7 @@ public class ActionPointMenu : MonoBehaviour {
     }
 
     public void CreatePuck(string action_id, Base.ActionObject actionObject) {
-        Debug.LogWarning(action_id);
-        GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, actionObject, true);
+        Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, actionObject, true);
     }
 
     public void SaveID(string new_id) {
@@ -48,7 +47,7 @@ public class ActionPointMenu : MonoBehaviour {
 
         foreach (KeyValuePair<Base.ActionObject, List<Base.ActionMetadata>> keyval in ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
             foreach (Base.ActionMetadata am in keyval.Value) {
-                GameObject btnGO = Instantiate(GameManager.Instance.ButtonPrefab);
+                GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab);
                 btnGO.transform.SetParent(dynamicContent.transform);
                 btnGO.transform.localScale = new Vector3(1, 1, 1);
                 Button btn = btnGO.GetComponent<Button>();
@@ -61,7 +60,7 @@ public class ActionPointMenu : MonoBehaviour {
         Dropdown endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
         dropdown.options.Clear();
         dropdown.captionText.text = "";
-        foreach (Base.ActionObject actionObject in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
             if (actionObject.ActionObjectMetadata.Robot) {
                 Dropdown.OptionData option = new Dropdown.OptionData {
                     text = actionObject.Data.Id
@@ -105,7 +104,7 @@ public class ActionPointMenu : MonoBehaviour {
     public void UpdateActionPointPosition() {
         Dropdown dropdown = robotsList.GetComponent<Dropdown>();
         Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
-        GameManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetComponent<Base.ActionPoint>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
+        Base.GameManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetComponent<Base.ActionPoint>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
     }
 
     public void UpdateEndEffectorList(Base.ActionObject robot) {

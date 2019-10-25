@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using DanielLochner.Assets.SimpleSideMenu;
 
 public class InteractiveObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
     private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,
-        SavePositionButton, CurrentPointLabel, NextButton, PreviousButton, FocusObjectDoneButton;
+        SavePositionButton, CurrentPointLabel, NextButton, PreviousButton, FocusObjectDoneButton, UpdatePositionBlockMesh, UpdatePositionBlockVO, robotsListVO, endEffectorListVO;
 
     int currentFocusPoint = -1;
 
@@ -24,13 +25,13 @@ public class InteractiveObjectMenu : MonoBehaviour {
         if (CurrentObject == null) {
             return;
         }
-        GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>());
+        Base.GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>());
 
     }
 
     public void SaveID(string new_id) {
         CurrentObject.GetComponent<Base.ActionObject>().Data.Id = new_id;
-        GameManager.Instance.UpdateScene();
+        Base.GameManager.Instance.UpdateScene();
     }
 
     public void DeleteIO() {
@@ -39,28 +40,50 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     public void UpdateMenu() {
-        Dropdown dropdown = robotsList.GetComponent<Dropdown>();
-        Dropdown endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
-        dropdown.options.Clear();
-        dropdown.captionText.text = "";
-        foreach (Base.ActionObject actionObject in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-            if (actionObject.ActionObjectMetadata.Robot) {
-                Dropdown.OptionData option = new Dropdown.OptionData {
-                    text = actionObject.Data.Id
-                };
-                dropdown.options.Add(option);
-            }
-        }
-        dropdown.value = 0;
-        if (dropdown.options.Count > 0 && CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.MetaModel3d.TypeEnum.Mesh) {
-            endEffectorDropdown.interactable = true;
-            dropdown.interactable = true;
-            EnableFocusControls();
-            dropdown.captionText.text = dropdown.options[dropdown.value].text;
+        Dropdown dropdown, endEffectorDropdown;
+        if (CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            dropdown = robotsList.GetComponent<Dropdown>();
+            endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
+        } else if (CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model != null) {
+            dropdown = robotsListVO.GetComponent<Dropdown>();
+            endEffectorDropdown = endEffectorListVO.GetComponent<Dropdown>();
         } else {
-            endEffectorDropdown.interactable = false;
-            dropdown.interactable = false;            
+            dropdown = null;
+            endEffectorDropdown = null;
+        }
+        if (dropdown != null) {
+            dropdown.options.Clear();
+            dropdown.captionText.text = "";
+            foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    Dropdown.OptionData option = new Dropdown.OptionData {
+                        text = actionObject.Data.Id
+                    };
+                    dropdown.options.Add(option);
+                }
+            }
+            dropdown.value = 0;
+        }
+
+        if (dropdown?.options.Count > 0) {
+            dropdown.captionText.text = dropdown.options[dropdown.value].text;
+            if (CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+                EnableFocusControls();
+                UpdatePositionBlockMesh.SetActive(true);
+                UpdatePositionBlockVO.SetActive(false);
+            } else if (CurrentObject.GetComponent<ActionObject2D>().ActionObjectMetadata.Model != null) {
+                UpdatePositionBlockMesh.SetActive(false);
+                UpdatePositionBlockVO.SetActive(true);
+            } else {
+                UpdatePositionBlockMesh.SetActive(false);
+                UpdatePositionBlockVO.SetActive(false);
+            }
+
+        } else {
+            
             DisableFocusControls();
+            UpdatePositionBlockMesh.SetActive(false);
+            UpdatePositionBlockVO.SetActive(false);
         }
 
         /*
@@ -97,27 +120,37 @@ public class InteractiveObjectMenu : MonoBehaviour {
     public void UpdateActionPointPosition() {
         Dropdown dropdown = robotsList.GetComponent<Dropdown>();
         Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
-        GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
+        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
     }
 
-    public void StartObjectFocusing() {
+    public async void StartObjectFocusing() {
         Dropdown robotList = robotsList.GetComponent<Dropdown>();
         Dropdown eeList = endEffectorList.GetComponent<Dropdown>();
         string robotId = robotList.options[robotList.value].text;
         string endEffector = eeList.options[eeList.value].text;
-        GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<ActionObject2D>().Data.Id, robotId, endEffector);
-        currentFocusPoint = 0;
-        UpdateCurrentPointLabel();
+        IO.Swagger.Model.FocusObjectStartResponse response = await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<ActionObject2D>().Data.Id, robotId, endEffector);
+        if (response.Result) {
+            currentFocusPoint = 0;
+            UpdateCurrentPointLabel();
+            GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
+            GetComponent<SimpleSideMenu>().overlayCloseOnPressed = false;
+        } else {
+            CurrentPointLabel.GetComponent<Text>().text = "";
+            GUIHelpers2D.Instance.ShowNotification("Failed to start object focusing: " + (response.Messages.Count > 0 ? response.Messages[0] : ""));
+            GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
+            GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
+        }
+
     }
 
     public void SavePosition() {
         if (currentFocusPoint < 0)
             return;
-        GameManager.Instance.SavePosition(CurrentObject.GetComponent<ActionObject2D>().Data.Id, currentFocusPoint);
+        Base.GameManager.Instance.SavePosition(CurrentObject.GetComponent<ActionObject2D>().Data.Id, currentFocusPoint);
     }
 
     public void FocusObjectDone() {
-        GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<ActionObject2D>().Data.Id);
+        Base.GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<ActionObject2D>().Data.Id);
         CurrentPointLabel.GetComponent<Text>().text = "";
     }
 

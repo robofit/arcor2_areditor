@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CameraMove : MonoBehaviour {
 
-    public GameObject Cam, MenuManager, ConnectionManager;
+    public GameObject Scene, ConnectionManager, ActionObjects;
     private bool moving;
     public bool DrawVirtualConnection;
     public GameObject VirtualPointer;
@@ -16,6 +16,11 @@ public class CameraMove : MonoBehaviour {
     // Update is called once per frame
     private void Update() {
         float speed = 10f;
+        if (!Base.GameManager.Instance.SceneInteractable || MenuManager.Instance.IsAnyMenuOpened())
+            return;
+
+        Scene.transform.localScale += new Vector3(Input.mouseScrollDelta.y * 0.3f, Input.mouseScrollDelta.y * 0.3f, 0);
+        //ActionObjects.transform.localScale -= new Vector3(Input.mouseScrollDelta.y * 0.1f, Input.mouseScrollDelta.y * 0.1f, 0);
         if (Input.GetMouseButtonUp(1)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
@@ -25,7 +30,7 @@ public class CameraMove : MonoBehaviour {
             if (DrawVirtualConnection) {
                 DrawVirtualConnection = false;
                 ConnectionManager.GetComponent<ConnectionManagerArcoro>().DestroyConnectionToMouse();
-                GameManager.Instance.UpdateProject();
+                Base.GameManager.Instance.UpdateProject();
             }
         } else if (Input.GetMouseButtonDown(0)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -36,7 +41,7 @@ public class CameraMove : MonoBehaviour {
         } else if (Input.GetMouseButtonUp(0)) {
             moving = false;
         } else if (moving && Input.GetMouseButton(0)) {
-            Cam.transform.position += new Vector3(Input.GetAxisRaw("Mouse X") * Time.deltaTime * speed, Input.GetAxisRaw("Mouse Y") * Time.deltaTime * speed, 0f);
+            Scene.transform.position += new Vector3(Input.GetAxisRaw("Mouse X") * Time.deltaTime * speed, Input.GetAxisRaw("Mouse Y") * Time.deltaTime * speed, 0f);
         }
 
 
