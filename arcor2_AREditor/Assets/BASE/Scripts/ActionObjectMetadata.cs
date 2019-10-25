@@ -8,10 +8,10 @@ namespace Base {
         private string type, description, baseObject;
         private bool actionsLoaded, robot;
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private ARServer.Models.ResponseGetObjectTypesModel model;
+        private IO.Swagger.Model.ObjectModel model;
 
 
-        public ActionObjectMetadata(string type, string description, string baseObject, ARServer.Models.ResponseGetObjectTypesModel model) {
+        public ActionObjectMetadata(string type, string description, string baseObject, IO.Swagger.Model.ObjectModel model) {
             Type = type;
             Description = description;
             BaseObject = baseObject;
@@ -37,7 +37,7 @@ namespace Base {
         public string BaseObject {
             get => baseObject; set => baseObject = value;
         }
-        public ResponseGetObjectTypesModel Model {
+        public IO.Swagger.Model.ObjectModel Model {
             get => model;
             set => model = value;
         }

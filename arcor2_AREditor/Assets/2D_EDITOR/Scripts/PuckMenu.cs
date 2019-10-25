@@ -82,7 +82,7 @@ public class PuckMenu : MonoBehaviour {
 
         int selectedValue = -1;
 
-        foreach (Base.ActionPoint ap in GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
             Dropdown.OptionData option = new Dropdown.OptionData {
                 text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id
             };
@@ -118,14 +118,14 @@ public class PuckMenu : MonoBehaviour {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
         parameter.Data.Value = newValue;
-        GameManager.Instance.UpdateProject();
+        Base.GameManager.Instance.UpdateProject();
     }
 
     public void OnChangeIntegerParameterHandler(string parameterId, long newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
         parameter.Data.Value = newValue;
-        GameManager.Instance.UpdateProject();
+        Base.GameManager.Instance.UpdateProject();
     }
 
 }

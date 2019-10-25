@@ -57,7 +57,6 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     }
 
     public void UpdateObjectsList(object sender, EventArgs eventArgs) {
-        Debug.LogError("UpdateObjectsList");
         string originalValue = "";
         if (ParentsList.GetComponent<Dropdown>().options.Count > 0) {
             originalValue = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
@@ -83,12 +82,8 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
 
     public void CreateNewObjectType() {
         string objectId = NameInput.GetComponent<InputField>().text;
-        ARServer.Models.RequestNewObjectTypeArgs requestNewObjectTypeArgs = new ARServer.Models.RequestNewObjectTypeArgs();
-        ARServer.Models.RequestNewObjectTypeArgsModel requestNewObjectTypeArgsModel = new ARServer.Models.RequestNewObjectTypeArgsModel();
-        requestNewObjectTypeArgs.Base = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
-        requestNewObjectTypeArgs.Description = "";
-        requestNewObjectTypeArgs.Type = objectId;
 
+        IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
         string modelTypeString = ModelsList.GetComponent<Dropdown>().options[ModelsList.GetComponent<Dropdown>().value].text;
         if (ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
             IO.Swagger.Model.MetaModel3d.TypeEnum modelType = new IO.Swagger.Model.MetaModel3d.TypeEnum();
@@ -99,39 +94,38 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
                     decimal sizeY = decimal.Parse(BoxY.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal sizeZ = decimal.Parse(BoxZ.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(objectId, sizeX, sizeY, sizeZ);
-                    requestNewObjectTypeArgsModel.Box = box;
+                    objectModel.Box = box;
                     break;
                 case "Sphere":
                     modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Sphere;
                     decimal radius = decimal.Parse(SphereRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Sphere sphere = new IO.Swagger.Model.Sphere(objectId, radius);
-                    requestNewObjectTypeArgsModel.Sphere = sphere;
+                    objectModel.Sphere = sphere;
                     break;
                 case "Cylinder":
                     modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Cylinder;
                     decimal cylinderRadius = decimal.Parse(CylinderRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal cylinderHeight = decimal.Parse(CylinderHeight.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Cylinder cylinder = new IO.Swagger.Model.Cylinder(objectId, cylinderHeight, cylinderRadius);
-                    requestNewObjectTypeArgsModel.Cylinder = cylinder;
+                    objectModel.Cylinder = cylinder;
                     break;
                 case "Mesh":
                     modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Mesh;
                     string meshId = MeshId.GetComponent<InputField>().text;
-                    ARServer.Models.RequestNewObjectTypeArgsModelMeshId mesh = new ARServer.Models.RequestNewObjectTypeArgsModelMeshId() {
+                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh() {
                         Id = meshId
                     };
-                    requestNewObjectTypeArgsModel.Mesh = mesh;
+                    objectModel.Mesh = mesh;
                     break;
                 default:
                     Debug.LogError("Model not defined!");
                     return;
             }
-            requestNewObjectTypeArgsModel.Type = modelType;
-
-            requestNewObjectTypeArgs.Model = requestNewObjectTypeArgsModel;
-
+            
         }
-        GameManager.Instance.CreateNewObjectType(requestNewObjectTypeArgs);
+        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
+                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text);
+        Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
     }
 
 }
