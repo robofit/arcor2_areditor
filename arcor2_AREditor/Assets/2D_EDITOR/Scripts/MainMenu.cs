@@ -13,6 +13,9 @@ public class MainMenu : MonoBehaviour {
     void Start() {
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
+        Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
+        Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
+        Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
     }
 
     // Update is called once per frame
@@ -76,19 +79,24 @@ public class MainMenu : MonoBehaviour {
         ActionObjects.SetActive(false);
     }
 
-    public void ConnectedToServer(string URI) {
+    public void ConnectToServer() {
+        Base.GameManager.Instance.ConnectToSever(GetConnectionDomain(), GetConnectionPort());
+    }
+
+
+    public void ConnectedToServer(object sender, Base.StringEventArgs e) {
 
         HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
         NewProjectMenu.SetActive(true);
         LoadProjectMenu.SetActive(true);
-        string s = "Connected to: " + URI;
+        string s = "Connected to: " + e.Data;
         Debug.Log(s);
         ConnectionStatus.GetComponentInChildren<Text>().text = s;
     }
 
-    public void DisconnectedFromServer() {
+    public void DisconnectedFromServer(object sender, EventArgs e) {
         HideDynamicContent();
         HideProjectControlButtons();
         ShowConnectionControl();
@@ -104,10 +112,13 @@ public class MainMenu : MonoBehaviour {
     public int GetConnectionPort() {
         return int.Parse(PortInput.GetComponentInChildren<InputField>().text);
     }
+    public void ShowNewObjectTypeMenu() {
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
+    }
 
-    public void ConnectingToSever(string URI) {
+    public void ConnectingToServer(object sender, Base.StringEventArgs e) {
         ConnectionControl.GetComponentInChildren<Button>().interactable = false;
-        string s = "Connecting to server: " + URI;
+        string s = "Connecting to server: " + e.Data;
         ConnectionStatus.GetComponentInChildren<Text>().text = s;
         Debug.Log(s);
     }
