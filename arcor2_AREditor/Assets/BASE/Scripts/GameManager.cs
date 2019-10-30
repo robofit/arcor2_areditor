@@ -6,7 +6,20 @@ using System.Threading.Tasks;
 
 namespace Base {
 
+    public class StringEventArgs : EventArgs {
+        public string Data {
+            get; set;
+        }
+
+        public StringEventArgs(string data) {
+            Data = data;
+        }
+    }
+
     public class GameManager : Singleton<GameManager> {
+
+        public delegate void StringEventHandler(object sender, StringEventArgs args);
+
         public event EventHandler OnSaveProject;
         public event EventHandler OnLoadProject;
         public event EventHandler OnRunProject;
@@ -15,7 +28,11 @@ namespace Base {
         public event EventHandler OnResumeProject;
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnSceneListChanged;
+        public event StringEventHandler OnConnectedToServer;
+        public event StringEventHandler OnConnectingToServer;
+        public event EventHandler OnDisconnectedFromServer;
 
+               
 
         public GameObject ActionObjects, Scene, SpawnPoint;
         public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
@@ -59,26 +76,27 @@ namespace Base {
         }
 
         public void UpdateScene() {
-            Scene.GetComponent<Base.Scene>().Data.Objects.Clear();
-            foreach (Base.ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>().ToList()) {
-                Scene.GetComponent<Base.Scene>().Data.Objects.Add(actionObject.Data);
+            Scene.GetComponent<Scene>().Data.Objects.Clear();
+            foreach (ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<ActionObject>().ToList()) {
+                Scene.GetComponent<Scene>().Data.Objects.Add(actionObject.Data);
             }
-            Base.WebsocketManager.Instance.UpdateScene(Scene.GetComponent<Base.Scene>().Data);
+            WebsocketManager.Instance.UpdateScene(Scene.GetComponent<Scene>().Data);
         }
-
+        
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    MenuManager.Instance.MainMenu.GetComponent<MainMenu>().ConnectedToServer(Base.WebsocketManager.Instance.APIDomainWS);
+                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     Scenes = await WebsocketManager.Instance.LoadScenes();
-                    OnSceneListChanged.Invoke(this, EventArgs.Empty);
+                    OnSceneListChanged?.Invoke(this, EventArgs.Empty);
+                    
                     Projects = await WebsocketManager.Instance.LoadProjects();
-                    OnProjectsListChanged.Invoke(this, EventArgs.Empty);
+                    OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     WebsocketManager.Instance.UpdateObjectTypes();
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     Scene.SetActive(false);
-                    MenuManager.Instance.MainMenu.GetComponent<MainMenu>().DisconnectedFromServer();
+                    OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.IdDesc>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
                     break;
@@ -86,21 +104,19 @@ namespace Base {
         }
 
        
-        public void ConnectToSever() {
-            string domain = MenuManager.Instance.MainMenu.GetComponent<MainMenu>().GetConnectionDomain();
-            int port = MenuManager.Instance.MainMenu.GetComponent<MainMenu>().GetConnectionPort();
-            MenuManager.Instance.MainMenu.GetComponent<MainMenu>().ConnectingToSever(Base.WebsocketManager.Instance.GetWSURI(domain, port));
+        public void ConnectToSever(string domain, int port) {
+            OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
             Scene.SetActive(true);
             WebsocketManager.Instance.ConnectToServer(domain, port);
 
         }
 
         public void DisconnectFromSever() {
-            Base.WebsocketManager.Instance.DisconnectFromSever();
+            WebsocketManager.Instance.DisconnectFromSever();
         }
 
         public GameObject SpawnActionObject(string type, bool updateScene = true, string id = "") {
-            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata aom)) {
+            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
             GameObject obj;
@@ -125,17 +141,16 @@ namespace Base {
 
             obj.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
             obj.transform.position = SpawnPoint.transform.position;
-            obj.GetComponent<Base.ActionObject>().Data.Type = type;
+            obj.GetComponent<ActionObject>().Data.Type = type;
             if (id == "")
-                obj.GetComponent<Base.ActionObject>().Data.Id = GetFreeIOName(type);
+                obj.GetComponent<ActionObject>().Data.Id = GetFreeIOName(type);
             else
-                obj.GetComponent<Base.ActionObject>().Data.Id = id;
-            //obj.GetComponent<Base.ActionObject>().Data.Pose = DataHelper.CreatePose(obj.GetComponent<Base.ActionObject>().GetScenePosition, )
-            obj.GetComponent<Base.ActionObject>().SetScenePosition(transform.position);
-            obj.GetComponent<Base.ActionObject>().SetSceneOrientation(transform.rotation);
+                obj.GetComponent<ActionObject>().Data.Id = id;
+            obj.GetComponent<ActionObject>().SetScenePosition(transform.position);
+            obj.GetComponent<ActionObject>().SetSceneOrientation(transform.rotation);
 
 
-            obj.GetComponent<Base.ActionObject>().ActionObjectMetadata = aom;
+            obj.GetComponent<ActionObject>().ActionObjectMetadata = aom;
             if (updateScene)
                 UpdateScene();
             return obj;
@@ -147,7 +162,7 @@ namespace Base {
             string freeName = ioType;
             do {
                 hasFreeName = true;
-                foreach (Base.ActionObject io in ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+                foreach (ActionObject io in ActionObjects.GetComponentsInChildren<ActionObject>()) {
                     if (io.Data.Id == freeName) {
                         hasFreeName = false;
                     }
@@ -159,14 +174,14 @@ namespace Base {
             return freeName;
         }
 
-        public GameObject SpawnPuck(string action_id, Base.ActionPoint ap, Base.ActionObject actionObject, bool generateData, bool updateProject = true, string puck_id = "") {
-            if (!actionObject.ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out Base.ActionMetadata am)) {
+        public GameObject SpawnPuck(string action_id, ActionPoint ap, ActionObject actionObject, bool generateData, bool updateProject = true, string puck_id = "") {
+            if (!actionObject.ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out ActionMetadata am)) {
                 Debug.LogError("Action " + action_id + " not supported by action object " + ap.ActionObject.name);
                 return null;
             }
             GameObject puck = Instantiate(PuckPrefab);
             puck.transform.SetParent(ap.transform.Find("Pucks"));
-            puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<Base.ActionPoint>().PuckCounter++ * 0.8f + 1f, 0f);
+            puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.8f + 1f, 0f);
             const string glyphs = "0123456789";
             string newId = puck_id;
             if (newId == "") {
@@ -175,7 +190,7 @@ namespace Base {
                     newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
                 }
             }
-            puck.GetComponent<Puck2D>().Init(newId, am, ap, actionObject, generateData, updateProject);
+            puck.GetComponent<Action>().Init(newId, am, ap, actionObject, generateData, updateProject);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
             if (updateProject) {
@@ -184,7 +199,7 @@ namespace Base {
             return puck;
         }
 
-        public GameObject SpawnActionPoint(Base.ActionObject actionObject, bool updateProject = true) {
+        public GameObject SpawnActionPoint(ActionObject actionObject, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.transform.Find("ActionPoints"));
             AP.transform.position = actionObject.transform.Find("ActionPoints").position + new Vector3(1f, 0f, 0f);
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -194,10 +209,10 @@ namespace Base {
             c.transform.SetParent(ConnectionManager.Instance.transform);
             c.GetComponent<Connection>().target[0] = actionObject.GetComponent<RectTransform>();
             c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
-            AP.GetComponent<Base.ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
-            AP.GetComponent<Base.ActionPoint>().SetActionObject(actionObject);
-            AP.GetComponent<Base.ActionPoint>().SetScenePosition(transform.position);
-            AP.GetComponent<Base.ActionPoint>().SetSceneOrientation(transform.rotation);
+            AP.GetComponent<ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
+            AP.GetComponent<ActionPoint>().SetActionObject(actionObject);
+            AP.GetComponent<ActionPoint>().SetScenePosition(transform.position);
+            AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
             if (updateProject)
                 UpdateProject();
             return AP;
@@ -211,20 +226,20 @@ namespace Base {
                 return;
             }
             Scene.GetComponent<Scene>().Data = scene;
-            Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
+            Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
             if (loadedScene != scene.Id) {
-                foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+                foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
                     Destroy(ao.gameObject);
                 }
                 loadedScene = scene.Id;
             } else {
-                foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+                foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
                     actionObjects[ao.Data.Id] = ao;
                 }
             }
 
             foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
-                if (actionObjects.TryGetValue(actionObject.Id, out Base.ActionObject ao)) {
+                if (actionObjects.TryGetValue(actionObject.Id, out ActionObject ao)) {
                     if (actionObject.Type != ao.Data.Type) {
                         // type has changed, what now? delete object and create a new one?
                         Destroy(ao.gameObject);
@@ -237,8 +252,8 @@ namespace Base {
                 } else {
                     GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
                     new_ao.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
-                    new_ao.GetComponent<Base.ActionObject>().Data = actionObject;
-                    new_ao.gameObject.transform.position = new_ao.GetComponent<Base.ActionObject>().GetScenePosition();
+                    new_ao.GetComponent<ActionObject>().Data = actionObject;
+                    new_ao.gameObject.transform.position = new_ao.GetComponent<ActionObject>().GetScenePosition();
                 }
             }
 
@@ -260,40 +275,40 @@ namespace Base {
 
             currentProject = project;
 
-            Dictionary<string, Base.ActionObject> actionObjects = new Dictionary<string, Base.ActionObject>();
+            Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
 
-            foreach (Base.ActionObject ao in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+            foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
                 actionObjects[ao.Data.Id] = ao;
             }
 
             Dictionary<string, string> connections = new Dictionary<string, string>();
 
             foreach (IO.Swagger.Model.ProjectObject projectObject in currentProject.Objects) {
-                if (actionObjects.TryGetValue(projectObject.Id, out Base.ActionObject actionObject)) {
+                if (actionObjects.TryGetValue(projectObject.Id, out ActionObject actionObject)) {
 
-                    foreach (Base.ActionPoint ap in actionObject.transform.GetComponentsInChildren<Base.ActionPoint>()) {
+                    foreach (ActionPoint ap in actionObject.transform.GetComponentsInChildren<ActionPoint>()) {
                         ap.DeleteAP(false);
                     }
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
                         GameObject actionPoint = SpawnActionPoint(actionObject, false);
-                        actionPoint.GetComponent<Base.ActionPoint>().Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
+                        actionPoint.GetComponent<ActionPoint>().Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
 
-                        actionPoint.transform.position = actionPoint.GetComponent<Base.ActionPoint>().GetScenePosition();
+                        actionPoint.transform.position = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                             string originalIOName = projectAction.Type.Split('/').First();
                             string action_type = projectAction.Type.Split('/').Last();
-                            if (actionObjects.TryGetValue(originalIOName, out Base.ActionObject originalActionObject)) {
-                                GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<Base.ActionPoint>(), originalActionObject, false, false, projectAction.Id);
-                                action.GetComponent<Base.Action>().Data = projectAction;
+                            if (actionObjects.TryGetValue(originalIOName, out ActionObject originalActionObject)) {
+                                GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<ActionPoint>(), originalActionObject, false, false, projectAction.Id);
+                                action.GetComponent<Action>().Data = projectAction;
 
                                 foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
-                                    if (action.GetComponent<Base.Action>().Metadata.Parameters.TryGetValue(projectActionParameter.Id, out Base.ActionParameterMetadata actionParameterMetadata)) {
-                                        Base.ActionParameter actionParameter = new Base.ActionParameter {
+                                    if (action.GetComponent<Action>().Metadata.Parameters.TryGetValue(projectActionParameter.Id, out ActionParameterMetadata actionParameterMetadata)) {
+                                        ActionParameter actionParameter = new ActionParameter {
                                             ActionParameterMetadata = actionParameterMetadata,
                                             Data = projectActionParameter
                                         };
-                                        action.GetComponent<Base.Action>().Parameters.Add(actionParameter.Data.Id, actionParameter);
+                                        action.GetComponent<Action>().Parameters.Add(actionParameter.Data.Id, actionParameter);
                                     }
                                 }
 
@@ -301,11 +316,11 @@ namespace Base {
                                     if (actionIO.Default != "start") {
                                         connections[projectAction.Id] = actionIO.Default;
                                     }
-                                    action.GetComponentInChildren<Base.PuckInput>().Data = actionIO;
+                                    action.GetComponentInChildren<PuckInput>().Data = actionIO;
                                 }
 
                                 foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                                    action.GetComponentInChildren<Base.PuckOutput>().Data = actionIO;
+                                    action.GetComponentInChildren<PuckOutput>().Data = actionIO;
                                 }
 
                             }
@@ -320,13 +335,13 @@ namespace Base {
 
             }
             foreach (KeyValuePair<string, string> connection in connections) {
-                Base.PuckInput input = FindPuck(connection.Key).transform.GetComponentInChildren<Base.PuckInput>();
-                Base.PuckOutput output = FindPuck(connection.Value).transform.GetComponentInChildren<Base.PuckOutput>();
+                PuckInput input = FindPuck(connection.Key).transform.GetComponentInChildren<PuckInput>();
+                PuckOutput output = FindPuck(connection.Value).transform.GetComponentInChildren<PuckOutput>();
                 GameObject c = Instantiate(ConnectionPrefab);
                 c.transform.SetParent(ConnectionManager.Instance.transform);
                 c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
                 c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
-                //input.GetComponentInParent<Base.Action>().Data.
+                //input.GetComponentInParent<Action>().Data.
                 input.Connection = c.GetComponent<Connection>();
                 output.Connection = c.GetComponent<Connection>();
             }
@@ -334,7 +349,7 @@ namespace Base {
 
         public GameObject FindPuck(string id) {
 
-            foreach (Base.Action action in ActionObjects.GetComponentsInChildren<Base.Action>()) {
+            foreach (Action action in ActionObjects.GetComponentsInChildren<Action>()) {
                 if (action.Data.Id == id)
                     return action.gameObject;
             }
@@ -344,25 +359,25 @@ namespace Base {
 
 
         public void UpdateProject() {
-            List<Base.ActionObject> list = new List<Base.ActionObject>();
-            list.AddRange(ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>());
+            List<ActionObject> list = new List<ActionObject>();
+            list.AddRange(ActionObjects.transform.GetComponentsInChildren<ActionObject>());
             currentProject.Objects.Clear();
-            currentProject.SceneId = Scene.GetComponent<Base.Scene>().Data.Id;
-            foreach (Base.ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<Base.ActionObject>()) {
+            currentProject.SceneId = Scene.GetComponent<Scene>().Data.Id;
+            foreach (ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
                 IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
-                foreach (Base.ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<Base.ActionPoint>()) {
+                foreach (ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<ActionPoint>()) {
                     IO.Swagger.Model.ProjectActionPoint projectActionPoint = DataHelper.ActionPointToProjectActionPoint(actionPoint.Data);
-                    foreach (Base.Action action in actionPoint.GetComponentsInChildren<Base.Action>()) {
+                    foreach (Action action in actionPoint.GetComponentsInChildren<Action>()) {
                         IO.Swagger.Model.Action projectAction = action.Data;
                         projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
-                        foreach (Base.ActionParameter parameter in action.Parameters.Values) {
+                        foreach (ActionParameter parameter in action.Parameters.Values) {
                             IO.Swagger.Model.ActionParameter projectParameter = parameter.Data;
                             projectAction.Parameters.Add(projectParameter);
                         }
                         projectAction.Inputs = new List<IO.Swagger.Model.ActionIO>();
                         projectAction.Outputs = new List<IO.Swagger.Model.ActionIO>();
-                        foreach (Base.InputOutput inputOutput in action.GetComponentsInChildren<Base.InputOutput>()) {
-                            if (inputOutput.GetType() == typeof(Base.PuckInput)) {
+                        foreach (InputOutput inputOutput in action.GetComponentsInChildren<InputOutput>()) {
+                            if (inputOutput.GetType() == typeof(PuckInput)) {
                                 projectAction.Inputs.Add(inputOutput.Data);
                             } else {
                                 projectAction.Outputs.Add(inputOutput.Data);
@@ -377,26 +392,26 @@ namespace Base {
             }
 
 
-            Base.WebsocketManager.Instance.UpdateProject(currentProject);
+            WebsocketManager.Instance.UpdateProject(currentProject);
         }
         public async Task LoadScenes() {
             Scenes = await WebsocketManager.Instance.LoadScenes();
-            OnSceneListChanged.Invoke(this, EventArgs.Empty);
+            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task LoadProjects() {
             Scenes = await WebsocketManager.Instance.LoadProjects();
-            OnProjectsListChanged.Invoke(this, EventArgs.Empty);
+            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
-            IO.Swagger.Model.SaveSceneResponse response = await Base.WebsocketManager.Instance.SaveScene();
+            IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
             LoadScenes();
             return response;
         }
 
         public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
-            IO.Swagger.Model.SaveProjectResponse response = await Base.WebsocketManager.Instance.SaveProject();
+            IO.Swagger.Model.SaveProjectResponse response = await WebsocketManager.Instance.SaveProject();
             LoadProjects();
             OnSaveProject?.Invoke(this, EventArgs.Empty);
             return response;
@@ -408,49 +423,46 @@ namespace Base {
         }
 
         public void RunProject() {
-            Base.WebsocketManager.Instance.RunProject(currentProject.Id);
+            WebsocketManager.Instance.RunProject(currentProject.Id);
             OnRunProject?.Invoke(this, EventArgs.Empty);
         }
 
         public void StopProject() {
-            Base.WebsocketManager.Instance.StopProject();
+            WebsocketManager.Instance.StopProject();
             OnStopProject?.Invoke(this, EventArgs.Empty);
         }
 
         public void PauseProject() {
-            Base.WebsocketManager.Instance.PauseProject();
+            WebsocketManager.Instance.PauseProject();
             OnPauseProject?.Invoke(this, EventArgs.Empty);
         }
 
 
         public void ResumeProject() {
-            Base.WebsocketManager.Instance.ResumeProject();
+            WebsocketManager.Instance.ResumeProject();
             OnResumeProject?.Invoke(this, EventArgs.Empty);
         }
 
-        public void ShowNewObjectTypeMenu() {
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
-        }
 
         public void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
-            Base.WebsocketManager.Instance.CreateNewObjectType(objectType);
+            WebsocketManager.Instance.CreateNewObjectType(objectType);
         }
 
         public void ExitApp() => Application.Quit();
 
-        public void UpdateActionPointPosition(Base.ActionPoint ap, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
-        public void UpdateActionObjectPosition(Base.ActionObject ao, string robotId, string endEffectorId) => Base.WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
+        public void UpdateActionPointPosition(ActionPoint ap, string robotId, string endEffectorId) => WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
+        public void UpdateActionObjectPosition(ActionObject ao, string robotId, string endEffectorId) => WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
 
         public async Task<IO.Swagger.Model.FocusObjectStartResponse> StartObjectFocusing(string objectId, string robotId, string endEffector) {
-            return await Base.WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
+            return await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
         }
 
         public void SavePosition(string objectId, int pointIdx) {
-            Base.WebsocketManager.Instance.SavePosition(objectId, pointIdx);
+            WebsocketManager.Instance.SavePosition(objectId, pointIdx);
         }
 
         public void FocusObjectDone(string objectId) {
-            Base.WebsocketManager.Instance.FocusObjectDone(objectId);
+            WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
         public void NewProject(string name, string sceneId, string robotSystemId) {
