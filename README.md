@@ -5,8 +5,8 @@ ARCOR2 AR Editor
 ### Instalation
  - clone this repo
  - get submodules:
-   - git submodules init
-   - git submodules update
+   - git submodule init
+   - git submodule update
  - create symlink of the submodules to the Assets folder:
    - run link_submodules.bat (on Windows)
    - run link_submodules.sh (on Linux)
