@@ -27,7 +27,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     // Start is called before the first frame update
     void Start() {
         //TODO: find out why start is called twice
-        ActionsManager.Instance.OnActionObjectUpdate += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
 
         Debug.LogError("start");
     }
@@ -62,7 +62,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
             originalValue = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
             ParentsList.GetComponent<Dropdown>().options.Clear();
         }         
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in ActionsManager.Instance.ActionObjectMetadata.Values) {
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
             ParentsList.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData(actionObjectMetadata.Type));
         }
         if (originalValue != "") {

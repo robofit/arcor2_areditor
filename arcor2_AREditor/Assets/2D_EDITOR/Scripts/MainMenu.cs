@@ -16,6 +16,7 @@ public class MainMenu : MonoBehaviour {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
+        Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
     }
 
     // Update is called once per frame
@@ -24,7 +25,7 @@ public class MainMenu : MonoBehaviour {
     }
 
 
-    void ActionObjectsUpdated() {
+    void ActionObjectsUpdated(object sender, EventArgs e) {
 
         foreach (Button b in ActionObjectsContent.GetComponentsInChildren<Button>()) {
             if (b.gameObject.tag == "PersistentButton") {
@@ -34,7 +35,7 @@ public class MainMenu : MonoBehaviour {
             }
 
         }
-        foreach (string ao_name in ActionsManager.Instance.ActionObjectMetadata.Keys) {
+        foreach (string ao_name in Base.ActionsManager.Instance.ActionObjectMetadata.Keys) {
             GameObject btnGO = Instantiate(ButtonPrefab);
             btnGO.transform.SetParent(ActionObjectsContent.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
@@ -173,5 +174,30 @@ public class MainMenu : MonoBehaviour {
         Base.GameManager.Instance.NewProject(name, scene, robotSystemId);
     }
 
-   
+    public void RunProject() {
+        Base.GameManager.Instance.RunProject();
+    }
+
+    public void StopProject() {
+        Base.GameManager.Instance.StopProject();
+    }
+
+
+    public void PauseProject() {
+        Base.GameManager.Instance.PauseProject();
+    }
+
+    public void ResumeProject() {
+        Base.GameManager.Instance.ResumeProject();
+    }
+
+    public void DisconnectFromSever() {
+        Base.GameManager.Instance.DisconnectFromSever();
+    }
+
+    public void ExitApp() {
+        Base.GameManager.Instance.ExitApp();
+    }
+
+
 }
