@@ -211,7 +211,7 @@ namespace Base {
             c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
             AP.GetComponent<ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
             AP.GetComponent<ActionPoint>().SetActionObject(actionObject);
-            AP.GetComponent<ActionPoint>().SetScenePosition(transform.position);
+            AP.GetComponent<ActionPoint>().SetScenePosition(transform.localPosition);
             AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
             if (updateProject)
                 UpdateProject();
@@ -299,7 +299,7 @@ namespace Base {
                         GameObject actionPoint = SpawnActionPoint(actionObject, false);
                         actionPoint.GetComponent<ActionPoint>().Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
 
-                        actionPoint.transform.position = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
+                        actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                             string originalIOName = projectAction.Type.Split('/').First();
