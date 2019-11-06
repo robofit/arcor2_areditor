@@ -30,7 +30,9 @@ public class ActionObject3D : Base.ActionObject
     }
 
     public override void OnClick() {
-        Debug.Log("Touched");
+        MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Data.Id);
+        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
+        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().UpdateMenu();
     }
 
     public override void UpdateId(string newId) {
