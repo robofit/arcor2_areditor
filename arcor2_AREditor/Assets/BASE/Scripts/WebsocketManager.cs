@@ -194,7 +194,6 @@ namespace Base {
                 request = ""
             };
             Debug.Log("Recieved new data: " + data);
-            Debug.LogError(data);
             var dispatch = JsonConvert.DeserializeAnonymousType(data, dispatchType);
             
             JSONObject jsonData = new JSONObject(data);

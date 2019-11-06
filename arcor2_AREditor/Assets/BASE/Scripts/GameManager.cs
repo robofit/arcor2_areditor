@@ -95,7 +95,7 @@ namespace Base {
                     WebsocketManager.Instance.UpdateObjectTypes();
                     break;
                 case ConnectionStatusEnum.Disconnected:
-                    Scene.SetActive(false);
+                    //Scene.SetActive(false);
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.IdDesc>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -139,18 +139,18 @@ namespace Base {
                     break;
             }
 
-            obj.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            
             obj.transform.position = SpawnPoint.transform.position;
-            obj.GetComponent<ActionObject>().Data.Type = type;
+            obj.GetComponentInChildren<ActionObject>().Data.Type = type;
             if (id == "")
-                obj.GetComponent<ActionObject>().Data.Id = GetFreeIOName(type);
+                obj.GetComponentInChildren<ActionObject>().Data.Id = GetFreeIOName(type);
             else
-                obj.GetComponent<ActionObject>().Data.Id = id;
-            obj.GetComponent<ActionObject>().SetScenePosition(transform.position);
-            obj.GetComponent<ActionObject>().SetSceneOrientation(transform.rotation);
+                obj.GetComponentInChildren<ActionObject>().Data.Id = id;
+            obj.GetComponentInChildren<ActionObject>().SetScenePosition(obj.transform.position);
+            obj.GetComponentInChildren<ActionObject>().SetSceneOrientation(obj.transform.rotation);
 
 
-            obj.GetComponent<ActionObject>().ActionObjectMetadata = aom;
+            obj.GetComponentInChildren<ActionObject>().ActionObjectMetadata = aom;
             if (updateScene)
                 UpdateScene();
             return obj;
@@ -249,12 +249,18 @@ namespace Base {
                     ao.Data = actionObject;
                     ao.gameObject.transform.position = ao.GetScenePosition();
                     ao.gameObject.transform.rotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
+                    actionObjects.Remove(actionObject.Id);
                 } else {
                     GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
                     new_ao.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
-                    new_ao.GetComponent<ActionObject>().Data = actionObject;
-                    new_ao.gameObject.transform.position = new_ao.GetComponent<ActionObject>().GetScenePosition();
+                    new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
+                    new_ao.gameObject.transform.position = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
                 }
+            }
+
+            // remove leftovers
+            foreach (ActionObject ao in actionObjects.Values) {
+                Destroy(ao.gameObject);
             }
 
 
