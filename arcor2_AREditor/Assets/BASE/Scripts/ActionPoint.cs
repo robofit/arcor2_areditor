@@ -19,7 +19,7 @@ namespace Base {
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
-                SetScenePosition(transform.position);
+                SetScenePosition(transform.localPosition);
                 transform.hasChanged = false;
             }
         }

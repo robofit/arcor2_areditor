@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace Base {
-    public abstract class ActionObject : MonoBehaviour {
+    public abstract class ActionObject : Clickable {
         [System.NonSerialized]
         public GameObject InteractiveObjectMenu;
         [System.NonSerialized]
@@ -19,13 +19,12 @@ namespace Base {
             
         }
 
-        private void Start() {
-            ActionPoints = transform.Find("ActionPoints").gameObject;
+        protected virtual void Start() {
             InteractiveObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
-        public void UpdateId(string newId) {
+        public virtual void UpdateId(string newId) {
             Data.Id = newId;
         }
 
@@ -54,6 +53,21 @@ namespace Base {
         public abstract Quaternion GetSceneOrientation();
 
         public abstract void SetSceneOrientation(Quaternion orientation);
+
+        public void SetWorldPosition(Vector3 position) {
+            Data.Pose.Position = DataHelper.Vector3ToPosition(position);
+        }
+
+        public Vector3 GetWorldPosition() {
+            return DataHelper.PositionToVector3(Data.Pose.Position);
+        }
+        public void SetWorldOrientation(Quaternion orientation) {
+            Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+        }
+
+        public Quaternion GetWorldOrientation() {
+            return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+        }
 
     }
 

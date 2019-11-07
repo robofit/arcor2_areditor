@@ -6,6 +6,11 @@ public class ActionObject2D : Base.ActionObject {
 
     private Vector3 offset;
 
+    protected override void Start() {
+        base.Start();
+        transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+    }
+
     private void Touch() {
         MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Data.Id);
         InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
@@ -22,6 +27,9 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     private void OnMouseDrag() {
+        if (!Base.GameManager.Instance.SceneInteractable || MenuManager.Instance.IsAnyMenuOpened()) {
+            return;
+        }
         Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f);
         transform.position = Camera.main.ScreenToWorldPoint(newPosition) + offset;
     }
@@ -52,6 +60,10 @@ public class ActionObject2D : Base.ActionObject {
 
     public override void SetSceneOrientation(Quaternion orientation) {
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+    }
+
+    public override void OnClick() {
+
     }
 }
 
