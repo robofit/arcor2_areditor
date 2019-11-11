@@ -17,7 +17,7 @@ public class ActionObject2D : Base.ActionObject {
         InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().UpdateMenu();
     }
 
-    private void OnMouseDown() {
+    public override void OnMouseDown() {
         if (Base.GameManager.Instance.SceneInteractable && !MenuManager.Instance.IsAnyMenuOpened()) {
             offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f));
         } else {
