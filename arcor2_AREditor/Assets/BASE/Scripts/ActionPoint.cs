@@ -33,7 +33,9 @@ namespace Base {
             foreach (Action action in GetComponentsInChildren<Action>()) {
                 action.DeleteAction(false);
             }
-            Destroy(ConnectionToIO.gameObject);
+            if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
+                Destroy(ConnectionToIO.gameObject);
+            }
             gameObject.SetActive(false);
             Destroy(gameObject);
 

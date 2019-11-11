@@ -36,13 +36,14 @@ public class ActionPoint3D : Base.ActionPoint {
     public override Vector3 GetScenePosition() {
         /*return Base.GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
              new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));*/
-        return Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1));
+        Vector3 v = DataHelper.PositionToVector3(Data.Pose.Position);
+        return new Vector3(v.x, v.z, v.y);
     }
 
     public override void SetScenePosition(Vector3 position) {
         /* Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(Base.GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
              new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));*/
-        Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(position, new Vector3(0.001f, 0.001f, 1)));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
     }
 
     public override Quaternion GetSceneOrientation() {

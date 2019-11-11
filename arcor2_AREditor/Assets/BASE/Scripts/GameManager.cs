@@ -81,6 +81,7 @@ namespace Base {
                 Scene.GetComponent<Scene>().Data.Objects.Add(actionObject.Data);
             }
             WebsocketManager.Instance.UpdateScene(Scene.GetComponent<Scene>().Data);
+            //UpdateProject();
         }
         
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
@@ -201,7 +202,7 @@ namespace Base {
 
         public GameObject SpawnActionPoint(ActionObject actionObject, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.transform.Find("ActionPoints"));
-            AP.transform.position = actionObject.transform.Find("ActionPoints").position + new Vector3(1f, 0f, 0f);
+            AP.transform.localPosition = new Vector3(0.15f, 0, 0); // 15cm next to action object            
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
 
             GameObject c = Instantiate(ConnectionPrefab);
@@ -209,7 +210,7 @@ namespace Base {
             c.transform.SetParent(ConnectionManager.Instance.transform);
             c.GetComponent<Connection>().target[0] = actionObject.GetComponent<RectTransform>();
             c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
-            AP.GetComponent<ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
+            //AP.GetComponent<ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
             AP.GetComponent<ActionPoint>().SetActionObject(actionObject);
             AP.GetComponent<ActionPoint>().SetScenePosition(transform.localPosition);
             AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
@@ -237,7 +238,6 @@ namespace Base {
                     actionObjects[ao.Data.Id] = ao;
                 }
             }
-
             foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
                 if (actionObjects.TryGetValue(actionObject.Id, out ActionObject ao)) {
                     if (actionObject.Type != ao.Data.Type) {
@@ -247,14 +247,14 @@ namespace Base {
                     }
 
                     ao.Data = actionObject;
-                    ao.gameObject.transform.position = ao.GetScenePosition();
-                    ao.gameObject.transform.rotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
+                    ao.gameObject.transform.localPosition = ao.GetScenePosition();
+                    ao.gameObject.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
                     actionObjects.Remove(actionObject.Id);
                 } else {
                     GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
                     new_ao.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
                     new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
-                    new_ao.gameObject.transform.position = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
+                    new_ao.gameObject.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
                 }
             }
 

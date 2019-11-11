@@ -40,4 +40,8 @@ public class ActionObject3D : Base.ActionObject
         ActionObjectName.GetComponent<TextMeshPro>().text = newId;
     }
 
+    public override void OnMouseDown() {
+        Debug.Log("onMouseDown");
+        OnClick();
+    }
 }
