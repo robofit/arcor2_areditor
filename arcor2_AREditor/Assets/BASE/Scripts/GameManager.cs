@@ -54,8 +54,10 @@ namespace Base {
 
         public ConnectionStatusEnum ConnectionStatus {
             get => connectionStatus; set {
-                connectionStatus = value;
-                OnConnectionStatusChanged(connectionStatus);
+                if (connectionStatus != value) {
+                    connectionStatus = value;
+                    OnConnectionStatusChanged(connectionStatus);
+                }
             }
         }
 
@@ -87,13 +89,14 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     Scenes = await WebsocketManager.Instance.LoadScenes();
-                    OnSceneListChanged?.Invoke(this, EventArgs.Empty);
-                    
+                     
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     WebsocketManager.Instance.UpdateObjectTypes();
+                    UpdateServices();
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     //Scene.SetActive(false);
@@ -116,6 +119,27 @@ namespace Base {
             WebsocketManager.Instance.DisconnectFromSever();
         }
 
+        public async void UpdateServices() {
+            ServiceManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
+        }
+
+        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
+            IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+            IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type);
+            return await WebsocketManager.Instance.AddObjectToScene(sceneObject: sceneObject);
+        }
+
+        public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
+            //IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+            //IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type);
+            return await WebsocketManager.Instance.AutoAddObjectToScene(type);
+        }
+
+        public async Task<IO.Swagger.Model.AddServiceToSceneResponse> AddServiceToScene(string type, string configId = "") {
+            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
+            return await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
+        }
+
         public GameObject SpawnActionObject(string type, bool updateScene = true, string id = "") {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
@@ -127,6 +151,9 @@ namespace Base {
                     obj = Instantiate(RobotPrefab, ActionObjects.transform);
                     break;
                 case "Box":
+                    obj = Instantiate(BoxPrefab, ActionObjects.transform);
+                    break;
+                case "Box2":
                     obj = Instantiate(BoxPrefab, ActionObjects.transform);
                     break;
                 case "Tester":
@@ -141,14 +168,14 @@ namespace Base {
             }
 
             
-            obj.transform.position = SpawnPoint.transform.position;
+            //obj.transform.position = SpawnPoint.transform.position;
             obj.GetComponentInChildren<ActionObject>().Data.Type = type;
             if (id == "")
                 obj.GetComponentInChildren<ActionObject>().Data.Id = GetFreeIOName(type);
             else
                 obj.GetComponentInChildren<ActionObject>().Data.Id = id;
-            obj.GetComponentInChildren<ActionObject>().SetScenePosition(obj.transform.position);
-            obj.GetComponentInChildren<ActionObject>().SetSceneOrientation(obj.transform.rotation);
+            obj.GetComponentInChildren<ActionObject>().SetScenePosition(obj.transform.localPosition);
+            obj.GetComponentInChildren<ActionObject>().SetSceneOrientation(obj.transform.localRotation);
 
 
             obj.GetComponentInChildren<ActionObject>().ActionObjectMetadata = aom;
@@ -224,8 +251,10 @@ namespace Base {
             newScene = null;
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
+
                 return;
             }
+
             Scene.GetComponent<Scene>().Data = scene;
             Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
             if (loadedScene != scene.Id) {
@@ -238,6 +267,7 @@ namespace Base {
                     actionObjects[ao.Data.Id] = ao;
                 }
             }
+
             foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
                 if (actionObjects.TryGetValue(actionObject.Id, out ActionObject ao)) {
                     if (actionObject.Type != ao.Data.Type) {
@@ -248,13 +278,13 @@ namespace Base {
 
                     ao.Data = actionObject;
                     ao.gameObject.transform.localPosition = ao.GetScenePosition();
-                    ao.gameObject.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
+                    ao.gameObject.transform.localRotation = ao.GetSceneOrientation();
                     actionObjects.Remove(actionObject.Id);
                 } else {
                     GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
-                    new_ao.transform.localRotation = DataHelper.OrientationToQuaternion(actionObject.Pose.Orientation);
                     new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
-                    new_ao.gameObject.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
+                    new_ao.transform.localRotation = new_ao.GetComponentInChildren<ActionObject>().GetSceneOrientation();
+                    new_ao.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
                 }
             }
 
@@ -263,7 +293,7 @@ namespace Base {
                 Destroy(ao.gameObject);
             }
 
-
+            
             sceneReady = true;
             if (newProject != null) {
                 ProjectUpdated(newProject);
@@ -471,21 +501,38 @@ namespace Base {
             WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
-        public void NewProject(string name, string sceneId, string robotSystemId) {
-            if (name == "" || robotSystemId == "") {
+        public void NewProject(string name, string sceneId) {
+            if (name == "") {
                 return;
             }
             if (sceneId == null) {
-                sceneId = name; // if no scene defined, create a new one with the name of the project
+                // if no scene defined, create a new one with the name of the project
+                NewScene(sceneId);
             } else {
                 throw new NotImplementedException();
             }
-            IO.Swagger.Model.Scene scene = new IO.Swagger.Model.Scene(id: sceneId, objects: new List<IO.Swagger.Model.SceneObject>(), robotSystemId: robotSystemId);
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId);
-            WebsocketManager.Instance.UpdateScene(scene);
-            SceneUpdated(scene);
             WebsocketManager.Instance.UpdateProject(project);
             ProjectUpdated(project);
+        }
+
+
+        public bool NewScene(string name) {
+            if (name == "") {
+                return false;
+            }
+            foreach (IO.Swagger.Model.IdDesc idDesc in Scenes) {
+                if (idDesc.Id == name)
+                    return false; // scene already exist
+            }
+            IO.Swagger.Model.Scene scene = new IO.Swagger.Model.Scene(id: name, objects: new List<IO.Swagger.Model.SceneObject>(), services: new List<IO.Swagger.Model.SceneService>());
+            WebsocketManager.Instance.UpdateScene(scene);
+            SceneUpdated(scene);
+            return true;
+        }
+
+        public async Task<bool> RemoveFromScene(string id) {
+            return await WebsocketManager.Instance.RemoveFromScene(id);
         }
 
 

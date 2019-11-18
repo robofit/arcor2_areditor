@@ -28,8 +28,6 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     void Start() {
         //TODO: find out why start is called twice
         Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
-
-        Debug.LogError("start");
     }
 
     // Update is called once per frame

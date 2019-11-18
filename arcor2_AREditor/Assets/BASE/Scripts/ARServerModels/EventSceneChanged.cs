@@ -9,7 +9,7 @@ namespace ARServer.Models {
     public class EventSceneChanged {
 
         public EventSceneChanged() {
-            Event = "sceneChanged";
+            Event = "SceneChanged";
         }
 
         [DataMember(Name = "event", EmitDefaultValue = false)]

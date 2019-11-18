@@ -1,22 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Michsky.UI.ModernUIPack;
 
 
 public class MainMenu : MonoBehaviour {
-    public GameObject InteractiveObjects, ButtonPrefab;
+    public GameObject ButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, NewProjectMenu, LoadProjectMenu, NewProjectName, RobotSystemId; //defined in inspector
+        ProjectsList, SceneList, DomainInput, PortInput, LoadProjectMenu, 
+        AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog; //defined in inspector
 
 
     // Start is called before the first frame update
     void Start() {
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
-        Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
+        
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
+        Base.ServiceManager.Instance.OnServicesUpdated += ServicesUpdated;
     }
 
     // Update is called once per frame
@@ -41,9 +44,73 @@ public class MainMenu : MonoBehaviour {
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<Text>().text = ao_name;
-            btn.onClick.AddListener(() => Base.GameManager.Instance.SpawnActionObject(ao_name));
+            btn.onClick.AddListener(() => AddObjectToScene(ao_name));
             btnGO.transform.SetAsFirstSibling();
         }
+
+    }
+
+    public void ServicesUpdated(object sender, EventArgs e) {
+
+        foreach (Button b in ServicesContent.GetComponentsInChildren<Button>()) {
+            //if (b.gameObject.tag == "PersistentButton") {
+            //    continue;
+            //} else {
+                Destroy(b.gameObject);
+            //}
+
+        }
+
+        foreach (IO.Swagger.Model.ServiceMeta service in Base.ServiceManager.Instance.ServicesMetadata) {
+            GameObject btnGO = Instantiate(ButtonPrefab);
+            btnGO.transform.SetParent(ActionObjectsContent.transform);
+            btnGO.transform.localScale = new Vector3(1, 1, 1);
+            Button btn = btnGO.GetComponent<Button>();
+            btn.GetComponentInChildren<Text>().text = service.Type;
+            btn.onClick.AddListener(() => ShowAddServiceDialog(service.Type));
+            btnGO.transform.SetAsLastSibling();
+        }
+
+    }
+
+    private void AddObjectToScene(string type) {
+        if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
+            if (actionObjectMetadata.NeedsServices.Count > 0) {
+                ShowAutoAddObjectDialog(type);
+            } else {
+                ShowAddObjectDialog(type);
+            }
+        } else {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
+        }
+        
+    }
+
+
+
+    public void ShowAddObjectDialog(string type) {
+        AddNewObjectDialog.GetComponent<AddNewObjectDialog>().ObjectToBeCreated = type;
+        AddNewObjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+    
+
+    public void ShowAutoAddObjectDialog(string type) {
+        AutoAddObjectsDialog.GetComponent<AutoAddObjectDialog>().ObjectToBeAdded = type;
+        AutoAddObjectsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+
+    public void ShowAddServiceDialog(string type) {
+        AddNewServiceDialog.GetComponent<AddNewServiceDialog>().ServiceToBeAdded = type;
+        AddNewServiceDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+
+    public void ShowNewProjectDialog() {
+        NewProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+
+    }
+
+     public void ShowNewSceneDialog() {
+        NewSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
 
     }
 
@@ -90,28 +157,26 @@ public class MainMenu : MonoBehaviour {
         HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
-        NewProjectMenu.SetActive(true);
         LoadProjectMenu.SetActive(true);
         string s = "Connected to: " + e.Data;
         Debug.Log(s);
-        ConnectionStatus.GetComponentInChildren<Text>().text = s;
+        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
     }
 
     public void DisconnectedFromServer(object sender, EventArgs e) {
         HideDynamicContent();
         HideProjectControlButtons();
         ShowConnectionControl();
-        NewProjectMenu.SetActive(false);
         LoadProjectMenu.SetActive(false);
-        ConnectionStatus.GetComponentInChildren<Text>().text = "Not connected to server";
+        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = "Not connected to server";
     }
 
     public string GetConnectionDomain() {
-        return DomainInput.GetComponentInChildren<InputField>().text;
+        return DomainInput.GetComponent<TMPro.TMP_InputField>().text;
     }
 
     public int GetConnectionPort() {
-        return int.Parse(PortInput.GetComponentInChildren<InputField>().text);
+        return int.Parse(PortInput.GetComponentInChildren<TMPro.TMP_InputField>().text);
     }
     public void ShowNewObjectTypeMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
@@ -120,7 +185,7 @@ public class MainMenu : MonoBehaviour {
     public void ConnectingToServer(object sender, Base.StringEventArgs e) {
         ConnectionControl.GetComponentInChildren<Button>().interactable = false;
         string s = "Connecting to server: " + e.Data;
-        ConnectionStatus.GetComponentInChildren<Text>().text = s;
+        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
         Debug.Log(s);
     }
 
@@ -161,17 +226,6 @@ public class MainMenu : MonoBehaviour {
 
     public void LoadProject() {
         Base.GameManager.Instance.LoadProject(ProjectsList.GetComponent<Dropdown>().options[ProjectsList.GetComponent<Dropdown>().value].text);
-    }
-
-    public void NewProject() {
-        string name = NewProjectName.GetComponent<InputField>().text;
-        string scene = SceneList.GetComponent<Dropdown>().options[SceneList.GetComponent<Dropdown>().value].text;
-        if (SceneList.GetComponent<Dropdown>().value < 2) {
-            scene = null;
-        }
-        string robotSystemId = RobotSystemId.GetComponent<InputField>().text;
-        
-        Base.GameManager.Instance.NewProject(name, scene, robotSystemId);
     }
 
     public void RunProject() {

@@ -34,9 +34,13 @@ public class InteractiveObjectMenu : MonoBehaviour {
         Base.GameManager.Instance.UpdateScene();
     }
 
-    public void DeleteIO() {
-        CurrentObject.GetComponent<Base.ActionObject>().DeleteIO();
+    public async void DeleteIO() {
+        if (!await Base.GameManager.Instance.RemoveFromScene(CurrentObject.GetComponent<Base.ActionObject>().Data.Id)) {
+            //TODO notification to the user
+            return;
+        }
         CurrentObject = null;
+        GetComponent<SimpleSideMenu>().Close();
     }
 
     public void UpdateMenu() {

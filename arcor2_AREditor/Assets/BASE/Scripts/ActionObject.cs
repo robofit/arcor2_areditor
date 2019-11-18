@@ -30,22 +30,13 @@ namespace Base {
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
-                SetScenePosition(transform.position);
-                SetSceneOrientation(transform.rotation);
+                SetScenePosition(transform.localPosition);
+                SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
         }
 
-        public void DeleteIO(bool updateScene = true) {
-            foreach (ActionPoint ap in GetComponentsInChildren<ActionPoint>()) {
-                ap.DeleteAP(false);
-            }
-            gameObject.SetActive(false);
-            Destroy(gameObject);
-            if (updateScene)
-                GameManager.Instance.UpdateScene();
-        }
-
+        
         public abstract Vector3 GetScenePosition();
 
         public abstract void SetScenePosition(Vector3 position);
