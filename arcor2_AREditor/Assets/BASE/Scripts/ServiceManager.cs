@@ -5,21 +5,48 @@ using System;
 
 namespace Base {
     public class ServiceManager : Singleton<ServiceManager> {
-        public List<IO.Swagger.Model.ServiceMeta> ServicesMetadata = new List<IO.Swagger.Model.ServiceMeta>();
+        public Dictionary<string, IO.Swagger.Model.ServiceMeta> ServicesMetadata = new Dictionary<string, IO.Swagger.Model.ServiceMeta>();
+        private Dictionary<string, IO.Swagger.Model.SceneService> ServicesData = new Dictionary<string, IO.Swagger.Model.SceneService>();
 
-        public event EventHandler OnServicesUpdated;
+        public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated;
+
+        public bool ServicesReady;
+
+        private void Awake() {
+            ServicesReady = false;
+        }
+
+        private void Start() {
+            GameManager.Instance.OnSceneChanged += SceneChanged;
+        }
+
+        private void SceneChanged(object sender, EventArgs e) {
+            ServicesData.Clear();
+            Debug.LogError(ServicesMetadata.Count);
+            foreach (IO.Swagger.Model.SceneService sceneService in Scene.Instance.Data.Services) {
+                ServicesData.Add(sceneService.Type, sceneService);
+            }
+            OnServicesUpdated?.Invoke(this, EventArgs.Empty);
+         }
 
         public void UpdateServicesMetadata(List<IO.Swagger.Model.ServiceMeta> newServices) {
-            ServicesMetadata = newServices;
-            OnServicesUpdated?.Invoke(this, EventArgs.Empty);
+            foreach (IO.Swagger.Model.ServiceMeta serviceMeta in newServices) {
+                ServicesMetadata[serviceMeta.Type] = serviceMeta;
+            }
+            OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
+            ServicesReady = true;
         }
 
         public bool ServiceInScene(string type) {
-            foreach (IO.Swagger.Model.SceneService sceneService in Scene.Instance.Data.Services) {
-                if (sceneService.Type == type)
-                    return true;
+            return ServicesData.ContainsKey(type);
+        }
+
+        public IO.Swagger.Model.SceneService GetService(string type) {
+            if (ServicesData.TryGetValue(type, out IO.Swagger.Model.SceneService sceneService)) {
+                return sceneService;
+            } else {
+                throw new KeyNotFoundException("Service not in scene!");
             }
-            return false;
         }
     }
 

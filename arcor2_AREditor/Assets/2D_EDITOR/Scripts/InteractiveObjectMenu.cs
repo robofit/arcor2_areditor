@@ -35,8 +35,9 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     public async void DeleteIO() {
-        if (!await Base.GameManager.Instance.RemoveFromScene(CurrentObject.GetComponent<Base.ActionObject>().Data.Id)) {
-            //TODO notification to the user
+        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
+        if (!response.Result) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove object " + CurrentObject.GetComponent<Base.ActionObject>().Data.Id, response.Messages[0]);
             return;
         }
         CurrentObject = null;

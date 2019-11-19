@@ -551,11 +551,11 @@ namespace Base {
             return response.Result;
         }
 
-        public async Task<bool> RemoveFromScene(string id) {
+        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
             IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: ++requestID, request: "RemoveFromScene", new IO.Swagger.Model.IdArgs(id: id));
             SendDataToServer(request.ToJson(), requestID, true);
-            IO.Swagger.Model.RemoveFromSceneResponse response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(requestID);
-            return response.Result;
+            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(requestID);
+            
         }
 
         public async Task<List<IO.Swagger.Model.ServiceMeta>> GetServices() {

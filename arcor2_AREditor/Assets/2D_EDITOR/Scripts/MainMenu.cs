@@ -5,10 +5,11 @@ using Michsky.UI.ModernUIPack;
 
 
 public class MainMenu : MonoBehaviour {
-    public GameObject ButtonPrefab;
+    public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
         ProjectsList, SceneList, DomainInput, PortInput, LoadProjectMenu, 
-        AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog; //defined in inspector
+        AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog,
+        ServiceSettingsDialog; //defined in inspector
 
 
     // Start is called before the first frame update
@@ -18,17 +19,13 @@ public class MainMenu : MonoBehaviour {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
-        Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ServiceManager.Instance.OnServicesUpdated += ServicesUpdated;
-    }
-
-    // Update is called once per frame
-    void Update() {
-
+        Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
+        Base.ServiceManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
     }
 
 
-    void ActionObjectsUpdated(object sender, EventArgs e) {
+    private void ActionObjectsUpdated(object sender, EventArgs e) {
 
         foreach (Button b in ActionObjectsContent.GetComponentsInChildren<Button>()) {
             if (b.gameObject.tag == "PersistentButton") {
@@ -51,26 +48,59 @@ public class MainMenu : MonoBehaviour {
     }
 
     public void ServicesUpdated(object sender, EventArgs e) {
+        foreach (ServiceButton serviceButton in ServicesContent.GetComponentsInChildren<ServiceButton>()) {
+            if (Base.ServiceManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+                //checked
+                serviceButton.State = true;
+            } else {
+                serviceButton.State = false;
+            }
+        }
+    }
 
-        foreach (Button b in ServicesContent.GetComponentsInChildren<Button>()) {
-            //if (b.gameObject.tag == "PersistentButton") {
-            //    continue;
-            //} else {
+    public void ServiceMetadataUpdated(object sender, EventArgs e) {
+
+        foreach (ServiceButton b in ServicesContent.GetComponentsInChildren<ServiceButton>()) {
+            if (b.gameObject.tag == "Persistent") {
+                continue;
+            } else {
                 Destroy(b.gameObject);
-            //}
+            }
 
         }
 
-        foreach (IO.Swagger.Model.ServiceMeta service in Base.ServiceManager.Instance.ServicesMetadata) {
-            GameObject btnGO = Instantiate(ButtonPrefab);
-            btnGO.transform.SetParent(ActionObjectsContent.transform);
-            btnGO.transform.localScale = new Vector3(1, 1, 1);
-            Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<Text>().text = service.Type;
-            btn.onClick.AddListener(() => ShowAddServiceDialog(service.Type));
-            btnGO.transform.SetAsLastSibling();
+        foreach (IO.Swagger.Model.ServiceMeta service in Base.ServiceManager.Instance.ServicesMetadata.Values) {
+            GameObject serviceButton = Instantiate(ServiceButtonPrefab);
+            serviceButton.transform.SetParent(ServicesContent.transform);
+            serviceButton.transform.localScale = new Vector3(1, 1, 1);
+            serviceButton.GetComponentInChildren<TMPro.TMP_Text>().text = service.Type;
+            if (Base.ServiceManager.Instance.ServiceInScene(service.Type)) {
+                //checked
+                serviceButton.GetComponentInChildren<ServiceButton>().State = true;
+            } else {
+                serviceButton.GetComponentInChildren<ServiceButton>().State = false;
+            }
+            serviceButton.GetComponent<ServiceButton>().ServiceMetadata = service;
+            serviceButton.GetComponentInChildren<Button>().onClick.AddListener(() => ServiceStateChanged(serviceButton.GetComponent<ServiceButton>()));
+            //Button btn = btnGO.GetComponent<Button>();
+            //btn.GetComponentInChildren<Text>().text = service.Type;
+            //btn.onClick.AddListener(() => ShowAddServiceDialog(service.Type));
+            serviceButton.transform.SetAsLastSibling();
         }
 
+    }
+
+    public async void ServiceStateChanged(ServiceButton serviceButton) {
+        
+        if (!serviceButton.State) {
+            ShowAddServiceDialog(serviceButton.ServiceMetadata.Type);
+        } else {
+            ShowServiceSettingsDialog(serviceButton);
+            /*if (!await Base.GameManager.Instance.RemoveFromScene(type)) {
+                Base.NotificationsModernUI.Instance.ShowNotification("Remove failed", "Failed to remove service from scene!");
+
+            }*/
+        }
     }
 
     private void AddObjectToScene(string type) {
@@ -102,6 +132,11 @@ public class MainMenu : MonoBehaviour {
     public void ShowAddServiceDialog(string type) {
         AddNewServiceDialog.GetComponent<AddNewServiceDialog>().ServiceToBeAdded = type;
         AddNewServiceDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+
+    public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
+        ServiceSettingsDialog.GetComponent<ServiceSettings>().Type = serviceButton.ServiceMetadata.Type;
+        ServiceSettingsDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
 
     public void ShowNewProjectDialog() {

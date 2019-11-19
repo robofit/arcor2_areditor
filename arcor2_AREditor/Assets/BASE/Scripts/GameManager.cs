@@ -31,6 +31,7 @@ namespace Base {
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
+        public event EventHandler OnSceneChanged;
 
                
 
@@ -72,7 +73,7 @@ namespace Base {
 
         // Update is called once per frame
         private void Update() {
-            if (newScene != null && ActionsManager.Instance.ActionsReady)
+            if (newScene != null && ActionsManager.Instance.ActionsReady && ServiceManager.Instance.ServicesReady)
                 SceneUpdated(newScene);
 
         }
@@ -293,7 +294,7 @@ namespace Base {
                 Destroy(ao.gameObject);
             }
 
-            
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
             sceneReady = true;
             if (newProject != null) {
                 ProjectUpdated(newProject);
@@ -531,7 +532,7 @@ namespace Base {
             return true;
         }
 
-        public async Task<bool> RemoveFromScene(string id) {
+        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
             return await WebsocketManager.Instance.RemoveFromScene(id);
         }
 
