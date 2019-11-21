@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 
 namespace Base {
@@ -10,7 +11,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.RobotJoints(new List<IO.Swagger.Model.Joint>(), ""), new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
 
 
         protected virtual void Awake() {

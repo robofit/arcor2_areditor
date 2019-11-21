@@ -60,7 +60,6 @@ namespace Base {
                 }
             }
 
-            Debug.Log("End");
             connecting = false;
             if (clientWebSocket.State == WebSocketState.Open) {
 
@@ -167,21 +166,26 @@ namespace Base {
         }
 
         public void UpdateScene(IO.Swagger.Model.Scene scene) {
-
-            ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged {
-                Scene = scene
+            //ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged();
+            IO.Swagger.Model.SceneChangedEvent eventData = new IO.Swagger.Model.SceneChangedEvent {
+                Event = "SceneChanged",
+                
             };
-
+            if (scene != null) {
+                eventData.Data = scene;
+            }
             SendDataToServer(eventData.ToJson());
-
-
         }
 
         // TODO: add action parameters
         public void UpdateProject(IO.Swagger.Model.Project project) {
-            ARServer.Models.EventProjectChanged eventData = new ARServer.Models.EventProjectChanged {
-                Project = project
+            IO.Swagger.Model.ProjectChangedEvent eventData = new IO.Swagger.Model.ProjectChangedEvent {
+                Event = "ProjectChanged"
             };
+            if (project != null) {
+                eventData.Data = project;
+            }
+            
             SendDataToServer(eventData.ToJson());
 
         }
@@ -279,8 +283,12 @@ namespace Base {
         void HandleProjectChanged(JSONObject obj) {
 
             try {
-                if (obj["event"].str != "ProjectChanged" || obj["data"].GetType() != typeof(JSONObject)) {
+                if (obj["event"].str != "ProjectChanged") {
                     return;
+                }
+
+                if (obj["data"].GetType() != typeof(JSONObject)) {
+                    GameManager.Instance.ProjectUpdated(null);
                 }
 
 
@@ -448,7 +456,7 @@ namespace Base {
             return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
-        public void LoadProject(string id) {
+        public void OpenProject(string id) {
             SendDataToServer(new IO.Swagger.Model.OpenProjectRequest(request: "OpenProject", args: new IO.Swagger.Model.IdArgs(id: id)).ToJson());
         }
 
@@ -517,7 +525,7 @@ namespace Base {
             return response.Data;
         }
 
-        public async Task<List<IO.Swagger.Model.IdDesc>> LoadProjects() {
+        public async Task<List<IO.Swagger.Model.ListProjectsResponseData>> LoadProjects() {
             IO.Swagger.Model.ListProjectsRequest request = new IO.Swagger.Model.ListProjectsRequest(id: ++requestID, request: "ListProjects");
             SendDataToServer(request.ToJson(), requestID, true);
             IO.Swagger.Model.ListProjectsResponse response = await WaitForResult<IO.Swagger.Model.ListProjectsResponse>(requestID);
@@ -558,7 +566,7 @@ namespace Base {
             
         }
 
-        public async Task<List<IO.Swagger.Model.ServiceMeta>> GetServices() {
+        public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {
             int r_id = ++requestID;
             IO.Swagger.Model.GetServicesRequest request = new IO.Swagger.Model.GetServicesRequest(id: r_id, request: "GetServices");
             SendDataToServer(request.ToJson(), r_id, true);
@@ -566,7 +574,15 @@ namespace Base {
             if (response.Result)
                 return response.Data;
             else
-                return new List<IO.Swagger.Model.ServiceMeta>();
+                return new List<IO.Swagger.Model.ServiceTypeMeta>();
+        }
+
+        public async Task<IO.Swagger.Model.OpenSceneResponse> OpenScene(string scene_id) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: scene_id);
+            IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            return await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
         }
     }
 }

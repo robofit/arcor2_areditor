@@ -5,7 +5,7 @@ using UnityEngine;
 public class ServiceButton : MonoBehaviour
 {
     //public string Type;
-    public IO.Swagger.Model.ServiceMeta ServiceMetadata;
+    public IO.Swagger.Model.ServiceTypeMeta ServiceMetadata;
     public GameObject Yes, No;
     private bool state;
 

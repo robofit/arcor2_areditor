@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
 
-public class InteractiveObjectMenu : MonoBehaviour {
+public class ActionObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
     private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,

@@ -16,9 +16,20 @@ namespace Base {
         }
     }
 
+    public class GameStateEventArgs : EventArgs {
+        public GameManager.GameStateEnum Data {
+            get; set;
+        }
+
+        public GameStateEventArgs(GameManager.GameStateEnum data) {
+            Data = data;
+        }
+    }
+
     public class GameManager : Singleton<GameManager> {
 
         public delegate void StringEventHandler(object sender, StringEventArgs args);
+        public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
 
         public event EventHandler OnSaveProject;
         public event EventHandler OnLoadProject;
@@ -32,23 +43,34 @@ namespace Base {
         public event StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
+        public event GameStateEventHandler OnGameStateChanged;
 
-               
+        private GameStateEnum gameState;
+
+        
 
         public GameObject ActionObjects, Scene, SpawnPoint;
         public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
         private string loadedScene;
-        private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project("", "JabloPCB", new List<IO.Swagger.Model.ProjectObject>(), "JabloPCB");
+        private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project(desc:"", id:"JabloPCB", objects:new List<IO.Swagger.Model.ProjectObject>(), sceneId:"JabloPCB", hasLogic: true);
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
 
-        public List<IO.Swagger.Model.IdDesc> Projects = new List<IO.Swagger.Model.IdDesc>(), Scenes = new List<IO.Swagger.Model.IdDesc>();
+        public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
+        public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
         public bool SceneInteractable = true;
 
         public enum ConnectionStatusEnum {
             Connected, Disconnected
+        }
+
+        public enum GameStateEnum {
+            Disconnected,
+            MainScreen,
+            SceneEditor,
+            ProjectEditor
         }
 
         private ConnectionStatusEnum connectionStatus;
@@ -62,13 +84,23 @@ namespace Base {
             }
         }
 
-        private void Awake() {
+        public GameStateEnum GameState {
+            get => gameState;
+            set {
+                gameState = value;
+                OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            }
         }
 
-        private void Start() {
+        private void Awake() {
             loadedScene = "";
             sceneReady = false;
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
+            gameState = GameStateEnum.Disconnected;
+        }
+
+        private void Start() {
+            
         }
 
         // Update is called once per frame
@@ -92,18 +124,19 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    Scenes = await WebsocketManager.Instance.LoadScenes();
+                    LoadScenes();
                      
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     WebsocketManager.Instance.UpdateObjectTypes();
                     UpdateServices();
+                    GameState = GameStateEnum.MainScreen;
                     break;
                 case ConnectionStatusEnum.Disconnected:
-                    //Scene.SetActive(false);
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
-                    Projects = new List<IO.Swagger.Model.IdDesc>();
+                    Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
+                    GameState = GameStateEnum.Disconnected;
                     break;
             }
         }
@@ -250,11 +283,26 @@ namespace Base {
         public void SceneUpdated(IO.Swagger.Model.Scene scene) {
             sceneReady = false;
             newScene = null;
-            if (!ActionsManager.Instance.ActionsReady) {
+
+            if (scene == null) {
+                if (GameState == GameStateEnum.SceneEditor || GameState == GameStateEnum.ProjectEditor) {
+                    GameState = GameStateEnum.MainScreen;
+                }
+                foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+                    Destroy(ao.gameObject);
+                }
+                return;
+            } else if (GameState != GameStateEnum.SceneEditor) {
+                GameState = GameStateEnum.SceneEditor;
+            }
+
+            if (!ActionsManager.Instance.ActionsReady || !ServiceManager.Instance.ServicesReady) {
                 newScene = scene;
 
                 return;
             }
+
+            
 
             Scene.GetComponent<Scene>().Data = scene;
             Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
@@ -305,10 +353,21 @@ namespace Base {
         }
 
         public void ProjectUpdated(IO.Swagger.Model.Project project) {
+            if (project == null) {
+                if (GameState == GameStateEnum.ProjectEditor) {
+                    GameState = GameStateEnum.MainScreen;
+                }
+                return;
+            } else if (GameState != GameStateEnum.ProjectEditor) {
+                GameState = GameStateEnum.ProjectEditor;
+            }
+
             if (project.SceneId != loadedScene || !sceneReady) {
                 newProject = project;
                 return;
             }
+
+
 
             currentProject = project;
 
@@ -437,7 +496,7 @@ namespace Base {
         }
 
         public async Task LoadProjects() {
-            Scenes = await WebsocketManager.Instance.LoadProjects();
+            Projects = await WebsocketManager.Instance.LoadProjects();
             OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -449,13 +508,21 @@ namespace Base {
 
         public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
             IO.Swagger.Model.SaveProjectResponse response = await WebsocketManager.Instance.SaveProject();
-            LoadProjects();
             OnSaveProject?.Invoke(this, EventArgs.Empty);
+            LoadProjects();
             return response;
         }
 
-        public void LoadProject(string id) {
-            WebsocketManager.Instance.LoadProject(id);
+        public void OpenProject(string id) {
+            WebsocketManager.Instance.OpenProject(id);
+            OnLoadProject?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async void OpenScene(string id) {
+            IO.Swagger.Model.OpenSceneResponse response = await WebsocketManager.Instance.OpenScene(id);
+            if (!response.Result) {
+                throw new RequestFailedException(response.Messages);
+            }            
             OnLoadProject?.Invoke(this, EventArgs.Empty);
         }
 
@@ -502,15 +569,17 @@ namespace Base {
             WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
-        public void NewProject(string name, string sceneId) {
+        public async void NewProject(string name, string sceneId) {
             if (name == "") {
-                return;
+                throw new RequestFailedException("Project name not specified");
             }
             if (sceneId == null) {
                 // if no scene defined, create a new one with the name of the project
                 NewScene(sceneId);
-            } else {
-                throw new NotImplementedException();
+            }
+            IO.Swagger.Model.OpenSceneResponse openSceneResponse = await WebsocketManager.Instance.OpenScene(sceneId);
+            if (!openSceneResponse.Result) {
+                throw new RequestFailedException("Failed to open scene");
             }
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId);
             WebsocketManager.Instance.UpdateProject(project);
@@ -536,6 +605,16 @@ namespace Base {
             return await WebsocketManager.Instance.RemoveFromScene(id);
         }
 
+        public void CloseScene() {
+            WebsocketManager.Instance.UpdateScene(null);
+            SceneUpdated(null);
+        }
+
+        public void CloseProject() {
+            
+            WebsocketManager.Instance.UpdateProject(null);
+            ProjectUpdated(null);
+        } 
 
 
     }

@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace Base {
     public abstract class ActionObject : Clickable {
-        [System.NonSerialized]
-        public GameObject InteractiveObjectMenu;
-        [System.NonSerialized]
+       [System.NonSerialized]
         public GameObject ConnectionPrefab;
 
         public GameObject ActionPoints;
@@ -14,13 +12,13 @@ namespace Base {
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
 
+       
 
         protected virtual void Awake() {
             
         }
 
         protected virtual void Start() {
-            InteractiveObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
@@ -34,6 +32,11 @@ namespace Base {
                 SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
+        }
+
+        public virtual bool SceneInteractable() {
+            return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.SceneInteractable);
         }
 
         
