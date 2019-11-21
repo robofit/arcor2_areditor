@@ -7,18 +7,15 @@ using Michsky.UI.ModernUIPack;
 public class MainMenu : MonoBehaviour {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, LoadProjectMenu, SceneControlButtons, MainControlButtons,
+        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons,
         AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog,
         ServiceSettingsDialog, CloseSceneDialog, CloseProjectDialog, OpenSceneDialog, OpenProjectDialog; //defined in inspector
 
 
     // Start is called before the first frame update
     void Start() {
-        Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
-
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
-        //Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
         Base.ServiceManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ServiceManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
@@ -55,14 +52,12 @@ public class MainMenu : MonoBehaviour {
 
     private void SetMainScreen() {
         MainControlButtons.SetActive(true);
-        LoadProjectMenu.SetActive(true);
     }
 
     private void HideEverything() {
         ProjectControlButtons.SetActive(false);
         ConnectionControl.SetActive(false);
         ActionObjects.SetActive(false);
-        LoadProjectMenu.SetActive(false);
         SceneControlButtons.SetActive(false);
         MainControlButtons.SetActive(false);
         Services.SetActive(false);
@@ -255,7 +250,6 @@ public class MainMenu : MonoBehaviour {
         HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
-        LoadProjectMenu.SetActive(true);
         string s = "Connected to: " + e.Data;
         Debug.Log(s);
         ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
@@ -265,7 +259,6 @@ public class MainMenu : MonoBehaviour {
         HideDynamicContent();
         HideProjectControlButtons();
         ShowConnectionControl();
-        LoadProjectMenu.SetActive(false);
         ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = "Not connected to server";
     }
 
@@ -307,13 +300,6 @@ public class MainMenu : MonoBehaviour {
         Base.NotificationsModernUI.Instance.ShowNotification("Project saved successfully", "");
     }
 
-    public void UpdateProjects(object sender, EventArgs eventArgs) {
-        Dropdown projectsListDropdown = ProjectsList.GetComponent<Dropdown>();
-        projectsListDropdown.options.Clear();
-        foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {            
-            projectsListDropdown.options.Add(new Dropdown.OptionData(project.Id));
-        }
-    }
 
      public void UpdateScenes(object sender, EventArgs eventArgs) {
         Dropdown sceneListDropdown = SceneList.GetComponent<Dropdown>();
