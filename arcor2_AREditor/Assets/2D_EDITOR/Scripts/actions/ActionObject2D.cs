@@ -30,7 +30,7 @@ public class ActionObject2D : Base.ActionObject {
 
     public override void OnMouseDown() {
         if (SceneInteractable()) {
-            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f));
+            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
         } else {
             offset = new Vector3(0, 0, 0);
         }
@@ -41,8 +41,10 @@ public class ActionObject2D : Base.ActionObject {
         if (!SceneInteractable())
             return;
         
-        Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f);
-        transform.position = Camera.main.ScreenToWorldPoint(newPosition) + offset;
+        Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);
+        Vector3 transformedPosition = Camera.main.ScreenToWorldPoint(newPosition) + offset;
+        transformedPosition.z = transform.position.z; // we only want to update x and y in 2D
+        transform.position = transformedPosition;
     }
 
     private void OnMouseUp() {
