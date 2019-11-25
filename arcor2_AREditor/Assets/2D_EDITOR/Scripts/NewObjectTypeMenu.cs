@@ -61,7 +61,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
             ParentsList.GetComponent<Dropdown>().options.Clear();
         }         
         foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
-            ParentsList.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData(actionObjectMetadata.Type));
+            ParentsList.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData(actionObjectMetadata.MetaData.Type));
         }
         if (originalValue != "") {
             // TODO: try if indexof works!

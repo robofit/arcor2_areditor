@@ -74,11 +74,19 @@ public class MainMenu : MonoBehaviour {
 
         }
         foreach (string ao_name in Base.ActionsManager.Instance.ActionObjectMetadata.Keys) {
+            if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(ao_name, out Base.ActionObjectMetadata actionObject)) {
+                if (actionObject.MetaData.Abstract) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
             GameObject btnGO = Instantiate(ButtonPrefab);
             btnGO.transform.SetParent(ActionObjectsContent.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<Text>().text = ao_name;
+            btn.GetComponentInChildren<TMPro.TMP_Text>().text = ao_name;
             btn.onClick.AddListener(() => AddObjectToScene(ao_name));
             btnGO.transform.SetAsFirstSibling();
         }
@@ -143,7 +151,7 @@ public class MainMenu : MonoBehaviour {
 
     private void AddObjectToScene(string type) {
         if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
-            if (actionObjectMetadata.NeedsServices.Count > 0) {
+            if (actionObjectMetadata.MetaData.NeedsServices.Count > 0) {
                 ShowAutoAddObjectDialog(type);
             } else {
                 ShowAddObjectDialog(type);

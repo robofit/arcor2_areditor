@@ -182,27 +182,28 @@ namespace Base {
                 return null;
             }
             GameObject obj;
-            switch (type) {
-                case "Robot":
-                case "KinaliRobot":
-                    obj = Instantiate(RobotPrefab, ActionObjects.transform);
-                    break;
-                case "Box":
-                    obj = Instantiate(BoxPrefab, ActionObjects.transform);
-                    break;
-                case "Box2":
-                    obj = Instantiate(BoxPrefab, ActionObjects.transform);
-                    break;
-                case "Tester":
-                    obj = Instantiate(TesterPrefab, ActionObjects.transform);
-                    break;
-                case "Workspace":
-                    obj = Instantiate(WorkspacePrefab, ActionObjects.transform);
-                    break;
-                default:
-                    obj = Instantiate(UnknownPrefab, ActionObjects.transform);
-                    break;
+            if (aom.Robot) {
+                obj = Instantiate(RobotPrefab, ActionObjects.transform);
+            } else {
+                switch (type) {
+                    case "Box":
+                        obj = Instantiate(BoxPrefab, ActionObjects.transform);
+                        break;
+                    case "Box2":
+                        obj = Instantiate(BoxPrefab, ActionObjects.transform);
+                        break;
+                    case "Tester":
+                        obj = Instantiate(TesterPrefab, ActionObjects.transform);
+                        break;
+                    case "Workspace":
+                        obj = Instantiate(WorkspacePrefab, ActionObjects.transform);
+                        break;
+                    default:
+                        obj = Instantiate(UnknownPrefab, ActionObjects.transform);
+                        break;
+                }
             }
+            
 
             
             //obj.transform.position = SpawnPoint.transform.position;
@@ -617,6 +618,7 @@ namespace Base {
             
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
+            CloseScene();
         } 
 
 

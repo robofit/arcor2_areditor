@@ -437,9 +437,9 @@ namespace Base {
             Dictionary<string, ActionObjectMetadata> newActionObjects = new Dictionary<string, ActionObjectMetadata>();
 
             foreach (IO.Swagger.Model.ObjectTypeMeta objectType in response.Data) {
-                ActionObjectMetadata ao = new ActionObjectMetadata(objectType.Type, objectType.Description, objectType.Base, objectType.ObjectModel, objectType.NeedsServices);
-                newActionObjects[ao.Type] = ao;
-                actionObjectsToBeUpdated.Add(ao.Type);
+                ActionObjectMetadata ao = new ActionObjectMetadata(objectType);
+                newActionObjects[ao.MetaData.Type] = ao;
+                actionObjectsToBeUpdated.Add(ao.MetaData.Type);
             }
             ActionsManager.Instance.UpdateObjects(newActionObjects);
         }

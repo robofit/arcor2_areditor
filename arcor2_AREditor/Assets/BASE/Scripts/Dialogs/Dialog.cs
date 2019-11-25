@@ -11,6 +11,7 @@ public class Dialog : MonoBehaviour
         foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {
             items.Add(idDesc.Id);
         }
+        UpdateToggleGroup(togglePrefab, toggleGroup, items);
     }
 
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListProjectsResponseData> projects) {

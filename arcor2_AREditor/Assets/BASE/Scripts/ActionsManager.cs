@@ -55,12 +55,12 @@ namespace Base {
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {
-            if (actionObjectMetadata.Type == type)
+            if (actionObjectMetadata.MetaData.Type == type)
                 return true;
-            if (actionObjectMetadata.Type == "Generic")
+            if (actionObjectMetadata.MetaData.Type == "Generic")
                 return false;
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
-                if (kv.Key == actionObjectMetadata.BaseObject) {
+                if (kv.Key == actionObjectMetadata.MetaData.Base) {
                     return IsDescendantOfType(type, kv.Value);
                 }
             }
