@@ -169,9 +169,12 @@ namespace Base {
             return await WebsocketManager.Instance.AutoAddObjectToScene(type);
         }
 
-        public async Task<IO.Swagger.Model.AddServiceToSceneResponse> AddServiceToScene(string type, string configId = "") {
+        public async void AddServiceToScene(string type, string configId = "") {
             IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
-            return await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
+            IO.Swagger.Model.AddServiceToSceneResponse response = await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
+            if (!response.Result) {
+                throw new RequestFailedException(response.Messages);
+            }
         }
 
         public GameObject SpawnActionObject(string type, bool updateScene = true, string id = "") {

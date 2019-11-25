@@ -7,26 +7,33 @@ using UnityEngine.UI;
 public class Dialog : MonoBehaviour
 {
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.IdDesc> idDescs) {
-        foreach (Transform toggle in toggleGroup.transform) {
-            Destroy(toggle.gameObject);
-        }
-        foreach (IO.Swagger.Model.IdDesc scene in idDescs) {
-
-            GameObject toggle = Instantiate(togglePrefab, toggleGroup.transform);
-            foreach (TMPro.TextMeshProUGUI text in toggle.GetComponentsInChildren<TMPro.TextMeshProUGUI>()) {
-                text.text = scene.Id;
-            }
-            toggle.GetComponent<Toggle>().group = toggleGroup.GetComponent<ToggleGroup>();
-            toggle.transform.SetAsFirstSibling();
+        List<string> items = new List<string>();
+        foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {
+            items.Add(idDesc.Id);
         }
     }
 
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListProjectsResponseData> projects) {
-        List<IO.Swagger.Model.IdDesc> idDescs = new List<IO.Swagger.Model.IdDesc>();
+        List<string> items = new List<string>();
         foreach (IO.Swagger.Model.ListProjectsResponseData project in projects) {
-            idDescs.Add(new IO.Swagger.Model.IdDesc(id: project.Id, desc: project.Desc));
+            items.Add(project.Id);
         }
-        UpdateToggleGroup(togglePrefab, toggleGroup, idDescs);
+        UpdateToggleGroup(togglePrefab, toggleGroup, items);
+    }
+
+    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<string> items) {
+        foreach (Transform toggle in toggleGroup.transform) {
+            Destroy(toggle.gameObject);
+        }
+        foreach (string item in items) {
+
+            GameObject toggle = Instantiate(togglePrefab, toggleGroup.transform);
+            foreach (TMPro.TextMeshProUGUI text in toggle.GetComponentsInChildren<TMPro.TextMeshProUGUI>()) {
+                text.text = item;
+            }
+            toggle.GetComponent<Toggle>().group = toggleGroup.GetComponent<ToggleGroup>();
+            toggle.transform.SetAsFirstSibling();
+        }
     }
 
     protected virtual string GetSelectedValue(GameObject toggleGroup) {

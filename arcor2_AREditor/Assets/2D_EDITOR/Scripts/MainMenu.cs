@@ -178,7 +178,7 @@ public class MainMenu : MonoBehaviour {
     }
 
     public void ShowAddServiceDialog(string type) {
-        AddNewServiceDialog.GetComponent<AddNewServiceDialog>().ServiceToBeAdded = type;
+        AddNewServiceDialog.GetComponent<AddSerivceDialog>().UpdateMenu(type);
         AddNewServiceDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
 
