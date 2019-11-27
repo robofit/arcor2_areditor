@@ -23,6 +23,6 @@ public class OnClickCollider : MonoBehaviour
     }
 
     public void OnMouseDown() {
-        Target.GetComponent<Base.Clickable>().OnMouseDown();
+        Target.GetComponent<Base.Clickable>().OnClick();
     }
 }

@@ -285,7 +285,7 @@ namespace Base {
             try {
                 if (obj["event"].str != "ProjectChanged") {
                     return;
-                }
+                }                
 
                 if (obj["data"].GetType() != typeof(JSONObject)) {
                     GameManager.Instance.ProjectUpdated(null);
@@ -298,6 +298,7 @@ namespace Base {
 
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleProjectChanged()");
+                GameManager.Instance.ProjectUpdated(null);
 
             }
 
@@ -319,7 +320,7 @@ namespace Base {
                 return;
             }
 
-            GameObject puck = GameManager.Instance.FindPuck(puck_id);
+            Action puck = GameManager.Instance.FindPuck(puck_id);
 
             //Arrow.transform.SetParent(puck.transform);
             //Arrow.transform.position = puck.transform.position + new Vector3(0f, 1.5f, 0f);
@@ -438,8 +439,8 @@ namespace Base {
 
             foreach (IO.Swagger.Model.ObjectTypeMeta objectType in response.Data) {
                 ActionObjectMetadata ao = new ActionObjectMetadata(objectType);
-                newActionObjects[ao.MetaData.Type] = ao;
-                actionObjectsToBeUpdated.Add(ao.MetaData.Type);
+                newActionObjects[ao.Type] = ao;
+                actionObjectsToBeUpdated.Add(ao.Type);
             }
             ActionsManager.Instance.UpdateObjects(newActionObjects);
         }

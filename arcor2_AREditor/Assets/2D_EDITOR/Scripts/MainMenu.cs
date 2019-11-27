@@ -75,7 +75,7 @@ public class MainMenu : MonoBehaviour {
         }
         foreach (string ao_name in Base.ActionsManager.Instance.ActionObjectMetadata.Keys) {
             if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(ao_name, out Base.ActionObjectMetadata actionObject)) {
-                if (actionObject.MetaData.Abstract) {
+                if (actionObject.Abstract) {
                     continue;
                 }
             } else {
@@ -151,7 +151,7 @@ public class MainMenu : MonoBehaviour {
 
     private void AddObjectToScene(string type) {
         if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
-            if (actionObjectMetadata.MetaData.NeedsServices.Count > 0) {
+            if (actionObjectMetadata.NeedsServices.Count > 0) {
                 ShowAutoAddObjectDialog(type);
             } else {
                 ShowAddObjectDialog(type);

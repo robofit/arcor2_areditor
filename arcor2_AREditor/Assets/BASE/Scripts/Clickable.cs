@@ -7,7 +7,6 @@ namespace Base
     {
         public abstract void OnClick();
 
-        public abstract void OnMouseDown();
     }
 
     

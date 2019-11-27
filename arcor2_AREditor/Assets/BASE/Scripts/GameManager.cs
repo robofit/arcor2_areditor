@@ -246,8 +246,8 @@ namespace Base {
                 return null;
             }
             GameObject puck = Instantiate(PuckPrefab);
-            puck.transform.SetParent(ap.transform.Find("Pucks"));
-            puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.8f + 1f, 0f);
+            puck.transform.SetParent(ap.Actions.transform);
+            puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.07f + 0.05f, 0f);
             const string glyphs = "0123456789";
             string newId = puck_id;
             if (newId == "") {
@@ -435,25 +435,34 @@ namespace Base {
 
             }
             foreach (KeyValuePair<string, string> connection in connections) {
-                PuckInput input = FindPuck(connection.Key).transform.GetComponentInChildren<PuckInput>();
-                PuckOutput output = FindPuck(connection.Value).transform.GetComponentInChildren<PuckOutput>();
-                GameObject c = Instantiate(ConnectionPrefab);
-                c.transform.SetParent(ConnectionManager.Instance.transform);
-                c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
-                c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
-                //input.GetComponentInParent<Action>().Data.
-                input.Connection = c.GetComponent<Connection>();
-                output.Connection = c.GetComponent<Connection>();
+                try {
+                    PuckInput input = FindPuck(connection.Key).Input;
+                    PuckOutput output = FindPuck(connection.Value).Output;
+                    if (input == null || output == null) {
+                        Debug.LogError("Conection does not exists");
+                        continue;
+
+                    }
+                    GameObject c = Instantiate(ConnectionPrefab);
+                    c.transform.SetParent(ConnectionManager.Instance.transform);
+                    c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
+                    c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
+
+                    input.Connection = c.GetComponent<Connection>();
+                    output.Connection = c.GetComponent<Connection>();
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }                
             }
-        }
+        }       
 
-        public GameObject FindPuck(string id) {
-
+      
+        public Action FindPuck(string id) {            
             foreach (Action action in ActionObjects.GetComponentsInChildren<Action>()) {
                 if (action.Data.Id == id)
-                    return action.gameObject;
+                    return action;
             }
-            return new GameObject();
+            throw new KeyNotFoundException("Action " + id + " not found!");
         }
 
 

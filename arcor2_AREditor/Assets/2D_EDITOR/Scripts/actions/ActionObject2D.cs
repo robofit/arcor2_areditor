@@ -28,7 +28,7 @@ public class ActionObject2D : Base.ActionObject {
         
     }
 
-    public override void OnMouseDown() {
+    public void OnMouseDown() {
         if (SceneInteractable()) {
             offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
         } else {
@@ -38,7 +38,7 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     private void OnMouseDrag() {
-        if (!SceneInteractable())
+        if (!SceneInteractable() || ActionObjectMetadata.Robot)
             return;
         
         Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);

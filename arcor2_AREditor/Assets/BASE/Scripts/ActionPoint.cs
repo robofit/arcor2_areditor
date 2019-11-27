@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 
 namespace Base {
-    public abstract class ActionPoint : MonoBehaviour {
+    public abstract class ActionPoint : Clickable {
         public ActionObject ActionObject;
+        public GameObject Actions;
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
@@ -42,6 +43,11 @@ namespace Base {
 
             if (updateProject)
                 GameManager.Instance.UpdateProject();
+        }
+
+        public virtual bool ProjectInteractable() {
+            return GameManager.Instance.GameState == GameManager.GameStateEnum.ProjectEditor &&
+                GameManager.Instance.SceneInteractable;
         }
 
         public abstract Vector3 GetScenePosition();

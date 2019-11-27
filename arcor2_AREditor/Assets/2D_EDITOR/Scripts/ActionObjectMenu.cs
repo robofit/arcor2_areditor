@@ -46,10 +46,10 @@ public class ActionObjectMenu : MonoBehaviour {
 
     public void UpdateMenu() {
         Dropdown dropdown, endEffectorDropdown;
-        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
             dropdown = robotsList.GetComponent<Dropdown>();
             endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
-        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel != null) {
+        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
             dropdown = robotsListVO.GetComponent<Dropdown>();
             endEffectorDropdown = endEffectorListVO.GetComponent<Dropdown>();
         } else {
@@ -72,11 +72,11 @@ public class ActionObjectMenu : MonoBehaviour {
 
         if (dropdown?.options.Count > 0) {
             dropdown.captionText.text = dropdown.options[dropdown.value].text;
-            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 EnableFocusControls();
                 UpdatePositionBlockMesh.SetActive(true);
                 UpdatePositionBlockVO.SetActive(false);
-            } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel != null) {
+            } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockMesh.SetActive(false);
                 UpdatePositionBlockVO.SetActive(true);
             } else {
@@ -160,8 +160,8 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     public void NextPoint() {
-        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel.Mesh.FocusPoints.Count - 1);
-        if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel.Mesh.FocusPoints.Count - 1) {
+        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
+        if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
             NextButton.GetComponent<Button>().interactable = false;
         } else {
             NextButton.GetComponent<Button>().interactable = true;
@@ -180,7 +180,7 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     private void UpdateCurrentPointLabel() {
-        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.MetaData.ObjectModel.Mesh.FocusPoints.Count.ToString();
+        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
     }
 
 }

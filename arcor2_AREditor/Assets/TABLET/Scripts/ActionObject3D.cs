@@ -39,6 +39,8 @@ public class ActionObject3D : Base.ActionObject
             MenuManager.Instance.ShowMenu(ActionObjectMenu, Data.Id);
         } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
             ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
+            MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor, "");
+
         }
     }
 
@@ -47,8 +49,4 @@ public class ActionObject3D : Base.ActionObject
         ActionObjectName.GetComponent<TextMeshPro>().text = newId;
     }
 
-    public override void OnMouseDown() {
-        Debug.Log("onMouseDown");
-        OnClick();
-    }
 }
