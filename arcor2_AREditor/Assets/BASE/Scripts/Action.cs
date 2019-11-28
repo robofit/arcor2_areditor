@@ -2,11 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Base {
-    public class Action : MonoBehaviour {
+    public abstract class Action : Clickable {
         private ActionMetadata metadata;
         private ActionObject actionObject;
 
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
+
+        public PuckInput Input;
+        public PuckOutput Output;
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
         public void Init(string id, ActionMetadata metadata, Base.ActionPoint ap, ActionObject originalActionObject, bool generateData, bool updateProject = true) {

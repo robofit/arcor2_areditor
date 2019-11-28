@@ -6,10 +6,13 @@ using TMPro;
 public class ActionObject3D : Base.ActionObject
 {
     public GameObject ActionObjectName;
+    private GameObject ActionObjectMenu, ActionObjectMenuProjectEditor;
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         UpdateId(Data.Id);
+        ActionObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
+        ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
     }
 
     public override Quaternion GetSceneOrientation() {
@@ -30,9 +33,15 @@ public class ActionObject3D : Base.ActionObject
     }
 
     public override void OnClick() {
-        MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Data.Id);
-        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
-        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().UpdateMenu();
+        if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
+            ActionObjectMenu.GetComponent<ActionObjectMenu>().CurrentObject = gameObject;
+            ActionObjectMenu.GetComponent<ActionObjectMenu>().UpdateMenu();
+            MenuManager.Instance.ShowMenu(ActionObjectMenu, Data.Id);
+        } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
+            ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
+            MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor, "");
+
+        }
     }
 
     public override void UpdateId(string newId) {

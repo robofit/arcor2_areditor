@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/TABLET/Scenes/TabletGUI.unity
     guid: 57ec56f6b5d8dfa46b1097f108d4c2cb
   - enabled: 0
@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/ANDROID/Scenes/AndroidGUI.unity
     guid: cee1a6df4408b6d438773f3a85cfd2e7
+  - enabled: 1
+    path: Assets/2D_EDITOR/UIGraph/Scenes/3D Example.unity
+    guid: 967792046f5624218bfdf16f6a007b8f
   m_configObjects:
     com.unity.xr.management.arcore_loader: {fileID: 11400000, guid: 20a9bcdf4f5308b4cbe95702f502a097,
       type: 2}

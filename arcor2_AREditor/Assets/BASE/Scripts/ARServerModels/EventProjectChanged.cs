@@ -9,7 +9,7 @@ namespace ARServer.Models {
     public class EventProjectChanged {
 
         public EventProjectChanged() {
-            Event = "projectChanged";
+            Event = "ProjectChanged";
         }
 
         [DataMember(Name = "event", EmitDefaultValue = false)]

@@ -51,7 +51,7 @@ public class ActionPointMenu : MonoBehaviour {
                 btnGO.transform.SetParent(dynamicContent.transform);
                 btnGO.transform.localScale = new Vector3(1, 1, 1);
                 Button btn = btnGO.GetComponent<Button>();
-                btn.GetComponentInChildren<Text>().text = keyval.Key.Data.Id + "/" + am.Name;
+                btn.GetComponentInChildren<TMPro.TMP_Text>().text = keyval.Key.Data.Id + "/" + am.Name;
                 btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
             }
 

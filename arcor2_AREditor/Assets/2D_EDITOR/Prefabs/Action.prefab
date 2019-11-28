@@ -63,8 +63,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 10
@@ -144,8 +142,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: c78f59f7f2c572340bdbaf6aef54f993, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -250,8 +246,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: c78f59f7f2c572340bdbaf6aef54f993, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -382,8 +376,6 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
-      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: c691b02d4fe60794e9a8773bfc4d3631, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -418,6 +410,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64878b6d4cbc74d49879b394ef3410cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Input: {fileID: 3697635146652334399}
+  Output: {fileID: 6456523285583128476}
 --- !u!61 &1930581083344212813
 BoxCollider2D:
   m_ObjectHideFlags: 0

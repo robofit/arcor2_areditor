@@ -7,9 +7,9 @@ namespace Base {
 
         
 
-        public ActionParameterMetadata(string name, string type, object defaultValue) {
+        public ActionParameterMetadata(string name, IO.Swagger.Model.ActionParameter.TypeEnum type, object defaultValue) {
             this.name = name;
-            this.type = StringToType(type);
+            this.type = type;
             this.defaultValue = defaultValue;
         }
 

@@ -39,8 +39,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5140028460938256069}
+  - component: {fileID: 6849433418117681114}
   m_Layer: 0
-  m_Name: ActionPoint
+  m_Name: ActionPoint3D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,7 +55,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2740470206176205867}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 526.61035, y: 12.071594, z: 584.0628}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2078995270900387591}
@@ -62,6 +63,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6849433418117681114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740470206176205867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43017f7b3cfa02643a6097a5d1b773c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionObject: {fileID: 0}
+  Actions: {fileID: 1416551817558692293}
+  ConnectionToIO: {fileID: 0}
 --- !u!1 &4940753687191564067
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,4 +214,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Target: {fileID: 0}
+  Target: {fileID: 2740470206176205867}

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class PuckMenu : MonoBehaviour {
 
-    public Puck2D CurrentPuck;
+    public Base.Action CurrentPuck;
 
     public GameObject ParameterStringPrefab, ParameterActionPointPrefab, ParameterIntegerPrefab;
     // Start is called before the first frame update
@@ -16,8 +16,8 @@ public class PuckMenu : MonoBehaviour {
 
     }
 
-    public void UpdateMenu(Base.Action action, Puck2D puck) {
-        CurrentPuck = puck;
+    public void UpdateMenu(Base.Action action) {
+        CurrentPuck = action;
         foreach (RectTransform o in transform.Find("Layout").Find("DynamicContent").GetComponentsInChildren<RectTransform>()) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);

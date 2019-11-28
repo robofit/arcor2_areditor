@@ -15,7 +15,7 @@ public class CameraMove : MonoBehaviour {
 
     // Update is called once per frame
     private void Update() {
-        float speed = 10f;
+        float speed = 80f;
         if (!Base.GameManager.Instance.SceneInteractable || MenuManager.Instance.IsAnyMenuOpened())
             return;
 

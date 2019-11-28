@@ -1,10 +1,23 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using SplineMesh;
+using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer)), ExecuteInEditMode]
 public class Connection : MonoBehaviour {
     const int minResolution = 2;
     const int maxResolution = 20;
     const int avgResolution = 20;
+
+    /// <summary>
+    /// The generated curves. Should not be changed in any way, use nodes instead.
+    /// </summary>
+    [HideInInspector]
+    public List<CubicBezierCurve> curves = new List<CubicBezierCurve>();
+
+    /// <summary>
+    /// Event raised when the node collection changes
+    /// </summary>
+    public event ListChangeHandler<SplineNode> NodeListChanged;
 
     //TODO: rename to "targets", plural
     public RectTransform[] target = new RectTransform[2];

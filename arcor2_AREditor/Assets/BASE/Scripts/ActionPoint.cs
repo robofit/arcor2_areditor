@@ -1,16 +1,18 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 
 namespace Base {
-    public abstract class ActionPoint : MonoBehaviour {
+    public abstract class ActionPoint : Clickable {
         public ActionObject ActionObject;
+        public GameObject Actions;
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.RobotJoints(new List<IO.Swagger.Model.Joint>(), ""), new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
 
 
         protected virtual void Awake() {
@@ -33,12 +35,19 @@ namespace Base {
             foreach (Action action in GetComponentsInChildren<Action>()) {
                 action.DeleteAction(false);
             }
-            Destroy(ConnectionToIO.gameObject);
+            if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
+                Destroy(ConnectionToIO.gameObject);
+            }
             gameObject.SetActive(false);
             Destroy(gameObject);
 
             if (updateProject)
                 GameManager.Instance.UpdateProject();
+        }
+
+        public virtual bool ProjectInteractable() {
+            return GameManager.Instance.GameState == GameManager.GameStateEnum.ProjectEditor &&
+                GameManager.Instance.SceneInteractable;
         }
 
         public abstract Vector3 GetScenePosition();

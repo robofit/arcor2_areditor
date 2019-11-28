@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
 
-public class InteractiveObjectMenu : MonoBehaviour {
+public class ActionObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
     private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,
@@ -34,17 +34,22 @@ public class InteractiveObjectMenu : MonoBehaviour {
         Base.GameManager.Instance.UpdateScene();
     }
 
-    public void DeleteIO() {
-        CurrentObject.GetComponent<Base.ActionObject>().DeleteIO();
+    public async void DeleteIO() {
+        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
+        if (!response.Result) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove object " + CurrentObject.GetComponent<Base.ActionObject>().Data.Id, response.Messages[0]);
+            return;
+        }
         CurrentObject = null;
+        GetComponent<SimpleSideMenu>().Close();
     }
 
     public void UpdateMenu() {
         Dropdown dropdown, endEffectorDropdown;
-        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
             dropdown = robotsList.GetComponent<Dropdown>();
             endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
-        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model != null) {
+        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
             dropdown = robotsListVO.GetComponent<Dropdown>();
             endEffectorDropdown = endEffectorListVO.GetComponent<Dropdown>();
         } else {
@@ -67,11 +72,11 @@ public class InteractiveObjectMenu : MonoBehaviour {
 
         if (dropdown?.options.Count > 0) {
             dropdown.captionText.text = dropdown.options[dropdown.value].text;
-            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 EnableFocusControls();
                 UpdatePositionBlockMesh.SetActive(true);
                 UpdatePositionBlockVO.SetActive(false);
-            } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model != null) {
+            } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockMesh.SetActive(false);
                 UpdatePositionBlockVO.SetActive(true);
             } else {
@@ -155,8 +160,8 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     public void NextPoint() {
-        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count - 1);
-        if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count - 1) {
+        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
+        if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
             NextButton.GetComponent<Button>().interactable = false;
         } else {
             NextButton.GetComponent<Button>().interactable = true;
@@ -175,7 +180,7 @@ public class InteractiveObjectMenu : MonoBehaviour {
     }
 
     private void UpdateCurrentPointLabel() {
-        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.Model.Mesh.FocusPoints.Count.ToString();
+        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
     }
 
 }

@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace Base {
     public abstract class ActionObject : Clickable {
-        [System.NonSerialized]
-        public GameObject InteractiveObjectMenu;
-        [System.NonSerialized]
+       [System.NonSerialized]
         public GameObject ConnectionPrefab;
 
         public GameObject ActionPoints;
@@ -14,13 +12,13 @@ namespace Base {
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
 
+       
 
         protected virtual void Awake() {
             
         }
 
         protected virtual void Start() {
-            InteractiveObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
@@ -30,22 +28,18 @@ namespace Base {
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
-                SetScenePosition(transform.position);
-                SetSceneOrientation(transform.rotation);
+                SetScenePosition(transform.localPosition);
+                SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
         }
 
-        public void DeleteIO(bool updateScene = true) {
-            foreach (ActionPoint ap in GetComponentsInChildren<ActionPoint>()) {
-                ap.DeleteAP(false);
-            }
-            gameObject.SetActive(false);
-            Destroy(gameObject);
-            if (updateScene)
-                GameManager.Instance.UpdateScene();
+        public virtual bool SceneInteractable() {
+            return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.SceneInteractable);
         }
 
+        
         public abstract Vector3 GetScenePosition();
 
         public abstract void SetScenePosition(Vector3 position);
