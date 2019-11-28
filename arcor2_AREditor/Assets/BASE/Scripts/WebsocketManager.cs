@@ -408,8 +408,8 @@ namespace Base {
                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
                                 break;
-                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.ActionPoint:
-                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint, "");
+                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
+                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
                                 break;
                             //case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:

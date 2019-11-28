@@ -245,9 +245,8 @@ namespace Base {
                 Debug.LogError("Action " + action_id + " not supported by action object " + ap.ActionObject.name);
                 return null;
             }
-            GameObject puck = Instantiate(PuckPrefab);
-            puck.transform.SetParent(ap.Actions.transform);
-            puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.07f + 0.05f, 0f);
+            GameObject puck = Instantiate(PuckPrefab, ap.Actions.transform);
+            //puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.07f, 0f);
             const string glyphs = "0123456789";
             string newId = puck_id;
             if (newId == "") {
@@ -265,20 +264,23 @@ namespace Base {
             return puck;
         }
 
-        public GameObject SpawnActionPoint(ActionObject actionObject, bool updateProject = true) {
+        public GameObject SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.transform.Find("ActionPoints"));
-            AP.transform.localPosition = new Vector3(0.15f, 0, 0); // 15cm next to action object            
+            AP.transform.localPosition = new Vector3(0, 0, 0);   
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
 
-            GameObject c = Instantiate(ConnectionPrefab);
-            c.GetComponent<LineRenderer>().enabled = true;
-            c.transform.SetParent(ConnectionManager.Instance.transform);
-            c.GetComponent<Connection>().target[0] = actionObject.GetComponent<RectTransform>();
-            c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
+            //GameObject c = Instantiate(ConnectionPrefab);
+            //c.GetComponent<LineRenderer>().enabled = true;
+            //c.transform.SetParent(ConnectionManager.Instance.transform);
+            //c.GetComponent<Connection>().target[0] = actionObject.GetComponent<RectTransform>();
+            //c.GetComponent<Connection>().target[1] = AP.GetComponent<RectTransform>();
             //AP.GetComponent<ActionPoint>().ConnectionToIO = c.GetComponent<Connection>();
-            AP.GetComponent<ActionPoint>().SetActionObject(actionObject);
-            AP.GetComponent<ActionPoint>().SetScenePosition(transform.localPosition);
-            AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
+
+            AP.GetComponent<ActionPoint>().InitAP(actionObject, apData);
+            if (apData == null) {
+                AP.GetComponent<ActionPoint>().SetScenePosition(transform.localPosition);
+                AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
+            }
             if (updateProject)
                 UpdateProject();
             return AP;
@@ -390,9 +392,7 @@ namespace Base {
                         ap.DeleteAP(false);
                     }
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
-                        GameObject actionPoint = SpawnActionPoint(actionObject, false);
-                        actionPoint.GetComponent<ActionPoint>().Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
-
+                        GameObject actionPoint = SpawnActionPoint(actionObject, DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false);
                         actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
@@ -426,7 +426,9 @@ namespace Base {
                             }
 
                         }
+                        actionPoint.GetComponent<ActionPoint>().UpdatePositionsOfPucks();
                     }
+
 
 
                 } else {
@@ -454,6 +456,8 @@ namespace Base {
                     Debug.LogError(ex);
                 }                
             }
+
+            
         }       
 
       
@@ -475,6 +479,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
                 IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<ActionPoint>()) {
+                    actionPoint.UpdatePositionsOfPucks();
                     IO.Swagger.Model.ProjectActionPoint projectActionPoint = DataHelper.ActionPointToProjectActionPoint(actionPoint.Data);
                     foreach (Action action in actionPoint.GetComponentsInChildren<Action>()) {
                         IO.Swagger.Model.Action projectAction = action.Data;

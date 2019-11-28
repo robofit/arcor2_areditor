@@ -12,12 +12,6 @@ namespace Base {
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
 
-       
-
-        protected virtual void Awake() {
-            
-        }
-
         protected virtual void Start() {
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
