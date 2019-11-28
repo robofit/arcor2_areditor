@@ -12,12 +12,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint("", new IO.Swagger.Model.RobotJoints(new List<IO.Swagger.Model.Joint>(), ""), new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));         
-
-
-        protected virtual void Awake() {
-
-        }
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", joints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position());         
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -26,9 +21,27 @@ namespace Base {
             }
         }
 
+        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData = null) {
+            SetActionObject(actionObject);
+            if (apData != null)
+                Data = apData;
+            Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
+            Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+        }
+
         public void SetActionObject(ActionObject actionObject) {
             ActionObject = actionObject;
             Data.Id = ActionObject.Data.Id + " - AP" + ActionObject.CounterAP++.ToString();
+        }
+
+        public abstract void UpdatePositionsOfPucks();
+
+        public Dictionary<string, IO.Swagger.Model.Pose> GetPoses() {
+            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
+            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+                poses.Add(orientation.Id, new IO.Swagger.Model.Pose(orientation.Orientation, Data.Position));
+            }
+            return poses;
         }
 
         public void DeleteAP(bool updateProject = true) {

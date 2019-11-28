@@ -2,10 +2,7 @@ using UnityEngine;
 
 public class ActionPoint2D : Base.ActionPoint {
 
-    protected override void Awake() {
-        base.Awake();
-    }
-
+   
     public void OnMouseDown() {
         if (Base.GameManager.Instance.SceneInteractable && !MenuManager.Instance.IsAnyMenuOpened()) {
             offset = gameObject.transform.position -
@@ -37,23 +34,24 @@ public class ActionPoint2D : Base.ActionPoint {
     }
 
     public override Vector3 GetScenePosition() {
-        return Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1));
+        return Vector3.Scale(DataHelper.PositionToVector3(Data.Position), new Vector3(1000, 1000, 1));
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(position, new Vector3(0.001f, 0.001f, 1)));
+        Data.Position = DataHelper.Vector3ToPosition(Vector3.Scale(position, new Vector3(0.001f, 0.001f, 1)));
     }
 
     public override Quaternion GetSceneOrientation() {
-        return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+        //return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+        return new Quaternion();
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+        //Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
     }
 
     public override void SetScenePosition(IO.Swagger.Model.Position position) {
-        Data.Pose.Position = position;
+        Data.Position = position;
     }
 
     public override bool ProjectInteractable() {
@@ -64,4 +62,13 @@ public class ActionPoint2D : Base.ActionPoint {
         throw new System.NotImplementedException();
     }
 
+    public override void UpdatePositionsOfPucks() {
+        Debug.LogError("ted");
+        int i = 0;
+        foreach (Puck2D action in Actions.GetComponentsInChildren<Puck2D>()) {
+            Debug.LogError("ha!");
+            action.transform.localPosition = new Vector3(0, i * 60, 0);
+            ++i;
+        }
+    }
 }

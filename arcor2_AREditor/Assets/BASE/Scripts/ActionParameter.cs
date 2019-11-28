@@ -3,7 +3,7 @@ using System;
 namespace Base {
     public class ActionParameter {
         public ActionParameterMetadata ActionParameterMetadata;
-        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter("", new IO.Swagger.Model.ActionParameter.TypeEnum(), "");
+        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter(id: "", value: "", type: new IO.Swagger.Model.ActionParameter.TypeEnum());
 
         public ActionParameter() {
 
@@ -42,6 +42,15 @@ namespace Base {
 
                 value = (bool) Data.Value;
             } catch (NullReferenceException e) {
+                value = def;
+            }
+        }
+
+        public void GetValue(out double value, double def = 0) {
+            try {
+
+                value = (double) Data.Value;
+            } catch (Exception ex) when (ex is NullReferenceException || ex is InvalidCastException) {
                 value = def;
             }
         }

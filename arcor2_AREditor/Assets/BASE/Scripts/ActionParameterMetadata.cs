@@ -21,8 +21,8 @@ namespace Base {
                     return IO.Swagger.Model.ActionParameter.TypeEnum.Double;
                 case "int":
                     return IO.Swagger.Model.ActionParameter.TypeEnum.Integer;
-                case "ActionPoint":
-                    return IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint;
+                case "Pose":
+                    return IO.Swagger.Model.ActionParameter.TypeEnum.Pose;
             }
             return new IO.Swagger.Model.ActionParameter.TypeEnum();
         }
@@ -31,8 +31,8 @@ namespace Base {
             switch (type) {
                 case IO.Swagger.Model.ActionParameter.TypeEnum.String:
                     return "str";
-                case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
-                    return "ActionPoint";
+                case IO.Swagger.Model.ActionParameter.TypeEnum.Pose:
+                    return "Pose";
                 case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
                     return "double";
                 case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:

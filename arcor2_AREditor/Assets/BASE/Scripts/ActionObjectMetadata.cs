@@ -16,7 +16,12 @@ namespace Base {
                                                                 description: meta.Description,
                                                                 needsServices: meta.NeedsServices,
                                                                 objectModel: meta.ObjectModel,
-                                                                type: meta.Type) { }
+                                                                type: meta.Type) {
+            // TODO: HACK!
+            if (Type == "RestRobot") {
+                Base = "Robot";
+            }
+        }
 
         public bool Robot {
             get => robot;

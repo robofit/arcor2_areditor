@@ -1,12 +1,13 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class PuckMenu : MonoBehaviour {
 
     public Base.Action CurrentPuck;
 
-    public GameObject ParameterStringPrefab, ParameterActionPointPrefab, ParameterIntegerPrefab;
+    public GameObject ParameterStringPrefab, ParameterActionPointPrefab, ParameterIntegerPrefab, ParameterDoublePrefab;
     // Start is called before the first frame update
     void Start() {
     }
@@ -45,13 +46,13 @@ public class PuckMenu : MonoBehaviour {
         CurrentPuck.DeleteAction();
     }
 
-    GameObject InitializeParameter(Base.ActionParameter actionParameter) {
+    private GameObject InitializeParameter(Base.ActionParameter actionParameter) {
         switch (actionParameter.ActionParameterMetadata.Type) {
             case IO.Swagger.Model.ActionParameter.TypeEnum.String:
                 actionParameter.GetValue(out string value);       
                 return InitializeStringParameter(actionParameter.ActionParameterMetadata.Name, value);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
-                return InitializeActionPointParameter(actionParameter);
+           case IO.Swagger.Model.ActionParameter.TypeEnum.Pose:
+                return InitializePoseParameter(actionParameter);
             case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
                 actionParameter.GetValue(out long longValue);
                 return InitializeIntegerParameter(actionParameter.ActionParameterMetadata.Name, longValue);
@@ -62,17 +63,16 @@ public class PuckMenu : MonoBehaviour {
         return null;
     }
 
-    GameObject InitializeStringParameter(string parameterId, string value) {
+    private GameObject InitializeStringParameter(string parameterId, string value) {
         GameObject input = Instantiate(ParameterStringPrefab);
-        input.transform.Find("Label").GetComponent<Text>().text = parameterId;
-
-        input.transform.Find("Input").GetComponent<InputField>().text = value;
-        input.transform.Find("Input").GetComponent<InputField>().onEndEdit.AddListener((string newValue) => OnChangeStringParameterHandler(parameterId, newValue));
+        input.GetComponent<LabeledInput>().Label.text = parameterId;
+        input.GetComponent<LabeledInput>().Input.text = value;
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(parameterId, newValue));
         return input;
     }
 
-
-    GameObject InitializeActionPointParameter(Base.ActionParameter actionParameter) {
+    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {
         GameObject actionInput = Instantiate(ParameterActionPointPrefab);
         actionInput.transform.Find("Label").GetComponent<Text>().text = actionParameter.ActionParameterMetadata.Name;
         Dropdown dropdown = actionInput.transform.Find("Dropdown").GetComponent<Dropdown>();
@@ -83,45 +83,44 @@ public class PuckMenu : MonoBehaviour {
         int selectedValue = -1;
 
         foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
-            Dropdown.OptionData option = new Dropdown.OptionData {
-                text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id
-            };
-            dropdown.options.Add(option);
-            if (option.text == selectedActionId) {
-                selectedValue = dropdown.options.Count - 1;
-            }
+            foreach (string poseKey in ap.GetPoses().Keys) {
+                Dropdown.OptionData option = new Dropdown.OptionData {
+                    text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey
+                };
+                dropdown.options.Add(option);
+                if (option.text == selectedActionId) {
+                    selectedValue = dropdown.options.Count - 1;
+                }
+            }                     
         }
         if (selectedValue >= 0) {
             dropdown.value = selectedValue;
         }
-        dropdown.onValueChanged.AddListener((int value) => OnChangeActionPointParameterHandler(actionParameter.ActionParameterMetadata.Name, dropdown.options[value].text));
+        dropdown.onValueChanged.AddListener((int value)
+            => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, dropdown.options[value].text));
         return actionInput;
     }
 
-    GameObject InitializeIntegerParameter(string parameterId, long value) {
+    private GameObject InitializeIntegerParameter(string parameterId, long value) {
         GameObject input = Instantiate(ParameterIntegerPrefab);
-        input.transform.Find("Label").GetComponent<Text>().text = parameterId;
-        input.transform.Find("Input").GetComponent<InputField>().text = value.ToString();
-        input.transform.Find("Input").GetComponent<InputField>().onEndEdit.AddListener((string newValue) => OnChangeIntegerParameterHandler(parameterId, long.Parse(newValue)));
+        input.GetComponent<LabeledInput>().Label.text = parameterId;
+        input.GetComponent<LabeledInput>().Input.text = value.ToString();
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(parameterId, long.Parse(newValue)));
         return input;
     }
 
-    GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
-        return null;
+    private GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
+        GameObject input = Instantiate(ParameterDoublePrefab);
+        input.GetComponent<LabeledInput>().Label.text = actionParameter.ActionParameterMetadata.Name;
+        actionParameter.GetValue(out double value);
+        input.GetComponent<LabeledInput>().Input.text = value.ToString();
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, double.Parse(newValue)));
+        return input;
     }
 
-    public void OnChangeActionPointParameterHandler(string parameterId, string actionId) {
-        OnChangeStringParameterHandler(parameterId, actionId);
-    }
-
-    public void OnChangeStringParameterHandler(string parameterId, string newValue) {
-        if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
-            return;
-        parameter.Data.Value = newValue;
-        Base.GameManager.Instance.UpdateProject();
-    }
-
-    public void OnChangeIntegerParameterHandler(string parameterId, long newValue) {
+   public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
         parameter.Data.Value = newValue;

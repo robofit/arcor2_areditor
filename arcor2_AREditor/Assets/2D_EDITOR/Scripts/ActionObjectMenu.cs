@@ -8,26 +8,7 @@ public class ActionObjectMenu : MonoBehaviour {
     [SerializeField]
     private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,
         SavePositionButton, CurrentPointLabel, NextButton, PreviousButton, FocusObjectDoneButton, UpdatePositionBlockMesh, UpdatePositionBlockVO, robotsListVO, endEffectorListVO;
-
-    int currentFocusPoint = -1;
-
-    // Start is called before the first frame update
-    void Start() {
-
-    }
-
-    // Update is called once per frame
-    void Update() {
-
-    }
-
-    public void CreateNewAP() {
-        if (CurrentObject == null) {
-            return;
-        }
-        Base.GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>());
-
-    }
+    private int currentFocusPoint = -1;
 
     public void SaveID(string new_id) {
         CurrentObject.GetComponent<Base.ActionObject>().Data.Id = new_id;
