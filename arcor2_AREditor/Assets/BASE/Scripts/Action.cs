@@ -4,25 +4,26 @@ using UnityEngine;
 namespace Base {
     public abstract class Action : Clickable {
         private ActionMetadata metadata;
-        private ActionObject actionObject;
-
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
-
+        private ActionObject actionObject;
+        private IO.Swagger.Model.SceneService service;
         public PuckInput Input;
         public PuckOutput Output;
+        private IActionProvider actionProvider;
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
-        public void Init(string id, ActionMetadata metadata, ActionPoint ap, ActionObject originalActionObject, bool generateData, bool updateProject = true) {
+        public void Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
+           
             this.metadata = metadata;
+            this.actionProvider = actionProvider;
             
-            actionObject = originalActionObject;
             if (generateData) {
-                foreach (ActionParameterMetadata actionParameterMetadata in this.metadata.Parameters.Values) {
+                foreach (IO.Swagger.Model.ObjectActionArgs actionParameterMetadata in this.metadata.ActionArgs) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
-                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ActionParameter.TypeEnum.Pose) {
-                        actionParameter.Data.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
+                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose) {
+                        actionParameter.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
                     } else {
-                        actionParameter.Data.Value = actionParameter.ActionParameterMetadata.DefaultValue;
+                        //actionParameter.Value = actionParameter.ActionParameterMetadata.DefaultValue; TODO:take a look
                     }
                     Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
                 }
@@ -36,20 +37,24 @@ namespace Base {
                 GameManager.Instance.UpdateProject();
             }
 
-            UpdateId(id, updateProject);
+            UpdateId(id, updateProject);            
             UpdateType();
         }
 
         
 
         public void UpdateType() {
-            Data.Type = actionObject.Data.Id + "/" + metadata.Name;
+            Data.Type = GetActionType();
         }
 
         public virtual void UpdateId(string newId, bool updateProject = true) {
             Data.Id = newId;
             if (updateProject)
                 GameManager.Instance.UpdateProject();
+        }
+
+        public string GetActionType() {
+            return actionProvider.GetProviderName() + "/" + metadata.Name; //TODO: AO|Service/Id
         }
 
         public void DeleteAction(bool updateProject = true) {
@@ -68,9 +73,6 @@ namespace Base {
         }
         public ActionMetadata Metadata {
             get => metadata; set => metadata = value;
-        }
-        public ActionObject ActionObject {
-            get => actionObject; set => actionObject = value;
         }
         
     }

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace Base {
-    public abstract class ActionObject : Clickable {
+    public abstract class ActionObject : Clickable, IActionProvider {
        [System.NonSerialized]
         public GameObject ConnectionPrefab;
 
@@ -33,7 +33,7 @@ namespace Base {
                 GameManager.Instance.SceneInteractable);
         }
 
-        
+                
         public abstract Vector3 GetScenePosition();
 
         public abstract void SetScenePosition(Vector3 position);
@@ -57,6 +57,21 @@ namespace Base {
             return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
         }
 
+        public string GetProviderName() {
+            return Data.Id;
+        }
+
+
+        public ActionMetadata GetActionMetadata(string action_id) {
+            if (ActionObjectMetadata.ActionsLoaded) {
+                if (ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out ActionMetadata actionMetadata)) {
+                    return actionMetadata;
+                } else {
+                    throw new ItemNotFoundException("Metadata not found");
+                }
+            }
+            return null; //TODO: throw exception
+        }
     }
 
 }

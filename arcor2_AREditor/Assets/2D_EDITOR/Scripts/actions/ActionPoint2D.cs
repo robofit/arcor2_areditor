@@ -63,10 +63,8 @@ public class ActionPoint2D : Base.ActionPoint {
     }
 
     public override void UpdatePositionsOfPucks() {
-        Debug.LogError("ted");
         int i = 0;
         foreach (Puck2D action in Actions.GetComponentsInChildren<Puck2D>()) {
-            Debug.LogError("ha!");
             action.transform.localPosition = new Vector3(0, i * 60, 0);
             ++i;
         }

@@ -16,9 +16,9 @@ public class MainMenu : MonoBehaviour {
     void Start() {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
-        Base.ServiceManager.Instance.OnServicesUpdated += ServicesUpdated;
+        Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
-        Base.ServiceManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
+        Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         HideEverything();
         DisconnectedFromServer(this, EventArgs.Empty);
@@ -95,7 +95,7 @@ public class MainMenu : MonoBehaviour {
 
     public void ServicesUpdated(object sender, EventArgs e) {
         foreach (ServiceButton serviceButton in ServicesContent.GetComponentsInChildren<ServiceButton>()) {
-            if (Base.ServiceManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+            if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
                 //checked
                 serviceButton.State = true;
             } else {
@@ -115,12 +115,12 @@ public class MainMenu : MonoBehaviour {
 
         }
 
-        foreach (IO.Swagger.Model.ServiceTypeMeta service in Base.ServiceManager.Instance.ServicesMetadata.Values) {
+        foreach (IO.Swagger.Model.ServiceTypeMeta service in Base.ActionsManager.Instance.ServicesMetadata.Values) {
             GameObject serviceButton = Instantiate(ServiceButtonPrefab);
             serviceButton.transform.SetParent(ServicesContent.transform);
             serviceButton.transform.localScale = new Vector3(1, 1, 1);
             serviceButton.GetComponentInChildren<TMPro.TMP_Text>().text = service.Type;
-            if (Base.ServiceManager.Instance.ServiceInScene(service.Type)) {
+            if (Base.ActionsManager.Instance.ServiceInScene(service.Type)) {
                 //checked
                 serviceButton.GetComponentInChildren<ServiceButton>().State = true;
             } else {

@@ -12,10 +12,10 @@ public class ServiceSettings : MonoBehaviour
         get => type;
         set {
             type = value;
-            IO.Swagger.Model.SceneService sceneService;
-            sceneService = Base.ServiceManager.Instance.GetService(type);
-            ServiceName.GetComponent<TMPro.TMP_Text>().text = "Service name: " + sceneService.Type;
-            ConfigID.GetComponent<TMPro.TMP_Text>().text = "Configuration ID: " + sceneService.ConfigurationId; // only first one, for now
+            Base.Service sceneService;
+            sceneService = Base.ActionsManager.Instance.GetService(type);
+            ServiceName.GetComponent<TMPro.TMP_Text>().text = "Service name: " + sceneService.Data.Type;
+            ConfigID.GetComponent<TMPro.TMP_Text>().text = "Configuration ID: " + sceneService.Data.ConfigurationId; // only first one, for now
             
          }
     }

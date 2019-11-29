@@ -104,12 +104,6 @@ namespace Base {
                 waitingForMessage = false;
 
             }
-            if (waitingForObjectActions == "" && actionObjectsToBeUpdated.Count > 0) {
-                waitingForObjectActions = actionObjectsToBeUpdated[0];
-                actionObjectsToBeUpdated.RemoveAt(0);
-                Debug.LogWarning(waitingForObjectActions);
-                UpdateObjectActions(waitingForObjectActions); 
-            }
 
             if (sendingQueue.Count > 0 && readyToSend) {
                 SendDataToServer();
@@ -207,12 +201,6 @@ namespace Base {
                 return;
             if (dispatch.response != null) {
                 switch (dispatch.response) {
-                    case "GetObjectTypes":
-                        HandleGetObjecTypes(data);
-                        break;
-                    case "GetActions":
-                        HandleGetActions(data);
-                        break;
                     case "NewObjectType":
                         HandleNewObjectType(data);
                         break;
@@ -400,26 +388,26 @@ namespace Base {
             
             if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(waitingForObjectActions, out ActionObjectMetadata ao)) {
                 foreach (IO.Swagger.Model.ObjectAction action in response.Data) {
-                    ActionMetadata a = new ActionMetadata(action.Name, action.Meta.Blocking, action.Meta.Free, action.Meta.Composite, action.Meta.Blackbox);
+                    ActionMetadata a = new ActionMetadata(action);
                     foreach (IO.Swagger.Model.ObjectActionArgs arg in action.ActionArgs) {
-                        switch (arg.Type) {
-                            //case IO.Swagger.Model.ActionParameter.TypeEnum.String:
-                            //case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
-                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
-                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
-                                break;
-                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
-                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
-                                break;
-                            //case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
-                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:
-                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Double, 0d);
-                                break;
-                            //case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
-                            case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
-                                a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
-                                break;
-                        }
+                        /* switch (arg.Type) {
+                             //case IO.Swagger.Model.ActionParameter.TypeEnum.String:
+                             //case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
+                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
+                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
+                                 break;
+                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
+                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
+                                 break;
+                             //case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
+                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:
+                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Double, 0d);
+                                 break;
+                             //case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
+                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
+                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
+                                 break;
+                    }*/
 
                     }
                     ao.ActionsMetadata[a.Name] = a;
@@ -429,7 +417,7 @@ namespace Base {
             }
         }
 
-        private void HandleGetObjecTypes(string data) {
+       /* private void HandleGetObjecTypes(string data) {
             IO.Swagger.Model.GetObjectTypesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.GetObjectTypesResponse>(data);
             if (!response.Result) {
                 Debug.LogError("Request getObjectTypes failed!");
@@ -443,6 +431,27 @@ namespace Base {
                 actionObjectsToBeUpdated.Add(ao.Type);
             }
             ActionsManager.Instance.UpdateObjects(newActionObjects);
+        }*/
+
+        public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
+            int id = requestID++;
+            SendDataToServer(new IO.Swagger.Model.GetObjectTypesRequest(id: id, request: "GetObjectTypes").ToJson(), id, true);
+            IO.Swagger.Model.GetObjectTypesResponse response = await WaitForResult<IO.Swagger.Model.GetObjectTypesResponse>(id);
+            if (response.Result)
+                return response.Data;
+            else {
+                throw new RequestFailedException("Failed to load object types");
+            }
+        }
+
+        public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
+            int id = requestID++;
+            SendDataToServer(new IO.Swagger.Model.GetActionsRequest(id: id, request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: name)).ToJson(), id, true);
+            IO.Swagger.Model.GetActionsResponse response = await WaitForResult<IO.Swagger.Model.GetActionsResponse>(id);
+            if (response.Result)
+                return response.Data;
+            else
+                throw new RequestFailedException("Failed to load actions for object/service " + name);
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
