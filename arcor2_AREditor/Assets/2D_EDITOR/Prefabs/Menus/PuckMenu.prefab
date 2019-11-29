@@ -308,15 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CurrentPuck: {fileID: 0}
-  ParameterStringPrefab: {fileID: 4223227334475559623, guid: f7d1c0c3a559f0444a5b3a3c5d62de78,
-    type: 3}
-  ParameterActionPointPrefab: {fileID: 2259668868574300244, guid: 19da6447a37ef7f429a554a2fd22d345,
-    type: 3}
-  ParameterIntegerPrefab: {fileID: 2838656142359092185, guid: be0f704610023b5409702b21adb4bd97,
-    type: 3}
-  ParameterDoublePrefab: {fileID: 7054424019312011599, guid: 973eafeae585cf242ac9e52b3e432870,
-    type: 3}
-  CollapsablePrefab: {fileID: 920948528114228850, guid: 962caad8dd1393d4d91494c0abe624cc,
+  ParameterInputPrefab: {fileID: 7054424019312011599, guid: 973eafeae585cf242ac9e52b3e432870,
     type: 3}
 --- !u!1 &3566580162441971721
 GameObject:
@@ -564,7 +556,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 2
+  m_Spacing: 8
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1

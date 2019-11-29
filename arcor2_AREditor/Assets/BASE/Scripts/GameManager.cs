@@ -426,7 +426,7 @@ namespace Base {
                                 try {
                                     IO.Swagger.Model.ObjectActionArg actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
 
-                                    ActionParameter actionParameter = new ActionParameter(actionMetadata);
+                                    ActionParameter actionParameter = new ActionParameter(actionMetadata, projectActionParameter);
                                     action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
                                 } catch (ItemNotFoundException ex) {
                                     Debug.LogError(ex);
