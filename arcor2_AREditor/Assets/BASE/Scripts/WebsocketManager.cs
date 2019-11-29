@@ -7,6 +7,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
+using System.IO;
 
 
 namespace Base {
@@ -91,14 +92,19 @@ namespace Base {
             if (!waitingForMessage && clientWebSocket.State == WebSocketState.Open) {
                 WebSocketReceiveResult result = null;
                 waitingForMessage = true;
-                ArraySegment<byte> bytesReceived = new ArraySegment<byte>(new byte[8192]);
+                ArraySegment<byte> bytesReceived = WebSocket.CreateClientBuffer(8192, 8192);
+                MemoryStream ms = new MemoryStream();
                 do {
                     result = await clientWebSocket.ReceiveAsync(
                         bytesReceived,
                         CancellationToken.None
                     );
-                    receivedData += Encoding.Default.GetString(bytesReceived.Array);
+
+                    if (bytesReceived.Array != null)
+                        ms.Write(bytesReceived.Array, bytesReceived.Offset, result.Count);
+                    
                 } while (!result.EndOfMessage);
+                receivedData = Encoding.Default.GetString(ms.ToArray());
                 HandleReceivedData(receivedData);
                 receivedData = "";
                 waitingForMessage = false;
@@ -389,7 +395,7 @@ namespace Base {
             if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(waitingForObjectActions, out ActionObjectMetadata ao)) {
                 foreach (IO.Swagger.Model.ObjectAction action in response.Data) {
                     ActionMetadata a = new ActionMetadata(action);
-                    foreach (IO.Swagger.Model.ObjectActionArgs arg in action.ActionArgs) {
+                    foreach (IO.Swagger.Model.ObjectActionArg arg in action.ActionArgs) {
                         /* switch (arg.Type) {
                              //case IO.Swagger.Model.ActionParameter.TypeEnum.String:
                              //case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:

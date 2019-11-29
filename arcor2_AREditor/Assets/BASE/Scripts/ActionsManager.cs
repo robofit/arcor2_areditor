@@ -106,7 +106,7 @@ namespace Base {
             Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
             foreach (IO.Swagger.Model.ObjectAction action in actions) {
                 ActionMetadata a = new ActionMetadata(action);
-                foreach (IO.Swagger.Model.ObjectActionArgs arg in action.ActionArgs) {
+                foreach (IO.Swagger.Model.ObjectActionArg arg in action.ActionArgs) {
                     /*switch (arg.Type) {
                         case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
                             a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");

@@ -18,9 +18,9 @@ namespace Base {
             this.actionProvider = actionProvider;
             
             if (generateData) {
-                foreach (IO.Swagger.Model.ObjectActionArgs actionParameterMetadata in this.metadata.ActionArgs) {
+                foreach (IO.Swagger.Model.ObjectActionArg actionParameterMetadata in this.metadata.ActionArgs) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
-                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose) {
+                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose) {
                         actionParameter.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
                     } else {
                         //actionParameter.Value = actionParameter.ActionParameterMetadata.DefaultValue; TODO:take a look

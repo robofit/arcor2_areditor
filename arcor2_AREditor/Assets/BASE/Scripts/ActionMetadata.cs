@@ -8,10 +8,10 @@ namespace Base {
 
         }
 
-        public IO.Swagger.Model.ObjectActionArgs GetParamMetadata(string name) {
-            foreach (IO.Swagger.Model.ObjectActionArgs objectActionArgs in ActionArgs) {
-                if (objectActionArgs.Name == name)
-                    return objectActionArgs;
+        public IO.Swagger.Model.ObjectActionArg GetParamMetadata(string name) {
+            foreach (IO.Swagger.Model.ObjectActionArg objectActionArg in ActionArgs) {
+                if (objectActionArg.Name == name)
+                    return objectActionArg;
             }
             throw new ItemNotFoundException("Action does not exist");
         }

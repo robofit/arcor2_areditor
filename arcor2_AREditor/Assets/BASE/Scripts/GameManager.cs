@@ -424,7 +424,7 @@ namespace Base {
 
                             foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
                                 try {
-                                    IO.Swagger.Model.ObjectActionArgs actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
+                                    IO.Swagger.Model.ObjectActionArg actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
 
                                     ActionParameter actionParameter = new ActionParameter(actionMetadata);
                                     action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
