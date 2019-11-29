@@ -1,29 +1,29 @@
 using System;
 
 namespace Base {
-    public class ActionParameter {
-        public ActionParameterMetadata ActionParameterMetadata;
-        public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter(id: "", value: "", type: new IO.Swagger.Model.ActionParameter.TypeEnum());
+    public class ActionParameter : IO.Swagger.Model.ActionParameter {
+        public IO.Swagger.Model.ObjectActionArg ActionParameterMetadata;
+        //public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter(id: "", value: "", type: new IO.Swagger.Model.ActionParameter.TypeEnum());
 
-        public ActionParameter() {
+        public ActionParameter(IO.Swagger.Model.ActionParameter actionParameter) : base (id: actionParameter.Id, value: actionParameter.Value) {
 
         }
-        public ActionParameter(ActionParameterMetadata actionParameterMetadata) {
+        public ActionParameter(IO.Swagger.Model.ObjectActionArg actionParameterMetadata) {
             ActionParameterMetadata = actionParameterMetadata;
-            Data.Id = ActionParameterMetadata.Name;
-            Data.Type = ActionParameterMetadata.Type;
-            Data.Value = ActionParameterMetadata.DefaultValue;
+            Id = ActionParameterMetadata.Name;
+            Type = (IO.Swagger.Model.ActionParameter.TypeEnum) ActionParameterMetadata.Type;
+            //Value = ActionParameterMetadata.DefaultValue;
         }
 
-        public ActionParameter(object value, ActionParameterMetadata actionParameterMetadata) {
-            Data.Value = value;
+        public ActionParameter(object value, IO.Swagger.Model.ObjectActionArg actionParameterMetadata) {
+            Value = value;
             ActionParameterMetadata = actionParameterMetadata;
         }
 
         public void GetValue(out string value, string def = "") {
             try {
 
-                value = (string) Data.Value;
+                value = (string) Value;
             } catch (NullReferenceException e) {
                 value = def;
             }
@@ -31,7 +31,7 @@ namespace Base {
 
         public void GetValue(out long value, long def = 0) {
             try {
-                value = (long) Data.Value;
+                value = (long) Value;
             } catch (NullReferenceException e) {
                 value = def;
             }
@@ -40,7 +40,7 @@ namespace Base {
         public void GetValue(out bool value, bool def = false) {
             try {
 
-                value = (bool) Data.Value;
+                value = (bool) Value;
             } catch (NullReferenceException e) {
                 value = def;
             }
@@ -49,7 +49,7 @@ namespace Base {
         public void GetValue(out double value, double def = 0) {
             try {
 
-                value = (double) Data.Value;
+                value = (double) Value;
             } catch (Exception ex) when (ex is NullReferenceException || ex is InvalidCastException) {
                 value = def;
             }

@@ -12,7 +12,7 @@ public class AddSerivceDialog : Dialog
 
     public void UpdateMenu(string serviceToBeAdded) {
         ServiceToBeAdded = serviceToBeAdded;
-        if (Base.ServiceManager.Instance.ServicesMetadata.TryGetValue(serviceToBeAdded, out IO.Swagger.Model.ServiceTypeMeta service)) {
+        if (Base.ActionsManager.Instance.ServicesMetadata.TryGetValue(serviceToBeAdded, out Base.ServiceMetadata service)) {
             UpdateToggleGroup(TogglePrefab, ToggleGroup, service.ConfigurationIds);
         }
         

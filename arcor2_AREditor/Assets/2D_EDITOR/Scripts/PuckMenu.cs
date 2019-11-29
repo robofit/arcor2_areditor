@@ -9,13 +9,7 @@ public class PuckMenu : MonoBehaviour {
 
     public GameObject ParameterStringPrefab, ParameterActionPointPrefab, ParameterIntegerPrefab, ParameterDoublePrefab;
     // Start is called before the first frame update
-    void Start() {
-    }
-
-    // Update is called once per frame
-    void Update() {
-
-    }
+   
 
     public void UpdateMenu(Base.Action action) {
         CurrentPuck = action;
@@ -25,7 +19,7 @@ public class PuckMenu : MonoBehaviour {
             }
         }
         transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Data.Id;
-        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.ActionObject.Data.Id + "/" + action.Metadata.Name;
+        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.Data.Type;
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
             Debug.Log(parameter.ToString());
             GameObject paramGO = InitializeParameter(parameter);
@@ -48,15 +42,15 @@ public class PuckMenu : MonoBehaviour {
 
     private GameObject InitializeParameter(Base.ActionParameter actionParameter) {
         switch (actionParameter.ActionParameterMetadata.Type) {
-            case IO.Swagger.Model.ActionParameter.TypeEnum.String:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.String:
                 actionParameter.GetValue(out string value);       
                 return InitializeStringParameter(actionParameter.ActionParameterMetadata.Name, value);
-           case IO.Swagger.Model.ActionParameter.TypeEnum.Pose:
+           case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
                 return InitializePoseParameter(actionParameter);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integer:
                 actionParameter.GetValue(out long longValue);
                 return InitializeIntegerParameter(actionParameter.ActionParameterMetadata.Name, longValue);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Double:
                 return InitializeDoubleParameter(actionParameter);
 
         }
@@ -123,7 +117,7 @@ public class PuckMenu : MonoBehaviour {
    public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        parameter.Data.Value = newValue;
+        parameter.Value = newValue;
         Base.GameManager.Instance.UpdateProject();
     }
 

@@ -43,6 +43,8 @@ namespace Base {
         public event StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
+        public event EventHandler OnActionObjectsChanged;
+        public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
 
         private GameStateEnum gameState;
@@ -105,7 +107,7 @@ namespace Base {
 
         // Update is called once per frame
         private void Update() {
-            if (newScene != null && ActionsManager.Instance.ActionsReady && ServiceManager.Instance.ServicesReady)
+            if (newScene != null && ActionsManager.Instance.ActionsReady)
                 SceneUpdated(newScene);
 
         }
@@ -128,7 +130,7 @@ namespace Base {
                      
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
-                    WebsocketManager.Instance.UpdateObjectTypes();
+                    UpdateActionObjects();                    
                     UpdateServices();
                     GameState = GameStateEnum.MainScreen;
                     break;
@@ -153,8 +155,12 @@ namespace Base {
             WebsocketManager.Instance.DisconnectFromSever();
         }
 
+        public async void UpdateActionObjects() {
+            ActionsManager.Instance.UpdateObjects(await WebsocketManager.Instance.GetObjectTypes());
+        }
+
         public async void UpdateServices() {
-            ServiceManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
+            ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
         }
 
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
@@ -240,13 +246,22 @@ namespace Base {
             return freeName;
         }
 
-        public GameObject SpawnPuck(string action_id, ActionPoint ap, ActionObject actionObject, bool generateData, bool updateProject = true, string puck_id = "") {
-            if (!actionObject.ActionObjectMetadata.ActionsMetadata.TryGetValue(action_id, out ActionMetadata am)) {
-                Debug.LogError("Action " + action_id + " not supported by action object " + ap.ActionObject.name);
-                return null;
+        public GameObject SpawnPuck(string action_id, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+            ActionMetadata actionMetadata;
+
+            try {
+                actionMetadata = actionProvider.GetActionMetadata(action_id);
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+                return null; //TODO: throw exception
             }
+
+            if (actionMetadata == null) {
+                Debug.LogError("Actions not ready");
+                return null; //TODO: throw exception
+            }            
+            
             GameObject puck = Instantiate(PuckPrefab, ap.Actions.transform);
-            //puck.transform.position = ap.transform.position + new Vector3(0f, ap.GetComponent<ActionPoint>().PuckCounter++ * 0.07f, 0f);
             const string glyphs = "0123456789";
             string newId = puck_id;
             if (newId == "") {
@@ -255,7 +270,7 @@ namespace Base {
                     newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
                 }
             }
-            puck.GetComponent<Action>().Init(newId, am, ap, actionObject, generateData, updateProject);
+            puck.GetComponent<Action>().Init(newId, actionMetadata, ap, generateData, actionProvider, updateProject);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
             if (updateProject) {
@@ -289,7 +304,6 @@ namespace Base {
         public void SceneUpdated(IO.Swagger.Model.Scene scene) {
             sceneReady = false;
             newScene = null;
-
             if (scene == null) {
                 if (GameState == GameStateEnum.SceneEditor || GameState == GameStateEnum.ProjectEditor) {
                     GameState = GameStateEnum.MainScreen;
@@ -301,13 +315,12 @@ namespace Base {
             } else if (GameState != GameStateEnum.SceneEditor) {
                 GameState = GameStateEnum.SceneEditor;
             }
-
-            if (!ActionsManager.Instance.ActionsReady || !ServiceManager.Instance.ServicesReady) {
+            
+            if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
 
                 return;
             }
-
             
 
             Scene.GetComponent<Scene>().Data = scene;
@@ -396,34 +409,44 @@ namespace Base {
                         actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                            string originalIOName = projectAction.Type.Split('/').First();
+                            string providerName = projectAction.Type.Split('/').First();
                             string action_type = projectAction.Type.Split('/').Last();
-                            if (actionObjects.TryGetValue(originalIOName, out ActionObject originalActionObject)) {
-                                GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<ActionPoint>(), originalActionObject, false, false, projectAction.Id);
-                                action.GetComponent<Action>().Data = projectAction;
-
-                                foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
-                                    if (action.GetComponent<Action>().Metadata.Parameters.TryGetValue(projectActionParameter.Id, out ActionParameterMetadata actionParameterMetadata)) {
-                                        ActionParameter actionParameter = new ActionParameter {
-                                            ActionParameterMetadata = actionParameterMetadata,
-                                            Data = projectActionParameter
-                                        };
-                                        action.GetComponent<Action>().Parameters.Add(actionParameter.Data.Id, actionParameter);
-                                    }
-                                }
-
-                                foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
-                                    if (actionIO.Default != "start") {
-                                        connections[projectAction.Id] = actionIO.Default;
-                                    }
-                                    action.GetComponentInChildren<PuckInput>().Data = actionIO;
-                                }
-
-                                foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                                    action.GetComponentInChildren<PuckOutput>().Data = actionIO;
-                                }
-
+                            IActionProvider actionProvider;
+                            if (actionObjects.TryGetValue(providerName, out ActionObject originalActionObject)) {
+                                actionProvider = originalActionObject;
+                            } else if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                                actionProvider = originalService;
+                            } else {
+                                continue; //TODO: throw exception
                             }
+                            GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<ActionPoint>(), false, actionProvider, false, projectAction.Id);
+                            action.GetComponent<Action>().Data = projectAction;
+
+                            foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
+                                try {
+                                    IO.Swagger.Model.ObjectActionArg actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
+
+                                    ActionParameter actionParameter = new ActionParameter(actionMetadata);
+                                    action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
+                                } catch (ItemNotFoundException ex) {
+                                    Debug.LogError(ex);
+                                }
+                                    
+                                    
+                            }
+
+                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
+                                if (actionIO.Default != "start") {
+                                    connections[projectAction.Id] = actionIO.Default;
+                                }
+                                action.GetComponentInChildren<PuckInput>().Data = actionIO;
+                            }
+
+                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                                action.GetComponentInChildren<PuckOutput>().Data = actionIO;
+                            }
+
+                            
 
                         }
                         actionPoint.GetComponent<ActionPoint>().UpdatePositionsOfPucks();
@@ -485,7 +508,7 @@ namespace Base {
                         IO.Swagger.Model.Action projectAction = action.Data;
                         projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
                         foreach (ActionParameter parameter in action.Parameters.Values) {
-                            IO.Swagger.Model.ActionParameter projectParameter = parameter.Data;
+                            IO.Swagger.Model.ActionParameter projectParameter = parameter;
                             projectAction.Parameters.Add(projectParameter);
                         }
                         projectAction.Inputs = new List<IO.Swagger.Model.ActionIO>();
@@ -633,9 +656,13 @@ namespace Base {
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
             CloseScene();
-        } 
+        }
+
+        public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
+            return await WebsocketManager.Instance.GetActions(name);
+        }
 
 
-    }
+        }
 
 }

@@ -8,7 +8,7 @@ public class ActionPointMenu : MonoBehaviour {
     public GameObject ActionButtonPrefab;
 
     [SerializeField]
-    private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList;
+    private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList, CollapsablePrefab;
 
     // Start is called before the first frame update
     private void Start() {
@@ -20,8 +20,8 @@ public class ActionPointMenu : MonoBehaviour {
 
     }
 
-    public void CreatePuck(string action_id, Base.ActionObject actionObject) {
-        Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, actionObject, true);
+    public void CreatePuck(string action_id, IActionProvider actionProvider) {
+        Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, true, actionProvider);
     }
 
     public void SaveID(string new_id) {
@@ -45,13 +45,16 @@ public class ActionPointMenu : MonoBehaviour {
         topText.GetComponentInChildren<Text>().text = actionPoint.Data.Id;
         interactiveObjectType.GetComponent<Text>().text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
 
-        foreach (KeyValuePair<Base.ActionObject, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
+        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
+            GameObject collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform);
+            collapsableMenu.GetComponent<CollapsableMenu>().Name = keyval.Key.GetProviderName();
+            collapsableMenu.GetComponent<CollapsableMenu>().Collapsed = true;
+
             foreach (Base.ActionMetadata am in keyval.Value) {
-                GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab);
-                btnGO.transform.SetParent(dynamicContent.transform);
+                GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.GetComponent<CollapsableMenu>().Content.transform);
                 btnGO.transform.localScale = new Vector3(1, 1, 1);
                 Button btn = btnGO.GetComponent<Button>();
-                btn.GetComponentInChildren<TMPro.TMP_Text>().text = keyval.Key.Data.Id + "/" + am.Name;
+                btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
                 btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
             }
 

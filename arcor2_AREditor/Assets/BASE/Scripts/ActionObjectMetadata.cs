@@ -23,6 +23,8 @@ namespace Base {
             }
         }
 
+
+
         public bool Robot {
             get => robot;
             set => robot = value;
