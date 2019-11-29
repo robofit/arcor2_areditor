@@ -25,8 +25,10 @@ namespace Base {
             SetActionObject(actionObject);
             if (apData != null)
                 Data = apData;
-            Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-            Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+            if (Data.Orientations.Count == 0)
+                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
+            if (Data.Joints.Count == 0)
+                Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
         }
 
         public void SetActionObject(ActionObject actionObject) {
