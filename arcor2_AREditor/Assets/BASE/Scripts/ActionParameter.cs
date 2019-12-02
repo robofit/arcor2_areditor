@@ -3,8 +3,7 @@ using System;
 namespace Base {
     public class ActionParameter : IO.Swagger.Model.ActionParameter {
         public IO.Swagger.Model.ObjectActionArg ActionParameterMetadata;
-        //public IO.Swagger.Model.ActionParameter Data = new IO.Swagger.Model.ActionParameter(id: "", value: "", type: new IO.Swagger.Model.ActionParameter.TypeEnum());
-
+       
         public ActionParameter(IO.Swagger.Model.ObjectActionArg actionParameterMetadata, IO.Swagger.Model.ActionParameter actionParameter = null) {
             ActionParameterMetadata = actionParameterMetadata;
             Id = ActionParameterMetadata.Name;

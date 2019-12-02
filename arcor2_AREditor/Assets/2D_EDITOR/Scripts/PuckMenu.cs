@@ -4,30 +4,36 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Globalization;
 
-public class PuckMenu : MonoBehaviour {
+public class PuckMenu : Base.Singleton<PuckMenu> {
 
     public Base.Action CurrentPuck;
 
-    public GameObject ParameterInputPrefab;
+    public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
+    public GameObject DynamicContent;
+    public InputField TopText;
+    public Text ActionType;
     // Start is called before the first frame update
    
 
     public void UpdateMenu(Base.Action action) {
+        DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
         CurrentPuck = action;
-        foreach (RectTransform o in transform.Find("Layout").Find("DynamicContent").GetComponentsInChildren<RectTransform>()) {
+        foreach (RectTransform o in DynamicContent.GetComponentsInChildren<RectTransform>()) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
             }
         }
-        transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Data.Id;
-        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.Data.Type;
+        TopText.text = action.Data.Id;
+        ActionType.text = action.Data.Type;
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
             GameObject paramGO = InitializeParameter(parameter);
             if (paramGO == null)
                 continue;
-            paramGO.transform.SetParent(transform.Find("Layout").Find("DynamicContent"));
+            paramGO.transform.SetParent(DynamicContent.transform);
             paramGO.transform.localScale = new Vector3(1, 1, 1);
         }
+        
+
     }
 
     public void SaveID(string new_id) {
@@ -78,33 +84,22 @@ public class PuckMenu : MonoBehaviour {
     }
 
     private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {
-        /*GameObject actionInput = Instantiate(ParameterActionPointPrefab);
-        actionInput.transform.Find("Label").GetComponent<Text>().text = actionParameter.ActionParameterMetadata.Name;
-        Dropdown dropdown = actionInput.transform.Find("Dropdown").GetComponent<Dropdown>();
-        dropdown.options.Clear();
-
+        GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
+        dropdownParameter.GetComponent<DropdownParameter>().Init();
         actionParameter.GetValue(out string selectedActionId);
-
         int selectedValue = -1;
-
+        List<string> options = new List<string>();
         foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
             foreach (string poseKey in ap.GetPoses().Keys) {
-                Dropdown.OptionData option = new Dropdown.OptionData {
-                    text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey
-                };
-                dropdown.options.Add(option);
-                if (option.text == selectedActionId) {
-                    selectedValue = dropdown.options.Count - 1;
-                }
-            }                     
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
+               
+            }
         }
-        if (selectedValue >= 0) {
-            dropdown.value = selectedValue;
-        }
-        dropdown.onValueChanged.AddListener((int value)
-            => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, dropdown.options[value].text));
-        return actionInput;*/
-        return null;
+        dropdownParameter.GetComponent<DropdownParameter>().PutData(options, selectedActionId,
+            () => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
+                                           dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text));
+       
+        return dropdownParameter;
     }
 
     private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {
