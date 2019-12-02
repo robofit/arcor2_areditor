@@ -50,6 +50,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.String:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Relativepose:
                 parameter = InitializeStringParameter(actionParameter);
                 break;
            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:

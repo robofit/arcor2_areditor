@@ -376,6 +376,7 @@ namespace Base {
                 if (GameState == GameStateEnum.ProjectEditor) {
                     GameState = GameStateEnum.MainScreen;
                 }
+                currentProject = null;
                 return;
             } else if (GameState != GameStateEnum.ProjectEditor) {
                 GameState = GameStateEnum.ProjectEditor;
@@ -385,7 +386,7 @@ namespace Base {
                 newProject = project;
                 return;
             }
-
+            newProject = null;
 
 
             currentProject = project;
@@ -647,12 +648,14 @@ namespace Base {
         }
 
         public void CloseScene() {
+            loadedScene = "";
             WebsocketManager.Instance.UpdateScene(null);
+            
             SceneUpdated(null);
         }
 
         public void CloseProject() {
-            
+            loadedScene = "";
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
             CloseScene();

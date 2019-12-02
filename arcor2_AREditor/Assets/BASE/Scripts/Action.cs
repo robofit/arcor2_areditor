@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace Base {
     public abstract class Action : Clickable {
@@ -23,7 +24,11 @@ namespace Base {
                     if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose) {
                         actionParameter.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
                     } else {
-                        //actionParameter.Value = actionParameter.ActionParameterMetadata.DefaultValue; TODO:take a look
+                        switch (actionParameter.Type) {
+                            case IO.Swagger.Model.ActionParameter.TypeEnum.Relativepose:
+                                actionParameter.Value = (string) Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
+                                break;
+                        }
                     }
                     Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
                 }
