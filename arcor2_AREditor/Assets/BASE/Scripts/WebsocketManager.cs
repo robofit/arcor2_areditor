@@ -185,7 +185,6 @@ namespace Base {
             if (project != null) {
                 eventData.Data = project;
             }
-            
             SendDataToServer(eventData.ToJson());
 
         }
