@@ -29,6 +29,8 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void OnClick() {
         transform.parent.GetComponent<VerticalLayoutGroup>().enabled = false;
+        GetComponent<HorizontalLayoutGroup>().enabled = false;
+
     }
 
     public void PutData(List<string> data, string selectedItem, UnityAction callback) {

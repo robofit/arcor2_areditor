@@ -53,8 +53,17 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.Relativepose:
                 parameter = InitializeStringParameter(actionParameter);
                 break;
-           case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
                 parameter = InitializePoseParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Joints:
+                parameter = InitializeJointsParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Stringenum:
+                parameter = InitializeStringEnumParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integerenum:
+                parameter = InitializeIntegerEnumParameter(actionParameter);
                 break;
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integer:
                 parameter = InitializeIntegerParameter(actionParameter);
@@ -84,23 +93,49 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         return input;
     }
 
-    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {
+
+
+    private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data) {
         GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
         dropdownParameter.GetComponent<DropdownParameter>().Init();
         actionParameter.GetValue(out string selectedActionId);
-        int selectedValue = -1;
+        
+        dropdownParameter.GetComponent<DropdownParameter>().PutData(data, selectedActionId,
+            () => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
+                                            dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text));
+        return dropdownParameter;
+    }
+
+    private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
+        return InitializeDropdownParameter(actionParameter, actionParameter.ActionParameterMetadata.StringAllowedValues);
+    }
+
+    private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
+        List<string> options = new List<string>();
+        foreach (int item in actionParameter.ActionParameterMetadata.IntegerAllowedValues) {
+            options.Add(item.ToString());
+        }
+        return InitializeDropdownParameter(actionParameter, options);
+    }
+
+    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {        
         List<string> options = new List<string>();
         foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
             foreach (string poseKey in ap.GetPoses().Keys) {
-                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
-               
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);               
             }
         }
-        dropdownParameter.GetComponent<DropdownParameter>().PutData(options, selectedActionId,
-            () => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
-                                           dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text));
-       
-        return dropdownParameter;
+        return InitializeDropdownParameter(actionParameter, options);
+    }
+
+     private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {        
+        List<string> options = new List<string>();
+        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+            foreach (string jointsId in ap.GetJoints().Keys) {
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);               
+            }
+        }
+        return InitializeDropdownParameter(actionParameter, options);
     }
 
     private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {

@@ -28,7 +28,7 @@ namespace Base {
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
             if (Data.Joints.Count == 0)
-                Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+                Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "defaultJoints", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -44,6 +44,14 @@ namespace Base {
                 poses.Add(orientation.Id, new IO.Swagger.Model.Pose(orientation.Orientation, Data.Position));
             }
             return poses;
+        }
+
+        public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints() {
+            Dictionary<string, IO.Swagger.Model.RobotJoints> joints = new Dictionary<string, IO.Swagger.Model.RobotJoints>();
+            foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.Joints) {
+                joints.Add(robotJoint.Id, robotJoint);
+            }
+            return joints;
         }
 
         public void DeleteAP(bool updateProject = true) {
