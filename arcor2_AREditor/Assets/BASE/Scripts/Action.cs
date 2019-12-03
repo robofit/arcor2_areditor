@@ -28,6 +28,12 @@ namespace Base {
                             case IO.Swagger.Model.ActionParameter.TypeEnum.Relativepose:
                                 actionParameter.Value = (string) Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
                                 break;
+                            case IO.Swagger.Model.ActionParameter.TypeEnum.Integerenum:
+                                actionParameter.Value = (int) actionParameterMetadata.IntegerAllowedValues[0];
+                                break;
+                            case IO.Swagger.Model.ActionParameter.TypeEnum.Stringenum:
+                                actionParameter.Value = (string) actionParameterMetadata.StringAllowedValues[0];
+                                break;
                         }
                     }
                     Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
@@ -36,14 +42,14 @@ namespace Base {
                     io.InitData();
                 }
             }
-            
+            UpdateId(id, false);
+            UpdateType();
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
             }
 
-            UpdateId(id, updateProject);            
-            UpdateType();
+            
         }
 
         

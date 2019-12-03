@@ -491,17 +491,23 @@ namespace Base {
             SendDataToServer(new IO.Swagger.Model.ResumeProjectRequest(request: "ResumeProject").ToJson());
         }
 
-        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId) {
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector: endEffectorId, id: robotId);
-            IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId, robot: robotArg);
-            IO.Swagger.Model.UpdateActionPointPoseRequest request = new IO.Swagger.Model.UpdateActionPointPoseRequest(request: "UpdateActionPointPose", args: args);
-            SendDataToServer(request.ToJson());
+        public async void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId,
+                orientationId: orientationId, robot: robotArg, updatePosition: updatePosition);
+            IO.Swagger.Model.UpdateActionPointPoseRequest request = new IO.Swagger.Model.UpdateActionPointPoseRequest(id: r_id, request: "UpdateActionPointPose", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPoseResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
         public void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector: endEffectorId, id: robotId);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector: endEffectorId, robotId: robotId);
             IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(robot: robotArg);
             IO.Swagger.Model.UpdateActionObjectPoseRequest request = new IO.Swagger.Model.UpdateActionObjectPoseRequest(request: "UpdateActionObjectPose", args: args);
+
             SendDataToServer(request.ToJson());
         }
 
@@ -598,6 +604,18 @@ namespace Base {
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
+        }
+
+        public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.ActionParamValuesArgs args = new IO.Swagger.Model.ActionParamValuesArgs(id: actionProviderId, paramId: param_id, parentParams: parent_params);
+            IO.Swagger.Model.ActionParamValuesRequest request = new IO.Swagger.Model.ActionParamValuesRequest(id: r_id, request: "ActionParamValues", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ActionParamValuesResponse response = await WaitForResult<IO.Swagger.Model.ActionParamValuesResponse>(r_id);
+            if (response.Result)
+                return response.Data;
+            else
+                return new List<string>();
         }
     }
 }

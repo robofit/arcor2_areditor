@@ -12,7 +12,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", joints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position());         
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position());         
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -27,8 +27,8 @@ namespace Base {
                 Data = apData;
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-            if (Data.Joints.Count == 0)
-                Data.Joints.Add(new IO.Swagger.Model.RobotJoints(dirty: false, id: "defaultJoints", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+            if (Data.RobotJoints.Count == 0)
+                Data.RobotJoints.Add(new IO.Swagger.Model.RobotJoints(isValid: true, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -48,7 +48,7 @@ namespace Base {
 
         public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints() {
             Dictionary<string, IO.Swagger.Model.RobotJoints> joints = new Dictionary<string, IO.Swagger.Model.RobotJoints>();
-            foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.Joints) {
+            foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.RobotJoints) {
                 joints.Add(robotJoint.Id, robotJoint);
             }
             return joints;

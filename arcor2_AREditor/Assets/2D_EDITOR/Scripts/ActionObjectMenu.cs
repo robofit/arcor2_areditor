@@ -103,12 +103,6 @@ public class ActionObjectMenu : MonoBehaviour {
         FocusObjectDoneButton.GetComponent<Button>().interactable = false;
     }
 
-    public void UpdateActionPointPosition() {
-        Dropdown dropdown = robotsList.GetComponent<Dropdown>();
-        Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
-        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
-    }
-
     public async void StartObjectFocusing() {
         Dropdown robotList = robotsList.GetComponent<Dropdown>();
         Dropdown eeList = endEffectorList.GetComponent<Dropdown>();

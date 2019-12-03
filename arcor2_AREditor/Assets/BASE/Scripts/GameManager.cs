@@ -223,6 +223,9 @@ namespace Base {
 
 
             obj.GetComponentInChildren<ActionObject>().ActionObjectMetadata = aom;
+            if (aom.Robot) {
+                obj.GetComponentInChildren<ActionObject>().LoadEndEffectors();
+            }
             if (updateScene)
                 UpdateScene();
             return obj;
@@ -270,7 +273,7 @@ namespace Base {
                     newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
                 }
             }
-            puck.GetComponent<Action>().Init(newId, actionMetadata, ap, generateData, actionProvider, updateProject);
+            puck.GetComponent<Action>().Init(newId, actionMetadata, ap, generateData, actionProvider, false);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
             if (updateProject) {
@@ -596,9 +599,9 @@ namespace Base {
 
         public void ExitApp() => Application.Quit();
 
-        public void UpdateActionPointPosition(ActionPoint ap, string robotId, string endEffectorId) => WebsocketManager.Instance.UpdateActionPointPosition(ap.Data.Id, robotId, endEffectorId);
-        public void UpdateActionObjectPosition(ActionObject ao, string robotId, string endEffectorId) => WebsocketManager.Instance.UpdateActionObjectPosition(ao.Data.Id, robotId, endEffectorId);
-
+        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition)
+            => WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
+        
         public async Task<IO.Swagger.Model.FocusObjectStartResponse> StartObjectFocusing(string objectId, string robotId, string endEffector) {
             return await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
         }
@@ -665,7 +668,11 @@ namespace Base {
             return await WebsocketManager.Instance.GetActions(name);
         }
 
-
+        public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
+            return await WebsocketManager.Instance.GetActionParamValues(actionProviderId, param_id, parent_params);
         }
+
+
+    }
 
 }

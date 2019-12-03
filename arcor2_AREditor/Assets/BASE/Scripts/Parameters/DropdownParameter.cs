@@ -48,6 +48,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
+
         Dropdown.SetupDropdown();
         
        

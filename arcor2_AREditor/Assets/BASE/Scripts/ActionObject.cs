@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
@@ -11,6 +12,7 @@ namespace Base {
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
+        public List<string> EndEffectors = new List<string>();
 
         protected virtual void Start() {
             ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
@@ -31,6 +33,12 @@ namespace Base {
         public virtual bool SceneInteractable() {
             return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor &&
                 GameManager.Instance.SceneInteractable);
+        }
+
+        public async void LoadEndEffectors() {
+            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
+            //idValues.Add(new IO.Swagger.Model.IdValue(id: "robot_id", value: Data.Id));
+            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }
 
                 

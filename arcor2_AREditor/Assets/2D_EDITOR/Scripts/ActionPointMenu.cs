@@ -1,24 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Michsky.UI.ModernUIPack;
 
-public class ActionPointMenu : MonoBehaviour {
+public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
     [System.NonSerialized]
     public Base.ActionPoint CurrentActionPoint;
     public GameObject ActionButtonPrefab;
 
     [SerializeField]
-    private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList, CollapsablePrefab;
-
-    // Start is called before the first frame update
-    private void Start() {
-
-    }
-
-    // Update is called once per frame
-    private void Update() {
-
-    }
+    private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
+        CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle;
 
     public void CreatePuck(string action_id, IActionProvider actionProvider) {
         Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, true, actionProvider);
@@ -29,7 +21,7 @@ public class ActionPointMenu : MonoBehaviour {
     }
 
     public void UpdateMenu() {
-
+        scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
         Base.ActionPoint actionPoint;
         if (CurrentActionPoint == null) {
             return;
@@ -59,43 +51,40 @@ public class ActionPointMenu : MonoBehaviour {
             }
 
         }
-        Dropdown dropdown = robotsList.GetComponent<Dropdown>();
-        Dropdown endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
-        dropdown.options.Clear();
-        dropdown.captionText.text = "";
+        CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
+        CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
+        CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
+
+        robotsListDropdown.dropdownItems.Clear();
+        endEffectorDropdown.dropdownItems.Clear();
+        orientationDropdown.dropdownItems.Clear();
+
         foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
             if (actionObject.ActionObjectMetadata.Robot) {
-                Dropdown.OptionData option = new Dropdown.OptionData {
-                    text = actionObject.Data.Id
+                CustomDropdown.Item item = new CustomDropdown.Item {
+                    itemName = actionObject.Data.Id
                 };
-                dropdown.options.Add(option);
+                if (item.OnItemSelection == null)
+                    item.OnItemSelection = new UnityEngine.Events.UnityEvent();
+                item.OnItemSelection.AddListener(() => OnRobotChanged(actionObject.Data.Id));
+
+                robotsListDropdown.dropdownItems.Add(item);
             }
         }
-        dropdown.value = 0;
-        if (dropdown.options.Count > 0) {
-            endEffectorDropdown.interactable = true;
-            dropdown.interactable = true;
-            updatePositionButton.GetComponent<Button>().interactable = true;
-            dropdown.captionText.text = dropdown.options[dropdown.value].text;
-        } else {
-            endEffectorDropdown.interactable = false;
-            dropdown.interactable = false;
-            updatePositionButton.GetComponent<Button>().interactable = false;
+        robotsListDropdown.SetupDropdown();
+        UpdateEndEffectorList(robotsListDropdown.selectedText.text);
+
+        foreach (string orientation in CurrentActionPoint.GetPoses().Keys) {
+            CustomDropdown.Item item = new CustomDropdown.Item {
+                itemName = orientation
+            };
+            orientationDropdown.dropdownItems.Add(item);
         }
+        orientationDropdown.SetupDropdown();
+    }
 
-
-        endEffectorDropdown.options.Clear();
-        endEffectorDropdown.captionText.text = "EE";
-        endEffectorDropdown.value = 0;
-            endEffectorDropdown.options.Add(new Dropdown.OptionData {
-                text = "EE"
-            });
-        endEffectorDropdown.options.Add(new Dropdown.OptionData {
-            text = "EE_Big"
-        });
-        endEffectorDropdown.options.Add(new Dropdown.OptionData {
-            text = "EE_Small"
-        });
+    private void OnRobotChanged(string robot_id) {
+        UpdateEndEffectorList(robot_id);
     }
 
     public void DeleteAP() {
@@ -104,13 +93,38 @@ public class ActionPointMenu : MonoBehaviour {
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
     }
 
-    public void UpdateActionPointPosition() {
-        Dropdown dropdown = robotsList.GetComponent<Dropdown>();
-        Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
-        Base.GameManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetComponent<Base.ActionPoint>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
+    public void UpdateEndEffectorList(string robot_id) {
+        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+            if (actionObject.Data.Id == robot_id) {
+                UpdateEndEffectorList(actionObject);
+            }
+        }
     }
 
     public void UpdateEndEffectorList(Base.ActionObject robot) {
+        CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
+        endEffectorDropdown.dropdownItems.Clear();
+        foreach (string ee in robot.EndEffectors) {
+            endEffectorDropdown.SetItemTitle(ee);
+            endEffectorDropdown.CreateNewItem();
+        }
+    }
 
+    public void ShowAddOrientationDialog() {
+        AddOrientationDialog.GetComponent<AddOrientationDialog>().ap = CurrentActionPoint;
+        AddOrientationDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+
+    public void ShowFocusConfirmationDialog() {
+        CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
+        CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
+        CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = endEffectorDropdown.selectedText.text;
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().RobotId = robotsListDropdown.selectedText.text;
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().OrientationId = orientationDropdown.selectedText.text;
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().ActionPointId = CurrentActionPoint.Data.Id;
+        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().Init();
+        FocusConfirmationDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
 }
