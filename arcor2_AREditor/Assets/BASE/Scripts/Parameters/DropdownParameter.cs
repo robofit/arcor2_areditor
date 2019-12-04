@@ -33,23 +33,30 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     }
 
+    public void DisableLayoutSelf() {
+        GetComponent<HorizontalLayoutGroup>().enabled = false;
+    }
+
     public void PutData(List<string> data, string selectedItem, UnityAction callback) {
         Dropdown.dropdownItems.Clear();
         foreach (string d in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = d
             };
-            if (item.OnItemSelection == null) {
-                item.OnItemSelection = new UnityEvent();
+            if (callback != null) {
+                if (item.OnItemSelection == null) {
+                    item.OnItemSelection = new UnityEvent();
+                }
+                item.OnItemSelection.AddListener(callback);
             }
-            item.OnItemSelection.AddListener(callback);
+            
             Dropdown.dropdownItems.Add(item);
             if (d == selectedItem) {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
-
-        Dropdown.SetupDropdown();
+        if (Dropdown.dropdownItems.Count > 0)
+            Dropdown.SetupDropdown();
         
        
     }

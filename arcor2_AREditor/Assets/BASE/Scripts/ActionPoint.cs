@@ -33,7 +33,7 @@ namespace Base {
 
         public void SetActionObject(ActionObject actionObject) {
             ActionObject = actionObject;
-            Data.Id = "AP" + ActionObject.CounterAP++.ToString();
+            Data.Id = actionObject.Data.Id +  "-AP" + ActionObject.CounterAP++.ToString();
         }
 
         public abstract void UpdatePositionsOfPucks();

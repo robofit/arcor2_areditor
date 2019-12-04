@@ -156,7 +156,8 @@ namespace Base {
         }
 
         public async void UpdateActionObjects() {
-            ActionsManager.Instance.UpdateObjects(await WebsocketManager.Instance.GetObjectTypes());
+            List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
+            ActionsManager.Instance.UpdateObjects(objectTypeMetas);
         }
 
         public async void UpdateServices() {
@@ -593,26 +594,46 @@ namespace Base {
         }
 
 
-        public void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
-            WebsocketManager.Instance.CreateNewObjectType(objectType);
+        public async void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+            try {
+                await WebsocketManager.Instance.CreateNewObjectType(objectType);
+                UpdateActionObjects();
+            } catch (RequestFailedException ex) {
+                NotificationsModernUI.Instance.ShowNotification("Failed to create new object type", ex.Message);
+            }
         }
 
         public void ExitApp() => Application.Quit();
 
-        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition)
-            => WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
+        public async void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+            
+            try {
+                await WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
+            } catch (RequestFailedException ex) {
+                NotificationsModernUI.Instance.ShowNotification("Failed to update action point", ex.Message);
+            }
+        }
         
-        public async Task<IO.Swagger.Model.FocusObjectStartResponse> StartObjectFocusing(string objectId, string robotId, string endEffector) {
-            return await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
+         public async void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPosition(actionObjectId, robotId, endEffectorId);
+            } catch (RequestFailedException ex) {
+                NotificationsModernUI.Instance.ShowNotification("Failed to update action object", ex.Message);
+            }
+        }
+        
+        public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
+            await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
         }
 
-        public void SavePosition(string objectId, int pointIdx) {
-            WebsocketManager.Instance.SavePosition(objectId, pointIdx);
+        public async Task SavePosition(string objectId, int pointIdx) {
+            await WebsocketManager.Instance.SavePosition(objectId, pointIdx);
         }
 
-        public void FocusObjectDone(string objectId) {
-            WebsocketManager.Instance.FocusObjectDone(objectId);
-        }
+        public async Task FocusObjectDone(string objectId) {
+            await WebsocketManager.Instance.FocusObjectDone(objectId);
+        } 
 
         public async void NewProject(string name, string sceneId) {
             if (name == "") {

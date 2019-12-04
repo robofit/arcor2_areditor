@@ -22,5 +22,6 @@ public class AddOrientationDialog : MonoBehaviour
         Base.GameManager.Instance.UpdateProject();
         NewOrientationName.GetComponent<TMPro.TMP_InputField>().text = "";
         GetComponent<ModalWindowManager>().CloseWindow();
+        MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateOrientations();
     }
 }

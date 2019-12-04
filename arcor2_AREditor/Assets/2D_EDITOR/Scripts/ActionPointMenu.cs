@@ -3,14 +3,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 
-public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
+public class ActionPointMenu : MonoBehaviour {
     [System.NonSerialized]
     public Base.ActionPoint CurrentActionPoint;
     public GameObject ActionButtonPrefab;
 
     [SerializeField]
     private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
-        CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle;
+        CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle,
+        UpdatePositionBlock;
 
     public void CreatePuck(string action_id, IActionProvider actionProvider) {
         Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, true, actionProvider);
@@ -22,6 +23,7 @@ public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
 
     public void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
+
         Base.ActionPoint actionPoint;
         if (CurrentActionPoint == null) {
             return;
@@ -52,12 +54,7 @@ public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
 
         }
         CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
-        CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
-        CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
-
         robotsListDropdown.dropdownItems.Clear();
-        endEffectorDropdown.dropdownItems.Clear();
-        orientationDropdown.dropdownItems.Clear();
 
         foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
             if (actionObject.ActionObjectMetadata.Robot) {
@@ -71,9 +68,22 @@ public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
                 robotsListDropdown.dropdownItems.Add(item);
             }
         }
-        robotsListDropdown.SetupDropdown();
-        UpdateEndEffectorList(robotsListDropdown.selectedText.text);
+        if (robotsListDropdown.dropdownItems.Count == 0) {
+            UpdatePositionBlock.SetActive(false);
+        } else {
+            robotsListDropdown.SetupDropdown();
+            UpdateEndEffectorList(robotsListDropdown.selectedText.text);
+            UpdatePositionBlock.SetActive(true);
+        }
+        
+        UpdateOrientations();
 
+
+    }
+
+    public void UpdateOrientations() {
+        CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
+        orientationDropdown.dropdownItems.Clear();
         foreach (string orientation in CurrentActionPoint.GetPoses().Keys) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = orientation
@@ -83,9 +93,7 @@ public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
         orientationDropdown.SetupDropdown();
     }
 
-    private void OnRobotChanged(string robot_id) {
-        UpdateEndEffectorList(robot_id);
-    }
+    
 
     public void DeleteAP() {
         if (CurrentActionPoint == null)
@@ -99,6 +107,10 @@ public class ActionPointMenu : Base.Singleton<ActionPointMenu> {
                 UpdateEndEffectorList(actionObject);
             }
         }
+    }
+
+    private void OnRobotChanged(string robot_id) {
+        UpdateEndEffectorList(robot_id);
     }
 
     public void UpdateEndEffectorList(Base.ActionObject robot) {

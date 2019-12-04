@@ -2,12 +2,17 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
+using Michsky.UI.ModernUIPack;
 
 public class ActionObjectMenu : MonoBehaviour {
     public GameObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab, robotsList, endEffectorList, StartObjectFocusingButton,
-        SavePositionButton, CurrentPointLabel, NextButton, PreviousButton, FocusObjectDoneButton, UpdatePositionBlockMesh, UpdatePositionBlockVO, robotsListVO, endEffectorListVO;
+    private GameObject aPPrefab;
+    public CustomDropdown RobotsList, EndEffectorList;
+    public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
+    public TMPro.TMP_Text CurrentPointLabel;
+    public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
+
     private int currentFocusPoint = -1;
 
     public void SaveID(string new_id) {
@@ -26,7 +31,37 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     public void UpdateMenu() {
-        Dropdown dropdown, endEffectorDropdown;
+        if (currentFocusPoint >= 0)
+            return;
+        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(true);
+            RobotsListsBlock.SetActive(true);
+        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
+            UpdatePositionBlockVO.SetActive(true);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(true);
+        } else {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+        }
+
+        RobotsList.transform.parent.GetComponent<DropdownParameter>().PutData(Base.ActionsManager.Instance.GetRobots(), "",
+            () => OnRobotChanged(RobotsList.selectedText.text));
+
+        if (RobotsList.dropdownItems.Count > 0)
+            OnRobotChanged(RobotsList.selectedText.text);
+        else {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+        }
+        FocusObjectDoneButton.interactable = false;
+        NextButton.interactable = false;
+        PreviousButton.interactable = false;
+
+        /*Dropdown dropdown, endEffectorDropdown;
         if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
             dropdown = robotsList.GetComponent<Dropdown>();
             endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
@@ -84,8 +119,35 @@ public class ActionObjectMenu : MonoBehaviour {
         });*/
 
         //ActionsManager.Instance.ActionObjectMetadata
-        //if (CurrentObject.GetComponent<ActionObject2D>().Data)
+        //if (CurrentObject.GetComponent<ActionObject2D>().Data)*/
     }
+
+    private void OnRobotChanged(string robot_id) {
+        UpdateEndEffectorList(robot_id);
+    }
+
+    public void UpdateEndEffectorList(Base.ActionObject robot) {
+        EndEffectorList.dropdownItems.Clear();
+        EndEffectorList.transform.parent.GetComponent<DropdownParameter>().PutData(robot.EndEffectors, "", null);
+    }
+
+    public void UpdateEndEffectorList(string robot_id) {
+        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+            if (actionObject.Data.Id == robot_id) {
+                UpdateEndEffectorList(actionObject);
+            }
+        }
+    }
+
+    public void UpdateObjectPosition() {
+        if (RobotsList.dropdownItems.Count == 0 || EndEffectorList.dropdownItems.Count == 0) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
+            return;
+        }
+        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>().Data.Id,
+            RobotsList.selectedText.text, EndEffectorList.selectedText.text);
+    }
+         
 
     private void EnableFocusControls() {
         SavePositionButton.GetComponent<Button>().interactable = true;
@@ -104,38 +166,62 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     public async void StartObjectFocusing() {
-        Dropdown robotList = robotsList.GetComponent<Dropdown>();
-        Dropdown eeList = endEffectorList.GetComponent<Dropdown>();
-        string robotId = robotList.options[robotList.value].text;
-        string endEffector = eeList.options[eeList.value].text;
-        IO.Swagger.Model.FocusObjectStartResponse response = await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<Base.ActionObject>().Data.Id, robotId, endEffector);
-        if (response.Result) {
+        if (RobotsList.dropdownItems.Count == 0 || EndEffectorList.dropdownItems.Count == 0) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
+            return;
+        }
+        try {
+            await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<Base.ActionObject>().Data.Id,
+                RobotsList.selectedText.text, EndEffectorList.selectedText.text);
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
             GetComponent<SimpleSideMenu>().overlayCloseOnPressed = false;
-        } else {
-            CurrentPointLabel.GetComponent<Text>().text = "";
-            GUIHelpers2D.Instance.ShowNotification("Failed to start object focusing: " + (response.Messages.Count > 0 ? response.Messages[0] : ""));
-            GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
-            GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
+            FocusObjectDoneButton.interactable = true;
+            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
+                NextButton.interactable = true;
+                PreviousButton.interactable = true;
+            }
+        } catch (Base.RequestFailedException ex) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to start object focusing", ex.Message);
+            CurrentPointLabel.text = "";
+            currentFocusPoint = -1;
+            if (ex.Message == "Focusing already started.") { //TODO HACK! find better solution
+                FocusObjectDone();
+            }
         }
-
     }
 
-    public void SavePosition() {
+    public async void SavePosition() {
         if (currentFocusPoint < 0)
             return;
-        Base.GameManager.Instance.SavePosition(CurrentObject.GetComponent<Base.ActionObject>().Data.Id, currentFocusPoint);
+        try {
+            await Base.GameManager.Instance.SavePosition(CurrentObject.GetComponent<Base.ActionObject>().Data.Id, currentFocusPoint);
+        } catch (Base.RequestFailedException ex) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
+        }
+
+        
     }
 
-    public void FocusObjectDone() {
-        Base.GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
-        CurrentPointLabel.GetComponent<Text>().text = "";
+    public async void FocusObjectDone() {
+        try {
+            await Base.GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
+            CurrentPointLabel.text = "";
+            GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
+            GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
+            currentFocusPoint = -1;
+            FocusObjectDoneButton.interactable = false;
+            NextButton.interactable = false;
+            PreviousButton.interactable = false;
+        } catch (Base.RequestFailedException ex) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
+        }     
     }
 
     public void NextPoint() {
         currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
+        PreviousButton.interactable = true;
         if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
             NextButton.GetComponent<Button>().interactable = false;
         } else {
@@ -146,6 +232,7 @@ public class ActionObjectMenu : MonoBehaviour {
 
     public void PreviousPoint() {
         currentFocusPoint = Math.Max(currentFocusPoint - 1, 0);
+        NextButton.interactable = true;
         if (currentFocusPoint == 0) {
             PreviousButton.GetComponent<Button>().interactable = false;
         } else {
@@ -155,7 +242,7 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     private void UpdateCurrentPointLabel() {
-        CurrentPointLabel.GetComponent<Text>().text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
+        CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
     }
 
 }
