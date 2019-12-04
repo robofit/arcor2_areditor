@@ -7,5 +7,8 @@ public interface IActionProvider
     string GetProviderName();
 
     Base.ActionMetadata GetActionMetadata(string action_id);
+
+
+    bool IsRobot();
     
 }

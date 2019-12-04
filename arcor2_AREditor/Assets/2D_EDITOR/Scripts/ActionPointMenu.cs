@@ -56,23 +56,11 @@ public class ActionPointMenu : MonoBehaviour {
         CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
         robotsListDropdown.dropdownItems.Clear();
 
-        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-            if (actionObject.ActionObjectMetadata.Robot) {
-                CustomDropdown.Item item = new CustomDropdown.Item {
-                    itemName = actionObject.Data.Id
-                };
-                if (item.OnItemSelection == null)
-                    item.OnItemSelection = new UnityEngine.Events.UnityEvent();
-                item.OnItemSelection.AddListener(() => OnRobotChanged(actionObject.Data.Id));
-
-                robotsListDropdown.dropdownItems.Add(item);
-            }
-        }
+        robotsListDropdown.GetComponent<DropdownRobots>().Init(OnRobotChanged);
         if (robotsListDropdown.dropdownItems.Count == 0) {
             UpdatePositionBlock.SetActive(false);
         } else {
-            robotsListDropdown.SetupDropdown();
-            UpdateEndEffectorList(robotsListDropdown.selectedText.text);
+            OnRobotChanged(robotsListDropdown.selectedText.text);
             UpdatePositionBlock.SetActive(true);
         }
         
@@ -101,26 +89,15 @@ public class ActionPointMenu : MonoBehaviour {
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
     }
 
-    public void UpdateEndEffectorList(string robot_id) {
-        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-            if (actionObject.Data.Id == robot_id) {
-                UpdateEndEffectorList(actionObject);
-            }
-        }
-    }
+   
 
     private void OnRobotChanged(string robot_id) {
-        UpdateEndEffectorList(robot_id);
+        Debug.LogError(robot_id);
+        endEffectorList.GetComponent<CustomDropdown>().dropdownItems.Clear();
+        endEffectorList.GetComponent<DropdownEndEffectors>().Init(robot_id);
     }
 
-    public void UpdateEndEffectorList(Base.ActionObject robot) {
-        CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
-        endEffectorDropdown.dropdownItems.Clear();
-        foreach (string ee in robot.EndEffectors) {
-            endEffectorDropdown.SetItemTitle(ee);
-            endEffectorDropdown.CreateNewItem();
-        }
-    }
+   
 
     public void ShowAddOrientationDialog() {
         AddOrientationDialog.GetComponent<AddOrientationDialog>().ap = CurrentActionPoint;

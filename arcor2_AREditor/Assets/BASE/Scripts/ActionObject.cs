@@ -80,6 +80,14 @@ namespace Base {
             }
             return null; //TODO: throw exception
         }
+
+        public List<string> GetEndEffectors() {
+            return EndEffectors;
+        }
+
+        public bool IsRobot() {
+            return ActionObjectMetadata.Robot;
+        }
     }
 
 }

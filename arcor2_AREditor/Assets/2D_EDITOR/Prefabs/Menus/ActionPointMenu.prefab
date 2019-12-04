@@ -3004,6 +3004,7 @@ GameObject:
   - component: {fileID: 4406934114612772029}
   - component: {fileID: 3445254447744446341}
   - component: {fileID: 19457293368138801}
+  - component: {fileID: 2042683873808786651}
   m_Layer: 5
   m_Name: RobotsList
   m_TagString: Untagged
@@ -3239,6 +3240,18 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &2042683873808786651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3402745082982111923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5fe0995e88aae439fd18f1ab14507b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3630934480877923618
 GameObject:
   m_ObjectHideFlags: 0
@@ -5742,6 +5755,7 @@ GameObject:
   - component: {fileID: 7333193664889028291}
   - component: {fileID: 4329753953385536952}
   - component: {fileID: 4362338777574983378}
+  - component: {fileID: 1022106808557403264}
   m_Layer: 5
   m_Name: EndEffectorList
   m_TagString: Untagged
@@ -5977,6 +5991,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Layout: {fileID: 2204886433377959511}
   Trigger: {fileID: 1441592824850172332}
+--- !u!114 &1022106808557403264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8458222086087197724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c4850016c3851240a78bf179607a0aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8602247600040030491
 GameObject:
   m_ObjectHideFlags: 0

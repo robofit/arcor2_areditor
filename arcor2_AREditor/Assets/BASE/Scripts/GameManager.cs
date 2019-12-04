@@ -55,7 +55,7 @@ namespace Base {
         public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
         private string loadedScene;
-        private IO.Swagger.Model.Project newProject, currentProject = new IO.Swagger.Model.Project(desc:"", id:"JabloPCB", objects:new List<IO.Swagger.Model.ProjectObject>(), sceneId:"JabloPCB", hasLogic: true);
+        private IO.Swagger.Model.Project newProject, currentProject = null;
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
 
@@ -65,7 +65,7 @@ namespace Base {
         public bool SceneInteractable = true;
 
         public enum ConnectionStatusEnum {
-            Connected, Disconnected
+            Connected, Disconnected, Connecting
         }
 
         public enum GameStateEnum {
@@ -102,7 +102,7 @@ namespace Base {
         }
 
         private void Start() {
-            
+            Scene.SetActive(false);
         }
 
         // Update is called once per frame
@@ -124,30 +124,39 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    LoadScenes();
-                     
+                    LoadScenes();                    
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();                    
                     UpdateServices();
                     GameState = GameStateEnum.MainScreen;
+                    Scene.SetActive(true);
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
                     GameState = GameStateEnum.Disconnected;
+                    currentProject = null;
+                    loadedScene = "";
+                    ProjectUpdated(null);
+                    SceneUpdated(null);
+                    Scene.SetActive(false);
+                    ActionsManager.Instance.Clear();
                     break;
             }
         }
 
        
-        public void ConnectToSever(string domain, int port) {
+        public async void ConnectToSever(string domain, int port) {
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            Scene.SetActive(true);
-            WebsocketManager.Instance.ConnectToServer(domain, port);
+            if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {                
+               ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            } else {
+                ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
+                NotificationsModernUI.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
+            }
 
         }
 
@@ -502,6 +511,8 @@ namespace Base {
         public void UpdateProject() {
             List<ActionObject> list = new List<ActionObject>();
             list.AddRange(ActionObjects.transform.GetComponentsInChildren<ActionObject>());
+            if (currentProject == null)
+                return;
             currentProject.Objects.Clear();
             currentProject.SceneId = Scene.GetComponent<Scene>().Data.Id;
             foreach (ActionObject actionObject in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
@@ -573,6 +584,8 @@ namespace Base {
         }
 
         public void RunProject() {
+            if (currentProject == null)
+                return;
             WebsocketManager.Instance.RunProject(currentProject.Id);
             OnRunProject?.Invoke(this, EventArgs.Empty);
         }

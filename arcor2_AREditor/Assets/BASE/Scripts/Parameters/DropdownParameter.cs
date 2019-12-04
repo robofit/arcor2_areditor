@@ -55,8 +55,12 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
-        if (Dropdown.dropdownItems.Count > 0)
+        if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
+            Dropdown.gameObject.SetActive(true);
+        }
+        else
+            Dropdown.gameObject.SetActive(false);
         
        
     }

@@ -9,7 +9,9 @@ namespace Base {
 
         public ServiceMetadata(IO.Swagger.Model.ServiceTypeMeta serviceMeta) : base(configurationIds: serviceMeta.ConfigurationIds, description: serviceMeta.Description,
             type: serviceMeta.Type) {
-
+            if (Type.Contains("Robot")) {
+                robot = true;
+            }
         }
 
         public Dictionary<string, ActionMetadata> ActionsMetadata {

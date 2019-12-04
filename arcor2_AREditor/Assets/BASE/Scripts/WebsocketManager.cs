@@ -44,7 +44,8 @@ namespace Base {
 
         }
 
-        async public void ConnectToServer(string domain, int port) {
+        public async Task<bool> ConnectToServer(string domain, int port) {
+            GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
             clientWebSocket = new ClientWebSocket();
@@ -62,13 +63,8 @@ namespace Base {
             }
 
             connecting = false;
-            if (clientWebSocket.State == WebSocketState.Open) {
-
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-
-            } else {
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-            }
+            
+            return clientWebSocket.State == WebSocketState.Open;
         }
 
         async public void DisconnectFromSever() {
@@ -202,7 +198,7 @@ namespace Base {
 
             JSONObject jsonData = new JSONObject(data);
 
-            if (dispatch.response == null && dispatch.request == null && dispatch.@event == null)
+            if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             if (dispatch.response != null) {
                 switch (dispatch.response) {

@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using IO.Swagger.Model;
+using System.Threading.Tasks;
 
 namespace Base {
     public class ActionsManager : Singleton<ActionsManager> {
@@ -59,6 +60,15 @@ namespace Base {
             }
         }
 
+        public void Clear() {
+            servicesData.Clear();
+            servicesMetadata.Clear();
+            actionObjectsMetadata.Clear();
+            ActionsReady = false;
+            ServicesLoaded = false;
+            ActionObjectsLoaded = false;
+        }
+
         private void SceneChanged(object sender, EventArgs e) {
             ServicesData.Clear();
             foreach (IO.Swagger.Model.SceneService sceneService in Scene.Instance.Data.Services) {
@@ -92,13 +102,20 @@ namespace Base {
         }
 
         public List<string> GetRobots() {
-            List<string> robots = new List<string>();
+            HashSet<string> robots = new HashSet<string>();
             foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
                 if (actionObject.ActionObjectMetadata.Robot) {
                     robots.Add(actionObject.Data.Id);
                 }
             }
-            return robots;
+            foreach (Service service in servicesData.Values) {
+                if (service.Metadata.Robot) {
+                    foreach (string s in service.GetRobots()) {
+                        robots.Add(s);
+                    }
+                }                    
+            }
+            return robots.ToList<string>();
         }
 
 
