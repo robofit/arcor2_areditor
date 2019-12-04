@@ -91,6 +91,16 @@ namespace Base {
             }
         }
 
+        public List<string> GetRobots() {
+            List<string> robots = new List<string>();
+            foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    robots.Add(actionObject.Data.Id);
+                }
+            }
+            return robots;
+        }
+
 
         private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));

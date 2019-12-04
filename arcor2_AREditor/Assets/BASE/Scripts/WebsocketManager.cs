@@ -206,15 +206,6 @@ namespace Base {
                 return;
             if (dispatch.response != null) {
                 switch (dispatch.response) {
-                    case "NewObjectType":
-                        HandleNewObjectType(data);
-                        break;
-                    case "FocusObjectDone":
-                        HandleFocusObjectDone(data);
-                        break;
-                    case "FocusObject":
-                        HandleFocusObject(data);
-                        break;
                     case "OpenProject":
                         HandleOpenProject(data);
                         break;
@@ -324,119 +315,10 @@ namespace Base {
             GameManager.Instance.SceneUpdated(eventSceneChanged.Scene);
         }
 
-        private void HandleNewObjectType(string data) {
-            IO.Swagger.Model.NewObjectTypeResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.NewObjectTypeResponse>(data);
-            if (response.Result) {
-                SSTools.ShowMessage("New object type successfully created", SSTools.Position.bottom, SSTools.Time.twoSecond);
-            } else {
-                SSTools.ShowMessage("Failed to create new object type: " + response.Messages[0], SSTools.Position.bottom, SSTools.Time.threeSecond);
-            }
-        }
-
-        private void HandleFocusObjectStart(string data) {
-            IO.Swagger.Model.FocusObjectStartResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.FocusObjectStartResponse>(data);
-            if (response.Result) {
-                SSTools.ShowMessage("Object focusing started", SSTools.Position.bottom, SSTools.Time.twoSecond);
-            } else {
-                SSTools.ShowMessage("Failed to start object focusing: " + response.Messages[0], SSTools.Position.bottom, SSTools.Time.threeSecond);
-            }
-        }
-
-        private void HandleFocusObjectDone(string data) {
-            IO.Swagger.Model.FocusObjectDoneResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.FocusObjectDoneResponse>(data);
-            if (response.Result && response.Messages.Count == 0) {
-                SSTools.ShowMessage("Object focused successfully", SSTools.Position.bottom, SSTools.Time.twoSecond);
-            } else if (response.Result) {
-                SSTools.ShowMessage(response.Messages[0], SSTools.Position.bottom, SSTools.Time.twoSecond);
-            } else {
-                SSTools.ShowMessage("Failed to focus object: " + response.Messages[0], SSTools.Position.bottom, SSTools.Time.threeSecond);
-            }
-        }
-
-        private void HandleFocusObject(string data) {
-            IO.Swagger.Model.FocusObjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.FocusObjectResponse>(data);
-            if (response.Result) {
-                SSTools.ShowMessage("Point focused", SSTools.Position.bottom, SSTools.Time.twoSecond);
-            } else {
-                SSTools.ShowMessage("Failed to start object focusing: " + response.Messages[0], SSTools.Position.bottom, SSTools.Time.threeSecond);
-            }
-        }
-
-        private void HandleSaveScene(string data) {
-            IO.Swagger.Model.SaveSceneResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.SaveSceneResponse>(data);
-        }
-
-        private void HandleSaveProject(string data) {
-            IO.Swagger.Model.SaveProjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.SaveProjectResponse>(data);
-        }
-
+       
         private void HandleOpenProject(string data) {
             IO.Swagger.Model.OpenProjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProjectResponse>(data);
         }
-
-        private async void HandleListProjects(string data) {
-            IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(data);
-        }
-
-        private void HandleListScenes(string data) {
-            IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(data);
-        }
-
-
-
-        private void HandleGetActions(string data) {
-            IO.Swagger.Model.GetActionsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.GetActionsResponse>(data);
-            if (!response.Result) {
-                Debug.LogError("Request getObjectActions failed!");
-                return;
-            }
-            
-            if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(waitingForObjectActions, out ActionObjectMetadata ao)) {
-                foreach (IO.Swagger.Model.ObjectAction action in response.Data) {
-                    ActionMetadata a = new ActionMetadata(action);
-                    foreach (IO.Swagger.Model.ObjectActionArg arg in action.ActionArgs) {
-                        /* switch (arg.Type) {
-                             //case IO.Swagger.Model.ActionParameter.TypeEnum.String:
-                             //case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
-                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
-                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
-                                 break;
-                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
-                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
-                                 break;
-                             //case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
-                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:
-                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Double, 0d);
-                                 break;
-                             //case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
-                             case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
-                                 a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
-                                 break;
-                    }*/
-
-                    }
-                    ao.ActionsMetadata[a.Name] = a;
-                }
-                ao.ActionsLoaded = true;
-                waitingForObjectActions = "";
-            }
-        }
-
-       /* private void HandleGetObjecTypes(string data) {
-            IO.Swagger.Model.GetObjectTypesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.GetObjectTypesResponse>(data);
-            if (!response.Result) {
-                Debug.LogError("Request getObjectTypes failed!");
-                return;
-            }
-            Dictionary<string, ActionObjectMetadata> newActionObjects = new Dictionary<string, ActionObjectMetadata>();
-
-            foreach (IO.Swagger.Model.ObjectTypeMeta objectType in response.Data) {
-                ActionObjectMetadata ao = new ActionObjectMetadata(objectType);
-                newActionObjects[ao.Type] = ao;
-                actionObjectsToBeUpdated.Add(ao.Type);
-            }
-            ActionsManager.Instance.UpdateObjects(newActionObjects);
-        }*/
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
             int id = requestID++;
@@ -491,46 +373,67 @@ namespace Base {
             SendDataToServer(new IO.Swagger.Model.ResumeProjectRequest(request: "ResumeProject").ToJson());
         }
 
-        public void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId) {
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector: endEffectorId, id: robotId);
-            IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId, robot: robotArg);
-            IO.Swagger.Model.UpdateActionPointPoseRequest request = new IO.Swagger.Model.UpdateActionPointPoseRequest(request: "UpdateActionPointPose", args: args);
-            SendDataToServer(request.ToJson());
+        public async Task UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId,
+                orientationId: orientationId, robot: robotArg, updatePosition: updatePosition);
+            IO.Swagger.Model.UpdateActionPointPoseRequest request = new IO.Swagger.Model.UpdateActionPointPoseRequest(id: r_id, request: "UpdateActionPointPose", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPoseResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector: endEffectorId, id: robotId);
-            IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(robot: robotArg);
-            IO.Swagger.Model.UpdateActionObjectPoseRequest request = new IO.Swagger.Model.UpdateActionObjectPoseRequest(request: "UpdateActionObjectPose", args: args);
-            SendDataToServer(request.ToJson());
+        public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(id: actionObjectId, robot: robotArg);
+            IO.Swagger.Model.UpdateActionObjectPoseRequest request = new IO.Swagger.Model.UpdateActionObjectPoseRequest(id: r_id, request: "UpdateActionObjectPose", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionObjectPoseResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
-            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(request: "NewObjectType", args: objectType);
-            SendDataToServer(request.ToJson());
-            UpdateObjectTypes();
+        public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.NewObjectTypeResponse response = await WaitForResult<IO.Swagger.Model.NewObjectTypeResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public async Task<IO.Swagger.Model.FocusObjectStartResponse> StartObjectFocusing(string objectId, string robotId, string endEffector) {
+        public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
+            int r_id = ++requestID;
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector, robotId);
             IO.Swagger.Model.FocusObjectStartRequestArgs args = new IO.Swagger.Model.FocusObjectStartRequestArgs(objectId: objectId, robot: robotArg);
-            IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: requestID++, request: "FocusObjectStart", args: args);
-            SendDataToServer(request.ToJson(), request.Id, true);
-            return await WaitForResult<IO.Swagger.Model.FocusObjectStartResponse>(request.Id);
+            IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: r_id, request: "FocusObjectStart", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.FocusObjectStartResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectStartResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-
-
-        public void SavePosition(string objectId, int pointIdx) {
+        public async Task SavePosition(string objectId, int pointIdx) {
+            int r_id = ++requestID;
             IO.Swagger.Model.FocusObjectRequestArgs args = new IO.Swagger.Model.FocusObjectRequestArgs(objectId: objectId, pointIdx: pointIdx);
-            IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(request: "FocusObject", args: args);
-            SendDataToServer(request.ToJson());
+            IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(id: r_id, request: "FocusObject", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.FocusObjectResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void FocusObjectDone(string objectId) {
+        public async Task FocusObjectDone(string objectId) {
+            int r_id = ++requestID;
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: objectId);
-            IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(request: "FocusObjectDone", args: args);
-            SendDataToServer(request.ToJson());
+            IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(id: r_id, request: "FocusObjectDone", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.FocusObjectDoneResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectDoneResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
         public async Task<List<IO.Swagger.Model.IdDesc>> LoadScenes() {
@@ -598,6 +501,18 @@ namespace Base {
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
+        }
+
+        public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.ActionParamValuesArgs args = new IO.Swagger.Model.ActionParamValuesArgs(id: actionProviderId, paramId: param_id, parentParams: parent_params);
+            IO.Swagger.Model.ActionParamValuesRequest request = new IO.Swagger.Model.ActionParamValuesRequest(id: r_id, request: "ActionParamValues", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ActionParamValuesResponse response = await WaitForResult<IO.Swagger.Model.ActionParamValuesResponse>(r_id);
+            if (response.Result)
+                return response.Data;
+            else
+                return new List<string>();
         }
     }
 }

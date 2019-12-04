@@ -103,6 +103,10 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         dropdownParameter.GetComponent<DropdownParameter>().PutData(data, selectedActionId,
             () => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
                                             dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text));
+        if (selectedActionId == "" || selectedActionId == null) {
+            OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
+                                            dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text);
+        }
         return dropdownParameter;
     }
 
