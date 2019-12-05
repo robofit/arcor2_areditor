@@ -21,10 +21,7 @@ namespace Base {
             if (generateData) {
                 foreach (IO.Swagger.Model.ObjectActionArg actionParameterMetadata in this.metadata.ActionArgs) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
-                    if (actionParameter.ActionParameterMetadata.Type == IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose) {
-                        actionParameter.Value = ap.ActionObject.Data.Id + "." + ap.Data.Id;
-                    } else {
-                        switch (actionParameter.Type) {
+                    switch (actionParameter.Type) {
                             case IO.Swagger.Model.ActionParameter.TypeEnum.Relativepose:
                                 actionParameter.Value = (string) Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
                                 break;
@@ -34,8 +31,17 @@ namespace Base {
                             case IO.Swagger.Model.ActionParameter.TypeEnum.Stringenum:
                                 actionParameter.Value = (string) actionParameterMetadata.StringAllowedValues[0];
                                 break;
+                            case IO.Swagger.Model.ActionParameter.TypeEnum.Pose:
+                                List<string> poses = new List<string>(ap.GetPoses().Keys);
+                                if (poses.Count == 0) {
+                                    actionParameter.Value = "";
+                                    //TODO: where to get valid ID?
+                                } else {
+                                    actionParameter.Value = (string) actionProvider.GetProviderName() + "." + ap.Data.Id + "." + poses[0];
+                                }
+                                break;
                         }
-                    }
+                    
                     Parameters[actionParameter.ActionParameterMetadata.Name] = actionParameter;
                 }
                 foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {

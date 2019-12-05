@@ -92,7 +92,6 @@ public class ActionPointMenu : MonoBehaviour {
    
 
     private void OnRobotChanged(string robot_id) {
-        Debug.LogError(robot_id);
         endEffectorList.GetComponent<CustomDropdown>().dropdownItems.Clear();
         endEffectorList.GetComponent<DropdownEndEffectors>().Init(robot_id);
     }
