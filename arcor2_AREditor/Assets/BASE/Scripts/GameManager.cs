@@ -51,9 +51,11 @@ namespace Base {
 
         
 
-        public GameObject ActionObjects, Scene, SpawnPoint;
+        public GameObject ActionObjects, Scene, SpawnPoint, LoadingScreen;
         public GameObject ConnectionPrefab, APConnectionPrefab, ActionPointPrefab, PuckPrefab, ButtonPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
+        public GameObject Tooltip;
+        public TMPro.TextMeshProUGUI Text;
         private string loadedScene;
         private IO.Swagger.Model.Project newProject, currentProject = null;
         private IO.Swagger.Model.Scene newScene;
@@ -103,6 +105,7 @@ namespace Base {
 
         private void Start() {
             Scene.SetActive(false);
+            ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
         }
 
         // Update is called once per frame
@@ -124,6 +127,8 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    MenuManager.Instance.DisableAllMenus();
+                    LoadingScreen.SetActive(true);
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     LoadScenes();                    
                     Projects = await WebsocketManager.Instance.LoadProjects();
@@ -131,7 +136,7 @@ namespace Base {
                     UpdateActionObjects();                    
                     UpdateServices();
                     GameState = GameStateEnum.MainScreen;
-                    Scene.SetActive(true);
+                    Scene.SetActive(true);                    
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
@@ -162,6 +167,11 @@ namespace Base {
 
         public void DisconnectFromSever() {
             WebsocketManager.Instance.DisconnectFromSever();
+        }
+
+        private void OnActionsLoaded(object sender, EventArgs e) {
+            LoadingScreen.SetActive(false);
+            MenuManager.Instance.EnableAllWindows();
         }
 
         public async void UpdateActionObjects() {

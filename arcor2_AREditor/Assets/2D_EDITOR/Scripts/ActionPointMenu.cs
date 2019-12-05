@@ -49,6 +49,14 @@ public class ActionPointMenu : MonoBehaviour {
                 btnGO.transform.localScale = new Vector3(1, 1, 1);
                 Button btn = btnGO.GetComponent<Button>();
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
+                btnGO.AddComponent<TooltipContent>();
+                if (btnGO.GetComponent<TooltipContent>().tooltipObject == null) {
+                    btnGO.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+                }
+                if (btnGO.GetComponent<TooltipContent>().descriptionText == null) {
+                    btnGO.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+                }
+                btnGO.GetComponent<TooltipContent>().description = am.Description;
                 btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
             }
 

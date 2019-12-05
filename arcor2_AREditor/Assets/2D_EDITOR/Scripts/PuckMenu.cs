@@ -76,7 +76,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         if (parameter == null) {
             return null;
         } else {
-            parameter.GetComponent<IActionParameter>().SetLabel(actionParameter.Id);
+            parameter.GetComponent<IActionParameter>().SetLabel(actionParameter.Id, actionParameter.ActionParameterMetadata.Description);
             return parameter;
             ;
         }

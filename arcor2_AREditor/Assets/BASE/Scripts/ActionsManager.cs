@@ -11,7 +11,7 @@ namespace Base {
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
         
-        public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated;
+        public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
 
 
         public GameObject InteractiveObjects, World, PuckPrefab;
@@ -56,6 +56,7 @@ namespace Base {
                     }
                 }
                 ActionsReady = true;
+                OnActionsLoaded?.Invoke(this, EventArgs.Empty);
                 enabled = false;
             }
         }
@@ -81,6 +82,7 @@ namespace Base {
 
         public void UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
+                Debug.LogError(newServiceMeta);
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
                 ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
                 UpdateActionsOfService(serviceMetadata);
