@@ -47,8 +47,7 @@ public class ActionObjectMenu : MonoBehaviour {
             RobotsListsBlock.SetActive(false);
         }
 
-        RobotsList.transform.parent.GetComponent<DropdownParameter>().PutData(Base.ActionsManager.Instance.GetRobots(), "",
-            () => OnRobotChanged(RobotsList.selectedText.text));
+        RobotsList.GetComponent<DropdownRobots>().Init(OnRobotChanged);
 
         if (RobotsList.dropdownItems.Count > 0)
             OnRobotChanged(RobotsList.selectedText.text);
@@ -60,84 +59,13 @@ public class ActionObjectMenu : MonoBehaviour {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-
-        /*Dropdown dropdown, endEffectorDropdown;
-        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
-            dropdown = robotsList.GetComponent<Dropdown>();
-            endEffectorDropdown = endEffectorList.GetComponent<Dropdown>();
-        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
-            dropdown = robotsListVO.GetComponent<Dropdown>();
-            endEffectorDropdown = endEffectorListVO.GetComponent<Dropdown>();
-        } else {
-            dropdown = null;
-            endEffectorDropdown = null;
-        }
-        if (dropdown != null) {
-            dropdown.options.Clear();
-            dropdown.captionText.text = "";
-            foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    Dropdown.OptionData option = new Dropdown.OptionData {
-                        text = actionObject.Data.Id
-                    };
-                    dropdown.options.Add(option);
-                }
-            }
-            dropdown.value = 0;
-        }
-
-        if (dropdown?.options.Count > 0) {
-            dropdown.captionText.text = dropdown.options[dropdown.value].text;
-            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
-                EnableFocusControls();
-                UpdatePositionBlockMesh.SetActive(true);
-                UpdatePositionBlockVO.SetActive(false);
-            } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
-                UpdatePositionBlockMesh.SetActive(false);
-                UpdatePositionBlockVO.SetActive(true);
-            } else {
-                UpdatePositionBlockMesh.SetActive(false);
-                UpdatePositionBlockVO.SetActive(false);
-            }
-
-        } else {
-            
-            DisableFocusControls();
-            UpdatePositionBlockMesh.SetActive(false);
-            UpdatePositionBlockVO.SetActive(false);
-        }
-
-        /*
-        endEffectorDropdown.options.Clear();
-        endEffectorDropdown.captionText.text = "EE_Big";
-        endEffectorDropdown.value = 0;
-        endEffectorDropdown.options.Add(new Dropdown.OptionData {
-            text = "EE_Big"
-        });
-        endEffectorDropdown.options.Add(new Dropdown.OptionData {
-            text = "EE_Small"
-        });*/
-
-        //ActionsManager.Instance.ActionObjectMetadata
-        //if (CurrentObject.GetComponent<ActionObject2D>().Data)*/
     }
 
     private void OnRobotChanged(string robot_id) {
-        UpdateEndEffectorList(robot_id);
-    }
-
-    public void UpdateEndEffectorList(Base.ActionObject robot) {
         EndEffectorList.dropdownItems.Clear();
-        EndEffectorList.transform.parent.GetComponent<DropdownParameter>().PutData(robot.EndEffectors, "", null);
+        EndEffectorList.GetComponent<DropdownEndEffectors>().Init(robot_id);
     }
-
-    public void UpdateEndEffectorList(string robot_id) {
-        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
-            if (actionObject.Data.Id == robot_id) {
-                UpdateEndEffectorList(actionObject);
-            }
-        }
-    }
+    
 
     public void UpdateObjectPosition() {
         if (RobotsList.dropdownItems.Count == 0 || EndEffectorList.dropdownItems.Count == 0) {

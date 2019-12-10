@@ -22,6 +22,9 @@ public class MainMenu : MonoBehaviour {
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         HideEverything();
         DisconnectedFromServer(this, EventArgs.Empty);
+        DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
+        PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
     }
 
 
@@ -249,6 +252,9 @@ public class MainMenu : MonoBehaviour {
     }
 
     public void ConnectToServer() {
+        PlayerPrefs.SetString("arserver_domain", DomainInput.GetComponent<TMPro.TMP_InputField>().text);
+        PlayerPrefs.SetInt("arserver_port", int.Parse(PortInput.GetComponent<TMPro.TMP_InputField>().text));
+        PlayerPrefs.Save();
         Base.GameManager.Instance.ConnectToSever(GetConnectionDomain(), GetConnectionPort());
     }
 

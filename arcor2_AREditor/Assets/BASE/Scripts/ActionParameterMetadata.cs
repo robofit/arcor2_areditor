@@ -1,6 +1,6 @@
 
 namespace Base {
-    public class ActionParameterMetadatas : IO.Swagger.Model.ObjectActionArgs {
+    public class ActionParameterMetadatas : IO.Swagger.Model.ObjectActionArg {
         private string name;
         private IO.Swagger.Model.ActionParameter.TypeEnum type;
         private object defaultValue;

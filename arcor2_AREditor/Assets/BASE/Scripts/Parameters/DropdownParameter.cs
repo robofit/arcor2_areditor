@@ -18,8 +18,15 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         throw new System.NotImplementedException();
     }
 
-    public void SetLabel(string label) {
+    public void SetLabel(string label, string description) {
         Label.text = label;
+        if (Label.GetComponent<TooltipContent>().tooltipObject == null) {
+            Label.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+        }
+        if (Label.GetComponent<TooltipContent>().descriptionText == null) {
+            Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+        }
+        Label.GetComponent<TooltipContent>().description = description;
     }
 
     public void Init() {
@@ -55,8 +62,12 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
-        if (Dropdown.dropdownItems.Count > 0)
+        if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
+            Dropdown.gameObject.SetActive(true);
+        }
+        else
+            Dropdown.gameObject.SetActive(false);
         
        
     }
