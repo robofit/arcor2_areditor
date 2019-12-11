@@ -11,6 +11,7 @@ public class MainMenu : MonoBehaviour {
         AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog,
         ServiceSettingsDialog, CloseSceneDialog, CloseProjectDialog, OpenSceneDialog, OpenProjectDialog; //defined in inspector
 
+    private GameObject debugTools;
 
     // Start is called before the first frame update
     void Start() {
@@ -25,6 +26,10 @@ public class MainMenu : MonoBehaviour {
         DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
         PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
+
+        debugTools = GameObject.FindGameObjectWithTag("debug_tools");
+        if(debugTools != null)
+            debugTools.SetActive(false);
     }
 
 
@@ -51,7 +56,7 @@ public class MainMenu : MonoBehaviour {
 
         }
     }
-   
+
 
     private void SetMainScreen() {
         MainControlButtons.SetActive(true);
@@ -140,7 +145,7 @@ public class MainMenu : MonoBehaviour {
     }
 
     public async void ServiceStateChanged(ServiceButton serviceButton) {
-        
+
         if (!serviceButton.State) {
             ShowAddServiceDialog(serviceButton.ServiceMetadata.Type);
         } else {
@@ -162,7 +167,7 @@ public class MainMenu : MonoBehaviour {
         } else {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
         }
-        
+
     }
 
 
@@ -170,18 +175,18 @@ public class MainMenu : MonoBehaviour {
     public void ShowCloseSceneDialog(string type) {
         CloseSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
-    
+
 
     public void ShowCloseProjectDialog(string type) {
         CloseProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
-    
+
 
     public void ShowAddObjectDialog(string type) {
         AddNewObjectDialog.GetComponent<AddNewObjectDialog>().ObjectToBeCreated = type;
         AddNewObjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
-    
+
 
     public void ShowAutoAddObjectDialog(string type) {
         AutoAddObjectsDialog.GetComponent<AutoAddObjectDialog>().ObjectToBeAdded = type;
@@ -203,7 +208,7 @@ public class MainMenu : MonoBehaviour {
 
     }
 
-     public void ShowNewSceneDialog() {
+    public void ShowNewSceneDialog() {
         NewSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
 
     }
@@ -213,7 +218,7 @@ public class MainMenu : MonoBehaviour {
 
     }
 
-     public void ShowOpenSceneDialog() {
+    public void ShowOpenSceneDialog() {
         OpenSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
 
     }
@@ -304,7 +309,7 @@ public class MainMenu : MonoBehaviour {
         Base.NotificationsModernUI.Instance.ShowNotification("Scene save sucessfull", "");
     }
 
-    public async void SaveProject() {       
+    public async void SaveProject() {
         IO.Swagger.Model.SaveProjectResponse saveProjectResponse = await Base.GameManager.Instance.SaveProject();
         if (!saveProjectResponse.Result) {
             saveProjectResponse.Messages.ForEach(Debug.LogError);
@@ -315,12 +320,12 @@ public class MainMenu : MonoBehaviour {
     }
 
 
-     public void UpdateScenes(object sender, EventArgs eventArgs) {
+    public void UpdateScenes(object sender, EventArgs eventArgs) {
         Dropdown sceneListDropdown = SceneList.GetComponent<Dropdown>();
         sceneListDropdown.options.Clear();
         sceneListDropdown.options.Add(new Dropdown.OptionData("Create new scene"));
         sceneListDropdown.options.Add(new Dropdown.OptionData("---"));
-        foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {            
+        foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
             sceneListDropdown.options.Add(new Dropdown.OptionData(scene.Id));
         }
     }
@@ -354,5 +359,13 @@ public class MainMenu : MonoBehaviour {
         Base.GameManager.Instance.ExitApp();
     }
 
+    public void SetDebugMode() {
+        if (debugTools != null) {
+            if (debugTools.activeSelf)
+                debugTools.SetActive(false);
+            else
+                debugTools.SetActive(true);
+        }
+    }
 
 }
