@@ -6,17 +6,15 @@ namespace Base {
     public abstract class Action : Clickable {
         private ActionMetadata metadata;
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
-        private ActionObject actionObject;
-        private IO.Swagger.Model.SceneService service;
         public PuckInput Input;
         public PuckOutput Output;
-        private IActionProvider actionProvider;
+        public IActionProvider ActionProvider;
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
         public void Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
            
             this.metadata = metadata;
-            this.actionProvider = actionProvider;
+            this.ActionProvider = actionProvider;
             
             if (generateData) {
                 foreach (IO.Swagger.Model.ObjectActionArg actionParameterMetadata in this.metadata.ActionArgs) {
@@ -71,7 +69,7 @@ namespace Base {
         }
 
         public string GetActionType() {
-            return actionProvider.GetProviderName() + "/" + metadata.Name; //TODO: AO|Service/Id
+            return ActionProvider.GetProviderName() + "/" + metadata.Name; //TODO: AO|Service/Id
         }
 
         public void DeleteAction(bool updateProject = true) {
