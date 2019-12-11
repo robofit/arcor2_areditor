@@ -17,10 +17,7 @@ namespace Base {
                                                                 needsServices: meta.NeedsServices,
                                                                 objectModel: meta.ObjectModel,
                                                                 type: meta.Type) {
-            // TODO: HACK!
-            if (Type == "RestRobot") {
-                Base = "Robot";
-            }
+           
         }
 
 

@@ -10,9 +10,19 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public TMPro.TMP_Text Label;
     public CustomDropdown Dropdown;
-    public GameObject Items;
+    public GameObject Items, LoadingObject;
+    public bool Loading;
 
-
+    public void SetLoading(bool loading) {
+        this.Loading = loading;
+        if (loading) {
+            Dropdown.gameObject.SetActive(false);
+            LoadingObject.SetActive(true);
+        } else {
+            Dropdown.gameObject.SetActive(true);
+            LoadingObject.SetActive(false);
+        }
+    }
     
     public object GetValue() {
         throw new System.NotImplementedException();
@@ -31,7 +41,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void Init() {
         Dropdown.listParent = transform.parent;
-        
+        this.Loading = false;
     }
 
     public void OnClick() {
@@ -62,12 +72,13 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
+        SetLoading(false);
         if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
-            Dropdown.gameObject.SetActive(true);
-        }
-        else
+            Debug.LogError("asdfasdf: " + Dropdown.selectedText.text);
+        } else {
             Dropdown.gameObject.SetActive(false);
+        }
         
        
     }

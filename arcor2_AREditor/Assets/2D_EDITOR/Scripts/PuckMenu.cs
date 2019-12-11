@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
+using UnityEngine.Events;
+using Michsky.UI.ModernUIPack;
 
 public class PuckMenu : Base.Singleton<PuckMenu> {
 
@@ -15,7 +18,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     // Start is called before the first frame update
    
 
-    public void UpdateMenu(Base.Action action) {
+    public async void UpdateMenu(Base.Action action) {
         DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
         CurrentPuck = action;
         foreach (RectTransform o in DynamicContent.GetComponentsInChildren<RectTransform>()) {
@@ -25,15 +28,33 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         }
         TopText.text = action.Data.Id;
         ActionType.text = action.Data.Type;
+        List<Tuple<DropdownParameter, Base.ActionParameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Base.ActionParameter>>();
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
-            GameObject paramGO = InitializeParameter(parameter);
+            GameObject paramGO = await InitializeParameter(parameter);
             if (paramGO == null)
                 continue;
+            if (parameter.ActionParameterMetadata.DynamicValue) {
+                dynamicDropdowns.Add(new Tuple<DropdownParameter, Base.ActionParameter>(paramGO.GetComponent<DropdownParameter>(), parameter));
+            }
             paramGO.transform.SetParent(DynamicContent.transform);
             paramGO.transform.localScale = new Vector3(1, 1, 1);
         }
-        
-
+        int parentCount = 0;
+        while (dynamicDropdowns.Count > 0) {
+            for (int i = dynamicDropdowns.Count - 1; i >= 0; i--) {
+                Tuple<DropdownParameter, Base.ActionParameter> tuple = dynamicDropdowns[i];
+                if (tuple.Item2.ActionParameterMetadata.DynamicValueParents.Count == parentCount) {
+                    try {
+                        await LoadDropdownValues(tuple.Item1, tuple.Item2, async () => await LoadDropdownValues(tuple.Item1, tuple.Item2));
+                    } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
+                        Debug.LogError(ex);
+                    } finally {
+                        dynamicDropdowns.RemoveAt(i);
+                    }
+                }
+            }
+            parentCount += 1;
+        }
     }
 
     public void SaveID(string new_id) {
@@ -46,12 +67,12 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         CurrentPuck.DeleteAction();
     }
 
-    private GameObject InitializeParameter(Base.ActionParameter actionParameter) {
+    private async Task<GameObject> InitializeParameter(Base.ActionParameter actionParameter) {
         GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.String:
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.Relativepose:
-                parameter = InitializeStringParameter(actionParameter);
+                parameter = await InitializeStringParameter(actionParameter);
                 break;
             case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
                 parameter = InitializePoseParameter(actionParameter);
@@ -78,36 +99,77 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         } else {
             parameter.GetComponent<IActionParameter>().SetLabel(actionParameter.Id, actionParameter.ActionParameterMetadata.Description);
             return parameter;
-            ;
         }
         
     }
 
-    private GameObject InitializeStringParameter(Base.ActionParameter actionParameter) {
-        GameObject input = Instantiate(ParameterInputPrefab);
-        input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
-        actionParameter.GetValue(out string value);
-        input.GetComponent<LabeledInput>().SetValue(value);
-        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
-            => OnChangeParameterHandler(actionParameter.Id, newValue));
+    private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
+        GameObject input;
+        if (actionParameter.ActionParameterMetadata.DynamicValue) {
+            input = InitializeDropdownParameter(actionParameter, new List<string>());
+            input.GetComponent<DropdownParameter>().SetLoading(true);     
+        } else {
+            actionParameter.GetValue(out string value);
+            input = Instantiate(ParameterInputPrefab);
+            input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
+            input.GetComponent<LabeledInput>().SetValue(value);
+            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+                => OnChangeParameterHandler(actionParameter.Id, newValue));
+        }      
         return input;
     }
 
+    private async Task LoadDropdownValues(DropdownParameter dropdownParameter, Base.ActionParameter actionParameter, UnityAction callback = null) {
+        Debug.LogError(actionParameter.Id);
+        List<string> values = new List<string>();
+        List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
+        foreach (string parent_param in actionParameter.ActionParameterMetadata.DynamicValueParents) {
+            IO.Swagger.Model.IdValue idValue = new IO.Swagger.Model.IdValue(id: parent_param, value: GetDropdownParamValue(parent_param));
+            args.Add(idValue);
+            if (callback != null)
+                AddOnChangeToDropdownParameter(parent_param, callback);
+        }
+        values = await Base.GameManager.Instance.GetActionParamValues(CurrentPuck.ActionProvider.GetProviderName(), actionParameter.Id, args);
+        DropdownParameterPutData(dropdownParameter, values, "", actionParameter.ActionParameterMetadata.Name);
+    }
 
+    private string GetDropdownParamValue(string param_id) {
+        Debug.LogError("blaaaa1");
+        Debug.LogError(param_id);
+        Debug.LogError(GetDropdownParameter(param_id).Dropdown.selectedText.text);
+        Debug.LogError("blaaaa2");
+        return GetDropdownParameter(param_id).Dropdown.selectedText.text;
+    }
+
+    private DropdownParameter GetDropdownParameter(string param_id) {
+        foreach (DropdownParameter dropdownParameter in DynamicContent.GetComponentsInChildren<DropdownParameter>()) {
+            if (dropdownParameter.Label.text == param_id)
+                return dropdownParameter;
+        }
+        throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
+    }
+
+    private void AddOnChangeToDropdownParameter(string param_id, UnityAction callback) {
+        DropdownParameter dropdownParameter = GetDropdownParameter(param_id);
+        foreach (CustomDropdown.Item item in dropdownParameter.Dropdown.dropdownItems) {
+            item.OnItemSelection.AddListener(callback);
+        }
+    }
 
     private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data) {
         GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
         dropdownParameter.GetComponent<DropdownParameter>().Init();
         actionParameter.GetValue(out string selectedActionId);
-        
-        dropdownParameter.GetComponent<DropdownParameter>().PutData(data, selectedActionId,
-            () => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
-                                            dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text));
-        if (selectedActionId == "" || selectedActionId == null) {
-            OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name,
-                                            dropdownParameter.GetComponent<DropdownParameter>().Dropdown.selectedText.text);
-        }
+        DropdownParameterPutData(dropdownParameter.GetComponent<DropdownParameter>(), data, selectedActionId, actionParameter.ActionParameterMetadata.Name);
         return dropdownParameter;
+    }
+
+    private void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId) {
+        dropdownParameter.PutData(data, selectedValue,
+            () => OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text));
+        if (selectedValue == "" || selectedValue == null) {
+            OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text);
+        }
     }
 
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
