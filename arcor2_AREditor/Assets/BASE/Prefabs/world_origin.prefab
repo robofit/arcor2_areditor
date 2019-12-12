@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1259925336932117235}
   m_Layer: 0
   m_Name: world_origin
-  m_TagString: world_origin
+  m_TagString: world_anchor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -45,8 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49de28a8bdca036498db6c626ee62883, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scenePrefab: {fileID: 1121270991111529823, guid: d2fbad24826d8d245a65fa509d5c7781,
-    type: 3}
 --- !u!65 &1259925336932117235
 BoxCollider:
   m_ObjectHideFlags: 0

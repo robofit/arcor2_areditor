@@ -129,14 +129,14 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     MenuManager.Instance.DisableAllMenus();
                     LoadingScreen.SetActive(true);
+                    Scene.SetActive(true);
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    LoadScenes();                    
+                    LoadScenes();
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();                    
                     UpdateServices();
                     GameState = GameStateEnum.MainScreen;
-                    Scene.SetActive(true);                    
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);

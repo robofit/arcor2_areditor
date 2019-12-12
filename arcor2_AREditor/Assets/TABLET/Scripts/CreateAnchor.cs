@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,26 +6,49 @@ using UnityEngine.XR.ARFoundation;
 
 public class CreateAnchor : MonoBehaviour
 {
-    private ARReferencePointManager arRefPointManager;
+    private ARAnchorManager arAnchorManager;
     private ARPlaneManager arPlaneManager;
-    private ARReferencePoint worldAnchor;
+    private ARAnchor worldAnchor;
 
     // Start is called before the first frame update
     private void Start() {
-        arRefPointManager = GameObject.FindWithTag("AR_MANAGERS").GetComponent<ARReferencePointManager>();
+        arAnchorManager = GameObject.FindWithTag("AR_MANAGERS").GetComponent<ARAnchorManager>();
         arPlaneManager = GameObject.FindWithTag("AR_MANAGERS").GetComponent<ARPlaneManager>();
+        worldAnchor = arAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
+    }
+
+    private void OnEnable() {
+        Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
+    }
+
+    private void OnDisable() {
+        Base.GameManager.Instance.OnConnectedToServer -= ConnectedToServer;
     }
 
     public void OnClick() {
         Debug.Log("ADDING ANCHOR");
-#if UNITY_EDITOR
-        Base.Scene.Instance.transform.parent = transform;
-#else
-        worldAnchor = arRefPointManager.AddReferencePoint(new Pose(transform.position, transform.rotation));
-        Base.Scene.Instance.transform.parent = worldAnchor.transform;
-#endif
-        Base.Scene.Instance.transform.localPosition = new Vector3(0f, 0f, 0f);
-        Base.Scene.Instance.transform.localScale = new Vector3(1f, 1f, 1f);
-        //Base.Scene.Instance.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        try {
+            arAnchorManager.RemoveAnchor(worldAnchor);
+        } catch(NullReferenceException e) {
+            Debug.Log(e);
+        }
+
+        worldAnchor = arAnchorManager.AddAnchor(new Pose(transform.position, transform.rotation));
+
+        if (Base.GameManager.Instance.ConnectionStatus == Base.GameManager.ConnectionStatusEnum.Connected)
+            AttachAnchor();
     }
+
+    private void AttachAnchor() {
+        Base.Scene.Instance.transform.parent = worldAnchor.transform;
+
+        Base.Scene.Instance.transform.localPosition = Vector3.zero;
+        Base.Scene.Instance.transform.localScale = new Vector3(1f, 1f, 1f);
+        Base.Scene.Instance.transform.localEulerAngles = Vector3.zero;
+    }
+
+    private void ConnectedToServer(object sender, Base.StringEventArgs e) {
+        AttachAnchor();
+    }
+
 }

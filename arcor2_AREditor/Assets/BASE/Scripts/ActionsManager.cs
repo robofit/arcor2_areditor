@@ -14,7 +14,7 @@ namespace Base {
         public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
 
 
-        public GameObject InteractiveObjects, World, PuckPrefab;
+        public GameObject InteractiveObjects, PuckPrefab;
 
         public event EventHandler OnActionObjectsUpdated;
 
