@@ -83,6 +83,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
 
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
         string modelTypeString = ModelsList.GetComponent<Dropdown>().options[ModelsList.GetComponent<Dropdown>().value].text;
+        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
         if (ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
             IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
             switch (modelTypeString) {
@@ -93,7 +94,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
                     decimal sizeZ = decimal.Parse(BoxZ.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(objectId, sizeX, sizeY, sizeZ);
                     objectModel.Box = box;
-                    
+
                     break;
                 case "Sphere":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;
@@ -119,10 +120,15 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
                     return;
             }
             objectModel.Type = modelType;
-        }
-        
-        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
+            objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
                 _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
+        } else {
+            objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
+                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
+        }
+
+        
+        
         Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
     }
 
