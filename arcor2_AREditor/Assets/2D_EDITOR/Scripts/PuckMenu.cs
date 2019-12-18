@@ -130,14 +130,10 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 AddOnChangeToDropdownParameter(parent_param, callback);
         }
         values = await Base.GameManager.Instance.GetActionParamValues(CurrentPuck.ActionProvider.GetProviderName(), actionParameter.Id, args);
-        DropdownParameterPutData(dropdownParameter, values, "", actionParameter.ActionParameterMetadata.Name);
+        DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
     }
 
     private string GetDropdownParamValue(string param_id) {
-        Debug.LogError("blaaaa1");
-        Debug.LogError(param_id);
-        Debug.LogError(GetDropdownParameter(param_id).Dropdown.selectedText.text);
-        Debug.LogError("blaaaa2");
         return GetDropdownParameter(param_id).Dropdown.selectedText.text;
     }
 

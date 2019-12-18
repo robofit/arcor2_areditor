@@ -7,11 +7,12 @@ public class ActionPointMenu : MonoBehaviour {
     [System.NonSerialized]
     public Base.ActionPoint CurrentActionPoint;
     public GameObject ActionButtonPrefab;
+    public GameObject UpdatePoseBlock, UpdateJointsBlock;
 
     [SerializeField]
     private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
         CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle,
-        UpdatePositionBlock;
+        UpdatePositionBlock, JointsList, AddJointsDialog;
 
     public void CreatePuck(string action_id, IActionProvider actionProvider) {
         Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, true, actionProvider);
@@ -71,7 +72,7 @@ public class ActionPointMenu : MonoBehaviour {
             OnRobotChanged(robotsListDropdown.selectedText.text);
             UpdatePositionBlock.SetActive(true);
         }
-        
+        UpdateJoints();
         UpdateOrientations();
 
 
@@ -88,6 +89,24 @@ public class ActionPointMenu : MonoBehaviour {
         }
         orientationDropdown.SetupDropdown();
     }
+        
+
+   public void UpdateJoints() {
+        CustomDropdown jointsDropdown = JointsList.GetComponent<CustomDropdown>();
+        jointsDropdown.dropdownItems.Clear();
+        foreach (string joints in CurrentActionPoint.GetJoints(true).Keys) {
+            CustomDropdown.Item item = new CustomDropdown.Item {
+                itemName = joints
+            };
+            jointsDropdown.dropdownItems.Add(item);
+        }
+        if (jointsDropdown.dropdownItems.Count > 0) {
+            jointsDropdown.gameObject.SetActive(true);
+            jointsDropdown.SetupDropdown();
+        } else {
+            jointsDropdown.gameObject.SetActive(false);
+        }
+    }
 
     
 
@@ -102,6 +121,13 @@ public class ActionPointMenu : MonoBehaviour {
     private void OnRobotChanged(string robot_id) {
         endEffectorList.GetComponent<CustomDropdown>().dropdownItems.Clear();
         endEffectorList.GetComponent<DropdownEndEffectors>().Init(robot_id);
+        if (endEffectorList.GetComponent<CustomDropdown>().dropdownItems.Count == 0) {
+            UpdatePoseBlock.SetActive(false);
+            UpdateJointsBlock.SetActive(true);
+        } else {
+            UpdatePoseBlock.SetActive(true);
+            UpdateJointsBlock.SetActive(false);
+        }
     }
 
    
@@ -111,11 +137,37 @@ public class ActionPointMenu : MonoBehaviour {
         AddOrientationDialog.GetComponent<ModalWindowManager>().OpenWindow();
     }
 
+    public void ShowAddJointsDialog() {
+        AddJointsDialog.GetComponent<AddJointsDialog>().ap = CurrentActionPoint;
+        AddJointsDialog.GetComponent<AddJointsDialog>().RobotId = robotsList.GetComponent<CustomDropdown>().selectedText.text;
+        AddJointsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+    }
+
+    public void FocusJoints() {
+        CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
+        CustomDropdown jointsDropdown = JointsList.GetComponent<CustomDropdown>();
+        if (jointsDropdown.dropdownItems.Count == 0) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", "");
+            return;
+        }
+        try {
+            Base.GameManager.Instance.UpdateActionPointJoints(CurrentActionPoint.Data.Id, robotsListDropdown.selectedText.text, jointsDropdown.selectedText.text);
+            Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
+        } catch (Base.RequestFailedException ex) {
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
+        }
+
+    }
+
     public void ShowFocusConfirmationDialog() {
         CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
         CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
         CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = endEffectorDropdown.selectedText.text;
+        if (endEffectorDropdown.dropdownItems.Count == 0) {
+            FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = "";
+        } else {
+            FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = endEffectorDropdown.selectedText.text;
+        }
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().RobotId = robotsListDropdown.selectedText.text;
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().OrientationId = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;

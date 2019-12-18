@@ -637,6 +637,15 @@ namespace Base {
             }
         }
         
+         public async void UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
+            
+            try {
+                await WebsocketManager.Instance.UpdateActionPointJoints(actionPointId, robotId, jointsId);
+            } catch (RequestFailedException ex) {
+                NotificationsModernUI.Instance.ShowNotification("Failed to update action point", ex.Message);
+            }
+        }
+        
          public async void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
 
             try {
