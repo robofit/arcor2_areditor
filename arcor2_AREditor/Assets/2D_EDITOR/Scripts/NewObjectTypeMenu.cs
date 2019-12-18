@@ -27,9 +27,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     // Start is called before the first frame update
     void Start() {
         //TODO: find out why start is called twice
-        ActionsManager.Instance.OnActionObjectUpdate += UpdateObjectsList;
-
-        Debug.LogError("start");
+        Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
     }
 
     // Update is called once per frame
@@ -62,7 +60,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
             originalValue = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
             ParentsList.GetComponent<Dropdown>().options.Clear();
         }         
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in ActionsManager.Instance.ActionObjectMetadata.Values) {
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
             ParentsList.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData(actionObjectMetadata.Type));
         }
         if (originalValue != "") {
@@ -85,46 +83,52 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
 
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
         string modelTypeString = ModelsList.GetComponent<Dropdown>().options[ModelsList.GetComponent<Dropdown>().value].text;
+        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
         if (ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
-            IO.Swagger.Model.MetaModel3d.TypeEnum modelType = new IO.Swagger.Model.MetaModel3d.TypeEnum();
+            IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
             switch (modelTypeString) {
                 case "Box":
-                    modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Box;
+                    modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Box;
                     decimal sizeX = decimal.Parse(BoxX.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal sizeY = decimal.Parse(BoxY.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal sizeZ = decimal.Parse(BoxZ.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(objectId, sizeX, sizeY, sizeZ);
                     objectModel.Box = box;
+
                     break;
                 case "Sphere":
-                    modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Sphere;
+                    modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;
                     decimal radius = decimal.Parse(SphereRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Sphere sphere = new IO.Swagger.Model.Sphere(objectId, radius);
                     objectModel.Sphere = sphere;
                     break;
                 case "Cylinder":
-                    modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Cylinder;
+                    modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder;
                     decimal cylinderRadius = decimal.Parse(CylinderRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal cylinderHeight = decimal.Parse(CylinderHeight.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Cylinder cylinder = new IO.Swagger.Model.Cylinder(objectId, cylinderHeight, cylinderRadius);
                     objectModel.Cylinder = cylinder;
                     break;
                 case "Mesh":
-                    modelType = IO.Swagger.Model.MetaModel3d.TypeEnum.Mesh;
+                    modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Mesh;
                     string meshId = MeshId.GetComponent<InputField>().text;
-                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh() {
-                        Id = meshId
-                    };
+                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), uri: "");
                     objectModel.Mesh = mesh;
                     break;
                 default:
                     Debug.LogError("Model not defined!");
                     return;
             }
-            
+            objectModel.Type = modelType;
+            objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
+                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
+        } else {
+            objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
+                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
         }
-        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
-                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text);
+
+        
+        
         Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
     }
 

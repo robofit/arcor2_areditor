@@ -33,10 +33,12 @@ public static class DataHelper {
     }
 
     public static IO.Swagger.Model.ProjectActionPoint ActionPointToProjectActionPoint(IO.Swagger.Model.ActionPoint actionPoint) {
-        return new IO.Swagger.Model.ProjectActionPoint(actionPoint.Id, actionPoint.Pose, new List<IO.Swagger.Model.Action>());
+        return new IO.Swagger.Model.ProjectActionPoint(id: actionPoint.Id, robotJoints: actionPoint.RobotJoints, orientations: actionPoint.Orientations,
+            position: actionPoint.Position, actions: new List<IO.Swagger.Model.Action>());
     }
 
     public static IO.Swagger.Model.ActionPoint ProjectActionPointToActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
-        return new IO.Swagger.Model.ActionPoint(projectActionPoint.Id, projectActionPoint.Pose);
+        return new IO.Swagger.Model.ActionPoint(id: projectActionPoint.Id, robotJoints: projectActionPoint.RobotJoints,
+            orientations: projectActionPoint.Orientations, position: projectActionPoint.Position);
     }
 }

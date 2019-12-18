@@ -1,37 +1,59 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading.Tasks;
+using UnityEngine.Events;
+using Michsky.UI.ModernUIPack;
 
-public class PuckMenu : MonoBehaviour {
+public class PuckMenu : Base.Singleton<PuckMenu> {
 
-    public Puck2D CurrentPuck;
+    public Base.Action CurrentPuck;
 
-    public GameObject ParameterStringPrefab, ParameterActionPointPrefab, ParameterIntegerPrefab;
+    public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
+    public GameObject DynamicContent;
+    public InputField TopText;
+    public Text ActionType;
     // Start is called before the first frame update
-    void Start() {
-    }
+   
 
-    // Update is called once per frame
-    void Update() {
-
-    }
-
-    public void UpdateMenu(Base.Action action, Puck2D puck) {
-        CurrentPuck = puck;
-        foreach (RectTransform o in transform.Find("Layout").Find("DynamicContent").GetComponentsInChildren<RectTransform>()) {
+    public async void UpdateMenu(Base.Action action) {
+        DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
+        CurrentPuck = action;
+        foreach (RectTransform o in DynamicContent.GetComponentsInChildren<RectTransform>()) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
             }
         }
-        transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = action.Data.Id;
-        transform.Find("Layout").Find("ActionType").GetComponent<Text>().text = action.ActionObject.Data.Id + "/" + action.Metadata.Name;
+        TopText.text = action.Data.Id;
+        ActionType.text = action.Data.Type;
+        List<Tuple<DropdownParameter, Base.ActionParameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Base.ActionParameter>>();
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
-            Debug.Log(parameter.ToString());
-            GameObject paramGO = InitializeParameter(parameter);
+            GameObject paramGO = await InitializeParameter(parameter);
             if (paramGO == null)
                 continue;
-            paramGO.transform.SetParent(transform.Find("Layout").Find("DynamicContent"));
+            if (parameter.ActionParameterMetadata.DynamicValue) {
+                dynamicDropdowns.Add(new Tuple<DropdownParameter, Base.ActionParameter>(paramGO.GetComponent<DropdownParameter>(), parameter));
+            }
+            paramGO.transform.SetParent(DynamicContent.transform);
             paramGO.transform.localScale = new Vector3(1, 1, 1);
+        }
+        int parentCount = 0;
+        while (dynamicDropdowns.Count > 0) {
+            for (int i = dynamicDropdowns.Count - 1; i >= 0; i--) {
+                Tuple<DropdownParameter, Base.ActionParameter> tuple = dynamicDropdowns[i];
+                if (tuple.Item2.ActionParameterMetadata.DynamicValueParents.Count == parentCount) {
+                    try {
+                        await LoadDropdownValues(tuple.Item1, tuple.Item2, async () => await LoadDropdownValues(tuple.Item1, tuple.Item2));
+                    } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
+                        Debug.LogError(ex);
+                    } finally {
+                        dynamicDropdowns.RemoveAt(i);
+                    }
+                }
+            }
+            parentCount += 1;
         }
     }
 
@@ -45,86 +67,174 @@ public class PuckMenu : MonoBehaviour {
         CurrentPuck.DeleteAction();
     }
 
-    GameObject InitializeParameter(Base.ActionParameter actionParameter) {
+    private async Task<GameObject> InitializeParameter(Base.ActionParameter actionParameter) {
+        GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
-            case IO.Swagger.Model.ActionParameter.TypeEnum.String:
-                actionParameter.GetValue(out string value);       
-                return InitializeStringParameter(actionParameter.ActionParameterMetadata.Name, value);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.ActionPoint:
-                return InitializeActionPointParameter(actionParameter);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.Integer:
-                actionParameter.GetValue(out long longValue);
-                return InitializeIntegerParameter(actionParameter.ActionParameterMetadata.Name, longValue);
-            case IO.Swagger.Model.ActionParameter.TypeEnum.Double:
-                return InitializeDoubleParameter(actionParameter);
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.String:
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Relativepose:
+                parameter = await InitializeStringParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
+                parameter = InitializePoseParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Joints:
+                parameter = InitializeJointsParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Stringenum:
+                parameter = InitializeStringEnumParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integerenum:
+                parameter = InitializeIntegerEnumParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integer:
+                parameter = InitializeIntegerParameter(actionParameter);
+                break;
+            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Double:
+                parameter = InitializeDoubleParameter(actionParameter);
+                break;
 
         }
-        return null;
+        if (parameter == null) {
+            return null;
+        } else {
+            parameter.GetComponent<IActionParameter>().SetLabel(actionParameter.Id, actionParameter.ActionParameterMetadata.Description);
+            return parameter;
+        }
+        
     }
 
-    GameObject InitializeStringParameter(string parameterId, string value) {
-        GameObject input = Instantiate(ParameterStringPrefab);
-        input.transform.Find("Label").GetComponent<Text>().text = parameterId;
-
-        input.transform.Find("Input").GetComponent<InputField>().text = value;
-        input.transform.Find("Input").GetComponent<InputField>().onEndEdit.AddListener((string newValue) => OnChangeStringParameterHandler(parameterId, newValue));
+    private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
+        GameObject input;
+        if (actionParameter.ActionParameterMetadata.DynamicValue) {
+            input = InitializeDropdownParameter(actionParameter, new List<string>());
+            input.GetComponent<DropdownParameter>().SetLoading(true);     
+        } else {
+            actionParameter.GetValue(out string value);
+            input = Instantiate(ParameterInputPrefab);
+            input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
+            input.GetComponent<LabeledInput>().SetValue(value);
+            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+                => OnChangeParameterHandler(actionParameter.Id, newValue));
+        }      
         return input;
     }
 
+    private async Task LoadDropdownValues(DropdownParameter dropdownParameter, Base.ActionParameter actionParameter, UnityAction callback = null) {
+        List<string> values = new List<string>();
+        List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
+        foreach (string parent_param in actionParameter.ActionParameterMetadata.DynamicValueParents) {
+            IO.Swagger.Model.IdValue idValue = new IO.Swagger.Model.IdValue(id: parent_param, value: GetDropdownParamValue(parent_param));
+            args.Add(idValue);
+            if (callback != null)
+                AddOnChangeToDropdownParameter(parent_param, callback);
+        }
+        values = await Base.GameManager.Instance.GetActionParamValues(CurrentPuck.ActionProvider.GetProviderName(), actionParameter.Id, args);
+        DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
+    }
 
-    GameObject InitializeActionPointParameter(Base.ActionParameter actionParameter) {
-        GameObject actionInput = Instantiate(ParameterActionPointPrefab);
-        actionInput.transform.Find("Label").GetComponent<Text>().text = actionParameter.ActionParameterMetadata.Name;
-        Dropdown dropdown = actionInput.transform.Find("Dropdown").GetComponent<Dropdown>();
-        dropdown.options.Clear();
+    private string GetDropdownParamValue(string param_id) {
+        return GetDropdownParameter(param_id).Dropdown.selectedText.text;
+    }
 
+    private DropdownParameter GetDropdownParameter(string param_id) {
+        foreach (DropdownParameter dropdownParameter in DynamicContent.GetComponentsInChildren<DropdownParameter>()) {
+            if (dropdownParameter.Label.text == param_id)
+                return dropdownParameter;
+        }
+        throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
+    }
+
+    private void AddOnChangeToDropdownParameter(string param_id, UnityAction callback) {
+        DropdownParameter dropdownParameter = GetDropdownParameter(param_id);
+        foreach (CustomDropdown.Item item in dropdownParameter.Dropdown.dropdownItems) {
+            item.OnItemSelection.AddListener(callback);
+        }
+    }
+
+    private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data) {
+        GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
+        dropdownParameter.GetComponent<DropdownParameter>().Init();
         actionParameter.GetValue(out string selectedActionId);
+        DropdownParameterPutData(dropdownParameter.GetComponent<DropdownParameter>(), data, selectedActionId, actionParameter.ActionParameterMetadata.Name);
+        return dropdownParameter;
+    }
 
-        int selectedValue = -1;
+    private void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId) {
+        dropdownParameter.PutData(data, selectedValue,
+            () => OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text));
+        if (selectedValue == "" || selectedValue == null) {
+            OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text);
+        }
+    }
 
+    private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
+        return InitializeDropdownParameter(actionParameter, actionParameter.ActionParameterMetadata.StringAllowedValues);
+    }
+
+    private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
+        List<string> options = new List<string>();
+        foreach (int item in actionParameter.ActionParameterMetadata.IntegerAllowedValues) {
+            options.Add(item.ToString());
+        }
+        return InitializeDropdownParameter(actionParameter, options);
+    }
+
+    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {        
+        List<string> options = new List<string>();
         foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
-            Dropdown.OptionData option = new Dropdown.OptionData {
-                text = ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id
-            };
-            dropdown.options.Add(option);
-            if (option.text == selectedActionId) {
-                selectedValue = dropdown.options.Count - 1;
+            foreach (string poseKey in ap.GetPoses().Keys) {
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);               
             }
         }
-        if (selectedValue >= 0) {
-            dropdown.value = selectedValue;
-        }
-        dropdown.onValueChanged.AddListener((int value) => OnChangeActionPointParameterHandler(actionParameter.ActionParameterMetadata.Name, dropdown.options[value].text));
-        return actionInput;
+        return InitializeDropdownParameter(actionParameter, options);
     }
 
-    GameObject InitializeIntegerParameter(string parameterId, long value) {
-        GameObject input = Instantiate(ParameterIntegerPrefab);
-        input.transform.Find("Label").GetComponent<Text>().text = parameterId;
-        input.transform.Find("Input").GetComponent<InputField>().text = value.ToString();
-        input.transform.Find("Input").GetComponent<InputField>().onEndEdit.AddListener((string newValue) => OnChangeIntegerParameterHandler(parameterId, long.Parse(newValue)));
+     private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {        
+        List<string> options = new List<string>();
+        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+            foreach (string jointsId in ap.GetJoints().Keys) {
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);               
+            }
+        }
+        return InitializeDropdownParameter(actionParameter, options);
+    }
+
+    private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {
+        GameObject input = Instantiate(ParameterInputPrefab);
+        actionParameter.GetValue(out long value);
+        input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.IntegerNumber);
+        input.GetComponent<LabeledInput>().Input.text = value.ToString();
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(actionParameter.Id, long.Parse(newValue)));
         return input;
     }
 
-    GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
-        return null;
+    private GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
+        GameObject input = Instantiate(ParameterInputPrefab);
+        input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.DecimalNumber);
+        actionParameter.GetValue(out double value);
+        input.GetComponent<LabeledInput>().Input.text = value.ToString();
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, ParseDouble(newValue)));
+        return input;
     }
 
-    public void OnChangeActionPointParameterHandler(string parameterId, string actionId) {
-        OnChangeStringParameterHandler(parameterId, actionId);
+    private double ParseDouble(string value) {
+        //Try parsing in the current culture
+        if (!double.TryParse(value, System.Globalization.NumberStyles.Any, CultureInfo.CurrentCulture, out double result) &&
+            //Then try in US english
+            !double.TryParse(value, System.Globalization.NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out result) &&
+            //Then in neutral language
+            !double.TryParse(value, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out result)) {
+
+        }
+        return result;
     }
 
-    public void OnChangeStringParameterHandler(string parameterId, string newValue) {
+   public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        parameter.Data.Value = newValue;
-        Base.GameManager.Instance.UpdateProject();
-    }
-
-    public void OnChangeIntegerParameterHandler(string parameterId, long newValue) {
-        if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
-            return;
-        parameter.Data.Value = newValue;
+        parameter.Value = newValue;
         Base.GameManager.Instance.UpdateProject();
     }
 

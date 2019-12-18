@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public GameObject InteractiveObjectMenu, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu;
+    public GameObject InteractiveObjectMenu, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu, ActionObjectMenuProjectEditor;
     GameObject MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
@@ -32,12 +32,31 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (InteractiveObjectMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open) {
             InteractiveObjectMenu.GetComponent<SimpleSideMenu>().Close();
         }
+        if (ActionObjectMenuProjectEditor.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open) {
+            ActionObjectMenuProjectEditor.GetComponent<SimpleSideMenu>().Close();
+        }
         if (ActionPointMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open) {
             ActionPointMenu.GetComponent<SimpleSideMenu>().Close();
         }
         if (PuckMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open) {
             PuckMenu.GetComponent<SimpleSideMenu>().Close();
         }
+    }
+
+    public void DisableAllMenus() {
+        MainMenu.SetActive(false);
+        InteractiveObjectMenu.SetActive(false);
+        ActionPointMenu.SetActive(false);
+        PuckMenu.SetActive(false);
+        ActionObjectMenuProjectEditor.SetActive(false);
+    }
+
+    public void EnableAllWindows() {
+        MainMenu.SetActive(true);
+        InteractiveObjectMenu.SetActive(true);
+        ActionPointMenu.SetActive(true);
+        PuckMenu.SetActive(true);
+        ActionObjectMenuProjectEditor.SetActive(true);
     }
 
     public void HideMenu() {

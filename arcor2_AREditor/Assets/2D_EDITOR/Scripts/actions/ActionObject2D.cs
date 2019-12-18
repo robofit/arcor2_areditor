@@ -5,16 +5,32 @@ public class ActionObject2D : Base.ActionObject {
 
 
     private Vector3 offset;
+    private GameObject ActionObjectMenu, ActionObjectMenuProjectEditor;
 
-    private void Touch() {
-        MenuManager.Instance.ShowMenu(InteractiveObjectMenu, Data.Id);
-        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().CurrentObject = gameObject;
-        InteractiveObjectMenu.GetComponent<InteractiveObjectMenu>().UpdateMenu();
+    protected override void Start() {
+        base.Start();
+        transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+        ActionObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
+        ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
     }
 
-    private void OnMouseDown() {
-        if (Base.GameManager.Instance.SceneInteractable && !MenuManager.Instance.IsAnyMenuOpened()) {
-            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f));
+
+    private void Touch() {
+        if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
+            ActionObjectMenu.GetComponent<ActionObjectMenu>().CurrentObject = gameObject;
+            ActionObjectMenu.GetComponent<ActionObjectMenu>().UpdateMenu();
+            MenuManager.Instance.ShowMenu(ActionObjectMenu, Data.Id);
+        } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
+            ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
+            MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor);
+        }
+        
+        
+    }
+
+    public void OnMouseDown() {
+        if (SceneInteractable()) {
+            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
         } else {
             offset = new Vector3(0, 0, 0);
         }
@@ -22,24 +38,27 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     private void OnMouseDrag() {
-        Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10.0f);
-        transform.position = Camera.main.ScreenToWorldPoint(newPosition) + offset;
+        if (!SceneInteractable() || ActionObjectMetadata.Robot)
+            return;
+        
+        Vector3 newPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0);
+        Vector3 transformedPosition = Camera.main.ScreenToWorldPoint(newPosition) + offset;
+        transformedPosition.z = transform.position.z; // we only want to update x and y in 2D
+        transform.position = transformedPosition;
     }
 
     private void OnMouseUp() {
+        if (!SceneInteractable())
+            return;
         Base.GameManager.Instance.UpdateScene();
     }
 
     public override Vector3 GetScenePosition() {
-        Vector3 v = Base.GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
-             new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));
-        return v;
+        return Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(100, 100, 1));
     }
 
     public override void SetScenePosition(Vector3 position) {
-
-        Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(Base.GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
-            new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(position, new Vector3(0.01f, 0.01f, 1)));
     }
 
     protected override void Update() {
@@ -52,6 +71,14 @@ public class ActionObject2D : Base.ActionObject {
 
     public override void SetSceneOrientation(Quaternion orientation) {
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+    }
+
+    public override void OnClick() {
+
+    }
+
+    public override bool SceneInteractable() {
+        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }
 }
 
