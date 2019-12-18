@@ -35,7 +35,7 @@ namespace Base {
                                     actionParameter.Value = "";
                                     //TODO: where to get valid ID?
                                 } else {
-                                    actionParameter.Value = (string) actionProvider.GetProviderName() + "." + ap.Data.Id + "." + poses[0];
+                                    actionParameter.Value = (string) ap.ActionObject.Data.Id + "." + ap.Data.Id + "." + poses[0];
                                 }
                                 break;
                         }
