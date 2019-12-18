@@ -120,7 +120,6 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     }
 
     private async Task LoadDropdownValues(DropdownParameter dropdownParameter, Base.ActionParameter actionParameter, UnityAction callback = null) {
-        Debug.LogError(actionParameter.Id);
         List<string> values = new List<string>();
         List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
         foreach (string parent_param in actionParameter.ActionParameterMetadata.DynamicValueParents) {
