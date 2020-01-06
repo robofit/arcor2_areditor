@@ -106,7 +106,8 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
         GameObject input;
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
-            input = InitializeDropdownParameter(actionParameter, new List<string>());
+            actionParameter.GetValue(out string selectedValue);
+            input = InitializeDropdownParameter(actionParameter, new List<string>(), selectedValue);
             input.GetComponent<DropdownParameter>().SetLoading(true);     
         } else {
             actionParameter.GetValue(out string value);
