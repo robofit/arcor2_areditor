@@ -4,15 +4,12 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 
 public class DropdownEndEffectors : MonoBehaviour {
-    private CustomDropdown dropdown;
+    public CustomDropdown Dropdown;
 
-    private void Start() {
-        dropdown = GetComponent<CustomDropdown>();
-    }
 
     public void Init(string robot_id) {
         if (robot_id == "") {
-            dropdown.dropdownItems.Clear();
+            Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;
         }
@@ -36,12 +33,12 @@ public class DropdownEndEffectors : MonoBehaviour {
     }
 
     public void UpdateEndEffectorList(Base.ActionObject robot) {
-        dropdown.dropdownItems.Clear();
+        Dropdown.dropdownItems.Clear();
         PutData(robot.EndEffectors);
     }
 
     public void UpdateEndEffectorList(Base.Service service, string robot_id) {
-        dropdown.dropdownItems.Clear();
+        Dropdown.dropdownItems.Clear();
         PutData(service.GetEndEffectors(robot_id));
     }
 

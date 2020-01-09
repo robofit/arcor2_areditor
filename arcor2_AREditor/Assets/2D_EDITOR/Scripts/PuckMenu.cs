@@ -106,7 +106,8 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
         GameObject input;
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
-            input = InitializeDropdownParameter(actionParameter, new List<string>());
+            actionParameter.GetValue(out string selectedValue);
+            input = InitializeDropdownParameter(actionParameter, new List<string>(), selectedValue);
             input.GetComponent<DropdownParameter>().SetLoading(true);     
         } else {
             actionParameter.GetValue(out string value);
@@ -120,7 +121,6 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     }
 
     private async Task LoadDropdownValues(DropdownParameter dropdownParameter, Base.ActionParameter actionParameter, UnityAction callback = null) {
-        Debug.LogError(actionParameter.Id);
         List<string> values = new List<string>();
         List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
         foreach (string parent_param in actionParameter.ActionParameterMetadata.DynamicValueParents) {
@@ -130,14 +130,10 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 AddOnChangeToDropdownParameter(parent_param, callback);
         }
         values = await Base.GameManager.Instance.GetActionParamValues(CurrentPuck.ActionProvider.GetProviderName(), actionParameter.Id, args);
-        DropdownParameterPutData(dropdownParameter, values, "", actionParameter.ActionParameterMetadata.Name);
+        DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
     }
 
     private string GetDropdownParamValue(string param_id) {
-        Debug.LogError("blaaaa1");
-        Debug.LogError(param_id);
-        Debug.LogError(GetDropdownParameter(param_id).Dropdown.selectedText.text);
-        Debug.LogError("blaaaa2");
         return GetDropdownParameter(param_id).Dropdown.selectedText.text;
     }
 
@@ -156,11 +152,10 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         }
     }
 
-    private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data) {
+    private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data, string selectedValue) {
         GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
         dropdownParameter.GetComponent<DropdownParameter>().Init();
-        actionParameter.GetValue(out string selectedActionId);
-        DropdownParameterPutData(dropdownParameter.GetComponent<DropdownParameter>(), data, selectedActionId, actionParameter.ActionParameterMetadata.Name);
+        DropdownParameterPutData(dropdownParameter.GetComponent<DropdownParameter>(), data, selectedValue, actionParameter.ActionParameterMetadata.Name);
         return dropdownParameter;
     }
 
@@ -173,7 +168,8 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     }
 
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
-        return InitializeDropdownParameter(actionParameter, actionParameter.ActionParameterMetadata.StringAllowedValues);
+        actionParameter.GetValue(out string selectedValue);
+        return InitializeDropdownParameter(actionParameter, actionParameter.ActionParameterMetadata.StringAllowedValues, selectedValue);
     }
 
     private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
@@ -181,7 +177,9 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         foreach (int item in actionParameter.ActionParameterMetadata.IntegerAllowedValues) {
             options.Add(item.ToString());
         }
-        return InitializeDropdownParameter(actionParameter, options);
+        actionParameter.GetValue(out long selectedValue);
+
+        return InitializeDropdownParameter(actionParameter, options, selectedValue.ToString());
     }
 
     private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {        
@@ -191,7 +189,9 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);               
             }
         }
-        return InitializeDropdownParameter(actionParameter, options);
+        actionParameter.GetValue(out string selectedValue);
+
+        return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
 
      private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {        
@@ -201,7 +201,8 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);               
             }
         }
-        return InitializeDropdownParameter(actionParameter, options);
+        actionParameter.GetValue(out string selectedValue);
+        return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
 
     private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {

@@ -28,7 +28,7 @@ namespace Base {
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
             if (Data.RobotJoints.Count == 0)
-                Data.RobotJoints.Add(new IO.Swagger.Model.RobotJoints(isValid: true, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+                Data.RobotJoints.Add(new IO.Swagger.Model.RobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -46,9 +46,16 @@ namespace Base {
             return poses;
         }
 
-        public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints() {
+        public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints(bool uniqueOnly = false) {
             Dictionary<string, IO.Swagger.Model.RobotJoints> joints = new Dictionary<string, IO.Swagger.Model.RobotJoints>();
+            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
+            if (uniqueOnly) {
+                poses = GetPoses();
+            }
             foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.RobotJoints) {
+                if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
+                    continue;
+                }
                 joints.Add(robotJoint.Id, robotJoint);
             }
             return joints;

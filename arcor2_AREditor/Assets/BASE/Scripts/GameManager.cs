@@ -637,6 +637,15 @@ namespace Base {
             }
         }
         
+         public async void UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
+            
+            try {
+                await WebsocketManager.Instance.UpdateActionPointJoints(actionPointId, robotId, jointsId);
+            } catch (RequestFailedException ex) {
+                NotificationsModernUI.Instance.ShowNotification("Failed to update action point", ex.Message);
+            }
+        }
+        
          public async void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
 
             try {
@@ -659,7 +668,9 @@ namespace Base {
         } 
 
         public async void NewProject(string name, string sceneId) {
+            LoadingScreen.SetActive(true);
             if (name == "") {
+                LoadingScreen.SetActive(false);
                 throw new RequestFailedException("Project name not specified");
             }
             if (sceneId == null) {
@@ -668,11 +679,13 @@ namespace Base {
             }
             IO.Swagger.Model.OpenSceneResponse openSceneResponse = await WebsocketManager.Instance.OpenScene(sceneId);
             if (!openSceneResponse.Result) {
+                LoadingScreen.SetActive(false);
                 throw new RequestFailedException("Failed to open scene");
             }
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId);
             WebsocketManager.Instance.UpdateProject(project);
             ProjectUpdated(project);
+            LoadingScreen.SetActive(false);
         }
 
 

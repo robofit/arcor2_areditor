@@ -381,6 +381,17 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
+        public async Task UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id: actionPointId,
+                jointsId: jointsId, robotId: robotId);
+            IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(id: r_id, request: "UpdateActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
         public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
             int r_id = ++requestID;
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);

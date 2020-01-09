@@ -20,10 +20,14 @@ public class FocusConfirmationDialog : MonoBehaviour
 
     public void UpdatePositionOrientation() {
         try {
-            Base.GameManager.Instance.UpdateActionPointPosition(ActionPointId, RobotId, EndEffectorId, OrientationId, UpdatePosition);
+            if (EndEffectorId == "") {
+                Base.GameManager.Instance.UpdateActionPointJoints(ActionPointId, RobotId, OrientationId);
+            } else {
+                Base.GameManager.Instance.UpdateActionPointPosition(ActionPointId, RobotId, EndEffectorId, OrientationId, UpdatePosition);
+            }
             GetComponent<ModalWindowManager>().CloseWindow();
         } catch (Base.RequestFailedException ex) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update position", ex.Message);
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to update", ex.Message);
         }
     }
 }

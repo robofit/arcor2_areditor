@@ -82,7 +82,6 @@ namespace Base {
 
         public void UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
-                Debug.LogError(newServiceMeta);
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
                 ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
                 UpdateActionsOfService(serviceMetadata);
