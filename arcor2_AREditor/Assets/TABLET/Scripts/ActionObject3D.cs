@@ -7,6 +7,7 @@ public class ActionObject3D : Base.ActionObject
 {
     public GameObject ActionObjectName;
     private GameObject ActionObjectMenu, ActionObjectMenuProjectEditor;
+    
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
@@ -14,6 +15,7 @@ public class ActionObject3D : Base.ActionObject
         ActionObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
         ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
     }
+
 
     public override Quaternion GetSceneOrientation() {
         return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);

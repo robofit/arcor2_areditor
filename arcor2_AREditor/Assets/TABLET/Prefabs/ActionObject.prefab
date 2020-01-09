@@ -42,6 +42,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4117692875275004883}
   - component: {fileID: 4556946370656040535}
+  - component: {fileID: 3050534694925757164}
   m_Layer: 0
   m_Name: ActionObject
   m_TagString: Untagged
@@ -78,7 +79,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ActionPoints: {fileID: 7608964153753617350}
+  EndEffectors: []
   ActionObjectName: {fileID: 6802618089977537743}
+--- !u!114 &3050534694925757164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4117692875275004882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12fabd961d2f703418575fef10475b7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ChildToBind: {fileID: 4117692875572246055}
 --- !u!1 &4117692875572246055
 GameObject:
   m_ObjectHideFlags: 0
