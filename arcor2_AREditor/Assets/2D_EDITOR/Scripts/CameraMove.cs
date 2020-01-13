@@ -16,7 +16,7 @@ public class CameraMove : MonoBehaviour {
     // Update is called once per frame
     private void Update() {
         float speed = 80f;
-        if (!Base.GameManager.Instance.SceneInteractable || MenuManager.Instance.IsAnyMenuOpened())
+        if (!Base.GameManager.Instance.SceneInteractable)
             return;
 
         Scene.transform.localScale += new Vector3(Input.mouseScrollDelta.y * 0.3f, Input.mouseScrollDelta.y * 0.3f, 0);
@@ -25,7 +25,7 @@ public class CameraMove : MonoBehaviour {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
             if (hit) {
-                hit.collider.gameObject.SendMessage("Touch");
+                hit.collider.gameObject.SendMessage("OnClick", Base.Clickable.Click.MOUSE_RIGHT_BUTTON);
             }
             if (DrawVirtualConnection) {
                 DrawVirtualConnection = false;

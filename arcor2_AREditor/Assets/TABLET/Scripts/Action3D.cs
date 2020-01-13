@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,9 +11,8 @@ public class Action3D : Base.Action {
         //gameObject.GetComponentInChildren<Text>().text = Data.Id;
     }
 
-    public override void OnClick() {
+    public override void OnClick(Click type) {
         MenuManager.Instance.PuckMenu.GetComponent<PuckMenu>().UpdateMenu(this);
         MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
     }
-
 }

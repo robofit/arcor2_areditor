@@ -24,10 +24,6 @@ namespace Base {
             }
         }
 
-        protected virtual void Touch() {
-
-
-        }
 
         private void OnMouseUp() {
             if (ConnectionManagerArcoro.Instance.IsConnecting()) {

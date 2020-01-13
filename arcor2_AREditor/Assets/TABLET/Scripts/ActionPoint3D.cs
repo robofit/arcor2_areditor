@@ -1,8 +1,9 @@
+using Base;
 using UnityEngine;
 
 public class ActionPoint3D : Base.ActionPoint {
 
-    public override void OnClick() {
+    public override void OnClick(Click type) {
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
@@ -37,4 +38,5 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void UpdatePositionsOfPucks() {
         throw new System.NotImplementedException();
     }
+
 }

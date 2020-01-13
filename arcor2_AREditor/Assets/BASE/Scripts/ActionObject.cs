@@ -31,8 +31,7 @@ namespace Base {
         }
 
         public virtual bool SceneInteractable() {
-            return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor &&
-                GameManager.Instance.SceneInteractable);
+            return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor);
         }
 
         public async void LoadEndEffectors() {

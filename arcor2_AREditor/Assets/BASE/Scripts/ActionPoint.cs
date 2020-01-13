@@ -76,8 +76,7 @@ namespace Base {
         }
 
         public virtual bool ProjectInteractable() {
-            return GameManager.Instance.GameState == GameManager.GameStateEnum.ProjectEditor &&
-                GameManager.Instance.SceneInteractable;
+            return GameManager.Instance.GameState == GameManager.GameStateEnum.ProjectEditor;
         }
 
         public abstract Vector3 GetScenePosition();

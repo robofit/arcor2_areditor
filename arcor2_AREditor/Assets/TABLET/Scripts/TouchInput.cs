@@ -15,7 +15,7 @@ public class TouchInput : Singleton<TouchInput> {
                 Ray ray = Camera.main.ScreenPointToRay(touch.position);
                 if (Physics.Raycast(ray, out hit)) {
                     try {
-                        hit.transform.gameObject.SendMessage("OnClick");
+                        hit.transform.gameObject.SendMessage("OnClick", Base.Clickable.Click.TOUCH);
                     }
                     catch (Exception e) {
                         Debug.LogError(e);
@@ -24,4 +24,5 @@ public class TouchInput : Singleton<TouchInput> {
             }
         }
     }
+
 }

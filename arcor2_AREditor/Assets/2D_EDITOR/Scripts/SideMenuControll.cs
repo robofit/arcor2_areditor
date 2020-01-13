@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+using Base;
+using UnityEngine;
 
-public class SideMenuControll : MonoBehaviour {
+public class SideMenuControll : Base.Clickable {
     public MenuManager _MenuManager;
     // Start is called before the first frame update
     void Start() {
@@ -16,7 +17,7 @@ public class SideMenuControll : MonoBehaviour {
         _MenuManager.HideMenu();
     }
 
-    void Touch() {
-
+    public override void OnClick(Click type) {
+        throw new System.NotImplementedException();
     }
 }
