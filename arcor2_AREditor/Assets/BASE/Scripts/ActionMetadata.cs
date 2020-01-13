@@ -6,7 +6,7 @@ namespace Base {
 
         public ActionMetadata(IO.Swagger.Model.ObjectAction metadata) :
             base(parameters: metadata.Parameters, meta: metadata.Meta, name: metadata.Name, origins: metadata.Origins, returns: metadata.Returns, description: metadata.Description) {
-            Debug.LogError(metadata.Parameters);
+            //Debug.LogError(metadata.Parameters);
         }
 
         public IO.Swagger.Model.ActionParameterMeta GetParamMetadata(string name) {
