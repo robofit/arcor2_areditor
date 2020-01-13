@@ -1,13 +1,13 @@
 
 namespace Base {
-    public class ActionParameterMetadatas : IO.Swagger.Model.ObjectActionArg {
+    public class ActionParameterMetadatas : IO.Swagger.Model.ActionParameterMeta {
         private string name;
-        private IO.Swagger.Model.ActionParameter.TypeEnum type;
+        private string type;
         private object defaultValue;
 
         
 
-        public ActionParameterMetadatas(string name, IO.Swagger.Model.ActionParameter.TypeEnum type, object defaultValue) {
+        public ActionParameterMetadatas(string name, string type, object defaultValue) {
             this.name = name;
             this.type = type;
             this.defaultValue = defaultValue;
@@ -19,7 +19,7 @@ namespace Base {
         public string Name {
             get => name; set => name = value;
         }
-        public IO.Swagger.Model.ActionParameter.TypeEnum Type {
+        public string Type {
             get => type; set => type = value;
         }
         public object DefaultValue {

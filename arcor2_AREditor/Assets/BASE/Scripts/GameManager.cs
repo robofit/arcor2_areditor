@@ -394,6 +394,147 @@ namespace Base {
 
         }
 
+
+        /**
+         *  TODO: create update method for all models - action object, action point, action - and call it instead of updating like this..
+         *
+         *
+         *
+         **/
+        /*
+       public void ProjectUpdated(IO.Swagger.Model.Project project) {
+           if (project == null) {
+               if (GameState == GameStateEnum.ProjectEditor) {
+                   GameState = GameStateEnum.MainScreen;
+               }
+               currentProject = null;
+               return;
+           } else if (GameState != GameStateEnum.ProjectEditor) {
+               GameState = GameStateEnum.ProjectEditor;
+           }
+
+           if (project.SceneId != loadedScene || !sceneReady) {
+               newProject = project;
+               return;
+           }
+           newProject = null;
+
+
+           currentProject = project;
+
+           Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
+
+
+           foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+               actionObjects[ao.Data.Id] = ao;
+           }
+
+           Dictionary<string, string> connections = new Dictionary<string, string>();
+
+           foreach (IO.Swagger.Model.ProjectObject projectObject in currentProject.Objects) {
+               if (actionObjects.TryGetValue(projectObject.Id, out ActionObject actionObject)) {
+
+                   Dictionary<string, ActionPoint> actionPoints = new Dictionary<string, ActionPoint>();
+
+                   foreach (ActionPoint ap in actionObject.transform.GetComponentsInChildren<ActionPoint>()) {
+                       //ap.DeleteAP(false);
+                       actionPoints.Add(ap.Data.Id, ap);
+                   }
+
+                   foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
+                       if (actionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
+                           actionPoint.Data = DataHelper.ProjectActionPointToActionPoint(projectActionPoint);
+                       } else {
+                           actionPoint = SpawnActionPoint(actionObject,
+                               DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false).GetComponent<ActionPoint>();
+                       }
+
+                       actionPoint.transform.localPosition = actionPoint.GetScenePosition();
+
+                       Dictionary<string, Action> actions = new Dictionary<string, Action>();
+
+                       foreach (Action action in actionPoint.Actions.transform.GetComponentsInChildren<Action>()) {
+                           actions.Add(action.Data.Id, action);
+                       }
+
+                       foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
+                           string providerName = projectAction.Type.Split('/').First();
+                           string action_type = projectAction.Type.Split('/').Last();
+                           IActionProvider actionProvider;
+                           if (actionObjects.TryGetValue(providerName, out ActionObject originalActionObject)) {
+                               actionProvider = originalActionObject;
+                           } else if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                               actionProvider = originalService;
+                           } else {
+                               continue; //TODO: throw exception
+                           }
+
+                           if (!actions.TryGetValue(projectAction.Id, out Action action)) {
+                               action = SpawnPuck(action_type, actionPoint, false, actionProvider, false, projectAction.Id).GetComponent<Action>();
+                           }
+                           action.GetComponent<Action>().Data = projectAction;
+
+                           foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
+                               try {
+                                   IO.Swagger.Model.ObjectActionArg actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
+
+                                   ActionParameter actionParameter = new ActionParameter(actionMetadata, projectActionParameter);
+                                   action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
+                               } catch (ItemNotFoundException ex) {
+                                   Debug.LogError(ex);
+                               }
+
+
+                           }
+
+                           foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
+                               if (actionIO.Default != "start") {
+                                   connections[projectAction.Id] = actionIO.Default;
+                               }
+                               action.GetComponentInChildren<PuckInput>().Data = actionIO;
+                           }
+
+                           foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                               action.GetComponentInChildren<PuckOutput>().Data = actionIO;
+                           }
+
+
+
+                       }
+                       actionPoint.UpdatePositionsOfPucks();
+                   }
+
+
+
+               } else {
+                   //object not exist? 
+               }
+
+           }
+           foreach (KeyValuePair<string, string> connection in connections) {
+               try {
+                   PuckInput input = FindPuck(connection.Key).Input;
+                   PuckOutput output = FindPuck(connection.Value).Output;
+                   if (input == null || output == null) {
+                       Debug.LogError("Conection does not exists");
+                       continue;
+
+                   }
+                   GameObject c = Instantiate(ConnectionPrefab);
+                   c.transform.SetParent(ConnectionManager.Instance.transform);
+                   c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
+                   c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
+
+                   input.Connection = c.GetComponent<Connection>();
+                   output.Connection = c.GetComponent<Connection>();
+               } catch (KeyNotFoundException ex) {
+                   Debug.LogError(ex);
+               }                
+           }
+
+
+       } */
+
         public void ProjectUpdated(IO.Swagger.Model.Project project) {
             if (project == null) {
                 if (GameState == GameStateEnum.ProjectEditor) {
@@ -448,15 +589,15 @@ namespace Base {
 
                             foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
                                 try {
-                                    IO.Swagger.Model.ObjectActionArg actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
+                                    IO.Swagger.Model.ActionParameterMeta actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
 
                                     ActionParameter actionParameter = new ActionParameter(actionMetadata, projectActionParameter);
                                     action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
                                 } catch (ItemNotFoundException ex) {
                                     Debug.LogError(ex);
                                 }
-                                    
-                                    
+
+
                             }
 
                             foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
@@ -470,7 +611,7 @@ namespace Base {
                                 action.GetComponentInChildren<PuckOutput>().Data = actionIO;
                             }
 
-                            
+
 
                         }
                         actionPoint.GetComponent<ActionPoint>().UpdatePositionsOfPucks();
@@ -501,13 +642,13 @@ namespace Base {
                     output.Connection = c.GetComponent<Connection>();
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
-                }                
+                }
             }
 
-            
-        }       
 
-      
+        }
+
+
         public Action FindPuck(string id) {            
             foreach (Action action in ActionObjects.GetComponentsInChildren<Action>()) {
                 if (action.Data.Id == id)
