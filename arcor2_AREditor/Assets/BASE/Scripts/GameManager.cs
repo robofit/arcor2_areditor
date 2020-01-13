@@ -64,7 +64,10 @@ namespace Base {
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-        public bool SceneInteractable = true;
+
+        public bool SceneInteractable {
+            get => !MenuManager.Instance.IsAnyMenuOpened();
+        }
 
         public enum ConnectionStatusEnum {
             Connected, Disconnected, Connecting

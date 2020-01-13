@@ -16,7 +16,28 @@ namespace Base {
 
         // Update is called once per frame
         private void Update() {
+            // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
+            if (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
+                ActivateSceneForEditing(true);
+            } else {
+                ActivateSceneForEditing(false);
+            }    
+        }
 
+        // Deactivates or activates scene and all objects in scene to ignore raycasting (clicking)
+        private void ActivateSceneForEditing(bool activate) {
+            Transform[] allChildren = GetComponentsInChildren<Transform>();
+            if (activate) {
+                gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                foreach (Transform child in allChildren) {
+                    child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                }
+            } else {
+                gameObject.layer = LayerMask.NameToLayer("Default");
+                foreach (Transform child in allChildren) {
+                    child.gameObject.layer = LayerMask.NameToLayer("Default");
+                }
+            }
         }
     }
 }
