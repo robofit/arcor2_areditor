@@ -14,7 +14,8 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionPointMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open ||
             PuckMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open ||
-            NewObjectTypeMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open;
+            NewObjectTypeMenu.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open ||
+            ActionObjectMenuProjectEditor.GetComponent<SimpleSideMenu>().CurrentState == SimpleSideMenu.State.Open;
     }
 
     public void ShowMenu(GameObject Menu, string Headline = "") {

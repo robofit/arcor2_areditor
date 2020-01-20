@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2078995270900387591}
   m_Layer: 0
   m_Name: Actions
-  m_TagString: Untagged
+  m_TagString: ActionPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -40,9 +40,10 @@ GameObject:
   m_Component:
   - component: {fileID: 5140028460938256069}
   - component: {fileID: 6849433418117681114}
+  - component: {fileID: 5547556670204946479}
   m_Layer: 0
   m_Name: ActionPoint3D
-  m_TagString: Untagged
+  m_TagString: ActionPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -78,6 +79,19 @@ MonoBehaviour:
   ActionObject: {fileID: 0}
   Actions: {fileID: 1416551817558692293}
   ConnectionToIO: {fileID: 0}
+--- !u!114 &5547556670204946479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740470206176205867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12fabd961d2f703418575fef10475b7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ChildToBind: {fileID: 7822383090967264636}
 --- !u!1 &4940753687191564067
 GameObject:
   m_ObjectHideFlags: 0
@@ -89,7 +103,7 @@ GameObject:
   - component: {fileID: 6002740434822622662}
   m_Layer: 0
   m_Name: Visual
-  m_TagString: Untagged
+  m_TagString: ActionPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -124,7 +138,7 @@ GameObject:
   - component: {fileID: 1162351292833498496}
   m_Layer: 0
   m_Name: Sphere
-  m_TagString: Untagged
+  m_TagString: ActionPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -168,7 +182,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: bfcf70772abfa0a429d14a477808fa5c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

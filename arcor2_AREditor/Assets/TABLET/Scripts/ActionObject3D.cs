@@ -20,7 +20,6 @@ public class ActionObject3D : Base.ActionObject
 
     private void Update() {
         if (transform.hasChanged) {
-            print("The transform has changed!");
 
             // hasChanged is set to false in base.Update()
             //transform.hasChanged = false;
@@ -47,7 +46,6 @@ public class ActionObject3D : Base.ActionObject
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Debug.Log("SETTING SCENE POSITION");
         Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
     }
 

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace Base {
-    public class InputOutput : MonoBehaviour {
+    public class InputOutput : Clickable {
         public Connection Connection;
         public IO.Swagger.Model.ActionIO Data = new IO.Swagger.Model.ActionIO("");
 
@@ -24,38 +24,38 @@ namespace Base {
             }
         }
 
-
-        private void OnMouseUp() {
-            if (ConnectionManagerArcoro.Instance.IsConnecting()) {
-
-                if (Connection == null) {
-                    Connection = ConnectionManagerArcoro.Instance.ConnectVirtualConnectionToObject(gameObject);
-                    GameObject connectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
-                    if (connectedPuck != null && connectedPuck.name != "VirtualPointer") {
-                        Data.Default = connectedPuck.transform.GetComponentInParent<Base.Action>().Data.Id;
-                        connectedPuck.GetComponent<Base.InputOutput>().Data.Default = transform.GetComponentInParent<Base.Action>().Data.Id;
-                    } else {
-                        InitData();
-                        connectedPuck.GetComponent<Base.InputOutput>().InitData();
-                    }
-
-                    GameManager.Instance.UpdateProject();
-                }
-
-            } else {
-                if (Connection == null) {
-                    Connection = ConnectionManagerArcoro.Instance.CreateConnectionToMouse(gameObject);
-                } else {
-                    Connection = ConnectionManagerArcoro.Instance.AttachConnectionToMouse(Connection, gameObject);
-                    InitData();
-                    Connection = null;
-                }
-            }
-
-        }
-
         public Connection GetConneciton() {
             return Connection;
+        }
+
+        public override void OnClick(Click type) {
+            if (type == Click.MOUSE_LEFT_BUTTON) {
+                if (ConnectionManagerArcoro.Instance.IsConnecting()) {
+
+                    if (Connection == null) {
+                        Connection = ConnectionManagerArcoro.Instance.ConnectVirtualConnectionToObject(gameObject);
+                        GameObject connectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
+                        if (connectedPuck != null && connectedPuck.name != "VirtualPointer") {
+                            Data.Default = connectedPuck.transform.GetComponentInParent<Base.Action>().Data.Id;
+                            connectedPuck.GetComponent<Base.InputOutput>().Data.Default = transform.GetComponentInParent<Base.Action>().Data.Id;
+                        } else {
+                            InitData();
+                            connectedPuck.GetComponent<Base.InputOutput>().InitData();
+                        }
+
+                        GameManager.Instance.UpdateProject();
+                    }
+
+                } else {
+                    if (Connection == null) {
+                        Connection = ConnectionManagerArcoro.Instance.CreateConnectionToMouse(gameObject);
+                    } else {
+                        Connection = ConnectionManagerArcoro.Instance.AttachConnectionToMouse(Connection, gameObject);
+                        InitData();
+                        Connection = null;
+                    }
+                }
+            }
         }
     }
 

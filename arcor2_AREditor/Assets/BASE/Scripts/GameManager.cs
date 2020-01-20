@@ -335,6 +335,9 @@ namespace Base {
                     GameState = GameStateEnum.MainScreen;
                 }
                 foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                     Destroy(ao.gameObject);
                 }
                 return;
@@ -353,6 +356,9 @@ namespace Base {
             Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
             if (loadedScene != scene.Id) {
                 foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                     Destroy(ao.gameObject);
                 }
                 loadedScene = scene.Id;
@@ -365,6 +371,10 @@ namespace Base {
             foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
                 if (actionObjects.TryGetValue(actionObject.Id, out ActionObject ao)) {
                     if (actionObject.Type != ao.Data.Type) {
+                        //TODO probably replace with something more convenient
+                        Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
+
                         // type has changed, what now? delete object and create a new one?
                         Destroy(ao.gameObject);
                         // TODO: create a new one with new type
@@ -379,11 +389,17 @@ namespace Base {
                     new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
                     new_ao.transform.localRotation = new_ao.GetComponentInChildren<ActionObject>().GetSceneOrientation();
                     new_ao.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
+
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Add(new_ao, new List<GameObject>());
                 }
             }
 
             // remove leftovers
             foreach (ActionObject ao in actionObjects.Values) {
+                //TODO probably replace with something more convenient
+                Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                 Destroy(ao.gameObject);
             }
 
@@ -434,6 +450,9 @@ namespace Base {
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
                         GameObject actionPoint = SpawnActionPoint(actionObject, DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false);
                         actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
+
+                        //TODO probably replace with something more convenient
+                        Base.Scene.Instance.ActionObjects[actionObject.gameObject].Add(actionPoint);
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                             string providerName = projectAction.Type.Split('/').First();
