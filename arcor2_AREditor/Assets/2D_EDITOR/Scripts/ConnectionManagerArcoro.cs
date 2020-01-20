@@ -2,12 +2,13 @@ using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject ConnectionPrefab, VirtualPointer, CameraManager;
+    public GameObject ConnectionPrefab, CameraManager;
     private Connection virtualConnectionToMouse;
+    private GameObject virtualPointer;
 
     // Start is called before the first frame update
     void Start() {
-
+        virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
     }
 
     // Update is called once per frame
@@ -26,8 +27,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public Connection CreateConnectionToMouse(GameObject o) {
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        virtualConnectionToMouse = CreateConnection(o, VirtualPointer);
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
+        virtualConnectionToMouse = CreateConnection(o, virtualPointer);
 
         return virtualConnectionToMouse;
     }
@@ -39,7 +40,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
         Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
     }
 
     public Connection ConnectVirtualConnectionToObject(GameObject o) {
@@ -47,7 +48,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return null;
 
 
-        int i = GetIndexOf(virtualConnectionToMouse, VirtualPointer);
+        int i = GetIndexOf(virtualConnectionToMouse, virtualPointer);
         if (i < 0) {
             return null;
         }
@@ -58,7 +59,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         }
         Connection c = virtualConnectionToMouse;
         virtualConnectionToMouse = null;
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
         return c;
     }
 
@@ -66,11 +67,11 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         int i = GetIndexOf(c, o);
         if (i < 0)
             return null;
-        c.target[i] = VirtualPointer.GetComponent<RectTransform>();
+        c.target[i] = virtualPointer.GetComponent<RectTransform>();
         o.GetComponent<Base.InputOutput>().Connection = null;
         o.GetComponent<Base.InputOutput>().InitData();
         virtualConnectionToMouse = c;
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
         return virtualConnectionToMouse;
     }
 
