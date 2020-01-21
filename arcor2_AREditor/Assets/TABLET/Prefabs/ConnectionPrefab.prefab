@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5806945198084741765}
   - component: {fileID: 5806945198096296325}
   - component: {fileID: 5806945198095790967}
-  - component: {fileID: 6548185291539755164}
   m_Layer: 0
   m_Name: ConnectionPrefab
   m_TagString: Untagged
@@ -155,24 +154,12 @@ MonoBehaviour:
   - {fileID: 0}
   points:
   - color: {r: 1, g: 1, b: 1, a: 1}
-    direction: 0
+    direction: 1
     position: 0
     weight: 1
   - color: {r: 1, g: 1, b: 1, a: 1}
-    direction: 0
+    direction: 3
     position: 0
     weight: 1
   resolution: 20
   _line: {fileID: 5806945198096296325}
---- !u!114 &6548185291539755164
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5806945198085100239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ffc290494a1be8488274183f6308d72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

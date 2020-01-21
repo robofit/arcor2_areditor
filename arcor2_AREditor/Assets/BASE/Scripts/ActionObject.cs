@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
-       [System.NonSerialized]
-        public GameObject ConnectionPrefab;
 
         public GameObject ActionPoints;
         [System.NonSerialized]
@@ -15,7 +13,6 @@ namespace Base {
         public List<string> EndEffectors = new List<string>();
 
         protected virtual void Start() {
-            ConnectionPrefab = GameManager.Instance.ConnectionPrefab;
         }
 
         public virtual void UpdateId(string newId) {

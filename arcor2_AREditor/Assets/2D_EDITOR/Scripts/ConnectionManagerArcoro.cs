@@ -24,8 +24,15 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public Connection CreateConnection(GameObject o1, GameObject o2) {
         GameObject c = Instantiate(ConnectionPrefab);
         c.transform.SetParent(transform);
-        c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
-        c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+        // Set correct targets. Output has to be always at 0 index, because we are connecting output to input.
+        // Output has direction to the east, while input has direction to the west.
+        if (o1.GetComponent<Base.InputOutput>().GetType() == typeof(Base.PuckOutput)) {
+            c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
+            c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+        } else {
+            c.GetComponent<Connection>().target[1] = o1.GetComponent<RectTransform>();
+            c.GetComponent<Connection>().target[0] = o2.GetComponent<RectTransform>();
+        }
         Connections.Add(c.GetComponent<Connection>());
         return c.GetComponent<Connection>();
     }

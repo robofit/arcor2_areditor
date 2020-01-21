@@ -517,8 +517,9 @@ namespace Base {
                     }
                     GameObject c = Instantiate(ConnectionPrefab);
                     c.transform.SetParent(ConnectionManager.instance.transform);
-                    c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
-                    c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
+                    // We are always connecting output to input.
+                    c.GetComponent<Connection>().target[0] = output.gameObject.GetComponent<RectTransform>();
+                    c.GetComponent<Connection>().target[1] = input.gameObject.GetComponent<RectTransform>();
 
                     input.Connection = c.GetComponent<Connection>();
                     output.Connection = c.GetComponent<Connection>();
