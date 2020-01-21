@@ -37,6 +37,7 @@ namespace Base {
         public event EventHandler OnStopProject;
         public event EventHandler OnPauseProject;
         public event EventHandler OnResumeProject;
+        public event EventHandler OnCloseProject;
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
@@ -515,12 +516,13 @@ namespace Base {
 
                     }
                     GameObject c = Instantiate(ConnectionPrefab);
-                    c.transform.SetParent(ConnectionManager.Instance.transform);
+                    c.transform.SetParent(ConnectionManager.instance.transform);
                     c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
                     c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
 
                     input.Connection = c.GetComponent<Connection>();
                     output.Connection = c.GetComponent<Connection>();
+                    ConnectionManagerArcoro.Instance.Connections.Add(c.GetComponent<Connection>());
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
                 }                
@@ -741,6 +743,7 @@ namespace Base {
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
             CloseScene();
+            OnCloseProject?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {

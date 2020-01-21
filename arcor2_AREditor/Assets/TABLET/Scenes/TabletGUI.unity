@@ -1402,7 +1402,8 @@ MonoBehaviour:
   Scene: {fileID: 311940052}
   SpawnPoint: {fileID: 2087559260}
   LoadingScreen: {fileID: 1123195957}
-  ConnectionPrefab: {fileID: 133288, guid: b8e9276d2ec4a497c8b03ea67a0c3c83, type: 3}
+  ConnectionPrefab: {fileID: 5806945198085100239, guid: 31f6d6356966c2e4bb045504a3741145,
+    type: 3}
   APConnectionPrefab: {fileID: 1840638192761304333, guid: 95914573f586afe4abc048f39fd7d78f,
     type: 3}
   ActionPointPrefab: {fileID: 2740470206176205867, guid: 71da8798b6db7214689109416f67e422,
@@ -5217,12 +5218,12 @@ PrefabInstance:
     - target: {fileID: 5176358584859393096, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5176358584859393096, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5176358584859393096, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
@@ -5237,37 +5238,37 @@ PrefabInstance:
     - target: {fileID: 5176358584859393096, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 5176358584859393096, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 5035712513465919207, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5035712513465919207, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5035712513465919207, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 365.5
       objectReference: {fileID: 0}
     - target: {fileID: 5035712513465919207, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -25
       objectReference: {fileID: 0}
     - target: {fileID: 5035712513465919207, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 731
       objectReference: {fileID: 0}
     - target: {fileID: 5129638514626906020, guid: d11ff9b97e462f7449cd9465617b9167,
         type: 3}
@@ -5570,8 +5571,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 931971011}
-  - component: {fileID: 931971013}
   - component: {fileID: 931971012}
+  - component: {fileID: 931971013}
   m_Layer: 0
   m_Name: ConnectionManager
   m_TagString: Untagged
@@ -5608,6 +5609,7 @@ MonoBehaviour:
   ConnectionPrefab: {fileID: 5806945198085100239, guid: 31f6d6356966c2e4bb045504a3741145,
     type: 3}
   CameraManager: {fileID: 1688362175}
+  Connections: []
 --- !u!114 &931971013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5620,8 +5622,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64d5217a38feb4c3d895d0f1edcd9978, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectionPrefab: {fileID: 5806945198095790967, guid: 31f6d6356966c2e4bb045504a3741145,
-    type: 3}
+  connectionPrefab: {fileID: 11479312, guid: b8e9276d2ec4a497c8b03ea67a0c3c83, type: 3}
   connections: []
 --- !u!1 &952576526
 GameObject:
@@ -8363,7 +8364,7 @@ PrefabInstance:
     - target: {fileID: 224685037686054822, guid: 4d8c6c9fba0e46f489b21fd7d92d739d,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1217189.2
+      value: 1244609.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d8c6c9fba0e46f489b21fd7d92d739d, type: 3}
@@ -12579,7 +12580,7 @@ PrefabInstance:
     - target: {fileID: 224841020572500472, guid: d39ad26c554f1a04d870956f7fac6fd8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1665689.2
+      value: 1702889.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d39ad26c554f1a04d870956f7fac6fd8, type: 3}

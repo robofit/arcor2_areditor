@@ -1,14 +1,19 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
     public GameObject ConnectionPrefab, CameraManager;
+    public List<Connection> Connections = new List<Connection>();
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
 
     // Start is called before the first frame update
     void Start() {
         virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
+
+        Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
 
     // Update is called once per frame
@@ -21,6 +26,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         c.transform.SetParent(transform);
         c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
         c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+        Connections.Add(c.GetComponent<Connection>());
         return c.GetComponent<Connection>();
     }
 
@@ -40,6 +46,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
         Destroy(virtualConnectionToMouse.gameObject);
+        Connections.Remove(virtualConnectionToMouse);
         CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
     }
 
@@ -123,4 +130,12 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return false;
         return input + output == 1;
     }
+
+    private void OnCloseProject(object sender, EventArgs e) {
+        foreach (Connection c in Connections) {
+            Destroy(c.gameObject);
+        }
+        Connections.Clear();
+    }
+
 }
