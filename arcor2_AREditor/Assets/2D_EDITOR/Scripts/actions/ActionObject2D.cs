@@ -1,3 +1,4 @@
+using Base;
 using UnityEngine;
 
 
@@ -14,8 +15,7 @@ public class ActionObject2D : Base.ActionObject {
         ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
     }
 
-
-    private void Touch() {
+    public override void OnClick(Click type) {
         if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
             ActionObjectMenu.GetComponent<ActionObjectMenu>().CurrentObject = gameObject;
             ActionObjectMenu.GetComponent<ActionObjectMenu>().UpdateMenu();
@@ -24,8 +24,6 @@ public class ActionObject2D : Base.ActionObject {
             ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
             MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor);
         }
-        
-        
     }
 
     public void OnMouseDown() {
@@ -71,10 +69,6 @@ public class ActionObject2D : Base.ActionObject {
 
     public override void SetSceneOrientation(Quaternion orientation) {
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
-    }
-
-    public override void OnClick() {
-
     }
 
     public override bool SceneInteractable() {

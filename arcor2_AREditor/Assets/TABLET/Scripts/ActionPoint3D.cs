@@ -1,11 +1,28 @@
+using Base;
 using UnityEngine;
 
 public class ActionPoint3D : Base.ActionPoint {
 
-    public override void OnClick() {
-        MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
-        MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
+
+    private void Update() {
+        if (transform.hasChanged) {
+
+            // hasChanged is set to false in base.Update()
+            //transform.hasChanged = false;
+
+            if (ProjectInteractable())
+                Base.GameManager.Instance.UpdateProject();
+        }
+
+        base.Update();
+    }
+
+    public override void OnClick(Click type) {
+        if (type == Click.MOUSE_RIGHT_BUTTON) {
+            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
+            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
+        }
     }
 
     public override Vector3 GetScenePosition() {
@@ -32,9 +49,19 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void SetScenePosition(IO.Swagger.Model.Position position) {
         Data.Position = position;
+        //Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
     }
 
     public override void UpdatePositionsOfPucks() {
-        throw new System.NotImplementedException();
+        int i = 1;
+        foreach (Action3D action in Actions.GetComponentsInChildren<Action3D>()) {
+            action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
+            ++i;
+        }
     }
+    
+    public override bool ProjectInteractable() {
+        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+    }
+
 }

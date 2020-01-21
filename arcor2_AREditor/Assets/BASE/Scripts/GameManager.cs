@@ -37,6 +37,7 @@ namespace Base {
         public event EventHandler OnStopProject;
         public event EventHandler OnPauseProject;
         public event EventHandler OnResumeProject;
+        public event EventHandler OnCloseProject;
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
@@ -64,7 +65,10 @@ namespace Base {
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-        public bool SceneInteractable = true;
+
+        public bool SceneInteractable {
+            get => !MenuManager.Instance.IsAnyMenuOpened();
+        }
 
         public enum ConnectionStatusEnum {
             Connected, Disconnected, Connecting
@@ -129,14 +133,14 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     MenuManager.Instance.DisableAllMenus();
                     LoadingScreen.SetActive(true);
+                    Scene.SetActive(true);
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    LoadScenes();                    
+                    LoadScenes();
                     Projects = await WebsocketManager.Instance.LoadProjects();
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();                    
                     UpdateServices();
                     GameState = GameStateEnum.MainScreen;
-                    Scene.SetActive(true);                    
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
@@ -332,6 +336,9 @@ namespace Base {
                     GameState = GameStateEnum.MainScreen;
                 }
                 foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                     Destroy(ao.gameObject);
                 }
                 return;
@@ -350,6 +357,9 @@ namespace Base {
             Dictionary<string, ActionObject> actionObjects = new Dictionary<string, ActionObject>();
             if (loadedScene != scene.Id) {
                 foreach (ActionObject ao in ActionObjects.transform.GetComponentsInChildren<ActionObject>()) {
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                     Destroy(ao.gameObject);
                 }
                 loadedScene = scene.Id;
@@ -362,6 +372,10 @@ namespace Base {
             foreach (IO.Swagger.Model.SceneObject actionObject in scene.Objects) {
                 if (actionObjects.TryGetValue(actionObject.Id, out ActionObject ao)) {
                     if (actionObject.Type != ao.Data.Type) {
+                        //TODO probably replace with something more convenient
+                        Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
+
                         // type has changed, what now? delete object and create a new one?
                         Destroy(ao.gameObject);
                         // TODO: create a new one with new type
@@ -376,11 +390,17 @@ namespace Base {
                     new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
                     new_ao.transform.localRotation = new_ao.GetComponentInChildren<ActionObject>().GetSceneOrientation();
                     new_ao.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
+
+                    //TODO probably replace with something more convenient
+                    Base.Scene.Instance.ActionObjects.Add(new_ao, new List<GameObject>());
                 }
             }
 
             // remove leftovers
             foreach (ActionObject ao in actionObjects.Values) {
+                //TODO probably replace with something more convenient
+                Base.Scene.Instance.ActionObjects.Remove(ao.gameObject);
+
                 Destroy(ao.gameObject);
             }
 
@@ -431,6 +451,9 @@ namespace Base {
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
                         GameObject actionPoint = SpawnActionPoint(actionObject, DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false);
                         actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
+
+                        //TODO probably replace with something more convenient
+                        Base.Scene.Instance.ActionObjects[actionObject.gameObject].Add(actionPoint);
 
                         foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                             string providerName = projectAction.Type.Split('/').First();
@@ -493,12 +516,14 @@ namespace Base {
 
                     }
                     GameObject c = Instantiate(ConnectionPrefab);
-                    c.transform.SetParent(ConnectionManager.Instance.transform);
-                    c.GetComponent<Connection>().target[0] = input.gameObject.GetComponent<RectTransform>();
-                    c.GetComponent<Connection>().target[1] = output.gameObject.GetComponent<RectTransform>();
+                    c.transform.SetParent(ConnectionManager.instance.transform);
+                    // We are always connecting output to input.
+                    c.GetComponent<Connection>().target[0] = output.gameObject.GetComponent<RectTransform>();
+                    c.GetComponent<Connection>().target[1] = input.gameObject.GetComponent<RectTransform>();
 
                     input.Connection = c.GetComponent<Connection>();
                     output.Connection = c.GetComponent<Connection>();
+                    ConnectionManagerArcoro.Instance.Connections.Add(c.GetComponent<Connection>());
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
                 }                
@@ -719,6 +744,7 @@ namespace Base {
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
             CloseScene();
+            OnCloseProject?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {

@@ -1,13 +1,19 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject ConnectionPrefab, VirtualPointer, CameraManager;
+    public GameObject ConnectionPrefab, CameraManager;
+    public List<Connection> Connections = new List<Connection>();
     private Connection virtualConnectionToMouse;
+    private GameObject virtualPointer;
 
     // Start is called before the first frame update
     void Start() {
+        virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
 
+        Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
 
     // Update is called once per frame
@@ -18,16 +24,24 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public Connection CreateConnection(GameObject o1, GameObject o2) {
         GameObject c = Instantiate(ConnectionPrefab);
         c.transform.SetParent(transform);
-        c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
-        c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+        // Set correct targets. Output has to be always at 0 index, because we are connecting output to input.
+        // Output has direction to the east, while input has direction to the west.
+        if (o1.GetComponent<Base.InputOutput>().GetType() == typeof(Base.PuckOutput)) {
+            c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
+            c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+        } else {
+            c.GetComponent<Connection>().target[1] = o1.GetComponent<RectTransform>();
+            c.GetComponent<Connection>().target[0] = o2.GetComponent<RectTransform>();
+        }
+        Connections.Add(c.GetComponent<Connection>());
         return c.GetComponent<Connection>();
     }
 
     public Connection CreateConnectionToMouse(GameObject o) {
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
-        virtualConnectionToMouse = CreateConnection(o, VirtualPointer);
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
+        virtualConnectionToMouse = CreateConnection(o, virtualPointer);
 
         return virtualConnectionToMouse;
     }
@@ -39,7 +53,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
         }
         Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        Connections.Remove(virtualConnectionToMouse);
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
     }
 
     public Connection ConnectVirtualConnectionToObject(GameObject o) {
@@ -47,7 +62,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return null;
 
 
-        int i = GetIndexOf(virtualConnectionToMouse, VirtualPointer);
+        int i = GetIndexOf(virtualConnectionToMouse, virtualPointer);
         if (i < 0) {
             return null;
         }
@@ -58,7 +73,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         }
         Connection c = virtualConnectionToMouse;
         virtualConnectionToMouse = null;
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = false;
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
         return c;
     }
 
@@ -66,11 +81,11 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         int i = GetIndexOf(c, o);
         if (i < 0)
             return null;
-        c.target[i] = VirtualPointer.GetComponent<RectTransform>();
+        c.target[i] = virtualPointer.GetComponent<RectTransform>();
         o.GetComponent<Base.InputOutput>().Connection = null;
         o.GetComponent<Base.InputOutput>().InitData();
         virtualConnectionToMouse = c;
-        CameraManager.GetComponent<CameraMove>().DrawVirtualConnection = true;
+        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
         return virtualConnectionToMouse;
     }
 
@@ -122,4 +137,12 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return false;
         return input + output == 1;
     }
+
+    private void OnCloseProject(object sender, EventArgs e) {
+        foreach (Connection c in Connections) {
+            Destroy(c.gameObject);
+        }
+        Connections.Clear();
+    }
+
 }
