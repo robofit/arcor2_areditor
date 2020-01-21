@@ -1169,6 +1169,7 @@ GameObject:
   - component: {fileID: 126992236}
   - component: {fileID: 126992240}
   - component: {fileID: 126992241}
+  - component: {fileID: 126992242}
   m_Layer: 0
   m_Name: AR Camera
   m_TagString: MainCamera
@@ -1355,6 +1356,31 @@ MonoBehaviour:
   selectionMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &126992242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 126992234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ff1a69b00cf624bbf15409690bbef0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showMain: 1
+  showSub: 1
+  showAxis: 1
+  gridSizeX: 6
+  gridSizeY: 0
+  gridSizeZ: 6
+  smallStep: 0.1
+  largeStep: 1
+  startX: -3
+  startY: 0
+  startZ: -3
+  mainColor: {r: 0, g: 1, b: 0, a: 1}
+  subColor: {r: 0, g: 0.5, b: 0, a: 1}
 --- !u!1 &139061313
 GameObject:
   m_ObjectHideFlags: 0
@@ -8364,7 +8390,7 @@ PrefabInstance:
     - target: {fileID: 224685037686054822, guid: 4d8c6c9fba0e46f489b21fd7d92d739d,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1244609.2
+      value: 1862579.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d8c6c9fba0e46f489b21fd7d92d739d, type: 3}
@@ -12580,7 +12606,7 @@ PrefabInstance:
     - target: {fileID: 224841020572500472, guid: d39ad26c554f1a04d870956f7fac6fd8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1702889.2
+      value: 2527169.2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d39ad26c554f1a04d870956f7fac6fd8, type: 3}
