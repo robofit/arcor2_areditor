@@ -134,8 +134,9 @@ namespace Base {
             Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
             foreach (IO.Swagger.Model.ObjectAction action in actions) {
                 ActionMetadata a = new ActionMetadata(action);
-                foreach (IO.Swagger.Model.ObjectActionArg arg in action.ActionArgs) {
-                    /*switch (arg.Type) {
+                /*
+                foreach (IO.Swagger.Model.ActionParameterMeta arg in action.Parameters) {
+                    switch (arg.Type) {
                         case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
                             a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
                             break;
@@ -148,9 +149,9 @@ namespace Base {
                         case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
                             a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
                             break;
-                    }*/
+                    }
 
-                }
+            }*/
                 metadata[a.Name] = a;
             }
             return metadata;

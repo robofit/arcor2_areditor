@@ -2,18 +2,18 @@ using System;
 
 namespace Base {
     public class ActionParameter : IO.Swagger.Model.ActionParameter {
-        public IO.Swagger.Model.ObjectActionArg ActionParameterMetadata;
+        public IO.Swagger.Model.ActionParameterMeta ActionParameterMetadata;
        
-        public ActionParameter(IO.Swagger.Model.ObjectActionArg actionParameterMetadata, IO.Swagger.Model.ActionParameter actionParameter = null) {
+        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, IO.Swagger.Model.ActionParameter actionParameter = null) {
             ActionParameterMetadata = actionParameterMetadata;
             Id = ActionParameterMetadata.Name;
-            Type = (TypeEnum) ActionParameterMetadata.Type;
+            Type = ActionParameterMetadata.Type;
             if (actionParameter != null) {
                 Value = actionParameter.Value;
             }
         }       
 
-        public ActionParameter(object value, IO.Swagger.Model.ObjectActionArg actionParameterMetadata) {
+        public ActionParameter(object value, IO.Swagger.Model.ActionParameterMeta actionParameterMetadata) {
             Value = value;
             ActionParameterMetadata = actionParameterMetadata;
         }
