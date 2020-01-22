@@ -17,19 +17,21 @@ namespace Base {
             this.ActionProvider = actionProvider;
             
             if (generateData) {
-                foreach (IO.Swagger.Model.ObjectActionArg actionParameterMetadata in this.metadata.ActionArgs) {
+                Debug.LogError(this.metadata);
+                Debug.LogError(this.metadata.Parameters);
+                foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMetadata in this.metadata.Parameters) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
                     switch (actionParameter.Type) {
-                            case IO.Swagger.Model.ActionParameter.TypeEnum.Relativepose:
-                                actionParameter.Value = (string) Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
+                            case "relative_pose":
+                                actionParameter.Value = Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
                                 break;
-                            case IO.Swagger.Model.ActionParameter.TypeEnum.Integerenum:
-                                actionParameter.Value = (int) actionParameterMetadata.IntegerAllowedValues[0];
+                            case "integer_enum":
+                                actionParameter.Value = (int) actionParameterMetadata.AllowedValues[0];
                                 break;
-                            case IO.Swagger.Model.ActionParameter.TypeEnum.Stringenum:
-                                actionParameter.Value = (string) actionParameterMetadata.StringAllowedValues[0];
+                            case "string_enum":
+                                actionParameter.Value = (string) actionParameterMetadata.AllowedValues[0];
                                 break;
-                            case IO.Swagger.Model.ActionParameter.TypeEnum.Pose:
+                            case "pose":
                                 List<string> poses = new List<string>(ap.GetPoses().Keys);
                                 if (poses.Count == 0) {
                                     actionParameter.Value = "";

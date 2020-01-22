@@ -70,26 +70,26 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     private async Task<GameObject> InitializeParameter(Base.ActionParameter actionParameter) {
         GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.String:
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Relativepose:
+            case "string":
+            case "relative_pose":
                 parameter = await InitializeStringParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Pose:
+            case "pose":
                 parameter = InitializePoseParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Joints:
+            case "joints":
                 parameter = InitializeJointsParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Stringenum:
+            case "string_enum":
                 parameter = InitializeStringEnumParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integerenum:
+            case "integer_enum":
                 parameter = InitializeIntegerEnumParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Integer:
+            case "integer":
                 parameter = InitializeIntegerParameter(actionParameter);
                 break;
-            case IO.Swagger.Model.ObjectActionArg.TypeEnum.Double:
+            case "double":
                 parameter = InitializeDoubleParameter(actionParameter);
                 break;
 
@@ -169,12 +169,15 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
 
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
         actionParameter.GetValue(out string selectedValue);
-        return InitializeDropdownParameter(actionParameter, actionParameter.ActionParameterMetadata.StringAllowedValues, selectedValue);
+        List<string> data = new List<string>();
+        foreach (string item in actionParameter.ActionParameterMetadata.AllowedValues)
+            data.Add(item);
+        return InitializeDropdownParameter(actionParameter, data, selectedValue);
     }
 
     private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
         List<string> options = new List<string>();
-        foreach (int item in actionParameter.ActionParameterMetadata.IntegerAllowedValues) {
+        foreach (int item in actionParameter.ActionParameterMetadata.AllowedValues) {
             options.Add(item.ToString());
         }
         actionParameter.GetValue(out long selectedValue);
