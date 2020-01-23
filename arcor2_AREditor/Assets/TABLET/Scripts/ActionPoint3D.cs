@@ -54,7 +54,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void UpdatePositionsOfPucks() {
         int i = 1;
-        foreach (Action3D action in Actions.GetComponentsInChildren<Action3D>()) {
+        foreach (Action3D action in Actions) {
             action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
             ++i;
         }

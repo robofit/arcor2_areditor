@@ -196,7 +196,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
 
     private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {        
         List<string> options = new List<string>();
-        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+        foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
             foreach (string poseKey in ap.GetPoses().Keys) {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);               
             }
@@ -208,7 +208,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
 
      private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {        
         List<string> options = new List<string>();
-        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+        foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
             foreach (string jointsId in ap.GetJoints().Keys) {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);               
             }

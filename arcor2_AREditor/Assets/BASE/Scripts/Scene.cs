@@ -9,7 +9,10 @@ namespace Base {
 
 
         // TODO JAK VHODNE UDELAT LIST VSECH AKCNICH OBJEKTU / POINTU???
-        public Dictionary<GameObject, List<GameObject>> ActionObjects = new Dictionary<GameObject, List<GameObject>>();
+        //public Dictionary<GameObject, List<GameObject>> ActionObjects = new Dictionary<GameObject, List<GameObject>>();
+
+        public List<ActionObject> ActionObjects = new List<ActionObject>();
+
 
         private bool sceneActive = true;
         private bool projectActive = true;
@@ -60,6 +63,42 @@ namespace Base {
                     child.gameObject.layer = LayerMask.NameToLayer("Default");
                 }
             }
+        }
+
+
+        public Action GetAction(string id) {
+            foreach (ActionObject actionObject in ActionObjects) {
+                foreach (ActionPoint actionPoint in actionObject.ActionPoints) {
+                    foreach (Action action in actionPoint.Actions) {
+                        if (action.Data.Id == id)
+                            return action;
+                    }
+                }
+            }
+            throw new KeyNotFoundException("Action " + id + " not found!");
+        }
+
+
+        public List<Action> GetAllActions() {
+            List<Action> actions = new List<Action>();
+            foreach (ActionObject actionObject in ActionObjects) {
+                foreach (ActionPoint actionPoint in actionObject.ActionPoints) {
+                    foreach (Action action in actionPoint.Actions) {
+                        actions.Add(action);
+                    }
+                }
+            }
+            return actions;
+        }
+
+        public List<ActionPoint> GetAllActionPoints() {
+            List<ActionPoint> actionPoints = new List<ActionPoint>();
+            foreach (ActionObject actionObject in ActionObjects) {
+                foreach (ActionPoint actionPoint in actionObject.ActionPoints) {
+                    actionPoints.Add(actionPoint);
+                }
+            }
+            return actionPoints;
         }
 
 

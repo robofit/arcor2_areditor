@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
 
-        public GameObject ActionPoints;
+        public List<ActionPoint> ActionPoints = new List<ActionPoint>();
+        //public GameObject ActionPoints;
         [System.NonSerialized]
         public int CounterAP = 0;
 

@@ -15,7 +15,7 @@ public class ActionPointMenu : MonoBehaviour {
         UpdatePositionBlock, JointsList, AddJointsDialog;
 
     public void CreatePuck(string action_id, IActionProvider actionProvider) {
-        Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint, true, actionProvider);
+        Base.GameManager.Instance.SpawnPuck(action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
     }
 
     public void SaveID(string new_id) {

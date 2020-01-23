@@ -279,7 +279,7 @@ namespace Base {
                 return;
             }
 
-            Action puck = GameManager.Instance.FindPuck(puck_id);
+            Action puck = Scene.Instance.GetAction(puck_id);
 
             //Arrow.transform.SetParent(puck.transform);
             //Arrow.transform.position = puck.transform.position + new Vector3(0f, 1.5f, 0f);

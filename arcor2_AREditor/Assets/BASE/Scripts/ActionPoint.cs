@@ -4,8 +4,11 @@ using System.Collections.Generic;
 
 namespace Base {
     public abstract class ActionPoint : Clickable {
+
+        public List<Action> Actions = new List<Action>();
+
         public ActionObject ActionObject;
-        public GameObject Actions;
+        //public GameObject Actions;
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;

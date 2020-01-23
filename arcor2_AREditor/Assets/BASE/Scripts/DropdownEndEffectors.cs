@@ -13,7 +13,7 @@ public class DropdownEndEffectors : MonoBehaviour {
             gameObject.SetActive(false);
             return;
         }
-        foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+        foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects) {
             if (actionObject.Data.Id == robot_id) {
                 UpdateEndEffectorList(actionObject);
                 return;

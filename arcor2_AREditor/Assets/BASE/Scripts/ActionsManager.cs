@@ -104,7 +104,7 @@ namespace Base {
 
         public List<string> GetRobots() {
             HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionObject>()) {
+            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects) {
                 if (actionObject.ActionObjectMetadata.Robot) {
                     robots.Add(actionObject.Data.Id);
                 }
