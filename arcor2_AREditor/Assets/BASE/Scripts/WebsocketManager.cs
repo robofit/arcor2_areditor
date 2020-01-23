@@ -28,7 +28,7 @@ namespace Base {
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
-        int requestID = 1;
+        private int requestID = 1;
 
         private void Awake() {
             waitingForMessage = false;
@@ -40,9 +40,6 @@ namespace Base {
             waitingForObjectActions = "";
         }
 
-        private void Start() {
-
-        }
 
         public async Task<bool> ConnectToServer(string domain, int port) {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
@@ -76,7 +73,7 @@ namespace Base {
 
 
         // Update is called once per frame
-        async void Update() {
+        private async void Update() {
             if (clientWebSocket == null)
                 return;
             if (clientWebSocket.State == WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Disconnected) {
@@ -196,43 +193,34 @@ namespace Base {
             Debug.Log("Recieved new data: " + data);
             var dispatch = JsonConvert.DeserializeAnonymousType(data, dispatchType);
 
-            JSONObject jsonData = new JSONObject(data);
-
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             if (dispatch.response != null) {
-                switch (dispatch.response) {
-                    case "OpenProject":
-                        HandleOpenProject(data);
-                        break;
-                    default:
-                        if (responses.ContainsKey(dispatch.id)) {
-                            responses[dispatch.id] = data;
-                        }
-                        break;
+
+                if (responses.ContainsKey(dispatch.id)) {
+                    responses[dispatch.id] = data;
+                } else {
+                    // TODO: response to unknown request
                 }
+                   
             } else if (dispatch.@event != null) {
                 switch (dispatch.@event) {
                     case "SceneChanged":
-                        HandleSceneChanged(jsonData);
+                        HandleSceneChanged(data);
                         break;
                     case "CurrentAction":
-                        HandleCurrentAction(jsonData);
+                        HandleCurrentAction(data);
                         break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
                             ignoreProjectChanged = false;
                         else
-                            HandleProjectChanged(jsonData);
+                            HandleProjectChanged(data);
                         break;
                 }
             }
 
         }
-
-        /*private async void WaitForResult(string key) {
-
-        }*/
 
         private async Task<T> WaitForResult<T>(int key) {
             if (responses.TryGetValue(key, out string value)) {
@@ -260,20 +248,12 @@ namespace Base {
             });
         }
 
-        void HandleProjectChanged(JSONObject obj) {
+        private void HandleProjectChanged(string obj) {
 
             try {
-                if (obj["event"].str != "ProjectChanged") {
-                    return;
-                }                
 
-                if (obj["data"].GetType() != typeof(JSONObject)) {
-                    GameManager.Instance.ProjectUpdated(null);
-                }
-
-
-                ARServer.Models.EventProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<ARServer.Models.EventProjectChanged>(obj.ToString());
-                GameManager.Instance.ProjectUpdated(eventProjectChanged.Project);
+                IO.Swagger.Model.ProjectChangedEvent eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChangedEvent>(obj);
+                GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
 
 
             } catch (NullReferenceException e) {
@@ -284,14 +264,13 @@ namespace Base {
 
         }
 
-        void HandleCurrentAction(JSONObject obj) {
+        private void HandleCurrentAction(string obj) {
             string puck_id;
             try {
-                if (obj["event"].str != "CurrentAction" || obj["data"].GetType() != typeof(JSONObject)) {
-                    return;
-                }
+                
+                IO.Swagger.Model.CurrentActionEvent currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentActionEvent>(obj);
 
-                puck_id = obj["data"]["action_id"].str;
+                puck_id = currentActionEvent.Data.ActionId;
 
 
 
@@ -306,9 +285,9 @@ namespace Base {
             //Arrow.transform.position = puck.transform.position + new Vector3(0f, 1.5f, 0f);
         }
 
-        void HandleSceneChanged(JSONObject obj) {
-            ARServer.Models.EventSceneChanged eventSceneChanged = JsonConvert.DeserializeObject<ARServer.Models.EventSceneChanged>(obj.ToString());
-            GameManager.Instance.SceneUpdated(eventSceneChanged.Scene);
+        private void HandleSceneChanged(string obj) {
+            IO.Swagger.Model.SceneChangedEvent sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChangedEvent>(obj);
+            GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
         }
 
        
@@ -350,24 +329,51 @@ namespace Base {
             return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
-        public void OpenProject(string id) {
-            SendDataToServer(new IO.Swagger.Model.OpenProjectRequest(request: "OpenProject", args: new IO.Swagger.Model.IdArgs(id: id)).ToJson());
+        public async Task OpenProject(string id) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
+            IO.Swagger.Model.OpenProjectRequest request = new IO.Swagger.Model.OpenProjectRequest(id: r_id, request: "OpenProject", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.OpenProjectResponse response = await WaitForResult<IO.Swagger.Model.OpenProjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void RunProject(string projectId) {
-            SendDataToServer(new IO.Swagger.Model.RunProjectRequest(request: "RunProject", args: new IO.Swagger.Model.IdArgs(id: projectId)).ToJson());
+        public async Task RunProject(string projectId) {
+            int r_id = ++requestID;
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: projectId);
+            IO.Swagger.Model.RunProjectRequest request = new IO.Swagger.Model.RunProjectRequest(id: r_id, request: "RunProject", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RunProjectResponse response = await WaitForResult<IO.Swagger.Model.RunProjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void StopProject() {
-            SendDataToServer(new IO.Swagger.Model.StopProjectRequest(request: "StopProject").ToJson());
+        public async Task StopProject() {
+            int r_id = ++requestID;
+            IO.Swagger.Model.StopProjectRequest request = new IO.Swagger.Model.StopProjectRequest(id: r_id, request: "StopProject");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StopProjectResponse response = await WaitForResult<IO.Swagger.Model.StopProjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void PauseProject() {
-            SendDataToServer(new IO.Swagger.Model.PauseProjectRequest(request: "PauseProject").ToJson());
+        public async Task PauseProject() {
+            int r_id = ++requestID;
+            IO.Swagger.Model.PauseProjectRequest request = new IO.Swagger.Model.PauseProjectRequest(id: r_id, request: "PauseProject");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.PauseProjectResponse response = await WaitForResult<IO.Swagger.Model.PauseProjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
-        public void ResumeProject() {
-            SendDataToServer(new IO.Swagger.Model.ResumeProjectRequest(request: "ResumeProject").ToJson());
+        public async Task ResumeProject() {
+            int r_id = ++requestID;
+            IO.Swagger.Model.ResumeProjectRequest request = new IO.Swagger.Model.ResumeProjectRequest(id: r_id, request: "ResumeProject");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ResumeProjectResponse response = await WaitForResult<IO.Swagger.Model.ResumeProjectResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
         }
 
         public async Task UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {

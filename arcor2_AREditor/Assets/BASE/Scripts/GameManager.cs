@@ -164,7 +164,7 @@ namespace Base {
                ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
             } else {
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-                NotificationsModernUI.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
+                Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
             }
 
         }
@@ -746,9 +746,14 @@ namespace Base {
             return response;
         }
 
-        public void OpenProject(string id) {
-            WebsocketManager.Instance.OpenProject(id);
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
+        public async void OpenProject(string id) {
+            try {
+                await WebsocketManager.Instance.OpenProject(id);
+                OnLoadProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to open project", ex.Message);
+            }
+            
         }
 
         public async void OpenScene(string id) {
@@ -759,27 +764,43 @@ namespace Base {
             OnLoadProject?.Invoke(this, EventArgs.Empty);
         }
 
-        public void RunProject() {
+        public async void RunProject() {
             if (currentProject == null)
                 return;
-            WebsocketManager.Instance.RunProject(currentProject.Id);
-            OnRunProject?.Invoke(this, EventArgs.Empty);
+            try {
+                await WebsocketManager.Instance.RunProject(currentProject.Id);
+                OnRunProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to run project", ex.Message);
+            }
         }
 
-        public void StopProject() {
-            WebsocketManager.Instance.StopProject();
-            OnStopProject?.Invoke(this, EventArgs.Empty);
+        public async void StopProject() {
+            try {
+                await WebsocketManager.Instance.StopProject();
+                OnStopProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
+            }
         }
 
-        public void PauseProject() {
-            WebsocketManager.Instance.PauseProject();
-            OnPauseProject?.Invoke(this, EventArgs.Empty);
+        public async void PauseProject() {
+            try {
+                await WebsocketManager.Instance.PauseProject();
+                OnPauseProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
+            }
         }
 
 
-        public void ResumeProject() {
-            WebsocketManager.Instance.ResumeProject();
-            OnResumeProject?.Invoke(this, EventArgs.Empty);
+        public async void ResumeProject() {
+            try {
+                await WebsocketManager.Instance.ResumeProject();
+                OnResumeProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);
+            }
         }
 
 
@@ -788,7 +809,7 @@ namespace Base {
                 await WebsocketManager.Instance.CreateNewObjectType(objectType);
                 UpdateActionObjects();
             } catch (RequestFailedException ex) {
-                NotificationsModernUI.Instance.ShowNotification("Failed to create new object type", ex.Message);
+                Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
             }
         }
 
@@ -799,7 +820,7 @@ namespace Base {
             try {
                 await WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
             } catch (RequestFailedException ex) {
-                NotificationsModernUI.Instance.ShowNotification("Failed to update action point", ex.Message);
+                Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
         }
         
@@ -808,7 +829,7 @@ namespace Base {
             try {
                 await WebsocketManager.Instance.UpdateActionPointJoints(actionPointId, robotId, jointsId);
             } catch (RequestFailedException ex) {
-                NotificationsModernUI.Instance.ShowNotification("Failed to update action point", ex.Message);
+                Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
         }
         
@@ -817,7 +838,7 @@ namespace Base {
             try {
                 await WebsocketManager.Instance.UpdateActionObjectPosition(actionObjectId, robotId, endEffectorId);
             } catch (RequestFailedException ex) {
-                NotificationsModernUI.Instance.ShowNotification("Failed to update action object", ex.Message);
+                Notifications.Instance.ShowNotification("Failed to update action object", ex.Message);
             }
         }
         

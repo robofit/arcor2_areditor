@@ -26,7 +26,7 @@ public class NewProjectDialog : Dialog
         try {
             sceneName = GetSelectedValue(ToggleGroup);
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
-            Base.GameManager.Instance.NewProject(name, sceneName);
+            Base.GameManager.Instance.NewProject(name, sceneName, generateLogic);
             GetComponent<ModalWindowManager>().CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to create new project", ex.Message);

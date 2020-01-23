@@ -330,9 +330,6 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
-    public void LoadProject() {
-        Base.GameManager.Instance.OpenProject(ProjectsList.GetComponent<Dropdown>().options[ProjectsList.GetComponent<Dropdown>().value].text);
-    }
 
     public void RunProject() {
         Base.GameManager.Instance.RunProject();
