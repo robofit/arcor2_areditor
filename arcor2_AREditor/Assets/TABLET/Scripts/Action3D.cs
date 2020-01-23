@@ -1,14 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using Base;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Action3D : Base.Action {
-    
-   public override void UpdateId(string newId, bool updateProject = true) {
+
+    public TextMeshPro NameText;
+
+    public override void UpdateId(string newId, bool updateProject = true) {
         base.UpdateId(newId, updateProject);
-        //gameObject.GetComponentInChildren<Text>().text = Data.Id;
+        NameText.text = newId;
     }
 
     public override void OnClick(Click type) {

@@ -289,7 +289,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 224.20007, y: 0}
-  m_SizeDelta: {x: 224.2, y: 0}
+  m_SizeDelta: {x: 400, y: 0}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &4278520794342771306
 CanvasRenderer:
@@ -312,7 +312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.76470596, g: 0.76470596, b: 0.76470596, a: 0.48235294}
+  m_Color: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 0.98039216}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -339,6 +339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b06ff4a9418848ae9320a01c38075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blurMaterial: {fileID: 0}
   placement: 1
   defaultState: 0
   transitionSpeed: 10
@@ -350,6 +351,8 @@ MonoBehaviour:
   handleToggleStateOnPressed: 1
   useOverlay: 1
   overlayColour: {r: 0, g: 0, b: 0, a: 0.25}
+  useBlur: 0
+  blurRadius: 10
   overlayCloseOnPressed: 1
 --- !u!114 &5693522075614961362
 MonoBehaviour:
@@ -365,12 +368,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ActionButtonPrefab: {fileID: 8816971199106679703, guid: c64c16394fff23a4ea935856ea5bf73b,
     type: 3}
+  UpdatePoseBlock: {fileID: 0}
+  UpdateJointsBlock: {fileID: 0}
   dynamicContent: {fileID: 0}
   topText: {fileID: 0}
   interactiveObjectType: {fileID: 0}
   robotsList: {fileID: 0}
   updatePositionButton: {fileID: 0}
   endEffectorList: {fileID: 0}
+  CollapsablePrefab: {fileID: 0}
+  orientationsList: {fileID: 0}
+  scrollableContent: {fileID: 0}
+  AddOrientationDialog: {fileID: 0}
+  FocusConfirmationDialog: {fileID: 0}
+  UpdatePositionToggle: {fileID: 0}
+  UpdatePositionBlock: {fileID: 0}
+  JointsList: {fileID: 0}
+  AddJointsDialog: {fileID: 0}
 --- !u!114 &6291643623364402706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -384,12 +398,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CurrentPuck: {fileID: 0}
-  ParameterStringPrefab: {fileID: 4223227334475559623, guid: f7d1c0c3a559f0444a5b3a3c5d62de78,
-    type: 3}
-  ParameterActionPointPrefab: {fileID: 2259668868574300244, guid: 19da6447a37ef7f429a554a2fd22d345,
-    type: 3}
-  ParameterIntegerPrefab: {fileID: 2838656142359092185, guid: be0f704610023b5409702b21adb4bd97,
-    type: 3}
+  ParameterInputPrefab: {fileID: 0}
+  ParameterDropdownPrefab: {fileID: 0}
+  DynamicContent: {fileID: 0}
+  TopText: {fileID: 0}
+  ActionType: {fileID: 0}
 --- !u!114 &6291643623364402705
 MonoBehaviour:
   m_ObjectHideFlags: 0
