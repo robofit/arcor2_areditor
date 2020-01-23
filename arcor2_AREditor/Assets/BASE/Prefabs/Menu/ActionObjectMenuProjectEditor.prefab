@@ -515,7 +515,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 224.20007, y: 0}
-  m_SizeDelta: {x: 224.2, y: 0}
+  m_SizeDelta: {x: 400, y: 0}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &1892839200197124354
 CanvasRenderer:
@@ -538,7 +538,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.76470596, g: 0.76470596, b: 0.76470596, a: 0.48235294}
+  m_Color: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 0.98039216}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -565,6 +565,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b06ff4a9418848ae9320a01c38075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blurMaterial: {fileID: 0}
   placement: 1
   defaultState: 0
   transitionSpeed: 10
@@ -576,6 +577,8 @@ MonoBehaviour:
   handleToggleStateOnPressed: 1
   useOverlay: 1
   overlayColour: {r: 0, g: 0, b: 0, a: 0.25}
+  useBlur: 0
+  blurRadius: 10
   overlayCloseOnPressed: 1
 --- !u!114 &1825114334500995159
 MonoBehaviour:

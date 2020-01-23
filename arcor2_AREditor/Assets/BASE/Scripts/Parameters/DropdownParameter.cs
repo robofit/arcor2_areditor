@@ -75,7 +75,6 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         SetLoading(false);
         if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
-            Debug.LogError("asdfasdf: " + Dropdown.selectedText.text);
         } else {
             Dropdown.gameObject.SetActive(false);
         }
