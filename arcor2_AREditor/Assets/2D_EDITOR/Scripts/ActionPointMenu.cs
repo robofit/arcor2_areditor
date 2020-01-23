@@ -51,6 +51,8 @@ public class ActionPointMenu : MonoBehaviour {
                 Button btn = btnGO.GetComponent<Button>();
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
                 btnGO.AddComponent<TooltipContent>();
+                btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
+                
                 if (btnGO.GetComponent<TooltipContent>().tooltipObject == null) {
                     btnGO.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
                 }

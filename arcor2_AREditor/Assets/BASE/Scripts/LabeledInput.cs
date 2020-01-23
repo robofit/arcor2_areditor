@@ -16,7 +16,6 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        
         if (Label.GetComponent<TooltipContent>().tooltipObject == null) {
             Label.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
         }
