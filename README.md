@@ -6,8 +6,7 @@ ARCOR2 AR Editor
  - clone this repo
  - get submodules:
    ```bash
-   git submodule init
-   git submodule update
+   git submodule update --init
    ```
  - create symlink of the submodules to the Assets folder:
  
@@ -22,6 +21,7 @@ ARCOR2 AR Editor
    ```
  - download multimedia files from LFS:
    ```bash
+   git lfs install
    git lfs pull
    ```
  - get third party assets from Unity AssetStore (extract and copy into Assets/Submodules):
