@@ -325,6 +325,7 @@ namespace Base {
             else {
                 throw new RequestFailedException("Failed to load object types");
             }
+
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {

@@ -1188,7 +1188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c4850016c3851240a78bf179607a0aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Dropdown: {fileID: 0}
+  Dropdown: {fileID: 124671184419754441}
 --- !u!114 &6632026966378030600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3004,6 +3004,11 @@ PrefabInstance:
       propertyPath: m_text
       value: Robot
       objectReference: {fileID: 0}
+    - target: {fileID: 2112372384121153121, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: listParent
+      value: 
+      objectReference: {fileID: 7807086564867757494}
     - target: {fileID: 1748540589799024278, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount

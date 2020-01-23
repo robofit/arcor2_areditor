@@ -833,7 +833,7 @@ namespace Base {
             await WebsocketManager.Instance.FocusObjectDone(objectId);
         } 
 
-        public async void NewProject(string name, string sceneId) {
+        public async void NewProject(string name, string sceneId, bool generateLogic) {
             LoadingScreen.SetActive(true);
             if (name == "") {
                 LoadingScreen.SetActive(false);
@@ -848,7 +848,7 @@ namespace Base {
                 LoadingScreen.SetActive(false);
                 throw new RequestFailedException("Failed to open scene");
             }
-            IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId);
+            IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             WebsocketManager.Instance.UpdateProject(project);
             ProjectUpdated(project);
             LoadingScreen.SetActive(false);
