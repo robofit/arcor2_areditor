@@ -273,7 +273,7 @@ namespace Base {
             return freeName;
         }
 
-        public GameObject SpawnPuck(string action_id, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+        public async Task<GameObject> SpawnPuck(string action_id, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
             ActionMetadata actionMetadata;
 
             try {
@@ -297,7 +297,7 @@ namespace Base {
                     newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
                 }
             }
-            puck.GetComponent<Action>().Init(newId, actionMetadata, ap, generateData, actionProvider, false);
+            await puck.GetComponent<Action>().Init(newId, actionMetadata, ap, generateData, actionProvider, false);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
             if (updateProject) {
@@ -555,7 +555,7 @@ namespace Base {
 
        } */
 
-        public void ProjectUpdated(IO.Swagger.Model.Project project) {
+        public async void ProjectUpdated(IO.Swagger.Model.Project project) {
             if (project == null) {
                 if (GameState == GameStateEnum.ProjectEditor) {
                     GameState = GameStateEnum.MainScreen;
@@ -607,14 +607,14 @@ namespace Base {
                             } else {
                                 continue; //TODO: throw exception
                             }
-                            GameObject action = SpawnPuck(action_type, actionPoint.GetComponent<ActionPoint>(), false, actionProvider, false, projectAction.Id);
+                            GameObject action = await SpawnPuck(action_type, actionPoint.GetComponent<ActionPoint>(), false, actionProvider, false, projectAction.Id);
                             action.GetComponent<Action>().Data = projectAction;
 
                             foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
                                 try {
                                     IO.Swagger.Model.ActionParameterMeta actionMetadata = action.GetComponent<Action>().Metadata.GetParamMetadata(projectActionParameter.Id);
 
-                                    ActionParameter actionParameter = new ActionParameter(actionMetadata, projectActionParameter);
+                                    ActionParameter actionParameter = new ActionParameter(actionMetadata, action.GetComponent<Action>(), projectActionParameter);
                                     action.GetComponent<Action>().Parameters.Add(actionParameter.Id, actionParameter);
                                 } catch (ItemNotFoundException ex) {
                                     Debug.LogError(ex);

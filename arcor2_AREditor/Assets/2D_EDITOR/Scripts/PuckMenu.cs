@@ -130,11 +130,13 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
             if (callback != null)
                 AddOnChangeToDropdownParameter(parent_param, callback);
         }
-        values = await Base.GameManager.Instance.GetActionParamValues(CurrentPuck.ActionProvider.GetProviderName(), actionParameter.Id, args);
+        values = await actionParameter.LoadDynamicValues(args);
         DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
     }
 
     private string GetDropdownParamValue(string param_id) {
+        if (GetDropdownParameter(param_id).Dropdown.dropdownItems.Count == 0)
+            return "";
         return GetDropdownParameter(param_id).Dropdown.selectedText.text;
     }
 
@@ -164,7 +166,13 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         dropdownParameter.PutData(data, selectedValue,
             () => OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text));
         if (selectedValue == "" || selectedValue == null) {
-            OnChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text);
+            string value;
+            if (dropdownParameter.Dropdown.dropdownItems.Count == 0)
+                value = "";
+            else
+                value = dropdownParameter.Dropdown.selectedText.text;
+
+            OnChangeParameterHandler(parameterId, value);
         }
     }
 
