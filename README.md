@@ -6,8 +6,7 @@ ARCOR2 AR Editor
  - clone this repo
  - get submodules:
    ```bash
-   git submodule init
-   git submodule update
+   git submodule update --init
    ```
  - create symlink of the submodules to the Assets folder:
  
