@@ -1,13 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Base {
     public class ActionParameter : IO.Swagger.Model.ActionParameter {
         public IO.Swagger.Model.ActionParameterMeta ActionParameterMetadata;
+        public Action Action;
        
-        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, IO.Swagger.Model.ActionParameter actionParameter = null) {
+        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, Action action, IO.Swagger.Model.ActionParameter actionParameter = null) {
             ActionParameterMetadata = actionParameterMetadata;
             Id = ActionParameterMetadata.Name;
             Type = ActionParameterMetadata.Type;
+            Action = action;
             if (actionParameter != null) {
                 Value = actionParameter.Value;
             }
@@ -16,6 +20,13 @@ namespace Base {
         public ActionParameter(object value, IO.Swagger.Model.ActionParameterMeta actionParameterMetadata) {
             Value = value;
             ActionParameterMetadata = actionParameterMetadata;
+        }
+
+        public async Task<List<string>> LoadDynamicValues(List<IO.Swagger.Model.IdValue> parentParams) {
+            if (!ActionParameterMetadata.DynamicValue) {
+                return new List<string>();
+            }
+            return await GameManager.Instance.GetActionParamValues(Action.ActionProvider.GetProviderName(), ActionParameterMetadata.Name, parentParams);
         }
 
         public void GetValue(out string value, string def = "") {
