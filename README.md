@@ -21,6 +21,7 @@ ARCOR2 AR Editor
    ```
  - download multimedia files from LFS:
    ```bash
+   git lfs install
    git lfs pull
    ```
  - get third party assets from Unity AssetStore (extract and copy into Assets/Submodules):
