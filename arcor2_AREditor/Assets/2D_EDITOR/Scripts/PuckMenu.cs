@@ -45,6 +45,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 Tuple<DropdownParameter, Base.ActionParameter> tuple = dynamicDropdowns[i];
                 if (tuple.Item2.ActionParameterMetadata.DynamicValueParents.Count == parentCount) {
                     try {
+                        Debug.LogWarning(tuple.Item2.Id);
                         await LoadDropdownValues(tuple.Item1, tuple.Item2, async () => await LoadDropdownValues(tuple.Item1, tuple.Item2));
                     } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
                         Debug.LogError(ex);

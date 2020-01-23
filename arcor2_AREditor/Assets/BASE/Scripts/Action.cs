@@ -17,8 +17,6 @@ namespace Base {
             this.ActionProvider = actionProvider;
 
             if (generateData) {
-                Debug.LogError(this.metadata);
-                Debug.LogError(this.metadata.Parameters);
                 foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMetadata in this.metadata.Parameters) {
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata);
                     switch (actionParameter.Type) {
