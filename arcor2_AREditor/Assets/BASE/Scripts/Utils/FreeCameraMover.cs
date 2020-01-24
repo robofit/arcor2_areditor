@@ -5,10 +5,7 @@ using UnityEngine;
 
 public class FreeCameraMover : MonoBehaviour
 {
-    
     public bool ControlWithMouseOnly = true;
-
-
     public float CameraRotationSpeed = 4f;
 
     [ConditionalField("ControlWithMouseOnly", inverse:true)]
@@ -25,25 +22,27 @@ public class FreeCameraMover : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        //rotate with right mouse
-        if (Input.GetMouseButton(1)) {
-            yaw += CameraRotationSpeed * Input.GetAxis("Mouse X");
-            pitch -= CameraRotationSpeed * Input.GetAxis("Mouse Y");
+        if (Base.GameManager.Instance.SceneInteractable) {
+            //rotate with right mouse
+            if (Input.GetMouseButton(1)) {
+                yaw += CameraRotationSpeed * Input.GetAxis("Mouse X");
+                pitch -= CameraRotationSpeed * Input.GetAxis("Mouse Y");
 
-            transform.eulerAngles = new Vector3(pitch, yaw, 0f);
-        }
-
-        if (ControlWithMouseOnly) {
-            //drag camera around with Middle Mouse
-            if (Input.GetMouseButton(2)) {
-                transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
+                transform.eulerAngles = new Vector3(pitch, yaw, 0f);
             }
 
-            //Zoom in and out with Mouse Wheel
-            transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, Space.Self);
-        } else {
-            Vector3 translation = GetDirection();
-            transform.Translate(translation * Time.deltaTime * WalkingSpeed);
+            if (ControlWithMouseOnly) {
+                //drag camera around with Middle Mouse
+                if (Input.GetMouseButton(2)) {
+                    transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
+                }
+
+                //Zoom in and out with Mouse Wheel
+                transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, Space.Self);
+            } else {
+                Vector3 translation = GetDirection();
+                transform.Translate(translation * Time.deltaTime * WalkingSpeed);
+            }
         }
     }
 

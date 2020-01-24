@@ -6,23 +6,24 @@ public class ActionObject2D : Base.ActionObject {
 
 
     private Vector3 offset;
-    private GameObject ActionObjectMenu, ActionObjectMenuProjectEditor;
+    private ActionObjectMenu actionObjectMenu;
+    private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-        ActionObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
-        ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
+        actionObjectMenu = MenuManager.Instance.InteractiveObjectMenu.gameObject.GetComponent<ActionObjectMenu>();
+        actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
     }
 
     public override void OnClick(Click type) {
         if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
-            ActionObjectMenu.GetComponent<ActionObjectMenu>().CurrentObject = gameObject;
-            ActionObjectMenu.GetComponent<ActionObjectMenu>().UpdateMenu();
-            MenuManager.Instance.ShowMenu(ActionObjectMenu, Data.Id);
+            actionObjectMenu.CurrentObject = gameObject;
+            actionObjectMenu.UpdateMenu();
+            MenuManager.Instance.ShowMenu(actionObjectMenu.gameObject, Data.Id);
         } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
-            ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
-            MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor);
+            actionObjectMenuProjectEditor.CurrentObject = gameObject;
+            MenuManager.Instance.ShowMenu(actionObjectMenuProjectEditor.gameObject);
         }
     }
 

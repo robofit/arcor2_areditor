@@ -16,6 +16,6 @@ public class Action3D : Base.Action {
 
     public override void OnClick(Click type) {
         MenuManager.Instance.PuckMenu.GetComponent<PuckMenu>().UpdateMenu(this);
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu.gameObject);
     }
 }

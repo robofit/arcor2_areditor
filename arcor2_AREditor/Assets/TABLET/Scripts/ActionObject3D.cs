@@ -7,14 +7,15 @@ using Base;
 public class ActionObject3D : Base.ActionObject
 {
     public GameObject ActionObjectName;
-    private GameObject ActionObjectMenu, ActionObjectMenuProjectEditor;
+    private ActionObjectMenu actionObjectMenu;
+    private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
     
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         UpdateId(Data.Id);
-        ActionObjectMenu = MenuManager.Instance.InteractiveObjectMenu;
-        ActionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor;
+        actionObjectMenu = MenuManager.Instance.InteractiveObjectMenu.gameObject.GetComponent<ActionObjectMenu>();
+        actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
     }
 
 
@@ -52,12 +53,12 @@ public class ActionObject3D : Base.ActionObject
     public override void OnClick(Click type) {
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
-                ActionObjectMenu.GetComponent<ActionObjectMenu>().CurrentObject = gameObject;
-                ActionObjectMenu.GetComponent<ActionObjectMenu>().UpdateMenu();
-                MenuManager.Instance.ShowMenu(ActionObjectMenu, Data.Id);
+                actionObjectMenu.CurrentObject = gameObject;
+                actionObjectMenu.UpdateMenu();
+                MenuManager.Instance.ShowMenu(actionObjectMenu.gameObject, Data.Id);
             } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
-                ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().CurrentObject = gameObject;
-                MenuManager.Instance.ShowMenu(ActionObjectMenuProjectEditor, "");
+                actionObjectMenuProjectEditor.CurrentObject = gameObject;
+                MenuManager.Instance.ShowMenu(actionObjectMenuProjectEditor.gameObject, "");
             }
         }
     }
