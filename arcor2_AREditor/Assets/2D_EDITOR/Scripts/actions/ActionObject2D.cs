@@ -12,7 +12,7 @@ public class ActionObject2D : Base.ActionObject {
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
-        actionObjectMenu = MenuManager.Instance.InteractiveObjectMenu.gameObject.GetComponent<ActionObjectMenu>();
+        actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
         actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
     }
 
@@ -20,10 +20,10 @@ public class ActionObject2D : Base.ActionObject {
         if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = gameObject;
             actionObjectMenu.UpdateMenu();
-            MenuManager.Instance.ShowMenu(actionObjectMenu.gameObject, Data.Id);
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor, Data.Id);
         } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
             actionObjectMenuProjectEditor.CurrentObject = gameObject;
-            MenuManager.Instance.ShowMenu(actionObjectMenuProjectEditor.gameObject);
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
         }
     }
 
