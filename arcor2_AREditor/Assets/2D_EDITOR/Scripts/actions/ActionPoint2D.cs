@@ -32,7 +32,7 @@ public class ActionPoint2D : Base.ActionPoint {
     public override void OnClick(Click type) {
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu.gameObject, Data.Id);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
     }
 
     public override Vector3 GetScenePosition() {
