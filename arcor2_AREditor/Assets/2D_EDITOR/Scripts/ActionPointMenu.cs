@@ -116,6 +116,7 @@ public class ActionPointMenu : MonoBehaviour {
         if (CurrentActionPoint == null)
             return;
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
+        MenuManager.Instance.HideMenu();
     }
 
    
