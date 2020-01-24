@@ -25,7 +25,7 @@ public class MainMenu : MonoBehaviour {
         DisconnectedFromServer(this, EventArgs.Empty);
         DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
         PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu.gameObject);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
         if(debugTools != null)
@@ -289,7 +289,7 @@ public class MainMenu : MonoBehaviour {
         return int.Parse(PortInput.GetComponentInChildren<TMPro.TMP_InputField>().text);
     }
     public void ShowNewObjectTypeMenu() {
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu.gameObject);
     }
 
     public void ConnectingToServer(object sender, Base.StringEventArgs e) {
