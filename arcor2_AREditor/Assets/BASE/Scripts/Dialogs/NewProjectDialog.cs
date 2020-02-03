@@ -10,8 +10,9 @@ public class NewProjectDialog : Dialog
     public GameObject ToggleGroup, GenerateLogicToggle;
     public GameObject TogglePrefab;
     public TMPro.TMP_InputField NewProjectName;
-    private void Start()
+    public override void Start()
     {
+        base.Start();
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
 
     }

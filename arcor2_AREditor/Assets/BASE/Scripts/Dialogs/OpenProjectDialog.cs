@@ -8,7 +8,8 @@ using Michsky.UI.ModernUIPack;
 public class OpenProjectDialog : Dialog {
     public GameObject ToggleGroup;
     public GameObject TogglePrefab;
-    private void Start() {
+    public override void Start() {
+        base.Start();
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
     }
 
