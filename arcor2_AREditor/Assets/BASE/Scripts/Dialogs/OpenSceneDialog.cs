@@ -21,7 +21,7 @@ public class OpenSceneDialog : Dialog {
         try {
             sceneName = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.OpenScene(sceneName);
-            GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open scene", ex.Message);
         }

@@ -7,9 +7,18 @@ using Michsky.UI.ModernUIPack;
 public class MainMenu : MonoBehaviour {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons,
-        AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog,
-        ServiceSettingsDialog, CloseSceneDialog, CloseProjectDialog, OpenSceneDialog, OpenProjectDialog; //defined in inspector
+        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent;
+
+    public OpenProjectDialog OpenProjectDialog;
+    public OpenSceneDialog OpenSceneDialog;
+    public CloseProjectDialog CloseProjectDialog;
+    public CloseSceneDialog CloseSceneDialog;
+    public ServiceSettingsDialog ServiceSettingsDialog;
+    public AutoAddObjectDialog AutoAddObjectDialog;
+    public AddSerivceDialog AddNewServiceDialog;
+    public AddNewObjectDialog AddNewObjectDialog;
+    public NewProjectDialog NewProjectDialog;
+    public NewSceneDialog NewSceneDialog;
 
     private GameObject debugTools;
 
@@ -30,6 +39,8 @@ public class MainMenu : MonoBehaviour {
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
         if(debugTools != null)
             debugTools.SetActive(false);
+
+
     }
 
 
@@ -173,53 +184,53 @@ public class MainMenu : MonoBehaviour {
 
 
     public void ShowCloseSceneDialog(string type) {
-        CloseSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        CloseSceneDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowCloseProjectDialog(string type) {
-        CloseProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        CloseProjectDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowAddObjectDialog(string type) {
-        AddNewObjectDialog.GetComponent<AddNewObjectDialog>().ObjectToBeCreated = type;
-        AddNewObjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AddNewObjectDialog.Init(type);
+        AddNewObjectDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowAutoAddObjectDialog(string type) {
-        AutoAddObjectsDialog.GetComponent<AutoAddObjectDialog>().ObjectToBeAdded = type;
-        AutoAddObjectsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AutoAddObjectDialog.ObjectToBeAdded = type;
+        AutoAddObjectDialog.WindowManager.OpenWindow();
     }
 
     public void ShowAddServiceDialog(string type) {
-        AddNewServiceDialog.GetComponent<AddSerivceDialog>().UpdateMenu(type);
-        AddNewServiceDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AddNewServiceDialog.UpdateMenu(type);
+        AddNewServiceDialog.WindowManager.OpenWindow();
     }
 
     public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
-        ServiceSettingsDialog.GetComponent<ServiceSettings>().Type = serviceButton.ServiceMetadata.Type;
-        ServiceSettingsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        ServiceSettingsDialog.Type = serviceButton.ServiceMetadata.Type;
+        ServiceSettingsDialog.WindowManager.OpenWindow();
     }
 
     public void ShowNewProjectDialog() {
-        NewProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        NewProjectDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowNewSceneDialog() {
-        NewSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        NewSceneDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowOpenProjectDialog() {
-        OpenProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        OpenProjectDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowOpenSceneDialog() {
-        OpenSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        OpenSceneDialog.WindowManager.OpenWindow();
 
     }
 

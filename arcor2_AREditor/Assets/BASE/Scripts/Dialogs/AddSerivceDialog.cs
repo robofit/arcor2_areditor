@@ -22,7 +22,7 @@ public class AddSerivceDialog : Dialog
         try {
             string configId = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.AddServiceToScene(type: ServiceToBeAdded, configId: configId);
-            gameObject.GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add service", ex.Message);
         }

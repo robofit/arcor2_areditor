@@ -21,7 +21,7 @@ public class OpenProjectDialog : Dialog {
         try {
             projectName = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.OpenProject(projectName);
-            GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open project", ex.Message);
         }
