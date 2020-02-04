@@ -207,7 +207,7 @@ namespace Base {
             }
         }
 
-        public GameObject SpawnActionObject(string type, bool updateScene = true, string id = "") {
+        public GameObject SpawnActionObject(string type, string uuid, bool updateScene = true, string id = "") {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -244,6 +244,7 @@ namespace Base {
                 obj.GetComponentInChildren<ActionObject>().Data.Id = id;
             obj.GetComponentInChildren<ActionObject>().SetScenePosition(obj.transform.localPosition);
             obj.GetComponentInChildren<ActionObject>().SetSceneOrientation(obj.transform.localRotation);
+            obj.GetComponentInChildren<ActionObject>().Data.Uuid = Guid.NewGuid().ToString();
 
 
             obj.GetComponentInChildren<ActionObject>().ActionObjectMetadata = aom;
@@ -306,7 +307,7 @@ namespace Base {
             return puck;
         }
 
-        public GameObject SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData, bool updateProject = true) {
+        public GameObject SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.transform.Find("ActionPoints"));
             AP.transform.localPosition = new Vector3(0, 0, 0);   
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -322,6 +323,7 @@ namespace Base {
             if (apData == null) {
                 AP.GetComponent<ActionPoint>().SetScenePosition(transform.localPosition);
                 AP.GetComponent<ActionPoint>().SetSceneOrientation(transform.rotation);
+                AP.GetComponent<ActionPoint>().Data.Uuid = Guid.NewGuid().ToString();
             }
             if (updateProject)
                 UpdateProject();
@@ -386,7 +388,7 @@ namespace Base {
                     ao.gameObject.transform.localRotation = ao.GetSceneOrientation();
                     actionObjects.Remove(actionObject.Id);
                 } else {
-                    GameObject new_ao = SpawnActionObject(actionObject.Type, false, actionObject.Id);
+                    GameObject new_ao = SpawnActionObject(actionObject.Type, actionObject.Uuid, false, actionObject.Id);
                     new_ao.GetComponentInChildren<ActionObject>().Data = actionObject;
                     new_ao.transform.localRotation = new_ao.GetComponentInChildren<ActionObject>().GetSceneOrientation();
                     new_ao.transform.localPosition = new_ao.GetComponentInChildren<ActionObject>().GetScenePosition();
@@ -596,7 +598,7 @@ namespace Base {
                         ap.DeleteAP(false);
                     }
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
-                        GameObject actionPoint = SpawnActionPoint(actionObject, DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false);
+                        GameObject actionPoint = SpawnActionPoint(actionObject, projectActionPoint, false);
                         actionPoint.transform.localPosition = actionPoint.GetComponent<ActionPoint>().GetScenePosition();
 
                         //TODO probably replace with something more convenient
@@ -701,7 +703,7 @@ namespace Base {
                 IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<ActionPoint>()) {
                     actionPoint.UpdatePositionsOfPucks();
-                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = DataHelper.ActionPointToProjectActionPoint(actionPoint.Data);
+                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = actionPoint.Data;
                     foreach (Action action in actionPoint.GetComponentsInChildren<Action>()) {
                         IO.Swagger.Model.Action projectAction = action.Data;
                         projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
@@ -921,6 +923,16 @@ namespace Base {
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
             return await WebsocketManager.Instance.GetActionParamValues(actionProviderId, param_id, parent_params);
+        }
+
+        public async Task<bool> ExecuteAction(string actionId) {
+            try {
+                await WebsocketManager.Instance.ExecuteAction(actionId);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
+                return false;
+            }
+            return true;
         }
 
 

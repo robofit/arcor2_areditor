@@ -12,7 +12,7 @@ namespace Base {
         public PuckOutput Output;
         public IActionProvider ActionProvider;
 
-        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
+        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "", "");
         public async Task Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
 
             this.metadata = metadata;
@@ -93,7 +93,7 @@ namespace Base {
 
             UpdateId(id, false);
             UpdateType();
-
+            Data.Uuid = Guid.NewGuid().ToString();
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();

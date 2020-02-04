@@ -528,5 +528,18 @@ namespace Base {
             else
                 return new List<string>();
         }
+
+        public async Task ExecuteAction(string actionId) {
+            Debug.Assert(actionId != null);
+            Debug.Assert(actionId != "");
+            
+            int r_id = ++requestID;
+            IO.Swagger.Model.ExecuteActionArgs args = new IO.Swagger.Model.ExecuteActionArgs(actionId: actionId);
+            IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
+            if (!response.Result) 
+                throw new RequestFailedException(response.Messages);
+        }
     }
 }
