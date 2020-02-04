@@ -704,6 +704,7 @@ namespace Base {
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.GetComponentsInChildren<ActionPoint>()) {
                     actionPoint.UpdatePositionsOfPucks();
                     IO.Swagger.Model.ProjectActionPoint projectActionPoint = actionPoint.Data;
+                    projectActionPoint.Actions.Clear();
                     foreach (Action action in actionPoint.GetComponentsInChildren<Action>()) {
                         IO.Swagger.Model.Action projectAction = action.Data;
                         projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
