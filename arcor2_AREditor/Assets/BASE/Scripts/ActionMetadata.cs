@@ -6,9 +6,13 @@ namespace Base {
 
         public ActionMetadata(IO.Swagger.Model.ObjectAction metadata) :
             base(parameters: metadata.Parameters, meta: metadata.Meta, name: metadata.Name, origins: metadata.Origins, returns: metadata.Returns, description: metadata.Description) {
-            //Debug.LogError(metadata.Parameters);
         }
 
+        /// <summary>
+        /// Returns medatada for specific action parameter defined by name.
+        /// </summary>
+        /// <param name="name">Name of the action parameter.</param>
+        /// <returns>Returns metadata of action parameter - ActionParameterMeta</returns>
         public IO.Swagger.Model.ActionParameterMeta GetParamMetadata(string name) {
             foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMeta in Parameters) {
                 if (actionParameterMeta.Name == name)

@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
 
-        public List<ActionPoint> ActionPoints = new List<ActionPoint>();
-        //public GameObject ActionPoints;
+        // string == IO.Swagger.Model.SceneObject Data.Id
+        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
 
@@ -26,6 +28,13 @@ namespace Base {
                 SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
+        }
+
+        public void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+            Data = actionObjectSwagger;
+            // update position and rotation based on received data from swagger
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
         }
 
         public virtual bool SceneInteractable() {
@@ -84,6 +93,23 @@ namespace Base {
 
         public bool IsRobot() {
             return ActionObjectMetadata.Robot;
+        }
+        
+        public void RemoveActionPoints() {
+            foreach (KeyValuePair<string, ActionPoint> actionPoint in ActionPoints) {
+                Destroy(actionPoint.Value.gameObject);
+            }
+            ActionPoints.Clear();
+        }
+
+        public void RemoveActionPoint(string id) {
+            Destroy(ActionPoints[id].gameObject);
+            ActionPoints.Remove(id);
+        }
+
+        // Called when this GameObject is destroyed
+        private void OnDestroy() {
+            RemoveActionPoints();
         }
     }
 

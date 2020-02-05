@@ -13,7 +13,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour {
         if (CurrentObject == null) {
             return;
         }
-        Base.GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
+        Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
 
     }
 

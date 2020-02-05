@@ -24,7 +24,7 @@ namespace Base {
             }
         }
 
-        public Connection GetConneciton() {
+        public Connection GetConnection() {
             return Connection;
         }
 

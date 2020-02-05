@@ -1,23 +1,57 @@
 using Base;
+using RuntimeGizmos;
 using UnityEngine;
 
 public class ActionPoint3D : Base.ActionPoint {
 
+    public GameObject Visual;
+    
+    private bool manipulationStarted = false;
+    private TransformGizmo tfGizmo;
+
+    private float interval = 0.1f;
+    private float nextUpdate = 0;
+
+    private bool updateProject = false;
+
+    private void Start() {
+        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+    }
 
     private void Update() {
-        if (transform.hasChanged) {
+        if (manipulationStarted) {
+            if (tfGizmo.mainTargetRoot != null) {
+                if (Time.time >= nextUpdate) {
+                    nextUpdate += interval;
 
-            // hasChanged is set to false in base.Update()
-            //transform.hasChanged = false;
-
-            if (ProjectInteractable())
-                Base.GameManager.Instance.UpdateProject();
+                    // check if gameobject with whom is Gizmo manipulating is our Visual gameobject
+                    if (GameObject.ReferenceEquals(Visual, tfGizmo.mainTargetRoot.gameObject)) {
+                        // if Gizmo is moving, we can send UpdateProject to server
+                        if (tfGizmo.isTransforming) {
+                            updateProject = true;
+                        } else if (updateProject) {
+                            updateProject = false;
+                            GameManager.Instance.UpdateProject();
+                        }
+                    }
+                }
+            } else {
+                if (updateProject) {
+                    updateProject = false;
+                    GameManager.Instance.UpdateProject();
+                }
+                manipulationStarted = false;
+            }
         }
 
         base.Update();
     }
 
     public override void OnClick(Click type) {
+        if (type == Click.MOUSE_LEFT_BUTTON) {
+            // We have clicked with left mouse and started manipulation with object
+            manipulationStarted = true;
+        }
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
@@ -54,7 +88,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void UpdatePositionsOfPucks() {
         int i = 1;
-        foreach (Action3D action in Actions) {
+        foreach (Action3D action in Actions.Values) {
             action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
             ++i;
         }

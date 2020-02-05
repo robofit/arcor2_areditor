@@ -6,15 +6,21 @@ using System.Threading.Tasks;
 
 namespace Base {
     public abstract class Action : Clickable {
+        // Metadata of this Action
         private ActionMetadata metadata;
+        // Dictionary of all action parameters for this Action
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
+        
         public PuckInput Input;
         public PuckOutput Output;
         public IActionProvider ActionProvider;
 
+        public ActionPoint ActionPoint;
+
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
         public async Task Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
 
+            ActionPoint = ap;
             this.metadata = metadata;
             this.ActionProvider = actionProvider;
 
@@ -102,6 +108,11 @@ namespace Base {
 
         }
 
+        public void ActionUpdate(IO.Swagger.Model.Action aData = null) {
+            if (aData != null)
+                Data = aData;
+        }
+
 
 
         public void UpdateType() {
@@ -136,6 +147,10 @@ namespace Base {
         }
         public ActionMetadata Metadata {
             get => metadata; set => metadata = value;
+        }
+
+        private void OnDestroy() {
+            ActionPoint.Actions.Remove(Data.Id);
         }
 
     }

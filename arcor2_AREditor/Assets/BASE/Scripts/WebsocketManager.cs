@@ -494,8 +494,7 @@ namespace Base {
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
             IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: ++requestID, request: "RemoveFromScene", new IO.Swagger.Model.IdArgs(id: id));
             SendDataToServer(request.ToJson(), requestID, true);
-            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(requestID);
-            
+            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(requestID);            
         }
 
         public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {

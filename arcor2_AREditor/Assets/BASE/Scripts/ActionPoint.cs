@@ -5,10 +5,11 @@ using System.Collections.Generic;
 namespace Base {
     public abstract class ActionPoint : Clickable {
 
-        public List<Action> Actions = new List<Action>();
+        // Key string is set to IO.Swagger.Model.ActionPoint Data.Id
+        public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
+        public GameObject ActionsSpawn;
 
         public ActionObject ActionObject;
-        //public GameObject Actions;
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
@@ -22,6 +23,14 @@ namespace Base {
                 SetScenePosition(transform.localPosition);
                 transform.hasChanged = false;
             }
+        }
+
+        public void ActionPointUpdate(IO.Swagger.Model.ActionPoint apData = null) {
+            if (apData != null)
+                Data = apData;
+            // update position and rotation based on received data from swagger
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
         }
 
         public void InitAP(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData = null) {
@@ -65,12 +74,18 @@ namespace Base {
         }
 
         public void DeleteAP(bool updateProject = true) {
-            foreach (Action action in GetComponentsInChildren<Action>()) {
-                action.DeleteAction(false);
+            foreach (KeyValuePair<string, Action> action in Actions) {
+                // Remove Action from Actions list reference
+                Actions.Remove(action.Key);
+                action.Value.DeleteAction(false);
             }
             if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
                 Destroy(ConnectionToIO.gameObject);
             }
+
+            // Remove this ActionPoint reference from parent ActionObject list
+            ActionObject.ActionPoints.Remove(this.Data.Id);
+
             gameObject.SetActive(false);
             Destroy(gameObject);
 
@@ -88,6 +103,24 @@ namespace Base {
         public abstract Quaternion GetSceneOrientation();
 
         public abstract void SetSceneOrientation(Quaternion orientation);
+
+
+        public void RemoveActions() {
+            foreach (KeyValuePair<string, Action> action in Actions) {
+                Destroy(action.Value.gameObject);
+            }
+            Actions.Clear();
+        }
+
+        public void RemoveAction(string id) {
+            Destroy(Actions[id].gameObject);
+            Actions.Remove(id);
+        }
+
+        // Called when this GameObject is destroyed
+        private void OnDestroy() {
+            RemoveActions();
+        }
 
     }
 

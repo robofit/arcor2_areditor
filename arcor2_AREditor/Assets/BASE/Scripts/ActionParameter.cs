@@ -5,8 +5,15 @@ using System.Threading.Tasks;
 namespace Base {
     public class ActionParameter : IO.Swagger.Model.ActionParameter {
         public IO.Swagger.Model.ActionParameterMeta ActionParameterMetadata;
+        // Reference to parent Action
         public Action Action;
-       
+
+        /// <summary>
+        /// Creates action parameter based on it's metadata, parent action and action paramater swagger model.
+        /// </summary>
+        /// <param name="actionParameterMetadata"></param>
+        /// <param name="action"></param>
+        /// <param name="actionParameter"></param>
         public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, Action action, IO.Swagger.Model.ActionParameter actionParameter = null) {
             ActionParameterMetadata = actionParameterMetadata;
             Id = ActionParameterMetadata.Name;
@@ -15,7 +22,11 @@ namespace Base {
             if (actionParameter != null) {
                 Value = actionParameter.Value;
             }
-        }       
+        }
+
+        public void UpdateActionParameter(IO.Swagger.Model.ActionParameter actionParameter) {
+            Value = actionParameter.Value;
+        }
 
         public ActionParameter(object value, IO.Swagger.Model.ActionParameterMeta actionParameterMetadata) {
             Value = value;
@@ -31,7 +42,6 @@ namespace Base {
 
         public void GetValue(out string value, string def = "") {
             try {
-
                 value = (string) Value;
             } catch (NullReferenceException e) {
                 value = def;
