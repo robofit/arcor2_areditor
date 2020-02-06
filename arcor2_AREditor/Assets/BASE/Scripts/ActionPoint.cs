@@ -17,7 +17,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position());         
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -34,10 +34,12 @@ namespace Base {
             transform.localRotation = GetSceneOrientation();
         }
 
-        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData = null) {
+        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData = null) {
             SetActionObject(actionObject);
-            if (apData != null)
-                Data = apData;
+            if (apData != null) {
+                Data = apData;                
+            }
+               
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
             if (Data.RobotJoints.Count == 0)

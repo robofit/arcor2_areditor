@@ -94,14 +94,19 @@ namespace Base {
             set {
                 gameState = value;
                 OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+                if (gameState == GameStateEnum.MainScreen) {
+                    LoadProjects();
+                    LoadScenes();
+                }
             }
         }
+
 
         private void Awake() {
             loadedScene = "";
             sceneReady = false;
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
-            gameState = GameStateEnum.Disconnected;
+            GameState = GameStateEnum.Disconnected;
         }
 
         private void Start() {
@@ -123,9 +128,7 @@ namespace Base {
                     MenuManager.Instance.DisableAllMenus();
                     LoadingScreen.SetActive(true);
                     Scene.Instance.gameObject.SetActive(true);
-                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    LoadScenes();
-                    Projects = await WebsocketManager.Instance.LoadProjects();
+                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));                   
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();                    
                     UpdateServices();
@@ -284,7 +287,8 @@ namespace Base {
                 IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
                     actionPoint.UpdatePositionsOfPucks();
-                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = DataHelper.ActionPointToProjectActionPoint(actionPoint.Data);
+                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = actionPoint.Data;
+                    projectActionPoint.Actions.Clear();
                     foreach (Action action in actionPoint.Actions.Values) {
                         IO.Swagger.Model.Action projectAction = action.Data;
                         projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
@@ -322,14 +326,12 @@ namespace Base {
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
             IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
-            LoadScenes();
             return response;
         }
 
         public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
             IO.Swagger.Model.SaveProjectResponse response = await WebsocketManager.Instance.SaveProject();
             OnSaveProject?.Invoke(this, EventArgs.Empty);
-            LoadProjects();
             return response;
         }
 
@@ -502,6 +504,16 @@ namespace Base {
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
             return await WebsocketManager.Instance.GetActionParamValues(actionProviderId, param_id, parent_params);
+        }
+
+        public async Task<bool> ExecuteAction(string actionId) {
+            try {
+                await WebsocketManager.Instance.ExecuteAction(actionId);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
+                return false;
+            }
+            return true;
         }
 
 

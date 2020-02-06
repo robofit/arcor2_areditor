@@ -28,7 +28,7 @@ public static class DataHelper {
     }
 
     public static IO.Swagger.Model.ProjectObject SceneObjectToProjectObject(IO.Swagger.Model.SceneObject sceneObject) {
-        IO.Swagger.Model.ProjectObject projectObject = new IO.Swagger.Model.ProjectObject(new List<IO.Swagger.Model.ProjectActionPoint>(), sceneObject.Id);
+        IO.Swagger.Model.ProjectObject projectObject = new IO.Swagger.Model.ProjectObject(new List<IO.Swagger.Model.ProjectActionPoint>(), sceneObject.Id, uuid: sceneObject.Uuid);
         return projectObject;
     }
 

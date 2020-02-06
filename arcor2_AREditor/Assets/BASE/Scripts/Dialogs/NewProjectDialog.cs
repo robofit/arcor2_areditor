@@ -7,10 +7,12 @@ using Michsky.UI.ModernUIPack;
 
 public class NewProjectDialog : Dialog
 {
-    public GameObject NewProjectName, ToggleGroup, GenerateLogicToggle;
+    public GameObject ToggleGroup, GenerateLogicToggle;
     public GameObject TogglePrefab;
-    private void Start()
+    public TMPro.TMP_InputField NewProjectName;
+    public override void Start()
     {
+        base.Start();
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
 
     }
@@ -20,14 +22,14 @@ public class NewProjectDialog : Dialog
     }
 
     public void NewProject() {
-        string name = NewProjectName.GetComponent<TMPro.TMP_InputField>().text;
+        string name = NewProjectName.text;
         string sceneName;
         bool generateLogic;
         try {
             sceneName = GetSelectedValue(ToggleGroup);
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
             Base.GameManager.Instance.NewProject(name, sceneName, generateLogic);
-            GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to create new project", ex.Message);
         }
