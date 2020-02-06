@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Base {
     public abstract class ActionPoint : Clickable {
@@ -13,6 +13,7 @@ namespace Base {
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
+        // TODO: rename (Connection to action object)
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
@@ -74,11 +75,10 @@ namespace Base {
         }
 
         public void DeleteAP(bool updateProject = true) {
-            foreach (KeyValuePair<string, Action> action in Actions) {
-                // Remove Action from Actions list reference
-                Actions.Remove(action.Key);
-                action.Value.DeleteAction(false);
-            }
+            // Remove all actions of this action point
+            RemoveActions(false);
+
+            // TODO: remove connections to action objects
             if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
                 Destroy(ConnectionToIO.gameObject);
             }
@@ -86,7 +86,6 @@ namespace Base {
             // Remove this ActionPoint reference from parent ActionObject list
             ActionObject.ActionPoints.Remove(this.Data.Id);
 
-            gameObject.SetActive(false);
             Destroy(gameObject);
 
             if (updateProject)
@@ -105,23 +104,17 @@ namespace Base {
         public abstract void SetSceneOrientation(Quaternion orientation);
 
 
-        public void RemoveActions() {
-            foreach (KeyValuePair<string, Action> action in Actions) {
-                Destroy(action.Value.gameObject);
+        public void RemoveActions(bool updateProject) {
+            // Remove all actions of this action point
+            foreach (string actionID in Actions.Keys.ToList<string>()) {
+                RemoveAction(actionID, updateProject);
             }
             Actions.Clear();
         }
 
-        public void RemoveAction(string id) {
-            Destroy(Actions[id].gameObject);
-            Actions.Remove(id);
+        public void RemoveAction(string id, bool updateProject) {
+            Actions[id].DeleteAction(updateProject);
         }
-
-        // Called when this GameObject is destroyed
-        private void OnDestroy() {
-            RemoveActions();
-        }
-
     }
 
 }

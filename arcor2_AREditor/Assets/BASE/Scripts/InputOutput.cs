@@ -31,7 +31,6 @@ namespace Base {
         public override void OnClick(Click type) {
             if (type == Click.MOUSE_LEFT_BUTTON) {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
-
                     if (Connection == null) {
                         Connection = ConnectionManagerArcoro.Instance.ConnectVirtualConnectionToObject(gameObject);
                         GameObject connectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
@@ -40,7 +39,6 @@ namespace Base {
                             connectedPuck.GetComponent<Base.InputOutput>().Data.Default = transform.GetComponentInParent<Base.Action>().Data.Id;
                         } else {
                             InitData();
-                            connectedPuck.GetComponent<Base.InputOutput>().InitData();
                         }
 
                         GameManager.Instance.UpdateProject();

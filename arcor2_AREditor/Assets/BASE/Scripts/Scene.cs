@@ -175,9 +175,10 @@ namespace Base {
         /// Destroys and removes references to all action objects in the scene.
         /// </summary>
         public void RemoveActionObjects() {
-            foreach (KeyValuePair<string, ActionObject> actionObject in ActionObjects) {
-                Destroy(actionObject.Value.gameObject);
+            foreach (string actionObjectID in ActionObjects.Keys.ToList<string>()) {
+                RemoveActionObject(actionObjectID);
             }
+            // just to make sure that none reference left
             ActionObjects.Clear();
         }
 
@@ -187,8 +188,7 @@ namespace Base {
         /// <param name="id"></param>
         public void RemoveActionObject(string id) {
             try {
-                Destroy(ActionObjects[id].gameObject);
-                ActionObjects.Remove(id);
+                ActionObjects[id].DeleteActionObject();
             } catch (NullReferenceException e) {
                 Debug.LogError(e);
             }
@@ -256,17 +256,17 @@ namespace Base {
 
             UpdateActionConnections(project.Objects, connections);
 
-            // Remove deleted action points
-            foreach (string actionPointID in GetAllActionPointsDict().Keys.ToList<string>()) {
-                if (!currentAP.Contains(actionPointID)) {
-                    RemoveActionPoint(actionPointID);
-                }
-            }
-
             // Remove deleted actions
             foreach (string actionID in GetAllActionsDict().Keys.ToList<string>()) {
                 if (!currentActions.Contains(actionID)) {
                     RemoveAction(actionID);
+                }
+            }
+
+            // Remove deleted action points
+            foreach (string actionPointID in GetAllActionPointsDict().Keys.ToList<string>()) {
+                if (!currentAP.Contains(actionPointID)) {
+                    RemoveActionPoint(actionPointID);
                 }
             }
         }
@@ -278,10 +278,9 @@ namespace Base {
         public void RemoveActionPoint(string id) {
             ActionPoint apToRemove = GetActionPoint(id);
             string aoIdToRemove = apToRemove.ActionObject.Data.Id;
-            // destroy gameobject of corresponding action point
-            Destroy(ActionObjects[aoIdToRemove].ActionPoints[id].gameObject);
-            // remove action point reference from list of action points of corresponding action object
-            ActionObjects[aoIdToRemove].ActionPoints.Remove(id);
+            // Call function in corresponding action point that will delete it and properly remove all references and connections.
+            // We don't want to update project, because we are calling this method only upon received update from server.
+            ActionObjects[aoIdToRemove].ActionPoints[id].DeleteAP(false);
         }
 
         /// <summary>
@@ -427,6 +426,7 @@ namespace Base {
 
                 // Add current connection from the server, we will only map the outputs
                 foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                    //if(!connections.ContainsKey(projectAction.Id))
                     connections.Add(projectAction.Id, actionIO.Default);
                 }
 
@@ -473,7 +473,7 @@ namespace Base {
                             input.Connection = newConnection;
                             output.Connection = newConnection;
                             ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
-                        }                        
+                        }
 
                         actionsToActualize.Add(action.Data.Id, action);
                     }
@@ -508,10 +508,9 @@ namespace Base {
             Action aToRemove = GetAction(id);
             string apIdToRemove = aToRemove.ActionPoint.Data.Id;
             string aoIdToRemove = aToRemove.ActionPoint.ActionObject.Data.Id;
-            // destroy gameobject of corresponding action point
-            Destroy(ActionObjects[aoIdToRemove].ActionPoints[apIdToRemove].Actions[id].gameObject);
-            // remove action point reference from list of action points of corresponding action object
-            ActionObjects[aoIdToRemove].ActionPoints[apIdToRemove].Actions.Remove(id);
+            // Call function in corresponding action that will delete it and properly remove all references and connections.
+            // We don't want to update project, because we are calling this method only upon received update from server.
+            ActionObjects[aoIdToRemove].ActionPoints[apIdToRemove].Actions[id].DeleteAction(false);
         }
 
         /// <summary>

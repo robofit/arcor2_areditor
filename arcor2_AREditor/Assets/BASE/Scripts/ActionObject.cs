@@ -94,22 +94,27 @@ namespace Base {
         public bool IsRobot() {
             return ActionObjectMetadata.Robot;
         }
+
+        public void DeleteActionObject() {
+            // Remove all actions of this action point
+            RemoveActionPoints();
+            
+            // Remove this ActionObject reference from the scene ActionObject list
+            Scene.Instance.ActionObjects.Remove(this.Data.Id);
+
+            Destroy(gameObject);
+        }
         
         public void RemoveActionPoints() {
-            foreach (KeyValuePair<string, ActionPoint> actionPoint in ActionPoints) {
-                Destroy(actionPoint.Value.gameObject);
+            // Remove all action points of this action object
+            foreach (string actionPointID in ActionPoints.Keys.ToList<string>()) {
+                RemoveActionPoint(actionPointID);
             }
             ActionPoints.Clear();
         }
 
         public void RemoveActionPoint(string id) {
-            Destroy(ActionPoints[id].gameObject);
-            ActionPoints.Remove(id);
-        }
-
-        // Called when this GameObject is destroyed
-        private void OnDestroy() {
-            RemoveActionPoints();
+            ActionPoints[id].DeleteAP(false);
         }
     }
 

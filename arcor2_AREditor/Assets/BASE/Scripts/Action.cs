@@ -132,12 +132,27 @@ namespace Base {
         }
 
         public void DeleteAction(bool updateProject = true) {
-            foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
-                if (io.Connection != null)
-                    Destroy(io.Connection.gameObject);
+            // Delete connection on input and set the gameobject that was connected through its output to the "end" value.
+            if (Input.Connection != null) {
+                InputOutput connectedActionIO = Input.Connection.target[0].GetComponent<InputOutput>();
+                connectedActionIO.Data.Default = "end";
+                // Remove the reference in connections manager.
+                ConnectionManagerArcoro.Instance.Connections.Remove(Input.Connection);
+                Destroy(Input.Connection.gameObject);
             }
-            gameObject.SetActive(false);
+            // Delete connection on output and set the gameobject that was connected through its input to the "start" value.
+            if (Output.Connection != null) {
+                InputOutput connectedActionIO = Output.Connection.target[1].GetComponent<InputOutput>();
+                connectedActionIO.Data.Default = "start";
+                // Remove the reference in connections manager.
+                ConnectionManagerArcoro.Instance.Connections.Remove(Output.Connection);
+                Destroy(Output.Connection.gameObject);
+            }
+
             Destroy(gameObject);
+
+            ActionPoint.Actions.Remove(Data.Id);
+
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }
@@ -147,10 +162,6 @@ namespace Base {
         }
         public ActionMetadata Metadata {
             get => metadata; set => metadata = value;
-        }
-
-        private void OnDestroy() {
-            ActionPoint.Actions.Remove(Data.Id);
         }
 
     }
