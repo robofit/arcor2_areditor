@@ -5,7 +5,7 @@ using TMPro;
 using Base;
 using RuntimeGizmos;
 
-public class ActionObject3D : Base.ActionObject
+public class ActionObject3D : ActionObject
 {
     public GameObject ActionObjectName;
     private ActionObjectMenu actionObjectMenu;

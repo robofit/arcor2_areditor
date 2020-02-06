@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Base {
     public abstract class ActionPoint : Clickable {
@@ -26,7 +27,7 @@ namespace Base {
             }
         }
 
-        public void ActionPointUpdate(IO.Swagger.Model.ActionPoint apData = null) {
+        public void ActionPointUpdate(IO.Swagger.Model.ProjectActionPoint apData = null) {
             if (apData != null)
                 Data = apData;
             // update position and rotation based on received data from swagger
@@ -37,7 +38,9 @@ namespace Base {
         public void InitAP(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData = null) {
             SetActionObject(actionObject);
             if (apData != null) {
-                Data = apData;                
+                Data = apData;
+            } else {
+                Data.Uuid = Guid.NewGuid().ToString();
             }
                
             if (Data.Orientations.Count == 0)

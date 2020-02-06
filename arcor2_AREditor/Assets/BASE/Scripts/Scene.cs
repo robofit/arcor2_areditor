@@ -198,7 +198,7 @@ namespace Base {
 
         #region ACTION_POINTS
 
-        public ActionPoint SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData, bool updateProject = true) {
+        public ActionPoint SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
             AP.transform.localPosition = new Vector3(0, 0, 0);
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -233,15 +233,15 @@ namespace Base {
                     foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
                         // if action point exist, just update it
                         if (actionObject.ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
-                            actionPoint.ActionPointUpdate(DataHelper.ProjectActionPointToActionPoint(projectActionPoint));
+                            actionPoint.ActionPointUpdate(projectActionPoint);
                         }
                         // if action point doesn't exist, create new one
                         else {
-                            actionPoint = SpawnActionPoint(actionObject, DataHelper.ProjectActionPointToActionPoint(projectActionPoint), false);
+                            actionPoint = SpawnActionPoint(actionObject, projectActionPoint, false);
                             actionPoint.ActionPointUpdate();
                         }
 
-                        // update actions in current action point
+                        // update actions in current action point 
                         var updateActionsResult = await UpdateActions(projectActionPoint, actionPoint);
                         currentActions.AddRange(updateActionsResult.Item1);
                         // merge dictionaries
