@@ -140,7 +140,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
     private void OnCloseProject(object sender, EventArgs e) {
         foreach (Connection c in Connections) {
-            Destroy(c.gameObject);
+            if (c.gameObject != null) {
+                Destroy(c.gameObject);
+            }
         }
         Connections.Clear();
     }

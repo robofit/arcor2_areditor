@@ -14,7 +14,7 @@ public class SideMenuControll : Base.Clickable {
     }
 
     public void Hide() {
-        _MenuManager.HideMenu();
+        //_MenuManager.HideMenu();
     }
 
     public override void OnClick(Click type) {

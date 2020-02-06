@@ -15,6 +15,8 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void SetLoading(bool loading) {
         this.Loading = loading;
+        if (Dropdown == null || Dropdown.gameObject == null)
+            return;
         if (loading) {
             Dropdown.gameObject.SetActive(false);
             LoadingObject.SetActive(true);

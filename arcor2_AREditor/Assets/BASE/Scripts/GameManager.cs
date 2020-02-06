@@ -260,6 +260,12 @@ namespace Base {
                 newProject = project;
                 return;
             }
+
+            //HACK: close all opened windows when project is updated, to avoid missing references to objects/points etc.
+            //TODO: find better solution
+            MenuManager.Instance.HideAllMenus();
+
+
             newProject = null;
 
             currentProject = project;

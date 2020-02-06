@@ -55,7 +55,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu.gameObject, Data.Id);
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
         }
     }
 

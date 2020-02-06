@@ -8,6 +8,7 @@ public class ActionPointMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
     public GameObject ActionButtonPrefab;
     public GameObject UpdatePoseBlock, UpdateJointsBlock;
+    public TMPro.TMP_Text NoOrientation, NoJoints;
 
     [SerializeField]
     private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
@@ -51,6 +52,8 @@ public class ActionPointMenu : MonoBehaviour {
                 Button btn = btnGO.GetComponent<Button>();
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
                 btnGO.AddComponent<TooltipContent>();
+                btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
+                
                 if (btnGO.GetComponent<TooltipContent>().tooltipObject == null) {
                     btnGO.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
                 }
@@ -87,7 +90,15 @@ public class ActionPointMenu : MonoBehaviour {
             };
             orientationDropdown.dropdownItems.Add(item);
         }
-        orientationDropdown.SetupDropdown();
+        if (orientationDropdown.dropdownItems.Count == 0) {
+            orientationDropdown.gameObject.SetActive(false);
+            NoOrientation.gameObject.SetActive(true);
+        } else {
+            NoOrientation.gameObject.SetActive(false);
+            orientationDropdown.enabled = true;
+            orientationDropdown.SetupDropdown();
+        }
+            
     }
         
 
@@ -101,10 +112,12 @@ public class ActionPointMenu : MonoBehaviour {
             jointsDropdown.dropdownItems.Add(item);
         }
         if (jointsDropdown.dropdownItems.Count > 0) {
+            NoJoints.gameObject.SetActive(false);
             jointsDropdown.gameObject.SetActive(true);
             jointsDropdown.SetupDropdown();
         } else {
             jointsDropdown.gameObject.SetActive(false);
+            NoJoints.gameObject.SetActive(true);
         }
     }
 
@@ -114,6 +127,7 @@ public class ActionPointMenu : MonoBehaviour {
         if (CurrentActionPoint == null)
             return;
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
+        MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
     }
 
    
@@ -160,6 +174,12 @@ public class ActionPointMenu : MonoBehaviour {
     }
 
     public void ShowFocusConfirmationDialog() {
+        if (robotsList.GetComponent<CustomDropdown>().dropdownItems.Count == 0 ||
+            endEffectorList.GetComponent<CustomDropdown>().dropdownItems.Count == 0 ||
+            orientationsList.GetComponent<CustomDropdown>().dropdownItems.Count == 0) {
+            Base.Notifications.Instance.ShowNotification("Failed to update orientation.", "Something is not selected");
+            return;
+        }
         CustomDropdown robotsListDropdown = robotsList.GetComponent<CustomDropdown>();
         CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
         CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
@@ -169,6 +189,7 @@ public class ActionPointMenu : MonoBehaviour {
             FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = endEffectorDropdown.selectedText.text;
         }
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().RobotId = robotsListDropdown.selectedText.text;
+
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().OrientationId = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().ActionPointId = CurrentActionPoint.Data.Id;
