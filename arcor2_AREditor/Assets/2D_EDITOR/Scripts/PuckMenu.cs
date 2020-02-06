@@ -261,7 +261,6 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         if (await Base.GameManager.Instance.ExecuteAction(CurrentPuck.Data.Id)) {
 
         }
-
         ExectuteActionBtn.interactable = true;
      
     }
