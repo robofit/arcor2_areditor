@@ -5,7 +5,7 @@ using System.Linq;
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
 
-        // string == IO.Swagger.Model.SceneObject Data.Id
+        // string == IO.Swagger.Model.SceneObject Data.Uuid
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
@@ -17,7 +17,7 @@ namespace Base {
 
         protected virtual void Start() {
         }
-
+        
         public virtual void UpdateId(string newId) {
             Data.Id = newId;
         }
@@ -44,7 +44,7 @@ namespace Base {
         public async void LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
             //idValues.Add(new IO.Swagger.Model.IdValue(id: "robot_id", value: Data.Id));
-            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Uuid, "end_effector_id", idValues);
         }
 
                 
@@ -100,21 +100,21 @@ namespace Base {
             RemoveActionPoints();
             
             // Remove this ActionObject reference from the scene ActionObject list
-            Scene.Instance.ActionObjects.Remove(this.Data.Id);
+            Scene.Instance.ActionObjects.Remove(this.Data.Uuid);
 
             Destroy(gameObject);
         }
         
         public void RemoveActionPoints() {
             // Remove all action points of this action object
-            foreach (string actionPointID in ActionPoints.Keys.ToList<string>()) {
-                RemoveActionPoint(actionPointID);
+            foreach (string actionPointUUID in ActionPoints.Keys.ToList<string>()) {
+                RemoveActionPoint(actionPointUUID);
             }
             ActionPoints.Clear();
         }
 
-        public void RemoveActionPoint(string id) {
-            ActionPoints[id].DeleteAP(false);
+        public void RemoveActionPoint(string uuid) {
+            ActionPoints[uuid].DeleteAP(false);
         }
     }
 

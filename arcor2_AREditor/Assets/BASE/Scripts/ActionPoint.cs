@@ -6,7 +6,7 @@ using System;
 namespace Base {
     public abstract class ActionPoint : Clickable {
 
-        // Key string is set to IO.Swagger.Model.ActionPoint Data.Id
+        // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
         public GameObject ActionsSpawn;
 
@@ -89,7 +89,7 @@ namespace Base {
             }
 
             // Remove this ActionPoint reference from parent ActionObject list
-            ActionObject.ActionPoints.Remove(this.Data.Id);
+            ActionObject.ActionPoints.Remove(this.Data.Uuid);
 
             Destroy(gameObject);
 
@@ -111,14 +111,14 @@ namespace Base {
 
         public void RemoveActions(bool updateProject) {
             // Remove all actions of this action point
-            foreach (string actionID in Actions.Keys.ToList<string>()) {
-                RemoveAction(actionID, updateProject);
+            foreach (string actionUUID in Actions.Keys.ToList<string>()) {
+                RemoveAction(actionUUID, updateProject);
             }
             Actions.Clear();
         }
 
-        public void RemoveAction(string id, bool updateProject) {
-            Actions[id].DeleteAction(updateProject);
+        public void RemoveAction(string uuid, bool updateProject) {
+            Actions[uuid].DeleteAction(updateProject);
         }
     }
 

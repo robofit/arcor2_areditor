@@ -179,9 +179,15 @@ namespace Base {
             ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
         }
 
+        /// <summary>
+        /// Sends request to the server to create a new Action Object of user specified type and id. Uuid has to be generated here in the client.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type);
+            IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type, uuid: Guid.NewGuid().ToString());
             return await WebsocketManager.Instance.AddObjectToScene(sceneObject: sceneObject);
         }
 

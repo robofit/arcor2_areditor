@@ -18,7 +18,8 @@ namespace Base {
         public ActionPoint ActionPoint;
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "", "");
-        public async Task Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
+
+        public async Task Init(string uuid, string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
 
             ActionPoint = ap;
             this.metadata = metadata;
@@ -93,13 +94,15 @@ namespace Base {
                     }
                     parentCount += 1;
                 }
+
+                Data.Uuid = uuid;
             }
 
-            
+
 
             UpdateId(id, false);
+            //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
-            Data.Uuid = Guid.NewGuid().ToString();
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
@@ -113,13 +116,9 @@ namespace Base {
                 Data = aData;
         }
 
-
-
         public void UpdateType() {
             Data.Type = GetActionType();
-        }
-
-        
+        }        
 
         public virtual void UpdateId(string newId, bool updateProject = true) {
             Data.Id = newId;
@@ -151,7 +150,7 @@ namespace Base {
 
             Destroy(gameObject);
 
-            ActionPoint.Actions.Remove(Data.Id);
+            ActionPoint.Actions.Remove(Data.Uuid);
 
             if (updateProject)
                 GameManager.Instance.UpdateProject();
