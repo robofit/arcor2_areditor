@@ -15,12 +15,13 @@ public class ActionPointMenu : MonoBehaviour {
         CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle,
         UpdatePositionBlock, JointsList, AddJointsDialog;
 
-    public void CreatePuck(string action_id, IActionProvider actionProvider) {
-        Base.Scene.Instance.SpawnPuck(null, action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
+    public async void CreatePuck(string action_id, IActionProvider actionProvider) {
+        await Base.Scene.Instance.SpawnPuck(null, action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
     }
 
     public void SaveID(string new_id) {
         CurrentActionPoint.GetComponent<Base.ActionPoint>().Data.Id = new_id;
+        Base.GameManager.Instance.UpdateProject();
     }
 
     public void UpdateMenu() {
