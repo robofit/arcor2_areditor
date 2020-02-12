@@ -10,7 +10,7 @@ public class Puck2D : Base.Action {
     }
 
     public override void OnClick(Click type) {
-        MenuManager.Instance.PuckMenu.GetComponent<PuckMenu>().UpdateMenu(this);
+        MenuManager.Instance.PuckMenu.GetComponent<ActionMenu>().UpdateMenu(this);
         MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
     }
 }

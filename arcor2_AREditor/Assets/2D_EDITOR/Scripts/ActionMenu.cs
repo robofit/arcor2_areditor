@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 
-public class PuckMenu : Base.Singleton<PuckMenu> {
+public class ActionMenu : Base.Singleton<ActionMenu> {
 
     public Base.Action CurrentPuck;
 
