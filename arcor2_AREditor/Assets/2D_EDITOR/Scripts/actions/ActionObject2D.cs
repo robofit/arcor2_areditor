@@ -17,11 +17,11 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     public override void OnClick(Click type) {
-        if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = gameObject;
             actionObjectMenu.UpdateMenu();
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor, Data.Id);
-        } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
+        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
             actionObjectMenuProjectEditor.CurrentObject = gameObject;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
         }

@@ -89,15 +89,16 @@ namespace Base {
             }
         }
 
-        public GameStateEnum GameState {
-            get => gameState;
-            set {
-                gameState = value;
-                OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
-                if (gameState == GameStateEnum.MainScreen) {
-                    LoadProjects();
-                    LoadScenes();
-                }
+        public GameStateEnum GetGameState() {
+            return gameState;
+        }
+
+        public async void SetGameState(GameStateEnum value) {
+            gameState = value;
+            OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            if (gameState == GameStateEnum.MainScreen) {
+                await LoadScenes();
+                await LoadProjects();
             }
         }
 
@@ -106,7 +107,7 @@ namespace Base {
             loadedScene = "";
             sceneReady = false;
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
-            GameState = GameStateEnum.Disconnected;
+            SetGameState(GameStateEnum.Disconnected);
         }
 
         private void Start() {
@@ -118,7 +119,6 @@ namespace Base {
         private void Update() {
             if (newScene != null && ActionsManager.Instance.ActionsReady)
                 SceneUpdated(newScene);
-
         }
 
         
@@ -132,13 +132,13 @@ namespace Base {
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();                    
                     UpdateServices();
-                    GameState = GameStateEnum.MainScreen;
+                    SetGameState(GameStateEnum.MainScreen);
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
-                    GameState = GameStateEnum.Disconnected;
+                    SetGameState(GameStateEnum.Disconnected);
                     currentProject = null;
                     loadedScene = "";
                     ProjectUpdated(null);
@@ -210,13 +210,13 @@ namespace Base {
             sceneReady = false;
             newScene = null;
             if (scene == null) {
-                if (GameState == GameStateEnum.SceneEditor || GameState == GameStateEnum.ProjectEditor) {
-                    GameState = GameStateEnum.MainScreen;
+                if (GetGameState() == GameStateEnum.SceneEditor || GetGameState() == GameStateEnum.ProjectEditor) {
+                    SetGameState(GameStateEnum.MainScreen);
                 }
                 Scene.Instance.RemoveActionObjects();
                 return;
-            } else if (GameState != GameStateEnum.SceneEditor) {
-                GameState = GameStateEnum.SceneEditor;
+            } else if (GetGameState() != GameStateEnum.SceneEditor) {
+                SetGameState(GameStateEnum.SceneEditor);
             }
             
             if (!ActionsManager.Instance.ActionsReady) {
@@ -256,13 +256,13 @@ namespace Base {
         // ProjectUpdated is called from server, when another GUI makes some changes
         public async void ProjectUpdated(IO.Swagger.Model.Project project) {
             if (project == null) {
-                if (GameState == GameStateEnum.ProjectEditor) {
-                    GameState = GameStateEnum.MainScreen;
+                if (GetGameState() == GameStateEnum.ProjectEditor) {
+                    SetGameState(GameStateEnum.MainScreen);
                 }
                 currentProject = null;
                 return;
-            } else if (GameState != GameStateEnum.ProjectEditor) {
-                GameState = GameStateEnum.ProjectEditor;
+            } else if (GetGameState() != GameStateEnum.ProjectEditor) {
+                SetGameState(GameStateEnum.ProjectEditor);
             }
 
             if (project.SceneId != loadedScene || !sceneReady) {
