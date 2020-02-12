@@ -3,9 +3,10 @@ using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
+using Base;
 
 public class ActionObjectMenu : MonoBehaviour {
-    public GameObject CurrentObject;
+    public ActionObject CurrentObject;
     [SerializeField]
     private GameObject aPPrefab;
     public CustomDropdown RobotsList, EndEffectorList;
@@ -16,14 +17,13 @@ public class ActionObjectMenu : MonoBehaviour {
     private int currentFocusPoint = -1;
 
     public void SaveID(string new_id) {
-        CurrentObject.GetComponent<Base.ActionObject>().Data.Id = new_id;
-        Base.GameManager.Instance.UpdateScene();
+        CurrentObject.UpdateId(new_id);
     }
 
     public async void DeleteIO() {
-        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
+        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove object " + CurrentObject.GetComponent<Base.ActionObject>().Data.Id, response.Messages[0]);
+            Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Id, response.Messages[0]);
             return;
         }
         CurrentObject = null;
@@ -33,11 +33,11 @@ public class ActionObjectMenu : MonoBehaviour {
     public void UpdateMenu() {
         if (currentFocusPoint >= 0)
             return;
-        if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+        if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
             UpdatePositionBlockVO.SetActive(false);
             UpdatePositionBlockMesh.SetActive(true);
             RobotsListsBlock.SetActive(true);
-        } else if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel != null) {
+        } else if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
             UpdatePositionBlockVO.SetActive(true);
             UpdatePositionBlockMesh.SetActive(false);
             RobotsListsBlock.SetActive(true);
@@ -72,7 +72,7 @@ public class ActionObjectMenu : MonoBehaviour {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>().Data.Id,
+        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.Data.Id,
             RobotsList.selectedText.text, EndEffectorList.selectedText.text);
     }
          
@@ -99,14 +99,14 @@ public class ActionObjectMenu : MonoBehaviour {
             return;
         }
         try {
-            await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.GetComponent<Base.ActionObject>().Data.Id,
+            await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
                 RobotsList.selectedText.text, EndEffectorList.selectedText.text);
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
             GetComponent<SimpleSideMenu>().overlayCloseOnPressed = false;
             FocusObjectDoneButton.interactable = true;
-            if (CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
+            if (CurrentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                 NextButton.interactable = true;
                 PreviousButton.interactable = true;
             }
@@ -124,7 +124,7 @@ public class ActionObjectMenu : MonoBehaviour {
         if (currentFocusPoint < 0)
             return;
         try {
-            await Base.GameManager.Instance.SavePosition(CurrentObject.GetComponent<Base.ActionObject>().Data.Id, currentFocusPoint);
+            await Base.GameManager.Instance.SavePosition(CurrentObject.Data.Id, currentFocusPoint);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
@@ -134,7 +134,7 @@ public class ActionObjectMenu : MonoBehaviour {
 
     public async void FocusObjectDone() {
         try {
-            await Base.GameManager.Instance.FocusObjectDone(CurrentObject.GetComponent<Base.ActionObject>().Data.Id);
+            await Base.GameManager.Instance.FocusObjectDone(CurrentObject.Data.Id);
             CurrentPointLabel.text = "";
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
             GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
@@ -148,9 +148,9 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     public void NextPoint() {
-        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
+        currentFocusPoint = Math.Min(currentFocusPoint + 1, CurrentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
         PreviousButton.interactable = true;
-        if (currentFocusPoint == CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
+        if (currentFocusPoint == CurrentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
             NextButton.GetComponent<Button>().interactable = false;
         } else {
             NextButton.GetComponent<Button>().interactable = true;
@@ -170,7 +170,7 @@ public class ActionObjectMenu : MonoBehaviour {
     }
 
     private void UpdateCurrentPointLabel() {
-        CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.GetComponent<Base.ActionObject>().ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
+        CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
     }
 
 }

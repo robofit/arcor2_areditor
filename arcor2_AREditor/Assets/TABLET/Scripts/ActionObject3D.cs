@@ -87,17 +87,17 @@ public class ActionObject3D : ActionObject
         }
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = gameObject;
+                actionObjectMenu.CurrentObject = this;
                 actionObjectMenu.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor, Data.Id);
             } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = gameObject;
+                actionObjectMenuProjectEditor.CurrentObject = this;
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor, "");
             }
         }
     }
 
-    public override void UpdateId(string newId) {
+    public override void UpdateId(string newId, bool updateScene = true) {
         base.UpdateId(newId);
         ActionObjectName.GetComponent<TextMeshPro>().text = newId;
     }

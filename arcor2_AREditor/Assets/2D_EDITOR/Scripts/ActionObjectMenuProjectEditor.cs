@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
+using Base;
 
 public class ActionObjectMenuProjectEditor : MonoBehaviour {
-    public GameObject CurrentObject;
+    public ActionObject CurrentObject;
     [SerializeField]
     private GameObject aPPrefab;
 
@@ -13,7 +14,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour {
         if (CurrentObject == null) {
             return;
         }
-        Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
+        Base.Scene.Instance.SpawnActionPoint(CurrentObject, null);
 
     }
 

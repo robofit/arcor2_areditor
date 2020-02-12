@@ -18,8 +18,12 @@ namespace Base {
         protected virtual void Start() {
         }
         
-        public virtual void UpdateId(string newId) {
+        public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
+
+            if (updateScene) {
+                GameManager.Instance.UpdateScene();
+            }
         }
 
         protected virtual void Update() {

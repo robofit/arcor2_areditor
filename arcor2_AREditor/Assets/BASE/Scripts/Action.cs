@@ -111,7 +111,7 @@ namespace Base {
 
         }
 
-        public void ActionUpdate(IO.Swagger.Model.Action aData = null) {
+        public virtual void ActionUpdate(IO.Swagger.Model.Action aData = null) {
             if (aData != null)
                 Data = aData;
         }
@@ -122,6 +122,17 @@ namespace Base {
 
         public virtual void UpdateId(string newId, bool updateProject = true) {
             Data.Id = newId;
+
+            // update changed IDs in connected actions
+            Action actionOnInput = Scene.Instance.GetActionById(Input.Data.Default);
+            if (actionOnInput != null) {
+                actionOnInput.Output.Data.Default = newId;
+            }
+            Action actionOnOutput = Scene.Instance.GetActionById(Output.Data.Default);
+            if (actionOnOutput != null) {
+                actionOnOutput.Input.Data.Default = newId;
+            }
+
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }
