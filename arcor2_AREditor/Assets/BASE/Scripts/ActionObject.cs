@@ -34,7 +34,7 @@ namespace Base {
             }
         }
 
-        public void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             Data = actionObjectSwagger;
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
