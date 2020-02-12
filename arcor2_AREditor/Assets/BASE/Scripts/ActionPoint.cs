@@ -34,6 +34,13 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
         }
+        
+        public virtual void UpdateId(string newId, bool updateProject = true) {
+            Data.Id = newId;
+
+            if (updateProject)
+                GameManager.Instance.UpdateProject();
+        }
 
         public void InitAP(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData = null) {
             SetActionObject(actionObject);

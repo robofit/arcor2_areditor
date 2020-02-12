@@ -18,8 +18,12 @@ namespace Base {
         protected virtual void Start() {
         }
         
-        public virtual void UpdateId(string newId) {
+        public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
+
+            if (updateScene) {
+                GameManager.Instance.UpdateScene();
+            }
         }
 
         protected virtual void Update() {
@@ -30,7 +34,7 @@ namespace Base {
             }
         }
 
-        public void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             Data = actionObjectSwagger;
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();

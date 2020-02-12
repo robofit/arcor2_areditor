@@ -7,7 +7,7 @@ using RuntimeGizmos;
 
 public class ActionObject3D : ActionObject
 {
-    public GameObject ActionObjectName;
+    public TextMeshPro ActionObjectName;
     private ActionObjectMenu actionObjectMenu;
     private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
@@ -97,9 +97,14 @@ public class ActionObject3D : ActionObject
         }
     }
 
-    public override void UpdateId(string newId) {
+    public override void UpdateId(string newId, bool updateScene = true) {
         base.UpdateId(newId);
-        ActionObjectName.GetComponent<TextMeshPro>().text = newId;
+        ActionObjectName.text = newId;
+    }
+
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        base.ActionObjectUpdate(actionObjectSwagger);
+        ActionObjectName.text = actionObjectSwagger.Id;
     }
 
 

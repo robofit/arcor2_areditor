@@ -25,8 +25,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public void SaveID(string new_id) {
-        CurrentActionPoint.GetComponent<Base.ActionPoint>().Data.Id = new_id;
-        Base.GameManager.Instance.UpdateProject();
+        CurrentActionPoint.UpdateId(new_id);
     }
 
     public void UpdateMenu() {

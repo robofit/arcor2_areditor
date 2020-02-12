@@ -480,7 +480,11 @@ namespace Base {
                     // Find corresponding action defined by ID
                     if (actionOutput != "start" && actionOutput != "end") {
                         refAction = GetActionById(actionOutput);
-                        actionOutput = refAction.Data.Id;
+                        if (refAction != null) {
+                            actionOutput = refAction.Data.Id;
+                        } else {
+                            actionOutput = "";
+                        }
                     }
                     if (action.Output.Data.Default != actionOutput) {
                         // Destroy old connection if there was some
@@ -558,7 +562,8 @@ namespace Base {
                     }
                 }
             }
-            throw new KeyNotFoundException("Action " + uuid + " not found!");
+            //Debug.LogError("Action " + uuid + " not found!");
+            return null;
         }
 
         /// <summary>
@@ -576,7 +581,8 @@ namespace Base {
                     }
                 }
             }
-            throw new KeyNotFoundException("Action " + id + " not found!");
+            //Debug.LogError("Action " + id + " not found!");
+            return null;
         }
 
         /// <summary>
