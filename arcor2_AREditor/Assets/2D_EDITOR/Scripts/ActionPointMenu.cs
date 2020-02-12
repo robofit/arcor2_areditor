@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 
-public class ActionPointMenu : MonoBehaviour {
+public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
     public Base.ActionPoint CurrentActionPoint;
     public GameObject ActionButtonPrefab;
@@ -11,9 +11,14 @@ public class ActionPointMenu : MonoBehaviour {
     public TMPro.TMP_Text NoOrientation, NoJoints;
 
     [SerializeField]
-    private GameObject dynamicContent, topText, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
-        CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, FocusConfirmationDialog, UpdatePositionToggle,
+    private GameObject dynamicContent, interactiveObjectType, robotsList, updatePositionButton, endEffectorList,
+        CollapsablePrefab, orientationsList, scrollableContent, AddOrientationDialog, UpdatePositionToggle,
         UpdatePositionBlock, JointsList, AddJointsDialog;
+
+    public FocusConfirmationDialog FocusConfirmationDialog;
+
+    [SerializeField]
+    private InputField topText;
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
         await Base.Scene.Instance.SpawnPuck(null, action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
@@ -39,7 +44,7 @@ public class ActionPointMenu : MonoBehaviour {
                 Destroy(o.gameObject);
             }
         }
-        topText.GetComponentInChildren<Text>().text = actionPoint.Data.Id;
+        SetHeader(actionPoint.Data.Id);
         interactiveObjectType.GetComponent<Text>().text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
@@ -185,16 +190,20 @@ public class ActionPointMenu : MonoBehaviour {
         CustomDropdown endEffectorDropdown = endEffectorList.GetComponent<CustomDropdown>();
         CustomDropdown orientationDropdown = orientationsList.GetComponent<CustomDropdown>();
         if (endEffectorDropdown.dropdownItems.Count == 0) {
-            FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = "";
+            FocusConfirmationDialog.EndEffectorId = "";
         } else {
-            FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().EndEffectorId = endEffectorDropdown.selectedText.text;
+            FocusConfirmationDialog.EndEffectorId = endEffectorDropdown.selectedText.text;
         }
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().RobotId = robotsListDropdown.selectedText.text;
+        FocusConfirmationDialog.RobotId = robotsListDropdown.selectedText.text;
 
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().OrientationId = orientationDropdown.selectedText.text;
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().ActionPointId = CurrentActionPoint.Data.Id;
-        FocusConfirmationDialog.GetComponent<FocusConfirmationDialog>().Init();
-        FocusConfirmationDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        FocusConfirmationDialog.OrientationId = orientationDropdown.selectedText.text;
+        FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
+        FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
+        FocusConfirmationDialog.Init();
+        FocusConfirmationDialog.WindowManager.OpenWindow();
+    }
+
+    public void SetHeader(string header) {
+        topText.text = header;
     }
 }

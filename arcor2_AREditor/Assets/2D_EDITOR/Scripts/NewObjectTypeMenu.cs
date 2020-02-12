@@ -6,7 +6,7 @@ using System;
 
 using System.Globalization;
 
-public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
+public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     [SerializeField]
     private GameObject BoxMenu, CylinderMenu, SphereMenu, MeshMenu, NameInput, ParentsList, ModelsList;
     [SerializeField]

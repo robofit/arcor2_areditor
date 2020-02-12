@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 
-public class ActionMenu : Base.Singleton<ActionMenu> {
+public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public Base.Action CurrentPuck;
 
@@ -27,7 +27,7 @@ public class ActionMenu : Base.Singleton<ActionMenu> {
                 Destroy(o.gameObject);
             }
         }
-        TopText.text = action.Data.Id;
+        SetHeader(action.Data.Id);
         ActionType.text = action.Data.Type;
         List<Tuple<DropdownParameter, Base.ActionParameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Base.ActionParameter>>();
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
@@ -265,4 +265,11 @@ public class ActionMenu : Base.Singleton<ActionMenu> {
      
     }
 
+    public void UpdateMenu() {
+        UpdateMenu(CurrentPuck);
+    }
+
+    public void SetHeader(string header) {
+        TopText.text = header;
+    }
 }

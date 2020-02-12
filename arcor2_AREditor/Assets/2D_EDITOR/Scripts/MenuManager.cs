@@ -18,15 +18,13 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open;
     }
 
-    public void ShowMenu(SimpleSideMenu Menu, string Headline = "") {
+    public void ShowMenu(SimpleSideMenu menu) {
         //Debug.Log(Menu); 
-        if (Menu == null)
+        if (menu == null)
             return;
         HideAllMenus();
-        if (Headline != "")
-            Menu.transform.Find("Layout").Find("TopText").GetComponent<InputField>().text = Headline;
-        Menu.GetComponent<SimpleSideMenu>().Open();
-        MenuOpened = Menu;
+        menu.GetComponent<SimpleSideMenu>().Open();
+        MenuOpened = menu;
     }
 
     public void HideAllMenus() {

@@ -8,6 +8,7 @@ public class FocusConfirmationDialog : MonoBehaviour
     public string RobotId, EndEffectorId, OrientationId, ActionPointId;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
+    public ModalWindowManager WindowManager;
 
     public void Init() {
         SettingsText.text = "Robot: " + RobotId +

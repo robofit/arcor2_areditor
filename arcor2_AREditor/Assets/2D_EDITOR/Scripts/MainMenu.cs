@@ -4,7 +4,7 @@ using System;
 using Michsky.UI.ModernUIPack;
 
 
-public class MainMenu : MonoBehaviour {
+public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
         ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent;
@@ -376,4 +376,11 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
+    public void UpdateMenu() {
+        //nothing to do..
+    }
+
+    public void SetHeader(string header) {
+        //nothing to do.. yet
+    }
 }

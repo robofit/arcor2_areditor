@@ -4,10 +4,10 @@ using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 
-public class ActionObjectMenu : MonoBehaviour {
-    public GameObject CurrentObject;
+public class ActionObjectMenu : MonoBehaviour, IMenu {
+    public Base.ActionObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab;
+    private InputField objectName;
     public CustomDropdown RobotsList, EndEffectorList;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
@@ -59,6 +59,7 @@ public class ActionObjectMenu : MonoBehaviour {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
+        objectName.text = CurrentObject.Data.Id;
     }
 
     private void OnRobotChanged(string robot_id) {

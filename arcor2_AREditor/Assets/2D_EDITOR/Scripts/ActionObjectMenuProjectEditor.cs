@@ -3,10 +3,10 @@ using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
 
-public class ActionObjectMenuProjectEditor : MonoBehaviour {
-    public GameObject CurrentObject;
+public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
+    public Base.ActionObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab;
+    private TMPro.TMP_Text objectName;
 
     
     public void CreateNewAP() {
@@ -15,6 +15,10 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour {
         }
         Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
 
+    }
+
+    public void UpdateMenu() {
+        objectName.text = CurrentObject.Data.Id;
     }
 
     /*
