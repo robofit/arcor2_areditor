@@ -155,16 +155,15 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-    public async void ServiceStateChanged(ServiceButton serviceButton) {
-
+    public void ServiceStateChanged(ServiceButton serviceButton) {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+            Base.Notifications.Instance.ShowNotification("Failed to update service", "Service state can only be changed in scene editor!");
+            return;
+        }
         if (!serviceButton.State) {
             ShowAddServiceDialog(serviceButton.ServiceMetadata.Type);
         } else {
             ShowServiceSettingsDialog(serviceButton);
-            /*if (!await Base.GameManager.Instance.RemoveFromScene(type)) {
-                Base.NotificationsModernUI.Instance.ShowNotification("Remove failed", "Failed to remove service from scene!");
-
-            }*/
         }
     }
 
@@ -210,8 +209,8 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
-        ServiceSettingsDialog.Type = serviceButton.ServiceMetadata.Type;
-        ServiceSettingsDialog.WindowManager.OpenWindow();
+        bool sceneEditor = Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor;
+        ServiceSettingsDialog.Show(serviceButton.ServiceMetadata.Type, sceneEditor);
     }
 
     public void ShowNewProjectDialog() {

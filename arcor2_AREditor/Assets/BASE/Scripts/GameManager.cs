@@ -62,7 +62,6 @@ namespace Base {
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
         }
@@ -113,6 +112,7 @@ namespace Base {
         private void Start() {
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
         // Update is called once per frame
@@ -121,16 +121,16 @@ namespace Base {
                 SceneUpdated(newScene);
         }
 
-        
+
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
                     MenuManager.Instance.DisableAllMenus();
-                    LoadingScreen.SetActive(true);
+                    StartLoading();
                     Scene.Instance.gameObject.SetActive(true);
-                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));                   
+                    OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
-                    UpdateActionObjects();                    
+                    UpdateActionObjects();
                     UpdateServices();
                     SetGameState(GameStateEnum.MainScreen);
                     break;
@@ -147,6 +147,16 @@ namespace Base {
                     ActionsManager.Instance.Clear();
                     break;
             }
+        }
+
+        public void StartLoading() {
+            Debug.Assert(LoadingScreen != null);
+            LoadingScreen.SetActive(true);
+        }
+
+       public void EndLoading() {
+            Debug.Assert(LoadingScreen != null);
+            LoadingScreen.SetActive(false);
         }
 
        
@@ -166,7 +176,7 @@ namespace Base {
         }
 
         private void OnActionsLoaded(object sender, EventArgs e) {
-            LoadingScreen.SetActive(false);
+            EndLoading();
             MenuManager.Instance.EnableAllWindows();
         }
 
@@ -186,20 +196,23 @@ namespace Base {
         /// <param name="id"></param>
         /// <returns></returns>
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
+            StartLoading();
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
             IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type, uuid: Guid.NewGuid().ToString());
+            EndLoading();
             return await WebsocketManager.Instance.AddObjectToScene(sceneObject: sceneObject);
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
-            //IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            //IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type);
             return await WebsocketManager.Instance.AutoAddObjectToScene(type);
         }
 
         public async void AddServiceToScene(string type, string configId = "") {
+            StartLoading();
             IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
+
             IO.Swagger.Model.AddServiceToSceneResponse response = await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
+            EndLoading();
             if (!response.Result) {
                 throw new RequestFailedException(response.Messages);
             }
@@ -207,6 +220,7 @@ namespace Base {
 
         // SceneUpdated is called from server, when another GUI makes some change.
         public void SceneUpdated(IO.Swagger.Model.Scene scene) {
+            StartLoading();
             sceneReady = false;
             newScene = null;
             if (scene == null) {
@@ -214,6 +228,7 @@ namespace Base {
                     SetGameState(GameStateEnum.MainScreen);
                 }
                 Scene.Instance.RemoveActionObjects();
+                EndLoading();
                 return;
             } else if (GetGameState() != GameStateEnum.SceneEditor) {
                 SetGameState(GameStateEnum.SceneEditor);
@@ -241,6 +256,7 @@ namespace Base {
             if (newProject != null) {
                 ProjectUpdated(newProject);
             }
+            EndLoading();
         }
 
 
@@ -255,11 +271,13 @@ namespace Base {
 
         // ProjectUpdated is called from server, when another GUI makes some changes
         public async void ProjectUpdated(IO.Swagger.Model.Project project) {
+            StartLoading();
             if (project == null) {
                 if (GetGameState() == GameStateEnum.ProjectEditor) {
                     SetGameState(GameStateEnum.MainScreen);
                 }
                 currentProject = null;
+                EndLoading();
                 return;
             } else if (GetGameState() != GameStateEnum.ProjectEditor) {
                 SetGameState(GameStateEnum.ProjectEditor);
@@ -270,16 +288,12 @@ namespace Base {
                 return;
             }
 
-            //HACK: close all opened windows when project is updated, to avoid missing references to objects/points etc.
-            //TODO: find better solution
-            MenuManager.Instance.HideAllMenus();
-
-
             newProject = null;
 
             currentProject = project;
            
-            Scene.Instance.UpdateActionPoints(currentProject);           
+            Scene.Instance.UpdateActionPoints(currentProject);
+            EndLoading();
         }
 
 
@@ -450,9 +464,9 @@ namespace Base {
         } 
 
         public async void NewProject(string name, string sceneId, bool generateLogic) {
-            LoadingScreen.SetActive(true);
+            StartLoading();
             if (name == "") {
-                LoadingScreen.SetActive(false);
+                EndLoading();
                 throw new RequestFailedException("Project name not specified");
             }
             if (sceneId == null) {
@@ -461,13 +475,13 @@ namespace Base {
             }
             IO.Swagger.Model.OpenSceneResponse openSceneResponse = await WebsocketManager.Instance.OpenScene(sceneId);
             if (!openSceneResponse.Result) {
-                LoadingScreen.SetActive(false);
+                EndLoading();
                 throw new RequestFailedException("Failed to open scene");
             }
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             WebsocketManager.Instance.UpdateProject(project);
             ProjectUpdated(project);
-            LoadingScreen.SetActive(false);
+            EndLoading();
         }
 
 
