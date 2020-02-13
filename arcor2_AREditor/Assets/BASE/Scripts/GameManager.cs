@@ -62,6 +62,8 @@ namespace Base {
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
+        public TMPro.TMP_Text ConnectionInfo, MessageBox, EditorInfo;
+
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
         }
@@ -95,9 +97,23 @@ namespace Base {
         public async void SetGameState(GameStateEnum value) {
             gameState = value;
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
-            if (gameState == GameStateEnum.MainScreen) {
-                await LoadScenes();
-                await LoadProjects();
+            switch (gameState) {
+                case GameStateEnum.MainScreen:
+                    StartLoading();
+                    await LoadScenes();
+                    await LoadProjects();
+                    EndLoading();
+                    EditorInfo.text = "";
+                    break;
+                case GameStateEnum.ProjectEditor:
+                    EditorInfo.text = "Project: " + currentProject.Id;
+                    break;
+                case GameStateEnum.SceneEditor:
+                    EditorInfo.text = "Scene: " + Scene.Instance.Data.Id;
+                    break;
+                default:
+                    EditorInfo.text = "";
+                    break;
             }
         }
 
@@ -125,6 +141,8 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    SetGameState(GameStateEnum.MainScreen);
+                    ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();
                     StartLoading();
                     Scene.Instance.gameObject.SetActive(true);
@@ -132,13 +150,15 @@ namespace Base {
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();
                     UpdateServices();
-                    SetGameState(GameStateEnum.MainScreen);
+                    
                     break;
                 case ConnectionStatusEnum.Disconnected:
+                    SetGameState(GameStateEnum.Disconnected);
+                    ConnectionInfo.text = "Not connected";
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
-                    SetGameState(GameStateEnum.Disconnected);
+                    
                     currentProject = null;
                     loadedScene = "";
                     ProjectUpdated(null);
@@ -230,9 +250,7 @@ namespace Base {
                 Scene.Instance.RemoveActionObjects();
                 EndLoading();
                 return;
-            } else if (GetGameState() != GameStateEnum.SceneEditor) {
-                SetGameState(GameStateEnum.SceneEditor);
-            }
+            } 
             
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
@@ -247,6 +265,10 @@ namespace Base {
             if (loadedScene != scene.Id) {
                 Scene.Instance.RemoveActionObjects();
                 loadedScene = scene.Id;
+            }
+
+            if (GetGameState() != GameStateEnum.SceneEditor) {
+                SetGameState(GameStateEnum.SceneEditor);
             }
 
             Scene.Instance.UpdateActionObjects();
@@ -270,7 +292,7 @@ namespace Base {
         }    
 
         // ProjectUpdated is called from server, when another GUI makes some changes
-        public async void ProjectUpdated(IO.Swagger.Model.Project project) {
+        public void ProjectUpdated(IO.Swagger.Model.Project project) {
             StartLoading();
             if (project == null) {
                 if (GetGameState() == GameStateEnum.ProjectEditor) {
@@ -279,9 +301,7 @@ namespace Base {
                 currentProject = null;
                 EndLoading();
                 return;
-            } else if (GetGameState() != GameStateEnum.ProjectEditor) {
-                SetGameState(GameStateEnum.ProjectEditor);
-            }
+            } 
 
             if (project.SceneId != loadedScene || !sceneReady) {
                 newProject = project;
@@ -291,7 +311,11 @@ namespace Base {
             newProject = null;
 
             currentProject = project;
-           
+
+            if (GetGameState() != GameStateEnum.ProjectEditor) {
+                SetGameState(GameStateEnum.ProjectEditor);
+            }
+
             Scene.Instance.UpdateActionPoints(currentProject);
             EndLoading();
         }

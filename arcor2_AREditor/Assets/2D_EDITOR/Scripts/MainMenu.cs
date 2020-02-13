@@ -6,7 +6,7 @@ using Michsky.UI.ModernUIPack;
 
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
-    public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
+    public GameObject ProjectControlButtons, ConnectionControl, ActionObjectsContent, ActionObjects,
         ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent;
 
     public OpenProjectDialog OpenProjectDialog;
@@ -242,10 +242,6 @@ public class MainMenu : MonoBehaviour, IMenu {
         ConnectionControl.GetComponentInChildren<Button>().interactable = true;
     }
 
-    public void ShowConnectionStatus() {
-        ConnectionStatus.SetActive(true);
-    }
-
     public void ShowDynamicContent() {
         ActionObjects.SetActive(true);
     }
@@ -256,10 +252,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void HideConnectionControl() {
         ConnectionControl.SetActive(false);
-    }
-
-    public void HideConnectionStatus() {
-        ConnectionStatus.SetActive(false);
     }
 
     public void HideDynamicContent() {
@@ -279,16 +271,12 @@ public class MainMenu : MonoBehaviour, IMenu {
         HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
-        string s = "Connected to: " + e.Data;
-        Debug.Log(s);
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
     }
 
     public void DisconnectedFromServer(object sender, EventArgs e) {
         HideDynamicContent();
         HideProjectControlButtons();
         ShowConnectionControl();
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = "Not connected to server";
     }
 
     public string GetConnectionDomain() {
@@ -304,9 +292,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void ConnectingToServer(object sender, Base.StringEventArgs e) {
         ConnectionControl.GetComponentInChildren<Button>().interactable = false;
-        string s = "Connecting to server: " + e.Data;
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
-        Debug.Log(s);
     }
 
     public async void SaveScene() {
