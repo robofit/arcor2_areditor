@@ -7,6 +7,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
+
 using System.IO;
 
 
@@ -35,7 +36,7 @@ namespace Base {
             readyToSend = true;
             ignoreProjectChanged = false;
             connecting = false;
-
+            
             receivedData = "";
             waitingForObjectActions = "";
         }
@@ -296,7 +297,7 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
-            int id = requestID++;
+            int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.GetObjectTypesRequest(id: id, request: "GetObjectTypes").ToJson(), id, true);
             IO.Swagger.Model.GetObjectTypesResponse response = await WaitForResult<IO.Swagger.Model.GetObjectTypesResponse>(id);
             if (response.Result)
@@ -308,7 +309,7 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
-            int id = requestID++;
+            int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.GetActionsRequest(id: id, request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: name)).ToJson(), id, true);
             IO.Swagger.Model.GetActionsResponse response = await WaitForResult<IO.Swagger.Model.GetActionsResponse>(id);
             if (response.Result)
@@ -318,19 +319,19 @@ namespace Base {
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
-            int id = requestID++;
+            int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene").ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveSceneResponse>(id);
         }
 
         public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
-            int id = requestID++;
+            int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject").ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
         public async Task OpenProject(string id) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
             IO.Swagger.Model.OpenProjectRequest request = new IO.Swagger.Model.OpenProjectRequest(id: r_id, request: "OpenProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -340,7 +341,7 @@ namespace Base {
         }
 
         public async Task RunProject(string projectId) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: projectId);
             IO.Swagger.Model.RunProjectRequest request = new IO.Swagger.Model.RunProjectRequest(id: r_id, request: "RunProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -350,7 +351,7 @@ namespace Base {
         }
 
         public async Task StopProject() {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.StopProjectRequest request = new IO.Swagger.Model.StopProjectRequest(id: r_id, request: "StopProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.StopProjectResponse response = await WaitForResult<IO.Swagger.Model.StopProjectResponse>(r_id);
@@ -359,7 +360,7 @@ namespace Base {
         }
 
         public async Task PauseProject() {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.PauseProjectRequest request = new IO.Swagger.Model.PauseProjectRequest(id: r_id, request: "PauseProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.PauseProjectResponse response = await WaitForResult<IO.Swagger.Model.PauseProjectResponse>(r_id);
@@ -368,7 +369,7 @@ namespace Base {
         }
 
         public async Task ResumeProject() {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ResumeProjectRequest request = new IO.Swagger.Model.ResumeProjectRequest(id: r_id, request: "ResumeProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ResumeProjectResponse response = await WaitForResult<IO.Swagger.Model.ResumeProjectResponse>(r_id);
@@ -377,7 +378,7 @@ namespace Base {
         }
 
         public async Task UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId,
                 orientationId: orientationId, robot: robotArg, updatePosition: updatePosition);
@@ -389,7 +390,7 @@ namespace Base {
         }
 
         public async Task UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id: actionPointId,
                 jointsId: jointsId, robotId: robotId);
             IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(id: r_id, request: "UpdateActionPointJoints", args);
@@ -400,7 +401,7 @@ namespace Base {
         }
 
         public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(id: actionObjectId, robot: robotArg);
             IO.Swagger.Model.UpdateActionObjectPoseRequest request = new IO.Swagger.Model.UpdateActionObjectPoseRequest(id: r_id, request: "UpdateActionObjectPose", args);
@@ -411,7 +412,7 @@ namespace Base {
         }
 
         public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewObjectTypeResponse response = await WaitForResult<IO.Swagger.Model.NewObjectTypeResponse>(r_id);
@@ -420,7 +421,7 @@ namespace Base {
         }
 
         public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector, robotId);
             IO.Swagger.Model.FocusObjectStartRequestArgs args = new IO.Swagger.Model.FocusObjectStartRequestArgs(objectId: objectId, robot: robotArg);
             IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: r_id, request: "FocusObjectStart", args: args);
@@ -431,7 +432,7 @@ namespace Base {
         }
 
         public async Task SavePosition(string objectId, int pointIdx) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.FocusObjectRequestArgs args = new IO.Swagger.Model.FocusObjectRequestArgs(objectId: objectId, pointIdx: pointIdx);
             IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(id: r_id, request: "FocusObject", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -441,7 +442,7 @@ namespace Base {
         }
 
         public async Task FocusObjectDone(string objectId) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: objectId);
             IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(id: r_id, request: "FocusObjectDone", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -451,54 +452,61 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.IdDesc>> LoadScenes() {
-            IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: ++requestID, request: "ListScenes");
-            SendDataToServer(request.ToJson(), requestID, true);
-            IO.Swagger.Model.ListScenesResponse response = await WaitForResult<IO.Swagger.Model.ListScenesResponse>(requestID);
+            int id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: id, request: "ListScenes");
+            SendDataToServer(request.ToJson(), id, true);
+            IO.Swagger.Model.ListScenesResponse response = await WaitForResult<IO.Swagger.Model.ListScenesResponse>(id);
             return response.Data;
         }
 
         public async Task<List<IO.Swagger.Model.ListProjectsResponseData>> LoadProjects() {
-            IO.Swagger.Model.ListProjectsRequest request = new IO.Swagger.Model.ListProjectsRequest(id: ++requestID, request: "ListProjects");
-            SendDataToServer(request.ToJson(), requestID, true);
-            IO.Swagger.Model.ListProjectsResponse response = await WaitForResult<IO.Swagger.Model.ListProjectsResponse>(requestID);
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ListProjectsRequest request = new IO.Swagger.Model.ListProjectsRequest(id: r_id, request: "ListProjects");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ListProjectsResponse response = await WaitForResult<IO.Swagger.Model.ListProjectsResponse>(r_id);
             return response.Data;
         }
 
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(IO.Swagger.Model.SceneObject sceneObject) {
-            IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: ++requestID, request: "AddObjectToScene", args: sceneObject);
-            SendDataToServer(request.ToJson(), requestID, true);
-            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(requestID);
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: sceneObject);
+            SendDataToServer(request.ToJson(), r_id, true);
+            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id);
         }
 
         public async Task<IO.Swagger.Model.AddServiceToSceneResponse> AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
-            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: ++requestID, request: "AddServiceToScene", args: sceneService);
-            SendDataToServer(request.ToJson(), requestID, true);
-            return await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(requestID);
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
+            SendDataToServer(request.ToJson(), r_id, true);
+            return await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
         }
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string objectType) {
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.TypeArgs args = new IO.Swagger.Model.TypeArgs(type: objectType);
-            IO.Swagger.Model.AutoAddObjectToSceneRequest request = new IO.Swagger.Model.AutoAddObjectToSceneRequest(id: ++requestID, request: "AutoAddObjectToScene", args: args);
-            SendDataToServer(request.ToJson(), requestID, true);
-            return await WaitForResult<IO.Swagger.Model.AutoAddObjectToSceneResponse>(requestID);
+            IO.Swagger.Model.AutoAddObjectToSceneRequest request = new IO.Swagger.Model.AutoAddObjectToSceneRequest(id: r_id, request: "AutoAddObjectToScene", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            return await WaitForResult<IO.Swagger.Model.AutoAddObjectToSceneResponse>(r_id);
             
         }
 
         public async Task<bool> AddServiceToScene(string configId, string serviceType) {
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(configurationId: configId, type: serviceType);
-            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: ++requestID, request: "AddServiceToScene", args: sceneService);
-            SendDataToServer(request.ToJson(), requestID, true);
-            IO.Swagger.Model.AddServiceToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(requestID);
+            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddServiceToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
             return response.Result;
         }
 
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
-            IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: ++requestID, request: "RemoveFromScene", new IO.Swagger.Model.IdArgs(id: id));
-            SendDataToServer(request.ToJson(), requestID, true);
-            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(requestID);            
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", new IO.Swagger.Model.IdArgs(id: id));
+            SendDataToServer(request.ToJson(), r_id, true);
+            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);            
         }
 
         public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.GetServicesRequest request = new IO.Swagger.Model.GetServicesRequest(id: r_id, request: "GetServices");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.GetServicesResponse response = await WaitForResult<IO.Swagger.Model.GetServicesResponse>(r_id);
@@ -509,7 +517,7 @@ namespace Base {
         }
 
         public async Task<IO.Swagger.Model.OpenSceneResponse> OpenScene(string scene_id) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: scene_id);
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -517,7 +525,7 @@ namespace Base {
         }
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
-            int r_id = ++requestID;
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ActionParamValuesArgs args = new IO.Swagger.Model.ActionParamValuesArgs(id: actionProviderId, paramId: param_id, parentParams: parent_params);
             IO.Swagger.Model.ActionParamValuesRequest request = new IO.Swagger.Model.ActionParamValuesRequest(id: r_id, request: "ActionParamValues", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -531,8 +539,8 @@ namespace Base {
         public async Task ExecuteAction(string actionId) {
             Debug.Assert(actionId != null);
             Debug.Assert(actionId != "");
-            
-            int r_id = ++requestID;
+
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ExecuteActionArgs args = new IO.Swagger.Model.ExecuteActionArgs(actionId: actionId);
             IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
