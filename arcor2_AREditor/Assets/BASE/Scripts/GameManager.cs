@@ -96,7 +96,7 @@ namespace Base {
 
         public async void SetGameState(GameStateEnum value) {
             gameState = value;
-            OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            
             switch (gameState) {
                 case GameStateEnum.MainScreen:
                     StartLoading();
@@ -115,6 +115,7 @@ namespace Base {
                     EditorInfo.text = "";
                     break;
             }
+            OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
 

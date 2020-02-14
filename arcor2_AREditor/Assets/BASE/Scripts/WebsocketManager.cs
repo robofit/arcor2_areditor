@@ -7,7 +7,6 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
-
 using System.IO;
 
 
@@ -17,9 +16,7 @@ namespace Base {
 
         private ClientWebSocket clientWebSocket;
 
-        private List<string> actionObjectsToBeUpdated = new List<string>();
         private Queue<KeyValuePair<int, string>> sendingQueue = new Queue<KeyValuePair<int, string>>();
-        private string waitingForObjectActions;
 
         private bool waitingForMessage = false;
 
@@ -35,10 +32,8 @@ namespace Base {
             waitingForMessage = false;
             readyToSend = true;
             ignoreProjectChanged = false;
-            connecting = false;
-            
+            connecting = false;            
             receivedData = "";
-            waitingForObjectActions = "";
         }
 
 
@@ -121,7 +116,7 @@ namespace Base {
 
         public void SendDataToServer(string data, int key = -1, bool storeResult = false) {
             if (key < 0) {
-                key = requestID++;
+                key = Interlocked.Increment(ref requestID);
             }
             Debug.Log("Sending data to server: " + data);
 
