@@ -59,6 +59,9 @@ namespace Base {
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
 
+        public const string ApiVersion = "0.2.0";
+        public const string ServerVersion = "0.1.8";
+
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
@@ -142,6 +145,10 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    if (!await CheckVersions()) {
+                        DisconnectFromSever();
+                        return;
+                    }
                     SetGameState(GameStateEnum.MainScreen);
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();
@@ -402,6 +409,7 @@ namespace Base {
             if (currentProject == null)
                 return;
             try {
+                await WebsocketManager.Instance.BuildProject(currentProject.Id);
                 await WebsocketManager.Instance.RunProject(currentProject.Id);
                 OnRunProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
@@ -558,6 +566,46 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
                 return false;
             }
+            return true;
+        }
+
+        public int GetMajorVersion(string versionString) {
+            Debug.Assert(versionString.Split('.').Length == 2);
+            return int.Parse(versionString.Split('.')[0]);
+        }
+
+         public int GetMinorVersion(string versionString) {
+            Debug.Assert(versionString.Split('.').Length == 2);
+            return int.Parse(versionString.Split('.')[1]);
+        }
+
+         public int GetPatchVersion(string versionString) {
+            Debug.Assert(versionString.Split('.').Length == 2);
+            return int.Parse(versionString.Split('.')[2]);
+        }
+
+        public async Task<bool> CheckVersions() {
+            //IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+            /*if (systemInfo.ApiVersion == ApiVersion && systemInfo.Version == ServerVersion)
+                return true;
+            if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion)) {
+                Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
+                return false;
+            }
+            if (GetMajorVersion(systemInfo.Version) != GetMajorVersion(ServerVersion)) {
+                Notifications.Instance.ShowNotification("Incompatibile editor and server versions", "Editor version: " + ApiVersion + ", server version: " + systemInfo.ApiVersion);
+                return false;
+            }
+            if (GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion) || GetPatchVersion(systemInfo.ApiVersion) != GetPatchVersion(ApiVersion)) {
+                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problem, you have been warned.");
+                return true;
+            }
+            if (GetMinorVersion(systemInfo.Version) != GetMinorVersion(ServerVersion) || GetPatchVersion(systemInfo.Version) != GetPatchVersion(ServerVersion)) {
+                Notifications.Instance.ShowNotification("Different api versions", "Editor version: " + ApiVersion + ", server version: " + systemInfo.ApiVersion + ". It can casuse problem, you have been warned.");
+                return true;
+            }
+            return false;
+            */
             return true;
         }
 
