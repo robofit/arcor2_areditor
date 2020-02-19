@@ -47,7 +47,6 @@ namespace Base {
 
         public async void LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            //idValues.Add(new IO.Swagger.Model.IdValue(id: "robot_id", value: Data.Id));
             EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }
 
