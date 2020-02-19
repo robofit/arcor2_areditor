@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using System.Linq;
 
 public class AddNewObjectDialog : Dialog
 {
@@ -9,10 +10,14 @@ public class AddNewObjectDialog : Dialog
 
     public TMPro.TMP_InputField NameInput;
 
+    
+    public static string ToUnderscoreCase(string str) {
+        return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+    }
    
     public void Init(string objectToBeCreated) {
         ObjectToBeCreated = objectToBeCreated;
-        NameInput.text = objectToBeCreated;
+        NameInput.text = ToUnderscoreCase(objectToBeCreated);
         // TODO: find available name
     }
 
