@@ -47,13 +47,11 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
 
         HideEverything();
-        Debug.LogWarning(args.Data);
         switch (args.Data) {
             case Base.GameManager.GameStateEnum.Disconnected:
                 DisconnectedFromServer(this, EventArgs.Empty);
                 break;
-            case Base.GameManager.GameStateEnum.MainScreen:
-                
+            case Base.GameManager.GameStateEnum.MainScreen:                
                 SetMainScreen();
                 break;
             case Base.GameManager.GameStateEnum.SceneEditor:
@@ -66,8 +64,6 @@ public class MainMenu : MonoBehaviour, IMenu {
                 ActionObjects.SetActive(false);
                 Services.SetActive(true);
                 break;
-
-
         }
     }
 
