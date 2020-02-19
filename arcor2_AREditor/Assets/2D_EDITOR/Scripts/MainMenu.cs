@@ -7,7 +7,7 @@ using Michsky.UI.ModernUIPack;
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent;
+        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
@@ -30,47 +30,54 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+        Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
+        Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
+        Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
+        Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
+        Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+
         HideEverything();
-        DisconnectedFromServer(this, EventArgs.Empty);
+        OnOpenDisconnectedScreen(this, EventArgs.Empty);
         DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
         PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
-        if(debugTools != null)
+        if (debugTools != null)
             debugTools.SetActive(false);
-
-
     }
 
 
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
-
-        HideEverything();
-        switch (args.Data) {
-            case Base.GameManager.GameStateEnum.Disconnected:
-                DisconnectedFromServer(this, EventArgs.Empty);
-                break;
-            case Base.GameManager.GameStateEnum.MainScreen:                
-                SetMainScreen();
-                break;
-            case Base.GameManager.GameStateEnum.SceneEditor:
-                SceneControlButtons.SetActive(true);
-                ActionObjects.SetActive(true);
-                Services.SetActive(true);
-                break;
-            case Base.GameManager.GameStateEnum.ProjectEditor:
-                ProjectControlButtons.SetActive(true);
-                ActionObjects.SetActive(false);
-                Services.SetActive(true);
-                break;
-        }
+        HideEverything();        
     }
 
-
-    private void SetMainScreen() {
+    private void OnOpenMainScreen(object sender, EventArgs eventArgs) {
         MainControlButtons.SetActive(true);
     }
+
+    private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
+        SceneControlButtons.SetActive(true);
+        ActionObjects.SetActive(true);
+        Services.SetActive(true);
+    }
+
+    private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
+        ProjectControlButtons.SetActive(true);
+        ActionObjects.SetActive(false);
+        Services.SetActive(true);
+    }
+
+    private void OnOpenProjectRunning(object sender, EventArgs eventArgs) {
+        RunningProjectControls.SetActive(true);
+    }
+
+    private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
+        HideDynamicContent();
+        HideProjectControlButtons();
+        ShowConnectionControl();
+    }
+
 
     private void HideEverything() {
         ProjectControlButtons.SetActive(false);
@@ -79,6 +86,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         SceneControlButtons.SetActive(false);
         MainControlButtons.SetActive(false);
         Services.SetActive(false);
+        RunningProjectControls.SetActive(false);
     }
 
     private void ActionObjectsUpdated(object sender, EventArgs e) {
@@ -272,10 +280,10 @@ public class MainMenu : MonoBehaviour, IMenu {
         ShowDynamicContent();
     }
 
-    public void DisconnectedFromServer(object sender, EventArgs e) {
-        HideDynamicContent();
-        HideProjectControlButtons();
-        ShowConnectionControl();
+    
+
+    public void ProjectRunning(object sender, EventArgs e) {
+
     }
 
     public string GetConnectionDomain() {
@@ -366,4 +374,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     public void SetHeader(string header) {
         //nothing to do.. yet
     }
+
+ 
 }
