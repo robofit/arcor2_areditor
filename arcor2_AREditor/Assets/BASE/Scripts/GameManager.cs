@@ -157,8 +157,7 @@ namespace Base {
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
                     UpdateActionObjects();
-                    UpdateServices();
-                    
+                    UpdateServices();                    
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     SetGameState(GameStateEnum.Disconnected);
@@ -237,8 +236,7 @@ namespace Base {
 
         public async void AddServiceToScene(string type, string configId = "") {
             StartLoading();
-            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
-
+            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId, uuid: Guid.NewGuid().ToString());
             IO.Swagger.Model.AddServiceToSceneResponse response = await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
             EndLoading();
             if (!response.Result) {

@@ -521,6 +521,8 @@ namespace Base {
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
             int r_id = Interlocked.Increment(ref requestID);
+            Debug.LogError(actionProviderId);
+            Debug.LogError(param_id);
             IO.Swagger.Model.ActionParamValuesArgs args = new IO.Swagger.Model.ActionParamValuesArgs(id: actionProviderId, paramId: param_id, parentParams: parent_params);
             IO.Swagger.Model.ActionParamValuesRequest request = new IO.Swagger.Model.ActionParamValuesRequest(id: r_id, request: "ActionParamValues", args);
             SendDataToServer(request.ToJson(), r_id, true);

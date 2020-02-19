@@ -126,14 +126,15 @@ namespace Base {
 
 
             actionObject.ActionObjectMetadata = aom;
-            if (aom.Robot) {
-                actionObject.LoadEndEffectors();
-            }
-
             actionObject.Data.Uuid = uuid;
 
             // Add the Action Object into scene reference
             ActionObjects.Add(uuid, actionObject);
+            if (aom.Robot) {
+                actionObject.LoadEndEffectors();
+            }
+
+           
 
             if (updateScene)
                 GameManager.Instance.UpdateScene();
