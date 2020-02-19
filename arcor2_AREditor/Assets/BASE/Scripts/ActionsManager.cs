@@ -44,9 +44,11 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded && ServicesLoaded) {
-
+                
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
+                    
                     if (!ao.ActionsLoaded) {
+                       
                         return;
                     }
                 }
@@ -160,7 +162,7 @@ namespace Base {
             
         }
 
-        public void UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
+        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
@@ -192,6 +194,16 @@ namespace Base {
                 }
             }
             return false;
+        }
+
+        public void WaitUntilActionsReady(int timeout) {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            while (!ActionsReady) {
+                if (sw.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException();
+                System.Threading.Thread.Sleep(100);
+            }
         }
 
 

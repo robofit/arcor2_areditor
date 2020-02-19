@@ -33,6 +33,7 @@ namespace Base {
 
         public event EventHandler OnSaveProject;
         public event EventHandler OnLoadProject;
+        public event EventHandler OnLoadScene;
         public event EventHandler OnRunProject;
         public event EventHandler OnStopProject;
         public event EventHandler OnPauseProject;
@@ -104,7 +105,6 @@ namespace Base {
         }
 
         public void SetGameState(GameStateEnum value) {
-            Debug.LogError(value);
             gameState = value;
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
@@ -119,13 +119,15 @@ namespace Base {
         private void Start() {
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            OnLoadProject += ProjectLoaded;
+            OnLoadScene += SceneLoaded;
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
         // Update is called once per frame
         private void Update() {
-            if (newScene != null && ProjectState != null && ActionsManager.Instance.ActionsReady)
-                SceneUpdated(newScene);
+            /*if (newScene != null && ProjectState != null && ActionsManager.Instance.ActionsReady)
+                SceneUpdated(newScene);*/
         }
 
 
@@ -134,6 +136,7 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     if (!await CheckVersions()) {
                         DisconnectFromSever();
+                        EndLoading();
                         return;
                     }
                     
@@ -142,9 +145,23 @@ namespace Base {
                     StartLoading();
                     Scene.Instance.gameObject.SetActive(true);
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
-                    OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
-                    UpdateActionObjects();
-                    UpdateServices();
+                    await UpdateActionObjects();
+                    await UpdateServices();
+
+                    await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(10000));
+                    if (newScene != null) {
+                        SceneUpdated(newScene);
+                    }
+                    if (sceneReady && currentProject == null) {
+                        OnLoadScene?.Invoke(this, EventArgs.Empty);
+                    } else if (sceneReady && currentProject != null && ProjectState.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
+                        OnLoadProject?.Invoke(this, EventArgs.Empty);
+                    } else if (!sceneReady && currentProject == null) {
+                        await OpenMainScreen();
+                    } else {
+                        OpenProjectRunningScreen();
+                    }
+                    EndLoading();
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OpenDisconnectedScreen();
@@ -175,8 +192,16 @@ namespace Base {
 
 
         public async void ConnectToSever(string domain, int port) {
+            StartLoading();
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
             if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
+                try {
+                    await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
+                } catch (TimeoutException e) {
+                    Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
+                    WebsocketManager.Instance.DisconnectFromSever();
+                    EndLoading();
+                }                
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
             } else {
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
@@ -194,12 +219,12 @@ namespace Base {
             MenuManager.Instance.EnableAllWindows();
         }
 
-        public async void UpdateActionObjects() {
+        public async Task UpdateActionObjects() {
             List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-            ActionsManager.Instance.UpdateObjects(objectTypeMetas);
+            await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
         }
 
-        public async void UpdateServices() {
+        public async Task UpdateServices() {
             ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
         }
 
@@ -237,19 +262,15 @@ namespace Base {
             sceneReady = false;
             newScene = null;
             if (scene == null) {
-                if (GetGameState() == GameStateEnum.SceneEditor || GetGameState() == GameStateEnum.ProjectEditor) {
-                    OpenMainScreen();
-                }
                 Scene.Instance.RemoveActionObjects();
                 EndLoading();
                 return;
             }
-
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
-
                 return;
             }
+            
 
             // Set current loaded swagger scene
             Scene.Instance.Data = scene;
@@ -260,14 +281,10 @@ namespace Base {
                 loadedScene = scene.Id;
             }
 
-            if (GetGameState() != GameStateEnum.SceneEditor) {
-                OpenSceneEditor();
-            }
-
             Scene.Instance.UpdateActionObjects();
-
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
             sceneReady = true;
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            
             if (newProject != null) {
                 ProjectUpdated(newProject);
             }
@@ -288,9 +305,6 @@ namespace Base {
         public void ProjectUpdated(IO.Swagger.Model.Project project) {
             StartLoading();
             if (project == null) {
-                if (GetGameState() == GameStateEnum.ProjectEditor) {
-                    OpenMainScreen();
-                }
                 currentProject = null;
                 EndLoading();
                 return;
@@ -307,7 +321,7 @@ namespace Base {
 
             Scene.Instance.UpdateActionPoints(currentProject);
             // project is running on execution and game state is not project running
-            if (ProjectState.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped &&
+            /*if (ProjectState.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped &&
                 GetGameState() != GameStateEnum.ProjectEditor) {
 
                 OpenProjectEditor();
@@ -317,7 +331,7 @@ namespace Base {
                 GetGameState() != GameStateEnum.ProjectRunning) {
 
                 OpenProjectRunningScreen();
-            } 
+            } */
             EndLoading();
         }
 
@@ -395,7 +409,7 @@ namespace Base {
             if (!response.Result) {
                 throw new RequestFailedException(response.Messages);
             }
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
         }
 
         public async void RunProject() {
@@ -492,14 +506,11 @@ namespace Base {
 
         public async void NewProject(string name, string sceneId, bool generateLogic) {
             StartLoading();
-            if (name == "") {
+            if (name == "" || sceneId == null) {
                 EndLoading();
-                throw new RequestFailedException("Project name not specified");
+                throw new RequestFailedException("Project name or scene id not specified");
             }
-            if (sceneId == null) {
-                // if no scene defined, create a new one with the name of the project
-                NewScene(sceneId);
-            }
+            
             IO.Swagger.Model.OpenSceneResponse openSceneResponse = await WebsocketManager.Instance.OpenScene(sceneId);
             if (!openSceneResponse.Result) {
                 EndLoading();
@@ -508,6 +519,7 @@ namespace Base {
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             WebsocketManager.Instance.UpdateProject(project);
             ProjectUpdated(project);
+            OnLoadProject?.Invoke(this, EventArgs.Empty);
             EndLoading();
         }
 
@@ -523,6 +535,7 @@ namespace Base {
             IO.Swagger.Model.Scene scene = new IO.Swagger.Model.Scene(id: name, objects: new List<IO.Swagger.Model.SceneObject>(), services: new List<IO.Swagger.Model.SceneService>());
             WebsocketManager.Instance.UpdateScene(scene);
             SceneUpdated(scene);
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -533,8 +546,8 @@ namespace Base {
         public void CloseScene() {
             loadedScene = "";
             WebsocketManager.Instance.UpdateScene(null);
-
             SceneUpdated(null);
+            OpenMainScreen();
         }
 
         public void CloseProject() {
@@ -543,6 +556,7 @@ namespace Base {
             ProjectUpdated(null);
             CloseScene();
             OnCloseProject?.Invoke(this, EventArgs.Empty);
+            OpenMainScreen();
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
@@ -605,6 +619,7 @@ namespace Base {
             StartLoading();
             await LoadScenes();
             await LoadProjects();
+            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
@@ -631,6 +646,14 @@ namespace Base {
 
         public void OpenDisconnectedScreen() {
             EditorInfo.text = "";
+        }
+
+        public void ProjectLoaded(object sender, EventArgs eventArgs) {
+            OpenProjectEditor();
+        }
+
+        public void SceneLoaded(object sender, EventArgs eventArgs) {
+            OpenSceneEditor();
         }
 
     }    
