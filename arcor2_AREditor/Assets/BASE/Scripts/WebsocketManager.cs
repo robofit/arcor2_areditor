@@ -28,6 +28,8 @@ namespace Base {
 
         private int requestID = 1;
 
+        public GameObject Arrow;
+
         private void Awake() {
             waitingForMessage = false;
             readyToSend = true;
@@ -186,11 +188,13 @@ namespace Base {
                 @event = "",
                 request = ""
             };
-            Debug.Log("Recieved new data: " + data);
+            
             var dispatch = JsonConvert.DeserializeAnonymousType(data, dispatchType);
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
+            if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
+                Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
                 if (responses.ContainsKey(dispatch.id)) {
@@ -206,6 +210,9 @@ namespace Base {
                         break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
+                        break;
+                    case "ProjectState":
+                        HandleProjectState(data);
                         break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
@@ -275,10 +282,17 @@ namespace Base {
                 return;
             }
 
-            Action puck = Scene.Instance.GetAction(puck_id);
+            Action puck = Scene.Instance.GetActionByID(puck_id);
+            if (puck == null)
+                return;
 
-            //Arrow.transform.SetParent(puck.transform);
-            //Arrow.transform.position = puck.transform.position + new Vector3(0f, 1.5f, 0f);
+            Arrow.transform.SetParent(puck.transform);
+            Arrow.transform.position = puck.transform.position + new Vector3(0.2f, 0f, 0f);
+        }
+
+        private void HandleProjectState(string obj) {
+            IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
+            GameManager.Instance.ProjectState = projectState.Data;
         }
 
         private void HandleSceneChanged(string obj) {

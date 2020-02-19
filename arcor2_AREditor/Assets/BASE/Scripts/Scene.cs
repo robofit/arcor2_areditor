@@ -568,6 +568,24 @@ namespace Base {
         }
 
         /// <summary>
+        /// Returns action of given UUID.
+        /// </summary>
+        /// <param name="uuid"></param>
+        /// <returns></returns>
+        public Action GetActionByID(string id) {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
+                    foreach (Action action in actionPoint.Actions.Values)
+                        if (action.Data.Id == id) {
+                        return action;
+                    }
+                }
+            }
+            //Debug.LogError("Action " + uuid + " not found!");
+            return null;
+        }
+
+        /// <summary>
         /// Returns action of given ID.
         /// </summary>
         /// <param name="id"></param>
