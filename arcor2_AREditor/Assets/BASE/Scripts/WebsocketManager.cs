@@ -544,7 +544,7 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        /* public async Task<IO.Swagger.Model.SystemInfoData> GetSystemInfo() {
+        public async Task<IO.Swagger.Model.SystemInfoData> GetSystemInfo() {
              int r_id = Interlocked.Increment(ref requestID);
 
              IO.Swagger.Model.SystemInfoRequest request = new IO.Swagger.Model.SystemInfoRequest(id: r_id, request: "SystemInfo");
@@ -553,14 +553,15 @@ namespace Base {
              if (!response.Result)
                  throw new RequestFailedException(response.Messages);
              return response.Data;
-         }*/
+         }
 
-        public async Task<bool> BuildProject(string project_id) {
+        public async Task BuildProject(string project_id) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: project_id);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
+            
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
         }

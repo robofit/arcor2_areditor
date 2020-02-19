@@ -60,7 +60,7 @@ namespace Base {
         private bool sceneReady;
 
         public const string ApiVersion = "0.2.0";
-        public const string ServerVersion = "0.1.8";
+        public const string ServerVersion = "0.2.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -585,8 +585,8 @@ namespace Base {
         }
 
         public async Task<bool> CheckVersions() {
-            //IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-            /*if (systemInfo.ApiVersion == ApiVersion && systemInfo.Version == ServerVersion)
+            IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+            if (systemInfo.ApiVersion == ApiVersion && systemInfo.Version == ServerVersion)
                 return true;
             if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion)) {
                 Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
@@ -601,12 +601,10 @@ namespace Base {
                 return true;
             }
             if (GetMinorVersion(systemInfo.Version) != GetMinorVersion(ServerVersion) || GetPatchVersion(systemInfo.Version) != GetPatchVersion(ServerVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor version: " + ApiVersion + ", server version: " + systemInfo.ApiVersion + ". It can casuse problem, you have been warned.");
+                Notifications.Instance.ShowNotification("Different api versions", "Editor version: " + ServerVersion + ", server version: " + systemInfo.Version + ". It can casuse problem, you have been warned.");
                 return true;
             }
             return false;
-            */
-            return true;
         }
 
 
