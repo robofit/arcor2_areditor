@@ -347,21 +347,25 @@ namespace Base {
         #region ACTIONS
 
         public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+            GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
             try {
                 actionMetadata = actionProvider.GetActionMetadata(action_id);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
+                GameManager.Instance.EndLoading();
                 return null; //TODO: throw exception
             }
 
             if (actionMetadata == null) {
                 Debug.LogError("Actions not ready");
+                GameManager.Instance.EndLoading();
                 return null; //TODO: throw exception
             }
 
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
+            puck.SetActive(false);
             const string glyphs = "0123456789";
 
             string newId = puck_id;
@@ -386,11 +390,11 @@ namespace Base {
             ActionObjects[ao.Data.Uuid].ActionPoints[ap.Data.Uuid].Actions.Add(action_uuid, action);
 
             ap.UpdatePositionsOfPucks();
-
+            puck.SetActive(true);
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
             }
-
+            GameManager.Instance.EndLoading();
             return action;
         }
 

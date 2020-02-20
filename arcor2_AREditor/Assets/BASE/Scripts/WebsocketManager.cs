@@ -69,7 +69,9 @@ namespace Base {
 
         async public void DisconnectFromSever() {
             Debug.Log("Disconnecting");
+            GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+            
             clientWebSocket = null;
         }
 

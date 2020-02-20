@@ -126,8 +126,7 @@ namespace Base {
 
         // Update is called once per frame
         private void Update() {
-            /*if (newScene != null && ProjectState != null && ActionsManager.Instance.ActionsReady)
-                SceneUpdated(newScene);*/
+           
         }
 
 
@@ -504,7 +503,7 @@ namespace Base {
             await WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
-        public async void NewProject(string name, string sceneId, bool generateLogic) {
+        public async Task NewProject(string name, string sceneId, bool generateLogic) {
             StartLoading();
             if (name == "" || sceneId == null) {
                 EndLoading();
@@ -515,6 +514,12 @@ namespace Base {
             if (!openSceneResponse.Result) {
                 EndLoading();
                 throw new RequestFailedException("Failed to open scene");
+            }
+            try {
+                await Task.Run(() => WaitForSceneReady(2000));
+            } catch (TimeoutException e) {
+                EndLoading();
+                throw new RequestFailedException("Failed to load selected scene");
             }
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             WebsocketManager.Instance.UpdateProject(project);
@@ -615,6 +620,17 @@ namespace Base {
             return false;
         }
 
+        public void WaitForSceneReady(int timeout) {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            while (!sceneReady) {
+                if (sw.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException();
+                System.Threading.Thread.Sleep(100);
+            }
+            return;
+        }
+
         public async Task OpenMainScreen() {
             StartLoading();
             await LoadScenes();
@@ -645,6 +661,7 @@ namespace Base {
         }
 
         public void OpenDisconnectedScreen() {
+            SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";
         }
 
