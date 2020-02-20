@@ -70,8 +70,11 @@ namespace Base {
         async public void DisconnectFromSever() {
             Debug.Log("Disconnecting");
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-            await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
-            
+            try {
+                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+            } catch (WebSocketException e) {
+                //already closed probably..
+            }
             clientWebSocket = null;
         }
 
@@ -109,16 +112,22 @@ namespace Base {
                 waitingForMessage = true;
                 ArraySegment<byte> bytesReceived = WebSocket.CreateClientBuffer(8192, 8192);
                 MemoryStream ms = new MemoryStream();
-                do {
-                    result = await clientWebSocket.ReceiveAsync(
-                        bytesReceived,
-                        CancellationToken.None
-                    );
+                try {
+                    do {
+                        result = await clientWebSocket.ReceiveAsync(
+                            bytesReceived,
+                            CancellationToken.None
+                        );
 
-                    if (bytesReceived.Array != null)
-                        ms.Write(bytesReceived.Array, bytesReceived.Offset, result.Count);
-                    
-                } while (!result.EndOfMessage);
+                        if (bytesReceived.Array != null)
+                            ms.Write(bytesReceived.Array, bytesReceived.Offset, result.Count);
+
+                    } while (!result.EndOfMessage);
+                } catch (WebSocketException e) {
+                    DisconnectFromSever();
+                    return;
+                }
+                
                 receivedData = Encoding.Default.GetString(ms.ToArray());
                 HandleReceivedData(receivedData);
                 receivedData = "";
@@ -315,7 +324,7 @@ namespace Base {
 
         private void HandleProjectState(string obj) {
             IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
-            GameManager.Instance.ProjectState = projectState.Data;
+            GameManager.Instance.SetProjectState(projectState.Data);
             projectStateArrived = true;
         }
 
