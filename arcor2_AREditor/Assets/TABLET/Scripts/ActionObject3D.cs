@@ -56,6 +56,7 @@ public class ActionObject3D : ActionObject
                     GameManager.Instance.UpdateScene();
                 }
                 manipulationStarted = false;
+                GameManager.Instance.ActivateGizmoOverlay(false);
             }
         }
 
@@ -84,6 +85,7 @@ public class ActionObject3D : ActionObject
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
+            GameManager.Instance.ActivateGizmoOverlay(true);
         }
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {

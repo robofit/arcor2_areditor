@@ -41,6 +41,7 @@ public class ActionPoint3D : Base.ActionPoint {
                     GameManager.Instance.UpdateProject();
                 }
                 manipulationStarted = false;
+                GameManager.Instance.ActivateGizmoOverlay(false);
             }
         }
 
@@ -51,6 +52,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
+            GameManager.Instance.ActivateGizmoOverlay(true);
         }
         if (type == Click.MOUSE_RIGHT_BUTTON) {
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;

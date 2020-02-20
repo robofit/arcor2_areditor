@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
+using UnityEngine.UI;
 
 namespace Base {
 
@@ -85,6 +86,8 @@ namespace Base {
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
         public TMPro.TMP_Text ConnectionInfo, MessageBox, EditorInfo;
+
+        public Image GizmoOverlay;
 
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
@@ -698,6 +701,10 @@ namespace Base {
 
         public void SceneLoaded(object sender, EventArgs eventArgs) {
             OpenSceneEditor();
+        }
+
+        public void ActivateGizmoOverlay(bool activate) {
+            GizmoOverlay.raycastTarget = activate;
         }
 
     }    
