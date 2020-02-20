@@ -73,7 +73,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
-        Debug.LogError("OnOpenDisconnectedScreen");
         ShowConnectionControl();
     }
 
