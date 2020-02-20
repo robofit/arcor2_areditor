@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class OnClickCollider : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class OnClickCollider : MonoBehaviour
     }
 
     public void OnMouseOver() {
+        // if we are clicking on UI
+        if (EventSystem.current.IsPointerOverGameObject()) {
+            return;
+        }
         if (Input.GetMouseButtonDown(0)) {
             Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.MOUSE_LEFT_BUTTON);
         }
