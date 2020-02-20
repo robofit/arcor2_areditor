@@ -13,6 +13,8 @@ namespace Base {
         
         public PuckInput Input;
         public PuckOutput Output;
+
+        public GameObject InputArrow, OutputArrow;
         public IActionProvider ActionProvider;
 
         public ActionPoint ActionPoint;
@@ -98,6 +100,10 @@ namespace Base {
                 Data.Uuid = uuid;
             }
 
+            if (!GameManager.Instance.CurrentProject.HasLogic) {
+                InputArrow.gameObject.SetActive(false);
+                OutputArrow.gameObject.SetActive(false);
+            }
 
 
             UpdateId(id, false);

@@ -30,6 +30,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+        Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
         Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
         Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
@@ -50,6 +51,14 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
         HideEverything();        
+    }
+
+    private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectRunning &&
+            args.Data.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
+            HideEverything();
+            OnOpenProjectEditor(this, EventArgs.Empty);
+        }        
     }
 
     private void OnOpenMainScreen(object sender, EventArgs eventArgs) {
