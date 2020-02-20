@@ -94,6 +94,7 @@ public class ActionObject3D : ActionObject
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
             } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
                 actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
             }
         }
