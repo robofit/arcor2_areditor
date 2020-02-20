@@ -30,6 +30,8 @@ namespace Base {
 
         public GameObject Arrow;
 
+        private bool projectArrived = false, sceneArrived = false, projectStateArrived = false;
+
         private void Awake() {
             waitingForMessage = false;
             readyToSend = true;
@@ -41,6 +43,9 @@ namespace Base {
 
         public async Task<bool> ConnectToServer(string domain, int port) {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
+            projectArrived = false;
+            sceneArrived = false;
+            projectStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
             clientWebSocket = new ClientWebSocket();
@@ -64,11 +69,30 @@ namespace Base {
 
         async public void DisconnectFromSever() {
             Debug.Log("Disconnecting");
+            GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+            
             clientWebSocket = null;
         }
 
+        /// <summary>
+        /// Waits until all post-connection data arrived from server or until timeout exprires
+        /// </summary>
+        /// <param name="timeout">Timeout in ms</param>
+        public async Task WaitForInitData(int timeout) {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            while (!CheckInitData()) {
+                if (sw.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException();
+                Thread.Sleep(100);
+            }
+            return;
+        }
 
+        public bool CheckInitData() {
+            return projectArrived && sceneArrived && projectStateArrived;
+        }
 
         // Update is called once per frame
         private async void Update() {
@@ -193,8 +217,8 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-                Debug.Log("Recieved new data: " + data);
+            //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
+            Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
                 if (responses.ContainsKey(dispatch.id)) {
@@ -257,8 +281,7 @@ namespace Base {
 
                 IO.Swagger.Model.ProjectChangedEvent eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChangedEvent>(obj);
                 GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
-
-
+                projectArrived = true;
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleProjectChanged()");
                 GameManager.Instance.ProjectUpdated(null);
@@ -293,11 +316,13 @@ namespace Base {
         private void HandleProjectState(string obj) {
             IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
             GameManager.Instance.ProjectState = projectState.Data;
+            projectStateArrived = true;
         }
 
         private void HandleSceneChanged(string obj) {
             IO.Swagger.Model.SceneChangedEvent sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChangedEvent>(obj);
             GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
+            sceneArrived = true;
         }
 
        

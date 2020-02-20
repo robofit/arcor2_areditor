@@ -73,8 +73,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
-        HideDynamicContent();
-        HideProjectControlButtons();
         ShowConnectionControl();
     }
 
@@ -315,10 +313,10 @@ public class MainMenu : MonoBehaviour, IMenu {
         IO.Swagger.Model.SaveProjectResponse saveProjectResponse = await Base.GameManager.Instance.SaveProject();
         if (!saveProjectResponse.Result) {
             saveProjectResponse.Messages.ForEach(Debug.LogError);
-            GUIHelpers2D.Instance.ShowNotification("Failed to save project" + (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+            Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
-        Base.NotificationsModernUI.Instance.ShowNotification("Project saved successfully", "");
+        Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
 
