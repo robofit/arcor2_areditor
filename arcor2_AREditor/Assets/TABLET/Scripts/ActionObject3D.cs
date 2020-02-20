@@ -3,30 +3,61 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Base;
+using RuntimeGizmos;
 
-public class ActionObject3D : Base.ActionObject
+public class ActionObject3D : ActionObject
 {
-    public GameObject ActionObjectName;
+    public TextMeshPro ActionObjectName;
     private ActionObjectMenu actionObjectMenu;
     private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
-    
+
+    public GameObject Visual;
+
+    private bool manipulationStarted = false;
+    private TransformGizmo tfGizmo;
+
+    private float interval = 0.1f;
+    private float nextUpdate = 0;
+
+    private bool updateScene = false;
+
+
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         UpdateId(Data.Id);
         actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
         actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
+
+        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
     }
 
 
     private void Update() {
-        if (transform.hasChanged) {
+        if (manipulationStarted) {
+            if (tfGizmo.mainTargetRoot != null) {
+                if (Time.time >= nextUpdate) {
+                    nextUpdate += interval;
 
-            // hasChanged is set to false in base.Update()
-            //transform.hasChanged = false;
-
-            if (SceneInteractable())
-                Base.GameManager.Instance.UpdateScene();
+                    // check if gameobject with whom is Gizmo manipulating is our Visual gameobject
+                    if (GameObject.ReferenceEquals(Visual, tfGizmo.mainTargetRoot.gameObject)) {
+                        // if Gizmo is moving, we can send UpdateProject to server
+                        if (tfGizmo.isTransforming) {
+                            updateScene = true;
+                        } else if (updateScene) {
+                            updateScene = false;
+                            GameManager.Instance.UpdateScene();
+                        }
+                    }
+                }
+            } else {
+                if (updateScene) {
+                    updateScene = false;
+                    GameManager.Instance.UpdateScene();
+                }
+                manipulationStarted = false;
+                GameManager.Instance.ActivateGizmoOverlay(false);
+            }
         }
 
         base.Update();
@@ -51,21 +82,31 @@ public class ActionObject3D : Base.ActionObject
     }
 
     public override void OnClick(Click type) {
+        if (type == Click.MOUSE_LEFT_BUTTON) {
+            // We have clicked with left mouse and started manipulation with object
+            manipulationStarted = true;
+            GameManager.Instance.ActivateGizmoOverlay(true);
+        }
         if (type == Click.MOUSE_RIGHT_BUTTON) {
-            if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = gameObject;
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
                 actionObjectMenu.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor, Data.Id);
-            } else if (Base.GameManager.Instance.GameState == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = gameObject;
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor, "");
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
             }
         }
     }
 
-    public override void UpdateId(string newId) {
+    public override void UpdateId(string newId, bool updateScene = true) {
         base.UpdateId(newId);
-        ActionObjectName.GetComponent<TextMeshPro>().text = newId;
+        ActionObjectName.text = newId;
+    }
+
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        base.ActionObjectUpdate(actionObjectSwagger);
+        ActionObjectName.text = actionObjectSwagger.Id;
     }
 
 

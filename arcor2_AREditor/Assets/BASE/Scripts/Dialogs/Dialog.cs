@@ -6,6 +6,12 @@ using UnityEngine.UI;
 
 public class Dialog : MonoBehaviour
 {
+    public ModalWindowManager WindowManager;
+
+    public virtual void Start() {
+        WindowManager = GetComponent<ModalWindowManager>();
+    }
+
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.IdDesc> idDescs) {
         List<string> items = new List<string>();
         foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {

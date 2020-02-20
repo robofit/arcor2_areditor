@@ -1,10 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
 
-        public GameObject ActionPoints;
+        // string == IO.Swagger.Model.SceneObject Data.Uuid
+        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
 
@@ -14,9 +17,13 @@ namespace Base {
 
         protected virtual void Start() {
         }
-
-        public virtual void UpdateId(string newId) {
+        
+        public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
+
+            if (updateScene) {
+                GameManager.Instance.UpdateScene();
+            }
         }
 
         protected virtual void Update() {
@@ -27,13 +34,19 @@ namespace Base {
             }
         }
 
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+            Data = actionObjectSwagger;
+            // update position and rotation based on received data from swagger
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
+        }
+
         public virtual bool SceneInteractable() {
-            return (GameManager.Instance.GameState == GameManager.GameStateEnum.SceneEditor);
+            return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
         }
 
         public async void LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            //idValues.Add(new IO.Swagger.Model.IdValue(id: "robot_id", value: Data.Id));
             EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }
 
@@ -83,6 +96,28 @@ namespace Base {
 
         public bool IsRobot() {
             return ActionObjectMetadata.Robot;
+        }
+
+        public void DeleteActionObject() {
+            // Remove all actions of this action point
+            RemoveActionPoints();
+            
+            // Remove this ActionObject reference from the scene ActionObject list
+            Scene.Instance.ActionObjects.Remove(this.Data.Uuid);
+
+            Destroy(gameObject);
+        }
+        
+        public void RemoveActionPoints() {
+            // Remove all action points of this action object
+            foreach (string actionPointUUID in ActionPoints.Keys.ToList<string>()) {
+                RemoveActionPoint(actionPointUUID);
+            }
+            ActionPoints.Clear();
+        }
+
+        public void RemoveActionPoint(string uuid) {
+            ActionPoints[uuid].DeleteAP(false);
         }
     }
 

@@ -2,19 +2,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using DanielLochner.Assets.SimpleSideMenu;
+using Base;
 
-public class ActionObjectMenuProjectEditor : MonoBehaviour {
-    public GameObject CurrentObject;
+public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
+    public Base.ActionObject CurrentObject;
     [SerializeField]
-    private GameObject aPPrefab;
+    private TMPro.TMP_Text objectName;
 
     
     public void CreateNewAP() {
         if (CurrentObject == null) {
             return;
         }
-        Base.GameManager.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
+        Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
 
+    }
+
+    public void UpdateMenu() {
+        objectName.text = CurrentObject.Data.Id;
     }
 
     /*

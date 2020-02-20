@@ -12,11 +12,13 @@ ARCOR2 AR Editor
  
    Windows:
    ```bash
+   cd scripts
    .\link_submodules.bat
    ```
    
    Linux:
    ```bash
+   cd scripts
    ./link_submodules.sh
    ```
  - download multimedia files from LFS:

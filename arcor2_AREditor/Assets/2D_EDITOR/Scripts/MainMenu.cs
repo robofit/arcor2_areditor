@@ -4,12 +4,21 @@ using System;
 using Michsky.UI.ModernUIPack;
 
 
-public class MainMenu : MonoBehaviour {
+public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
-    public GameObject ProjectControlButtons, ConnectionControl, ConnectionStatus, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons,
-        AddNewObjectDialog, NewProjectDialog, NewSceneDialog, Services, ServicesContent, AddNewServiceDialog, AutoAddObjectsDialog,
-        ServiceSettingsDialog, CloseSceneDialog, CloseProjectDialog, OpenSceneDialog, OpenProjectDialog; //defined in inspector
+    public GameObject ProjectControlButtons, ConnectionControl, ActionObjectsContent, ActionObjects,
+        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
+
+    public OpenProjectDialog OpenProjectDialog;
+    public OpenSceneDialog OpenSceneDialog;
+    public CloseProjectDialog CloseProjectDialog;
+    public CloseSceneDialog CloseSceneDialog;
+    public ServiceSettingsDialog ServiceSettingsDialog;
+    public AutoAddObjectDialog AutoAddObjectDialog;
+    public AddSerivceDialog AddNewServiceDialog;
+    public AddNewObjectDialog AddNewObjectDialog;
+    public NewProjectDialog NewProjectDialog;
+    public NewSceneDialog NewSceneDialog;
 
     private GameObject debugTools;
 
@@ -21,46 +30,61 @@ public class MainMenu : MonoBehaviour {
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+        Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
+        Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
+        Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
+        Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
+        Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
+        Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+
         HideEverything();
-        DisconnectedFromServer(this, EventArgs.Empty);
+        OnOpenDisconnectedScreen(this, EventArgs.Empty);
         DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
         PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
-        if(debugTools != null)
+        if (debugTools != null)
             debugTools.SetActive(false);
     }
 
 
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
-        HideEverything();
-        switch (args.Data) {
-            case Base.GameManager.GameStateEnum.Disconnected:
-                DisconnectedFromServer(this, EventArgs.Empty);
-                break;
-            case Base.GameManager.GameStateEnum.MainScreen:
-                SetMainScreen();
-                break;
-            case Base.GameManager.GameStateEnum.SceneEditor:
-                SceneControlButtons.SetActive(true);
-                ActionObjects.SetActive(true);
-                Services.SetActive(true);
-                break;
-            case Base.GameManager.GameStateEnum.ProjectEditor:
-                ProjectControlButtons.SetActive(true);
-                ActionObjects.SetActive(false);
-                Services.SetActive(true);
-                break;
-
-
-        }
+        HideEverything();        
     }
 
+    private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectRunning &&
+            args.Data.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
+            HideEverything();
+            OnOpenProjectEditor(this, EventArgs.Empty);
+        }        
+    }
 
-    private void SetMainScreen() {
+    private void OnOpenMainScreen(object sender, EventArgs eventArgs) {
         MainControlButtons.SetActive(true);
     }
+
+    private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
+        SceneControlButtons.SetActive(true);
+        ActionObjects.SetActive(true);
+        Services.SetActive(true);
+    }
+
+    private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
+        ProjectControlButtons.SetActive(true);
+        ActionObjects.SetActive(false);
+        Services.SetActive(true);
+    }
+
+    private void OnOpenProjectRunning(object sender, EventArgs eventArgs) {
+        RunningProjectControls.SetActive(true);
+    }
+
+    private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
+        ShowConnectionControl();
+    }
+
 
     private void HideEverything() {
         ProjectControlButtons.SetActive(false);
@@ -69,6 +93,7 @@ public class MainMenu : MonoBehaviour {
         SceneControlButtons.SetActive(false);
         MainControlButtons.SetActive(false);
         Services.SetActive(false);
+        RunningProjectControls.SetActive(false);
     }
 
     private void ActionObjectsUpdated(object sender, EventArgs e) {
@@ -144,16 +169,15 @@ public class MainMenu : MonoBehaviour {
 
     }
 
-    public async void ServiceStateChanged(ServiceButton serviceButton) {
-
+    public void ServiceStateChanged(ServiceButton serviceButton) {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+            Base.Notifications.Instance.ShowNotification("Failed to update service", "Service state can only be changed in scene editor!");
+            return;
+        }
         if (!serviceButton.State) {
             ShowAddServiceDialog(serviceButton.ServiceMetadata.Type);
         } else {
             ShowServiceSettingsDialog(serviceButton);
-            /*if (!await Base.GameManager.Instance.RemoveFromScene(type)) {
-                Base.NotificationsModernUI.Instance.ShowNotification("Remove failed", "Failed to remove service from scene!");
-
-            }*/
         }
     }
 
@@ -173,53 +197,53 @@ public class MainMenu : MonoBehaviour {
 
 
     public void ShowCloseSceneDialog(string type) {
-        CloseSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        CloseSceneDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowCloseProjectDialog(string type) {
-        CloseProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        CloseProjectDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowAddObjectDialog(string type) {
-        AddNewObjectDialog.GetComponent<AddNewObjectDialog>().ObjectToBeCreated = type;
-        AddNewObjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AddNewObjectDialog.Init(type);
+        AddNewObjectDialog.WindowManager.OpenWindow();
     }
 
 
     public void ShowAutoAddObjectDialog(string type) {
-        AutoAddObjectsDialog.GetComponent<AutoAddObjectDialog>().ObjectToBeAdded = type;
-        AutoAddObjectsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AutoAddObjectDialog.ObjectToBeAdded = type;
+        AutoAddObjectDialog.WindowManager.OpenWindow();
     }
 
     public void ShowAddServiceDialog(string type) {
-        AddNewServiceDialog.GetComponent<AddSerivceDialog>().UpdateMenu(type);
-        AddNewServiceDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        AddNewServiceDialog.UpdateMenu(type);
+        AddNewServiceDialog.WindowManager.OpenWindow();
     }
 
     public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
-        ServiceSettingsDialog.GetComponent<ServiceSettings>().Type = serviceButton.ServiceMetadata.Type;
-        ServiceSettingsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        bool sceneEditor = Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor;
+        ServiceSettingsDialog.Show(serviceButton.ServiceMetadata.Type, sceneEditor);
     }
 
     public void ShowNewProjectDialog() {
-        NewProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        NewProjectDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowNewSceneDialog() {
-        NewSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        NewSceneDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowOpenProjectDialog() {
-        OpenProjectDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        OpenProjectDialog.WindowManager.OpenWindow();
 
     }
 
     public void ShowOpenSceneDialog() {
-        OpenSceneDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        OpenSceneDialog.WindowManager.OpenWindow();
 
     }
 
@@ -232,10 +256,6 @@ public class MainMenu : MonoBehaviour {
         ConnectionControl.GetComponentInChildren<Button>().interactable = true;
     }
 
-    public void ShowConnectionStatus() {
-        ConnectionStatus.SetActive(true);
-    }
-
     public void ShowDynamicContent() {
         ActionObjects.SetActive(true);
     }
@@ -246,10 +266,6 @@ public class MainMenu : MonoBehaviour {
 
     public void HideConnectionControl() {
         ConnectionControl.SetActive(false);
-    }
-
-    public void HideConnectionStatus() {
-        ConnectionStatus.SetActive(false);
     }
 
     public void HideDynamicContent() {
@@ -269,16 +285,12 @@ public class MainMenu : MonoBehaviour {
         HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
-        string s = "Connected to: " + e.Data;
-        Debug.Log(s);
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
     }
 
-    public void DisconnectedFromServer(object sender, EventArgs e) {
-        HideDynamicContent();
-        HideProjectControlButtons();
-        ShowConnectionControl();
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = "Not connected to server";
+    
+
+    public void ProjectRunning(object sender, EventArgs e) {
+
     }
 
     public string GetConnectionDomain() {
@@ -294,9 +306,6 @@ public class MainMenu : MonoBehaviour {
 
     public void ConnectingToServer(object sender, Base.StringEventArgs e) {
         ConnectionControl.GetComponentInChildren<Button>().interactable = false;
-        string s = "Connecting to server: " + e.Data;
-        ConnectionStatus.GetComponentInChildren<TMPro.TMP_Text>().text = s;
-        Debug.Log(s);
     }
 
     public async void SaveScene() {
@@ -313,10 +322,10 @@ public class MainMenu : MonoBehaviour {
         IO.Swagger.Model.SaveProjectResponse saveProjectResponse = await Base.GameManager.Instance.SaveProject();
         if (!saveProjectResponse.Result) {
             saveProjectResponse.Messages.ForEach(Debug.LogError);
-            GUIHelpers2D.Instance.ShowNotification("Failed to save project" + (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+            Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
-        Base.NotificationsModernUI.Instance.ShowNotification("Project saved successfully", "");
+        Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
 
@@ -365,4 +374,13 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
+    public void UpdateMenu() {
+        //nothing to do..
+    }
+
+    public void SetHeader(string header) {
+        //nothing to do.. yet
+    }
+
+ 
 }

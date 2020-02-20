@@ -32,7 +32,7 @@ public class ActionPoint2D : Base.ActionPoint {
     public override void OnClick(Click type) {
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu, Data.Id);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
     }
 
     public override Vector3 GetScenePosition() {
@@ -62,7 +62,7 @@ public class ActionPoint2D : Base.ActionPoint {
 
     public override void UpdatePositionsOfPucks() {
         int i = 0;
-        foreach (Puck2D action in Actions.GetComponentsInChildren<Puck2D>()) {
+        foreach (Puck2D action in Actions.Values) {
             action.transform.localPosition = new Vector3(0, i * 60, 0);
             ++i;
         }

@@ -8,7 +8,8 @@ using Michsky.UI.ModernUIPack;
 public class OpenProjectDialog : Dialog {
     public GameObject ToggleGroup;
     public GameObject TogglePrefab;
-    private void Start() {
+    public override void Start() {
+        base.Start();
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
     }
 
@@ -21,7 +22,7 @@ public class OpenProjectDialog : Dialog {
         try {
             projectName = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.OpenProject(projectName);
-            GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open project", ex.Message);
         }

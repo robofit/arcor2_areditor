@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 
-public class PuckMenu : Base.Singleton<PuckMenu> {
+public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public Base.Action CurrentPuck;
 
@@ -15,8 +15,9 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
     public GameObject DynamicContent;
     public InputField TopText;
     public Text ActionType;
+    public Button ExectuteActionBtn;
     // Start is called before the first frame update
-   
+
 
     public async void UpdateMenu(Base.Action action) {
         DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
@@ -26,7 +27,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
                 Destroy(o.gameObject);
             }
         }
-        TopText.text = action.Data.Id;
+        SetHeader(action.Data.Id);
         ActionType.text = action.Data.Type;
         List<Tuple<DropdownParameter, Base.ActionParameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Base.ActionParameter>>();
         foreach (Base.ActionParameter parameter in action.Parameters.Values) {
@@ -100,7 +101,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
             parameter.GetComponent<IActionParameter>().SetLabel(actionParameter.Id, actionParameter.ActionParameterMetadata.Description);
             return parameter;
         }
-        
+
     }
 
     private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
@@ -108,7 +109,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
             actionParameter.GetValue(out string selectedValue);
             input = InitializeDropdownParameter(actionParameter, new List<string>(), selectedValue);
-            input.GetComponent<DropdownParameter>().SetLoading(true);     
+            input.GetComponent<DropdownParameter>().SetLoading(true);
         } else {
             actionParameter.GetValue(out string value);
             input = Instantiate(ParameterInputPrefab);
@@ -116,7 +117,7 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
             input.GetComponent<LabeledInput>().SetValue(value);
             input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
                 => OnChangeParameterHandler(actionParameter.Id, newValue));
-        }      
+        }
         return input;
     }
 
@@ -193,11 +194,11 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         return InitializeDropdownParameter(actionParameter, options, selectedValue.ToString());
     }
 
-    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {        
+    private GameObject InitializePoseParameter(Base.ActionParameter actionParameter) {
         List<string> options = new List<string>();
-        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+        foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
             foreach (string poseKey in ap.GetPoses().Keys) {
-                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);               
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
             }
         }
         actionParameter.GetValue(out string selectedValue);
@@ -205,11 +206,11 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
 
-     private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {        
+    private GameObject InitializeJointsParameter(Base.ActionParameter actionParameter) {
         List<string> options = new List<string>();
-        foreach (Base.ActionPoint ap in Base.GameManager.Instance.ActionObjects.GetComponentsInChildren<Base.ActionPoint>()) {
+        foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
             foreach (string jointsId in ap.GetJoints().Keys) {
-                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);               
+                options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
             }
         }
         actionParameter.GetValue(out string selectedValue);
@@ -248,11 +249,27 @@ public class PuckMenu : Base.Singleton<PuckMenu> {
         return result;
     }
 
-   public void OnChangeParameterHandler(string parameterId, object newValue) {
+    public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
         parameter.Value = newValue;
         Base.GameManager.Instance.UpdateProject();
     }
 
+    public async void ExecuteAction() {
+        ExectuteActionBtn.interactable = false;
+        if (await Base.GameManager.Instance.ExecuteAction(CurrentPuck.Data.Id)) {
+
+        }
+        ExectuteActionBtn.interactable = true;
+     
+    }
+
+    public void UpdateMenu() {
+        UpdateMenu(CurrentPuck);
+    }
+
+    public void SetHeader(string header) {
+        TopText.text = header;
+    }
 }

@@ -1,18 +1,24 @@
 using UnityEngine;
 using System.Collections.Generic;
-
+using System.Linq;
+using System;
 
 namespace Base {
     public abstract class ActionPoint : Clickable {
+
+        // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
+        public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
+        public GameObject ActionsSpawn;
+
         public ActionObject ActionObject;
-        public GameObject Actions;
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
+        // TODO: rename (Connection to action object)
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position());         
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -21,10 +27,29 @@ namespace Base {
             }
         }
 
-        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ActionPoint apData = null) {
-            SetActionObject(actionObject);
+        public void ActionPointUpdate(IO.Swagger.Model.ProjectActionPoint apData = null) {
             if (apData != null)
                 Data = apData;
+            // update position and rotation based on received data from swagger
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
+        }
+        
+        public virtual void UpdateId(string newId, bool updateProject = true) {
+            Data.Id = newId;
+
+            if (updateProject)
+                GameManager.Instance.UpdateProject();
+        }
+
+        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData = null) {
+            SetActionObject(actionObject);
+            if (apData != null) {
+                Data = apData;
+            } else {
+                Data.Uuid = Guid.NewGuid().ToString();
+            }
+               
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
             if (Data.RobotJoints.Count == 0)
@@ -62,13 +87,17 @@ namespace Base {
         }
 
         public void DeleteAP(bool updateProject = true) {
-            foreach (Action action in GetComponentsInChildren<Action>()) {
-                action.DeleteAction(false);
-            }
+            // Remove all actions of this action point
+            RemoveActions(false);
+
+            // TODO: remove connections to action objects
             if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
                 Destroy(ConnectionToIO.gameObject);
             }
-            gameObject.SetActive(false);
+
+            // Remove this ActionPoint reference from parent ActionObject list
+            ActionObject.ActionPoints.Remove(this.Data.Uuid);
+
             Destroy(gameObject);
 
             if (updateProject)
@@ -76,7 +105,7 @@ namespace Base {
         }
 
         public virtual bool ProjectInteractable() {
-            return GameManager.Instance.GameState == GameManager.GameStateEnum.ProjectEditor;
+            return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor;
         }
 
         public abstract Vector3 GetScenePosition();
@@ -86,6 +115,18 @@ namespace Base {
 
         public abstract void SetSceneOrientation(Quaternion orientation);
 
+
+        public void RemoveActions(bool updateProject) {
+            // Remove all actions of this action point
+            foreach (string actionUUID in Actions.Keys.ToList<string>()) {
+                RemoveAction(actionUUID, updateProject);
+            }
+            Actions.Clear();
+        }
+
+        public void RemoveAction(string uuid, bool updateProject) {
+            Actions[uuid].DeleteAction(updateProject);
+        }
     }
 
 }

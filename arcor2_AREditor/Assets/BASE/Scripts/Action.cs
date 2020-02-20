@@ -6,15 +6,24 @@ using System.Threading.Tasks;
 
 namespace Base {
     public abstract class Action : Clickable {
+        // Metadata of this Action
         private ActionMetadata metadata;
+        // Dictionary of all action parameters for this Action
         private Dictionary<string, ActionParameter> parameters = new Dictionary<string, ActionParameter>();
+        
         public PuckInput Input;
         public PuckOutput Output;
+
+        public GameObject InputArrow, OutputArrow;
         public IActionProvider ActionProvider;
 
-        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
-        public async Task Init(string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
+        public ActionPoint ActionPoint;
 
+        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "", "");
+
+        public async Task Init(string uuid, string id, ActionMetadata metadata, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true) {
+
+            ActionPoint = ap;
             this.metadata = metadata;
             this.ActionProvider = actionProvider;
 
@@ -87,13 +96,19 @@ namespace Base {
                     }
                     parentCount += 1;
                 }
+
+                Data.Uuid = uuid;
             }
 
-            
+            if (!GameManager.Instance.CurrentProject.HasLogic) {
+                InputArrow.gameObject.SetActive(false);
+                OutputArrow.gameObject.SetActive(false);
+            }
+
 
             UpdateId(id, false);
+            //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
-
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
@@ -102,16 +117,28 @@ namespace Base {
 
         }
 
-
+        public virtual void ActionUpdate(IO.Swagger.Model.Action aData = null) {
+            if (aData != null)
+                Data = aData;
+        }
 
         public void UpdateType() {
             Data.Type = GetActionType();
-        }
-
-        
+        }        
 
         public virtual void UpdateId(string newId, bool updateProject = true) {
             Data.Id = newId;
+
+            // update changed IDs in connected actions
+            Action actionOnInput = Scene.Instance.GetActionById(Input.Data.Default);
+            if (actionOnInput != null) {
+                actionOnInput.Output.Data.Default = newId;
+            }
+            Action actionOnOutput = Scene.Instance.GetActionById(Output.Data.Default);
+            if (actionOnOutput != null) {
+                actionOnOutput.Input.Data.Default = newId;
+            }
+
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }
@@ -121,12 +148,27 @@ namespace Base {
         }
 
         public void DeleteAction(bool updateProject = true) {
-            foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
-                if (io.Connection != null)
-                    Destroy(io.Connection.gameObject);
+            // Delete connection on input and set the gameobject that was connected through its output to the "end" value.
+            if (Input.Connection != null) {
+                InputOutput connectedActionIO = Input.Connection.target[0].GetComponent<InputOutput>();
+                connectedActionIO.Data.Default = "end";
+                // Remove the reference in connections manager.
+                ConnectionManagerArcoro.Instance.Connections.Remove(Input.Connection);
+                Destroy(Input.Connection.gameObject);
             }
-            gameObject.SetActive(false);
+            // Delete connection on output and set the gameobject that was connected through its input to the "start" value.
+            if (Output.Connection != null) {
+                InputOutput connectedActionIO = Output.Connection.target[1].GetComponent<InputOutput>();
+                connectedActionIO.Data.Default = "start";
+                // Remove the reference in connections manager.
+                ConnectionManagerArcoro.Instance.Connections.Remove(Output.Connection);
+                Destroy(Output.Connection.gameObject);
+            }
+
             Destroy(gameObject);
+
+            ActionPoint.Actions.Remove(Data.Uuid);
+
             if (updateProject)
                 GameManager.Instance.UpdateProject();
         }

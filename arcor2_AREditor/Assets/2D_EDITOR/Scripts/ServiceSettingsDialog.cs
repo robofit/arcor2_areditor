@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.UI;
 
-public class ServiceSettings : MonoBehaviour
+public class ServiceSettingsDialog : Dialog
 {
     private string type;
-    public GameObject ServiceName, ConfigID; // set in inspector
+    public TMPro.TMP_Text ServiceName, ConfigID; // set in inspector
+    public Button RemoveButton;
 
     public string Type {
         get => type;
@@ -14,10 +16,20 @@ public class ServiceSettings : MonoBehaviour
             type = value;
             Base.Service sceneService;
             sceneService = Base.ActionsManager.Instance.GetService(type);
-            ServiceName.GetComponent<TMPro.TMP_Text>().text = "Service name: " + sceneService.Data.Type;
-            ConfigID.GetComponent<TMPro.TMP_Text>().text = "Configuration ID: " + sceneService.Data.ConfigurationId; // only first one, for now
+            ServiceName.text = "Service name: " + sceneService.Data.Type;
+            ConfigID.text = "Configuration ID: " + sceneService.Data.ConfigurationId; // only first one, for now
             
          }
+    }
+
+    public void Show(string type, bool showRemove) {
+        Type = type;
+        if (showRemove) {
+            RemoveButton.gameObject.SetActive(true);
+        } else {
+            RemoveButton.gameObject.SetActive(false);
+        }
+        WindowManager.OpenWindow();
     }
 
     public async void RemoveService() {
@@ -25,7 +37,7 @@ public class ServiceSettings : MonoBehaviour
         if (!response.Result) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove service " + type, response.Messages[0]);
         } else {
-            gameObject.GetComponent<ModalWindowManager>().CloseWindow();
+            WindowManager.CloseWindow();
         }
     }
 }

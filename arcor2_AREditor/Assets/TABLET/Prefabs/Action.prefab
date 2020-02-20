@@ -161,6 +161,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -428,6 +429,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -526,6 +528,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Input: {fileID: 4512397415820150178}
   Output: {fileID: 6585983383530919065}
+  InputArrow: {fileID: 415263692387985219}
+  OutputArrow: {fileID: 2807976569739690693}
+  ActionPoint: {fileID: 0}
   NameText: {fileID: 3829416011926610468}
 --- !u!1 &6417292781798665001
 GameObject:
@@ -568,11 +573,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3267596979025425762}
     m_Modifications:
-    - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
-        type: 3}
-      propertyPath: m_Name
-      value: OutputArrow
-      objectReference: {fileID: 0}
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -643,6 +643,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.05
       objectReference: {fileID: 0}
+    - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
+        type: 3}
+      propertyPath: m_Name
+      value: OutputArrow
+      objectReference: {fileID: 0}
     - target: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -669,11 +674,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3267596979025425762}
     m_Modifications:
-    - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
-        type: 3}
-      propertyPath: m_Name
-      value: InputArrow
-      objectReference: {fileID: 0}
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -743,6 +743,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalScale.z
       value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
+        type: 3}
+      propertyPath: m_Name
+      value: InputArrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
