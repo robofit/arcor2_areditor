@@ -87,6 +87,8 @@ namespace Base {
 
         public TMPro.TMP_Text ConnectionInfo, MessageBox, EditorInfo;
 
+        public GameObject LandingScreen, MainScreen;
+
         public Image GizmoOverlay;
 
         public bool SceneInteractable {
@@ -214,6 +216,9 @@ namespace Base {
             LoadingScreen.SetActive(false);
         }
 
+        private void Init() {
+
+        }
 
         public async void ConnectToSever(string domain, int port) {
             StartLoading();
