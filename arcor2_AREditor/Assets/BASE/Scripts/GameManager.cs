@@ -87,8 +87,6 @@ namespace Base {
 
         public TMPro.TMP_Text ConnectionInfo, MessageBox, EditorInfo;
 
-        public GameObject LandingScreen, MainScreen;
-
         public Image GizmoOverlay;
 
         public bool SceneInteractable {
