@@ -151,15 +151,12 @@ namespace Base {
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
-        // Update is called once per frame
-        private void Update() {
-           
-        }
 
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    
                     if (!await CheckVersions()) {
                         DisconnectFromSever();
                         EndLoading();
@@ -201,7 +198,7 @@ namespace Base {
                     ProjectUpdated(null);
                     SceneUpdated(null);
                     Scene.Instance.gameObject.SetActive(false);
-                    ActionsManager.Instance.Clear();
+                    Init();
                     break;
             }
         }

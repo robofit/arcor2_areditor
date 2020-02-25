@@ -101,9 +101,7 @@ namespace Base {
         private async void Update() {
             if (clientWebSocket == null)
                 return;
-            if (clientWebSocket.State == WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Disconnected) {
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            } else if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
+            if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             }
 
