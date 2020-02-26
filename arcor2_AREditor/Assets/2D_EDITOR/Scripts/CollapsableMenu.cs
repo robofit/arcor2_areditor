@@ -9,8 +9,10 @@ public class CollapsableMenu : MonoBehaviour
     [SerializeField]
     private bool collapsed;
     public GameObject CollapseButton, Content;
+    [SerializeField]
+    private TMPro.TMP_Text text;
 
-    private string downArrow = " ▼", rightArrow = " ►";
+    private string downArrow = " - ", rightArrow = " + ";
 
     public bool Collapsed {
         get => collapsed;
@@ -31,9 +33,9 @@ public class CollapsableMenu : MonoBehaviour
         collapsed = state;
         Content.SetActive(!state);
         if (Collapsed) {
-            CollapseButton.GetComponentInChildren<Text>().text = rightArrow + " " + Name;
+            text.text = rightArrow + Name;
         } else {
-            CollapseButton.GetComponentInChildren<Text>().text = downArrow + " " + Name;
+            text.text = downArrow + Name;
         }
     }
 

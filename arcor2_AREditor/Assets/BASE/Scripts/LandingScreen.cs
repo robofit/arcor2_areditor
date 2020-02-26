@@ -34,10 +34,11 @@ public class LandingScreen : MonoBehaviour
 
     private void ConnectedToServer(object sender, EventArgs args) {
         CanvasGroup.alpha = 0;
+        CanvasGroup.blocksRaycasts = false;
     }
 
     private void DisconnectedFromServer(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
-        PlayerPrefs.SetInt("arserver_keep_connected", 0);
+        CanvasGroup.blocksRaycasts = true;
     }
 }

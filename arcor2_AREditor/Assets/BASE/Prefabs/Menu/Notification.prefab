@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 1.25, y: -20}
-  m_SizeDelta: {x: -32.5, y: -70}
+  m_AnchoredPosition: {x: 1.25, y: -34.4}
+  m_SizeDelta: {x: -32.5, y: -98.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7813841756834291696
 CanvasRenderer:
@@ -92,10 +92,10 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 67.85
+  m_fontSizeBase: 18
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -130,7 +130,7 @@ MonoBehaviour:
   m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -2, z: 0, w: 0}
+  m_margin: {x: 0, y: -0.5588379, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 7813841756834291697}
     characterCount: 30
@@ -190,8 +190,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 20, y: -30}
-  m_SizeDelta: {x: -70, y: 25}
+  m_AnchoredPosition: {x: 36.1, y: -43.7}
+  m_SizeDelta: {x: -102.1, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7813841756978281447
 CanvasRenderer:
@@ -248,10 +248,10 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 22.5
+  m_fontSize: 37.45
   m_fontSizeBase: 22.5
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -265,7 +265,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: 0
+  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -286,7 +286,7 @@ MonoBehaviour:
   m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 1}
+  m_margin: {x: -0.13696289, y: 0, z: 0, w: 1}
   m_textInfo:
     textComponent: {fileID: 7813841756978281444}
     characterCount: 23
@@ -419,8 +419,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 30, y: -30}
-  m_SizeDelta: {x: 25, y: 25}
+  m_AnchoredPosition: {x: 43.7, y: -43.679}
+  m_SizeDelta: {x: 52.4, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7813841757425455899
 CanvasRenderer:
@@ -574,7 +574,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -50, y: -50}
-  m_SizeDelta: {x: 400, y: 90}
+  m_SizeDelta: {x: 953.2, y: 214.5}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &7813841757805299984
 CanvasRenderer:
@@ -592,7 +592,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7813841757805299989}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -627,6 +627,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b4bbdcf873a4164eabf85f0d7820717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  icon: {fileID: 0}
+  title: Notification Title
+  description: Notification description
+  enableTimer: 1
+  timer: 3
+  useCustomContent: 0
+  notificationStyle: 0
 --- !u!114 &7813841757805299988
 MonoBehaviour:
   m_ObjectHideFlags: 0
