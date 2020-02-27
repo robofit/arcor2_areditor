@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace Base {
     public class ActionParameter : IO.Swagger.Model.ActionParameter {
@@ -21,6 +24,49 @@ namespace Base {
             Action = action;
             if (actionParameter != null) {
                 Value = actionParameter.Value;
+            } else {
+                switch (Type) {
+                    case "relative_pose":
+                        SetValue(Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", ""));
+                        break;
+                    case "integer_enum":
+                        SetValue(actionParameterMetadata.AllowedValues[0]);
+                        break;
+                    case "string_enum":
+                        SetValue(actionParameter.Value = (string) actionParameterMetadata.AllowedValues[0]);
+                        break;
+                    case "pose":
+                        List<string> poses = new List<string>(action.ActionPoint.GetPoses().Keys);
+                        if (poses.Count == 0) {
+                            SetValue("");
+                            //TODO: where to get valid ID?
+                        } else {
+                            SetValue(action.ActionPoint.ActionObject.Data.Id + "." + action.ActionPoint.Data.Id + "." + poses[0]);
+                        }
+                        break;
+                    case "joints":
+                        List<string> joints = new List<string>(action.ActionPoint.GetJoints().Keys);
+                        if (joints.Count == 0) {
+                            SetValue("");
+                            //TODO: where to get valid ID?
+                        } else {
+                            SetValue(action.ActionPoint.ActionObject.Data.Id + "." + action.ActionPoint.Data.Id + "." + joints[0]);
+                        }
+                        break;
+                    case "int":
+                        SetValue(0);
+                        break;
+                    case "double":
+                        SetValue(0d);
+                        break;
+                    case "string":
+                        SetValue("");
+                        break;
+                    default:
+                        //actionParameter.Value = actionParameterMetadata.DefaultValue;
+                        break;
+
+                }
             }
         }
 
@@ -28,10 +74,10 @@ namespace Base {
             Value = actionParameter.Value;
         }
 
-        public ActionParameter(object value, IO.Swagger.Model.ActionParameterMeta actionParameterMetadata) {
-            Value = value;
+        /*public ActionParameter(object value, IO.Swagger.Model.ActionParameterMeta actionParameterMetadata) {
+            //Value = value;
             ActionParameterMetadata = actionParameterMetadata;
-        }
+        }*/
 
         public async Task<List<string>> LoadDynamicValues(List<IO.Swagger.Model.IdValue> parentParams) {
             if (!ActionParameterMetadata.DynamicValue) {
@@ -40,38 +86,12 @@ namespace Base {
             return await GameManager.Instance.GetActionParamValues(Action.ActionProvider.GetProviderName(), ActionParameterMetadata.Name, parentParams);
         }
 
-        public void GetValue(out string value, string def = "") {
-            try {
-                value = (string) Value;
-            } catch (NullReferenceException e) {
-                value = def;
-            }
+        public T GetValue<T>() {            
+            return JsonConvert.DeserializeObject<T>(Value);
         }
 
-        public void GetValue(out long value, long def = 0) {
-            try {
-                value = (long) Value;
-            } catch (NullReferenceException e) {
-                value = def;
-            }
-        }
-
-        public void GetValue(out bool value, bool def = false) {
-            try {
-
-                value = (bool) Value;
-            } catch (NullReferenceException e) {
-                value = def;
-            }
-        }
-
-        public void GetValue(out double value, double def = 0) {
-            try {
-
-                value = (double) Value;
-            } catch (Exception ex) when (ex is NullReferenceException || ex is InvalidCastException) {
-                value = def;
-            }
+        public void SetValue(object newValue) {
+            Value = JsonConvert.SerializeObject(newValue);
         }
     }
 
