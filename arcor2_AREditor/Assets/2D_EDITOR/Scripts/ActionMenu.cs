@@ -107,11 +107,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
         GameObject input;
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
-            actionParameter.GetValue(out string selectedValue);
+            string selectedValue = actionParameter.GetValue<string>();
             input = InitializeDropdownParameter(actionParameter, new List<string>(), selectedValue);
             input.GetComponent<DropdownParameter>().SetLoading(true);
         } else {
-            actionParameter.GetValue(out string value);
+            string value =  actionParameter.GetValue<string>();
             input = Instantiate(ParameterInputPrefab);
             input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
             input.GetComponent<LabeledInput>().SetValue(value);
@@ -177,7 +177,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
-        actionParameter.GetValue(out string selectedValue);
+        string selectedValue = actionParameter.GetValue<string>();
         List<string> data = new List<string>();
         foreach (string item in actionParameter.ActionParameterMetadata.AllowedValues)
             data.Add(item);
@@ -189,7 +189,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         foreach (int item in actionParameter.ActionParameterMetadata.AllowedValues) {
             options.Add(item.ToString());
         }
-        actionParameter.GetValue(out long selectedValue);
+        int selectedValue = actionParameter.GetValue<int>();
 
         return InitializeDropdownParameter(actionParameter, options, selectedValue.ToString());
     }
@@ -201,7 +201,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
             }
         }
-        actionParameter.GetValue(out string selectedValue);
+        
+        string selectedValue = actionParameter.GetValue<string>();
 
         return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
@@ -213,13 +214,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
             }
         }
-        actionParameter.GetValue(out string selectedValue);
+        string selectedValue = actionParameter.GetValue<string>();
         return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
 
     private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {
         GameObject input = Instantiate(ParameterInputPrefab);
-        actionParameter.GetValue(out long value);
+        int value = actionParameter.GetValue<int>();
         input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.IntegerNumber);
         input.GetComponent<LabeledInput>().Input.text = value.ToString();
         input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
@@ -230,7 +231,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     private GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
         GameObject input = Instantiate(ParameterInputPrefab);
         input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.DecimalNumber);
-        actionParameter.GetValue(out double value);
+        double value = actionParameter.GetValue<double>();
         input.GetComponent<LabeledInput>().Input.text = value.ToString();
         input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
             => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, ParseDouble(newValue)));
@@ -252,7 +253,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        parameter.Value = newValue;
+        parameter.SetValue(newValue);
         Base.GameManager.Instance.UpdateProject();
     }
 
