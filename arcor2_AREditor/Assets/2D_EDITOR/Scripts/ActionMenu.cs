@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
+using Newtonsoft.Json;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
@@ -72,8 +73,10 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
             case "string":
+                 parameter = InitializeStringParameter(actionParameter);
+                break;
             case "relative_pose":
-                parameter = await InitializeStringParameter(actionParameter);
+                parameter = InitializeRelativePoseParameter(actionParameter);
                 break;
             case "pose":
                 parameter = InitializePoseParameter(actionParameter);
@@ -104,7 +107,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     }
 
-    private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
+    private GameObject InitializeStringParameter(Base.ActionParameter actionParameter) {
         GameObject input;
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
             string selectedValue = actionParameter.GetValue<string>();
@@ -121,6 +124,19 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         return input;
     }
 
+    private GameObject InitializeRelativePoseParameter(Base.ActionParameter actionParameter) {
+        GameObject input;
+        
+        IO.Swagger.Model.Pose value = actionParameter.GetValue<IO.Swagger.Model.Pose>();
+        input = Instantiate(ParameterInputPrefab);
+        input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
+        input.GetComponent<LabeledInput>().SetValue(JsonConvert.SerializeObject(value));
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(actionParameter.Id, JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue)));
+        
+        return input;
+    }
+
     private async Task LoadDropdownValues(DropdownParameter dropdownParameter, Base.ActionParameter actionParameter, UnityAction callback = null) {
         List<string> values = new List<string>();
         List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
@@ -131,7 +147,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 AddOnChangeToDropdownParameter(parent_param, callback);
         }
         values = await actionParameter.LoadDynamicValues(args);
-        DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
+        DropdownParameterPutData(dropdownParameter, values, actionParameter.GetValue<string>(), actionParameter.ActionParameterMetadata.Name);
     }
 
     private string GetDropdownParamValue(string param_id) {
@@ -179,14 +195,14 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
         string selectedValue = actionParameter.GetValue<string>();
         List<string> data = new List<string>();
-        foreach (string item in actionParameter.ActionParameterMetadata.AllowedValues)
+        foreach (string item in ((ARServer.Models.StringEnumParameterExtra) actionParameter.ActionParameterMetadata.ParameterExtra).AllowedValues)
             data.Add(item);
         return InitializeDropdownParameter(actionParameter, data, selectedValue);
     }
 
     private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
         List<string> options = new List<string>();
-        foreach (int item in actionParameter.ActionParameterMetadata.AllowedValues) {
+        foreach (int item in ((ARServer.Models.IntegerEnumParameterExtra) actionParameter.ActionParameterMetadata.ParameterExtra).AllowedValues) {
             options.Add(item.ToString());
         }
         int selectedValue = actionParameter.GetValue<int>();

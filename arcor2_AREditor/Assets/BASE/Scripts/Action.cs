@@ -59,9 +59,9 @@ namespace Base {
                                 }
                                 List<string> values = await actionParameter.LoadDynamicValues(args);
                                 if (values.Count > 0) {
-                                    actionParameter.Value = values[0];
+                                    actionParameter.SetValue(values[0]);
                                 } else {
-                                    actionParameter.Value = "";
+                                    actionParameter.SetValue("");
                                 }
                             } catch (Exception ex) when (ex is ItemNotFoundException || ex is Base.RequestFailedException) {
                                 Debug.LogError(ex);
