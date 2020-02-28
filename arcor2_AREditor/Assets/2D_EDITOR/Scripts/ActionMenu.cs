@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
+using Newtonsoft.Json;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
@@ -72,8 +73,10 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         GameObject parameter = null;
         switch (actionParameter.ActionParameterMetadata.Type) {
             case "string":
+                 parameter = InitializeStringParameter(actionParameter);
+                break;
             case "relative_pose":
-                parameter = await InitializeStringParameter(actionParameter);
+                parameter = InitializeRelativePoseParameter(actionParameter);
                 break;
             case "pose":
                 parameter = InitializePoseParameter(actionParameter);
@@ -104,20 +107,33 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     }
 
-    private async Task<GameObject> InitializeStringParameter(Base.ActionParameter actionParameter) {
+    private GameObject InitializeStringParameter(Base.ActionParameter actionParameter) {
         GameObject input;
         if (actionParameter.ActionParameterMetadata.DynamicValue) {
-            actionParameter.GetValue(out string selectedValue);
+            string selectedValue = actionParameter.GetValue<string>();
             input = InitializeDropdownParameter(actionParameter, new List<string>(), selectedValue);
             input.GetComponent<DropdownParameter>().SetLoading(true);
         } else {
-            actionParameter.GetValue(out string value);
+            string value =  actionParameter.GetValue<string>();
             input = Instantiate(ParameterInputPrefab);
             input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
             input.GetComponent<LabeledInput>().SetValue(value);
             input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
                 => OnChangeParameterHandler(actionParameter.Id, newValue));
         }
+        return input;
+    }
+
+    private GameObject InitializeRelativePoseParameter(Base.ActionParameter actionParameter) {
+        GameObject input;
+        
+        IO.Swagger.Model.Pose value = actionParameter.GetValue<IO.Swagger.Model.Pose>();
+        input = Instantiate(ParameterInputPrefab);
+        input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.Standard);
+        input.GetComponent<LabeledInput>().SetValue(JsonConvert.SerializeObject(value));
+        input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            => OnChangeParameterHandler(actionParameter.Id, JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue)));
+        
         return input;
     }
 
@@ -131,7 +147,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 AddOnChangeToDropdownParameter(parent_param, callback);
         }
         values = await actionParameter.LoadDynamicValues(args);
-        DropdownParameterPutData(dropdownParameter, values, (string) actionParameter.Value, actionParameter.ActionParameterMetadata.Name);
+        DropdownParameterPutData(dropdownParameter, values, actionParameter.GetValue<string>(), actionParameter.ActionParameterMetadata.Name);
     }
 
     private string GetDropdownParamValue(string param_id) {
@@ -177,19 +193,19 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     private GameObject InitializeStringEnumParameter(Base.ActionParameter actionParameter) {
-        actionParameter.GetValue(out string selectedValue);
+        string selectedValue = actionParameter.GetValue<string>();
         List<string> data = new List<string>();
-        foreach (string item in actionParameter.ActionParameterMetadata.AllowedValues)
+        foreach (string item in ((ARServer.Models.StringEnumParameterExtra) actionParameter.ActionParameterMetadata.ParameterExtra).AllowedValues)
             data.Add(item);
         return InitializeDropdownParameter(actionParameter, data, selectedValue);
     }
 
     private GameObject InitializeIntegerEnumParameter(Base.ActionParameter actionParameter) {
         List<string> options = new List<string>();
-        foreach (int item in actionParameter.ActionParameterMetadata.AllowedValues) {
+        foreach (int item in ((ARServer.Models.IntegerEnumParameterExtra) actionParameter.ActionParameterMetadata.ParameterExtra).AllowedValues) {
             options.Add(item.ToString());
         }
-        actionParameter.GetValue(out long selectedValue);
+        int selectedValue = actionParameter.GetValue<int>();
 
         return InitializeDropdownParameter(actionParameter, options, selectedValue.ToString());
     }
@@ -201,7 +217,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
             }
         }
-        actionParameter.GetValue(out string selectedValue);
+        
+        string selectedValue = actionParameter.GetValue<string>();
 
         return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
@@ -213,13 +230,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
             }
         }
-        actionParameter.GetValue(out string selectedValue);
+        string selectedValue = actionParameter.GetValue<string>();
         return InitializeDropdownParameter(actionParameter, options, selectedValue);
     }
 
     private GameObject InitializeIntegerParameter(Base.ActionParameter actionParameter) {
         GameObject input = Instantiate(ParameterInputPrefab);
-        actionParameter.GetValue(out long value);
+        int value = actionParameter.GetValue<int>();
         input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.IntegerNumber);
         input.GetComponent<LabeledInput>().Input.text = value.ToString();
         input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
@@ -230,7 +247,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     private GameObject InitializeDoubleParameter(Base.ActionParameter actionParameter) {
         GameObject input = Instantiate(ParameterInputPrefab);
         input.GetComponent<LabeledInput>().SetType(TMPro.TMP_InputField.ContentType.DecimalNumber);
-        actionParameter.GetValue(out double value);
+        double value = actionParameter.GetValue<double>();
         input.GetComponent<LabeledInput>().Input.text = value.ToString();
         input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
             => OnChangeParameterHandler(actionParameter.ActionParameterMetadata.Name, ParseDouble(newValue)));
@@ -252,7 +269,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public void OnChangeParameterHandler(string parameterId, object newValue) {
         if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
-        parameter.Value = newValue;
+        parameter.SetValue(newValue);
         Base.GameManager.Instance.UpdateProject();
     }
 

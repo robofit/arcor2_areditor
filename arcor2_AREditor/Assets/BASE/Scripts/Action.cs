@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Text.RegularExpressions;
 using System;
 using System.Threading.Tasks;
 
@@ -32,30 +31,7 @@ namespace Base {
                 foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMetadata in this.metadata.Parameters) {
                     
                     ActionParameter actionParameter = new ActionParameter(actionParameterMetadata, this);
-                    switch (actionParameter.Type) {
-                        case "relative_pose":
-                            actionParameter.Value = Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", "");
-                            break;
-                        case "integer_enum":
-                            actionParameter.Value = (int) actionParameterMetadata.AllowedValues[0];
-                            break;
-                        case "string_enum":
-                            actionParameter.Value = (string) actionParameterMetadata.AllowedValues[0];
-                            break;
-                        case "pose":
-                            List<string> poses = new List<string>(ap.GetPoses().Keys);
-                            if (poses.Count == 0) {
-                                actionParameter.Value = "";
-                                //TODO: where to get valid ID?
-                            } else {
-                                actionParameter.Value = (string) ap.ActionObject.Data.Id + "." + ap.Data.Id + "." + poses[0];
-                            }
-                            break;
-                        default:
-                            actionParameter.Value = actionParameterMetadata.DefaultValue;
-                            break;
-
-                    }
+                    
                     if (actionParameterMetadata.DynamicValue) {
                         dynamicParameters.Add(actionParameter);
                     }
@@ -75,7 +51,7 @@ namespace Base {
                                 foreach (string parent in actionParameter.ActionParameterMetadata.DynamicValueParents) {
                                     string paramValue = "";
                                     if (parameters.TryGetValue(parent, out ActionParameter parameter)) {
-                                        parameter.GetValue(out paramValue);
+                                        paramValue = parameter.GetValue<string>();
                                     } else {
                                         //TODO raise exception
                                     }
@@ -83,9 +59,9 @@ namespace Base {
                                 }
                                 List<string> values = await actionParameter.LoadDynamicValues(args);
                                 if (values.Count > 0) {
-                                    actionParameter.Value = values[0];
+                                    actionParameter.SetValue(values[0]);
                                 } else {
-                                    actionParameter.Value = "";
+                                    actionParameter.SetValue("");
                                 }
                             } catch (Exception ex) when (ex is ItemNotFoundException || ex is Base.RequestFailedException) {
                                 Debug.LogError(ex);

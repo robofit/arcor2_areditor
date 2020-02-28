@@ -1,30 +1,28 @@
+using Newtonsoft.Json;
 
 namespace Base {
-    public class ActionParameterMetadatas : IO.Swagger.Model.ActionParameterMeta {
-        private string name;
-        private string type;
-        private object defaultValue;
+    public class ActionParameterMetadata : IO.Swagger.Model.ActionParameterMeta {
 
-        
+        public ARServer.Models.BaseParameterExtra ParameterExtra;
 
-        public ActionParameterMetadatas(string name, string type, object defaultValue) {
-            this.name = name;
-            this.type = type;
-            this.defaultValue = defaultValue;
+        public ActionParameterMetadata(IO.Swagger.Model.ActionParameterMeta actionParameterMeta): base(actionParameterMeta.DefaultValue, actionParameterMeta.Description, actionParameterMeta.DynamicValue,
+            actionParameterMeta.DynamicValueParents, actionParameterMeta.Extra, actionParameterMeta.Name, actionParameterMeta.Type) {
+            switch (Type) {
+                case "string_enum":
+                    ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.StringEnumParameterExtra>(Extra);
+                    break;
+                case "integer_enum":
+                    ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntegerEnumParameterExtra>(Extra);
+                    break;
+                case "int":
+                    ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntParameterExtra>(Extra);
+                    break;
+                case "double":
+                    ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.DoubleParameterExtra>(Extra);
+                    break;
+            }
         }
 
-      
-
-
-        public string Name {
-            get => name; set => name = value;
-        }
-        public string Type {
-            get => type; set => type = value;
-        }
-        public object DefaultValue {
-            get => defaultValue; set => defaultValue = value;
-        }
     }
 
 }

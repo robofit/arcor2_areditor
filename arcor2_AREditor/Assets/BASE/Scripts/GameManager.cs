@@ -79,7 +79,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.2.0";
+        public const string ApiVersion = "0.3.0";
         public const string ServerVersion = "0.2.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
@@ -602,40 +602,34 @@ namespace Base {
         }
 
         public int GetMajorVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
+            Debug.Assert(versionString.Split('.').Length == 3);
             return int.Parse(versionString.Split('.')[0]);
         }
 
         public int GetMinorVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
+            Debug.Assert(versionString.Split('.').Length == 3);
             return int.Parse(versionString.Split('.')[1]);
         }
 
         public int GetPatchVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
+            Debug.Assert(versionString.Split('.').Length == 3);
             return int.Parse(versionString.Split('.')[2]);
         }
 
         public async Task<bool> CheckVersions() {
             IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-            if (systemInfo.ApiVersion == ApiVersion && systemInfo.Version == ServerVersion)
+            if (systemInfo.ApiVersion == ApiVersion)
                 return true;
             if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion)) {
                 Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
                 return false;
             }
-            if (GetMajorVersion(systemInfo.Version) != GetMajorVersion(ServerVersion)) {
-                Notifications.Instance.ShowNotification("Incompatibile editor and server versions", "Editor version: " + ApiVersion + ", server version: " + systemInfo.ApiVersion);
-                return false;
-            }
+            
             if (GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion) || GetPatchVersion(systemInfo.ApiVersion) != GetPatchVersion(ApiVersion)) {
                 Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problem, you have been warned.");
                 return true;
             }
-            if (GetMinorVersion(systemInfo.Version) != GetMinorVersion(ServerVersion) || GetPatchVersion(systemInfo.Version) != GetPatchVersion(ServerVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor version: " + ServerVersion + ", server version: " + systemInfo.Version + ". It can casuse problem, you have been warned.");
-                return true;
-            }
+            
             return false;
         }
 
