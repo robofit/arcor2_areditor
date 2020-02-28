@@ -58,6 +58,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void PutData(List<string> data, string selectedItem, UnityAction callback) {
         Dropdown.dropdownItems.Clear();
+
         foreach (string d in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = d
