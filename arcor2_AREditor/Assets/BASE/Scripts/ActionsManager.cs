@@ -42,6 +42,12 @@ namespace Base {
 
         private void Start() {
             GameManager.Instance.OnSceneChanged += SceneChanged;
+            GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+
+        }
+        
+        private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
+            Init();
         }
 
         private void Update() {
@@ -65,7 +71,7 @@ namespace Base {
             }
         }
 
-        public void Clear() {
+        public void Init() {
             servicesData.Clear();
             servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
