@@ -23,7 +23,8 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (menu == null)
             return;
         HideAllMenus();
-        menu.GetComponent<SimpleSideMenu>().Open();
+        menu.Open();
+        menu.gameObject.GetComponent<IMenu>().UpdateMenu();
         MenuOpened = menu;
     }
 

@@ -12,6 +12,14 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     public CustomDropdown Dropdown;
     public GameObject Items, LoadingObject;
     public bool Loading;
+    public VerticalLayoutGroup LayoutGroupToBeDisabled;
+    public GameObject Trigger, CanvasRoot;
+
+    private void Start() {
+        if (CanvasRoot != null)
+            Dropdown.listParent = CanvasRoot.transform;
+        enabled = false;
+    }
 
     public void SetLoading(bool loading) {
         this.Loading = loading;
@@ -41,19 +49,24 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         Label.GetComponent<TooltipContent>().description = description;
     }
 
-    public void Init() {
-        Dropdown.listParent = transform.parent;
+    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+        
+        Dropdown.listParent = canvasRoot.transform;
+        CanvasRoot = canvasRoot;
+        
+        LayoutGroupToBeDisabled = layoutGroupToBeDisabled;
+       
         this.Loading = false;
     }
 
     public void OnClick() {
-        transform.parent.GetComponent<VerticalLayoutGroup>().enabled = false;
-        GetComponent<HorizontalLayoutGroup>().enabled = false;
-
+        gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
+        LayoutGroupToBeDisabled.enabled = false;
+        enabled = true;
     }
 
     public void DisableLayoutSelf() {
-        GetComponent<HorizontalLayoutGroup>().enabled = false;
+        gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
     }
 
     public void PutData(List<string> data, string selectedItem, UnityAction callback) {
@@ -83,6 +96,13 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         }
         
        
+    }
+
+    private void Update() {
+        if (!Trigger.activeSelf) {
+            LayoutGroupToBeDisabled.enabled = true;
+            enabled = false;
+        }
     }
 
 }

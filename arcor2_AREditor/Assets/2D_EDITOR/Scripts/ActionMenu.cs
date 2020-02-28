@@ -17,6 +17,9 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public TMPro.TMP_InputField TopText;
     public TMPro.TMP_Text ActionType;
     public Button ExectuteActionBtn;
+
+    public VerticalLayoutGroup DynamicContentLayout;
+    public GameObject CanvasRoot;
     // Start is called before the first frame update
 
 
@@ -173,7 +176,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     private GameObject InitializeDropdownParameter(Base.ActionParameter actionParameter, List<string> data, string selectedValue) {
         GameObject dropdownParameter = Instantiate(ParameterDropdownPrefab, DynamicContent.transform);
-        dropdownParameter.GetComponent<DropdownParameter>().Init();
+        dropdownParameter.GetComponent<DropdownParameter>().Init(DynamicContentLayout, CanvasRoot);
         DropdownParameterPutData(dropdownParameter.GetComponent<DropdownParameter>(), data, selectedValue, actionParameter.ActionParameterMetadata.Name);
         return dropdownParameter;
     }
