@@ -79,8 +79,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.2.0";
-        public const string ServerVersion = "0.2.0";
+        public const string ApiVersion = "0.3.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -155,7 +154,7 @@ namespace Base {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
                     
-                    if (!await CheckVersions()) {
+                    if (!await CheckApiVersion()) {
                         DisconnectFromSever();
                         EndLoading();
                         return;
@@ -602,40 +601,36 @@ namespace Base {
         }
 
         public int GetMajorVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
-            return int.Parse(versionString.Split('.')[0]);
+            return int.Parse(SplitVersionString(versionString)[0]);
         }
 
         public int GetMinorVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
-            return int.Parse(versionString.Split('.')[1]);
+            return int.Parse(SplitVersionString(versionString)[1]);
         }
 
         public int GetPatchVersion(string versionString) {
-            Debug.Assert(versionString.Split('.').Length == 2);
-            return int.Parse(versionString.Split('.')[2]);
+            return int.Parse(SplitVersionString(versionString)[2]);
         }
 
-        public async Task<bool> CheckVersions() {
+        public List<string> SplitVersionString(string versionString) {
+            List<string> version = versionString.Split('.').ToList<string>();
+            Debug.Assert(version.Count == 3, versionString);
+            return version;
+        }
+
+        public async Task<bool> CheckApiVersion() {
             IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-            if (systemInfo.ApiVersion == ApiVersion && systemInfo.Version == ServerVersion)
+            if (systemInfo.ApiVersion == ApiVersion)
                 return true;
-            if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion)) {
+            if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion) || GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion)) {
                 Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
                 return false;
             }
-            if (GetMajorVersion(systemInfo.Version) != GetMajorVersion(ServerVersion)) {
-                Notifications.Instance.ShowNotification("Incompatibile editor and server versions", "Editor version: " + ApiVersion + ", server version: " + systemInfo.ApiVersion);
-                return false;
-            }
-            if (GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion) || GetPatchVersion(systemInfo.ApiVersion) != GetPatchVersion(ApiVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problem, you have been warned.");
+            if (GetPatchVersion(systemInfo.ApiVersion) != GetPatchVersion(ApiVersion)) {
+                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problems, you have been warned.");
                 return true;
             }
-            if (GetMinorVersion(systemInfo.Version) != GetMinorVersion(ServerVersion) || GetPatchVersion(systemInfo.Version) != GetPatchVersion(ServerVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor version: " + ServerVersion + ", server version: " + systemInfo.Version + ". It can casuse problem, you have been warned.");
-                return true;
-            }
+            
             return false;
         }
 

@@ -13,8 +13,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
     public GameObject DynamicContent;
-    public InputField TopText;
-    public Text ActionType;
+    public TMPro.TMP_InputField TopText;
+    public TMPro.TMP_Text ActionType;
     public Button ExectuteActionBtn;
     // Start is called before the first frame update
 
