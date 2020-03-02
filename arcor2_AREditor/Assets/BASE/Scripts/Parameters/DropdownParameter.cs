@@ -35,7 +35,11 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     }
     
     public object GetValue() {
-        throw new System.NotImplementedException();
+        if (Dropdown.dropdownItems.Count > 0) {
+            return Dropdown.selectedText.text;
+        } else {
+            throw new IndexOutOfRangeException();
+        }
     }
 
     public void SetLabel(string label, string description) {
