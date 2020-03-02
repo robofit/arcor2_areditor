@@ -382,5 +382,9 @@ public class MainMenu : MonoBehaviour, IMenu {
         //nothing to do.. yet
     }
 
+    public void Recalibrate() {
+        CalibrationManager.Instance.Recalibrate();
+    }
+
  
 }

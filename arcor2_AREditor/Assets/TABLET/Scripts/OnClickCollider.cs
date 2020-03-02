@@ -1,16 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using RuntimeGizmos;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class OnClickCollider : MonoBehaviour
-{
+public class OnClickCollider : Clickable {
     public GameObject Target;
-    
-    public void OnClick()
-    {
-        Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.TOUCH);
+
+    public override void OnClick(Click type) {
+        if (type == Click.TOUCH) {
+            Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.TOUCH);
+        } else if (type == Click.LONG_TOUCH) {
+            Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.LONG_TOUCH);
+        }
     }
 
     public void OnMouseOver() {

@@ -40,9 +40,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             AttachScene();
         }
 
-        foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
-            trackedImg.gameObject.SetActive(false);
-        }
+        ActivateTrackables(false);
 #endif
     }
 
@@ -70,5 +68,17 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void ConnectedToServer(object sender, Base.StringEventArgs e) {
         AttachScene();
+    }
+
+    public void Recalibrate() {
+        ActivateTrackables(true);
+    }
+
+    private void ActivateTrackables(bool active) {
+#if !UNITY_EDITOR
+        foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
+            trackedImg.gameObject.SetActive(active);
+        }
+#endif
     }
 }
