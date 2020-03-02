@@ -10,6 +10,8 @@ namespace Base {
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
+
+        public Action CurrentlyRunningAction = null;
         
         public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
 
