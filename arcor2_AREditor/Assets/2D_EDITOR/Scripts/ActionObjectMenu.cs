@@ -8,8 +8,8 @@ using Base;
 public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
     [SerializeField]
-    private InputField objectName;
-    public CustomDropdown RobotsList, EndEffectorList;
+    private TMPro.TMP_InputField objectName;
+    public DropdownParameter RobotsList, EndEffectorList;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
@@ -47,10 +47,10 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             RobotsListsBlock.SetActive(false);
         }
 
-        RobotsList.GetComponent<DropdownRobots>().Init(OnRobotChanged);
+        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged);
 
-        if (RobotsList.dropdownItems.Count > 0)
-            OnRobotChanged(RobotsList.selectedText.text);
+        if (RobotsList.Dropdown.dropdownItems.Count > 0)
+            OnRobotChanged(RobotsList.Dropdown.selectedText.text);
         else {
             UpdatePositionBlockVO.SetActive(false);
             UpdatePositionBlockMesh.SetActive(false);
@@ -63,18 +63,18 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
     private void OnRobotChanged(string robot_id) {
-        EndEffectorList.dropdownItems.Clear();
-        EndEffectorList.GetComponent<DropdownEndEffectors>().Init(robot_id);
+        EndEffectorList.Dropdown.dropdownItems.Clear();
+        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
     }
     
 
     public void UpdateObjectPosition() {
-        if (RobotsList.dropdownItems.Count == 0 || EndEffectorList.dropdownItems.Count == 0) {
+        if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.Data.Id,
-            RobotsList.selectedText.text, EndEffectorList.selectedText.text);
+            RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
     }
          
 
@@ -95,13 +95,13 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
     public async void StartObjectFocusing() {
-        if (RobotsList.dropdownItems.Count == 0 || EndEffectorList.dropdownItems.Count == 0) {
+        if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         try {
             await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
-                RobotsList.selectedText.text, EndEffectorList.selectedText.text);
+                RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;

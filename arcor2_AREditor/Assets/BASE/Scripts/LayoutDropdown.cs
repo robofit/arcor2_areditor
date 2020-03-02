@@ -6,7 +6,9 @@ using Michsky.UI.ModernUIPack;
 
 public class LayoutDropdown : MonoBehaviour
 {
-    public GameObject Layout, Trigger;
+    public GameObject Trigger;
+    public VerticalLayoutGroup Layout;
+
 
     private void Start() {
         GetComponent<Button>().onClick.AddListener(OnClick);
@@ -14,13 +16,13 @@ public class LayoutDropdown : MonoBehaviour
     }
 
     private void OnClick() {
-        Layout.GetComponent<VerticalLayoutGroup>().enabled = false;
+        Layout.enabled = false;
         enabled = true;
     }
 
     private void Update() {
         if (!Trigger.activeSelf) {
-            Layout.GetComponent<VerticalLayoutGroup>().enabled = true;
+            Layout.enabled = true;
             enabled = false;
         }
     }
