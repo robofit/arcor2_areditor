@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 4618120162863866931}
   - component: {fileID: 2135223395522982168}
   - component: {fileID: 1162351292833498496}
+  - component: {fileID: 6458597712290806601}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: ActionPoint
@@ -180,6 +181,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -230,3 +232,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Target: {fileID: 2740470206176205867}
+--- !u!114 &6458597712290806601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7822383090967264636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
+  HoverMaterial: {fileID: 2100000, guid: f753f6738cd0a134c852a65b5e2aa48c, type: 2}
