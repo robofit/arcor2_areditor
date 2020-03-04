@@ -116,25 +116,16 @@ namespace Base {
 
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
 
-            actionObject.Data.Type = type;
             if (id == "")
-                actionObject.Data.Id = GetFreeIOName(type);
-            else
-                actionObject.Data.Id = id;
-            actionObject.SetScenePosition(obj.transform.localPosition);
-            actionObject.SetSceneOrientation(obj.transform.localRotation);
-
-
-            actionObject.ActionObjectMetadata = aom;
-            actionObject.Data.Uuid = uuid;
+                id = GetFreeIOName(type);
+            
+            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, uuid, aom);
 
             // Add the Action Object into scene reference
             ActionObjects.Add(uuid, actionObject);
             if (aom.Robot) {
                 actionObject.LoadEndEffectors();
             }
-
-           
 
             if (updateScene)
                 GameManager.Instance.UpdateScene();
