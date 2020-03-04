@@ -82,7 +82,7 @@ public class ActionObject3D : ActionObject
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
     }
 
     public override void OnClick(Click type) {
@@ -162,5 +162,6 @@ public class ActionObject3D : ActionObject
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         Model.transform.localScale = new Vector3(1, 1, 1);
+        gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
     }
 }

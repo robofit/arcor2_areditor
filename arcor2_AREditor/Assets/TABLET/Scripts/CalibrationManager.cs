@@ -24,7 +24,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public void CreateAnchor(Transform tf) {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         RemoveWorldAnchor();
 
         List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
@@ -45,7 +45,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public void RemoveWorldAnchor() {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         if (WorldAnchor != null) {
             ARAnchorManager.RemoveAnchor(WorldAnchor);
         }
@@ -53,7 +53,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private void AttachScene() {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         if (WorldAnchor == null) {
             WorldAnchor = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
         }
@@ -75,7 +75,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private void ActivateTrackables(bool active) {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
             trackedImg.gameObject.SetActive(active);
         }

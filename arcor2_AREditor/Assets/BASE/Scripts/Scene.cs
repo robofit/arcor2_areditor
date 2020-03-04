@@ -17,6 +17,8 @@ namespace Base {
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
 
+        public GameObject CurrentlySelectedObject;
+
         private bool sceneActive = true;
         private bool projectActive = true;
 
@@ -84,6 +86,14 @@ namespace Base {
 
             return freeName;
         }
+
+        public void SetSelectedObject(GameObject obj) {
+            if (CurrentlySelectedObject != null) {
+                CurrentlySelectedObject.SendMessage("Deselect");
+            }
+            CurrentlySelectedObject = obj;
+        }
+
 
         #region ACTION_OBJECTS
 

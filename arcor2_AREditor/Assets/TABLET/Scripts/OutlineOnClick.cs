@@ -7,51 +7,74 @@ using UnityEngine.EventSystems;
 public class OutlineOnClick : Clickable {
 
     public Material ClickMaterial;
-    public Material HoverMaterial;
 
-    private Renderer renderer;
-    private List<Material> materials = new List<Material>();
-
+    public List<Renderer> Renderers = new List<Renderer>();
+    private Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
+    
     private void Start() {
-        renderer = GetComponent<Renderer>();
-        materials.AddRange(renderer.materials);
+        materials.Clear();
+        foreach (Renderer renderer in Renderers) {
+            materials.Add(renderer, new List<Material>(renderer.materials));
+        }
+
+    }
+
+    private void OnEnable() {
+        InputHandler.Instance.OnBlindClick += OnBlindClick;
+    }
+
+    private void OnDisable() {
+        InputHandler.Instance.OnBlindClick -= OnBlindClick;
+    }
+
+    public void InitRenderers(List<Renderer> renderers) {
+        Renderers = renderers;
+        materials.Clear();
+        foreach (Renderer renderer in Renderers) {
+            materials.Add(renderer, new List<Material>(renderer.materials));
+        }
     }
 
     public override void OnClick(Click type) {
-        if (type == Click.TOUCH) {
-        } else if (type == Click.LONG_TOUCH) {
-        }
-    }
-
-    public void OnMouseOver() {
-        // if we are clicking on UI
-        //if (EventSystem.current.IsPointerOverGameObject()) {
-        //    AddMaterial(HoverMaterial);
-        //    renderer.materials = materials.ToArray();
-        //}
-
-        if (Input.GetMouseButtonDown(0)) {
-            //Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.MOUSE_LEFT_BUTTON);
-        }
-        if (Input.GetMouseButtonDown(1)) {
-            //Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.MOUSE_RIGHT_BUTTON);
+        if (type == Click.MOUSE_RIGHT_BUTTON) {
+            Scene.Instance.SetSelectedObject(gameObject);
             AddMaterial(ClickMaterial);
-            renderer.materials = materials.ToArray();
-        }
-        if (Input.GetMouseButtonDown(2)) {
-            //Target.GetComponent<Base.Clickable>().OnClick(Base.Clickable.Click.MOUSE_MIDDLE_BUTTON);
+            foreach (Renderer renderer in Renderers) {
+                renderer.materials = materials[renderer].ToArray();
+            }
         }
     }
 
     private void AddMaterial(Material material) {
-        if (!materials.Contains(material)) {
-            materials.Add(material);
+        foreach (Renderer renderer in Renderers) {
+            if (!materials[renderer].Contains(material)) {
+                materials[renderer].Add(material);
+            }
         }
     }
 
     private void RemoveMaterial(Material material) {
-        if (materials.Contains(material)) {
-            materials.Remove(material);
+        foreach (Renderer renderer in Renderers) {
+            if (materials[renderer].Contains(material)) {
+                materials[renderer].Remove(material);
+            }
+        }
+    }
+
+    private void OnBlindClick(object sender, EventBlindClickArgs e) {
+        if (GameManager.Instance.SceneInteractable) {
+            Scene.Instance.SetSelectedObject(null);
+            RemoveMaterial(ClickMaterial);
+            foreach (Renderer renderer in Renderers) {
+                renderer.materials = materials[renderer].ToArray();
+            }
+        }
+    }
+
+    public void Deselect() {
+        RemoveMaterial(ClickMaterial);
+        foreach (Renderer renderer in Renderers) {
+            renderer.materials = materials[renderer].ToArray();
         }
     }
 }
