@@ -11,7 +11,9 @@ public class ActionObject3D : ActionObject
     private ActionObjectMenu actionObjectMenu;
     private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
-    public GameObject Visual;
+    public GameObject Visual, Model;
+
+    public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -28,8 +30,10 @@ public class ActionObject3D : ActionObject
         UpdateId(Data.Id);
         actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
         actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
-
+       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        // disable update method until model is ready
+        //enabled = false;
     }
 
 
@@ -39,8 +43,8 @@ public class ActionObject3D : ActionObject
                 if (Time.time >= nextUpdate) {
                     nextUpdate += interval;
 
-                    // check if gameobject with whom is Gizmo manipulating is our Visual gameobject
-                    if (GameObject.ReferenceEquals(Visual, tfGizmo.mainTargetRoot.gameObject)) {
+                    // check if gameobject with whom is Gizmo manipulating is our Model gameobject
+                    if (GameObject.ReferenceEquals(Model, tfGizmo.mainTargetRoot.gameObject)) {
                         // if Gizmo is moving, we can send UpdateProject to server
                         if (tfGizmo.isTransforming) {
                             updateScene = true;
@@ -108,6 +112,8 @@ public class ActionObject3D : ActionObject
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
         base.ActionObjectUpdate(actionObjectSwagger);
         ActionObjectName.text = actionObjectSwagger.Id;
+        if (Model == null)
+            CreateModel();
     }
 
 
@@ -115,4 +121,46 @@ public class ActionObject3D : ActionObject
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }
 
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        Data.Id = id;
+        Data.Type = type;
+        SetScenePosition(position);
+        SetSceneOrientation(orientation);
+        Data.Uuid = uuid;
+        ActionObjectMetadata = actionObjectMetadata;
+        CreateModel();
+        enabled = true;
+    }
+
+    public void CreateModel() {
+        if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
+            Model = Instantiate(CubePrefab, Visual.transform);
+            Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+        } else {
+            switch (ActionObjectMetadata.ObjectModel.Type) {
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                    Model = Instantiate(CubePrefab, Visual.transform);
+                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ);
+                    break;
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                    Model = Instantiate(CylinderPrefab, Visual.transform);
+                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
+                    break;
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                    Model = Instantiate(SpherePrefab, Visual.transform);
+                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
+                    break;
+                default:
+                    Model = Instantiate(CubePrefab, Visual.transform);
+                    Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+                    break;
+            }
+        }
+        if (IsRobot()) {
+            Model.tag = "Robot";
+        }
+        gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
+        Model.GetComponent<OnClickCollider>().Target = gameObject;
+        Model.transform.localScale = new Vector3(1, 1, 1);
+    }
 }

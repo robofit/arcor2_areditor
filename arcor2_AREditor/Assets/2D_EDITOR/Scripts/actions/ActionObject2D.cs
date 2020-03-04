@@ -75,6 +75,10 @@ public class ActionObject2D : Base.ActionObject {
     public override bool SceneInteractable() {
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }
+
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        throw new System.NotImplementedException();
+    }
 }
 
 
