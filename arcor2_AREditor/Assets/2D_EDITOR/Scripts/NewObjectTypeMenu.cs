@@ -8,11 +8,13 @@ using System.Globalization;
 
 public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     [SerializeField]
-    private GameObject BoxMenu, CylinderMenu, SphereMenu, MeshMenu, NameInput, ParentsList, ModelsList;
+    private GameObject BoxMenu, CylinderMenu, SphereMenu, MeshMenu;
     [SerializeField]
-    private GameObject BoxX, BoxY, BoxZ, SphereRadius, CylinderHeight, CylinderRadius, MeshId;
     private Dictionary<string, GameObject> ModelMenus;
-    
+    public TMPro.TMP_InputField NameInput, BoxX, BoxY, BoxZ, SphereRadius, CylinderHeight, CylinderRadius, MeshId;
+    public DropdownParameter ParentsList, ModelsList;
+
+
     private void Awake() {
         ModelMenus = new Dictionary<string, GameObject>() {
             { "None", null },
@@ -39,8 +41,8 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     }
 
-    public void UpdateModelsMenu(int value) {
-        string modelType = ModelsList.GetComponent<Dropdown>().options[value].text;
+    public void UpdateModelsMenu() {
+        string modelType = (string) ModelsList.GetValue();
         if (ModelMenus.TryGetValue(modelType, out GameObject menu)) {
             ShowModelMenu(menu);
         }
@@ -56,62 +58,53 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     public void UpdateObjectsList(object sender, EventArgs eventArgs) {
         string originalValue = "";
-        if (ParentsList.GetComponent<Dropdown>().options.Count > 0) {
-            originalValue = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
-            ParentsList.GetComponent<Dropdown>().options.Clear();
-        }         
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
-            ParentsList.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData(actionObjectMetadata.Type));
-        }
-        if (originalValue != "") {
-            // TODO: try if indexof works!
-            int index = ParentsList.GetComponent<Dropdown>().options.IndexOf(new Dropdown.OptionData(originalValue));
-            if (index >= 0) {
-                ParentsList.GetComponent<Dropdown>().value = index;
-            }
-        }
-        try {
-            ParentsList.GetComponent<Dropdown>().captionText.text = ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text;
-        } catch (ArgumentOutOfRangeException) {
+        if (ParentsList.Dropdown.dropdownItems.Count > 0)
+            originalValue = (string) ParentsList.GetValue();
 
+        List<string> values = new List<string>();
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
+            values.Add(actionObjectMetadata.Type);
         }
+        ParentsList.PutData(values, originalValue, null);
         
     }
 
     public void CreateNewObjectType() {
-        string objectId = NameInput.GetComponent<InputField>().text;
+        Debug.Assert(ModelsList.Dropdown.dropdownItems.Count > 0, "No models");
+        Debug.Assert(ParentsList.Dropdown.dropdownItems.Count > 0, "No parent objects");
+        string objectId = NameInput.text;
 
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
-        string modelTypeString = ModelsList.GetComponent<Dropdown>().options[ModelsList.GetComponent<Dropdown>().value].text;
+        string modelTypeString = (string) ModelsList.GetValue();
         IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
         if (ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
             IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
             switch (modelTypeString) {
                 case "Box":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Box;
-                    decimal sizeX = decimal.Parse(BoxX.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-                    decimal sizeY = decimal.Parse(BoxY.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-                    decimal sizeZ = decimal.Parse(BoxZ.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal sizeX = decimal.Parse(BoxX.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal sizeY = decimal.Parse(BoxY.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal sizeZ = decimal.Parse(BoxZ.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(objectId, sizeX, sizeY, sizeZ);
                     objectModel.Box = box;
 
                     break;
                 case "Sphere":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;
-                    decimal radius = decimal.Parse(SphereRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal radius = decimal.Parse(SphereRadius.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Sphere sphere = new IO.Swagger.Model.Sphere(objectId, radius);
                     objectModel.Sphere = sphere;
                     break;
                 case "Cylinder":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder;
-                    decimal cylinderRadius = decimal.Parse(CylinderRadius.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-                    decimal cylinderHeight = decimal.Parse(CylinderHeight.GetComponent<InputField>().text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal cylinderRadius = decimal.Parse(CylinderRadius.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    decimal cylinderHeight = decimal.Parse(CylinderHeight.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     IO.Swagger.Model.Cylinder cylinder = new IO.Swagger.Model.Cylinder(objectId, cylinderHeight, cylinderRadius);
                     objectModel.Cylinder = cylinder;
                     break;
                 case "Mesh":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Mesh;
-                    string meshId = MeshId.GetComponent<InputField>().text;
+                    string meshId = MeshId.text;
                     IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), uri: "");
                     objectModel.Mesh = mesh;
                     break;
@@ -121,10 +114,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
-                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
         } else {
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
-                _base: ParentsList.GetComponent<Dropdown>().options[ParentsList.GetComponent<Dropdown>().value].text, needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
         }
 
         

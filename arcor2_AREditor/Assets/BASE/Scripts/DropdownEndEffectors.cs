@@ -47,10 +47,10 @@ public class DropdownEndEffectors : MonoBehaviour {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = ee
             };
-            GetComponent<CustomDropdown>().dropdownItems.Add(item);
+            Dropdown.dropdownItems.Add(item);
         }
-        if (GetComponent<CustomDropdown>().dropdownItems.Count > 0) {
-            GetComponent<CustomDropdown>().SetupDropdown();
+        if (Dropdown.dropdownItems.Count > 0) {
+            Dropdown.SetupDropdown();
             gameObject.SetActive(true);
         } else {
             gameObject.SetActive(false);
