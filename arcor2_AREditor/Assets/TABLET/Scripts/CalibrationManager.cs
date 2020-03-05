@@ -12,17 +12,14 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARPlaneManager ARPlaneManager;
     public ARRaycastManager ARRaycastManager;
     public ARTrackedImageManager ARTrackedImageManager;
+    public ARPointCloudManager ARPointCloudManager;
 
     private ARAnchor WorldAnchor;
     
     private void OnEnable() {
         GameManager.Instance.OnConnectedToServer += ConnectedToServer;
     }
-
-    private void OnDisable() {
-        GameManager.Instance.OnConnectedToServer -= ConnectedToServer;
-    }
-
+    
     public void CreateAnchor(Transform tf) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         RemoveWorldAnchor();
@@ -78,6 +75,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
             trackedImg.gameObject.SetActive(active);
+        }
+#endif
+    }
+
+    public void DisplayPlanes(bool active) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        foreach (ARPlane plane in ARPlaneManager.trackables) {
+            plane.gameObject.SetActive(active);
+        }
+
+        foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
+            pointCloud.gameObject.SetActive(active);
         }
 #endif
     }

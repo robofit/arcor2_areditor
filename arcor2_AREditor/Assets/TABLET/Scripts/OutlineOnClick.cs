@@ -24,7 +24,9 @@ public class OutlineOnClick : Clickable {
     }
 
     private void OnDisable() {
-        InputHandler.Instance.OnBlindClick -= OnBlindClick;
+        if (InputHandler.Instance != null) {
+            InputHandler.Instance.OnBlindClick -= OnBlindClick;
+        }
     }
 
     public void InitRenderers(List<Renderer> renderers) {
@@ -36,7 +38,16 @@ public class OutlineOnClick : Clickable {
     }
 
     public override void OnClick(Click type) {
+        // HANDLE MOUSE
         if (type == Click.MOUSE_RIGHT_BUTTON) {
+            Scene.Instance.SetSelectedObject(gameObject);
+            AddMaterial(ClickMaterial);
+            foreach (Renderer renderer in Renderers) {
+                renderer.materials = materials[renderer].ToArray();
+            }
+        }
+        // HANDLE TOUCH
+        else if (type == Click.TOUCH && !Scene.Instance.UseGizmo) {
             Scene.Instance.SetSelectedObject(gameObject);
             AddMaterial(ClickMaterial);
             foreach (Renderer renderer in Renderers) {

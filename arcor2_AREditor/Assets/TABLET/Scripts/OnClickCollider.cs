@@ -9,7 +9,6 @@ public class OnClickCollider : Clickable {
     public GameObject Target;
 
     public override void OnClick(Click type) {
-        Debug.Log(type);
         foreach (Clickable clickable in Target.GetComponents<Clickable>()) {
             clickable.OnClick(type);
         }

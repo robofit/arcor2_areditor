@@ -22,14 +22,23 @@ namespace Base {
         private bool sceneActive = true;
         private bool projectActive = true;
 
+        private bool useGizmo = true;
+        public bool UseGizmo {
+            get => useGizmo;
+            set => useGizmo = value;
+        }
+
 
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
-                if (!sceneActive) {
+                if (!sceneActive && UseGizmo) {
                     ActivateSceneForEditing(true, "ActionObject");
                     sceneActive = true;
+                } else if (sceneActive && !UseGizmo) {
+                    ActivateSceneForEditing(false, "ActionObject");
+                    sceneActive = false;
                 }
             } else {
                 if (sceneActive) {
@@ -39,9 +48,12 @@ namespace Base {
             }
 
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
-                if (!projectActive) {
+                if (!projectActive && UseGizmo) {
                     ActivateSceneForEditing(true, "ActionPoint");
                     projectActive = true;
+                } else if (projectActive && !UseGizmo) {
+                    ActivateSceneForEditing(false, "ActionPoint");
+                    projectActive = false;
                 }
             } else {
                 if (projectActive) {
@@ -50,6 +62,7 @@ namespace Base {
                 }
             }
         }
+
 
         /// <summary>
         /// Deactivates or activates scene and all objects in the scene to ignore raycasting (clicking).

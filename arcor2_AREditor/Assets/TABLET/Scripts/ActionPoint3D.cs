@@ -49,15 +49,28 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
             GameManager.Instance.ActivateGizmoOverlay(true);
-        }
-        if (type == Click.MOUSE_RIGHT_BUTTON) {
+        } else if (type == Click.MOUSE_RIGHT_BUTTON) {
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
             MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+        }
+
+        // HANDLE TOUCH
+        else if (type == Click.TOUCH) {
+            if (Scene.Instance.UseGizmo) {
+                // We have touched and started manipulation with object
+                manipulationStarted = true;
+                GameManager.Instance.ActivateGizmoOverlay(true);
+            } else {
+                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
+                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+            }
         }
     }
 

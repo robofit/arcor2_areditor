@@ -86,12 +86,13 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {
+        // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
             GameManager.Instance.ActivateGizmoOverlay(true);
         }
-        if (type == Click.MOUSE_RIGHT_BUTTON) {
+        else if (type == Click.MOUSE_RIGHT_BUTTON) {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
                 actionObjectMenu.UpdateMenu();
@@ -100,6 +101,26 @@ public class ActionObject3D : ActionObject
                 actionObjectMenuProjectEditor.CurrentObject = this;
                 actionObjectMenuProjectEditor.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        // HANDLE TOUCH
+        else if (type == Click.TOUCH) {
+            if (Scene.Instance.UseGizmo) {
+                // We have clicked with left mouse and started manipulation with object
+                manipulationStarted = true;
+                GameManager.Instance.ActivateGizmoOverlay(true);
+            }
+            else {
+                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                    actionObjectMenu.CurrentObject = this;
+                    actionObjectMenu.UpdateMenu();
+                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+                } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                    actionObjectMenuProjectEditor.CurrentObject = this;
+                    actionObjectMenuProjectEditor.UpdateMenu();
+                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+                }
             }
         }
     }
