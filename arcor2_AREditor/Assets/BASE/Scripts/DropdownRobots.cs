@@ -6,9 +6,9 @@ using Michsky.UI.ModernUIPack;
 
 public class DropdownRobots : MonoBehaviour
 {
-
+    public CustomDropdown Dropdown;
     public void Init(UnityAction<string> callback) {
-        GetComponent<CustomDropdown>().dropdownItems.Clear();
+        Dropdown.dropdownItems.Clear();
         foreach (string robot_id in Base.ActionsManager.Instance.GetRobots()) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = robot_id
@@ -17,10 +17,10 @@ public class DropdownRobots : MonoBehaviour
                 if (item.OnItemSelection == null)
                     item.OnItemSelection = new UnityEvent();
                 item.OnItemSelection.AddListener(() => callback(robot_id));
-            }   
-            GetComponent<CustomDropdown>().dropdownItems.Add(item);
+            }
+            Dropdown.dropdownItems.Add(item);
         }
-        if (GetComponent<CustomDropdown>().dropdownItems.Count > 0)
-            GetComponent<CustomDropdown>().SetupDropdown();
+        if (Dropdown.dropdownItems.Count > 0)
+            Dropdown.SetupDropdown();
     }
 }

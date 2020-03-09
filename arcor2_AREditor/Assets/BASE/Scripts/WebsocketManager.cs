@@ -27,9 +27,7 @@ namespace Base {
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
         private int requestID = 1;
-
-        public GameObject Arrow;
-
+        
         private bool projectArrived = false, sceneArrived = false, projectStateArrived = false;
 
         private void Awake() {
@@ -101,9 +99,7 @@ namespace Base {
         private async void Update() {
             if (clientWebSocket == null)
                 return;
-            if (clientWebSocket.State == WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Disconnected) {
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            } else if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
+            if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
                 GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             }
 
@@ -318,8 +314,13 @@ namespace Base {
             if (puck == null)
                 return;
 
-            Arrow.transform.SetParent(puck.transform);
-            Arrow.transform.position = puck.transform.position + new Vector3(0.2f, 0f, 0f);
+            // Stop previously running action (change its color to default)
+            if(ActionsManager.Instance.CurrentlyRunningAction != null)
+                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+
+            ActionsManager.Instance.CurrentlyRunningAction = puck;
+            // Run current action (set its color to running)
+            puck.RunAction();
         }
 
         private void HandleProjectState(string obj) {

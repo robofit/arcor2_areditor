@@ -17,6 +17,8 @@ namespace Base {
 
         protected virtual void Start() {
         }
+
+        public abstract void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata);
         
         public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
@@ -36,6 +38,7 @@ namespace Base {
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             Data = actionObjectSwagger;
+
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();

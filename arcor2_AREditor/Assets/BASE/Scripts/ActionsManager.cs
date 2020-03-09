@@ -10,6 +10,8 @@ namespace Base {
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
+
+        public Action CurrentlyRunningAction = null;
         
         public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
 
@@ -40,6 +42,12 @@ namespace Base {
 
         private void Start() {
             GameManager.Instance.OnSceneChanged += SceneChanged;
+            GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+
+        }
+        
+        private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
+            Init();
         }
 
         private void Update() {
@@ -63,7 +71,7 @@ namespace Base {
             }
         }
 
-        public void Clear() {
+        public void Init() {
             servicesData.Clear();
             servicesMetadata.Clear();
             actionObjectsMetadata.Clear();

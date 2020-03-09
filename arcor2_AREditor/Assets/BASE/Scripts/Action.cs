@@ -152,8 +152,17 @@ namespace Base {
         public Dictionary<string, ActionParameter> Parameters {
             get => parameters; set => parameters = value;
         }
+
         public ActionMetadata Metadata {
             get => metadata; set => metadata = value;
+        }
+
+        public virtual void RunAction() {
+
+        }
+
+        public virtual void StopAction() {
+
         }
 
     }

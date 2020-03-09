@@ -8,6 +8,26 @@ using UnityEngine.UI;
 public class Action3D : Base.Action {
 
     public TextMeshPro NameText;
+    public Renderer Visual;
+
+    private Color32 colorDefault = new Color32(229, 215, 68, 255);
+    private Color32 colorRunnning = new Color32(255, 0, 255, 255);
+
+    private void Start() {
+        GameManager.Instance.OnStopProject += OnProjectStop;
+    }
+
+    private void OnProjectStop(object sender, System.EventArgs e) {
+        StopAction();
+    }
+
+    public override void RunAction() {
+        Visual.material.color = colorRunnning;
+    }
+
+    public override void StopAction() {
+        Visual.material.color = colorDefault;
+    }
 
     public override void UpdateId(string newId, bool updateProject = true) {
         base.UpdateId(newId, updateProject);
@@ -20,7 +40,9 @@ public class Action3D : Base.Action {
     }
 
     public override void OnClick(Click type) {
-        MenuManager.Instance.PuckMenu.GetComponent<ActionMenu>().UpdateMenu(this);
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
+            MenuManager.Instance.PuckMenu.GetComponent<ActionMenu>().UpdateMenu(this);
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        }
     }
 }
