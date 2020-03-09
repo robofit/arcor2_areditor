@@ -7,8 +7,6 @@ public class Recalibrate : Clickable {
 
 
     public override void OnClick(Click type) {
-        Debug.Log("CLICK: " + type);
-
         if (type == Click.LONG_TOUCH) {
             Calibrate();
         }
