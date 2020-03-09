@@ -47,7 +47,7 @@ public class OutlineOnClick : Clickable {
             }
         }
         // HANDLE TOUCH
-        else if (type == Click.TOUCH && !Scene.Instance.UseGizmo) {
+        else if (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
             Scene.Instance.SetSelectedObject(gameObject);
             AddMaterial(ClickMaterial);
             foreach (Renderer renderer in Renderers) {

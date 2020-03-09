@@ -62,7 +62,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
         // HANDLE TOUCH
         else if (type == Click.TOUCH) {
-            if (Scene.Instance.UseGizmo) {
+            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                 // We have touched and started manipulation with object
                 manipulationStarted = true;
                 GameManager.Instance.ActivateGizmoOverlay(true);

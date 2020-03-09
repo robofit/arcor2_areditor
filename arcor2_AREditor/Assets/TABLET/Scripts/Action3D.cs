@@ -40,7 +40,7 @@ public class Action3D : Base.Action {
     }
 
     public override void OnClick(Click type) {
-        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !Scene.Instance.UseGizmo)) {
+        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             MenuManager.Instance.PuckMenu.GetComponent<ActionMenu>().UpdateMenu(this);
             MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         }

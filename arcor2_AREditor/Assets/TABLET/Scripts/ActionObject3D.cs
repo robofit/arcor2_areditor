@@ -106,7 +106,7 @@ public class ActionObject3D : ActionObject
 
         // HANDLE TOUCH
         else if (type == Click.TOUCH) {
-            if (Scene.Instance.UseGizmo) {
+            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                 // We have clicked with left mouse and started manipulation with object
                 manipulationStarted = true;
                 GameManager.Instance.ActivateGizmoOverlay(true);

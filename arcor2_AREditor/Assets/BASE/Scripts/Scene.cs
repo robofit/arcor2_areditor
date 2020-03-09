@@ -22,21 +22,15 @@ namespace Base {
         private bool sceneActive = true;
         private bool projectActive = true;
 
-        private bool useGizmo = true;
-        public bool UseGizmo {
-            get => useGizmo;
-            set => useGizmo = value;
-        }
-
 
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
-                if (!sceneActive && UseGizmo) {
+                if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionObject");
                     sceneActive = true;
-                } else if (sceneActive && !UseGizmo) {
+                } else if (sceneActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(false, "ActionObject");
                     sceneActive = false;
                 }
@@ -48,10 +42,10 @@ namespace Base {
             }
 
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
-                if (!projectActive && UseGizmo) {
+                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionPoint");
                     projectActive = true;
-                } else if (projectActive && !UseGizmo) {
+                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(false, "ActionPoint");
                     projectActive = false;
                 }
