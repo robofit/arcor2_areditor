@@ -337,7 +337,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+        public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
             GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
@@ -371,7 +371,7 @@ namespace Base {
                 action_uuid = Guid.NewGuid().ToString();
             } 
 
-            await puck.GetComponent<Action>().Init(action_uuid, newId, actionMetadata, ap, generateData, actionProvider, false);
+            await puck.GetComponent<Action>().Init(action_uuid, newId, actionMetadata, ap, actionProvider, false);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
@@ -421,7 +421,7 @@ namespace Base {
                 }
                 // if action doesn't exist, create new one
                 else {
-                    action = await SpawnPuck(projectAction.Uuid, actionType, actionPoint.ActionObject, actionPoint, false, actionProvider, false, projectAction.Id);
+                    action = await SpawnPuck(projectAction.Uuid, actionType, actionPoint.ActionObject, actionPoint, actionProvider, false, projectAction.Id);
                     action.ActionUpdate(projectAction);
                 }
 
@@ -437,7 +437,7 @@ namespace Base {
                             // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
                             IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(projectActionParameter.Id);
 
-                            actionParameter = new ActionParameter(actionParameterMetadata, action, projectActionParameter);
+                            actionParameter = new ActionParameter(actionParameterMetadata, action, projectActionParameter.Value);
                             action.Parameters.Add(actionParameter.Id, actionParameter);
                         }
                     } catch (ItemNotFoundException ex) {

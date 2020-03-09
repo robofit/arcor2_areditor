@@ -21,9 +21,12 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public DropdownParameter robotsList, endEffectorList, orientationsList, JointsList;
 
+    public AddNewActionDialog AddNewActionDialog;
+
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
-        await Base.Scene.Instance.SpawnPuck(null, action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
+        AddNewActionDialog.Init(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
+        AddNewActionDialog.WindowManager.OpenWindow();
     }
 
     public void SaveID(string new_id) {

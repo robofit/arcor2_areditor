@@ -38,7 +38,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         if (Dropdown.dropdownItems.Count > 0) {
             return Dropdown.selectedText.text;
         } else {
-            throw new IndexOutOfRangeException();
+            return null;
         }
     }
 
@@ -109,4 +109,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         }
     }
 
+    public string GetName() {
+        return Label.text;
+    }
 }

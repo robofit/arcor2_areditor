@@ -16,15 +16,15 @@ namespace Base {
         /// </summary>
         /// <param name="actionParameterMetadata"></param>
         /// <param name="action"></param>
-        /// <param name="actionParameter"></param>
-        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, Action action, IO.Swagger.Model.ActionParameter actionParameter = null) {
+        /// <param name="value"></param>
+        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, Action action, string value) {
+            Debug.Assert(value != null);
             ActionParameterMetadata = new ActionParameterMetadata(actionParameterMetadata);
             Id = ActionParameterMetadata.Name;
             Type = ActionParameterMetadata.Type;
             Action = action;
-            if (actionParameter != null) {
-                Value = actionParameter.Value;
-            } else {
+            Value = value;
+            /* else {
                 switch (Type) {
                     case "relative_pose":
                         //SetValue(Regex.Replace(new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(), position: new IO.Swagger.Model.Position()).ToJson(), @"\t|\n|\r", ""));
@@ -34,7 +34,7 @@ namespace Base {
                         if (ActionParameterMetadata.DefaultValue != null)
                             Value = ActionParameterMetadata.DefaultValue;
                         else
-                            SetValue(((ARServer.Models.IntegerEnumParameterExtra) ActionParameterMetadata.ParameterExtra).AllowedValues[0].ToString());                        
+                            SetValue(((ARServer.Models.IntegerEnumParameterExtra) ActionParameterMetadata.ParameterExtra).AllowedValues[0].ToString());
                         break;
                     case "string_enum":
                         if (ActionParameterMetadata.DefaultValue != null)
@@ -60,13 +60,41 @@ namespace Base {
                             SetValue(action.ActionPoint.ActionObject.Data.Id + "." + action.ActionPoint.Data.Id + "." + joints[0]);
                         }
                         break;
-                   default:
+                    default:
                         Value = ActionParameterMetadata.DefaultValue;
                         break;
 
                 }
+            }*/
+        }
+
+        public ActionParameter(IO.Swagger.Model.ActionParameterMeta actionParameterMetadata, Action action, object value) {
+            ActionParameterMetadata = new ActionParameterMetadata(actionParameterMetadata);
+            Id = ActionParameterMetadata.Name;
+            Type = ActionParameterMetadata.Type;
+            Action = action;
+
+            switch (Type) {
+                case "relative_pose":
+                    SetValue((IO.Swagger.Model.Pose) value);
+                    break;
+                case "integer_enum":
+                case "int":
+                    SetValue((int) value);
+                    break;
+                case "string_enum":
+                case "pose":
+                case "joints":
+                case "string":
+                    SetValue((string) value);
+                    break;
+                case "double":
+                    SetValue((double) value);
+                    break;
             }
         }
+
+
 
         public void UpdateActionParameter(IO.Swagger.Model.ActionParameter actionParameter) {
             Value = actionParameter.Value;
@@ -77,20 +105,25 @@ namespace Base {
             ActionParameterMetadata = actionParameterMetadata;
         }*/
 
-        public async Task<List<string>> LoadDynamicValues(List<IO.Swagger.Model.IdValue> parentParams) {
-            if (!ActionParameterMetadata.DynamicValue) {
-                return new List<string>();
-            }
-            return await GameManager.Instance.GetActionParamValues(Action.ActionProvider.GetProviderName(), ActionParameterMetadata.Name, parentParams);
-        }
-
-        public T GetValue<T>() {            
+        public T GetValue<T>() {
             return JsonConvert.DeserializeObject<T>(Value);
         }
 
-        public void SetValue(object newValue) {
-            Value = JsonConvert.SerializeObject(newValue);
+        public static T GetValue<T>(string value) {
+            if (value == null) {
+                return default; 
+            }                
+            return JsonConvert.DeserializeObject<T>(value);
         }
+
+        public void SetValue(object newValue) {
+            if (newValue == null)
+                Value = null;
+            else
+                Value = JsonConvert.SerializeObject(newValue);
+        }
+
+
     }
 
 }
