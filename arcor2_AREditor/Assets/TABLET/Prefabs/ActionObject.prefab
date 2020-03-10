@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 4117692875275004883}
   - component: {fileID: 4556946370656040535}
   - component: {fileID: 3050534694925757164}
+  - component: {fileID: 2581210906066714764}
   m_Layer: 0
   m_Name: ActionObject
   m_TagString: ActionObject
@@ -101,6 +102,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ChildToBind: {fileID: 0}
+--- !u!114 &2581210906066714764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4117692875275004882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
+  Renderer: {fileID: 0}
 --- !u!1 &6802618089977537743
 GameObject:
   m_ObjectHideFlags: 0
