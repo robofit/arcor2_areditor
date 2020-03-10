@@ -45,6 +45,9 @@ namespace Base {
             UpdateId(id, false);
             //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
+            foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
+                io.InitData();
+            }
 
             if (updateProject) {
                 GameManager.Instance.UpdateProject();
