@@ -40,6 +40,7 @@ public class AddNewActionDialog : Dialog
             Base.Action action = await Base.Scene.Instance.SpawnPuck(null, actionMetadata.Name, CurrentActionPoint.ActionObject, CurrentActionPoint, actionProvider, false);
             foreach (IActionParameter actionParameter in actionParameters) {
                 object value = actionParameter.GetValue();
+
                 IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(actionParameter.GetName());
                 
                 Base.ActionParameter ap = new Base.ActionParameter(actionParameterMetadata, action, value);

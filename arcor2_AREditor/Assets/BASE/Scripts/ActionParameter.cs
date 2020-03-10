@@ -79,7 +79,7 @@ namespace Base {
                     SetValue((IO.Swagger.Model.Pose) value);
                     break;
                 case "integer_enum":
-                case "int":
+                case "integer":
                     SetValue((int) value);
                     break;
                 case "string_enum":

@@ -30,7 +30,7 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public void SetType(string contentType) {
         switch (ParameterType) {
-            case "int":
+            case "integer":
                 Input.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
                 break;
             case "double":
@@ -50,7 +50,7 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public object GetValue() {
         switch (ParameterType) {
-            case "int":
+            case "integer":
                 return int.Parse(Input.text);
             case "double":
                 return Base.Action.ParseDouble(Input.text);

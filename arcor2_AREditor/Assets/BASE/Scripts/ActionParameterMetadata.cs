@@ -16,7 +16,7 @@ namespace Base {
                 case "integer_enum":
                     ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntegerEnumParameterExtra>(Extra);
                     break;
-                case "int":
+                case "integer":
                     ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntParameterExtra>(Extra);
                     break;
                 case "double":

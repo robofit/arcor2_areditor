@@ -18,7 +18,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -53,7 +53,7 @@ namespace Base {
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
             if (Data.RobotJoints.Count == 0)
-                Data.RobotJoints.Add(new IO.Swagger.Model.RobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+                Data.RobotJoints.Add(new IO.Swagger.Model.ProjectRobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -71,13 +71,13 @@ namespace Base {
             return poses;
         }
 
-        public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints(bool uniqueOnly = false) {
-            Dictionary<string, IO.Swagger.Model.RobotJoints> joints = new Dictionary<string, IO.Swagger.Model.RobotJoints>();
+        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJoints(bool uniqueOnly = false) {
+            Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
             Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
             if (uniqueOnly) {
                 poses = GetPoses();
             }
-            foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.RobotJoints) {
+            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
                     continue;
                 }
