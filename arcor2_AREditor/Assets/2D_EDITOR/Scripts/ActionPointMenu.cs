@@ -82,10 +82,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (robotsListDropdown.dropdownItems.Count == 0) {
             UpdatePositionBlock.SetActive(false);
         } else {
-            OnRobotChanged(robotsListDropdown.selectedText.text);
+            OnRobotChanged((string) robotsList.GetValue());
             UpdatePositionBlock.SetActive(true);
+            
         }
-        UpdateJoints();
+        
         UpdateOrientations();
 
 
@@ -112,10 +113,10 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
         
 
-   public void UpdateJoints() {
+   public void UpdateJoints(string robot_id) {
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         jointsDropdown.dropdownItems.Clear();
-        foreach (string joints in CurrentActionPoint.GetJoints(true).Keys) {
+        foreach (string joints in CurrentActionPoint.GetJoints(true, robot_id).Keys) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = joints
             };
@@ -152,6 +153,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             UpdatePoseBlock.SetActive(true);
             UpdateJointsBlock.SetActive(false);
         }
+        UpdateJoints(robot_id);
     }
 
    
