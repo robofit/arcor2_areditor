@@ -28,7 +28,7 @@ public class AddNewActionDialog : Dialog
         foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));         
         }
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderName(), actionParametersMetadata, DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderName(), actionParametersMetadata, DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
     }
         
     public void OnChangeParameterHandler(string parameterId, object newValue) {

@@ -207,17 +207,16 @@ namespace Base {
 
         public static GameObject InitializePoseParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
+
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
                 foreach (string poseKey in ap.GetPoses().Keys) {
-                    options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + poseKey);
+                    options.Add(ap.ActionObject.Data.Id + "." + ap.Data.Id + "." + poseKey);
                 }
             }
             string selectedValue = null;
             if (value != null) {
                 selectedValue = value;
-            } else if (actionParameterMetadata.DefaultValue != null) {
-                selectedValue = actionParameterMetadata.GetDefaultValue<string>();
-            }
+            } 
 
             return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
         }
@@ -225,8 +224,8 @@ namespace Base {
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (string jointsId in ap.GetJoints().Keys) {
-                    options.Add(ap.ActionObject.GetComponent<Base.ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
+                foreach (string jointsId in ap.GetJoints(false, null, true).Keys) {
+                    options.Add(ap.ActionObject.GetComponent<ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
                 }
             }
             string selectedValue = null;
@@ -325,11 +324,25 @@ namespace Base {
             }
         }
 
-        public static async Task<List<IActionParameter>> InitParameters(string actionProviderId, List<ActionParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup DynamicContentLayout, GameObject canvasRoot) {
+        public static async Task<List<IActionParameter>> InitParameters(string actionProviderId, List<ActionParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup DynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint) {
             List<Tuple<DropdownParameter, ActionParameterMetadata>> dynamicDropdowns = new List<Tuple<DropdownParameter, ActionParameterMetadata>>();
             List<IActionParameter> actionParameters = new List<IActionParameter>();
             foreach (ActionParameterMetadata parameterMetadata in parameter_metadatas) {
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, DynamicContentLayout, canvasRoot, null);
+                string value = null;
+                switch (parameterMetadata.Type) {
+                    case "pose":
+                        value = actionPoint.ActionObject.Data.Id + "." + actionPoint.Data.Id + "." + "default"; // TODO: is it ok? will there always be default?
+                        break;
+                    case "joints":
+                        IO.Swagger.Model.ProjectRobotJoints projectRobotJoints = actionPoint.GetFirstJoints();
+                        if (projectRobotJoints != null)
+                            value = actionPoint.ActionObject.Data.Id + "." + actionPoint.Data.Id + "." + projectRobotJoints.Id;
+                        break;
+                }
+                if (value != null) {
+                    value = JsonConvert.SerializeObject(value);
+                }
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, DynamicContentLayout, canvasRoot, value);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;

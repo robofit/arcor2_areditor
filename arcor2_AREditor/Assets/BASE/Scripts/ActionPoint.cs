@@ -52,8 +52,8 @@ namespace Base {
                
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-            if (Data.RobotJoints.Count == 0)
-                Data.RobotJoints.Add(new IO.Swagger.Model.ProjectRobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+            /*if (Data.RobotJoints.Count == 0)
+                Data.RobotJoints.Add(new IO.Swagger.Model.ProjectRobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));*/
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -71,20 +71,42 @@ namespace Base {
             return poses;
         }
 
-        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJoints(bool uniqueOnly = false) {
+        public IO.Swagger.Model.Pose GetDefaultPose() {
+            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+                if (orientation.Id == "default")
+                    return new IO.Swagger.Model.Pose(position: Data.Position, orientation: orientation.Orientation);
+            }
+            throw new ItemNotFoundException();            
+        }
+
+        public IO.Swagger.Model.ProjectRobotJoints GetFirstJoints(string robot_id = null, bool valid_only = false) {
+            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+                if ((robot_id != null && robot_id != robotJoint.RobotId) ||
+                        (valid_only && !robotJoint.IsValid))
+                    continue;
+                return robotJoint;
+            }
+            return null;    
+        }
+
+        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
             Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
             Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
             if (uniqueOnly) {
                 poses = GetPoses();
             }
             foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
-                if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
+                if ((uniqueOnly && poses.ContainsKey(robotJoint.Id)) ||
+                    (robot_id != null && robot_id != robotJoint.RobotId) ||
+                    (valid_only && !robotJoint.IsValid)) {
                     continue;
-                }
+                }                
                 joints.Add(robotJoint.Id, robotJoint);
             }
             return joints;
         }
+        
+
 
         public void DeleteAP(bool updateProject = true) {
             // Remove all actions of this action point
