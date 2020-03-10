@@ -225,7 +225,29 @@ namespace Base {
 
         public ActionPoint SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
-            AP.transform.localPosition = new Vector3(0, 0, 0);
+            Vector3 offset = new Vector3();
+            if (actionObject.ActionObjectMetadata.ObjectModel != null) {
+                switch (actionObject.ActionObjectMetadata.ObjectModel.Type) {
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Box.SizeY / 2f + 0.1f;
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Cylinder.Height / 2f + 0.1f;
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Mesh:
+                        //TODO: how to handle meshes? do i know dimensios?
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Sphere.Radius / 2f + 0.1f;
+                        break;
+                    default:
+                        offset.y = 0.15f;
+                        break;
+                }
+            }
+            
+
+            AP.transform.localPosition = offset;
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
 
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();

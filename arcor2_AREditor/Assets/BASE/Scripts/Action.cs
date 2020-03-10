@@ -327,6 +327,10 @@ namespace Base {
             List<IActionParameter> actionParameters = new List<IActionParameter>();
             foreach (ActionParameterMetadata parameterMetadata in parameter_metadatas) {
                 GameObject paramGO = InitializeParameter(parameterMetadata, handler, DynamicContentLayout, canvasRoot, null);
+                if (paramGO == null) {
+                    Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
+                    continue;
+                }
                 actionParameters.Add(paramGO.GetComponent<IActionParameter>());
                 if (paramGO == null)
                     continue;
@@ -364,7 +368,11 @@ namespace Base {
             List<IActionParameter> actionParameters = new List<IActionParameter>();
             foreach (ActionParameter parameter in parameters) {
                 GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value);
-                
+
+                if (paramGO == null) {
+                    Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ActionParameterMetadata.Name);
+                    continue;
+                }
                 actionParameters.Add(paramGO.GetComponent<IActionParameter>());
                 if (paramGO == null)
                     continue;
