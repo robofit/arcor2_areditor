@@ -82,16 +82,17 @@ public class ActionObject3D : ActionObject
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
     }
 
     public override void OnClick(Click type) {
+        // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
             GameManager.Instance.ActivateGizmoOverlay(true);
         }
-        if (type == Click.MOUSE_RIGHT_BUTTON) {
+        else if (type == Click.MOUSE_RIGHT_BUTTON) {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
                 actionObjectMenu.UpdateMenu();
@@ -100,6 +101,26 @@ public class ActionObject3D : ActionObject
                 actionObjectMenuProjectEditor.CurrentObject = this;
                 actionObjectMenuProjectEditor.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        // HANDLE TOUCH
+        else if (type == Click.TOUCH) {
+            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+                // We have clicked with left mouse and started manipulation with object
+                manipulationStarted = true;
+                GameManager.Instance.ActivateGizmoOverlay(true);
+            }
+            else {
+                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                    actionObjectMenu.CurrentObject = this;
+                    actionObjectMenu.UpdateMenu();
+                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+                } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                    actionObjectMenuProjectEditor.CurrentObject = this;
+                    actionObjectMenuProjectEditor.UpdateMenu();
+                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+                }
             }
         }
     }
@@ -162,5 +183,6 @@ public class ActionObject3D : ActionObject
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         Model.transform.localScale = new Vector3(1, 1, 1);
+        gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
     }
 }

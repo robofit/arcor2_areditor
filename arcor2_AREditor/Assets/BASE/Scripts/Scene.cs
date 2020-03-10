@@ -17,6 +17,8 @@ namespace Base {
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
 
+        public GameObject CurrentlySelectedObject;
+
         private bool sceneActive = true;
         private bool projectActive = true;
 
@@ -25,9 +27,12 @@ namespace Base {
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
-                if (!sceneActive) {
+                if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionObject");
                     sceneActive = true;
+                } else if (sceneActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+                    ActivateSceneForEditing(false, "ActionObject");
+                    sceneActive = false;
                 }
             } else {
                 if (sceneActive) {
@@ -37,9 +42,12 @@ namespace Base {
             }
 
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
-                if (!projectActive) {
+                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionPoint");
                     projectActive = true;
+                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+                    ActivateSceneForEditing(false, "ActionPoint");
+                    projectActive = false;
                 }
             } else {
                 if (projectActive) {
@@ -48,6 +56,7 @@ namespace Base {
                 }
             }
         }
+
 
         /// <summary>
         /// Deactivates or activates scene and all objects in the scene to ignore raycasting (clicking).
@@ -84,6 +93,14 @@ namespace Base {
 
             return freeName;
         }
+
+        public void SetSelectedObject(GameObject obj) {
+            if (CurrentlySelectedObject != null) {
+                CurrentlySelectedObject.SendMessage("Deselect");
+            }
+            CurrentlySelectedObject = obj;
+        }
+
 
         #region ACTION_OBJECTS
 

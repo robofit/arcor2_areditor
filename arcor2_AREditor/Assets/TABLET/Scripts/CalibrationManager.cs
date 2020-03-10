@@ -12,19 +12,16 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARPlaneManager ARPlaneManager;
     public ARRaycastManager ARRaycastManager;
     public ARTrackedImageManager ARTrackedImageManager;
+    public ARPointCloudManager ARPointCloudManager;
 
     private ARAnchor WorldAnchor;
     
     private void OnEnable() {
         GameManager.Instance.OnConnectedToServer += ConnectedToServer;
     }
-
-    private void OnDisable() {
-        GameManager.Instance.OnConnectedToServer -= ConnectedToServer;
-    }
-
+    
     public void CreateAnchor(Transform tf) {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         RemoveWorldAnchor();
 
         List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
@@ -40,14 +37,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             AttachScene();
         }
 
-        foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
-            trackedImg.gameObject.SetActive(false);
-        }
+        ActivateTrackables(false);
 #endif
     }
 
     public void RemoveWorldAnchor() {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         if (WorldAnchor != null) {
             ARAnchorManager.RemoveAnchor(WorldAnchor);
         }
@@ -55,7 +50,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private void AttachScene() {
-#if !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         if (WorldAnchor == null) {
             WorldAnchor = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
         }
@@ -70,5 +65,29 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void ConnectedToServer(object sender, Base.StringEventArgs e) {
         AttachScene();
+    }
+
+    public void Recalibrate() {
+        ActivateTrackables(true);
+    }
+
+    private void ActivateTrackables(bool active) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
+            trackedImg.gameObject.SetActive(active);
+        }
+#endif
+    }
+
+    public void DisplayPlanes(bool active) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        foreach (ARPlane plane in ARPlaneManager.trackables) {
+            plane.gameObject.SetActive(active);
+        }
+
+        foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
+            pointCloud.gameObject.SetActive(active);
+        }
+#endif
     }
 }
