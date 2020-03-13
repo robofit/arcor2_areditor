@@ -79,6 +79,10 @@ public class ActionObject2D : Base.ActionObject {
     public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
         throw new System.NotImplementedException();
     }
+
+    public override void SetVisibility(float value) {
+        throw new System.NotImplementedException();
+    }
 }
 
 

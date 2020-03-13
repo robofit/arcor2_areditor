@@ -702,6 +702,14 @@ namespace Base {
             GizmoOverlay.raycastTarget = activate;
         }
 
+        public void SaveFloat(string key, float value) {
+            PlayerPrefs.SetFloat(key, value);
+        }
+
+        public float LoadFloat(string key, float defaultValue) {
+            return PlayerPrefs.GetFloat(key, defaultValue);
+        }
+
     }    
 
 }

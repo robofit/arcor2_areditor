@@ -143,6 +143,7 @@ public class ActionObject3D : ActionObject
     }
 
     public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;
         SetScenePosition(position);
@@ -151,6 +152,7 @@ public class ActionObject3D : ActionObject
         ActionObjectMetadata = actionObjectMetadata;
         CreateModel();
         enabled = true;
+        SetVisibility(visibility);
     }
 
     public void CreateModel() {
@@ -184,5 +186,16 @@ public class ActionObject3D : ActionObject
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         Model.transform.localScale = new Vector3(1, 1, 1);
         gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
+    }
+
+
+    public override void SetVisibility(float value) {
+        base.SetVisibility(value);
+        Model.GetComponent<Renderer>().material.color = new Color(Model.GetComponent<Renderer>().material.color.r,
+                                                                  Model.GetComponent<Renderer>().material.color.g,
+                                                                  Model.GetComponent<Renderer>().material.color.b,
+                                                                  value);
+        
+        
     }
 }

@@ -10,15 +10,19 @@ namespace Base {
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
+        protected float visibility;
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
 
         protected virtual void Start() {
+
         }
 
-        public abstract void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata);
+        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+            visibility = GameManager.Instance.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
+        }
         
         public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
@@ -121,6 +125,17 @@ namespace Base {
 
         public void RemoveActionPoint(string uuid) {
             ActionPoints[uuid].DeleteAP(false);
+        }
+
+
+        public virtual void SetVisibility(float value) {
+            Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
+            visibility = value;
+            GameManager.Instance.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+        }
+
+        public float GetVisibility() {
+            return visibility;
         }
     }
 

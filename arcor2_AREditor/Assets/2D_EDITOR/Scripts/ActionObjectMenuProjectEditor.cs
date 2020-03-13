@@ -8,6 +8,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
     [SerializeField]
     private TMPro.TMP_Text objectName;
+    public Slider VisibilitySlider;
 
     
     public void CreateNewAP() {
@@ -15,19 +16,17 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
             return;
         }
         Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
-
+         
     }
 
     public void UpdateMenu() {
         objectName.text = CurrentObject.Data.Id;
+        VisibilitySlider.value = CurrentObject.GetVisibility()*100;
     }
 
-    /*
-    public void UpdateActionPointPosition() {
-        Dropdown dropdown = robotsList.GetComponent<Dropdown>();
-        Dropdown dropdownEE = endEffectorList.GetComponent<Dropdown>();
-        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.GetComponent<Base.ActionObject>(), dropdown.options[dropdown.value].text, dropdownEE.options[dropdownEE.value].text);
-    }*/
+    public void OnVisibilityChange(float value) {
+        CurrentObject.SetVisibility(value/100f); 
+    }  
 
 
 }
