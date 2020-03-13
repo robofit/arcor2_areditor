@@ -85,7 +85,6 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     }
 
     public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction callback) {
-        SetLoading(true);
         Dropdown.dropdownItems.Clear();
         foreach (CustomDropdown.Item item in items) {
             if (callback != null) {
@@ -100,12 +99,13 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
                 Dropdown.selectedItemIndex = Dropdown.dropdownItems.Count - 1;
             }
         }
+
+        SetLoading(false);
         if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
         } else {
             Dropdown.gameObject.SetActive(false);
         }
-        SetLoading(false);
     }
 
     private void Update() {

@@ -294,6 +294,7 @@ namespace Base {
         }
 
         public static async Task LoadDropdownValues(string actionProviderId, string selectedValue, DropdownParameter dropdownParameter, ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject parentObject, UnityAction callback = null) {
+            Debug.LogError("LoadDropdownValues");
             List<string> values = new List<string>();
             List<IO.Swagger.Model.IdValue> args = new List<IO.Swagger.Model.IdValue>();
             if (actionParameterMetadata.DynamicValueParents != null) {
