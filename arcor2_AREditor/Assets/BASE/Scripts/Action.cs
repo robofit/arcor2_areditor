@@ -302,7 +302,7 @@ namespace Base {
 
                     string value = (string) parent_param.GetValue();
                     if (value == null) {
-                        Debug.LogError("Parrent param has no value, this should never happen!");
+                        Debug.LogError("Parent param has no value, this should never happen!");
                         continue;
                     }
 
