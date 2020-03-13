@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
+using System.Linq;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -19,7 +20,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public FocusConfirmationDialog FocusConfirmationDialog;
 
-    public DropdownParameter robotsList, endEffectorList, orientationsList, JointsList;
+    public DropdownParameter robotsList, endEffectorList, orientationsList;
+    public DropdownParameterJoints JointsList;
 
     public AddNewActionDialog AddNewActionDialog;
 
@@ -115,17 +117,12 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
    public void UpdateJoints(string robot_id) {
         CustomDropdown jointsDropdown = JointsList.Dropdown;
-        jointsDropdown.dropdownItems.Clear();
-        foreach (string joints in CurrentActionPoint.GetJoints(true, robot_id).Keys) {
-            CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = joints
-            };
-            jointsDropdown.dropdownItems.Add(item);
-        }
+        
+        JointsList.PutData(CurrentActionPoint.GetJoints(true, robot_id).Values.ToList(), null, null);
+
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
             jointsDropdown.gameObject.SetActive(true);
-            jointsDropdown.SetupDropdown();
         } else {
             jointsDropdown.gameObject.SetActive(false);
             NoJoints.gameObject.SetActive(true);
