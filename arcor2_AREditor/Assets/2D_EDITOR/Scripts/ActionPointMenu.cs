@@ -116,6 +116,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         
 
    public void UpdateJoints(string robot_id) {
+        if (robot_id == null)
+            return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         
         JointsList.PutData(CurrentActionPoint.GetJoints(true, robot_id).Values.ToList(), null, null);
@@ -179,7 +181,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
         }
-
+        UpdateJoints((string) robotsList.GetValue());
     }
 
     public void ShowFocusConfirmationDialog() {
