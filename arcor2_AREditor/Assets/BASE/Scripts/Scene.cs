@@ -22,6 +22,7 @@ namespace Base {
         private bool sceneActive = true;
         private bool projectActive = true;
 
+        public bool ActionObjectsInteractive, ActionObjectsVisible;
 
         // Update is called once per frame
         private void Update() {
@@ -165,10 +166,10 @@ namespace Base {
                         // TODO: create a new one with new type
                     }
                     // Update data received from swagger
-                    actionObject.ActionObjectUpdate(aoSwagger);
+                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 } else {
                     actionObject = SpawnActionObject(aoSwagger.Uuid, aoSwagger.Type, false, aoSwagger.Id);
-                    actionObject.ActionObjectUpdate(aoSwagger);
+                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 }
 
                 currentAO.Add(aoSwagger.Uuid);
@@ -180,7 +181,41 @@ namespace Base {
                     RemoveActionObject(actionObjectUUID);
                 }
             }
+
+            
         }
+
+        /// <summary>
+        /// Shows action objects models
+        /// </summary>
+        public void ShowActionObjects() {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.Show();
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", true);
+        }
+
+        /// <summary>
+        /// Hides action objects models
+        /// </summary>
+        public void HideActionObjects() {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.Hide();
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", false);
+        }
+
+         /// <summary>
+        /// Sets whether action objects should react to user inputs (i.e. enables/disables colliders)
+        /// </summary>
+        public void SetActionObjectsInteractivity(bool interactivity) {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.SetInteractivity(interactivity);
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
+            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
+        }
+
 
         /// <summary>
         /// Destroys and removes references to all action objects in the scene.

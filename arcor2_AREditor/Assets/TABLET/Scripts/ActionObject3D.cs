@@ -130,11 +130,11 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-        base.ActionObjectUpdate(actionObjectSwagger);
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        Debug.Assert(Model != null);
+        base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
         ActionObjectName.text = actionObjectSwagger.Id;
-        if (Model == null)
-            CreateModel();
+
     }
 
 
@@ -197,5 +197,20 @@ public class ActionObject3D : ActionObject
                                                                   value);
         
         
+    }
+
+    public override void Show() {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Renderer>().enabled = true;
+    }
+
+    public override void Hide() {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Renderer>().enabled = false;
+    }
+
+    public override void SetInteractivity(bool interactivity) {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Collider>().enabled = interactivity;
     }
 }

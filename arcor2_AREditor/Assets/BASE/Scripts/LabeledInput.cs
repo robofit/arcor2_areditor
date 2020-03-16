@@ -44,9 +44,6 @@ public class LabeledInput : MonoBehaviour, IActionParameter
     }
 
 
-    public void SetValue(string value) {
-        Input.text = value;
-    }
 
     public object GetValue() {
         switch (ParameterType) {
@@ -63,5 +60,9 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public string GetName() {
         return Label.text;
+    }
+
+    public void SetValue(object value) {
+        Input.text = (string) value;
     }
 }

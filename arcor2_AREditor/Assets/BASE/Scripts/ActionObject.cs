@@ -40,12 +40,18 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
             Data = actionObjectSwagger;
 
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
+            if (visibility)
+                Show();
+            else
+                Hide();
+
+            SetInteractivity(interactivity);
         }
 
         public virtual bool SceneInteractable() {
@@ -137,6 +143,12 @@ namespace Base {
         public float GetVisibility() {
             return visibility;
         }
+
+        public abstract void Show();
+
+        public abstract void Hide();
+
+        public abstract void SetInteractivity(bool interactive);
     }
 
 }

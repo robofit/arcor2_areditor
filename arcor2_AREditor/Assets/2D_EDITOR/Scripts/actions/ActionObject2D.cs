@@ -83,6 +83,18 @@ public class ActionObject2D : Base.ActionObject {
     public override void SetVisibility(float value) {
         throw new System.NotImplementedException();
     }
+
+    public override void Show() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Hide() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void SetInteractivity(bool interactive) {
+        throw new System.NotImplementedException();
+    }
 }
 
 

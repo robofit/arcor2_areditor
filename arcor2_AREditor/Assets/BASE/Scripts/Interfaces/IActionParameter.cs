@@ -6,4 +6,5 @@ public interface IActionParameter
     string GetName();
     object GetValue();
 
+    void SetValue(object value);
 }

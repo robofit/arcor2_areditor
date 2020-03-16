@@ -118,4 +118,8 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     public string GetName() {
         return Label.text;
     }
+
+    public void SetValue(object value) {
+        throw new NotImplementedException();
+    }
 }
