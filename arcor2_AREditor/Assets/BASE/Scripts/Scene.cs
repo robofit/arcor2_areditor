@@ -215,6 +215,13 @@ namespace Base {
             return actionObject;
         }
 
+        public ActionObject GetFirstActionObject() {
+            if (ActionObjects.Count == 0) {
+                return null;
+            }
+            return ActionObjects.First().Value;
+        }
+
         /// <summary>
         /// Shows action objects models
         /// </summary>

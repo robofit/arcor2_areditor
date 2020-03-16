@@ -30,19 +30,17 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
 
     public void ShowNextAO() {
         ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
-        nextAO.ShowMenu();
-        Scene.Instance.SetSelectedObject(nextAO.gameObject);
-        nextAO.SendMessage("Select");
+        ShowActionObject(nextAO);
     }
 
     public void ShowPreviousAO() {
         ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
-        previousAO.ShowMenu();
-        Scene.Instance.SetSelectedObject(previousAO.gameObject);
-        previousAO.SendMessage("Select");
+        ShowActionObject(previousAO);
     }
 
-
-
-
+    private static void ShowActionObject(ActionObject actionObject) {
+        actionObject.ShowMenu();
+        Scene.Instance.SetSelectedObject(actionObject.gameObject);
+        actionObject.SendMessage("Select");
+    }
 }

@@ -179,12 +179,16 @@ public class ActionObject3D : ActionObject
 
     public override void Show() {
         Debug.Assert(Model != null);
-        Model.GetComponent<Renderer>().enabled = true;
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = true;
+        }
     }
 
     public override void Hide() {
         Debug.Assert(Model != null);
-        Model.GetComponent<Renderer>().enabled = false;
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = false;
+        }
     }
 
     public override void SetInteractivity(bool interactivity) {
