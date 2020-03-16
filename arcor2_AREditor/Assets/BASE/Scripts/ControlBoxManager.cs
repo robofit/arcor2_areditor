@@ -38,4 +38,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public void ShowActionObjectSettingsMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
     }
+
+    public void DisplayConnections(bool active) {
+        ConnectionManagerArcoro.Instance.DisplayConnections(active);
+    }
 }

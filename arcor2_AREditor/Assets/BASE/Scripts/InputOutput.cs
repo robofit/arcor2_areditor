@@ -29,6 +29,9 @@ namespace Base {
         }
 
         public override void OnClick(Click type) {
+            if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
+                return;
+            }
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.TOUCH) {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (Connection == null) {
