@@ -15,9 +15,12 @@ namespace Base {
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
+        protected ActionObjectMenu actionObjectMenu;
+        protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
         protected virtual void Start() {
-
+            actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
+            actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
@@ -149,6 +152,19 @@ namespace Base {
         public abstract void Hide();
 
         public abstract void SetInteractivity(bool interactive);
+
+
+    public void ShowMenu() {
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+            actionObjectMenu.CurrentObject = this;
+            actionObjectMenu.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+            actionObjectMenuProjectEditor.CurrentObject = this;
+            actionObjectMenuProjectEditor.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+        }
+    }
     }
 
 }

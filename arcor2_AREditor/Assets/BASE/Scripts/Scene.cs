@@ -185,6 +185,36 @@ namespace Base {
             
         }
 
+        public ActionObject GetNextActionObject(string aoUUID) {
+            List<string> keys = ActionObjects.Keys.ToList();
+            Debug.Assert(keys.Count > 0);
+            int index = keys.IndexOf(aoUUID);
+            string next;
+            if (index + 1 < ActionObjects.Keys.Count)
+                next = keys[index + 1];
+            else
+                next = keys[0];
+            if (!ActionObjects.TryGetValue(next, out ActionObject actionObject)) {
+                throw new ItemNotFoundException("This should never happen");
+            }
+            return actionObject;
+        }
+
+        public ActionObject GetPreviousActionObject(string aoUUID) {
+            List<string> keys = ActionObjects.Keys.ToList();
+            Debug.Assert(keys.Count > 0);
+            int index = keys.IndexOf(aoUUID);
+            string previous;
+            if (index - 1 > -1)
+                previous = keys[index - 1];
+            else
+                previous = keys[keys.Count - 1];
+            if (!ActionObjects.TryGetValue(previous, out ActionObject actionObject)) {
+                throw new ItemNotFoundException("This should never happen");
+            }
+            return actionObject;
+        }
+
         /// <summary>
         /// Shows action objects models
         /// </summary>

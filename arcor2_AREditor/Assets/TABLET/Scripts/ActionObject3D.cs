@@ -8,9 +8,6 @@ using RuntimeGizmos;
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
-    private ActionObjectMenu actionObjectMenu;
-    private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
-
     public GameObject Visual, Model;
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
@@ -27,10 +24,7 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        UpdateId(Data.Id);
-        actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
-        actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
-       
+        UpdateId(Data.Id);       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         // disable update method until model is ready
         //enabled = false;
@@ -93,15 +87,7 @@ public class ActionObject3D : ActionObject
             GameManager.Instance.ActivateGizmoOverlay(true);
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                actionObjectMenu.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
+            ShowMenu();
         }
 
         // HANDLE TOUCH
@@ -112,15 +98,7 @@ public class ActionObject3D : ActionObject
                 GameManager.Instance.ActivateGizmoOverlay(true);
             }
             else {
-                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                    actionObjectMenu.CurrentObject = this;
-                    actionObjectMenu.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-                } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                    actionObjectMenuProjectEditor.CurrentObject = this;
-                    actionObjectMenuProjectEditor.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-                }
+                ShowMenu();
             }
         }
     }
@@ -213,4 +191,5 @@ public class ActionObject3D : ActionObject
         Debug.Assert(Model != null);
         Model.GetComponent<Collider>().enabled = interactivity;
     }
+
 }

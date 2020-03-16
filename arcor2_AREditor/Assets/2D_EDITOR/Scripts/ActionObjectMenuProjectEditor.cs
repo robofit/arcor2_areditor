@@ -26,7 +26,23 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
 
     public void OnVisibilityChange(float value) {
         CurrentObject.SetVisibility(value/100f); 
-    }  
+    }
+
+    public void ShowNextAO() {
+        ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
+        nextAO.ShowMenu();
+        Scene.Instance.SetSelectedObject(nextAO.gameObject);
+        nextAO.SendMessage("Select");
+    }
+
+    public void ShowPreviousAO() {
+        ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
+        previousAO.ShowMenu();
+        Scene.Instance.SetSelectedObject(previousAO.gameObject);
+        previousAO.SendMessage("Select");
+    }
+
+
 
 
 }

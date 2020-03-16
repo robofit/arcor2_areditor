@@ -95,6 +95,7 @@ public class ActionObject2D : Base.ActionObject {
     public override void SetInteractivity(bool interactive) {
         throw new System.NotImplementedException();
     }
+
 }
 
 
