@@ -20,9 +20,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     }
 
     public void ShowMenu(SimpleSideMenu menu) {
-        //Debug.Log(Menu); 
-        if (menu == null)
-            return;
+        Debug.Assert(menu != null); 
         HideAllMenus();
         menu.Open();
         menu.gameObject.GetComponent<IMenu>().UpdateMenu();
