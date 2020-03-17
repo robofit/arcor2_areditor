@@ -8,9 +8,6 @@ using RuntimeGizmos;
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
-    private ActionObjectMenu actionObjectMenu;
-    private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
-
     public GameObject Visual, Model;
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
@@ -27,10 +24,7 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        UpdateId(Data.Id);
-        actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
-        actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
-       
+        UpdateId(Data.Id);       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         // disable update method until model is ready
         //enabled = false;
@@ -93,15 +87,7 @@ public class ActionObject3D : ActionObject
             GameManager.Instance.ActivateGizmoOverlay(true);
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                actionObjectMenu.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
+            ShowMenu();
         }
 
         // HANDLE TOUCH
@@ -112,15 +98,7 @@ public class ActionObject3D : ActionObject
                 GameManager.Instance.ActivateGizmoOverlay(true);
             }
             else {
-                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                    actionObjectMenu.CurrentObject = this;
-                    actionObjectMenu.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-                } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                    actionObjectMenuProjectEditor.CurrentObject = this;
-                    actionObjectMenuProjectEditor.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-                }
+                ShowMenu();
             }
         }
     }
@@ -130,11 +108,11 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-        base.ActionObjectUpdate(actionObjectSwagger);
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        Debug.Assert(Model != null);
+        base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
         ActionObjectName.text = actionObjectSwagger.Id;
-        if (Model == null)
-            CreateModel();
+
     }
 
 
@@ -143,6 +121,7 @@ public class ActionObject3D : ActionObject
     }
 
     public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;
         SetScenePosition(position);
@@ -151,6 +130,7 @@ public class ActionObject3D : ActionObject
         ActionObjectMetadata = actionObjectMetadata;
         CreateModel();
         enabled = true;
+        SetVisibility(visibility);
     }
 
     public void CreateModel() {
@@ -185,4 +165,35 @@ public class ActionObject3D : ActionObject
         Model.transform.localScale = new Vector3(1, 1, 1);
         gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
     }
+
+
+    public override void SetVisibility(float value) {
+        base.SetVisibility(value);
+        Model.GetComponent<Renderer>().material.color = new Color(Model.GetComponent<Renderer>().material.color.r,
+                                                                  Model.GetComponent<Renderer>().material.color.g,
+                                                                  Model.GetComponent<Renderer>().material.color.b,
+                                                                  value);
+        
+        
+    }
+
+    public override void Show() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = true;
+        }
+    }
+
+    public override void Hide() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = false;
+        }
+    }
+
+    public override void SetInteractivity(bool interactivity) {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Collider>().enabled = interactivity;
+    }
+
 }

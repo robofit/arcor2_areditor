@@ -79,7 +79,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.3.0";
+        public const string ApiVersion = "0.4.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -302,6 +302,10 @@ namespace Base {
             if (loadedScene != scene.Id) {
                 Scene.Instance.RemoveActionObjects();
                 loadedScene = scene.Id;
+                if (loadedScene != null) {
+                    Scene.Instance.ActionObjectsVisible = LoadBool("scene/" + loadedScene + "/AOVisibility", true);
+                    Scene.Instance.ActionObjectsInteractive = LoadBool("scene/" + loadedScene + "/AOInteractivity", true);
+                }
             }
 
             Scene.Instance.UpdateActionObjects();
@@ -426,7 +430,14 @@ namespace Base {
             if (!response.Result) {
                 throw new RequestFailedException(response.Messages);
             }
-            OnLoadScene?.Invoke(this, EventArgs.Empty);
+            try {
+                await Task.Run(() => WaitForSceneReady(2000));
+                OnLoadScene?.Invoke(this, EventArgs.Empty);
+            } catch (TimeoutException e) {
+                EndLoading();
+                throw new RequestFailedException("Failed to open selected scene");
+            }
+           
         }
 
         public async void RunProject() {
@@ -700,6 +711,23 @@ namespace Base {
 
         public void ActivateGizmoOverlay(bool activate) {
             GizmoOverlay.raycastTarget = activate;
+        }
+
+        public void SaveFloat(string key, float value) {
+            PlayerPrefs.SetFloat(key, value);
+        }
+
+        public float LoadFloat(string key, float defaultValue) {
+            return PlayerPrefs.GetFloat(key, defaultValue);
+        }
+
+        public void SaveBool(string key, bool value) {
+            PlayerPrefs.SetInt(key, value ? 1 : 0);
+        }
+
+        public bool LoadBool(string key, bool defaultValue) {
+            int value = PlayerPrefs.GetInt(key, defaultValue ? 1 : 0);
+            return value == 1 ? true : false;
         }
 
     }    

@@ -1,4 +1,6 @@
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Base {
     public class ActionParameterMetadata : IO.Swagger.Model.ActionParameterMeta {
@@ -14,7 +16,7 @@ namespace Base {
                 case "integer_enum":
                     ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntegerEnumParameterExtra>(Extra);
                     break;
-                case "int":
+                case "integer":
                     ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntParameterExtra>(Extra);
                     break;
                 case "double":
@@ -22,6 +24,17 @@ namespace Base {
                     break;
             }
         }
+
+        public async Task<List<string>> LoadDynamicValues(string actionProviderId, List<IO.Swagger.Model.IdValue> parentParams) {
+            if (!DynamicValue) {
+                return new List<string>();
+            }
+            return await GameManager.Instance.GetActionParamValues(actionProviderId, Name, parentParams);
+        }
+
+        public T GetDefaultValue<T>() {
+            return JsonConvert.DeserializeObject<T>(DefaultValue);
+        } 
 
     }
 

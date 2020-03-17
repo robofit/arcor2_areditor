@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu, ActionObjectMenuProjectEditor;
+    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu, ActionObjectMenuProjectEditor, ActionObjectSettingsMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
@@ -15,6 +15,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
             PuckMenu.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
+            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open;
     }
 

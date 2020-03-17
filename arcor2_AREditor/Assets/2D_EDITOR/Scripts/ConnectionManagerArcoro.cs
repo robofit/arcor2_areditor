@@ -9,6 +9,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
 
+    public bool ConnectionsActive = true;
+
     // Start is called before the first frame update
     void Start() {
         virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
@@ -22,6 +24,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
+        if (!ConnectionsActive)
+            return null;
         GameObject c = Instantiate(ConnectionPrefab);
         c.transform.SetParent(transform);
         // Set correct targets. Output has to be always at 0 index, because we are connecting output to input.
@@ -38,6 +42,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection CreateConnectionToMouse(GameObject o) {
+        if (!ConnectionsActive)
+            return null;
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
         CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
@@ -47,6 +53,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public void DestroyConnectionToMouse() {
+        if (!ConnectionsActive)
+            return;
         int i = GetIndexByType(virtualConnectionToMouse, typeof(Base.InputOutput));
         if (i >= 0) {
             virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
@@ -58,6 +66,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection ConnectVirtualConnectionToObject(GameObject o) {
+        if (!ConnectionsActive)
+            return null;
         if (virtualConnectionToMouse == null)
             return null;
 
@@ -78,6 +88,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public Connection AttachConnectionToMouse(Connection c, GameObject o) {
+        if (!ConnectionsActive)
+            return null;
         int i = GetIndexOf(c, o);
         if (i < 0)
             return null;
@@ -145,6 +157,13 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             }
         }
         Connections.Clear();
+    }
+
+    public void DisplayConnections(bool active) {
+        foreach (Connection connection in Connections) {
+            connection.gameObject.SetActive(active);
+        }
+        ConnectionsActive = active;
     }
 
 }

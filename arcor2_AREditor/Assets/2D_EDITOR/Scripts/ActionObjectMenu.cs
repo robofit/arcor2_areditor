@@ -13,6 +13,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
+    public Slider VisibilitySlider;
 
     private int currentFocusPoint = -1;
 
@@ -60,6 +61,8 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         NextButton.interactable = false;
         PreviousButton.interactable = false;
         objectName.text = CurrentObject.Data.Id;
+
+        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
     }
 
     private void OnRobotChanged(string robot_id) {
@@ -172,6 +175,11 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     private void UpdateCurrentPointLabel() {
         CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + CurrentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
+    }
+
+
+    public void OnVisibilityChange(float value) {
+        CurrentObject.SetVisibility(value / 100f);
     }
 
 }

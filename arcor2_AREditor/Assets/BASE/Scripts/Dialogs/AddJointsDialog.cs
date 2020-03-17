@@ -18,13 +18,13 @@ public class AddJointsDialog : MonoBehaviour {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed", "Joints named " + joints_id + " already exists");
             return;
         }
-        IO.Swagger.Model.RobotJoints robotJoints = new IO.Swagger.Model.RobotJoints(id: joints_id, isValid: false, joints: new List<IO.Swagger.Model.Joint>(), RobotId);
+        IO.Swagger.Model.ProjectRobotJoints robotJoints = new IO.Swagger.Model.ProjectRobotJoints(id: joints_id, isValid: false, joints: new List<IO.Swagger.Model.Joint>(), RobotId);
 
         
         ap.Data.RobotJoints.Add(robotJoints);
         Base.GameManager.Instance.UpdateProject();
         NewJointsName.GetComponent<TMPro.TMP_InputField>().text = "";
         GetComponent<ModalWindowManager>().CloseWindow();
-        MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateJoints();
+        MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateJoints(RobotId, joints_id);
     }
 }
