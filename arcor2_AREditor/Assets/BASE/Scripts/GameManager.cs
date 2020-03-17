@@ -730,6 +730,14 @@ namespace Base {
             return value == 1 ? true : false;
         }
 
+        public Button CreateButton(Transform parent, string label) {
+            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);
+            btnGO.transform.localScale = new Vector3(1, 1, 1);
+            Button btn = btnGO.GetComponent<Button>();
+            btn.GetComponentInChildren<TMPro.TMP_Text>().text = label;
+            return btn;
+        }
+
     }    
 
 }

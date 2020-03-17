@@ -18,7 +18,13 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");
+        protected ActionPointMenu actionPointMenu;
+
+        protected virtual void Start() {
+            actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
+            
+        }
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
@@ -148,6 +154,12 @@ namespace Base {
 
         public void RemoveAction(string uuid, bool updateProject) {
             Actions[uuid].DeleteAction(updateProject);
+        }
+
+        public void ShowMenu() {
+            actionPointMenu.CurrentActionPoint = this;
+            actionPointMenu.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
         }
     }
 

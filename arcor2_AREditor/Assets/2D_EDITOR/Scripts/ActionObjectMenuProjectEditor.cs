@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System;
-using DanielLochner.Assets.SimpleSideMenu;
 using Base;
 
 public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
@@ -9,6 +7,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     [SerializeField]
     private TMPro.TMP_Text objectName;
     public Slider VisibilitySlider;
+    public GameObject DynamicContent;
 
     
     public void CreateNewAP() {
@@ -16,12 +15,19 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
             return;
         }
         Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
-         
+        UpdateMenu();
     }
 
     public void UpdateMenu() {
         objectName.text = CurrentObject.Data.Id;
         VisibilitySlider.value = CurrentObject.GetVisibility()*100;
+        foreach (Transform t in DynamicContent.transform) {
+            Destroy(t.gameObject);
+        }
+        foreach (ActionPoint actionPoint in CurrentObject.ActionPoints.Values) {
+            Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Id);
+            button.onClick.AddListener(() => ShowActionPoint(actionPoint));
+        }
     }
 
     public void OnVisibilityChange(float value) {
@@ -42,5 +48,12 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         actionObject.ShowMenu();
         Scene.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
+    }
+
+    private static void ShowActionPoint(ActionPoint actionPoint) {
+        MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
+        actionPoint.ShowMenu();
+        Scene.Instance.SetSelectedObject(actionPoint.gameObject);
+        actionPoint.SendMessage("Select");
     }
 }

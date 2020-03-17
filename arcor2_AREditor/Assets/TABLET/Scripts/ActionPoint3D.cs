@@ -14,11 +14,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private bool updateProject = false;
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
     }
 
-    private void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
