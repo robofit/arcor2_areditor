@@ -81,4 +81,8 @@ public class MainScreen : MonoBehaviour
         // TODO new scene
         button.onClick.AddListener(() => NewProjectDialog.WindowManager.OpenWindow());
     }
+
+    public void NotImplemented() {
+        Base.Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
+    }
 }
