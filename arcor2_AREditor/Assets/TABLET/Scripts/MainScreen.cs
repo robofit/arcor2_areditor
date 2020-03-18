@@ -13,6 +13,9 @@ public class MainScreen : MonoBehaviour
     public NewProjectDialog NewProjectDialog;
 
     [SerializeField]
+    private SceneOptionMenu SceneOptionMenu;
+
+    [SerializeField]
     private CanvasGroup projectsList, scenesList;
 
     [SerializeField]
@@ -62,6 +65,7 @@ public class MainScreen : MonoBehaviour
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
             tile.SetLabel(scene.Id);
             tile.AddListener(() => Base.GameManager.Instance.OpenScene(scene.Id));
+            tile.OptionAddListener(() => SceneOptionMenu.Open(scene.Id));
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene

@@ -17,4 +17,8 @@ public class Tile : MonoBehaviour
     public void AddListener(UnityAction callback) {
         MainButton.onClick.AddListener(callback);
     }
+
+    public void OptionAddListener(UnityAction callback) {
+        OptionButton.onClick.AddListener(callback);
+    }
 }
