@@ -9,16 +9,45 @@ public class Tile : MonoBehaviour
     private TMPro.TMP_Text Label;
     [SerializeField]
     private Button MainButton, OptionButton;
+    [SerializeField]
+    private GameObject star;
 
     public void SetLabel(string label) {
         Label.text = label;
     }
 
+    public string GetLabel() {
+        return Label.text;
+    }
+
     public void AddListener(UnityAction callback) {
-        MainButton.onClick.AddListener(callback);
+        if (callback != null)
+            MainButton.onClick.AddListener(callback);
     }
 
     public void OptionAddListener(UnityAction callback) {
-        OptionButton.onClick.AddListener(callback);
+        if (callback == null) {
+            OptionButton.gameObject.SetActive(false);
+        } else {
+            OptionButton.gameObject.SetActive(true);
+            OptionButton.onClick.AddListener(callback);
+        }        
+    }
+
+    public void SetStar(bool visible) {
+        star.SetActive(visible);
+    }
+
+    public bool GetStarred() {
+        return star.activeSelf;
+    }
+
+    public virtual void InitTile(string sceneId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible) {
+        SetLabel(sceneId);
+        if (mainCallback != null) {
+            AddListener(mainCallback);
+        }
+        OptionAddListener(optionCallback);
+        SetStar(starVisible);
     }
 }

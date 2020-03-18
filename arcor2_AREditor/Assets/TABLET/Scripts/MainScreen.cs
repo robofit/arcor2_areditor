@@ -21,6 +21,8 @@ public class MainScreen : MonoBehaviour
     [SerializeField]
     private CanvasGroup CanvasGroup;
 
+    private List<SceneTile> sceneTiles = new List<SceneTile>();
+
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
     }
@@ -57,15 +59,38 @@ public class MainScreen : MonoBehaviour
         scenesList.blocksRaycasts = true;
     }
 
+    public void FilterLists(bool starred = false) {
+        foreach (SceneTile sceneTile in sceneTiles) {
+            if (starred && !sceneTile.GetStarred())
+                sceneTile.gameObject.SetActive(false);
+            else
+                sceneTile.gameObject.SetActive(true);
+        }
+    }
+
+    public void EnableRecent(bool enable) {
+        if (enable)
+            FilterLists(false);
+    }
+
+    public void EnableStarred(bool enable) {
+        if (enable)
+            FilterLists(true);
+    }
+
     public void UpdateScenes(object sender, EventArgs eventArgs) {
+        sceneTiles.Clear();
         foreach (Transform t in ScenesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
-            tile.SetLabel(scene.Id);
-            tile.AddListener(() => Base.GameManager.Instance.OpenScene(scene.Id));
-            tile.OptionAddListener(() => SceneOptionMenu.Open(scene.Id));
+            bool starred = Base.GameManager.Instance.LoadBool("scene/" + scene.Id + "/starred", false);
+            tile.InitTile(scene.Id,
+                          () => Base.GameManager.Instance.OpenScene(scene.Id),
+                          () => SceneOptionMenu.Open(tile),
+                          starred);
+            sceneTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
