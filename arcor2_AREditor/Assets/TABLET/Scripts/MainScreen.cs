@@ -16,19 +16,25 @@ public class MainScreen : MonoBehaviour
     private SceneOptionMenu SceneOptionMenu;
 
     [SerializeField]
+    private ProjectOptionMenu ProjectOptionMenu;
+
+    [SerializeField]
     private CanvasGroup projectsList, scenesList;
 
     [SerializeField]
     private CanvasGroup CanvasGroup;
 
     private List<SceneTile> sceneTiles = new List<SceneTile>();
+    private List<ProjectTile> projectTiles = new List<ProjectTile>();
 
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
+        CanvasGroup.blocksRaycasts = true;
     }
 
     private void HideSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 0;
+        CanvasGroup.blocksRaycasts = false;
     }
 
     private void Start() {
@@ -60,12 +66,20 @@ public class MainScreen : MonoBehaviour
     }
 
     public void FilterLists(bool starred = false) {
-        foreach (SceneTile sceneTile in sceneTiles) {
-            if (starred && !sceneTile.GetStarred())
-                sceneTile.gameObject.SetActive(false);
-            else
-                sceneTile.gameObject.SetActive(true);
+        //FilterLists((List<Tiles>) sceneTiles, starred);
+        foreach (SceneTile tile in sceneTiles) {
+            FilterTile(tile, starred);
         }
+        foreach (ProjectTile tile in projectTiles) {
+            FilterTile(tile, starred);
+        }
+    }
+
+    public void FilterTile(Tile tile, bool starred = false) {
+        if (starred && !tile.GetStarred())
+            tile.gameObject.SetActive(false);
+        else
+            tile.gameObject.SetActive(true);
     }
 
     public void EnableRecent(bool enable) {
@@ -98,13 +112,18 @@ public class MainScreen : MonoBehaviour
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {
+        projectTiles.Clear();
         foreach (Transform t in ProjectsDynamicContent.transform) {
             Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
-            SceneTile tile = Instantiate(SceneTilePrefab, ProjectsDynamicContent.transform).GetComponent<SceneTile>();
-            tile.SetLabel(project.Id);
-            tile.AddListener(() => Base.GameManager.Instance.OpenProject(project.Id));
+            ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
+            bool starred = Base.GameManager.Instance.LoadBool("project/" + project.Id + "/starred", false);
+            tile.InitTile(project.Id,
+                          () => Base.GameManager.Instance.OpenProject(project.Id),
+                          () => ProjectOptionMenu.Open(tile),
+                          starred);
+            projectTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
