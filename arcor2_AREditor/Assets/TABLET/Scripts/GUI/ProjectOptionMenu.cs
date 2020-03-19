@@ -8,7 +8,7 @@ public class ProjectOptionMenu : TileOptionMenu
 
     public void Open(ProjectTile tile) {
         projectTile = tile;
-        Open(tile.GetLabel(), tile.GetStarred());
+        Open((Tile) tile);
     }
 
     public override void SetStar(bool starred) {
@@ -16,4 +16,5 @@ public class ProjectOptionMenu : TileOptionMenu
         projectTile.SetStar(starred);
         Close();
     }
+
 }

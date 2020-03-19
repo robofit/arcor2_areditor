@@ -9,13 +9,12 @@ public class SceneOptionMenu : TileOptionMenu {
 
     public void Open(SceneTile sceneTile) {
         this.sceneTile = sceneTile;
-        Open(sceneTile.GetLabel(), sceneTile.GetStarred());
+        Open((Tile) sceneTile);
     }
 
     public override void SetStar(bool starred) {
         Base.GameManager.Instance.SaveBool("scene/" + GetLabel() + "/starred", starred);
-        sceneTile.SetStar(starred);
-        Close();
+        SetStar(sceneTile, starred);
     }
 
     

@@ -4,9 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class MainScreen : MonoBehaviour
+public class MainScreen : Base.Singleton<MainScreen>
 {
-    List<string> scenes = new List<string>(), projects = new List<string>();
     public TMPro.TMP_Text ScenesBtn, ProjectsBtn;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, ScenesDynamicContent, ProjectsDynamicContent;
     public NewSceneDialog NewSceneDialog;
@@ -26,6 +25,9 @@ public class MainScreen : MonoBehaviour
 
     private List<SceneTile> sceneTiles = new List<SceneTile>();
     private List<ProjectTile> projectTiles = new List<ProjectTile>();
+
+    //filters
+    private bool starredOnly = false;
 
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
@@ -65,31 +67,34 @@ public class MainScreen : MonoBehaviour
         scenesList.blocksRaycasts = true;
     }
 
-    public void FilterLists(bool starred = false) {
-        //FilterLists((List<Tiles>) sceneTiles, starred);
+    public void FilterLists() {
         foreach (SceneTile tile in sceneTiles) {
-            FilterTile(tile, starred);
+            FilterTile(tile);
         }
         foreach (ProjectTile tile in projectTiles) {
-            FilterTile(tile, starred);
+            FilterTile(tile);
         }
     }
 
-    public void FilterTile(Tile tile, bool starred = false) {
-        if (starred && !tile.GetStarred())
+    public void FilterTile(Tile tile) {
+        if (starredOnly && !tile.GetStarred())
             tile.gameObject.SetActive(false);
         else
             tile.gameObject.SetActive(true);
     }
 
     public void EnableRecent(bool enable) {
-        if (enable)
-            FilterLists(false);
+        if (enable) {
+            starredOnly = false;
+            FilterLists();
+        }            
     }
 
     public void EnableStarred(bool enable) {
-        if (enable)
-            FilterLists(true);
+        if (enable) {
+            starredOnly = true;
+            FilterLists();
+        }
     }
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
