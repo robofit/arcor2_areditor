@@ -52,28 +52,32 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void OnClick(Click type) {
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
-            // We have clicked with left mouse and started manipulation with object
-            manipulationStarted = true;
-            GameManager.Instance.ActivateGizmoOverlay(true);
+            StartManipulation();
         } else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
-            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+            ShowMenu();
         }
 
         // HANDLE TOUCH
         else if (type == Click.TOUCH) {
-            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                // We have touched and started manipulation with object
-                manipulationStarted = true;
-                GameManager.Instance.ActivateGizmoOverlay(true);
+            if (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate) {
+                StartManipulation();
             } else {
-                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
-                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+                ShowMenu();
             }
         }
     }
+
+    public void StartManipulation() {
+        if (Locked) {
+            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
+        } else {
+            // We have clicked with left mouse and started manipulation with object
+            manipulationStarted = true;
+            GameManager.Instance.ActivateGizmoOverlay(true);
+            Debug.LogError("asdf");
+        }
+    }
+
 
     public override Vector3 GetScenePosition() {
         /*return Base.GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -

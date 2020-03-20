@@ -41,7 +41,7 @@ namespace Base {
                     sceneActive = false;
                 }
             }
-
+            
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
                 if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionPoint");

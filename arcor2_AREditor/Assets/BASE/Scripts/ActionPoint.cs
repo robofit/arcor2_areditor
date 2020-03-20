@@ -21,6 +21,18 @@ namespace Base {
         public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");
         protected ActionPointMenu actionPointMenu;
 
+        
+        public bool Locked {
+            get {
+                return GameManager.Instance.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
+            }
+
+            set {
+                Debug.Assert(GameManager.Instance.CurrentProject != null);
+                GameManager.Instance.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
+            }
+        }
+
         protected virtual void Start() {
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
             
@@ -58,8 +70,7 @@ namespace Base {
                
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-            /*if (Data.RobotJoints.Count == 0)
-                Data.RobotJoints.Add(new IO.Swagger.Model.ProjectRobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));*/
+
         }
 
         public void SetActionObject(ActionObject actionObject) {
