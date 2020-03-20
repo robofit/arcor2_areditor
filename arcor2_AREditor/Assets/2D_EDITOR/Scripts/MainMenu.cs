@@ -34,7 +34,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
         Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
-        Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
+        //Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
 
         HideEverything();

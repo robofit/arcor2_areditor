@@ -113,11 +113,11 @@ PlayerSettings:
   vulkanNumSwapchainBuffers: 3
   vulkanEnableSetSRGBWrite: 0
   m_SupportedAspectRatios:
-    4:3: 1
-    5:4: 1
+    4:3: 0
+    5:4: 0
     16:10: 1
-    16:9: 1
-    Others: 1
+    16:9: 0
+    Others: 0
   bundleVersion: 0.2.1
   preloadedAssets: []
   metroInputSource: 0
@@ -162,6 +162,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
+    Android: com.UnityTestRunner.UnityTestRunner
     iPhone: com.VUTFIT.arcor2AREditor
   buildNumber: {}
   AndroidBundleVersionCode: 1
@@ -277,7 +278,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: 7cdb20a5772f5cd4fa91ed3dedda2f07, type: 3}
+      m_Icon: {fileID: 2800000, guid: c5791191702afc144bf64b1dbd97309d, type: 3}
       m_Width: 128
       m_Height: 128
       m_Kind: 0

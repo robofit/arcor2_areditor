@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
+using System.Linq;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -19,11 +20,15 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public FocusConfirmationDialog FocusConfirmationDialog;
 
-    public DropdownParameter robotsList, endEffectorList, orientationsList, JointsList;
+    public DropdownParameter robotsList, endEffectorList, orientationsList;
+    public DropdownParameterJoints JointsList;
+
+    public AddNewActionDialog AddNewActionDialog;
 
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
-        await Base.Scene.Instance.SpawnPuck(null, action_id, CurrentActionPoint.ActionObject, CurrentActionPoint, true, actionProvider);
+        AddNewActionDialog.Init(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
+        AddNewActionDialog.WindowManager.OpenWindow();
     }
 
     public void SaveID(string new_id) {
@@ -79,10 +84,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (robotsListDropdown.dropdownItems.Count == 0) {
             UpdatePositionBlock.SetActive(false);
         } else {
-            OnRobotChanged(robotsListDropdown.selectedText.text);
+            OnRobotChanged((string) robotsList.GetValue());
             UpdatePositionBlock.SetActive(true);
+            
         }
-        UpdateJoints();
+        
         UpdateOrientations();
 
 
@@ -109,19 +115,16 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
         
 
-   public void UpdateJoints() {
+   public void UpdateJoints(string robot_id, string selectedJoints=null) {
+        if (robot_id == null)
+            return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
-        jointsDropdown.dropdownItems.Clear();
-        foreach (string joints in CurrentActionPoint.GetJoints(true).Keys) {
-            CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = joints
-            };
-            jointsDropdown.dropdownItems.Add(item);
-        }
+        
+        JointsList.PutData(CurrentActionPoint.GetJoints(true, robot_id).Values.ToList(), selectedJoints, null);
+
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
             jointsDropdown.gameObject.SetActive(true);
-            jointsDropdown.SetupDropdown();
         } else {
             jointsDropdown.gameObject.SetActive(false);
             NoJoints.gameObject.SetActive(true);
@@ -149,6 +152,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             UpdatePoseBlock.SetActive(true);
             UpdateJointsBlock.SetActive(false);
         }
+        UpdateJoints(robot_id);
     }
 
    
@@ -165,19 +169,18 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public void FocusJoints() {
-        CustomDropdown robotsListDropdown = robotsList.Dropdown;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         if (jointsDropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", "");
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints(CurrentActionPoint.Data.Id, robotsListDropdown.selectedText.text, jointsDropdown.selectedText.text);
+            Base.GameManager.Instance.UpdateActionPointJoints(CurrentActionPoint.Data.Id, (string) robotsList.GetValue(), (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
         }
-
+        UpdateJoints((string) robotsList.GetValue(), (string) JointsList.GetValue());
     }
 
     public void ShowFocusConfirmationDialog() {

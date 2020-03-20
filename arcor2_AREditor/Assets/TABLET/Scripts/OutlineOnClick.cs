@@ -40,19 +40,11 @@ public class OutlineOnClick : Clickable {
     public override void OnClick(Click type) {
         // HANDLE MOUSE
         if (type == Click.MOUSE_RIGHT_BUTTON) {
-            Scene.Instance.SetSelectedObject(gameObject);
-            AddMaterial(ClickMaterial);
-            foreach (Renderer renderer in Renderers) {
-                renderer.materials = materials[renderer].ToArray();
-            }
+            Select();
         }
         // HANDLE TOUCH
         else if (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-            Scene.Instance.SetSelectedObject(gameObject);
-            AddMaterial(ClickMaterial);
-            foreach (Renderer renderer in Renderers) {
-                renderer.materials = materials[renderer].ToArray();
-            }
+            Select();
         }
     }
 
@@ -84,6 +76,14 @@ public class OutlineOnClick : Clickable {
 
     public void Deselect() {
         RemoveMaterial(ClickMaterial);
+        foreach (Renderer renderer in Renderers) {
+            renderer.materials = materials[renderer].ToArray();
+        }
+    }
+
+    public void Select() {
+        Scene.Instance.SetSelectedObject(gameObject);
+        AddMaterial(ClickMaterial);
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();
         }
