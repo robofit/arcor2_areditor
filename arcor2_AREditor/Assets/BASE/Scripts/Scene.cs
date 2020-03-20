@@ -29,30 +29,30 @@ namespace Base {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(true, "ActionObject");
+                    ActivateActionObjectsForGizmo(true);
                     sceneActive = true;
                 } else if (sceneActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(false, "ActionObject");
+                    ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
             } else {
                 if (sceneActive) {
-                    ActivateSceneForEditing(false, "ActionObject");
+                    ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
             }
             
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
                 if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(true, "ActionPoint");
+                    ActivateActionPointsForGizmo(true);
                     projectActive = true;
                 } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(false, "ActionPoint");
+                    ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }
             } else {
                 if (projectActive) {
-                    ActivateSceneForEditing(false, "ActionPoint");
+                    ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }
             }
@@ -64,17 +64,46 @@ namespace Base {
         /// </summary>
         /// <param name="activate"></param>
         /// <param name="tagToActivate"></param>
-        private void ActivateSceneForEditing(bool activate, string tagToActivate) {
-            Transform[] allChildren = Helper.FindComponentsInChildrenWithTag<Transform>(gameObject, tagToActivate);
+        //private void ActivateSceneForEditing(bool activate, string tagToActivate) {
+        //    Transform[] allChildren = Helper.FindComponentsInChildrenWithTag<Transform>(gameObject, tagToActivate);
+        //    if (activate) {
+        //        gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+        //        foreach (Transform child in allChildren) {
+        //            child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+        //        }
+        //    } else {
+        //        gameObject.layer = LayerMask.NameToLayer("Default");
+        //        foreach (Transform child in allChildren) {
+        //            child.gameObject.layer = LayerMask.NameToLayer("Default");
+        //        }
+        //    }
+        //}
+
+
+        private void ActivateActionObjectsForGizmo(bool activate) {
             if (activate) {
                 gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-                foreach (Transform child in allChildren) {
-                    child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                foreach (ActionObject actionObject in ActionObjects.Values) {
+                    actionObject.ActivateForGizmo("GizmoRuntime");
                 }
             } else {
                 gameObject.layer = LayerMask.NameToLayer("Default");
-                foreach (Transform child in allChildren) {
-                    child.gameObject.layer = LayerMask.NameToLayer("Default");
+                foreach (ActionObject actionObject in ActionObjects.Values) {
+                    actionObject.ActivateForGizmo("Default");
+                }
+            }
+        }
+
+        private void ActivateActionPointsForGizmo(bool activate) {
+            if (activate) {
+                gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                    actionPoint.ActivateForGizmo("GizmoRuntime");
+                }
+            } else {
+                gameObject.layer = LayerMask.NameToLayer("Default");
+                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                    actionPoint.ActivateForGizmo("Default");
                 }
             }
         }

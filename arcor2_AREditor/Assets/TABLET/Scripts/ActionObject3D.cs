@@ -219,4 +219,8 @@ public class ActionObject3D : ActionObject
         Model.GetComponent<Collider>().enabled = interactivity;
     }
 
+    public override void ActivateForGizmo(string layer) {
+        base.ActivateForGizmo(layer);
+        Model.layer = LayerMask.NameToLayer(layer);
+    }
 }

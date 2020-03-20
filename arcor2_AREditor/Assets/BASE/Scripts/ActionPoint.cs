@@ -154,7 +154,6 @@ namespace Base {
 
         public abstract void SetSceneOrientation(Quaternion orientation);
 
-
         public void RemoveActions(bool updateProject) {
             // Remove all actions of this action point
             foreach (string actionUUID in Actions.Keys.ToList<string>()) {
@@ -171,6 +170,10 @@ namespace Base {
             actionPointMenu.CurrentActionPoint = this;
             actionPointMenu.UpdateMenu();
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
+        }
+
+        public virtual void ActivateForGizmo(string layer) {
+            gameObject.layer = LayerMask.NameToLayer(layer);
         }
     }
 

@@ -74,7 +74,6 @@ public class ActionPoint3D : Base.ActionPoint {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
             GameManager.Instance.ActivateGizmoOverlay(true);
-            Debug.LogError("asdf");
         }
     }
 
@@ -116,6 +115,13 @@ public class ActionPoint3D : Base.ActionPoint {
     
     public override bool ProjectInteractable() {
         return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+    }
+
+    public override void ActivateForGizmo(string layer) {
+        if (!Locked) {
+            base.ActivateForGizmo(layer);
+            Visual.layer = LayerMask.NameToLayer(layer);
+        }
     }
 
 }
