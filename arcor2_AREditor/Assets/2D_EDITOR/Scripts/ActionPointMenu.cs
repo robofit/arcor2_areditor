@@ -61,8 +61,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 btnGO.AddComponent<TooltipContent>();
                 btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
                 
-                if (btnGO.GetComponent<TooltipContent>().tooltipObject == null) {
-                    btnGO.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+                if (btnGO.GetComponent<TooltipContent>().tooltipRect == null) {
+                    btnGO.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
                 }
                 if (btnGO.GetComponent<TooltipContent>().descriptionText == null) {
                     btnGO.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
