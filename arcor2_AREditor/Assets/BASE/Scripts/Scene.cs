@@ -58,28 +58,10 @@ namespace Base {
             }
         }
 
-
         /// <summary>
-        /// Deactivates or activates scene and all objects in the scene to ignore raycasting (clicking).
+        /// Deactivates or activates all action objects in scene for gizmo interaction.
         /// </summary>
         /// <param name="activate"></param>
-        /// <param name="tagToActivate"></param>
-        //private void ActivateSceneForEditing(bool activate, string tagToActivate) {
-        //    Transform[] allChildren = Helper.FindComponentsInChildrenWithTag<Transform>(gameObject, tagToActivate);
-        //    if (activate) {
-        //        gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //        foreach (Transform child in allChildren) {
-        //            child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //        }
-        //    } else {
-        //        gameObject.layer = LayerMask.NameToLayer("Default");
-        //        foreach (Transform child in allChildren) {
-        //            child.gameObject.layer = LayerMask.NameToLayer("Default");
-        //        }
-        //    }
-        //}
-
-
         private void ActivateActionObjectsForGizmo(bool activate) {
             if (activate) {
                 gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
@@ -94,6 +76,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Deactivates or activates all action points in scene for gizmo interaction.
+        /// </summary>
+        /// <param name="activate"></param>
         private void ActivateActionPointsForGizmo(bool activate) {
             if (activate) {
                 gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
