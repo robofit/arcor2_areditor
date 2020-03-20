@@ -41,7 +41,7 @@ namespace Base {
                     sceneActive = false;
                 }
             }
-
+            
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
                 if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateSceneForEditing(true, "ActionPoint");
@@ -325,8 +325,8 @@ namespace Base {
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
             actionPoint.InitAP(actionObject, apData);
             if (apData == null) {
-                actionPoint.SetScenePosition(transform.localPosition);
-                actionPoint.SetSceneOrientation(transform.rotation);
+                actionPoint.SetScenePosition(AP.transform.localPosition);
+                actionPoint.SetSceneOrientation(AP.transform.rotation);
             }
 
             ActionObjects[actionObject.Data.Uuid].ActionPoints.Add(actionPoint.Data.Uuid, actionPoint);

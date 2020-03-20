@@ -25,6 +25,9 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public AddNewActionDialog AddNewActionDialog;
 
+    [SerializeField]
+    private Button LockedBtn, UnlockedBtn;
+
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.Init(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
@@ -66,8 +69,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 btnGO.AddComponent<TooltipContent>();
                 btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
                 
-                if (btnGO.GetComponent<TooltipContent>().tooltipObject == null) {
-                    btnGO.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+                if (btnGO.GetComponent<TooltipContent>().tooltipRect == null) {
+                    btnGO.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
                 }
                 if (btnGO.GetComponent<TooltipContent>().descriptionText == null) {
                     btnGO.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
@@ -90,8 +93,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         
         UpdateOrientations();
-
-
+        UpdateLockedBtns(CurrentActionPoint.Locked);
+        
     }
 
     public void UpdateOrientations() {
@@ -209,5 +212,15 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void SetHeader(string header) {
         topText.text = header;
+    }
+
+    public void UpdateLockedBtns(bool locked) {
+        LockedBtn.gameObject.SetActive(locked);
+        UnlockedBtn.gameObject.SetActive(!locked);
+    }
+
+    public void SetLocked(bool locked) {
+        CurrentActionPoint.Locked = locked;
+        UpdateLockedBtns(locked);
     }
 }
