@@ -12,6 +12,10 @@ public class ActionObject3D : ActionObject
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
+    public Material ActionObjectMaterialTransparent;
+    public Material ActionObjectMaterialOpaque;
+    private bool transparent = false;
+
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
 
@@ -19,7 +23,8 @@ public class ActionObject3D : ActionObject
     private float nextUpdate = 0;
 
     private bool updateScene = false;
-
+    private Renderer modelRenderer;
+    private OutlineOnClick outlineOnClick;
 
     protected override void Start() {
         base.Start();
@@ -163,18 +168,36 @@ public class ActionObject3D : ActionObject
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         Model.transform.localScale = new Vector3(1, 1, 1);
-        gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
+        modelRenderer = Model.GetComponent<Renderer>();
+        outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
     }
 
 
     public override void SetVisibility(float value) {
         base.SetVisibility(value);
-        Model.GetComponent<Renderer>().material.color = new Color(Model.GetComponent<Renderer>().material.color.r,
-                                                                  Model.GetComponent<Renderer>().material.color.g,
-                                                                  Model.GetComponent<Renderer>().material.color.b,
-                                                                  value);
-        
-        
+        // Set opaque material
+        if (value >= 1) {
+            transparent = false;
+            Material oldMaterial = modelRenderer.material;
+            modelRenderer.material = ActionObjectMaterialOpaque;
+            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+        }
+        // Set transparent material
+        else {
+            if (!transparent) {
+                Material oldMaterial = modelRenderer.material;
+                modelRenderer.material = ActionObjectMaterialTransparent;
+                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+                transparent = true;
+            }
+            // set alpha of the material
+            Color color = modelRenderer.material.color;
+            color.a = value;
+            modelRenderer.material.color = color;
+        }
     }
 
     public override void Show() {
