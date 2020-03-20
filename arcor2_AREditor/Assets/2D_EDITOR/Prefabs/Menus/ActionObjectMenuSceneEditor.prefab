@@ -149,16 +149,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ebbd33be3a73ca40aa6a4371ff9a6c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainSlider: {fileID: 2536995383637266026}
   valueText: {fileID: 4669285482905322041}
   popupValueText: {fileID: 6849466725233399516}
   enableSaving: 0
   sliderTag: Tag Text
-  defaultValue: 1
   usePercent: 1
   showValue: 0
   showPopupValue: 1
   useRoundValue: 1
-  disableContent: 0
+  onValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  sliderEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &7452407751761904902
 MonoBehaviour:
   m_ObjectHideFlags: 0

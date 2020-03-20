@@ -1769,16 +1769,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ebbd33be3a73ca40aa6a4371ff9a6c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainSlider: {fileID: 7729277793992049522}
   valueText: {fileID: 5680437494448094635}
   popupValueText: {fileID: 7003262346602742239}
   enableSaving: 0
   sliderTag: Tag Text
-  defaultValue: 1
   usePercent: 1
   showValue: 0
   showPopupValue: 1
   useRoundValue: 1
-  disableContent: 0
+  onValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  sliderEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &581960213365583167
 MonoBehaviour:
   m_ObjectHideFlags: 0
