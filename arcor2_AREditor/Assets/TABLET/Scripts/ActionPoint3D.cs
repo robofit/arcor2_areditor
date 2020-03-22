@@ -77,32 +77,21 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
-
     public override Vector3 GetScenePosition() {
-        /*return Base.GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
-             new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));*/
-        Vector3 v = DataHelper.PositionToVector3(Data.Position);
-        return new Vector3(v.x, v.z, v.y);
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
     }
 
     public override void SetScenePosition(Vector3 position) {
-        /* Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(Base.GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
-             new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));*/
-        Data.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
-        //return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+        //return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Orientations[0].Orientation));
         return new Quaternion();
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        //Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
-    }
-
-    public override void SetScenePosition(IO.Swagger.Model.Position position) {
-        Data.Position = position;
-        //Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
+        //Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation:DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation))));
     }
 
     public override void UpdatePositionsOfPucks() {

@@ -66,22 +66,20 @@ public class ActionObject3D : ActionObject
         base.Update();
     }
 
-
-    public override Quaternion GetSceneOrientation() {
-        return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
-    }
-
     public override Vector3 GetScenePosition() {
-        Vector3 v = DataHelper.PositionToVector3(Data.Pose.Position);
-        return new Vector3(v.x, v.z, v.y); //swapped y and z!!
-    }
-
-    public override void SetSceneOrientation(Quaternion orientation) {
-        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+    }
+
+    public override Quaternion GetSceneOrientation() {
+        return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+    }
+
+    public override void SetSceneOrientation(Quaternion orientation) {
+        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
     public override void OnClick(Click type) {
@@ -146,7 +144,7 @@ public class ActionObject3D : ActionObject
             switch (ActionObjectMetadata.ObjectModel.Type) {
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
                     Model = Instantiate(CubePrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ);
+                    Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
                     break;
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);

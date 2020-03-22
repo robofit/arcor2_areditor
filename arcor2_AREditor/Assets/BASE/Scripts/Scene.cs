@@ -196,8 +196,6 @@ namespace Base {
                     RemoveActionObject(actionObjectUUID);
                 }
             }
-
-            
         }
 
         public ActionObject GetNextActionObject(string aoUUID) {
