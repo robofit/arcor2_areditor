@@ -53,10 +53,12 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         Label.GetComponent<TooltipContent>().description = description;
     }
 
-    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, bool enableIcons = false) {
         
         Dropdown.listParent = canvasRoot.transform;
         CanvasRoot = canvasRoot;
+        Dropdown.enableIcon = enableIcons;
+        Dropdown.selectedImage.gameObject.SetActive(enableIcons);
         
         LayoutGroupToBeDisabled = layoutGroupToBeDisabled;
        
