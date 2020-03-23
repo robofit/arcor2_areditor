@@ -19,7 +19,7 @@ namespace Base {
 
         public GameObject InteractiveObjects, PuckPrefab;
 
-        public event EventHandler OnActionObjectsUpdated;
+        public event GameManager.StringEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
 
@@ -174,7 +174,7 @@ namespace Base {
             
         }
 
-        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
+        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata, string highlighteObject = null) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
@@ -185,14 +185,9 @@ namespace Base {
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
             }
-            /*foreach (ActionObject ao in InteractiveObjects.GetComponentsInChildren<ActionObject>()) {
-                if (!ActionObjectMetadata.ContainsKey(ao.Data.Type)) {
-                    Destroy(ao.gameObject);
-                }
-            }*/
             enabled = true;
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, EventArgs.Empty);
+            OnActionObjectsUpdated?.Invoke(this, new Base.StringEventArgs(highlighteObject));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {

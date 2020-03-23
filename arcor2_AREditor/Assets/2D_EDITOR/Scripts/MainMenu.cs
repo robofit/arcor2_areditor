@@ -101,7 +101,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         RunningProjectControls.SetActive(false);
     }
 
-    private void ActionObjectsUpdated(object sender, EventArgs e) {
+    private void ActionObjectsUpdated(object sender, Base.StringEventArgs eventArgs) {
 
         foreach (Button b in ActionObjectsContent.GetComponentsInChildren<Button>()) {
             if (b.gameObject.tag == "PersistentButton") {
@@ -128,6 +128,9 @@ public class MainMenu : MonoBehaviour, IMenu {
             btn.interactable = !actionObjectMetadata.Disabled;
             btn.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
             btnGO.transform.SetAsFirstSibling();
+            if (eventArgs.Data == actionObjectMetadata.Type) {
+                btn.GetComponent<ActionButton>().Highlight(2f);
+            }
         }
 
     }

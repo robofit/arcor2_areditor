@@ -242,9 +242,9 @@ namespace Base {
             MenuManager.Instance.EnableAllWindows();
         }
 
-        public async Task UpdateActionObjects() {
+        public async Task UpdateActionObjects(string highlighteObject = null) {
             List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-            await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
+            await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
         }
 
         public async Task UpdateServices() {
@@ -482,12 +482,14 @@ namespace Base {
         }
 
 
-        public async void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+        public async Task<bool> CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
             try {
                 await WebsocketManager.Instance.CreateNewObjectType(objectType);
-                UpdateActionObjects();
+                await UpdateActionObjects(objectType.Type);
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
+                return false;
             }
         }
 
