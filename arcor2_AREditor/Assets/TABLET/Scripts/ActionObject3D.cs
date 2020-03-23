@@ -36,7 +36,7 @@ public class ActionObject3D : ActionObject
     }
 
 
-    private void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
