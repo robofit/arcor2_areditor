@@ -49,6 +49,11 @@ public class ActionPoint3D : Base.ActionPoint {
         base.Update();
     }
 
+    private void LateUpdate() {
+        // ignore parent rotation
+        transform.rotation = Quaternion.identity;
+    }
+
     public override void OnClick(Click type) {
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
