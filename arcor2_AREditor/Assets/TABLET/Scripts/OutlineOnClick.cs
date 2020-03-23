@@ -16,7 +16,6 @@ public class OutlineOnClick : Clickable {
         foreach (Renderer renderer in Renderers) {
             materials.Add(renderer, new List<Material>(renderer.materials));
         }
-
     }
 
     private void OnEnable() {
@@ -87,5 +86,15 @@ public class OutlineOnClick : Clickable {
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();
         }
+    }
+
+    /// <summary>
+    /// Removes mat1 (=old material) and Adds mat2 (=new material) to the materials array.
+    /// </summary>
+    /// <param name="mat1"></param>
+    /// <param name="mat2"></param>
+    public void SwapMaterials(Material mat1, Material mat2) {
+        RemoveMaterial(mat1);
+        AddMaterial(mat2);
     }
 }
