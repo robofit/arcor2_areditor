@@ -8,16 +8,20 @@ public class MainsScreen : MonoBehaviour {
     public CanvasGroup CanvasGroup;
 
     private void Start() {
-        Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
+        Base.GameManager.Instance.OnOpenProjectEditor += ShowEditorWindow;
+        Base.GameManager.Instance.OnOpenSceneEditor += ShowEditorWindow;
+        Base.GameManager.Instance.OnOpenMainScreen += HideEditorWindow;
+        Base.GameManager.Instance.OnDisconnectedFromServer += HideEditorWindow;
     }
 
 
-    private void ConnectedToServer(object sender, EventArgs args) {
+    private void ShowEditorWindow(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
+        CanvasGroup.blocksRaycasts = true;
     }
 
-    private void DisconnectedFromServer(object sender, EventArgs args) {
+    private void HideEditorWindow(object sender, EventArgs args) {
         CanvasGroup.alpha = 0;
+        CanvasGroup.blocksRaycasts = false;
     }
 }

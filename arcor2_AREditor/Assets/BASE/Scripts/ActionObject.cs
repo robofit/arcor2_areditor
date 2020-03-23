@@ -154,17 +154,21 @@ namespace Base {
         public abstract void SetInteractivity(bool interactive);
 
 
-    public void ShowMenu() {
-        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-            actionObjectMenu.CurrentObject = this;
-            actionObjectMenu.UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-            actionObjectMenuProjectEditor.CurrentObject = this;
-            actionObjectMenuProjectEditor.UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+        public void ShowMenu() {
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
+                actionObjectMenu.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
         }
-    }
+
+        public virtual void ActivateForGizmo(string layer) {
+            gameObject.layer = LayerMask.NameToLayer(layer);
+        }
     }
 
 }

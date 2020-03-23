@@ -85,9 +85,9 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                     decimal sizeX = decimal.Parse(BoxX.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal sizeY = decimal.Parse(BoxY.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
                     decimal sizeZ = decimal.Parse(BoxZ.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                    (sizeX, sizeY, sizeZ) = TransformConvertor.UnityToROSScale(sizeX, sizeY, sizeZ);
                     IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(objectId, sizeX, sizeY, sizeZ);
                     objectModel.Box = box;
-
                     break;
                 case "Sphere":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;

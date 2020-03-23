@@ -52,10 +52,6 @@ public class ActionPoint2D : Base.ActionPoint {
         //Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
     }
 
-    public override void SetScenePosition(IO.Swagger.Model.Position position) {
-        Data.Position = position;
-    }
-
     public override bool ProjectInteractable() {
         return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }

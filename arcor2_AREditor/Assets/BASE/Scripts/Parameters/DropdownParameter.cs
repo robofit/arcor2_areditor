@@ -44,8 +44,8 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        if (Label.GetComponent<TooltipContent>().tooltipObject == null) {
-            Label.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+        if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
+            Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
         }
         if (Label.GetComponent<TooltipContent>().descriptionText == null) {
             Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
@@ -53,10 +53,12 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         Label.GetComponent<TooltipContent>().description = description;
     }
 
-    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, bool enableIcons = false) {
         
         Dropdown.listParent = canvasRoot.transform;
         CanvasRoot = canvasRoot;
+        Dropdown.enableIcon = enableIcons;
+        Dropdown.selectedImage.gameObject.SetActive(enableIcons);
         
         LayoutGroupToBeDisabled = layoutGroupToBeDisabled;
        
