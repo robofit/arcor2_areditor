@@ -74,7 +74,6 @@ public class ActionPoint3D : Base.ActionPoint {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
             GameManager.Instance.ActivateGizmoOverlay(true);
-            Debug.LogError("asdf");
         }
     }
 
