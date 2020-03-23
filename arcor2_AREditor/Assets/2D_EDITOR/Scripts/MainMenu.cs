@@ -111,8 +111,8 @@ public class MainMenu : MonoBehaviour, IMenu {
             }
 
         }
-        foreach (string ao_name in Base.ActionsManager.Instance.ActionObjectMetadata.Keys) {
-            if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(ao_name, out Base.ActionObjectMetadata actionObject)) {
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
+            if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(actionObjectMetadata.Type, out Base.ActionObjectMetadata actionObject)) {
                 if (actionObject.Abstract) {
                     continue;
                 }
@@ -124,8 +124,9 @@ public class MainMenu : MonoBehaviour, IMenu {
             btnGO.transform.SetParent(ActionObjectsContent.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<TMPro.TMP_Text>().text = ao_name;
-            btn.onClick.AddListener(() => AddObjectToScene(ao_name));
+            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObjectMetadata.Type;
+            btn.interactable = !actionObjectMetadata.Disabled;
+            btn.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
             btnGO.transform.SetAsFirstSibling();
         }
 
@@ -133,6 +134,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void ServicesUpdated(object sender, EventArgs e) {
         foreach (ServiceButton serviceButton in serviceButtons) {
+            serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
             if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
                 //checked
                 serviceButton.gameObject.SetActive(true);

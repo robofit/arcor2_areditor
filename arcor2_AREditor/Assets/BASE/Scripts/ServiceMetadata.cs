@@ -8,7 +8,7 @@ namespace Base {
         private bool robot, actionsLoaded;
 
         public ServiceMetadata(IO.Swagger.Model.ServiceTypeMeta serviceMeta) : base(configurationIds: serviceMeta.ConfigurationIds, description: serviceMeta.Description,
-            type: serviceMeta.Type) {
+            type: serviceMeta.Type, disabled: serviceMeta.Disabled, problem: serviceMeta.Problem) {
             if (Type.Contains("Robot")) {
                 robot = true;
             }

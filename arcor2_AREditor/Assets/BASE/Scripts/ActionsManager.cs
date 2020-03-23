@@ -132,12 +132,15 @@ namespace Base {
 
 
         private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
-            actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
+            if (!actionObject.Disabled)
+                actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
             actionObject.ActionsLoaded = true;
         }
 
         private async void UpdateActionsOfService(ServiceMetadata serviceMetadata) {
-            serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
+            if (!serviceMetadata.Disabled) {
+                serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
+            }
             serviceMetadata.ActionsLoaded = true;
         }
 
