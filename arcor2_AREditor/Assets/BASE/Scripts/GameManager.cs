@@ -167,8 +167,14 @@ namespace Base {
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     await UpdateActionObjects();
                     await UpdateServices();
-
-                    await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(10000));
+                    try {
+                        await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(15000));
+                    } catch (TimeoutException e) {
+                        Notifications.Instance.ShowNotification("Connection failed", "Some actions were not loaded within timeout");
+                        DisconnectFromSever();
+                        ActionsManager.Instance.Init();
+                        return;
+                    }
                     if (newScene != null) {
                         SceneUpdated(newScene);
                     }
@@ -248,7 +254,7 @@ namespace Base {
         }
 
         public async Task UpdateServices() {
-            ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
+            await ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
         }
 
         /// <summary>
@@ -596,7 +602,14 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
-            return await WebsocketManager.Instance.GetActions(name);
+            try {
+                return await WebsocketManager.Instance.GetActions(name);
+            } catch (RequestFailedException e) {
+                Debug.LogError("Failed to load action for object/service " + name);
+                Notifications.Instance.ShowNotification("Failed to laod actions", "Failed to load action for object/service " + name);
+                return null;
+            }
+
         }
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {
