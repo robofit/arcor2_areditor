@@ -14,7 +14,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARTrackedImageManager ARTrackedImageManager;
     public ARPointCloudManager ARPointCloudManager;
 
-    private ARAnchor WorldAnchor;
+    [HideInInspector]
+    public ARAnchor WorldAnchor;
     
     private void OnEnable() {
         GameManager.Instance.OnConnectedToServer += ConnectedToServer;

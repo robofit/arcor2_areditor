@@ -50,8 +50,14 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     private void LateUpdate() {
-        // ignore parent rotation
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        // set rotation to the WorldAnchor and ignore its parent rotation
+        if (CalibrationManager.Instance.WorldAnchor != null) {
+            transform.rotation = CalibrationManager.Instance.WorldAnchor.transform.rotation;
+        }
+#else
         transform.rotation = Quaternion.identity;
+#endif
     }
 
     public override void OnClick(Click type) {
