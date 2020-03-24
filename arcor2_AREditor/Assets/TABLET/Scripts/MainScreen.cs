@@ -52,19 +52,24 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void SwitchToProjects() {
         ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
         ProjectsBtn.color = new Color(0, 0, 0);
-        projectsList.alpha = 1;
+        /*projectsList.alpha = 1;
         projectsList.blocksRaycasts = true;
         scenesList.alpha = 0;
-        scenesList.blocksRaycasts = false;
+        scenesList.blocksRaycasts = false;*/
+        projectsList.gameObject.SetActive(true);
+        scenesList.gameObject.SetActive(false);
     }
 
     public void SwitchToScenes() {
         ScenesBtn.color = new Color(0, 0, 0);
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        projectsList.alpha = 0;
+        /*projectsList.alpha = 0;
         projectsList.blocksRaycasts = false;
         scenesList.alpha = 1;
-        scenesList.blocksRaycasts = true;
+        scenesList.blocksRaycasts = true;*/
+
+        projectsList.gameObject.SetActive(false);
+        scenesList.gameObject.SetActive(true);
     }
 
     public void FilterLists() {
