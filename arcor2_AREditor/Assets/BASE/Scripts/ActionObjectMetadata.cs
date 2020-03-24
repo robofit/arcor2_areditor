@@ -16,7 +16,9 @@ namespace Base {
                                                                 description: meta.Description,
                                                                 needsServices: meta.NeedsServices,
                                                                 objectModel: meta.ObjectModel,
-                                                                type: meta.Type) {
+                                                                type: meta.Type,
+                                                                disabled: meta.Disabled,
+                                                                problem: meta.Problem) {
            
         }
 

@@ -167,8 +167,14 @@ namespace Base {
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
                     await UpdateActionObjects();
                     await UpdateServices();
-
-                    await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(10000));
+                    try {
+                        await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(15000));
+                    } catch (TimeoutException e) {
+                        Notifications.Instance.ShowNotification("Connection failed", "Some actions were not loaded within timeout");
+                        DisconnectFromSever();
+                        ActionsManager.Instance.Init();
+                        return;
+                    }
                     if (newScene != null) {
                         SceneUpdated(newScene);
                     }
@@ -242,13 +248,13 @@ namespace Base {
             MenuManager.Instance.EnableAllWindows();
         }
 
-        public async Task UpdateActionObjects() {
+        public async Task UpdateActionObjects(string highlighteObject = null) {
             List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-            await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
+            await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
         }
 
         public async Task UpdateServices() {
-            ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
+            await ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
         }
 
         /// <summary>
@@ -272,11 +278,14 @@ namespace Base {
         public async void AddServiceToScene(string type, string configId = "") {
             StartLoading();
             IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId, uuid: Guid.NewGuid().ToString());
-            IO.Swagger.Model.AddServiceToSceneResponse response = await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
-            EndLoading();
-            if (!response.Result) {
-                throw new RequestFailedException(response.Messages);
-            }
+            try {
+                await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Add service failed", e.Message);
+            } finally {
+                EndLoading();
+            }            
+            
         }
 
         // SceneUpdated is called from server, when another GUI makes some change.
@@ -425,17 +434,20 @@ namespace Base {
             }
         }
 
-        public async void OpenScene(string id) {
-            IO.Swagger.Model.OpenSceneResponse response = await WebsocketManager.Instance.OpenScene(id);
-            if (!response.Result) {
-                throw new RequestFailedException(response.Messages);
-            }
+        public async Task OpenScene(string id) {
+            try {
+                await WebsocketManager.Instance.OpenScene(id);
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Open scene failed", e.Message);
+                return;
+            }    
             try {
                 await Task.Run(() => WaitForSceneReady(2000));
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
+                return;
             } catch (TimeoutException e) {
                 EndLoading();
-                throw new RequestFailedException("Failed to open selected scene");
+                Notifications.Instance.ShowNotification("Open scene failed", "Failed to open selected scene");
             }
            
         }
@@ -482,12 +494,14 @@ namespace Base {
         }
 
 
-        public async void CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+        public async Task<bool> CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
             try {
                 await WebsocketManager.Instance.CreateNewObjectType(objectType);
-                UpdateActionObjects();
+                await UpdateActionObjects(objectType.Type);
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
+                return false;
             }
         }
 
@@ -533,22 +547,24 @@ namespace Base {
         }
 
         public async Task NewProject(string name, string sceneId, bool generateLogic) {
+            Debug.Assert(sceneId != null && sceneId != "");
+            Debug.Assert(name != null && name != "");
             StartLoading();
-            if (name == "" || sceneId == null) {
-                EndLoading();
-                throw new RequestFailedException("Project name or scene id not specified");
-            }
             
-            IO.Swagger.Model.OpenSceneResponse openSceneResponse = await WebsocketManager.Instance.OpenScene(sceneId);
-            if (!openSceneResponse.Result) {
-                EndLoading();
-                throw new RequestFailedException("Failed to open scene");
-            }
             try {
-                await Task.Run(() => WaitForSceneReady(2000));
+                await WebsocketManager.Instance.OpenScene(sceneId);
+            } catch (RequestFailedException e) {
+                EndLoading();
+                Notifications.Instance.ShowNotification("Open scene failed", e.Message);
+                return;
+            }           
+            
+            try {
+                await Task.Run(() => WaitForSceneReady(5000));
             } catch (TimeoutException e) {
                 EndLoading();
-                throw new RequestFailedException("Failed to load selected scene");
+                Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
+                return;
             }
             IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             WebsocketManager.Instance.UpdateProject(project);
@@ -594,7 +610,14 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
-            return await WebsocketManager.Instance.GetActions(name);
+            try {
+                return await WebsocketManager.Instance.GetActions(name);
+            } catch (RequestFailedException e) {
+                Debug.LogError("Failed to load action for object/service " + name);
+                Notifications.Instance.ShowNotification("Failed to laod actions", "Failed to load action for object/service " + name);
+                return null;
+            }
+
         }
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {

@@ -56,7 +56,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         menu?.SetActive(true);
     }
 
-    public void UpdateObjectsList(object sender, EventArgs eventArgs) {
+    public void UpdateObjectsList(object sender, Base.StringEventArgs eventArgs) {
         string originalValue = "";
         if (ParentsList.Dropdown.dropdownItems.Count > 0)
             originalValue = (string) ParentsList.GetValue();
@@ -69,7 +69,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         
     }
 
-    public void CreateNewObjectType() {
+    public async void CreateNewObjectType() {
         Debug.Assert(ModelsList.Dropdown.dropdownItems.Count > 0, "No models");
         Debug.Assert(ParentsList.Dropdown.dropdownItems.Count > 0, "No parent objects");
         string objectId = NameInput.text;
@@ -123,7 +123,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
         
         
-        Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
+        bool success = await Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
+        if (success) {
+            MenuManager.Instance.NewObjectTypeMenu.Close();
+        }
     }
 
 }

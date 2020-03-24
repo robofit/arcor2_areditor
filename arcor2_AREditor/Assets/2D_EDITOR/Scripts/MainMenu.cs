@@ -101,7 +101,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         RunningProjectControls.SetActive(false);
     }
 
-    private void ActionObjectsUpdated(object sender, EventArgs e) {
+    private void ActionObjectsUpdated(object sender, Base.StringEventArgs eventArgs) {
 
         foreach (Button b in ActionObjectsContent.GetComponentsInChildren<Button>()) {
             if (b.gameObject.tag == "PersistentButton") {
@@ -125,9 +125,14 @@ public class MainMenu : MonoBehaviour, IMenu {
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObjectMetadata.Type;
-            btn.interactable = !actionObjectMetadata.Disabled;
             btn.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
             btnGO.transform.SetAsFirstSibling();
+            
+            if (eventArgs.Data == actionObjectMetadata.Type) {
+                btn.GetComponent<ActionButton>().Highlight(2f);
+            }
+            btn.interactable = !actionObjectMetadata.Disabled;
+
         }
 
     }
