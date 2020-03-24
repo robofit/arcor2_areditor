@@ -4,9 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
+using Newtonsoft.Json;
 
 public class LabeledInput : MonoBehaviour, IActionParameter
 {
+    public string ParameterType;
+
     public TMPro.TMP_Text Label;
     public TMPro.TMP_InputField Input;
 
@@ -16,8 +19,8 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        if (Label.GetComponent<TooltipContent>().tooltipObject == null) {
-            Label.GetComponent<TooltipContent>().tooltipObject = Base.GameManager.Instance.Tooltip;
+        if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
+            Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
         }
         if (Label.GetComponent<TooltipContent>().descriptionText == null) {
             Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
@@ -25,18 +28,41 @@ public class LabeledInput : MonoBehaviour, IActionParameter
         Label.GetComponent<TooltipContent>().description = description;
     }
 
-    public void SetType(TMPro.TMP_InputField.ContentType contentType) {
-        Input.contentType = contentType;
+    public void SetType(string contentType) {
+        switch (ParameterType) {
+            case "integer":
+                Input.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
+                break;
+            case "double":
+                Input.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
+                break;
+            default:
+                Input.contentType = TMPro.TMP_InputField.ContentType.Alphanumeric;
+                break;
+        }
+        ParameterType = contentType;
     }
 
 
-    public void SetValue(string value) {
-        Input.text = value;
-    }
 
     public object GetValue() {
-        return Input.text;
+        switch (ParameterType) {
+            case "integer":
+                return int.Parse(Input.text);
+            case "double":
+                return Base.Action.ParseDouble(Input.text);
+            case "relative_pose":
+                return JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(Input.text);
+            default:
+                return Input.text;
+        }
     }
 
+    public string GetName() {
+        return Label.text;
+    }
 
+    public void SetValue(object value) {
+        Input.text = (string) value;
+    }
 }

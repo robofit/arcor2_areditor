@@ -8,12 +8,13 @@ using RuntimeGizmos;
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
-    private ActionObjectMenu actionObjectMenu;
-    private ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
-
     public GameObject Visual, Model;
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
+
+    public Material ActionObjectMaterialTransparent;
+    public Material ActionObjectMaterialOpaque;
+    private bool transparent = false;
 
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -22,22 +23,20 @@ public class ActionObject3D : ActionObject
     private float nextUpdate = 0;
 
     private bool updateScene = false;
-
+    private Renderer modelRenderer;
+    private OutlineOnClick outlineOnClick;
 
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        UpdateId(Data.Id);
-        actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
-        actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
-       
+        UpdateId(Data.Id);       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         // disable update method until model is ready
         //enabled = false;
     }
 
 
-    private void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
@@ -67,22 +66,20 @@ public class ActionObject3D : ActionObject
         base.Update();
     }
 
-
-    public override Quaternion GetSceneOrientation() {
-        return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
-    }
-
     public override Vector3 GetScenePosition() {
-        Vector3 v = DataHelper.PositionToVector3(Data.Pose.Position);
-        return new Vector3(v.x, v.z, v.y); //swapped y and z!!
-    }
-
-    public override void SetSceneOrientation(Quaternion orientation) {
-        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+    }
+
+    public override Quaternion GetSceneOrientation() {
+        return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+    }
+
+    public override void SetSceneOrientation(Quaternion orientation) {
+        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
     public override void OnClick(Click type) {
@@ -93,15 +90,7 @@ public class ActionObject3D : ActionObject
             GameManager.Instance.ActivateGizmoOverlay(true);
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                actionObjectMenu.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
+            ShowMenu();
         }
 
         // HANDLE TOUCH
@@ -112,15 +101,7 @@ public class ActionObject3D : ActionObject
                 GameManager.Instance.ActivateGizmoOverlay(true);
             }
             else {
-                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                    actionObjectMenu.CurrentObject = this;
-                    actionObjectMenu.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-                } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                    actionObjectMenuProjectEditor.CurrentObject = this;
-                    actionObjectMenuProjectEditor.UpdateMenu();
-                    MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-                }
+                ShowMenu();
             }
         }
     }
@@ -130,11 +111,11 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-        base.ActionObjectUpdate(actionObjectSwagger);
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        Debug.Assert(Model != null);
+        base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
         ActionObjectName.text = actionObjectSwagger.Id;
-        if (Model == null)
-            CreateModel();
+
     }
 
 
@@ -143,6 +124,7 @@ public class ActionObject3D : ActionObject
     }
 
     public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;
         SetScenePosition(position);
@@ -151,6 +133,7 @@ public class ActionObject3D : ActionObject
         ActionObjectMetadata = actionObjectMetadata;
         CreateModel();
         enabled = true;
+        SetVisibility(visibility);
     }
 
     public void CreateModel() {
@@ -161,7 +144,7 @@ public class ActionObject3D : ActionObject
             switch (ActionObjectMetadata.ObjectModel.Type) {
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
                     Model = Instantiate(CubePrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ);
+                    Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
                     break;
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);
@@ -183,6 +166,59 @@ public class ActionObject3D : ActionObject
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         Model.transform.localScale = new Vector3(1, 1, 1);
-        gameObject.GetComponent<OutlineOnClick>().InitRenderers(new List<Renderer>() { Model.GetComponent<Renderer>() });
+        modelRenderer = Model.GetComponent<Renderer>();
+        outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
+    }
+
+
+    public override void SetVisibility(float value) {
+        base.SetVisibility(value);
+        // Set opaque material
+        if (value >= 1) {
+            transparent = false;
+            Material oldMaterial = modelRenderer.material;
+            modelRenderer.material = ActionObjectMaterialOpaque;
+            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+        }
+        // Set transparent material
+        else {
+            if (!transparent) {
+                Material oldMaterial = modelRenderer.material;
+                modelRenderer.material = ActionObjectMaterialTransparent;
+                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+                transparent = true;
+            }
+            // set alpha of the material
+            Color color = modelRenderer.material.color;
+            color.a = value;
+            modelRenderer.material.color = color;
+        }
+    }
+
+    public override void Show() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = true;
+        }
+    }
+
+    public override void Hide() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = false;
+        }
+    }
+
+    public override void SetInteractivity(bool interactivity) {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Collider>().enabled = interactivity;
+    }
+
+    public override void ActivateForGizmo(string layer) {
+        base.ActivateForGizmo(layer);
+        Model.layer = LayerMask.NameToLayer(layer);
     }
 }

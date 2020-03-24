@@ -30,7 +30,7 @@ public class NewProjectDialog : Dialog
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
             await Base.GameManager.Instance.NewProject(name, sceneName, generateLogic);
             WindowManager.CloseWindow();
-        } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
+        } catch (Exception ex) when (ex is Base.ItemNotFoundException) { 
             Base.Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
         }
 

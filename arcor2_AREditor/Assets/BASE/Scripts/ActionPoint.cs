@@ -18,11 +18,30 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.RobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");         
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");
+        protected ActionPointMenu actionPointMenu;
+
+        
+        public bool Locked {
+            get {
+                return GameManager.Instance.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
+            }
+
+            set {
+                Debug.Assert(GameManager.Instance.CurrentProject != null);
+                GameManager.Instance.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
+            }
+        }
+
+        protected virtual void Start() {
+            actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
+            
+        }
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 SetScenePosition(transform.localPosition);
+                //SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
         }
@@ -32,7 +51,8 @@ namespace Base {
                 Data = apData;
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
-            transform.localRotation = GetSceneOrientation();
+            //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
+            //transform.localRotation = GetSceneOrientation();
         }
         
         public virtual void UpdateId(string newId, bool updateProject = true) {
@@ -52,8 +72,7 @@ namespace Base {
                
             if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-            if (Data.RobotJoints.Count == 0)
-                Data.RobotJoints.Add(new IO.Swagger.Model.RobotJoints(isValid: false, id: "default", joints: new List<IO.Swagger.Model.Joint>(), robotId: "aubo"));
+
         }
 
         public void SetActionObject(ActionObject actionObject) {
@@ -71,20 +90,42 @@ namespace Base {
             return poses;
         }
 
-        public Dictionary<string, IO.Swagger.Model.RobotJoints> GetJoints(bool uniqueOnly = false) {
-            Dictionary<string, IO.Swagger.Model.RobotJoints> joints = new Dictionary<string, IO.Swagger.Model.RobotJoints>();
+        public IO.Swagger.Model.Pose GetDefaultPose() {
+            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+                if (orientation.Id == "default")
+                    return new IO.Swagger.Model.Pose(position: Data.Position, orientation: orientation.Orientation);
+            }
+            throw new ItemNotFoundException();            
+        }
+
+        public IO.Swagger.Model.ProjectRobotJoints GetFirstJoints(string robot_id = null, bool valid_only = false) {
+            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+                if ((robot_id != null && robot_id != robotJoint.RobotId) ||
+                        (valid_only && !robotJoint.IsValid))
+                    continue;
+                return robotJoint;
+            }
+            return null;    
+        }
+
+        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
+            Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
             Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
             if (uniqueOnly) {
                 poses = GetPoses();
             }
-            foreach (IO.Swagger.Model.RobotJoints robotJoint in Data.RobotJoints) {
-                if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
+            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+                if ((uniqueOnly && poses.ContainsKey(robotJoint.Id)) ||
+                    (robot_id != null && robot_id != robotJoint.RobotId) ||
+                    (valid_only && !robotJoint.IsValid)) {
                     continue;
-                }
+                }                
                 joints.Add(robotJoint.Id, robotJoint);
             }
             return joints;
         }
+        
+
 
         public void DeleteAP(bool updateProject = true) {
             // Remove all actions of this action point
@@ -110,11 +151,8 @@ namespace Base {
 
         public abstract Vector3 GetScenePosition();
         public abstract void SetScenePosition(Vector3 position);
-        public abstract void SetScenePosition(IO.Swagger.Model.Position position);
         public abstract Quaternion GetSceneOrientation();
-
         public abstract void SetSceneOrientation(Quaternion orientation);
-
 
         public void RemoveActions(bool updateProject) {
             // Remove all actions of this action point
@@ -126,6 +164,16 @@ namespace Base {
 
         public void RemoveAction(string uuid, bool updateProject) {
             Actions[uuid].DeleteAction(updateProject);
+        }
+
+        public void ShowMenu() {
+            actionPointMenu.CurrentActionPoint = this;
+            actionPointMenu.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
+        }
+
+        public virtual void ActivateForGizmo(string layer) {
+            gameObject.layer = LayerMask.NameToLayer(layer);
         }
     }
 

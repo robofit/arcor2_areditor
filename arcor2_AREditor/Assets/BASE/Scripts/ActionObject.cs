@@ -10,15 +10,22 @@ namespace Base {
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
+        protected float visibility;
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
+        protected ActionObjectMenu actionObjectMenu;
+        protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
         protected virtual void Start() {
+            actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
+            actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
         }
 
-        public abstract void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata);
+        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+            visibility = GameManager.Instance.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
+        }
         
         public virtual void UpdateId(string newId, bool updateScene = true) {
             Data.Id = newId;
@@ -36,12 +43,18 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
             Data = actionObjectSwagger;
 
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
+            if (visibility)
+                Show();
+            else
+                Hide();
+
+            SetInteractivity(interactivity);
         }
 
         public virtual bool SceneInteractable() {
@@ -121,6 +134,40 @@ namespace Base {
 
         public void RemoveActionPoint(string uuid) {
             ActionPoints[uuid].DeleteAP(false);
+        }
+
+
+        public virtual void SetVisibility(float value) {
+            Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
+            visibility = value;
+            GameManager.Instance.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+        }
+
+        public float GetVisibility() {
+            return visibility;
+        }
+
+        public abstract void Show();
+
+        public abstract void Hide();
+
+        public abstract void SetInteractivity(bool interactive);
+
+
+        public void ShowMenu() {
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
+                actionObjectMenu.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        public virtual void ActivateForGizmo(string layer) {
+            gameObject.layer = LayerMask.NameToLayer(layer);
         }
     }
 

@@ -14,11 +14,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private bool updateProject = false;
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
     }
 
-    private void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
@@ -48,57 +49,60 @@ public class ActionPoint3D : Base.ActionPoint {
         base.Update();
     }
 
+    private void LateUpdate() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        // set rotation to the WorldAnchor and ignore its parent rotation
+        if (CalibrationManager.Instance.WorldAnchor != null) {
+            transform.rotation = CalibrationManager.Instance.WorldAnchor.transform.rotation;
+        }
+#else
+        transform.rotation = Quaternion.identity;
+#endif
+    }
+
     public override void OnClick(Click type) {
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
-            // We have clicked with left mouse and started manipulation with object
-            manipulationStarted = true;
-            GameManager.Instance.ActivateGizmoOverlay(true);
+            StartManipulation();
         } else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
-            MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+            ShowMenu();
         }
 
         // HANDLE TOUCH
         else if (type == Click.TOUCH) {
-            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                // We have touched and started manipulation with object
-                manipulationStarted = true;
-                GameManager.Instance.ActivateGizmoOverlay(true);
+            if (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate) {
+                StartManipulation();
             } else {
-                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().CurrentActionPoint = this;
-                MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+                ShowMenu();
             }
         }
     }
 
+    public void StartManipulation() {
+        if (Locked) {
+            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
+        } else {
+            // We have clicked with left mouse and started manipulation with object
+            manipulationStarted = true;
+            GameManager.Instance.ActivateGizmoOverlay(true);
+        }
+    }
+
     public override Vector3 GetScenePosition() {
-        /*return Base.GameManager.Instance.Scene.transform.TransformPoint(Vector3.Scale(DataHelper.PositionToVector3(Data.Pose.Position), new Vector3(1000, 1000, 1)) -
-             new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0));*/
-        Vector3 v = DataHelper.PositionToVector3(Data.Position);
-        return new Vector3(v.x, v.z, v.y);
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
     }
 
     public override void SetScenePosition(Vector3 position) {
-        /* Data.Pose.Position = DataHelper.Vector3ToPosition(Vector3.Scale(Base.GameManager.Instance.Scene.transform.InverseTransformPoint(transform.position) +
-             new Vector3(Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.width / 2, Base.GameManager.Instance.Scene.GetComponent<RectTransform>().rect.height / 2, 0), new Vector3(0.001f, 0.001f, 1)));*/
-        Data.Position = DataHelper.Vector3ToPosition(new Vector3(position.x, position.z, position.y));
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
-        //return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
+        //return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Orientations[0].Orientation));
         return new Quaternion();
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        //Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
-    }
-
-    public override void SetScenePosition(IO.Swagger.Model.Position position) {
-        Data.Position = position;
-        //Data.Pose.Position = DataHelper.Vector3ToPosition(new Vector3(transform.position.x, transform.position.z, transform.position.y));
+        //Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation:DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation))));
     }
 
     public override void UpdatePositionsOfPucks() {
@@ -111,6 +115,13 @@ public class ActionPoint3D : Base.ActionPoint {
     
     public override bool ProjectInteractable() {
         return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+    }
+
+    public override void ActivateForGizmo(string layer) {
+        if (!Locked) {
+            base.ActivateForGizmo(layer);
+            Visual.layer = LayerMask.NameToLayer(layer);
+        }
     }
 
 }

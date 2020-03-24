@@ -17,13 +17,13 @@ public class OpenSceneDialog : Dialog {
         UpdateToggleGroup(TogglePrefab, ToggleGroup, Base.GameManager.Instance.Scenes);
     }
 
-    public void OpenScene() {
+    public async void OpenScene() {
         string sceneName;
         try {
             sceneName = GetSelectedValue(ToggleGroup);
-            Base.GameManager.Instance.OpenScene(sceneName);
+            await Base.GameManager.Instance.OpenScene(sceneName);
             WindowManager.CloseWindow();
-        } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
+        } catch (Exception ex) when (ex is Base.ItemNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open scene", ex.Message);
         }
     }

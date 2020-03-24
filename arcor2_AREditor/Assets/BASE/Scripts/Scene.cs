@@ -22,58 +22,74 @@ namespace Base {
         private bool sceneActive = true;
         private bool projectActive = true;
 
+        public bool ActionObjectsInteractive, ActionObjectsVisible;
 
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(true, "ActionObject");
+                    ActivateActionObjectsForGizmo(true);
                     sceneActive = true;
                 } else if (sceneActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(false, "ActionObject");
+                    ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
             } else {
                 if (sceneActive) {
-                    ActivateSceneForEditing(false, "ActionObject");
+                    ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
             }
-
+            
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
                 if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(true, "ActionPoint");
+                    ActivateActionPointsForGizmo(true);
                     projectActive = true;
                 } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateSceneForEditing(false, "ActionPoint");
+                    ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }
             } else {
                 if (projectActive) {
-                    ActivateSceneForEditing(false, "ActionPoint");
+                    ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }
             }
         }
 
-
         /// <summary>
-        /// Deactivates or activates scene and all objects in the scene to ignore raycasting (clicking).
+        /// Deactivates or activates all action objects in scene for gizmo interaction.
         /// </summary>
         /// <param name="activate"></param>
-        /// <param name="tagToActivate"></param>
-        private void ActivateSceneForEditing(bool activate, string tagToActivate) {
-            Transform[] allChildren = Helper.FindComponentsInChildrenWithTag<Transform>(gameObject, tagToActivate);
+        private void ActivateActionObjectsForGizmo(bool activate) {
             if (activate) {
                 gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-                foreach (Transform child in allChildren) {
-                    child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                foreach (ActionObject actionObject in ActionObjects.Values) {
+                    actionObject.ActivateForGizmo("GizmoRuntime");
                 }
             } else {
                 gameObject.layer = LayerMask.NameToLayer("Default");
-                foreach (Transform child in allChildren) {
-                    child.gameObject.layer = LayerMask.NameToLayer("Default");
+                foreach (ActionObject actionObject in ActionObjects.Values) {
+                    actionObject.ActivateForGizmo("Default");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deactivates or activates all action points in scene for gizmo interaction.
+        /// </summary>
+        /// <param name="activate"></param>
+        private void ActivateActionPointsForGizmo(bool activate) {
+            if (activate) {
+                gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
+                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                    actionPoint.ActivateForGizmo("GizmoRuntime");
+                }
+            } else {
+                gameObject.layer = LayerMask.NameToLayer("Default");
+                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                    actionPoint.ActivateForGizmo("Default");
                 }
             }
         }
@@ -165,10 +181,10 @@ namespace Base {
                         // TODO: create a new one with new type
                     }
                     // Update data received from swagger
-                    actionObject.ActionObjectUpdate(aoSwagger);
+                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 } else {
                     actionObject = SpawnActionObject(aoSwagger.Uuid, aoSwagger.Type, false, aoSwagger.Id);
-                    actionObject.ActionObjectUpdate(aoSwagger);
+                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 }
 
                 currentAO.Add(aoSwagger.Uuid);
@@ -181,6 +197,75 @@ namespace Base {
                 }
             }
         }
+
+        public ActionObject GetNextActionObject(string aoUUID) {
+            List<string> keys = ActionObjects.Keys.ToList();
+            Debug.Assert(keys.Count > 0);
+            int index = keys.IndexOf(aoUUID);
+            string next;
+            if (index + 1 < ActionObjects.Keys.Count)
+                next = keys[index + 1];
+            else
+                next = keys[0];
+            if (!ActionObjects.TryGetValue(next, out ActionObject actionObject)) {
+                throw new ItemNotFoundException("This should never happen");
+            }
+            return actionObject;
+        }
+
+        public ActionObject GetPreviousActionObject(string aoUUID) {
+            List<string> keys = ActionObjects.Keys.ToList();
+            Debug.Assert(keys.Count > 0);
+            int index = keys.IndexOf(aoUUID);
+            string previous;
+            if (index - 1 > -1)
+                previous = keys[index - 1];
+            else
+                previous = keys[keys.Count - 1];
+            if (!ActionObjects.TryGetValue(previous, out ActionObject actionObject)) {
+                throw new ItemNotFoundException("This should never happen");
+            }
+            return actionObject;
+        }
+
+        public ActionObject GetFirstActionObject() {
+            if (ActionObjects.Count == 0) {
+                return null;
+            }
+            return ActionObjects.First().Value;
+        }
+
+        /// <summary>
+        /// Shows action objects models
+        /// </summary>
+        public void ShowActionObjects() {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.Show();
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", true);
+        }
+
+        /// <summary>
+        /// Hides action objects models
+        /// </summary>
+        public void HideActionObjects() {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.Hide();
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", false);
+        }
+
+         /// <summary>
+        /// Sets whether action objects should react to user inputs (i.e. enables/disables colliders)
+        /// </summary>
+        public void SetActionObjectsInteractivity(bool interactivity) {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                actionObject.SetInteractivity(interactivity);
+            }
+            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
+            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
+        }
+
 
         /// <summary>
         /// Destroys and removes references to all action objects in the scene.
@@ -225,14 +310,36 @@ namespace Base {
 
         public ActionPoint SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData, bool updateProject = true) {
             GameObject AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
-            AP.transform.localPosition = new Vector3(0, 0, 0);
+            Vector3 offset = new Vector3();
+            if (actionObject.ActionObjectMetadata.ObjectModel != null) {
+                switch (actionObject.ActionObjectMetadata.ObjectModel.Type) {
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Box.SizeY / 2f + 0.1f;
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Cylinder.Height / 2f + 0.1f;
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Mesh:
+                        //TODO: how to handle meshes? do i know dimensios?
+                        break;
+                    case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Sphere.Radius / 2f + 0.1f;
+                        break;
+                    default:
+                        offset.y = 0.15f;
+                        break;
+                }
+            }
+            
+
+            AP.transform.localPosition = offset;
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
 
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
             actionPoint.InitAP(actionObject, apData);
             if (apData == null) {
-                actionPoint.SetScenePosition(transform.localPosition);
-                actionPoint.SetSceneOrientation(transform.rotation);
+                actionPoint.SetScenePosition(AP.transform.localPosition);
+                actionPoint.SetSceneOrientation(AP.transform.rotation);
             }
 
             ActionObjects[actionObject.Data.Uuid].ActionPoints.Add(actionPoint.Data.Uuid, actionPoint);
@@ -354,7 +461,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, bool generateData, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+        public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
             GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
@@ -388,7 +495,7 @@ namespace Base {
                 action_uuid = Guid.NewGuid().ToString();
             } 
 
-            await puck.GetComponent<Action>().Init(action_uuid, newId, actionMetadata, ap, generateData, actionProvider, false);
+            await puck.GetComponent<Action>().Init(action_uuid, newId, actionMetadata, ap, actionProvider, false);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
@@ -438,7 +545,7 @@ namespace Base {
                 }
                 // if action doesn't exist, create new one
                 else {
-                    action = await SpawnPuck(projectAction.Uuid, actionType, actionPoint.ActionObject, actionPoint, false, actionProvider, false, projectAction.Id);
+                    action = await SpawnPuck(projectAction.Uuid, actionType, actionPoint.ActionObject, actionPoint, actionProvider, false, projectAction.Id);
                     action.ActionUpdate(projectAction);
                 }
 
@@ -454,7 +561,7 @@ namespace Base {
                             // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
                             IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(projectActionParameter.Id);
 
-                            actionParameter = new ActionParameter(actionParameterMetadata, action, projectActionParameter);
+                            actionParameter = new ActionParameter(actionParameterMetadata, action, projectActionParameter.Value);
                             action.Parameters.Add(actionParameter.Id, actionParameter);
                         }
                     } catch (ItemNotFoundException ex) {

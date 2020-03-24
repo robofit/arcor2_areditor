@@ -518,11 +518,14 @@ namespace Base {
             return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id);
         }
 
-        public async Task<IO.Swagger.Model.AddServiceToSceneResponse> AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
+        public async Task AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
+            var response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
+            if (!response.Result) {
+                throw new RequestFailedException(response.Messages);
+            }
         }
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string objectType) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -560,12 +563,15 @@ namespace Base {
                 return new List<IO.Swagger.Model.ServiceTypeMeta>();
         }
 
-        public async Task<IO.Swagger.Model.OpenSceneResponse> OpenScene(string scene_id) {
+        public async Task OpenScene(string scene_id) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: scene_id);
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
+            IO.Swagger.Model.OpenSceneResponse response = await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
+            if (!response.Result) {
+                throw new RequestFailedException(response.Messages);
+            }
         }
 
         public async Task<List<string>> GetActionParamValues(string actionProviderId, string param_id, List<IO.Swagger.Model.IdValue> parent_params) {

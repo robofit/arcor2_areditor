@@ -93,7 +93,7 @@ public class GridOverlay : MonoBehaviour {
                 for (float i = 0; i <= gridSizeZ; i += largeStep) {
                     if (showAxis) {
                         if (i == middleZ) {
-                            GL.Color(Color.red);
+                            GL.Color(Color.green);
                             GL.Vertex3(startX, startY + j, startZ + i);
                             GL.Vertex3(startX + gridSizeX, startY + j, startZ + i);
                             GL.Color(mainColor);
@@ -108,7 +108,7 @@ public class GridOverlay : MonoBehaviour {
                 for (float i = 0; i <= gridSizeX; i += largeStep) {
                     if (showAxis) {
                         if (i == middleX) {
-                            GL.Color(Color.blue);
+                            GL.Color(Color.red);
                             GL.Vertex3(startX + i, startY + j, startZ);
                             GL.Vertex3(startX + i, startY + j, startZ + gridSizeZ);
                             GL.Color(mainColor);

@@ -15,10 +15,11 @@ namespace Base {
         
         public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
 
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
 
         public GameObject InteractiveObjects, PuckPrefab;
 
-        public event EventHandler OnActionObjectsUpdated;
+        public event GameManager.StringEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
 
@@ -90,11 +91,11 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-        public void UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
+        public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
                 ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
-                UpdateActionsOfService(serviceMetadata);
+                await UpdateActionsOfService(serviceMetadata);
             }
             ServicesLoaded = true;
             OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
@@ -130,17 +131,31 @@ namespace Base {
         }
 
 
-        private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
-            actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
+        private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
+            if (!actionObject.Disabled)
+                actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
+            if (actionObject.ActionsMetadata == null) {
+                actionObject.Disabled = true;
+                actionObject.Problem = "Failed to load actions";
+            }
             actionObject.ActionsLoaded = true;
         }
 
-        private async void UpdateActionsOfService(ServiceMetadata serviceMetadata) {
-            serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
+        private async Task UpdateActionsOfService(ServiceMetadata serviceMetadata) {
+            if (!serviceMetadata.Disabled) {
+                serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
+            }
+            if (serviceMetadata.ActionsMetadata == null) {
+                serviceMetadata.Disabled = true;
+                serviceMetadata.Problem = "Failed to load actions";
+            }
             serviceMetadata.ActionsLoaded = true;
         }
 
         private Dictionary<string, ActionMetadata> ParseActions(List<IO.Swagger.Model.ObjectAction> actions) {
+            if (actions == null) {
+                return null;
+            }
             Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
             foreach (IO.Swagger.Model.ObjectAction action in actions) {
                 ActionMetadata a = new ActionMetadata(action);
@@ -170,25 +185,20 @@ namespace Base {
             
         }
 
-        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
+        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata, string highlighteObject = null) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
+                await UpdateActionsOfActionObject(m);
                 actionObjectsMetadata.Add(metadata.Type, m);
-                UpdateActionsOfActionObject(m);
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
             }
-            /*foreach (ActionObject ao in InteractiveObjects.GetComponentsInChildren<ActionObject>()) {
-                if (!ActionObjectMetadata.ContainsKey(ao.Data.Type)) {
-                    Destroy(ao.gameObject);
-                }
-            }*/
             enabled = true;
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, EventArgs.Empty);
+            OnActionObjectsUpdated?.Invoke(this, new Base.StringEventArgs(highlighteObject));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {
