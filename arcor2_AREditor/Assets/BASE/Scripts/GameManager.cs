@@ -79,7 +79,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.4.0";
+        public const string ApiVersion = "0.5.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
