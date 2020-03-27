@@ -51,6 +51,7 @@ namespace Base {
         public event EventHandler OnPauseProject;
         public event EventHandler OnResumeProject;
         public event EventHandler OnCloseProject;
+        public event EventHandler OnCloseScene;
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
@@ -597,6 +598,7 @@ namespace Base {
             loadedScene = "";
             WebsocketManager.Instance.UpdateScene(null);
             SceneUpdated(null);
+            OnCloseScene?.Invoke(this, EventArgs.Empty);
             OpenMainScreen();
         }
 
