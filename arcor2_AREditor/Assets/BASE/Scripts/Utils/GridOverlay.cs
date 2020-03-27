@@ -27,6 +27,8 @@ public class GridOverlay : MonoBehaviour {
     private int middleY;
     private int middleX;
 
+#if UNITY_EDITOR || UNITY_STANDALONE
+
     private void Start() {
         middleZ = gridSizeZ / 2;
         middleY = gridSizeY / 2;
@@ -132,4 +134,5 @@ public class GridOverlay : MonoBehaviour {
 
         GL.End();
     }
+#endif
 }

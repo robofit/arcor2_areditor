@@ -20,6 +20,8 @@ public class FreeCameraMover : MonoBehaviour
     private float yaw = 0f;
     private float pitch = 0f;
 
+#if UNITY_EDITOR || UNITY_STANDALONE
+
     // Update is called once per frame
     void Update() {
         if (Base.GameManager.Instance.SceneInteractable) {
@@ -61,4 +63,5 @@ public class FreeCameraMover : MonoBehaviour
         }
         return Vector3.zero;
     }
+#endif
 }
