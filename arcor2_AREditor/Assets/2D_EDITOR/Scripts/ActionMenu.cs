@@ -15,6 +15,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public Button ExectuteActionBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
+    public ConfirmationDialog ConfirmationDialog;
 
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
@@ -42,13 +43,19 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public void DeletePuck() {
+        ConfirmationDialog.Close();
         if (CurrentPuck == null)
-            return;
+            return;        
         CurrentPuck.DeleteAction();
         MenuManager.Instance.PuckMenu.Close();
     }
 
-    
+    public void ShowDeleteActionDialog() {
+        ConfirmationDialog.Open("Delete action",
+                                "Do you want to delete action " + CurrentPuck.Data.Id + "?",
+                                () => DeletePuck(),
+                                () => ConfirmationDialog.Close());
+    }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
        

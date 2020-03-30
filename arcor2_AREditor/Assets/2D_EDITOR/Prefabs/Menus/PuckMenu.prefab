@@ -239,6 +239,7 @@ MonoBehaviour:
   ActionType: {fileID: 5758408933129896914}
   ExectuteActionBtn: {fileID: 3553193149785279971}
   AddNewActionDialog: {fileID: 0}
+  ConfirmationDialog: {fileID: 0}
   DynamicContentLayout: {fileID: 4946019615314290720}
   CanvasRoot: {fileID: 0}
 --- !u!1 &3553834341816891860
@@ -1223,6 +1224,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 4946019617098303240}
+    - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ShowDeleteActionDialog
+      objectReference: {fileID: 0}
     - target: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_LocalPosition.x
