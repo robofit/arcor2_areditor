@@ -310,7 +310,7 @@ namespace Base {
                 return;
             }
 
-            Action puck = Scene.Instance.GetActionByID(puck_id);
+            Action puck = Scene.Instance.GetActionById(puck_id);
             if (puck == null)
                 return;
 

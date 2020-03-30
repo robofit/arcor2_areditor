@@ -15,6 +15,8 @@ public class AddNewActionDialog : Dialog
     private List<IActionParameter> actionParameters = new List<IActionParameter>();
     public Base.ActionPoint CurrentActionPoint;
     private IActionProvider actionProvider;
+    [SerializeField]
+    private LabeledInput nameInput;
 
 
     public async void Init(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
@@ -29,6 +31,9 @@ public class AddNewActionDialog : Dialog
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));         
         }
         actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderName(), actionParametersMetadata, DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
+        nameInput.SetLabel("Name", "Name of the action");
+        nameInput.SetType("string");
+        nameInput.SetValue(actionMetadata.Name);
     }
         
     public void OnChangeParameterHandler(string parameterId, object newValue) {
@@ -36,13 +41,16 @@ public class AddNewActionDialog : Dialog
     }
 
     public async void CreateAction() {
+        string newActionName = (string) nameInput.GetValue();
+        
         if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
-            Base.Action action = await Base.Scene.Instance.SpawnPuck(null, actionMetadata.Name, CurrentActionPoint.ActionObject, CurrentActionPoint, actionProvider, false);
+            Base.Action action = await Base.Scene.Instance.SpawnPuck(null, actionMetadata.Name, CurrentActionPoint.ActionObject, CurrentActionPoint, actionProvider, false, newActionName);
+            if (action == null) {
+                return;
+            }
             foreach (IActionParameter actionParameter in actionParameters) {
                 object value = actionParameter.GetValue();
-
-                IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(actionParameter.GetName());
-                
+                IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(actionParameter.GetName());                
                 Base.ActionParameter ap = new Base.ActionParameter(actionParameterMetadata, action, value);
                 action.Parameters.Add(actionParameter.GetName(), ap);
             }
