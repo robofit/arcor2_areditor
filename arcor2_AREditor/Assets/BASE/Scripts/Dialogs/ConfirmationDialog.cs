@@ -27,11 +27,11 @@ public class ConfirmationDialog : Dialog
     }
 
     public void SetDescription(string description) {
-        WindowManager.descriptionText = description;
+        WindowManager.windowDescription.text = description;
     }
 
     public void SetTitle(string title) {
-        WindowManager.titleText = title;
+        WindowManager.windowTitle.text = title;
     }
 
     public void Open(string title, string description, UnityAction confirmationCallback, UnityAction cancelCallback, string confirmLabel = "Confirm", string cancelLabel = "Cancel") {
