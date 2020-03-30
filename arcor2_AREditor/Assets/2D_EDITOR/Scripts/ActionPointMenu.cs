@@ -30,7 +30,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
-        AddNewActionDialog.Init(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
+        AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
         AddNewActionDialog.WindowManager.OpenWindow();
     }
 

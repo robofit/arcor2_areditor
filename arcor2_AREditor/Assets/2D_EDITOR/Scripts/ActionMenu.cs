@@ -14,6 +14,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public TMPro.TMP_Text ActionType;
     public Button ExectuteActionBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
+    public AddNewActionDialog AddNewActionDialog;
 
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
@@ -44,6 +45,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         if (CurrentPuck == null)
             return;
         CurrentPuck.DeleteAction();
+        MenuManager.Instance.PuckMenu.Close();
     }
 
     
@@ -70,5 +72,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public void SetHeader(string header) {
         TopText.text = header;
+    }
+
+    public void DuplicateAction() {
+        
+        AddNewActionDialog.InitFromAction(CurrentPuck);
+        AddNewActionDialog.WindowManager.OpenWindow();
+
     }
 }

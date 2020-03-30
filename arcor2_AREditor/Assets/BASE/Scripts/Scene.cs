@@ -462,6 +462,19 @@ namespace Base {
         #region ACTIONS
 
         public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+            string newId = puck_id;
+            const string glyphs = "0123456789";
+            if (newId == "") {
+                newId = action_id;
+                for (int j = 0; j < 4; j++) {
+                    newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
+                }
+            } else {
+                if (Base.Scene.Instance.GetActionById(puck_id) != null) {
+                    Base.Notifications.Instance.ShowNotification("Failed to create action", "Action with name " + puck_id + " already exists");
+                    return null;
+                }
+            }
             GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
@@ -481,15 +494,9 @@ namespace Base {
 
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
             puck.SetActive(false);
-            const string glyphs = "0123456789";
+            
 
-            string newId = puck_id;
-            if (newId == "") {
-                newId = action_id;
-                for (int j = 0; j < 4; j++) {
-                    newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
-                }
-            }
+            
 
             if (action_uuid == "" || action_uuid == null) {
                 action_uuid = Guid.NewGuid().ToString();
@@ -678,24 +685,6 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
                     if (actionPoint.Actions.TryGetValue(uuid, out Action action)) {
-                        return action;
-                    }
-                }
-            }
-            //Debug.LogError("Action " + uuid + " not found!");
-            return null;
-        }
-
-        /// <summary>
-        /// Returns action of given UUID.
-        /// </summary>
-        /// <param name="uuid"></param>
-        /// <returns></returns>
-        public Action GetActionByID(string id) {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    foreach (Action action in actionPoint.Actions.Values)
-                        if (action.Data.Id == id) {
                         return action;
                     }
                 }
