@@ -187,7 +187,7 @@ namespace Base {
 
         public void UpdateScene(IO.Swagger.Model.Scene scene) {
             //ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged();
-            IO.Swagger.Model.SceneChangedEvent eventData = new IO.Swagger.Model.SceneChangedEvent {
+            IO.Swagger.Model.SceneChanged eventData = new IO.Swagger.Model.SceneChanged {
                 Event = "SceneChanged",
                 
             };
@@ -330,7 +330,7 @@ namespace Base {
         }
 
         private void HandleSceneChanged(string obj) {
-            IO.Swagger.Model.SceneChangedEvent sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChangedEvent>(obj);
+            IO.Swagger.Model.SceneChanged sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChanged>(obj);
             GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
             sceneArrived = true;
         }
@@ -511,9 +511,10 @@ namespace Base {
             return response.Data;
         }
 
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(IO.Swagger.Model.SceneObject sceneObject) {
+        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string userId, string type, IO.Swagger.Model.Pose pose) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: sceneObject);
+            IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose, type, userId);
+            IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id);
         }
@@ -621,6 +622,70 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
+        public async Task CreateScene(string userId, string description) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.NewSceneRequestArgs args = new IO.Swagger.Model.NewSceneRequestArgs(userId: userId, desc: description);
+            IO.Swagger.Model.NewSceneRequest request = new IO.Swagger.Model.NewSceneRequest(r_id, "NewScene", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.NewSceneResponse response = await WaitForResult<IO.Swagger.Model.NewSceneResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task RenameScene(string userId, string newUserId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(userId, newUserId);
+            IO.Swagger.Model.RenameSceneRequest request = new IO.Swagger.Model.RenameSceneRequest(r_id, "RenameScene", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameSceneResponse response = await WaitForResult<IO.Swagger.Model.RenameSceneResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task RenameObject(string userId, string newUserId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(userId, newUserId);
+            IO.Swagger.Model.RenameObjectRequest request = new IO.Swagger.Model.RenameObjectRequest(r_id, "RenameObject", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameObjectResponse response = await WaitForResult<IO.Swagger.Model.RenameObjectResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task UpdateObjectPose(string id, IO.Swagger.Model.Pose pose) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateObjectPoseRequestArgs(id, pose);
+            IO.Swagger.Model.UpdateObjectPoseRequest request = new IO.Swagger.Model.UpdateObjectPoseRequest(r_id, "UpdateObjectPose", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task<bool> CloseScene(bool force) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CloseSceneRequestArgs args = new IO.Swagger.Model.CloseSceneRequestArgs(force);
+            IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(r_id, "CloseScene", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
+            // TODO: is this correct?
+            return response.Result;
+        }
+
+        public async Task<List<string>> GetProjectsWithScene(string sceneId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(sceneId);
+            IO.Swagger.Model.ProjectsWithSceneRequest request = new IO.Swagger.Model.ProjectsWithSceneRequest(r_id, "ProjectsWithScene", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ProjectsWithSceneResponse response = await WaitForResult<IO.Swagger.Model.ProjectsWithSceneResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+            return response.Data;
+        }
 
     }
 }

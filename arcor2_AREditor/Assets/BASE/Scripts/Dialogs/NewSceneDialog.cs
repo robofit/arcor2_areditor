@@ -7,13 +7,11 @@ public class NewSceneDialog : Dialog
 {
     public TMPro.TMP_InputField NewSceneName;
 
-    public void NewScene() {
+    public async void NewScene() {
         string name = NewSceneName.text;
 
-        if (Base.GameManager.Instance.NewScene(name)) {
+        if (await Base.GameManager.Instance.NewScene(name)) {
             WindowManager.CloseWindow();
-        } else {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to create new scene", "Scene with name " + name + " already exists");
-        }
+        } 
     }
 }

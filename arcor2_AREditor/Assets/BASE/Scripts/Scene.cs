@@ -7,11 +7,12 @@ using UnityEngine;
 
 namespace Base {
     public class Scene : Singleton<Scene> {
+
+        public IO.Swagger.Model.Scene Data = null;
         
-        public IO.Swagger.Model.Scene Data = new IO.Swagger.Model.Scene("", "JabloPCB", new List<IO.Swagger.Model.SceneObject>(), new List<IO.Swagger.Model.SceneService>());
-        
-        // string == IO.Swagger.Model.Scene Data.Uuid
+        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
+        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionObjectsSpawn;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
@@ -120,7 +121,7 @@ namespace Base {
 
         #region ACTION_OBJECTS
 
-        public ActionObject SpawnActionObject(string uuid, string type, bool updateScene = true, string id = "") {
+        public ActionObject SpawnActionObject(string id, string type, bool updateScene = true, string userId = "") {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -149,13 +150,13 @@ namespace Base {
 
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
 
-            if (id == "")
-                id = GetFreeIOName(type);
+            if (userId == "")
+                userId = GetFreeIOName(type);
             
-            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, uuid, aom);
+            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
 
             // Add the Action Object into scene reference
-            ActionObjects.Add(uuid, actionObject);
+            ActionObjects.Add(id, actionObject);
             if (aom.Robot) {
                 actionObject.LoadEndEffectors();
             }
@@ -172,9 +173,9 @@ namespace Base {
         public void UpdateActionObjects() {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Data.Objects) {
-                if (ActionObjects.TryGetValue(aoSwagger.Uuid, out ActionObject actionObject)) {
+                if (ActionObjects.TryGetValue(aoSwagger.Id, out ActionObject actionObject)) {
                     if (aoSwagger.Type != actionObject.Data.Type) {
-                        ActionObjects.Remove(aoSwagger.Uuid);
+                        ActionObjects.Remove(aoSwagger.Id);
 
                         // type has changed, what now? delete object and create a new one?
                         Destroy(actionObject.gameObject);
@@ -183,25 +184,25 @@ namespace Base {
                     // Update data received from swagger
                     actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 } else {
-                    actionObject = SpawnActionObject(aoSwagger.Uuid, aoSwagger.Type, false, aoSwagger.Id);
+                    actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.UserId);
                     actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 }
 
-                currentAO.Add(aoSwagger.Uuid);
+                currentAO.Add(aoSwagger.Id);
             }
 
             // Remove deleted action objects
-            foreach (string actionObjectUUID in ActionObjects.Keys.ToList<string>()) {
-                if (!currentAO.Contains(actionObjectUUID)) {
-                    RemoveActionObject(actionObjectUUID);
+            foreach (string actionObjectId in ActionObjects.Keys.ToList<string>()) {
+                if (!currentAO.Contains(actionObjectId)) {
+                    RemoveActionObject(actionObjectId);
                 }
             }
         }
 
-        public ActionObject GetNextActionObject(string aoUUID) {
+        public ActionObject GetNextActionObject(string aoId) {
             List<string> keys = ActionObjects.Keys.ToList();
             Debug.Assert(keys.Count > 0);
-            int index = keys.IndexOf(aoUUID);
+            int index = keys.IndexOf(aoId);
             string next;
             if (index + 1 < ActionObjects.Keys.Count)
                 next = keys[index + 1];
@@ -213,10 +214,10 @@ namespace Base {
             return actionObject;
         }
 
-        public ActionObject GetPreviousActionObject(string aoUUID) {
+        public ActionObject GetPreviousActionObject(string aoId) {
             List<string> keys = ActionObjects.Keys.ToList();
             Debug.Assert(keys.Count > 0);
-            int index = keys.IndexOf(aoUUID);
+            int index = keys.IndexOf(aoId);
             string previous;
             if (index - 1 > -1)
                 previous = keys[index - 1];
@@ -271,20 +272,20 @@ namespace Base {
         /// Destroys and removes references to all action objects in the scene.
         /// </summary>
         public void RemoveActionObjects() {
-            foreach (string actionObjectUUID in ActionObjects.Keys.ToList<string>()) {
-                RemoveActionObject(actionObjectUUID);
+            foreach (string actionObjectId in ActionObjects.Keys.ToList<string>()) {
+                RemoveActionObject(actionObjectId);
             }
             // just to make sure that none reference left
             ActionObjects.Clear();
         }
 
         /// <summary>
-        /// Destroys and removes references to action object of given UUID.
+        /// Destroys and removes references to action object of given Id.
         /// </summary>
-        /// <param name="uuid"></param>
-        public void RemoveActionObject(string uuid) {
+        /// <param name="Id"></param>
+        public void RemoveActionObject(string Id) {
             try {
-                ActionObjects[uuid].DeleteActionObject();
+                ActionObjects[Id].DeleteActionObject();
             } catch (NullReferenceException e) {
                 Debug.LogError(e);
             }
@@ -342,7 +343,7 @@ namespace Base {
                 actionPoint.SetSceneOrientation(AP.transform.rotation);
             }
 
-            ActionObjects[actionObject.Data.Uuid].ActionPoints.Add(actionPoint.Data.Uuid, actionPoint);
+            ActionObjects[actionObject.Data.Id].ActionPoints.Add(actionPoint.Data.Id, actionPoint);
 
             if (updateProject)
                 GameManager.Instance.UpdateProject();
@@ -359,74 +360,74 @@ namespace Base {
             List<string> currentActions = new List<string>();
             Dictionary<string, string> connections = new Dictionary<string, string>();
 
-            foreach (IO.Swagger.Model.ProjectObject projectObject in project.Objects) {
-                if (ActionObjects.TryGetValue(projectObject.Uuid, out ActionObject actionObject)) {
+            
 
-                    foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
-                        // if action point exist, just update it
-                        if (actionObject.ActionPoints.TryGetValue(projectActionPoint.Uuid, out ActionPoint actionPoint)) {
-                            actionPoint.ActionPointUpdate(projectActionPoint);
-                        }
-                        // if action point doesn't exist, create new one
-                        else {
-                            actionPoint = SpawnActionPoint(actionObject, projectActionPoint, false);
-                            actionPoint.ActionPointUpdate();
-                        }
-
-                        // update actions in current action point 
-                        var updateActionsResult = await UpdateActions(projectActionPoint, actionPoint);
-                        currentActions.AddRange(updateActionsResult.Item1);
-                        // merge dictionaries
-                        connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
-
-                        actionPoint.UpdatePositionsOfPucks();
-
-                        currentAP.Add(projectActionPoint.Uuid);
-                    }
+            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
+                // if action point exist, just update it
+                if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
+                    actionPoint.ActionPointUpdate(projectActionPoint);
                 }
-            }
+                // if action point doesn't exist, create new one
+                else {
+                    //TODO: update spawn action point to not need action object
+                    //actionPoint = SpawnActionPoint(actionObject, actionPoint, false);
+                    actionPoint.ActionPointUpdate();
+                }
 
-            UpdateActionConnections(project.Objects, connections);
+                // update actions in current action point 
+                var updateActionsResult = await UpdateActions(projectActionPoint, actionPoint);
+                currentActions.AddRange(updateActionsResult.Item1);
+                // merge dictionaries
+                connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
+
+                actionPoint.UpdatePositionsOfPucks();
+
+                currentAP.Add(actionPoint.Data.Id);
+            }
+               
+            
+
+            UpdateActionConnections(project.ActionPoints, connections);
 
             // Remove deleted actions
-            foreach (string actionUUID in GetAllActionsDict().Keys.ToList<string>()) {
-                if (!currentActions.Contains(actionUUID)) {
-                    RemoveAction(actionUUID);
+            foreach (string actionId in GetAllActionsDict().Keys.ToList<string>()) {
+                if (!currentActions.Contains(actionId)) {
+                    RemoveAction(actionId);
                 }
             }
 
             // Remove deleted action points
-            foreach (string actionPointUUID in GetAllActionPointsDict().Keys.ToList<string>()) {
-                if (!currentAP.Contains(actionPointUUID)) {
-                    RemoveActionPoint(actionPointUUID);
+            foreach (string actionPointId in GetAllActionPointsDict().Keys.ToList<string>()) {
+                if (!currentAP.Contains(actionPointId)) {
+                    RemoveActionPoint(actionPointId);
                 }
             }
         }
 
         /// <summary>
-        /// Destroys and removes references to action point of given UUID.
+        /// Destroys and removes references to action point of given Id.
         /// </summary>
-        /// <param name="uuid"></param>
-        public void RemoveActionPoint(string uuid) {
-            ActionPoint apToRemove = GetActionPoint(uuid);
-            string aoUuidToRemove = apToRemove.ActionObject.Data.Uuid;
+        /// <param name="Id"></param>
+        public void RemoveActionPoint(string Id) {
+            ActionPoint apToRemove = GetActionPoint(Id);
+            string aoIdToRemove = apToRemove.ActionObject.Data.Id;
             // Call function in corresponding action point that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionObjects[aoUuidToRemove].ActionPoints[uuid].DeleteAP(false);
+            ActionObjects[aoIdToRemove].ActionPoints[Id].DeleteAP(false);
         }
 
         /// <summary>
-        /// Returns action point of given UUID.
+        /// Returns action point of given Id.
         /// </summary>
-        /// <param name="uuid"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        public ActionPoint GetActionPoint(string uuid) {
+        public ActionPoint GetActionPoint(string Id) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                if (actionObject.ActionPoints.TryGetValue(uuid, out ActionPoint actionPoint)) {
+                if (actionObject.ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
                     return actionPoint;
                 }
             }
-            throw new KeyNotFoundException("ActionPoint " + uuid + " not found!");
+            throw new KeyNotFoundException("ActionPoint " + Id + " not found!");
         }
 
         /// <summary>
@@ -444,14 +445,14 @@ namespace Base {
         }
 
         /// <summary>
-        /// Returns all action points in the scene in a dictionary [action_point_UUID, ActionPoint_object]
+        /// Returns all action points in the scene in a dictionary [action_point_Id, ActionPoint_object]
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, ActionPoint> GetAllActionPointsDict() {
             Dictionary<string, ActionPoint> actionPoints = new Dictionary<string, ActionPoint>();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    actionPoints.Add(actionPoint.Data.Uuid, actionPoint);
+                    actionPoints.Add(actionPoint.Data.Id, actionPoint);
                 }
             }
             return actionPoints;
@@ -461,11 +462,11 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_uuid, string action_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
             string newId = puck_id;
             const string glyphs = "0123456789";
             if (newId == "") {
-                newId = action_id;
+                newId = action_user_id;
                 for (int j = 0; j < 4; j++) {
                     newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
                 }
@@ -479,7 +480,7 @@ namespace Base {
             ActionMetadata actionMetadata;
 
             try {
-                actionMetadata = actionProvider.GetActionMetadata(action_id);
+                actionMetadata = actionProvider.GetActionMetadata(action_user_id);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 GameManager.Instance.EndLoading();
@@ -498,18 +499,18 @@ namespace Base {
 
             
 
-            if (action_uuid == "" || action_uuid == null) {
-                action_uuid = Guid.NewGuid().ToString();
+            if (action_id == "" || action_id == null) {
+                action_id = Guid.NewGuid().ToString();
             } 
 
-            await puck.GetComponent<Action>().Init(action_uuid, newId, actionMetadata, ap, actionProvider, false);
+            await puck.GetComponent<Action>().Init(action_id, newId, actionMetadata, ap, actionProvider, false);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
             Action action = puck.GetComponent<Action>();
 
             // Add new action into scene reference
-            ActionObjects[ao.Data.Uuid].ActionPoints[ap.Data.Uuid].Actions.Add(action_uuid, action);
+            ActionObjects[ao.Data.Id].ActionPoints[ap.Data.Id].Actions.Add(action_id, action);
 
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
@@ -547,12 +548,12 @@ namespace Base {
                 }
 
                 // if action exist, just update it
-                if (actionPoint.Actions.TryGetValue(projectAction.Uuid, out Action action)) {
+                if (actionPoint.Actions.TryGetValue(projectAction.Id, out Action action)) {
                     action.ActionUpdate(projectAction);
                 }
                 // if action doesn't exist, create new one
                 else {
-                    action = await SpawnPuck(projectAction.Uuid, actionType, actionPoint.ActionObject, actionPoint, actionProvider, false, projectAction.Id);
+                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint.ActionObject, actionPoint, actionProvider, false, projectAction.Id);
                     action.ActionUpdate(projectAction);
                 }
 
@@ -579,11 +580,11 @@ namespace Base {
                 // Add current connection from the server, we will only map the outputs
                 foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
                     //if(!connections.ContainsKey(projectAction.Id))
-                    connections.Add(projectAction.Uuid, actionIO.Default);
+                    connections.Add(projectAction.Id, actionIO.Default);
                 }
 
                 // local list of all actions for current action point
-                currentA.Add(projectAction.Uuid);
+                currentA.Add(projectAction.Id);
             }
             
             return (currentA, connections);
@@ -594,13 +595,13 @@ namespace Base {
         /// </summary>
         /// <param name="projectObjects"></param>
         /// <param name="connections"></param>
-        public void UpdateActionConnections(List<IO.Swagger.Model.ProjectObject> projectObjects, Dictionary<string, string> connections) {
+        public void UpdateActionConnections(List<IO.Swagger.Model.ProjectActionPoint> actionPoints, Dictionary<string, string> connections) {
             Dictionary<string, Action> actionsToActualize = new Dictionary<string, Action>();
 
             // traverse through all actions (even freshly created)
             foreach (Action action in GetAllActions()) {
                 // get connection from dictionary [actionID,outputAction]
-                if (connections.TryGetValue(action.Data.Uuid, out string actionOutput)) {
+                if (connections.TryGetValue(action.Data.Id, out string actionOutput)) {
                     // Check if action's output action is NOT the same as actionOutput from newly received data from server,
                     // then connection changed and we have to delete actual connection of current action and create new one
                     Action refAction = null;
@@ -639,57 +640,56 @@ namespace Base {
                             ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
                         }
                     }
-                    actionsToActualize.Add(action.Data.Uuid, action);
+                    actionsToActualize.Add(action.Data.Id, action);
                 }
             }
 
             // Set action inputs and outputs for updated connections
-            foreach (IO.Swagger.Model.ProjectObject projectObject in projectObjects) {
-                foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectObject.ActionPoints) {
-                    foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {                        
-                        if (actionsToActualize.TryGetValue(projectAction.Uuid, out Action action)) {
-                            // Sets action inputs (currently each action has only 1 input)
-                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
-                                action.Input.Data = actionIO;
-                            }
+            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in actionPoints) {
+                foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {                        
+                    if (actionsToActualize.TryGetValue(projectAction.Id, out Action action)) {
+                        // Sets action inputs (currently each action has only 1 input)
+                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
+                            action.Input.Data = actionIO;
+                        }
 
-                            // Sets action outputs (currently each action has only 1 output)
-                            foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                                action.Output.Data = actionIO;
-                            }
+                        // Sets action outputs (currently each action has only 1 output)
+                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                            action.Output.Data = actionIO;
                         }
                     }
                 }
             }
+            
         }
 
         /// <summary>
-        /// Destroys and removes references to action of given UUID.
+        /// Destroys and removes references to action of given Id.
         /// </summary>
-        /// <param name="uuid"></param>
-        public void RemoveAction(string uuid) {
-            Action aToRemove = GetAction(uuid);
-            string apUuidToRemove = aToRemove.ActionPoint.Data.Uuid;
-            string aoUuidToRemove = aToRemove.ActionPoint.ActionObject.Data.Uuid;
+        /// <param name="Id"></param>
+        public void RemoveAction(string Id) {
+            Action aToRemove = GetAction(Id);
+            string apIdToRemove = aToRemove.ActionPoint.Data.Id;
+            string aoIdToRemove = aToRemove.ActionPoint.ActionObject.Data.Id;
             // Call function in corresponding action that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionObjects[aoUuidToRemove].ActionPoints[apUuidToRemove].Actions[uuid].DeleteAction(false);
+            ActionObjects[aoIdToRemove].ActionPoints[apIdToRemove].Actions[Id].DeleteAction(false);
         }
 
         /// <summary>
-        /// Returns action of given UUID.
+        /// Returns action of given Id.
         /// </summary>
-        /// <param name="uuid"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        public Action GetAction(string uuid) {
+        public Action GetAction(string Id) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    if (actionPoint.Actions.TryGetValue(uuid, out Action action)) {
+                    if (actionPoint.Actions.TryGetValue(Id, out Action action)) {
                         return action;
                     }
                 }
             }
-            //Debug.LogError("Action " + uuid + " not found!");
+            //Debug.LogError("Action " + Id + " not found!");
             return null;
         }
 
@@ -729,7 +729,7 @@ namespace Base {
         }
 
         /// <summary>
-        /// Returns all actions in the scene in a dictionary [action_UUID, Action_object]
+        /// Returns all actions in the scene in a dictionary [action_Id, Action_object]
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, Action> GetAllActionsDict() {
@@ -737,7 +737,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
                     foreach (Action action in actionPoint.Actions.Values) {
-                        actions.Add(action.Data.Uuid, action);
+                        actions.Add(action.Data.Id, action);
                     }
                 }
             }

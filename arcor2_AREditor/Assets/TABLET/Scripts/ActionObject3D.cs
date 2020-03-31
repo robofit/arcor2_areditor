@@ -129,7 +129,7 @@ public class ActionObject3D : ActionObject
         Data.Type = type;
         SetScenePosition(position);
         SetSceneOrientation(orientation);
-        Data.Uuid = uuid;
+        Data.Id = uuid;
         ActionObjectMetadata = actionObjectMetadata;
         CreateModel();
         enabled = true;

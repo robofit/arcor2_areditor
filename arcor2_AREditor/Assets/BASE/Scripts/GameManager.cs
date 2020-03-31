@@ -79,7 +79,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.5.0";
+        public const string ApiVersion = "0.6.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -258,17 +258,16 @@ namespace Base {
         }
 
         /// <summary>
-        /// Sends request to the server to create a new Action Object of user specified type and id. Uuid has to be generated here in the client.
+        /// Sends request to the server to create a new Action Object of user specified type and id. Id has to be generated here in the client.
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="id"></param>
+        /// <param name="userId"></param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
+        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string userId) {
             StartLoading();
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type, uuid: Guid.NewGuid().ToString());
             EndLoading();
-            return await WebsocketManager.Instance.AddObjectToScene(sceneObject: sceneObject);
+            return await WebsocketManager.Instance.AddObjectToScene(userId, type, pose);
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
@@ -277,7 +276,7 @@ namespace Base {
 
         public async void AddServiceToScene(string type, string configId = "") {
             StartLoading();
-            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId, uuid: Guid.NewGuid().ToString());
+            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
             try {
                 await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
             } catch (RequestFailedException e) {
@@ -363,7 +362,7 @@ namespace Base {
 
         // UpdateProject updates opened project on the server.
         public void UpdateProject() {
-            if (CurrentProject == null)
+            /*if (CurrentProject == null)
                 return;
             CurrentProject.Objects.Clear();
             CurrentProject.SceneId = Scene.Instance.Data.Id;
@@ -395,7 +394,7 @@ namespace Base {
                 CurrentProject.Objects.Add(projectObject);
             }
 
-            WebsocketManager.Instance.UpdateProject(CurrentProject);
+            WebsocketManager.Instance.UpdateProject(CurrentProject);*/
         }
 
         public async Task LoadScenes() {
@@ -566,26 +565,25 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
                 return;
             }
-            IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
-            WebsocketManager.Instance.UpdateProject(project);
-            ProjectUpdated(project);
+            //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), userId: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
+            //WebsocketManager.Instance.UpdateProject(project);
+            //ProjectUpdated(project);
             OnLoadProject?.Invoke(this, EventArgs.Empty);
             EndLoading();
         }
 
 
-        public bool NewScene(string name) {
+        public async Task<bool> NewScene(string name) {
             if (name == "") {
+                Notifications.Instance.ShowNotification("Failed to create new scene", "Scane name to defined");
                 return false;
             }
-            foreach (IO.Swagger.Model.IdDesc idDesc in Scenes) {
-                if (idDesc.Id == name)
-                    return false; // scene already exist
+            try {
+                await WebsocketManager.Instance.CreateScene(name, "");
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
             }
-            IO.Swagger.Model.Scene scene = new IO.Swagger.Model.Scene(id: name, objects: new List<IO.Swagger.Model.SceneObject>(), services: new List<IO.Swagger.Model.SceneService>());
-            WebsocketManager.Instance.UpdateScene(scene);
-            SceneUpdated(scene);
-            OnLoadScene?.Invoke(this, EventArgs.Empty);
+            //OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -593,18 +591,19 @@ namespace Base {
             return await WebsocketManager.Instance.RemoveFromScene(id);
         }
 
-        public void CloseScene() {
+        public async Task<bool> CloseScene(bool force) {
             loadedScene = "";
-            WebsocketManager.Instance.UpdateScene(null);
-            SceneUpdated(null);
-            OpenMainScreen();
+            bool success = await WebsocketManager.Instance.CloseScene(force);
+            if (success)
+                OpenMainScreen();
+            return success;
         }
 
         public void CloseProject() {
             loadedScene = "";
             WebsocketManager.Instance.UpdateProject(null);
             ProjectUpdated(null);
-            CloseScene();
+            //CloseScene();
             OnCloseProject?.Invoke(this, EventArgs.Empty);
             OpenMainScreen();
         }

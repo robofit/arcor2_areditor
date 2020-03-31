@@ -18,7 +18,7 @@ namespace Base {
         public Connection ConnectionToIO;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), uuid: "");
+        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), userId: "");
         protected ActionPointMenu actionPointMenu;
 
         
@@ -67,7 +67,7 @@ namespace Base {
             if (apData != null) {
                 Data = apData;
             } else {
-                Data.Uuid = Guid.NewGuid().ToString();
+                Data.Id = Guid.NewGuid().ToString();
             }
                
             if (Data.Orientations.Count == 0)
@@ -137,7 +137,7 @@ namespace Base {
             }
 
             // Remove this ActionPoint reference from parent ActionObject list
-            ActionObject.ActionPoints.Remove(this.Data.Uuid);
+            ActionObject.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
 

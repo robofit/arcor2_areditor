@@ -35,12 +35,12 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     }
 
     public void ShowNextAO() {
-        ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
+        ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(nextAO);
     }
 
     public void ShowPreviousAO() {
-        ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Uuid);
+        ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(previousAO);
     }
 

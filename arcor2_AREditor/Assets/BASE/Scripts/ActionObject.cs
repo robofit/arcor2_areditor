@@ -12,7 +12,7 @@ namespace Base {
         public int CounterAP = 0;
         protected float visibility;
 
-        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
+        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "", "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
         protected ActionObjectMenu actionObjectMenu;
@@ -119,7 +119,7 @@ namespace Base {
             RemoveActionPoints();
             
             // Remove this ActionObject reference from the scene ActionObject list
-            Scene.Instance.ActionObjects.Remove(this.Data.Uuid);
+            Scene.Instance.ActionObjects.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }

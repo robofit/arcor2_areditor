@@ -28,13 +28,13 @@ namespace Base {
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public async Task Init(string uuid, string id, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true) {
+        public async Task Init(string id, string userId, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true) {
 
             ActionPoint = ap;
             this.metadata = metadata;
             this.ActionProvider = actionProvider;
 
-            Data.Uuid = uuid;
+            Data.Id = id;
 
             if (!GameManager.Instance.CurrentProject.HasLogic) {
                 InputArrow.gameObject.SetActive(false);
@@ -42,7 +42,7 @@ namespace Base {
             }
 
 
-            UpdateId(id, false);
+            UpdateId(userId, false);
             //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
             foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
@@ -106,7 +106,7 @@ namespace Base {
 
             Destroy(gameObject);
 
-            ActionPoint.Actions.Remove(Data.Uuid);
+            ActionPoint.Actions.Remove(Data.Id);
 
             if (updateProject)
                 GameManager.Instance.UpdateProject();

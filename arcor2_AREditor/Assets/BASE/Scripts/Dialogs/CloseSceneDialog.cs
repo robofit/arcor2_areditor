@@ -6,8 +6,8 @@ public class CloseSceneDialog : Dialog {
 
     
 
-    public void CloseScene() {
-        Base.GameManager.Instance.CloseScene();
+    public async void CloseScene() {
+        await Base.GameManager.Instance.CloseScene(true);
         WindowManager.CloseWindow();
     }
 }

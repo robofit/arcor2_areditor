@@ -27,11 +27,6 @@ public static class DataHelper {
         orientation = OrientationToQuaternion(pose.Orientation);
     }
 
-    public static IO.Swagger.Model.ProjectObject SceneObjectToProjectObject(IO.Swagger.Model.SceneObject sceneObject) {
-        IO.Swagger.Model.ProjectObject projectObject = new IO.Swagger.Model.ProjectObject(new List<IO.Swagger.Model.ProjectActionPoint>(), sceneObject.Id, uuid: sceneObject.Uuid);
-        return projectObject;
-    }
-
     public static IO.Swagger.Model.ProjectActionPoint ActionPointToProjectActionPoint(IO.Swagger.Model.ActionPoint actionPoint) {
         return new IO.Swagger.Model.ProjectActionPoint(id: actionPoint.Id, robotJoints: actionPoint.RobotJoints, orientations: actionPoint.Orientations,
             position: actionPoint.Position, actions: new List<IO.Swagger.Model.Action>());

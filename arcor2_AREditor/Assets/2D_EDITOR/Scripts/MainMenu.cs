@@ -203,8 +203,9 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
 
-    public void ShowCloseSceneDialog(string type) {
-        CloseSceneDialog.WindowManager.OpenWindow();
+    public async void CloseScene() {
+        if (! await Base.GameManager.Instance.CloseScene(false))
+            CloseSceneDialog.WindowManager.OpenWindow();
     }
 
 
