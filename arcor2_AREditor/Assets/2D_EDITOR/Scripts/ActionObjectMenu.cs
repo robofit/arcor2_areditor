@@ -15,21 +15,32 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public Slider VisibilitySlider;
 
+    public ConfirmationDialog ConfirmationDialog;
+
     private int currentFocusPoint = -1;
 
     public void SaveID(string new_id) {
         CurrentObject.UpdateId(new_id);
     }
 
-    public async void DeleteIO() {
+    public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {
-            Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Id, response.Messages[0]);
+            Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Id, response.Messages[0]);
             return;
         }
         CurrentObject = null;
-        GetComponent<SimpleSideMenu>().Close();
+        ConfirmationDialog.Close();
+        MenuManager.Instance.ActionObjectMenuSceneEditor.Close();
     }
+
+    public void ShowDeleteActionDialog() {
+        ConfirmationDialog.Open("Delete action object",
+                                "Do you want to delete action object " + CurrentObject.Data.Id + "?",
+                                () => DeleteActionObject(),
+                                () => ConfirmationDialog.Close());
+    }
+
 
     public void UpdateMenu() {
         if (currentFocusPoint >= 0)

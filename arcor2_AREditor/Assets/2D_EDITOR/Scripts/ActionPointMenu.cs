@@ -23,6 +23,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public DropdownParameter robotsList, endEffectorList, orientationsList;
     public DropdownParameterJoints JointsList;
 
+    public ConfirmationDialog ConfirmationDialog;
+
     public AddNewActionDialog AddNewActionDialog;
 
     [SerializeField]
@@ -30,7 +32,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
-        AddNewActionDialog.Init(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
+        AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
         AddNewActionDialog.WindowManager.OpenWindow();
     }
 
@@ -141,6 +143,13 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
         MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+    }
+
+    public void ShowDeleteAPDialog() {
+        ConfirmationDialog.Open("Delete action point",
+                                "Do you want to delete action point " + CurrentActionPoint.Data.Id + "?",
+                                () => DeleteAP(),
+                                () => ConfirmationDialog.Close());
     }
 
    
