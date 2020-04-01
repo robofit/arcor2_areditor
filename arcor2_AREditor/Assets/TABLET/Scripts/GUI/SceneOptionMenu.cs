@@ -17,6 +17,7 @@ public class SceneOptionMenu : TileOptionMenu {
     public override void SetStar(bool starred) {
         Base.GameManager.Instance.SaveBool("scene/" + GetLabel() + "/starred", starred);
         SetStar(sceneTile, starred);
+        Close();
     }
 
     public void ShowRenameDialog() {

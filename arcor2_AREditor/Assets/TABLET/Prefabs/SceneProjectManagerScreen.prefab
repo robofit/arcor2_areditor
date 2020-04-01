@@ -16,6 +16,7 @@ MonoBehaviour:
   label: {fileID: 4575097658898419614}
   AddStarBtn: {fileID: 4242465885030200430}
   RemoveStarBtn: {fileID: 1427113436829513480}
+  inputDialog: {fileID: 0}
 --- !u!1 &924875469951224940
 GameObject:
   m_ObjectHideFlags: 0
@@ -7250,6 +7251,11 @@ PrefabInstance:
       propertyPath: m_textInfo.pageCount
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7842369872882218467, guid: 981634e233417404a87ce17bc0447271,
+        type: 3}
+      propertyPath: m_text
+      value: Export
+      objectReference: {fileID: 0}
     - target: {fileID: 7852119334414009330, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_Sprite
@@ -8761,7 +8767,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 3232450956286077593}
+      objectReference: {fileID: 1708373867908624679}
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -11805,6 +11811,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.pageCount
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7842369872882218467, guid: 981634e233417404a87ce17bc0447271,
+        type: 3}
+      propertyPath: m_text
+      value: Export
       objectReference: {fileID: 0}
     - target: {fileID: 7852119334414009330, guid: 981634e233417404a87ce17bc0447271,
         type: 3}

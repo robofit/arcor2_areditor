@@ -5,6 +5,8 @@ using UnityEngine;
 public class ProjectOptionMenu : TileOptionMenu
 {
     private ProjectTile projectTile;
+    [SerializeField]
+    private InputDialog inputDialog;
 
     public void Open(ProjectTile tile) {
         projectTile = tile;
@@ -16,5 +18,22 @@ public class ProjectOptionMenu : TileOptionMenu
         projectTile.SetStar(starred);
         Close();
     }
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename project",
+                         "Type new name",
+                         "New name",
+                         projectTile.GetLabel(),
+                         () => RenameProject(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void RenameProject(string newUserId) {
+        bool result = await Base.GameManager.Instance.RenameScene(projectTile.ProjectId, newUserId);
+        if (result) {
+            inputDialog.Close();
+            projectTile.SetLabel(newUserId);
+        }
+    }
+
 
 }

@@ -446,8 +446,9 @@ namespace Base {
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
         }
-
+        
         public async Task UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+            /*
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId,
@@ -456,12 +457,15 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPoseResponse>(r_id);
             if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+                throw new RequestFailedException(response.Messages);*/
+
+            //TODO: implement
         }
 
         
 
         public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+            /*
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(id: actionObjectId, robot: robotArg);
@@ -470,8 +474,11 @@ namespace Base {
             IO.Swagger.Model.UpdateActionObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionObjectPoseResponse>(r_id);
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
-        }
+                */
 
+            //TODO: implement
+        }
+        
         public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
@@ -726,9 +733,82 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        public async Task UpdateActionPointJoints(string id, string jointsId, string robotId) {
+
+
+        public async Task UpdateActionPoint(string id, string parentId, IO.Swagger.Model.Position position, string userId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id, jointsId, robotId);
+            IO.Swagger.Model.UpdateActionPointRequestArgs args = new IO.Swagger.Model.UpdateActionPointRequestArgs(id, parentId, position, userId);
+            IO.Swagger.Model.UpdateActionPointRequest request = new IO.Swagger.Model.UpdateActionPointRequest(r_id, "UpdateActionPoint", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task AddActionPointOrientation(string id, IO.Swagger.Model.Orientation orientation, string userId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddActionPointOrientationRequestArgs args = new IO.Swagger.Model.AddActionPointOrientationRequestArgs(id, orientation, userId);
+            IO.Swagger.Model.AddActionPointOrientationRequest request = new IO.Swagger.Model.AddActionPointOrientationRequest(r_id, "AddActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointOrientationResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+        public async Task UpdateActionPointOrientation(string id, IO.Swagger.Model.Orientation orientation, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionPointOrientationRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationRequestArgs(id, orientation, orientationId);
+            IO.Swagger.Model.UpdateActionPointOrientationRequest request = new IO.Swagger.Model.UpdateActionPointOrientationRequest(r_id, "UpdateActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointOrientationResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+        public async Task UpdateActionPointUsingRobot(string id, string robotId, string endEffector) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId, endEffector);
+            IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs(id, robotArg);
+            IO.Swagger.Model.UpdateActionPointUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointUsingRobotRequest(r_id, "UpdateActionPointUsingRobot", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointUsingRobotResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+         public async Task AddActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string userId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId, endEffector);
+            IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs(id, robotArg, userId);
+            IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest(r_id, "AddActionPointOrientationUsingRobot", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task AddActionPointJoints(string id, string robotId, string userId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddActionPointJointsRequestArgs args = new IO.Swagger.Model.AddActionPointJointsRequestArgs(id, robotId, userId);
+            IO.Swagger.Model.AddActionPointJointsRequest request = new IO.Swagger.Model.AddActionPointJointsRequest(r_id, "AddActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointJointsResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task UpdateActionPointJoints(string id, string robotId, string userId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id, robotId, userId);
             IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(r_id, "UpdateActionPointJoints", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
@@ -737,9 +817,76 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
+        public async Task RemoveActionPointOrientation(string id, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(id, orientationId);
+            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
 
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
 
+         public async Task RemoveActionPointJoints(string id, string jointsId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveActionPointJointsRequestArgs args = new IO.Swagger.Model.RemoveActionPointJointsRequestArgs(id, jointsId);
+            IO.Swagger.Model.RemoveActionPointJointsRequest request = new IO.Swagger.Model.RemoveActionPointJointsRequest(r_id, "RemoveActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointJointsResponse>(r_id);
 
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string userId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddActionRequestArgs args = new IO.Swagger.Model.AddActionRequestArgs(actionPointId, actionParameters, type, userId);
+            IO.Swagger.Model.AddActionRequest request = new IO.Swagger.Model.AddActionRequest(r_id, "AddAction", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddActionResponse response = await WaitForResult<IO.Swagger.Model.AddActionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> actionParameters) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionRequestArgs args = new IO.Swagger.Model.UpdateActionRequestArgs(actionId, actionParameters);
+            IO.Swagger.Model.UpdateActionRequest request = new IO.Swagger.Model.UpdateActionRequest(r_id, "UpdateAction", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        
+        public async Task UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionLogicArgs args = new IO.Swagger.Model.UpdateActionLogicArgs(actionId, inputs, outputs);
+            IO.Swagger.Model.UpdateActionLogicRequest request = new IO.Swagger.Model.UpdateActionLogicRequest(r_id, "UpdateActionLogic", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionLogicResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionLogicResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+                
+        public async Task RenameProject(string projectId, string newUserId) {
+            /*int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionLogicArgs args = new IO.Swagger.Model.UpdateActionLogicArgs(actionId, inputs, outputs);
+            IO.Swagger.Model.UpdateActionLogicRequest request = new IO.Swagger.Model.UpdateActionLogicRequest(r_id, "UpdateActionLogic", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionLogicResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionLogicResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);*/
+
+            throw new RequestFailedException("Not implemented");
+        }
+
+        
 
     }
 }

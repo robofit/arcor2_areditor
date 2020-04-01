@@ -345,7 +345,7 @@ namespace Base {
                     actionObject = Scene.Instance.SpawnActionObject(data.Data.Id, data.Data.Type, false, data.Data.UserId);
                     actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
                     break;
-                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Delete:
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
                     Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
                     Scene.Instance.ActionObjects.Remove(data.Data.Id);
                     Destroy(actionObject.gameObject);
@@ -353,6 +353,9 @@ namespace Base {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
                     Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
                     actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
+                    //TODO: implement
                     break;
                 default:
                     throw new NotImplementedException();
@@ -804,6 +807,15 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
+                return false;
+            }
+        }
+        public async Task<bool> RenameProject(string id, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameProject(id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
                 return false;
             }
         }
