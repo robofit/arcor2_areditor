@@ -27,12 +27,12 @@ namespace Base {
             visibility = GameManager.Instance.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
-        public virtual void UpdateId(string newId, bool updateScene = true) {
+        public virtual void UpdateId(string newId) {
             Data.Id = newId;
+        }
 
-            if (updateScene) {
-                GameManager.Instance.UpdateScene();
-            }
+        public virtual void RenameActionObject(string newUserId) {
+
         }
 
         protected virtual void Update() {
