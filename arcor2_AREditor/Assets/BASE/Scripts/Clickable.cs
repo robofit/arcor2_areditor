@@ -10,7 +10,8 @@ namespace Base
             MOUSE_RIGHT_BUTTON = 1,
             MOUSE_MIDDLE_BUTTON = 2,
             TOUCH = 3,
-            LONG_TOUCH = 4
+            LONG_TOUCH = 4,
+            TOUCH_BEGAN = 5
         }
 
         // Call using SendMessage("OnClick", Base.Clickable.Click.MOUSE_LEFT_BUTTON) to specify which button caused the click.
