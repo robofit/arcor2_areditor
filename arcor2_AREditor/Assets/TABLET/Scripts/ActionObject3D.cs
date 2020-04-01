@@ -106,7 +106,7 @@ public class ActionObject3D : ActionObject
         }
     }
 
-    public override void UpdateId(string newId, bool updateScene = true) {
+    public override void UpdateId(string newId) {
         base.UpdateId(newId);
         ActionObjectName.text = newId;
     }

@@ -644,9 +644,9 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        public async Task RenameObject(string userId, string newUserId) {
+        public async Task RenameObject(string id, string newUserId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(userId, newUserId);
+            IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(id, newUserId);
             IO.Swagger.Model.RenameObjectRequest request = new IO.Swagger.Model.RenameObjectRequest(r_id, "RenameObject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameObjectResponse response = await WaitForResult<IO.Swagger.Model.RenameObjectResponse>(r_id);

@@ -760,9 +760,9 @@ namespace Base {
             return btn;
         }
 
-        public async Task<bool> RenameActionObject(string userId, string newUserId) {
+        public async Task<bool> RenameActionObject(string id, string newUserId) {
             try {
-                await WebsocketManager.Instance.RenameObject(userId, newUserId);
+                await WebsocketManager.Instance.RenameObject(id, newUserId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
