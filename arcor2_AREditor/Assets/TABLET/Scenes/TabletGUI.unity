@@ -11440,6 +11440,16 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 1771758555018720957, guid: def3169f9eb264940bb689878d06ba51,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 878864071}
+    - target: {fileID: 1771758555018720957, guid: def3169f9eb264940bb689878d06ba51,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CloseScene
+      objectReference: {fileID: 0}
     - target: {fileID: 1771758555018720958, guid: def3169f9eb264940bb689878d06ba51,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -15213,6 +15223,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 844897348}
   m_CullTransparentMesh: 0
+--- !u!114 &878864071 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1771758554860182025, guid: def3169f9eb264940bb689878d06ba51,
+    type: 3}
+  m_PrefabInstance: {fileID: 687106932}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ff1583d2d19dc943bd99992867f3304, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &931971010
 GameObject:
   m_ObjectHideFlags: 0
@@ -17100,6 +17122,11 @@ PrefabInstance:
       objectReference: {fileID: 1858441105}
     - target: {fileID: 1656207438481173917, guid: ca36fd5459e979e4797ad5c3f564dde0,
         type: 3}
+      propertyPath: CloseSceneDialog
+      value: 
+      objectReference: {fileID: 878864071}
+    - target: {fileID: 1656207438481173917, guid: ca36fd5459e979e4797ad5c3f564dde0,
+        type: 3}
       propertyPath: CloseProjectDialog
       value: 
       objectReference: {fileID: 2026117733}
@@ -17118,11 +17145,6 @@ PrefabInstance:
       propertyPath: AutoAddObjectDialog
       value: 
       objectReference: {fileID: 592909419}
-    - target: {fileID: 1656207438481173917, guid: ca36fd5459e979e4797ad5c3f564dde0,
-        type: 3}
-      propertyPath: CloseSceneDialog
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1656207438635763797, guid: ca36fd5459e979e4797ad5c3f564dde0,
         type: 3}
       propertyPath: m_Layer
