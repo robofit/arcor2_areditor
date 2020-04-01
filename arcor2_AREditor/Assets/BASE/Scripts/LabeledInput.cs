@@ -37,7 +37,7 @@ public class LabeledInput : MonoBehaviour, IActionParameter
                 Input.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
                 break;
             default:
-                Input.contentType = TMPro.TMP_InputField.ContentType.Alphanumeric;
+                Input.contentType = TMPro.TMP_InputField.ContentType.Standard;
                 break;
         }
         ParameterType = contentType;
