@@ -161,6 +161,8 @@ public class MainMenu : MonoBehaviour, IMenu {
             Destroy(b.gameObject);
         }
 
+        serviceButtons.Clear();
+
         foreach (IO.Swagger.Model.ServiceTypeMeta service in Base.ActionsManager.Instance.ServicesMetadata.Values) {
             ServiceButton serviceButton = Instantiate(ServiceButtonPrefab).GetComponent<ServiceButton>();
             serviceButton.transform.SetParent(ServicesContent.transform);
