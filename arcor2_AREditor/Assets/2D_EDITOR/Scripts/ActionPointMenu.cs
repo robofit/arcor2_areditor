@@ -215,6 +215,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         FocusConfirmationDialog.OrientationId = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
+        FocusConfirmationDialog.ActionPointUserId = CurrentActionPoint.Data.UserId;
         FocusConfirmationDialog.Init();
         FocusConfirmationDialog.WindowManager.OpenWindow();
     }

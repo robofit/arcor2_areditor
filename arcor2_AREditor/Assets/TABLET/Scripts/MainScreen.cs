@@ -52,10 +52,6 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void SwitchToProjects() {
         ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
         ProjectsBtn.color = new Color(0, 0, 0);
-        /*projectsList.alpha = 1;
-        projectsList.blocksRaycasts = true;
-        scenesList.alpha = 0;
-        scenesList.blocksRaycasts = false;*/
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
     }
@@ -63,11 +59,6 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void SwitchToScenes() {
         ScenesBtn.color = new Color(0, 0, 0);
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        /*projectsList.alpha = 0;
-        projectsList.blocksRaycasts = false;
-        scenesList.alpha = 1;
-        scenesList.blocksRaycasts = true;*/
-
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
     }
@@ -113,7 +104,8 @@ public class MainScreen : Base.Singleton<MainScreen>
             tile.InitTile(scene.Id,
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
-                          starred);
+                          starred,
+                          scene.Id);
             sceneTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();

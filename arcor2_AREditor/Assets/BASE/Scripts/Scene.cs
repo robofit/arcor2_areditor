@@ -161,9 +161,6 @@ namespace Base {
                 actionObject.LoadEndEffectors();
             }
 
-            if (updateScene)
-                GameManager.Instance.UpdateScene();
-            
             return actionObject;
         }
 

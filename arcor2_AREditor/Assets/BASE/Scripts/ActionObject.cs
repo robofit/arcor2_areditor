@@ -27,8 +27,8 @@ namespace Base {
             visibility = GameManager.Instance.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
-        public virtual void UpdateId(string newId) {
-            Data.Id = newId;
+        public virtual void UpdateUserId(string newUserId) {
+            Data.UserId = newUserId;
         }
 
         public async virtual void RenameActionObject(string newUserId) {
@@ -44,6 +44,8 @@ namespace Base {
         }
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+            if (Data != null & Data.UserId != actionObjectSwagger.UserId)
+                UpdateUserId(actionObjectSwagger.UserId);
             Data = actionObjectSwagger;
 
             // update position and rotation based on received data from swagger

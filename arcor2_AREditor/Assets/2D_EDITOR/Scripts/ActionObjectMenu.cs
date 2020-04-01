@@ -20,10 +20,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     private int currentFocusPoint = -1;
 
-    public void SaveID(string new_id) {
-        CurrentObject.UpdateId(new_id);
-    }
-
+    
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {

@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -301,10 +302,16 @@ namespace Base {
                 newScene = scene;
                 return;
             }
-            
 
             // Set current loaded swagger scene
-            Scene.Instance.Data = scene;
+            if (Scene.Instance.Data == null) {
+                Scene.Instance.Data = scene;
+                OpenSceneEditor();
+            } else {
+                Scene.Instance.Data = scene;
+            }
+            
+            
 
             // if another scene was loaded, remove everything from current scene
             if (loadedScene != scene.Id) {
@@ -326,15 +333,34 @@ namespace Base {
             EndLoading();
         }
 
-
-        // UpdateScene updates scene on the server.
-        public void UpdateScene() {
-            Scene.Instance.Data.Objects.Clear();
-            foreach (ActionObject actionObject in Scene.Instance.ActionObjects.Values) {
-                Scene.Instance.Data.Objects.Add(actionObject.Data);
-            }
-            WebsocketManager.Instance.UpdateScene(Scene.Instance.Data);
+        public void ActionPointChanged(ProjectActionPoint data) {
+            throw new NotImplementedException();
         }
+
+
+        public void SceneObjectChanged(SceneObjectChanged data) {
+            ActionObject actionObject;
+            switch (data.ChangeType) {
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
+                    actionObject = Scene.Instance.SpawnActionObject(data.Data.Id, data.Data.Type, false, data.Data.UserId);
+                    actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Delete:
+                    Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
+                    Scene.Instance.ActionObjects.Remove(data.Data.Id);
+                    Destroy(actionObject.gameObject);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
+                    Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
+                    actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+
+
 
         // ProjectUpdated is called from server, when another GUI makes some changes
         public void ProjectUpdated(IO.Swagger.Model.Project project) {
@@ -533,6 +559,7 @@ namespace Base {
             }
         }
 
+        
         public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
             await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
         }
@@ -587,15 +614,17 @@ namespace Base {
             return true;
         }
 
-        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
+        public async Task<RemoveFromSceneResponse> RemoveFromScene(string id) {
             return await WebsocketManager.Instance.RemoveFromScene(id);
         }
 
         public async Task<bool> CloseScene(bool force) {
             loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseScene(force);
-            if (success)
+            if (success) {
                 OpenMainScreen();
+                Scene.Instance.Data = null;
+            }                
             return success;
         }
 
@@ -608,7 +637,7 @@ namespace Base {
             OpenMainScreen();
         }
 
-        public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
+        public async Task<List<ObjectAction>> GetActions(string name) {
             try {
                 return await WebsocketManager.Instance.GetActions(name);
             } catch (RequestFailedException e) {
@@ -701,13 +730,13 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
-            EditorInfo.text = "Scene: " + Scene.Instance.Data.Id;
+            EditorInfo.text = "Scene: " + Scene.Instance.Data.UserId;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
         }
 
         public void OpenProjectEditor() {
-            EditorInfo.text = "Project: " + CurrentProject.Id;
+            EditorInfo.text = "Project: " + CurrentProject.UserId;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
         }
@@ -766,6 +795,15 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
+                return false;
+            }
+        }
+         public async Task<bool> RenameScene(string id, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameScene(id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
                 return false;
             }
         }

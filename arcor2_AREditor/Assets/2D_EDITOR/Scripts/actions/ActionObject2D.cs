@@ -49,7 +49,9 @@ public class ActionObject2D : Base.ActionObject {
     private void OnMouseUp() {
         if (!SceneInteractable())
             return;
-        Base.GameManager.Instance.UpdateScene();
+        //GameManager.Instance.UpdateScene();
+        //TODO: update position of the object via RPC
+
     }
 
     public override Vector3 GetScenePosition() {

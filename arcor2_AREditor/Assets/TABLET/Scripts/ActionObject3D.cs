@@ -29,7 +29,6 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        UpdateId(Data.Id);       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         // disable update method until model is ready
         //enabled = false;
@@ -49,14 +48,16 @@ public class ActionObject3D : ActionObject
                             updateScene = true;
                         } else if (updateScene) {
                             updateScene = false;
-                            GameManager.Instance.UpdateScene();
+                            //GameManager.Instance.UpdateScene();
+                            //TODO: update position of the object via RPC
                         }
                     }
                 }
             } else {
                 if (updateScene) {
                     updateScene = false;
-                    GameManager.Instance.UpdateScene();
+                    //GameManager.Instance.UpdateScene();
+                    //TODO: update position of the object via RPC
                 }
                 manipulationStarted = false;
                 GameManager.Instance.ActivateGizmoOverlay(false);
@@ -106,15 +107,15 @@ public class ActionObject3D : ActionObject
         }
     }
 
-    public override void UpdateId(string newId) {
-        base.UpdateId(newId);
-        ActionObjectName.text = newId;
+    public override void UpdateUserId(string newUserId) {
+        base.UpdateUserId(newUserId);
+        ActionObjectName.text = newUserId;
     }
 
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
         Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
-        ActionObjectName.text = actionObjectSwagger.Id;
+        ActionObjectName.text = actionObjectSwagger.UserId;
 
     }
 

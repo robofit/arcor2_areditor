@@ -6,6 +6,8 @@ using DanielLochner.Assets.SimpleSideMenu;
 public class SceneOptionMenu : TileOptionMenu {
     
     private SceneTile sceneTile;
+    [SerializeField]
+    private InputDialog inputDialog;
 
     public void Open(SceneTile sceneTile) {
         this.sceneTile = sceneTile;
@@ -17,6 +19,21 @@ public class SceneOptionMenu : TileOptionMenu {
         SetStar(sceneTile, starred);
     }
 
-    
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename scene",
+                         "Type new name",
+                         "New name",
+                         sceneTile.GetLabel(),
+                         () => RenameScene(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void RenameScene(string newUserId) {
+        bool result = await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId);
+        if (result) {
+            inputDialog.Close();
+            sceneTile.SetLabel(newUserId);
+        }
+    }
 
 }

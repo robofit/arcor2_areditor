@@ -42,8 +42,8 @@ public class Tile : MonoBehaviour
         return star.activeSelf;
     }
 
-    public virtual void InitTile(string sceneId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible) {
-        SetLabel(sceneId);
+    public virtual void InitTile(string tileLabel, UnityAction mainCallback, UnityAction optionCallback, bool starVisible) {
+        SetLabel(tileLabel);
         if (mainCallback != null) {
             AddListener(mainCallback);
         }

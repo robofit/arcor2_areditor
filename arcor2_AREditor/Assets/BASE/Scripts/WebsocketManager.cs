@@ -237,6 +237,15 @@ namespace Base {
                     case "SceneChanged":
                         HandleSceneChanged(data);
                         break;
+                    case "SceneObjectChanged":
+                        HandleSceneObjectChanged(data);
+                        break;
+                    case "ActionPointChanged":
+                        HandleActionPointChanged(data);
+                        break;
+                    case "ActionChanged":
+                        HandleActionChanged(data);
+                        break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
@@ -254,7 +263,7 @@ namespace Base {
 
         }
 
-        private async Task<T> WaitForResult<T>(int key) {
+       private async Task<T> WaitForResult<T>(int key) {
             if (responses.TryGetValue(key, out string value)) {
                 if (value == null) {
                     value = await WaitForResponseReady(key);
@@ -335,7 +344,24 @@ namespace Base {
             sceneArrived = true;
         }
 
-       
+        private void HandleActionChanged(string data) {
+            throw new NotImplementedException();
+        }
+
+        private void HandleActionPointChanged(string data) {
+            IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
+            GameManager.Instance.ActionPointChanged(actionPointChangedEvent.Data);
+        }
+
+
+        private void HandleSceneObjectChanged(string data) {
+            IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
+            
+            GameManager.Instance.SceneObjectChanged(sceneObjectChanged);
+        }
+
+
+
         private void HandleOpenProject(string data) {
             IO.Swagger.Model.OpenProjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProjectResponse>(data);
         }
@@ -433,16 +459,7 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        public async Task UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id: actionPointId,
-                jointsId: jointsId, robotId: robotId);
-            IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(id: r_id, request: "UpdateActionPointJoints", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
-        }
+        
 
         public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -686,6 +703,43 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
             return response.Data;
         }
+
+        public async Task CreateProject(string userId, string sceneId, string description) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(userId: userId, sceneId: sceneId, desc: description);
+            IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task AddActionPoint(string userId, string parent, IO.Swagger.Model.Position position) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddActionPointArgs args = new IO.Swagger.Model.AddActionPointArgs(parent, position, userId);
+            IO.Swagger.Model.AddActionPointRequest request = new IO.Swagger.Model.AddActionPointRequest(r_id, "AddActionPoint", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddActionPointResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointResponse>(r_id);
+
+            if (!response.Result)   
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task UpdateActionPointJoints(string id, string jointsId, string robotId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(id, jointsId, robotId);
+            IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(r_id, "UpdateActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+
+
 
     }
 }

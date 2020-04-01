@@ -5,7 +5,7 @@ using Michsky.UI.ModernUIPack;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
-    public string RobotId, EndEffectorId, OrientationId, ActionPointId;
+    public string RobotId, EndEffectorId, OrientationId, ActionPointId, ActionPointUserId;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
@@ -14,7 +14,7 @@ public class FocusConfirmationDialog : MonoBehaviour
         SettingsText.text = "Robot: " + RobotId +
             "\nEnd effector: " + EndEffectorId +
             "\nOrientation: " + OrientationId +
-            "\nAction point: " + ActionPointId +
+            "\nAction point: " + ActionPointUserId +
             "\nUpdate position: " + UpdatePosition.ToString();
 
     }
