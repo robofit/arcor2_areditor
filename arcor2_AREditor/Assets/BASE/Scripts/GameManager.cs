@@ -598,8 +598,15 @@ namespace Base {
             //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), userId: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             //WebsocketManager.Instance.UpdateProject(project);
             //ProjectUpdated(project);
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
-            EndLoading();
+            try {
+                await WebsocketManager.Instance.CreateProject(name, sceneId, "");
+                OnLoadProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to create project", e.Message);
+            } finally {
+                EndLoading();
+            }
+            
         }
 
 
@@ -819,6 +826,78 @@ namespace Base {
                 return false;
             }
         }
+
+        public async Task<bool> AddActionPoint(string userId, string parent, Position position) {
+            try {
+                await WebsocketManager.Instance.AddActionPoint(userId, parent, position);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RenameActionPoint(ActionPoint actionPoint, string newUserId) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, actionPoint.Data.Parent, actionPoint.Data.Position, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+        public async Task<bool> UpdateActionPointParent(ActionPoint actionPoint, string parentId) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, parentId, actionPoint.Data.Position, actionPoint.Data.UserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateActionPointPosition(ActionPoint actionPoint, Position newPosition) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, actionPoint.Data.Parent, newPosition, actionPoint.Data.UserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, string orientationId) {
+            try {
+                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, new Orientation(), orientationId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+
+        public async Task<bool> AddActionPointJoints(ActionPoint actionPoint, string jointsId, string robotId) {
+            try {
+                await WebsocketManager.Instance.AddActionPointJoints(actionPoint.Data.Id, robotId, jointsId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+        
+        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string userId) {
+            try {
+                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, userId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        
 
     }    
 

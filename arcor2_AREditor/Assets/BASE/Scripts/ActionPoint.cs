@@ -38,10 +38,9 @@ namespace Base {
             
         }
 
-        protected virtual void Update() {
+        protected virtual async void Update() {
             if (gameObject.transform.hasChanged) {
                 SetScenePosition(transform.localPosition);
-                //SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
         }
@@ -62,22 +61,18 @@ namespace Base {
                 GameManager.Instance.UpdateProject();
         }
 
-        public void InitAP(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData = null) {
-            SetActionObject(actionObject);
-            if (apData != null) {
-                Data = apData;
-            } else {
-                Data.Id = Guid.NewGuid().ToString();
-            }
-               
-            if (Data.Orientations.Count == 0)
-                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));
-
+        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, ActionObject actionObject = null) {
+            Debug.Assert(apData != null);
+            if (actionObject != null)
+                SetActionObject(actionObject);
+            Data = apData;
+            // TODO: is this neccessary?
+            /*if (Data.Orientations.Count == 0)
+                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
         }
 
         public void SetActionObject(ActionObject actionObject) {
             ActionObject = actionObject;
-            Data.Id = actionObject.Data.Id +  "-AP" + ActionObject.CounterAP++.ToString();
         }
 
         public abstract void UpdatePositionsOfPucks();

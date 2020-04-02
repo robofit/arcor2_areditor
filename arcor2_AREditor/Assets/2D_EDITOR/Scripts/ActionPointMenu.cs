@@ -11,7 +11,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public GameObject UpdatePoseBlock, UpdateJointsBlock;
     public TMPro.TMP_Text NoOrientation, NoJoints, ActionObjectType;
     [SerializeField]
-    private TMPro.TMP_InputField topText;
+    private TMPro.TMP_Text actionPointName;
 
     [SerializeField]
     private GameObject dynamicContent, updatePositionButton,
@@ -30,6 +30,9 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private Button LockedBtn, UnlockedBtn;
 
+    [SerializeField]
+    private InputDialog inputDialog;
+
 
     public async void CreatePuck(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
@@ -39,6 +42,24 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void SaveID(string new_id) {
         CurrentActionPoint.UpdateId(new_id);
     }
+
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename action point",
+                         "Type new name",
+                         "New name",
+                         CurrentActionPoint.Data.UserId,
+                         () => RenameActionPoint(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void RenameActionPoint(string newUserId) {
+        bool result = await Base.GameManager.Instance.RenameActionPoint(CurrentActionPoint, newUserId);
+        if (result) {
+            inputDialog.Close();
+            actionPointName.text = newUserId;
+        }
+    }
+
 
     public void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
@@ -170,14 +191,39 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
    
 
     public void ShowAddOrientationDialog() {
-        AddOrientationDialog.GetComponent<AddOrientationDialog>().ap = CurrentActionPoint;
-        AddOrientationDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        inputDialog.Open("Create new named orientation",
+                         "Please set name of the new orientation",
+                         "Name",
+                         "",
+                         () => AddOrientation(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddOrientation(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, name);
+        if (success) {
+            inputDialog.Close();
+        }
+        UpdateOrientations();
     }
 
     public void ShowAddJointsDialog() {
-        AddJointsDialog.GetComponent<AddJointsDialog>().ap = CurrentActionPoint;
-        AddJointsDialog.GetComponent<AddJointsDialog>().RobotId = robotsList.Dropdown.selectedText.text;
-        AddJointsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        inputDialog.Open("Create new joints configuration",
+                         "Please set name of the new joints configuration",
+                         "Name",
+                         "",
+                         () => AddJoints(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddJoints(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, name);
+        if (success) {
+            inputDialog.Close();
+        }
+        UpdateOrientations();
     }
 
     public void FocusJoints() {
@@ -221,7 +267,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public void SetHeader(string header) {
-        topText.text = header;
+        actionPointName.text = header;
     }
 
     public void UpdateLockedBtns(bool locked) {
@@ -232,5 +278,21 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void SetLocked(bool locked) {
         CurrentActionPoint.Locked = locked;
         UpdateLockedBtns(locked);
+    }
+
+   
+    public async void UntieActionPoint() {
+        Debug.Assert(CurrentActionPoint != null);
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, null);
+        if (result) {
+            ConfirmationDialog.Close();
+        }
+    }
+
+    public void ShowUntieActionPointDialog() {
+        ConfirmationDialog.Open("Untie action point",
+                                "Do you want to untie action point " + CurrentActionPoint.Data.Id + "?",
+                                () => UntieActionPoint(),
+                                () => ConfirmationDialog.Close());
     }
 }

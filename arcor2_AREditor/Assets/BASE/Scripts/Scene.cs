@@ -13,7 +13,7 @@ namespace Base {
         // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public GameObject ActionObjectsSpawn;
+        public GameObject ActionObjectsSpawn, ActionPointsOrigin;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
@@ -306,44 +306,19 @@ namespace Base {
 
         #region ACTION_POINTS
 
-        public ActionPoint SpawnActionPoint(ActionObject actionObject, IO.Swagger.Model.ProjectActionPoint apData, bool updateProject = true) {
-            GameObject AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
-            Vector3 offset = new Vector3();
-            if (actionObject.ActionObjectMetadata.ObjectModel != null) {
-                switch (actionObject.ActionObjectMetadata.ObjectModel.Type) {
-                    case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
-                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Box.SizeY / 2f + 0.1f;
-                        break;
-                    case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
-                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Cylinder.Height / 2f + 0.1f;
-                        break;
-                    case IO.Swagger.Model.ObjectModel.TypeEnum.Mesh:
-                        //TODO: how to handle meshes? do i know dimensios?
-                        break;
-                    case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
-                        offset.y = (float) actionObject.ActionObjectMetadata.ObjectModel.Sphere.Radius / 2f + 0.1f;
-                        break;
-                    default:
-                        offset.y = 0.15f;
-                        break;
-                }
+        public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, ActionObject actionObject = null) {
+            Debug.Assert(apData != null);
+            GameObject AP;
+            if (actionObject == null) {
+                AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
+            } else {
+                AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
             }
-            
 
-            AP.transform.localPosition = offset;
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
-
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
-            actionPoint.InitAP(actionObject, apData);
-            if (apData == null) {
-                actionPoint.SetScenePosition(AP.transform.localPosition);
-                actionPoint.SetSceneOrientation(AP.transform.rotation);
-            }
-
+            actionPoint.InitAP(apData, actionObject);
             ActionObjects[actionObject.Data.Id].ActionPoints.Add(actionPoint.Data.Id, actionPoint);
-
-            if (updateProject)
-                GameManager.Instance.UpdateProject();
 
             return actionPoint;
         }
@@ -366,8 +341,12 @@ namespace Base {
                 }
                 // if action point doesn't exist, create new one
                 else {
+                    ActionObject actionObject = null;
+                    if (projectActionPoint.Parent != null) {
+                        ActionObjects.TryGetValue(projectActionPoint.Parent, out actionObject);
+                    }
                     //TODO: update spawn action point to not need action object
-                    //actionPoint = SpawnActionPoint(actionObject, actionPoint, false);
+                    actionPoint = SpawnActionPoint(projectActionPoint, actionObject);
                     actionPoint.ActionPointUpdate();
                 }
 
@@ -459,7 +438,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true, string puck_id = "") {
+        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, string puck_id = "") {
             string newId = puck_id;
             const string glyphs = "0123456789";
             if (newId == "") {
@@ -511,9 +490,7 @@ namespace Base {
 
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
-            if (updateProject) {
-                GameManager.Instance.UpdateProject();
-            }
+            
             GameManager.Instance.EndLoading();
             return action;
         }
@@ -550,7 +527,7 @@ namespace Base {
                 }
                 // if action doesn't exist, create new one
                 else {
-                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint.ActionObject, actionPoint, actionProvider, false, projectAction.Id);
+                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint.ActionObject, actionPoint, actionProvider, projectAction.Id);
                     action.ActionUpdate(projectAction);
                 }
 

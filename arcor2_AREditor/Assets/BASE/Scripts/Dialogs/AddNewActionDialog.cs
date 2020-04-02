@@ -21,12 +21,6 @@ public class AddNewActionDialog : Dialog
 
     private async void Init() {
         
-        
-        
-        
-        
-
-        
     }
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
@@ -65,18 +59,14 @@ public class AddNewActionDialog : Dialog
         string newActionName = (string) nameInput.GetValue();
         
         if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
-            Base.Action action = await Base.Scene.Instance.SpawnPuck(null, actionMetadata.Name, CurrentActionPoint.ActionObject, CurrentActionPoint, actionProvider, false, newActionName);
-            if (action == null) {
-                return;
-            }
+            List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IActionParameter actionParameter in actionParameters) {
-                object value = actionParameter.GetValue();
-                IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(actionParameter.GetName());                
-                Base.ActionParameter ap = new Base.ActionParameter(actionParameterMetadata, action, value);
-                action.Parameters.Add(actionParameter.GetName(), ap);
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(CurrentActionPoint.Data.Id, JsonConvert.SerializeObject(actionParameter.GetValue()), actionParameter.GetName());
+                parameters.Add(ap);
             }
-            Base.GameManager.Instance.UpdateProject();
-            WindowManager.CloseWindow();
+            bool success = await Base.GameManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, actionMetadata.Name, newActionName);
+            if (success)
+                WindowManager.CloseWindow();
         }
     }
 
