@@ -262,13 +262,13 @@ namespace Base {
         /// Sends request to the server to create a new Action Object of user specified type and id. Id has to be generated here in the client.
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="userId"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string userId) {
+        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string name) {
             StartLoading();
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
             EndLoading();
-            return await WebsocketManager.Instance.AddObjectToScene(userId, type, pose);
+            return await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
@@ -324,6 +324,8 @@ namespace Base {
             }
 
             Scene.Instance.UpdateActionObjects();
+            Scene.Instance.UpdateServices();
+
             sceneReady = true;
             OnSceneChanged?.Invoke(this, EventArgs.Empty);
             
@@ -342,7 +344,7 @@ namespace Base {
             ActionObject actionObject;
             switch (data.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    actionObject = Scene.Instance.SpawnActionObject(data.Data.Id, data.Data.Type, false, data.Data.UserId);
+                    actionObject = Scene.Instance.SpawnActionObject(data.Data.Id, data.Data.Type, false, data.Data.Name);
                     actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
@@ -355,6 +357,26 @@ namespace Base {
                     actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
+                    //TODO: implement
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+
+        public void SceneServiceChanged(SceneServiceChanged data) {
+            switch (data.ChangeType) {
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
+                    ActionsManager.Instance.AddService(data.Data);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
+                    ActionsManager.Instance.RemoveService(data.Data.Type);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
+                    ActionsManager.Instance.UpdateService(data.Data);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
                     //TODO: implement
                     break;
                 default:
@@ -595,7 +617,7 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
                 return;
             }
-            //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), userId: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
+            //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), name: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
             //WebsocketManager.Instance.UpdateProject(project);
             //ProjectUpdated(project);
             try {
@@ -625,7 +647,7 @@ namespace Base {
         }
 
         public async Task<RemoveFromSceneResponse> RemoveFromScene(string id) {
-            return await WebsocketManager.Instance.RemoveFromScene(id);
+            return await WebsocketManager.Instance.RemoveFromScene(id, false);
         }
 
         public async Task<bool> CloseScene(bool force) {
@@ -740,13 +762,13 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
-            EditorInfo.text = "Scene: " + Scene.Instance.Data.UserId;
+            EditorInfo.text = "Scene: " + Scene.Instance.Data.Name;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
         }
 
         public void OpenProjectEditor() {
-            EditorInfo.text = "Project: " + CurrentProject.UserId;
+            EditorInfo.text = "Project: " + CurrentProject.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
         }
@@ -827,9 +849,9 @@ namespace Base {
             }
         }
 
-        public async Task<bool> AddActionPoint(string userId, string parent, Position position) {
+        public async Task<bool> AddActionPoint(string name, string parent, Position position) {
             try {
-                await WebsocketManager.Instance.AddActionPoint(userId, parent, position);
+                await WebsocketManager.Instance.AddActionPoint(name, parent, position);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -848,7 +870,7 @@ namespace Base {
         }
         public async Task<bool> UpdateActionPointParent(ActionPoint actionPoint, string parentId) {
             try {
-                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, parentId, actionPoint.Data.Position, actionPoint.Data.UserId);
+                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, parentId, actionPoint.Data.Position, actionPoint.Data.Name);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -858,7 +880,7 @@ namespace Base {
 
         public async Task<bool> UpdateActionPointPosition(ActionPoint actionPoint, Position newPosition) {
             try {
-                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, actionPoint.Data.Parent, newPosition, actionPoint.Data.UserId);
+                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, actionPoint.Data.Parent, newPosition, actionPoint.Data.Name);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -887,9 +909,9 @@ namespace Base {
             }
         }
         
-        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string userId) {
+        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
             try {
-                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, userId);
+                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, name);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);

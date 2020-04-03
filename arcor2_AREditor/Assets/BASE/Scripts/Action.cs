@@ -23,12 +23,12 @@ namespace Base {
 
         public ActionPoint ActionPoint;
 
-        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "", "");
+        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), "", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
 
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public async Task Init(string id, string userId, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true) {
+        public async Task Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true) {
 
             ActionPoint = ap;
             this.metadata = metadata;
@@ -42,7 +42,7 @@ namespace Base {
             }
 
 
-            UpdateId(userId, false);
+            UpdateId(name, false);
             //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
             foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {

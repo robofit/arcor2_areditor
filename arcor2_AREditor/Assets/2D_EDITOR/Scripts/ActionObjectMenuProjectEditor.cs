@@ -13,7 +13,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     private InputDialog inputDialog;
 
     
-    public async void CreateNewAP(string userId) {
+    public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
         IO.Swagger.Model.Position offset = new IO.Swagger.Model.Position();
         if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
@@ -35,7 +35,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
                     break;
             }
         }
-        bool result = await GameManager.Instance.AddActionPoint(userId, CurrentObject.Data.Id, offset);
+        bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
         //Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
         UpdateMenu();
     }

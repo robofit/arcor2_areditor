@@ -6,14 +6,28 @@ using IO.Swagger.Model;
 using System.Threading.Tasks;
 
 namespace Base {
+
+    public class ServiceEventArgs : EventArgs {
+        public Service Data {
+            get; set;
+        }
+
+        public ServiceEventArgs(Service data) {
+            Data = data;
+        }
+    }
     public class ActionsManager : Singleton<ActionsManager> {
+        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
+
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
         public Action CurrentlyRunningAction = null;
         
-        public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
+        public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
+
+        public event ServiceEventHandler OnServicesUpdated;
 
         public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
 
@@ -42,9 +56,7 @@ namespace Base {
         }
 
         private void Start() {
-            GameManager.Instance.OnSceneChanged += SceneChanged;
             GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
-
         }
         
         private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
@@ -81,14 +93,36 @@ namespace Base {
             ActionObjectsLoaded = false;
         }
 
-        private void SceneChanged(object sender, EventArgs e) {
-            ServicesData.Clear();
-            foreach (IO.Swagger.Model.SceneService sceneService in Scene.Instance.Data.Services) {
-                if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                    ServicesData.Add(sceneService.Type, new Service(sceneService, serviceMetadata));
-                }
+        
+
+        public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
+            Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
+            ServicesData.TryGetValue(sceneService.Type, out Service service);
+            service.Data = sceneService;
+            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
+        }
+
+        public void AddService(IO.Swagger.Model.SceneService sceneService) {
+            Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
+            if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
+                Service service = new Service(sceneService, serviceMetadata);                
+                ServicesData.Add(sceneService.Type, service);
+                OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
-            OnServicesUpdated?.Invoke(this, EventArgs.Empty);
+            
+        }
+
+        public void RemoveService(string serviceType) {
+            Debug.Assert(ServicesData.ContainsKey(serviceType));
+            ServicesData.TryGetValue(serviceType, out Service service);
+            ServicesData.Remove(serviceType);
+            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
+        }
+
+        public void ClearServices() {
+            foreach (string service in servicesData.Keys) {
+                RemoveService(service);
+            }
         }
 
         public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {

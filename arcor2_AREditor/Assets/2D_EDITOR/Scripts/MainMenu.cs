@@ -23,7 +23,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private GameObject debugTools;
 
-    private List<ServiceButton> serviceButtons = new List<ServiceButton>();
+    private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
     // Start is called before the first frame update
     void Start() {
@@ -71,14 +71,14 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
         SceneControlButtons.SetActive(true);
         ActionObjects.SetActive(true);
-        ServicesUpdated(null, EventArgs.Empty);
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
         ProjectControlButtons.SetActive(true);
         ActionObjects.SetActive(false);
-        ServicesUpdated(null, EventArgs.Empty);
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
@@ -137,27 +137,40 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-    public void ServicesUpdated(object sender, EventArgs e) {
-        foreach (ServiceButton serviceButton in serviceButtons) {
-            serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
-            if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
-                //checked
-                serviceButton.gameObject.SetActive(true);
-                serviceButton.State = true;
-            } else {
-                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                    serviceButton.gameObject.SetActive(false);
-                } else {
-                    serviceButton.gameObject.SetActive(true);
-                }
-                serviceButton.State = false;
+    public void ServicesUpdated(object sender, Base.ServiceEventArgs eventArgs) {
+        if (eventArgs.Data != null) {
+            if (serviceButtons.TryGetValue(eventArgs.Data.Data.Type, out ServiceButton btn)) {
+                UpdateServiceButton(btn);
             }
+        } else {
+            foreach (ServiceButton serviceButton in serviceButtons.Values) {
+                UpdateServiceButton(serviceButton);
+            }
+        }
+        
+        
+    }
+
+    private static void UpdateServiceButton(ServiceButton serviceButton) {
+        serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
+        
+        if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+            //checked
+            serviceButton.gameObject.SetActive(true);
+            serviceButton.State = true;
+        } else {
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                serviceButton.gameObject.SetActive(false);
+            } else {
+                serviceButton.gameObject.SetActive(true);
+            }
+            serviceButton.State = false;
         }
     }
 
     public void ServiceMetadataUpdated(object sender, EventArgs e) {
 
-        foreach (ServiceButton b in serviceButtons) {
+        foreach (ServiceButton b in serviceButtons.Values) {
             Destroy(b.gameObject);
         }
 
@@ -170,10 +183,9 @@ public class MainMenu : MonoBehaviour, IMenu {
             serviceButton.ServiceMetadata = service;
             serviceButton.gameObject.GetComponentInChildren<Button>().onClick.AddListener(() => ServiceStateChanged(serviceButton.GetComponent<ServiceButton>()));
             serviceButton.transform.SetAsLastSibling();
-            serviceButtons.Add(serviceButton);
+            serviceButtons.Add(service.Type, serviceButton);
         }
-        ServicesUpdated(this, EventArgs.Empty);
-
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
     }
 
     public void ServiceStateChanged(ServiceButton serviceButton) {

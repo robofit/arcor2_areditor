@@ -47,7 +47,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         inputDialog.Open("Rename action point",
                          "Type new name",
                          "New name",
-                         CurrentActionPoint.Data.UserId,
+                         CurrentActionPoint.Data.Name,
                          () => RenameActionPoint(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -261,7 +261,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         FocusConfirmationDialog.OrientationId = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
-        FocusConfirmationDialog.ActionPointUserId = CurrentActionPoint.Data.UserId;
+        FocusConfirmationDialog.ActionPointUserId = CurrentActionPoint.Data.Name;
         FocusConfirmationDialog.Init();
         FocusConfirmationDialog.WindowManager.OpenWindow();
     }

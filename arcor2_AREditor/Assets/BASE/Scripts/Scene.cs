@@ -121,7 +121,7 @@ namespace Base {
 
         #region ACTION_OBJECTS
 
-        public ActionObject SpawnActionObject(string id, string type, bool updateScene = true, string userId = "") {
+        public ActionObject SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -150,8 +150,8 @@ namespace Base {
 
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
 
-            if (userId == "")
-                userId = GetFreeIOName(type);
+            if (name == "")
+                name = GetFreeIOName(type);
             
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
 
@@ -170,29 +170,21 @@ namespace Base {
         public void UpdateActionObjects() {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Data.Objects) {
-                if (ActionObjects.TryGetValue(aoSwagger.Id, out ActionObject actionObject)) {
-                    if (aoSwagger.Type != actionObject.Data.Type) {
-                        ActionObjects.Remove(aoSwagger.Id);
-
-                        // type has changed, what now? delete object and create a new one?
-                        Destroy(actionObject.gameObject);
-                        // TODO: create a new one with new type
-                    }
-                    // Update data received from swagger
-                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
-                } else {
-                    actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.UserId);
-                    actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
-                }
-
+                ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
+                actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
 
-            // Remove deleted action objects
-            foreach (string actionObjectId in ActionObjects.Keys.ToList<string>()) {
-                if (!currentAO.Contains(actionObjectId)) {
-                    RemoveActionObject(actionObjectId);
-                }
+        }
+
+        /// <summary>
+        /// Updates all services from scene data.  
+        /// Only called when whole scene arrived, i.e. when client is connected or scene is opened, so all service needs to be added.
+        /// </summary>
+        public void UpdateServices() {
+            ActionsManager.Instance.ClearServices(); //just to be sure
+            foreach (IO.Swagger.Model.SceneService service in Data.Services) {
+                ActionsManager.Instance.AddService(service);
             }
         }
 

@@ -43,7 +43,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         InputDialog.Open("Rename action object",
                          "Type new name",
                          "New name",
-                         CurrentObject.Data.UserId,
+                         CurrentObject.Data.Name,
                          () => RenameObject(InputDialog.GetValue()),
                          () => InputDialog.Close());
     }
@@ -86,7 +86,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-        objectName.text = CurrentObject.Data.UserId;
+        objectName.text = CurrentObject.Data.Name;
 
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
     }

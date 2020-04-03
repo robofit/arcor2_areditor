@@ -22,7 +22,7 @@ public class AddNewObjectDialog : Dialog
     }
 
     public async void AddObjectToScene() {
-        IO.Swagger.Model.AddObjectToSceneResponse result = await Base.GameManager.Instance.AddObjectToScene(type: ObjectToBeCreated, userId: NameInput.text);
+        IO.Swagger.Model.AddObjectToSceneResponse result = await Base.GameManager.Instance.AddObjectToScene(type: ObjectToBeCreated, name: NameInput.text);
         if (result.Result) {
             WindowManager.CloseWindow();
             NameInput.text = "";

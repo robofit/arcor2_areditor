@@ -12,7 +12,7 @@ namespace Base {
         public int CounterAP = 0;
         protected float visibility;
 
-        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "", "");
+        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
         protected ActionObjectMenu actionObjectMenu;
@@ -28,7 +28,7 @@ namespace Base {
         }
         
         public virtual void UpdateUserId(string newUserId) {
-            Data.UserId = newUserId;
+            Data.Name = newUserId;
         }
 
         public async virtual void RenameActionObject(string newUserId) {
@@ -44,8 +44,8 @@ namespace Base {
         }
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
-            if (Data != null & Data.UserId != actionObjectSwagger.UserId)
-                UpdateUserId(actionObjectSwagger.UserId);
+            if (Data != null & Data.Name != actionObjectSwagger.Name)
+                UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
 
             // update position and rotation based on received data from swagger
