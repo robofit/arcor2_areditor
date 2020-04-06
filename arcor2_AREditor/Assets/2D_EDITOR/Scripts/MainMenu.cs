@@ -221,8 +221,9 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void ShowCloseProjectDialog(string type) {
-        CloseProjectDialog.WindowManager.OpenWindow();
+    public async void ShowCloseProjectDialog(string type) {
+        if (!await Base.GameManager.Instance.CloseProject(false))
+            CloseProjectDialog.WindowManager.OpenWindow();
     }
 
 

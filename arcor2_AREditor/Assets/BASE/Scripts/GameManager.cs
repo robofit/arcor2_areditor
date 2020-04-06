@@ -335,8 +335,43 @@ namespace Base {
             EndLoading();
         }
 
-        public void ActionPointChanged(ProjectActionPoint data) {
-            throw new NotImplementedException();
+        public void ActionPointChanged(ActionPointChanged data) {
+            switch (data.ChangeType) {
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
+                    //ActionPoint actionPoint;
+                    if (data.Data.Parent != null && Scene.Instance.ActionObjects.TryGetValue(data.Data.Parent, out ActionObject actionObject)) {
+                        Scene.Instance.SpawnActionPoint(data.Data, actionObject);
+                    } else {
+                        Scene.Instance.SpawnActionPoint(data.Data);
+                    }
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
+                    Scene.Instance.RemoveActionPoint(data.Data.Id);
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
+                    try {
+                        ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.Data.Id);
+                        //TODO: update ap, connections, actions etc.
+                        
+                    } catch (KeyNotFoundException ex) {
+                        Debug.Log("Action point " + data.Data.Id + " not found!");
+                        Notifications.Instance.ShowNotification("", "Action point " + data.Data.Id + " not found!");
+                        return;
+                    }
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
+                    try {
+                        ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.Data.Id);
+                        actionPoint.ActionPointUpdate(data.Data);
+                    } catch (KeyNotFoundException ex) {
+                        Debug.Log("Action point " + data.Data.Id + " not found!");
+                        Notifications.Instance.ShowNotification("", "Action point " + data.Data.Id + " not found!");
+                        return;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 
@@ -409,6 +444,15 @@ namespace Base {
             
             EndLoading();
         }
+
+        public string GetSceneId(string name) {
+            foreach (IdDesc scene in Scenes) {
+                if (name == scene.Name)
+                    return scene.Id;
+            }
+            throw new RequestFailedException("No scene with name: " + name);
+        }
+
 
 
         // UpdateProject updates opened project on the server.
@@ -566,10 +610,10 @@ namespace Base {
             }
         }
 
-        public async void UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
+        public async void UpdateActionPointJoints(string robotId, string jointsId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointJoints(actionPointId, robotId, jointsId);
+                await WebsocketManager.Instance.UpdateActionPointJoints(robotId, jointsId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
@@ -660,13 +704,18 @@ namespace Base {
             return success;
         }
 
-        public void CloseProject() {
+        public async Task<bool> CloseProject(bool force) {
             loadedScene = "";
-            WebsocketManager.Instance.UpdateProject(null);
-            ProjectUpdated(null);
+            bool success = await WebsocketManager.Instance.CloseProject(force);
+            if (success) {
+                OpenMainScreen();
+                OnCloseProject?.Invoke(this, EventArgs.Empty);
+                Scene.Instance.Data = null;
+            }
+            return success;
+            //ProjectUpdated(null);
             //CloseScene();
-            OnCloseProject?.Invoke(this, EventArgs.Empty);
-            OpenMainScreen();
+            
         }
 
         public async Task<List<ObjectAction>> GetActions(string name) {

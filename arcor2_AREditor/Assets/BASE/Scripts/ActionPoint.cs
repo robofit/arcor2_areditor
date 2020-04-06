@@ -66,6 +66,7 @@ namespace Base {
             if (actionObject != null)
                 SetActionObject(actionObject);
             Data = apData;
+            ActionPointUpdate();
             // TODO: is this neccessary?
             /*if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
@@ -132,7 +133,7 @@ namespace Base {
             }
 
             // Remove this ActionPoint reference from parent ActionObject list
-            ActionObject.ActionPoints.Remove(this.Data.Id);
+            Scene.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
 

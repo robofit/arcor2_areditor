@@ -35,7 +35,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         foreach (IO.Swagger.Model.ActionParameterMeta meta in CurrentPuck.Metadata.Parameters) {
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
         }
-        actionParameters = await Base.Action.InitParameters(CurrentPuck.ActionProvider.GetProviderName(), CurrentPuck.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Action.InitParameters(CurrentPuck.ActionProvider.GetProviderId(), CurrentPuck.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
     }
 
     public void SaveID(string new_id) {

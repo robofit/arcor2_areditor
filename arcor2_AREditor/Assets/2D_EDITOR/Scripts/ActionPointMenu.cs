@@ -76,7 +76,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 Destroy(o.gameObject);
             }
         }
-        SetHeader(actionPoint.Data.Id);
+        SetHeader(actionPoint.Data.Name);
         ActionObjectType.text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
@@ -160,11 +160,12 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     
 
     public void DeleteAP() {
-        if (CurrentActionPoint == null)
-            return;
+        Debug.Assert(CurrentActionPoint != null);
         CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
         MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
     }
+
+   
 
     public void ShowDeleteAPDialog() {
         ConfirmationDialog.Open("Delete action point",
@@ -233,7 +234,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints(CurrentActionPoint.Data.Id, (string) robotsList.GetValue(), (string) JointsList.GetValue());
+            Base.GameManager.Instance.UpdateActionPointJoints((string) robotsList.GetValue(), (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);

@@ -22,7 +22,7 @@ public class FocusConfirmationDialog : MonoBehaviour
     public void UpdatePositionOrientation() {
         try {
             if (EndEffectorId == "") {
-                Base.GameManager.Instance.UpdateActionPointJoints(ActionPointId, RobotId, OrientationId);
+                Base.GameManager.Instance.UpdateActionPointJoints(RobotId, OrientationId);
             } else {
                 Base.GameManager.Instance.UpdateActionPointPosition(ActionPointId, RobotId, EndEffectorId, OrientationId, UpdatePosition);
             }

@@ -6,7 +6,7 @@ namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider {
 
         // string == IO.Swagger.Model.SceneObject Data.Uuid
-        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        //public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
@@ -93,7 +93,7 @@ namespace Base {
         }
 
         public string GetProviderName() {
-            return Data.Id;
+            return Data.Name;
         }
 
 
@@ -128,14 +128,10 @@ namespace Base {
         
         public void RemoveActionPoints() {
             // Remove all action points of this action object
-            foreach (string actionPointUUID in ActionPoints.Keys.ToList<string>()) {
-                RemoveActionPoint(actionPointUUID);
+            List<ActionPoint> actionPoints = GetActionPoints();
+            foreach (ActionPoint actionPoint in actionPoints) {
+                actionPoint.DeleteAP();
             }
-            ActionPoints.Clear();
-        }
-
-        public void RemoveActionPoint(string uuid) {
-            ActionPoints[uuid].DeleteAP(false);
         }
 
 
@@ -170,6 +166,20 @@ namespace Base {
 
         public virtual void ActivateForGizmo(string layer) {
             gameObject.layer = LayerMask.NameToLayer(layer);
+        }
+
+        public string GetProviderId() {
+            return Data.Id;
+        }
+
+        public List<ActionPoint> GetActionPoints() {
+            List<ActionPoint> actionPoints = new List<ActionPoint>();
+            foreach (ActionPoint actionPoint in Scene.Instance.ActionPoints.Values) {
+                if (actionPoint.Data.Parent == Data.Id) {
+                    actionPoints.Add(actionPoint);
+                }
+            }
+            return actionPoints;
         }
     }
 

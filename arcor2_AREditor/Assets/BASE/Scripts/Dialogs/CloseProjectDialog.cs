@@ -6,7 +6,7 @@ public class CloseProjectDialog : Dialog
 {
 
     public void CloseProject() {
-        Base.GameManager.Instance.CloseProject();
+        Base.GameManager.Instance.CloseProject(true);
         WindowManager.CloseWindow();
     }
 }

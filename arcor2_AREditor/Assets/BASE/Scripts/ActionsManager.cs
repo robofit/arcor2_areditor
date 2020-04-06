@@ -119,8 +119,10 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
         }
 
+
         public void ClearServices() {
-            foreach (string service in servicesData.Keys) {
+            List<string> servicesKeys = servicesData.Keys.ToList();
+            foreach (string service in servicesKeys) {
                 RemoveService(service);
             }
         }

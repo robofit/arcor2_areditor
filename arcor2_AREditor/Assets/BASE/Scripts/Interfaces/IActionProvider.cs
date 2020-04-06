@@ -6,6 +6,8 @@ public interface IActionProvider
 {
     string GetProviderName();
 
+    string GetProviderId();
+
     Base.ActionMetadata GetActionMetadata(string action_id);
 
 

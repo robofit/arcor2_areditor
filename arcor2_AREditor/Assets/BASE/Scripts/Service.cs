@@ -71,6 +71,9 @@ namespace Base {
             return metadata.Robot;
         }
 
+        public string GetProviderId() {
+            return Data.Type;
+        }
     }
 
 }

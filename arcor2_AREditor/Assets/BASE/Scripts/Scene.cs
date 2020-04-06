@@ -118,6 +118,7 @@ namespace Base {
             CurrentlySelectedObject = obj;
         }
 
+        
 
         #region ACTION_OBJECTS
 
@@ -310,10 +311,12 @@ namespace Base {
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
             actionPoint.InitAP(apData, actionObject);
-            ActionObjects[actionObject.Data.Id].ActionPoints.Add(actionPoint.Data.Id, actionPoint);
+            ActionPoints.Add(actionPoint.Data.Id, actionPoint);
 
             return actionPoint;
         }
+
+
 
         /// <summary>
         /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.
@@ -339,7 +342,6 @@ namespace Base {
                     }
                     //TODO: update spawn action point to not need action object
                     actionPoint = SpawnActionPoint(projectActionPoint, actionObject);
-                    actionPoint.ActionPointUpdate();
                 }
 
                 // update actions in current action point 
@@ -377,11 +379,9 @@ namespace Base {
         /// </summary>
         /// <param name="Id"></param>
         public void RemoveActionPoint(string Id) {
-            ActionPoint apToRemove = GetActionPoint(Id);
-            string aoIdToRemove = apToRemove.ActionObject.Data.Id;
-            // Call function in corresponding action point that will delete it and properly remove all references and connections.
+           // Call function in corresponding action point that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionObjects[aoIdToRemove].ActionPoints[Id].DeleteAP(false);
+            ActionPoints[Id].DeleteAP(false);
         }
 
         /// <summary>
@@ -390,11 +390,10 @@ namespace Base {
         /// <param name="Id"></param>
         /// <returns></returns>
         public ActionPoint GetActionPoint(string Id) {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                if (actionObject.ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
+            if (ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
                     return actionPoint;
-                }
             }
+            
             throw new KeyNotFoundException("ActionPoint " + Id + " not found!");
         }
 
@@ -403,13 +402,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public List<ActionPoint> GetAllActionPoints() {
-            List<ActionPoint> actionPoints = new List<ActionPoint>();
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    actionPoints.Add(actionPoint);
-                }
-            }
-            return actionPoints;
+            return ActionPoints.Values.ToList();
         }
 
         /// <summary>
@@ -417,13 +410,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, ActionPoint> GetAllActionPointsDict() {
-            Dictionary<string, ActionPoint> actionPoints = new Dictionary<string, ActionPoint>();
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    actionPoints.Add(actionPoint.Data.Id, actionPoint);
-                }
-            }
-            return actionPoints;
+            return ActionPoints;
         }
 
         #endregion
@@ -478,7 +465,7 @@ namespace Base {
             Action action = puck.GetComponent<Action>();
 
             // Add new action into scene reference
-            ActionObjects[ao.Data.Id].ActionPoints[ap.Data.Id].Actions.Add(action_id, action);
+            ActionPoints[ap.Data.Id].Actions.Add(action_id, action);
 
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
@@ -639,7 +626,7 @@ namespace Base {
             string aoIdToRemove = aToRemove.ActionPoint.ActionObject.Data.Id;
             // Call function in corresponding action that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionObjects[aoIdToRemove].ActionPoints[apIdToRemove].Actions[Id].DeleteAction(false);
+            ActionPoints[apIdToRemove].Actions[Id].DeleteAction(false);
         }
 
         /// <summary>
@@ -648,13 +635,12 @@ namespace Base {
         /// <param name="Id"></param>
         /// <returns></returns>
         public Action GetAction(string Id) {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    if (actionPoint.Actions.TryGetValue(Id, out Action action)) {
-                        return action;
-                    }
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.Actions.TryGetValue(Id, out Action action)) {
+                    return action;
                 }
             }
+            
             //Debug.LogError("Action " + Id + " not found!");
             return null;
         }
@@ -665,15 +651,14 @@ namespace Base {
         /// <param name="id"></param>
         /// <returns></returns>
         public Action GetActionById(string id) {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    foreach (Action action in actionPoint.Actions.Values) {
-                        if (action.Data.Id == id) {
-                            return action;
-                        }
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                foreach (Action action in actionPoint.Actions.Values) {
+                    if (action.Data.Id == id) {
+                        return action;
                     }
                 }
             }
+            
             //Debug.LogError("Action " + id + " not found!");
             return null;
         }
@@ -684,13 +669,12 @@ namespace Base {
         /// <returns></returns>
         public List<Action> GetAllActions() {
             List<Action> actions = new List<Action>();
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    foreach (Action action in actionPoint.Actions.Values) {
-                        actions.Add(action);
-                    }
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                foreach (Action action in actionPoint.Actions.Values) {
+                    actions.Add(action);
                 }
             }
+            
             return actions;
         }
 
@@ -700,13 +684,12 @@ namespace Base {
         /// <returns></returns>
         public Dictionary<string, Action> GetAllActionsDict() {
             Dictionary<string, Action> actions = new Dictionary<string, Action>();
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    foreach (Action action in actionPoint.Actions.Values) {
-                        actions.Add(action.Data.Id, action);
-                    }
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                foreach (Action action in actionPoint.Actions.Values) {
+                    actions.Add(action.Data.Id, action);
                 }
             }
+           
             return actions;
         }
 
