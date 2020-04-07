@@ -44,14 +44,15 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     /// <param name="tf"></param>
     public void CreateAnchor(Transform tf) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        // remove all old local anchors, if there are some (in case we are recalibrating)
-        RemoveLocalWorldAnchor();
-        RemoveCloudWorldAnchor();
 
-        // TODO check if there is plane that is very close to detected object
         // try to raycast straight down to intersect closest plane
         List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
         if (ARRaycastManager.Raycast(new Ray(tf.position, Vector3.down), raycastHits, TrackableType.PlaneWithinPolygon)) {
+
+            // remove all old local anchors, if there are some (in case we are recalibrating)
+            RemoveLocalWorldAnchor();
+            RemoveCloudWorldAnchor();
+
             Pose hitPose = raycastHits[0].pose;
             TrackableId hitPlaneId = raycastHits[0].trackableId;
             ARPlane plane = ARPlaneManager.GetPlane(hitPlaneId);
@@ -68,8 +69,15 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
                 StartCoroutine(HostCloudAnchor());
             }
+
+            ActivateTrackableMarkers(false);
         }
-        ActivateTrackableMarkers(false);
+        // if there is no plane beneath detected marker then display notification about unsufficient tracking
+        else {
+            Notifications.Instance.ShowNotification("Calibration error", "Plane beneath calibration marker is not detected");
+            //TODO play animation for moving with the device
+
+        }
 #endif
     }
 
