@@ -34,6 +34,8 @@ public class UniversalDialog : Dialog
     }
 
     public virtual void Open(string title, string description, UnityAction confirmationCallback, UnityAction cancelCallback, string confirmLabel = "Confirm", string cancelLabel = "Cancel") {
+        WindowManager.onConfirm.RemoveAllListeners();
+        WindowManager.onCancel.RemoveAllListeners();
         SetTitle(title);
         SetDescription(description);
         AddConfirmCallback(confirmationCallback);

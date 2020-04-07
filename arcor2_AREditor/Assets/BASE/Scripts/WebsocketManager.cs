@@ -896,6 +896,18 @@ namespace Base {
 
         }
 
+        public async Task RemoveActionPoint(string actionPointId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(actionPointId);
+            IO.Swagger.Model.RemoveActionPointRequest request = new IO.Swagger.Model.RemoveActionPointRequest(r_id, "RemoveActionPoint", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+
+        }
+
         public async Task<bool> CloseProject(bool force) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CloseProjectRequestArgs args = new IO.Swagger.Model.CloseProjectRequestArgs(force);

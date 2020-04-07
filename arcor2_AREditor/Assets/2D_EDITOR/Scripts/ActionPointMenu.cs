@@ -159,17 +159,20 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     
 
-    public void DeleteAP() {
+    public async void DeleteAP() {
         Debug.Assert(CurrentActionPoint != null);
-        CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
-        MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+        bool success = await Base.GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
+        if (success) {
+            ConfirmationDialog.Close();
+            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+        }    
     }
 
    
 
     public void ShowDeleteAPDialog() {
         ConfirmationDialog.Open("Delete action point",
-                                "Do you want to delete action point " + CurrentActionPoint.Data.Id + "?",
+                                "Do you want to delete action point " + CurrentActionPoint.Data.Name + "?",
                                 () => DeleteAP(),
                                 () => ConfirmationDialog.Close());
     }

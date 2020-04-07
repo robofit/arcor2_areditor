@@ -57,6 +57,8 @@ namespace Base {
                 Hide();
 
             SetInteractivity(interactivity);
+
+            
         }
 
         public virtual bool SceneInteractable() {
