@@ -52,8 +52,10 @@ public class ActionPoint3D : Base.ActionPoint {
     private void LateUpdate() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         // set rotation to the WorldAnchor and ignore its parent rotation
-        if (CalibrationManager.Instance.WorldAnchor != null) {
-            transform.rotation = CalibrationManager.Instance.WorldAnchor.transform.rotation;
+        if (CalibrationManager.Instance.WorldAnchorCloud != null) {
+            transform.rotation = CalibrationManager.Instance.WorldAnchorCloud.transform.rotation;
+        } else if (CalibrationManager.Instance.WorldAnchorLocal != null) {
+            transform.rotation = CalibrationManager.Instance.WorldAnchorLocal.transform.rotation;
         }
 #else
         transform.rotation = Quaternion.identity;
