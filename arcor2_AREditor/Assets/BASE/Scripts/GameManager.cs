@@ -149,8 +149,6 @@ namespace Base {
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
-
-
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
@@ -313,8 +311,8 @@ namespace Base {
                 Scene.Instance.RemoveActionObjects();
                 loadedScene = scene.Id;
                 if (loadedScene != null) {
-                    Scene.Instance.ActionObjectsVisible = LoadBool("scene/" + loadedScene + "/AOVisibility", true);
-                    Scene.Instance.ActionObjectsInteractive = LoadBool("scene/" + loadedScene + "/AOInteractivity", true);
+                    Scene.Instance.ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOVisibility", true);
+                    Scene.Instance.ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOInteractivity", true);
                 }
             }
 
@@ -738,22 +736,22 @@ namespace Base {
             GizmoOverlay.raycastTarget = activate;
         }
 
-        public void SaveFloat(string key, float value) {
-            PlayerPrefs.SetFloat(key, value);
-        }
+        //public void SaveFloat(string key, float value) {
+        //    PlayerPrefs.SetFloat(key, value);
+        //}
 
-        public float LoadFloat(string key, float defaultValue) {
-            return PlayerPrefs.GetFloat(key, defaultValue);
-        }
+        //public float LoadFloat(string key, float defaultValue) {
+        //    return PlayerPrefs.GetFloat(key, defaultValue);
+        //}
 
-        public void SaveBool(string key, bool value) {
-            PlayerPrefs.SetInt(key, value ? 1 : 0);
-        }
+        //public void SaveBool(string key, bool value) {
+        //    PlayerPrefs.SetInt(key, value ? 1 : 0);
+        //}
 
-        public bool LoadBool(string key, bool defaultValue) {
-            int value = PlayerPrefs.GetInt(key, defaultValue ? 1 : 0);
-            return value == 1 ? true : false;
-        }
+        //public bool LoadBool(string key, bool defaultValue) {
+        //    int value = PlayerPrefs.GetInt(key, defaultValue ? 1 : 0);
+        //    return value == 1 ? true : false;
+        //}
 
         public Button CreateButton(Transform parent, string label) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);
