@@ -4,13 +4,14 @@ using System.Linq;
 using System;
 
 namespace Base {
-    public abstract class ActionPoint : Clickable {
+    public abstract class ActionPoint : Clickable, IActionPointParent {
 
         // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
         public GameObject ActionsSpawn;
 
-        public ActionObject ActionObject;
+        public IActionPointParent Parent;
+
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
@@ -61,10 +62,9 @@ namespace Base {
                 GameManager.Instance.UpdateProject();
         }
 
-        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, ActionObject actionObject = null) {
+        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
-            if (actionObject != null)
-                SetActionObject(actionObject);
+            SetParent(parent);
             Data = apData;
             ActionPointUpdate();
             // TODO: is this neccessary?
@@ -72,8 +72,8 @@ namespace Base {
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
         }
 
-        public void SetActionObject(ActionObject actionObject) {
-            ActionObject = actionObject;
+        public void SetParent(IActionPointParent parent) {
+            Parent = parent;
         }
 
         public abstract void UpdatePositionsOfPucks();
@@ -123,7 +123,7 @@ namespace Base {
         
 
 
-        public void DeleteAP(bool updateProject = true) {
+        public void DeleteAP() {
             // Remove all actions of this action point
             RemoveActions(false);
 
@@ -136,9 +136,6 @@ namespace Base {
             Scene.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
-
-            if (updateProject)
-                GameManager.Instance.UpdateProject();
         }
 
         public virtual bool ProjectInteractable() {
@@ -170,6 +167,34 @@ namespace Base {
 
         public virtual void ActivateForGizmo(string layer) {
             gameObject.layer = LayerMask.NameToLayer(layer);
+        }
+
+        public IActionPointParent GetParent() {
+            return Parent;
+        }
+
+        public string GetName() {
+            return Data.Name;
+        }
+
+        public string GetId() {
+            return Data.Id;
+        }
+
+        public bool IsActionObject() {
+            return false;
+        }
+
+        public ActionObject GetActionObject() {
+            if (Parent != null) {
+                return Parent.GetActionObject();
+            } else {
+                return null;
+            }
+        }
+
+        public Transform GetTransform() {
+            return transform;
         }
     }
 

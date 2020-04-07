@@ -77,9 +77,23 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             }
         }
         SetHeader(actionPoint.Data.Name);
-        ActionObjectType.text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
+        if (actionPoint.Parent != null)
+            ActionObjectType.text = actionPoint.Parent.GetName();
+        else
+            ActionObjectType.text = "Global actoin point";
 
-        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
+        Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata;
+        if (actionPoint.Parent == null) {
+            actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+        } else {
+            Base.ActionObject parentActionObject = actionPoint.Parent.GetActionObject();
+            if (parentActionObject == null)
+                actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+            else
+                actionsMetadata = Base.ActionsManager.Instance.GetAllActionsOfObject(parentActionObject);
+        }
+
+        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
             GameObject collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform);
             collapsableMenu.GetComponent<CollapsableMenu>().Name = keyval.Key.GetProviderName();
             collapsableMenu.GetComponent<CollapsableMenu>().Collapsed = true;
@@ -287,7 +301,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
    
     public async void UntieActionPoint() {
         Debug.Assert(CurrentActionPoint != null);
-        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, null);
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, "");
         if (result) {
             ConfirmationDialog.Close();
         }
@@ -295,7 +309,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void ShowUntieActionPointDialog() {
         ConfirmationDialog.Open("Untie action point",
-                                "Do you want to untie action point " + CurrentActionPoint.Data.Id + "?",
+                                "Do you want to untie action point " + CurrentActionPoint.Data.Name + "?",
                                 () => UntieActionPoint(),
                                 () => ConfirmationDialog.Close());
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Base {
-    public abstract class ActionObject : Clickable, IActionProvider {
+    public abstract class ActionObject : Clickable, IActionProvider, IActionPointParent {
 
         // string == IO.Swagger.Model.SceneObject Data.Uuid
         //public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
@@ -182,6 +182,30 @@ namespace Base {
                 }
             }
             return actionPoints;
+        }
+
+        public string GetName() {
+            return Data.Name;
+        }
+
+        public string GetId() {
+            return Data.Id;
+        }
+
+        public bool IsActionObject() {
+            return true;
+        }
+
+        public Base.ActionObject GetActionObject() {
+            return this;
+        }
+
+        public Transform GetTransform() {
+            return transform;
+        }
+
+        public string GetProviderType() {
+            return Data.Type;
         }
     }
 

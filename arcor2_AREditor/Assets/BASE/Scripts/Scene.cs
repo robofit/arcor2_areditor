@@ -299,18 +299,18 @@ namespace Base {
 
         #region ACTION_POINTS
 
-        public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, ActionObject actionObject = null) {
+        public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent actionPointParent) {
             Debug.Assert(apData != null);
             GameObject AP;
-            if (actionObject == null) {
+            if (actionPointParent == null) {
                 AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
             } else {
-                AP = Instantiate(ActionPointPrefab, actionObject.ActionPointsSpawn.transform);
+                AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
             }
 
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
-            actionPoint.InitAP(apData, actionObject);
+            actionPoint.InitAP(apData, actionPointParent);
             ActionPoints.Add(actionPoint.Data.Id, actionPoint);
 
             return actionPoint;
@@ -374,6 +374,38 @@ namespace Base {
             }
         }
 
+        public void RemoveActionPoints() {
+            List<ActionPoint> actionPoints = ActionPoints.Values.ToList();
+            foreach (ActionPoint actionPoint in actionPoints) {
+                actionPoint.DeleteAP();
+            }
+        }
+
+        public IActionProvider GetActionProvider(string id) {
+            try {
+                return ActionsManager.Instance.GetService(id);
+            } catch (KeyNotFoundException ex) {
+
+            }
+
+            if (ActionObjects.TryGetValue(id, out ActionObject actionObject)) {
+                return actionObject;
+            }
+            throw new KeyNotFoundException("No action provider with id: " + id);
+        }
+
+        public IActionPointParent GetActionPointParent(string parentId) {
+            if (parentId == null)
+                return null;
+            if (ActionObjects.TryGetValue(parentId, out ActionObject actionObject)) {
+                return actionObject;
+            }
+            /*if (ActionPoints.TryGetValue(parentId, out ActionPoint actionPoint)) {
+                return actionPoint;
+            }*/
+            return null;
+        }
+
         /// <summary>
         /// Destroys and removes references to action point of given Id.
         /// </summary>
@@ -381,7 +413,7 @@ namespace Base {
         public void RemoveActionPoint(string Id) {
            // Call function in corresponding action point that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[Id].DeleteAP(false);
+            ActionPoints[Id].DeleteAP();
         }
 
         /// <summary>
@@ -417,7 +449,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionObject ao, ActionPoint ap, IActionProvider actionProvider, string puck_id = "") {
+        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionPoint ap, IActionProvider actionProvider, string puck_id = "") {
             string newId = puck_id;
             const string glyphs = "0123456789";
             if (newId == "") {
@@ -506,7 +538,7 @@ namespace Base {
                 }
                 // if action doesn't exist, create new one
                 else {
-                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint.ActionObject, actionPoint, actionProvider, projectAction.Id);
+                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint, actionProvider, projectAction.Id);
                     action.ActionUpdate(projectAction);
                 }
 
@@ -623,7 +655,6 @@ namespace Base {
         public void RemoveAction(string Id) {
             Action aToRemove = GetAction(Id);
             string apIdToRemove = aToRemove.ActionPoint.Data.Id;
-            string aoIdToRemove = aToRemove.ActionPoint.ActionObject.Data.Id;
             // Call function in corresponding action that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
             ActionPoints[apIdToRemove].Actions[Id].DeleteAction(false);

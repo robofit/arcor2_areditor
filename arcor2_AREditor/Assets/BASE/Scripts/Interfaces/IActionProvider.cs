@@ -8,6 +8,8 @@ public interface IActionProvider
 
     string GetProviderId();
 
+    string GetProviderType();
+
     Base.ActionMetadata GetActionMetadata(string action_id);
 
 

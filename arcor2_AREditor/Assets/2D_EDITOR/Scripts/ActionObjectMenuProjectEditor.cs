@@ -58,7 +58,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
             Destroy(t.gameObject);
         }
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
-            Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Id);
+            Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Name);
             button.onClick.AddListener(() => ShowActionPoint(actionPoint));
         }
     }

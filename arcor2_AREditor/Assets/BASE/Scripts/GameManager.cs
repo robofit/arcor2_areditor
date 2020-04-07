@@ -335,14 +335,31 @@ namespace Base {
             EndLoading();
         }
 
+        internal async void ActionChanged(ActionChanged data) {
+            switch (data.ChangeType) {
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
+                    ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.ParentId);
+                    IActionProvider actionProvider = Scene.Instance.GetActionProvider(Action.ParseActionType(data.Data.Type).Item1);
+                    await Scene.Instance.SpawnPuck(Action.ParseActionType(data.Data.Type).Item2, data.Data.Name, actionPoint, actionProvider, data.Data.Id);
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
+                    
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
+                    
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         public void ActionPointChanged(ActionPointChanged data) {
             switch (data.ChangeType) {
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
-                    if (data.Data.Parent != null && Scene.Instance.ActionObjects.TryGetValue(data.Data.Parent, out ActionObject actionObject)) {
-                        Scene.Instance.SpawnActionPoint(data.Data, actionObject);
-                    } else {
-                        Scene.Instance.SpawnActionPoint(data.Data);
-                    }
+                    IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(data.Data.Parent);
+                    Scene.Instance.SpawnActionPoint(data.Data, actionPointParent);                    
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
                     Scene.Instance.RemoveActionPoint(data.Data.Id);
@@ -426,6 +443,7 @@ namespace Base {
             StartLoading();
             if (project == null) {
                 CurrentProject = null;
+                Scene.Instance.RemoveActionPoints();
                 EndLoading();
                 return;
             }
@@ -443,6 +461,8 @@ namespace Base {
             
             EndLoading();
         }
+
+        
 
         public string GetSceneId(string name) {
             foreach (IdDesc scene in Scenes) {

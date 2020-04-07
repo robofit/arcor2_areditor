@@ -83,7 +83,7 @@ namespace Base {
         }
 
         public string GetActionType() {
-            return ActionProvider.GetProviderName() + "/" + metadata.Name; //TODO: AO|Service/Id
+            return ActionProvider.GetProviderType() + "/" + metadata.Name; //TODO: AO|Service/Id
         }
 
         public void DeleteAction(bool updateProject = true) {
@@ -209,8 +209,8 @@ namespace Base {
             List<string> options = new List<string>();
 
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (string poseKey in ap.GetPoses().Keys) {
-                    options.Add(ap.ActionObject.Data.Id + "." + ap.Data.Id + "." + poseKey);
+                foreach (string poseKey in ap.GetPoses().Keys) {                    
+                    options.Add(ap.Data.Id + "." + poseKey);
                 }
             }
             string selectedValue = null;
@@ -225,7 +225,7 @@ namespace Base {
             List<string> options = new List<string>();
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
                 foreach (string jointsId in ap.GetJoints(false, null, true).Keys) {
-                    options.Add(ap.ActionObject.GetComponent<ActionObject>().Data.Id + "." + ap.Data.Id + "." + jointsId);
+                    options.Add(ap.Data.Id + "." + jointsId);
                 }
             }
             string selectedValue = null;
@@ -331,12 +331,21 @@ namespace Base {
                 string value = null;
                 switch (parameterMetadata.Type) {
                     case "pose":
-                        value = actionPoint.ActionObject.Data.Id + "." + actionPoint.Data.Id + "." + "default"; // TODO: is it ok? will there always be default?
+                        if (actionPoint.Parent != null)
+                            value = actionPoint.Parent.GetId() + "." + actionPoint.Data.Id + "." + "default"; // TODO: is it ok? will there always be default?
+                        else
+                            value = actionPoint.Data.Id + "." + "default";
                         break;
                     case "joints":
                         IO.Swagger.Model.ProjectRobotJoints projectRobotJoints = actionPoint.GetFirstJoints();
-                        if (projectRobotJoints != null)
-                            value = actionPoint.ActionObject.Data.Id + "." + actionPoint.Data.Id + "." + projectRobotJoints.Id;
+                        if (projectRobotJoints != null) {
+                            if (actionPoint.Parent != null) {
+                                value = actionPoint.Parent.GetId() + "." + actionPoint.Data.Id + "." + projectRobotJoints.Id;
+                            } else {
+                                value = actionPoint.Data.Id + "." + projectRobotJoints.Id;
+                            }
+                        }
+                            
                         break;
                 }
                 if (value != null) {
@@ -479,7 +488,15 @@ namespace Base {
             return true;
         }
 
+        public static Tuple<string, string> ParseActionType(string type) {
+            if (!type.Contains("/"))
+                throw new FormatException("Action type has to be in format action_provider_id/action_type");
+            return new Tuple<string, string>(type.Split('/')[0], type.Split('/')[1]);
+        }
 
+        public static string BuildActionType(string actionProviderId, string actionType) {
+            return actionProviderId + "/" + actionType;
+        }
     }
 
 }

@@ -74,6 +74,10 @@ namespace Base {
         public string GetProviderId() {
             return Data.Type;
         }
+
+        public string GetProviderType() {
+            return Data.Type;
+        }
     }
 
 }

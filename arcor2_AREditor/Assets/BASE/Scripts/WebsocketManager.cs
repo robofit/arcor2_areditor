@@ -348,7 +348,8 @@ namespace Base {
         }
 
         private void HandleActionChanged(string data) {
-            throw new NotImplementedException();
+            IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
+            GameManager.Instance.ActionChanged(actionChanged);
         }
 
         private void HandleActionPointChanged(string data) {
