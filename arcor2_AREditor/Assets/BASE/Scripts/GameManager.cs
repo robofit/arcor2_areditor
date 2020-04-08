@@ -290,6 +290,19 @@ namespace Base {
             
         }
 
+        public void SceneAdded(IO.Swagger.Model.Scene scene) {
+            SceneUpdated(scene);
+        }
+
+        
+        public async void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
+            if (GetGameState() == GameStateEnum.SceneEditor)
+                Scene.Instance.SceneBaseUpdated(scene);
+            else if (GetGameState() == GameStateEnum.MainScreen) {
+                await LoadScenes();
+            }
+        }
+
         // SceneUpdated is called from server, when another GUI makes some change.
         public void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();

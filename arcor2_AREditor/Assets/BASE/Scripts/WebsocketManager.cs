@@ -349,7 +349,21 @@ namespace Base {
 
         private void HandleSceneChanged(string obj) {
             IO.Swagger.Model.SceneChanged sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChanged>(obj);
-            GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
+            switch (sceneChangedEvent.ChangeType) {
+                case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
+                    break;
+                case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Remove:
+                    throw new NotImplementedException();
+                case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
+                    break;
+                case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.SceneBaseUpdated(sceneChangedEvent.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
             sceneArrived = true;
         }
 

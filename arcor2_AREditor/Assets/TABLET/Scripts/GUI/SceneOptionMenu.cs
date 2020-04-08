@@ -34,6 +34,7 @@ public class SceneOptionMenu : TileOptionMenu {
         if (result) {
             inputDialog.Close();
             sceneTile.SetLabel(newUserId);
+            SetLabel(newUserId);
         }
     }
 

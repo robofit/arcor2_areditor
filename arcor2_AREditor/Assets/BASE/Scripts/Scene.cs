@@ -118,6 +118,13 @@ namespace Base {
             CurrentlySelectedObject = obj;
         }
 
+        public void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
+
+            Data.Desc = scene.Desc;
+            Data.Modified = scene.Modified;
+            Data.Name = scene.Name;
+        }
+
         
 
         #region ACTION_OBJECTS
