@@ -13,7 +13,7 @@ public class DropdownParameterJoints : DropdownParameter
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (IO.Swagger.Model.ProjectRobotJoints joints in robotJoints) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = joints.Id
+                itemName = joints.Name
             };
             if (joints.IsValid) {
                 item.itemIcon = ValidIcon;

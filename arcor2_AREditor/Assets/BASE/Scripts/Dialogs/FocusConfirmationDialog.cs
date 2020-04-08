@@ -5,7 +5,7 @@ using Michsky.UI.ModernUIPack;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
-    public string RobotId, EndEffectorId, OrientationId, ActionPointId, ActionPointUserId;
+    public string RobotId, EndEffectorId, OrientationId, OrientationName, ActionPointId, ActionPointName;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
@@ -13,8 +13,8 @@ public class FocusConfirmationDialog : MonoBehaviour
     public void Init() {
         SettingsText.text = "Robot: " + RobotId +
             "\nEnd effector: " + EndEffectorId +
-            "\nOrientation: " + OrientationId +
-            "\nAction point: " + ActionPointUserId +
+            "\nOrientation: " + OrientationName +
+            "\nAction point: " + ActionPointName +
             "\nUpdate position: " + UpdatePosition.ToString();
 
     }
@@ -24,7 +24,9 @@ public class FocusConfirmationDialog : MonoBehaviour
             if (EndEffectorId == "") {
                 Base.GameManager.Instance.UpdateActionPointJoints(RobotId, OrientationId);
             } else {
-                Base.GameManager.Instance.UpdateActionPointPosition(ActionPointId, RobotId, EndEffectorId, OrientationId, UpdatePosition);
+                if (UpdatePosition)
+                    Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
+                Base.GameManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
             }
             GetComponent<ModalWindowManager>().CloseWindow();
             MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);

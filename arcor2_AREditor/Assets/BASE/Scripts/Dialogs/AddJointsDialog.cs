@@ -14,7 +14,7 @@ public class AddJointsDialog : MonoBehaviour {
             return;
         }
         string joints_id = NewJointsName.GetComponent<TMPro.TMP_InputField>().text;
-        if (ap.GetJoints().ContainsKey(joints_id)) {
+        if (ap.GetAllJoints().ContainsKey(joints_id)) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed", "Joints named " + joints_id + " already exists");
             return;
         }

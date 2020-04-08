@@ -74,6 +74,8 @@ namespace Base {
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
         private string loadedScene;
+
+        
         private IO.Swagger.Model.Project newProject;
         public IO.Swagger.Model.Project CurrentProject = null;
         private IO.Swagger.Model.Scene newScene;
@@ -335,107 +337,203 @@ namespace Base {
             EndLoading();
         }
 
-        internal async void ActionChanged(ActionChanged data) {
-            switch (data.ChangeType) {
-                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
-                    ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.ParentId);
-                    IActionProvider actionProvider = Scene.Instance.GetActionProvider(Action.ParseActionType(data.Data.Type).Item1);
-                    await Scene.Instance.SpawnPuck(Action.ParseActionType(data.Data.Type).Item2, data.Data.Name, actionPoint, actionProvider, data.Data.Id);
-                    break;
-                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
-                    break;
-                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
-                    
-                    break;
-                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
-                    
-                    break;
-                default:
-                    throw new NotImplementedException();
+      
+
+        public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
+            Base.Action action = Scene.Instance.GetAction(projectAction.Id);
+            if (action == null) {
+                Debug.LogError("Trying to update non-existing action!");
+                return;
             }
+            action.ActionUpdate(projectAction);
         }
 
-        public void ActionPointChanged(ActionPointChanged data) {
-            switch (data.ChangeType) {
-                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
-                    IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(data.Data.Parent);
-                    Scene.Instance.SpawnActionPoint(data.Data, actionPointParent);                    
-                    break;
-                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
-                    Scene.Instance.RemoveActionPoint(data.Data.Id);
-                    break;
-                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
-                    try {
-                        ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.Data.Id);
-                        //TODO: update ap, connections, actions etc.
-                        
-                    } catch (KeyNotFoundException ex) {
-                        Debug.Log("Action point " + data.Data.Id + " not found!");
-                        Notifications.Instance.ShowNotification("", "Action point " + data.Data.Id + " not found!");
-                        return;
-                    }
-                    break;
-                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
-                    try {
-                        ActionPoint actionPoint = Scene.Instance.GetActionPoint(data.Data.Id);
-                        actionPoint.ActionPointUpdate(data.Data);
-                    } catch (KeyNotFoundException ex) {
-                        Debug.Log("Action point " + data.Data.Id + " not found!");
-                        Notifications.Instance.ShowNotification("", "Action point " + data.Data.Id + " not found!");
-                        return;
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
+        public void ActionBaseUpdated(IO.Swagger.Model.Action projectAction) {
+            Base.Action action = Scene.Instance.GetAction(projectAction.Id);
+            if (action == null) {
+                Debug.LogError("Trying to update non-existing action!");
+                return;
             }
+            action.ActionUpdateBaseData(projectAction);
+        }
+
+        public async void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
+            ActionPoint actionPoint = Scene.Instance.GetActionPoint(parentId);
+            IActionProvider actionProvider = Scene.Instance.GetActionProvider(Action.ParseActionType(projectAction.Type).Item1);
+            Base.Action action = await Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, Action.ParseActionType(projectAction.Type).Item2, actionPoint, actionProvider);
+            // updates name of the action
+            action.ActionUpdateBaseData(projectAction);
+            // updates parameters of the action
+            action.ActionUpdate(projectAction);
         }
 
 
-        public void SceneObjectChanged(SceneObjectChanged data) {
-            ActionObject actionObject;
-            switch (data.ChangeType) {
-                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    actionObject = Scene.Instance.SpawnActionObject(data.Data.Id, data.Data.Type, false, data.Data.Name);
-                    actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
-                    break;
-                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
-                    Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
-                    Scene.Instance.ActionObjects.Remove(data.Data.Id);
-                    Destroy(actionObject.gameObject);
-                    break;
-                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
-                    Scene.Instance.ActionObjects.TryGetValue(data.Data.Id, out actionObject);
-                    actionObject.ActionObjectUpdate(data.Data, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
-                    break;
-                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
-                    //TODO: implement
-                    break;
-                default:
-                    throw new NotImplementedException();
+        public void ActionRemoved(IO.Swagger.Model.Action action) {
+            Scene.Instance.RemoveAction(action.Id);
+        }
+
+
+        public async void ActionPointUpdated(ProjectActionPoint projectActionPoint) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
+                await actionPoint.UpdateActions(projectActionPoint);
+                // TODO - update orientations, joints etc.
+            } catch (KeyNotFoundException ex) {
+                Debug.Log("Action point " + projectActionPoint.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
+                return;
+            }
+        }
+
+        public void ActionPointBaseUpdated(ProjectActionPoint projectActionPoint) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
+                actionPoint.ActionPointBaseUpdate(projectActionPoint);
+            } catch (KeyNotFoundException ex) {
+                Debug.Log("Action point " + projectActionPoint.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
+                return;
+            }
+        }
+
+        public void ActionPointAdded(ProjectActionPoint projectActionPoint) {
+            IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(projectActionPoint.Parent);
+            if (actionPointParent != null) {
+                Scene.Instance.SpawnActionPoint(projectActionPoint, actionPointParent);
+            } else {
+                Debug.LogError("Parent " + projectActionPoint.Name + "(" + projectActionPoint.Id + ") not found");
             }
         }
 
 
-        public void SceneServiceChanged(SceneServiceChanged data) {
-            switch (data.ChangeType) {
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    ActionsManager.Instance.AddService(data.Data);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    ActionsManager.Instance.RemoveService(data.Data.Type);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    ActionsManager.Instance.UpdateService(data.Data);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    //TODO: implement
-                    break;
-                default:
-                    throw new NotImplementedException();
+        public void ActionPointRemoved(ProjectActionPoint projectActionPoint) {
+            Scene.Instance.RemoveActionPoint(projectActionPoint.Id);
+        }
+
+
+        public void SceneObjectUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                actionObject.ActionObjectUpdate(sceneObject, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+        }
+
+        public void SceneObjectBaseUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+        }
+
+        public void SceneObjectAdded(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type, false, sceneObject.Name);
+            actionObject.ActionObjectUpdate(sceneObject, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+        }
+
+
+        public void SceneObjectRemoved(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                Scene.Instance.ActionObjects.Remove(sceneObject.Id);
+                Destroy(actionObject.gameObject);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }            
+        }
+
+
+        public void ActionPointOrientationUpdated(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.UpdateOrientation(orientation); 
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationBaseUpdated(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.BaseUpdateOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationAdded(NamedOrientation orientation, string actionPointIt) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(actionPointIt);
+                actionPoint.AddOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationRemoved(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.RemoveOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to remove action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsUpdated(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.UpdateJoints(joints); 
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsBaseUpdated(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.BaseUpdateJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsAdded(ProjectRobotJoints joints, string actionPointIt) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(actionPointIt);
+                actionPoint.AddJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add action point joints", ex.Message);
+                return;
             }
         }
 
 
+        public void ActionPointJointsRemoved(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.RemoveJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to remove action point joints", ex.Message);
+                return;
+            }
+        }
 
 
         // ProjectUpdated is called from server, when another GUI makes some changes
@@ -620,10 +718,19 @@ namespace Base {
 
         public void ExitApp() => Application.Quit();
 
-        public async void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
+            }
+        }
+
+        public async void UpdateActionPointOrientationUsingRobot(string actionPointId, string robotId, string endEffectorId, string orientationId) {
+
+            try {
+                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(actionPointId, robotId, endEffectorId, orientationId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
@@ -980,6 +1087,27 @@ namespace Base {
         public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
             try {
                 await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, name);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RenameAction(string actionId, string newName) {
+            try {
+                await WebsocketManager.Instance.RenameAction(actionId, newName);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
+                return false;
+            }
+        }
+
+
+        public async Task<bool> RemoveAction(string actionId) {
+            try {
+                await WebsocketManager.Instance.RemoveAction(actionId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);

@@ -28,7 +28,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public AddNewActionDialog AddNewActionDialog;
 
     [SerializeField]
-    private Button LockedBtn, UnlockedBtn;
+    private Button LockedBtn, UnlockedBtn, UntieBtn;
 
     [SerializeField]
     private InputDialog inputDialog;
@@ -94,25 +94,24 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
-            GameObject collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform);
-            collapsableMenu.GetComponent<CollapsableMenu>().Name = keyval.Key.GetProviderName();
-            collapsableMenu.GetComponent<CollapsableMenu>().Collapsed = true;
+            CollapsableMenu collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform).GetComponent<CollapsableMenu>();
+            collapsableMenu.Name = keyval.Key.GetProviderName();
+            collapsableMenu.Collapsed = true;
 
             foreach (Base.ActionMetadata am in keyval.Value) {
-                GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.GetComponent<CollapsableMenu>().Content.transform);
-                btnGO.transform.localScale = new Vector3(1, 1, 1);
-                Button btn = btnGO.GetComponent<Button>();
+                Button btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<Button>();
+                btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
-                btnGO.AddComponent<TooltipContent>();
-                btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
+                TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
+                btnTooltip.enabled = am.Description != "";
                 
-                if (btnGO.GetComponent<TooltipContent>().tooltipRect == null) {
-                    btnGO.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+                if (btnTooltip.tooltipRect == null) {
+                    btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
                 }
-                if (btnGO.GetComponent<TooltipContent>().descriptionText == null) {
-                    btnGO.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+                if (btnTooltip.descriptionText == null) {
+                    btnTooltip.descriptionText = Base.GameManager.Instance.Text;
                 }
-                btnGO.GetComponent<TooltipContent>().description = am.Description;
+                btnTooltip.description = am.Description;
                 btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
             }
 
@@ -131,15 +130,19 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         
         UpdateOrientations();
         UpdateLockedBtns(CurrentActionPoint.Locked);
+        if (CurrentActionPoint.Parent == null)
+            UntieBtn.interactable = false;
+        else
+            UntieBtn.interactable = true;
         
     }
 
     public void UpdateOrientations() {
         CustomDropdown orientationDropdown = orientationsList.Dropdown;
         orientationDropdown.dropdownItems.Clear();
-        foreach (string orientation in CurrentActionPoint.GetPoses().Keys) {
+        foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = orientation
+                itemName = orientation.Name
             };
             orientationDropdown.dropdownItems.Add(item);
         }
@@ -148,6 +151,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             NoOrientation.gameObject.SetActive(true);
         } else {
             NoOrientation.gameObject.SetActive(false);
+            orientationDropdown.gameObject.SetActive(true);
             orientationDropdown.enabled = true;
             orientationDropdown.SetupDropdown();
         }
@@ -160,7 +164,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         
-        JointsList.PutData(CurrentActionPoint.GetJoints(true, robot_id).Values.ToList(), selectedJoints, null);
+        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null);
 
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
@@ -237,11 +241,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public async void AddJoints(string name) {
         Debug.Assert(CurrentActionPoint != null);
-        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, name);
+        bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, (string) robotsList.GetValue());
         if (success) {
             inputDialog.Close();
         }
-        UpdateOrientations();
+        UpdateJoints((string) robotsList.GetValue());
     }
 
     public void FocusJoints() {
@@ -251,7 +255,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints((string) robotsList.GetValue(), (string) JointsList.GetValue());
+            Base.GameManager.Instance.UpdateActionPointJoints((string) robotsList.GetValue(), CurrentActionPoint.GetJoints((string) JointsList.GetValue()).Name);
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
@@ -276,10 +280,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         FocusConfirmationDialog.RobotId = robotsListDropdown.selectedText.text;
 
-        FocusConfirmationDialog.OrientationId = orientationDropdown.selectedText.text;
+        FocusConfirmationDialog.OrientationId = CurrentActionPoint.GetNamedOrientationByName(orientationDropdown.selectedText.text).Id;
+        FocusConfirmationDialog.OrientationName = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
-        FocusConfirmationDialog.ActionPointUserId = CurrentActionPoint.Data.Name;
+        FocusConfirmationDialog.ActionPointName = CurrentActionPoint.Data.Name;
         FocusConfirmationDialog.Init();
         FocusConfirmationDialog.WindowManager.OpenWindow();
     }

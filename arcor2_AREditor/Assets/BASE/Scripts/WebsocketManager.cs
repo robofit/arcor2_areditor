@@ -249,6 +249,12 @@ namespace Base {
                     case "ActionChanged":
                         HandleActionChanged(data);
                         break;
+                    case "OrientationChanged":
+                        HandleOrientationChanged(data);
+                        break;
+                    case "JointsChanged":
+                        HandleJointsChanged(data);
+                        break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
@@ -266,7 +272,7 @@ namespace Base {
 
         }
 
-       private async Task<T> WaitForResult<T>(int key) {
+        private async Task<T> WaitForResult<T>(int key) {
             if (responses.TryGetValue(key, out string value)) {
                 if (value == null) {
                     value = await WaitForResponseReady(key);
@@ -322,7 +328,7 @@ namespace Base {
                 return;
             }
 
-            Action puck = Scene.Instance.GetActionById(puck_id);
+            Action puck = Scene.Instance.GetAction(puck_id);
             if (puck == null)
                 return;
 
@@ -349,26 +355,124 @@ namespace Base {
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
-            GameManager.Instance.ActionChanged(actionChanged);
+            switch (actionChanged.ChangeType) {
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
+                    GameManager.Instance.ActionRemoved(actionChanged.Data);
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.ActionUpdated(actionChanged.Data);
+                    break;
+                case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.ActionBaseUpdated(actionChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private void HandleActionPointChanged(string data) {
             IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
-            GameManager.Instance.ActionPointChanged(actionPointChangedEvent);
+            switch (actionPointChangedEvent.ChangeType) {
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
+                    GameManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
+                    break;
+                case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
+        private void HandleOrientationChanged(string data) {
+            IO.Swagger.Model.OrientationChanged orientationChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.OrientationChanged>(data);
+            switch (orientationChanged.ChangeType) {
+                case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
+                    break;
+                case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Remove:
+                    GameManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
+                    break;
+                case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
+                    break;
+                case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void HandleJointsChanged(string data) {
+            IO.Swagger.Model.JointsChanged jointsChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.JointsChanged>(data);
+            switch (jointsChanged.ChangeType) {
+                case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
+                    break;
+                case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Remove:
+                    GameManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
+                    break;
+                case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
+                    break;
+                case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
         private void HandleSceneObjectChanged(string data) {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
-            
-            GameManager.Instance.SceneObjectChanged(sceneObjectChanged);
+            switch (sceneObjectChanged.ChangeType) {
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
+                    GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
+                    GameManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
+                    GameManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
+                    GameManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 
         private void HandleSceneServiceChanged(string data) {
             IO.Swagger.Model.SceneServiceChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneServiceChanged>(data);
-            
-            GameManager.Instance.SceneServiceChanged(sceneObjectChanged);
+
+            switch (sceneObjectChanged.ChangeType) {
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
+                    ActionsManager.Instance.AddService(sceneObjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
+                    ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
+                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
+                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 
@@ -458,19 +562,17 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
         
-        public async Task UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
-            /*
+        public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
+            
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
-            IO.Swagger.Model.UpdateActionPointPoseRequestArgs args = new IO.Swagger.Model.UpdateActionPointPoseRequestArgs(id: actionPointId,
-                orientationId: orientationId, robot: robotArg, updatePosition: updatePosition);
-            IO.Swagger.Model.UpdateActionPointPoseRequest request = new IO.Swagger.Model.UpdateActionPointPoseRequest(id: r_id, request: "UpdateActionPointPose", args);
+            IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs(actionPointId: actionPointId,
+                robot: robotArg);
+            IO.Swagger.Model.UpdateActionPointUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointUsingRobotRequest(id: r_id, request: "UpdateActionPointUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionPointPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPoseResponse>(r_id);
+            IO.Swagger.Model.UpdateActionPointUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointUsingRobotResponse>(r_id);
             if (!response.Result)
-                throw new RequestFailedException(response.Messages);*/
-
-            //TODO: implement
+                throw new RequestFailedException(response.Messages);
         }
 
         
@@ -782,19 +884,6 @@ namespace Base {
         }
 
 
-        public async Task UpdateActionPointUsingRobot(string id, string robotId, string endEffector) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffector);
-            IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs(actionPointId: id, robot: robotArg);
-            IO.Swagger.Model.UpdateActionPointUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointUsingRobotRequest(r_id, "UpdateActionPointUsingRobot", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionPointUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointUsingRobotResponse>(r_id);
-
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
-        }
-
-
          public async Task AddActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string name) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId, endEffector);
@@ -807,6 +896,20 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
+        
+        public async Task UpdateActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffector);
+            IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs(actionPointId: id, robot: robotArg, orientationId: orientationId);
+            IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest(r_id, "UpdateActionPointOrientationUsingRobot", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        
         public async Task AddActionPointJoints(string id, string robotId, string name) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddActionPointJointsRequestArgs args = new IO.Swagger.Model.AddActionPointJointsRequestArgs(actionPointId: id, robotId: robotId, name: name);
@@ -873,7 +976,31 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        
+        public async Task RemoveAction(string actionId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: actionId);
+            IO.Swagger.Model.RemoveActionRequest request = new IO.Swagger.Model.RemoveActionRequest(r_id, "RemoveAction", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task RenameAction(string actionId, string newName) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameActionRequestArgs args = new IO.Swagger.Model.RenameActionRequestArgs(actionId: actionId, newName: newName);
+            IO.Swagger.Model.RenameActionRequest request = new IO.Swagger.Model.RenameActionRequest(r_id, "RenameAction", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameActionResponse response = await WaitForResult<IO.Swagger.Model.RenameActionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+
+
         public async Task UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionLogicArgs args = new IO.Swagger.Model.UpdateActionLogicArgs(actionId: actionId, inputs: inputs, outputs: outputs);

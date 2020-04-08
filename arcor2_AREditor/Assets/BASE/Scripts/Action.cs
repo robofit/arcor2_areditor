@@ -28,7 +28,7 @@ namespace Base {
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public async Task Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider, bool updateProject = true) {
+        public async Task Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
 
             ActionPoint = ap;
             this.metadata = metadata;
@@ -42,51 +42,58 @@ namespace Base {
             }
 
 
-            UpdateId(name, false);
+            UpdateName(name);
             //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
             foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
                 io.InitData();
             }
 
-            if (updateProject) {
-                GameManager.Instance.UpdateProject();
-            }
 
 
         }
 
-        public virtual void ActionUpdate(IO.Swagger.Model.Action aData = null) {
-            if (aData != null)
-                Data = aData;
+        public virtual void ActionUpdateBaseData(IO.Swagger.Model.Action action) {
+            Data.Name = action.Name;
+        }
+
+        public virtual void ActionUpdate(IO.Swagger.Model.Action action) {
+
+            // Updates (or creates new) parameters of current action
+            foreach (IO.Swagger.Model.ActionParameter projectActionParameter in action.Parameters) {
+                try {
+                    // If action parameter exist in action dictionary, then just update that parameter value (it's metadata will always be unchanged)
+                    if (Parameters.TryGetValue(projectActionParameter.Id, out ActionParameter actionParameter)) {
+                        actionParameter.UpdateActionParameter(projectActionParameter);
+                    }
+                    // Otherwise create a new action parameter, load metadata for it and add it to the dictionary of action
+                    else {
+                        // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
+                        IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = Metadata.GetParamMetadata(projectActionParameter.Id);
+
+                        actionParameter = new ActionParameter(actionParameterMetadata, this, projectActionParameter.Value);
+                        Parameters.Add(actionParameter.Id, actionParameter);
+                    }
+                } catch (ItemNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
+            }
         }
 
         public void UpdateType() {
             Data.Type = GetActionType();
         }        
 
-        public virtual void UpdateId(string newId, bool updateProject = true) {
-            Data.Id = newId;
+        public virtual void UpdateName(string newName) {
+            Data.Name = newName;
 
-            // update changed IDs in connected actions
-            Action actionOnInput = Scene.Instance.GetActionById(Input.Data.Default);
-            if (actionOnInput != null) {
-                actionOnInput.Output.Data.Default = newId;
-            }
-            Action actionOnOutput = Scene.Instance.GetActionById(Output.Data.Default);
-            if (actionOnOutput != null) {
-                actionOnOutput.Input.Data.Default = newId;
-            }
-
-            if (updateProject)
-                GameManager.Instance.UpdateProject();
         }
 
         public string GetActionType() {
             return ActionProvider.GetProviderType() + "/" + metadata.Name; //TODO: AO|Service/Id
         }
 
-        public void DeleteAction(bool updateProject = true) {
+        public void DeleteAction() {
             // Delete connection on input and set the gameobject that was connected through its output to the "end" value.
             if (Input.Connection != null) {
                 InputOutput connectedActionIO = Input.Connection.target[0].GetComponent<InputOutput>();
@@ -108,8 +115,6 @@ namespace Base {
 
             ActionPoint.Actions.Remove(Data.Id);
 
-            if (updateProject)
-                GameManager.Instance.UpdateProject();
         }
 
         public Dictionary<string, ActionParameter> Parameters {
@@ -224,7 +229,7 @@ namespace Base {
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (string jointsId in ap.GetJoints(false, null, true).Keys) {
+                foreach (string jointsId in ap.GetAllJoints(false, null, true).Keys) {
                     options.Add(ap.Data.Id + "." + jointsId);
                 }
             }

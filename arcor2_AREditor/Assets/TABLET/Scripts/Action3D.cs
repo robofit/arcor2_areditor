@@ -29,19 +29,19 @@ public class Action3D : Base.Action {
         Visual.material.color = colorDefault;
     }
 
-    public override void UpdateId(string newId, bool updateProject = true) {
-        base.UpdateId(newId, updateProject);
-        NameText.text = newId;
+    public override void UpdateName(string newName) {
+        base.UpdateName(newName);
+        NameText.text = newName;
     }
 
-    public override void ActionUpdate(IO.Swagger.Model.Action aData = null) {
-        base.ActionUpdate(aData);
-        NameText.text = aData.Id;
+    public override void ActionUpdateBaseData(IO.Swagger.Model.Action aData = null) {
+        base.ActionUpdateBaseData(aData);
+        NameText.text = aData.Name;
     }
 
     public override void OnClick(Click type) {
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
-            ActionMenu.Instance.CurrentPuck = this;
+            ActionMenu.Instance.CurrentAction = this;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         }
     }

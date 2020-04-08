@@ -254,7 +254,6 @@ namespace Base {
                 actionObject.SetInteractivity(interactivity);
             }
             GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
-            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
         }
 
 
@@ -286,7 +285,7 @@ namespace Base {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public ActionObject FindActionObjectByID(string id) {
+        public ActionObject GetActionObject(string id) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.Data.Id == id) {
                     return actionObject;
@@ -332,7 +331,7 @@ namespace Base {
             foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
                 // if action point exist, just update it
                 if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
-                    actionPoint.ActionPointUpdate(projectActionPoint);
+                    actionPoint.ActionPointBaseUpdate(projectActionPoint);
                 }
                 // if action point doesn't exist, create new one
                 else {
@@ -345,7 +344,7 @@ namespace Base {
                 }
 
                 // update actions in current action point 
-                var updateActionsResult = await UpdateActions(projectActionPoint, actionPoint);
+                (List<string>, Dictionary<string, string>) updateActionsResult = await actionPoint.UpdateActions(projectActionPoint);
                 currentActions.AddRange(updateActionsResult.Item1);
                 // merge dictionaries
                 connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
@@ -445,29 +444,79 @@ namespace Base {
             return ActionPoints;
         }
 
+        /// <summary>
+        /// Returns joints with id or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IO.Swagger.Model.ProjectRobotJoints GetJoints(string id) {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                try {
+                    return actionPoint.GetJoints(id);
+                } catch (KeyNotFoundException ex) { }                
+            }
+            throw new KeyNotFoundException("Joints with id " + id + " not found");
+        }
+
+        /// <summary>
+        /// Returns orientation with id or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IO.Swagger.Model.NamedOrientation GetNamedOrientation(string id) {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                try {
+                    return actionPoint.GetOrientation(id);
+                } catch (KeyNotFoundException ex) { }                
+            }
+            throw new KeyNotFoundException("Joints with id " + id + " not found");
+        }
+
+        /// <summary>
+        /// Returns action point containing orientation with id or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionPoint GetActionPointWithOrientation(string id) {
+            foreach(ActionPoint actionPoint in ActionPoints.Values) {
+                try {
+                    // if GetOrientation dont throw exception, correct action point was found
+                    actionPoint.GetOrientation(id);
+                    return actionPoint;
+                } catch (KeyNotFoundException ex) { }
+            }
+            throw new KeyNotFoundException("Action point with orientation id " + id + " not found");
+        }
+
+        /// <summary>
+        /// Returns action point containing joints with id or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ActionPoint GetActionPointWithJoints(string id) {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                try {
+                    // if GetJoints dont throw exception, correct action point was found
+                    actionPoint.GetJoints(id);
+                    return actionPoint;
+                } catch (KeyNotFoundException ex) { }
+            }
+            throw new KeyNotFoundException("Action point with joints id " + id + " not found");
+        }
+
+
+
         #endregion
 
         #region ACTIONS
 
-        public async Task<Action> SpawnPuck(string action_id, string action_user_id, ActionPoint ap, IActionProvider actionProvider, string puck_id = "") {
-            string newId = puck_id;
-            const string glyphs = "0123456789";
-            if (newId == "") {
-                newId = action_user_id;
-                for (int j = 0; j < 4; j++) {
-                    newId += glyphs[UnityEngine.Random.Range(0, glyphs.Length)];
-                }
-            } else {
-                if (Base.Scene.Instance.GetActionById(puck_id) != null) {
-                    Base.Notifications.Instance.ShowNotification("Failed to create action", "Action with name " + puck_id + " already exists");
-                    return null;
-                }
-            }
+        public async Task<Action> SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
+            Debug.Assert(GetActionByName(action_name) == null);
             GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
             try {
-                actionMetadata = actionProvider.GetActionMetadata(action_user_id);
+                actionMetadata = actionProvider.GetActionMetadata(action_type);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 GameManager.Instance.EndLoading();
@@ -483,14 +532,7 @@ namespace Base {
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
             puck.SetActive(false);
             
-
-            
-
-            if (action_id == "" || action_id == null) {
-                action_id = Guid.NewGuid().ToString();
-            } 
-
-            await puck.GetComponent<Action>().Init(action_id, newId, actionMetadata, ap, actionProvider, false);
+            await puck.GetComponent<Action>().Init(action_id, action_name, actionMetadata, ap, actionProvider);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
@@ -506,74 +548,7 @@ namespace Base {
             return action;
         }
 
-        /// <summary>
-        /// Updates actions of given ActionPoint and ProjectActionPoint received from server.
-        /// </summary>
-        /// <param name="projectActionPoint"></param>
-        /// <param name="actionPoint"></param>
-        /// <returns></returns>
-        public async Task<(List<string>, Dictionary<string, string>)> UpdateActions(IO.Swagger.Model.ProjectActionPoint projectActionPoint, ActionPoint actionPoint) {
-            List<string> currentA = new List<string>();
-            // Connections between actions (action -> output --- input <- action2)
-            Dictionary<string, string> connections = new Dictionary<string, string>();
-
-            foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                string providerName = projectAction.Type.Split('/').First();
-                string actionType = projectAction.Type.Split('/').Last();
-                IActionProvider actionProvider;
-                //if (ActionObjects.TryGetValue(providerName, out ActionObject originalActionObject)) {
-                ActionObject originalActionObject = FindActionObjectByID(providerName);
-                if (originalActionObject != null) {
-                    actionProvider = originalActionObject;
-                } else if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
-                    actionProvider = originalService;
-                } else {
-                    Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
-                    continue; //TODO: throw exception
-                }
-
-                // if action exist, just update it
-                if (actionPoint.Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action.ActionUpdate(projectAction);
-                }
-                // if action doesn't exist, create new one
-                else {
-                    action = await SpawnPuck(projectAction.Id, actionType, actionPoint, actionProvider, projectAction.Id);
-                    action.ActionUpdate(projectAction);
-                }
-
-                // Updates (or creates new) parameters of current action
-                foreach (IO.Swagger.Model.ActionParameter projectActionParameter in projectAction.Parameters) {
-                    try {
-                        // If action parameter exist in action dictionary, then just update that parameter value (it's metadata will always be unchanged)
-                        if (action.Parameters.TryGetValue(projectActionParameter.Id, out ActionParameter actionParameter)) {
-                            actionParameter.UpdateActionParameter(projectActionParameter);
-                        }
-                        // Otherwise create a new action parameter, load metadata for it and add it to the dictionary of action
-                        else {
-                            // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
-                            IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(projectActionParameter.Id);
-
-                            actionParameter = new ActionParameter(actionParameterMetadata, action, projectActionParameter.Value);
-                            action.Parameters.Add(actionParameter.Id, actionParameter);
-                        }
-                    } catch (ItemNotFoundException ex) {
-                        Debug.LogError(ex);
-                    }
-                }
-
-                // Add current connection from the server, we will only map the outputs
-                foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                    //if(!connections.ContainsKey(projectAction.Id))
-                    connections.Add(projectAction.Id, actionIO.Default);
-                }
-
-                // local list of all actions for current action point
-                currentA.Add(projectAction.Id);
-            }
-            
-            return (currentA, connections);
-        }
+       
 
         /// <summary>
         /// Updates connections between actions in the scene.
@@ -592,7 +567,7 @@ namespace Base {
                     Action refAction = null;
                     // Find corresponding action defined by ID
                     if (actionOutput != "start" && actionOutput != "end") {
-                        refAction = GetActionById(actionOutput);
+                        refAction = GetAction(actionOutput);
                         if (refAction != null) {
                             actionOutput = refAction.Data.Id;
                         } else {
@@ -657,17 +632,17 @@ namespace Base {
             string apIdToRemove = aToRemove.ActionPoint.Data.Id;
             // Call function in corresponding action that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[apIdToRemove].Actions[Id].DeleteAction(false);
+            ActionPoints[apIdToRemove].Actions[Id].DeleteAction();
         }
 
         /// <summary>
         /// Returns action of given Id.
         /// </summary>
-        /// <param name="Id"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public Action GetAction(string Id) {
+        public Action GetAction(string id) {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                if (actionPoint.Actions.TryGetValue(Id, out Action action)) {
+                if (actionPoint.Actions.TryGetValue(id, out Action action)) {
                     return action;
                 }
             }
@@ -679,12 +654,12 @@ namespace Base {
         /// <summary>
         /// Returns action of given ID.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public Action GetActionById(string id) {
+        public Action GetActionByName(string name) {
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 foreach (Action action in actionPoint.Actions.Values) {
-                    if (action.Data.Id == id) {
+                    if (action.Data.Name == name) {
                         return action;
                     }
                 }

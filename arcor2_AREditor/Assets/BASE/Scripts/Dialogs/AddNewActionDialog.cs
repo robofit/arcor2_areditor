@@ -25,10 +25,6 @@ public class AddNewActionDialog : Dialog
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
-        actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
-        foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
-            actionParametersMetadata.Add(meta.Name, new Base.ActionParameterMetadata(meta));
-        }
         actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
         nameInput.SetValue(actionMetadata.Name);
     }
@@ -37,13 +33,18 @@ public class AddNewActionDialog : Dialog
     public async void InitFromAction(Base.Action action) {
         InitDialog(action.ActionProvider, action.Metadata, action.ActionPoint);
         actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
-        nameInput.SetValue(action.Data.Id);
+        nameInput.SetValue(action.Data.Name);
     }
 
     public void InitDialog(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         this.actionMetadata = actionMetadata;
         CurrentActionPoint = actionPoint;
         this.actionProvider = actionProvider;
+        actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
+        foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
+            actionParametersMetadata.Add(meta.Name, new Base.ActionParameterMetadata(meta));
+        }
+
         foreach (Transform t in DynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -62,7 +63,7 @@ public class AddNewActionDialog : Dialog
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IActionParameter actionParameter in actionParameters) {
                 if (!actionParametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ActionParameterMetadata actionParameterMetadata)) {
-                    Base.Notifications.Instance.ShowNotification("Failed to create new action", "");
+                    Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
                     return;
                 }
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);

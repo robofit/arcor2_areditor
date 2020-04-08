@@ -7,21 +7,34 @@ using System.Linq;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
-    public Base.Action CurrentPuck;
+    public Base.Action CurrentAction;
 
     public GameObject DynamicContent;
-    public TMPro.TMP_InputField TopText;
+    public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    public Button ExectuteActionBtn;
+    public Button ExecuteActionBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
+    [SerializeField]
+    private InputDialog inputDialog;
+
 
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
-    // Start is called before the first frame update
-    
-   
+
+    private void Start() {
+        Debug.Assert(DynamicContent != null);
+        Debug.Assert(ActionName != null);
+        Debug.Assert(ActionType != null);
+        Debug.Assert(ExecuteActionBtn != null);
+        Debug.Assert(AddNewActionDialog != null);
+        Debug.Assert(ConfirmationDialog != null);
+        Debug.Assert(inputDialog != null);
+        Debug.Assert(DynamicContentLayout != null);
+        Debug.Assert(CanvasRoot != null);
+    }
+
     public async void UpdateMenu() {
         DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
         foreach (RectTransform o in DynamicContent.GetComponentsInChildren<RectTransform>()) {
@@ -29,38 +42,52 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 Destroy(o.gameObject);
             }
         }
-        SetHeader(CurrentPuck.Data.Id);
-        ActionType.text = CurrentPuck.Data.Type;
+        SetHeader(CurrentAction.Data.Name);
+        ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
         List<Base.ActionParameterMetadata> actionParametersMetadata = new List<Base.ActionParameterMetadata>();
-        foreach (IO.Swagger.Model.ActionParameterMeta meta in CurrentPuck.Metadata.Parameters) {
+        foreach (IO.Swagger.Model.ActionParameterMeta meta in CurrentAction.Metadata.Parameters) {
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
         }
-        actionParameters = await Base.Action.InitParameters(CurrentPuck.ActionProvider.GetProviderId(), CurrentPuck.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
     }
 
-    public void SaveID(string new_id) {
-        CurrentPuck.UpdateId(new_id);
-    }
-
-    public void DeletePuck() {
+    public async void Deletection() {
         ConfirmationDialog.Close();
-        if (CurrentPuck == null)
-            return;        
-        CurrentPuck.DeleteAction();
-        MenuManager.Instance.PuckMenu.Close();
+        if (CurrentAction == null)
+            return;
+        if (await Base.GameManager.Instance.RemoveAction(CurrentAction.Data.Id)) {
+            MenuManager.Instance.PuckMenu.Close();
+        }        
+    }
+
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename action",
+                         "Type new name",
+                         "New name",
+                         CurrentAction.Data.Name,
+                         () => RenameAction(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void RenameAction(string newName) {
+        bool result = await Base.GameManager.Instance.RenameAction(CurrentAction.Data.Id, newName);
+        if (result) {
+            inputDialog.Close();
+            ActionName.text = newName;
+        }
     }
 
     public void ShowDeleteActionDialog() {
         ConfirmationDialog.Open("Delete action",
-                                "Do you want to delete action " + CurrentPuck.Data.Id + "?",
-                                () => DeletePuck(),
+                                "Do you want to delete action " + CurrentAction.Data.Name + "?",
+                                () => Deletection(),
                                 () => ConfirmationDialog.Close());
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
        
 
-        if (!CurrentPuck.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
+        if (!CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
             return;
         parameter.SetValue(newValue);
         
@@ -68,22 +95,22 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public async void ExecuteAction() {
-        ExectuteActionBtn.interactable = false;
-        if (await Base.GameManager.Instance.ExecuteAction(CurrentPuck.Data.Id)) {
+        ExecuteActionBtn.interactable = false;
+        if (await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id)) {
 
         }
-        ExectuteActionBtn.interactable = true;
+        ExecuteActionBtn.interactable = true;
      
     }
 
 
     public void SetHeader(string header) {
-        TopText.text = header;
+        ActionName.text = header;
     }
 
     public void DuplicateAction() {
         
-        AddNewActionDialog.InitFromAction(CurrentPuck);
+        AddNewActionDialog.InitFromAction(CurrentAction);
         AddNewActionDialog.WindowManager.OpenWindow();
 
     }

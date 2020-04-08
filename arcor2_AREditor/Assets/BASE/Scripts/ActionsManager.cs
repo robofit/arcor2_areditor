@@ -91,9 +91,7 @@ namespace Base {
             ActionsReady = false;
             ServicesLoaded = false;
             ActionObjectsLoaded = false;
-        }
-
-        
+        }        
 
         public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
             Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
