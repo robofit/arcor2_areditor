@@ -22,9 +22,9 @@ public class AddJointsDialog : MonoBehaviour {
 
         
         ap.Data.RobotJoints.Add(robotJoints);
-        Base.GameManager.Instance.UpdateProject();
         NewJointsName.GetComponent<TMPro.TMP_InputField>().text = "";
         GetComponent<ModalWindowManager>().CloseWindow();
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateJoints(RobotId, joints_id);
+        //TODO - check if this is working
     }
 }

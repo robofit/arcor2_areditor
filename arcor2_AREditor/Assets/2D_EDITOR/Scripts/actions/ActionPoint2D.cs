@@ -24,8 +24,8 @@ public class ActionPoint2D : Base.ActionPoint {
         transform.position = transformedPosition;
     }
 
-    private void OnMouseUp() {
-        Base.GameManager.Instance.UpdateProject();
+    private async void OnMouseUp() {
+        await Base.GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
     }
 
 

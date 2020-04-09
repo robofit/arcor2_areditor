@@ -143,7 +143,7 @@ namespace Base {
                 selectedValue = JsonConvert.DeserializeObject<string>(actionParameterMetadata.DefaultValue);
             }
             if (actionParameterMetadata.DynamicValue) {
-                input = InitializeDropdownParameter(actionParameterMetadata, new List<string>(), selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+                input = InitializeDropdownParameter(actionParameterMetadata, new List<string>(), selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
                 input.GetComponent<DropdownParameter>().SetLoading(true);
             } else {
                 input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
@@ -171,9 +171,9 @@ namespace Base {
 
             return input;
         }
-
-        public static GameObject InitializeDropdownParameter(ActionParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
-            DropdownParameter dropdownParameter = Instantiate(ActionsManager.Instance.ParameterDropdownPrefab).GetComponent<DropdownParameter>();
+       
+        public static GameObject InitializeDropdownParameter(ActionParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject DropdownPrefab) {
+            DropdownParameter dropdownParameter = Instantiate(DropdownPrefab).GetComponent<DropdownParameter>();
             dropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
             DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler);
             return dropdownParameter.gameObject;
@@ -189,7 +189,7 @@ namespace Base {
             List<string> data = new List<string>();
             foreach (string item in ((ARServer.Models.StringEnumParameterExtra) actionParameterMetadata.ParameterExtra).AllowedValues)
                 data.Add(item);
-            return InitializeDropdownParameter(actionParameterMetadata, data, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            return InitializeDropdownParameter(actionParameterMetadata, data, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
         }
 
         public static GameObject InitializeIntegerEnumParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
@@ -207,23 +207,30 @@ namespace Base {
             if (selectedValue != null) {
                 selectedValueString = selectedValue.ToString();
             }
-            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValueString, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValueString, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
         }
 
         public static GameObject InitializePoseParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
 
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (string poseKey in ap.GetPoses().Keys) {                    
-                    options.Add(ap.Data.Id + "." + poseKey);
+                foreach (IO.Swagger.Model.NamedOrientation orientation in ap.GetNamedOrientations()) {                    
+                    options.Add(ap.Data.Name + "." + orientation.Name);
                 }
             }
             string selectedValue = null;
             if (value != null) {
-                selectedValue = value;
+                try {
+                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(value);
+                    IO.Swagger.Model.NamedOrientation namedOrientation = actionPoint.GetNamedOrientation(value);
+                    selectedValue = actionPoint.Data.Name + "." + namedOrientation.Name;
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
+                
             } 
 
-            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPosesPrefab);
         }
 
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
@@ -239,7 +246,7 @@ namespace Base {
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<string>();
             }
-            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
         }
 
         public static GameObject InitializeIntegerParameter(ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
@@ -336,21 +343,18 @@ namespace Base {
                 string value = null;
                 switch (parameterMetadata.Type) {
                     case "pose":
-                        if (actionPoint.Parent != null)
-                            value = actionPoint.Parent.GetId() + "." + actionPoint.Data.Id + "." + "default"; // TODO: is it ok? will there always be default?
-                        else
-                            value = actionPoint.Data.Id + "." + "default";
+                        try {
+                            value = actionPoint.GetFirstOrientation().Id;
+                        } catch (ItemNotFoundException ex) {
+                            // there is no orientation on this action point
+                        }
                         break;
                     case "joints":
-                        IO.Swagger.Model.ProjectRobotJoints projectRobotJoints = actionPoint.GetFirstJoints();
-                        if (projectRobotJoints != null) {
-                            if (actionPoint.Parent != null) {
-                                value = actionPoint.Parent.GetId() + "." + actionPoint.Data.Id + "." + projectRobotJoints.Id;
-                            } else {
-                                value = actionPoint.Data.Id + "." + projectRobotJoints.Id;
-                            }
+                        try {
+                            value = actionPoint.GetFirstJoints().Id;
+                        } catch (ItemNotFoundException ex) {
+                            // there are no valid joints on this action point
                         }
-                            
                         break;
                 }
                 if (value != null) {

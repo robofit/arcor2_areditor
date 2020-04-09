@@ -29,9 +29,9 @@ namespace Base {
 
         public event ServiceEventHandler OnServicesUpdated;
 
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab;
 
-        public GameObject InteractiveObjects, PuckPrefab;
+        public GameObject InteractiveObjects;
 
         public event GameManager.StringEventHandler OnActionObjectsUpdated;
 
@@ -56,6 +56,11 @@ namespace Base {
         }
 
         private void Start() {
+            Debug.Assert(ParameterInputPrefab != null);
+            Debug.Assert(ParameterDropdownPrefab != null);
+            Debug.Assert(ParameterDropdownPosesPrefab != null);
+            Debug.Assert(ParameterDropdownJointsPrefab != null);
+            Debug.Assert(InteractiveObjects != null);
             GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
         }
         

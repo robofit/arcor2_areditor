@@ -49,7 +49,7 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, DynamicContent.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObject.Data.Id;
+            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObject.Data.Name;
             btn.onClick.AddListener(() => ShowActionObject(actionObject));
         }
     }

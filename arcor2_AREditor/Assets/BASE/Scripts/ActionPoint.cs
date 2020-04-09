@@ -58,11 +58,9 @@ namespace Base {
         }
 
         
-        public virtual void UpdateId(string newId, bool updateProject = true) {
+        public virtual void UpdateId(string newId) {
             Data.Id = newId;
 
-            if (updateProject)
-                GameManager.Instance.UpdateProject();
         }
 
         public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent parent = null) {
@@ -100,6 +98,19 @@ namespace Base {
             throw new KeyNotFoundException("Orientation with name " + name + " not found.");
         }
 
+        public NamedOrientation GetNamedOrientation(string id) {
+            foreach (NamedOrientation orientation in Data.Orientations)
+                if (orientation.Id == id)
+                    return orientation;
+            throw new KeyNotFoundException("Orientation with name " + name + " not found.");
+        }
+
+        public NamedOrientation GetFirstOrientation() {
+            if (Data.Orientations.Count == 0)
+                throw new ItemNotFoundException();
+            return Data.Orientations[0];
+        }
+
         public IO.Swagger.Model.Pose GetDefaultPose() {
             foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
                 if (orientation.Id == "default")
@@ -115,7 +126,7 @@ namespace Base {
                     continue;
                 return robotJoint;
             }
-            return null;    
+            throw new ItemNotFoundException();    
         }
 
         public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetAllJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {

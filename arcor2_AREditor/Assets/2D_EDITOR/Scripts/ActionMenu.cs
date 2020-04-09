@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Newtonsoft.Json;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
@@ -84,14 +85,17 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue) {
-       
-
-        if (!CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter parameter))
-            return;
-        parameter.SetValue(newValue);
-        
-        Base.GameManager.Instance.UpdateProject();
+    public async void OnChangeParameterHandler(string parameterId, object newValue) {
+        List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+        foreach (IO.Swagger.Model.ActionParameter parameter in CurrentAction.Parameters.Values) {
+            if (parameterId == parameter.Id) {
+                IO.Swagger.Model.ActionParameter updatedParameter = new IO.Swagger.Model.ActionParameter
+                    (id: parameter.Id, type: parameter.Type, value: JsonConvert.SerializeObject(newValue));
+                parameters.Add(updatedParameter);
+            } else
+                parameters.Add(parameter);
+        }
+        bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);
     }
 
     public async void ExecuteAction() {

@@ -185,30 +185,6 @@ namespace Base {
             SendDataToServer(new IO.Swagger.Model.GetActionsRequest(request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: ObjectId)).ToJson());
         }
 
-        public void UpdateScene(IO.Swagger.Model.Scene scene) {
-            //ARServer.Models.EventSceneChanged eventData = new ARServer.Models.EventSceneChanged();
-            IO.Swagger.Model.SceneChanged eventData = new IO.Swagger.Model.SceneChanged {
-                Event = "SceneChanged",
-                
-            };
-            if (scene != null) {
-                eventData.Data = scene;
-            }
-            SendDataToServer(eventData.ToJson());
-        }
-
-        // TODO: add action parameters
-        public void UpdateProject(IO.Swagger.Model.Project project) {
-            IO.Swagger.Model.ProjectChanged eventData = new IO.Swagger.Model.ProjectChanged {
-                Event = "ProjectChanged"
-            };
-            if (project != null) {
-                eventData.Data = project;
-            }
-            SendDataToServer(eventData.ToJson());
-
-        }
-
 
         private void HandleReceivedData(string data) {
             var dispatchType = new {
@@ -605,21 +581,33 @@ namespace Base {
                 throw new RequestFailedException(response.Messages);
         }
 
-        
+        public async Task UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose) {
 
-        public async Task UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
-            /*
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
-            IO.Swagger.Model.UpdateActionObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateActionObjectPoseRequestArgs(id: actionObjectId, robot: robotArg);
-            IO.Swagger.Model.UpdateActionObjectPoseRequest request = new IO.Swagger.Model.UpdateActionObjectPoseRequest(id: r_id, request: "UpdateActionObjectPose", args);
+            IO.Swagger.Model.UpdateObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateObjectPoseRequestArgs
+                (objectId: actionObjectId, pose: pose);
+            IO.Swagger.Model.UpdateObjectPoseRequest request = new IO.Swagger.Model.UpdateObjectPoseRequest
+                (id: r_id, request: "UpdateObjectPose", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionObjectPoseResponse>(r_id);
+            IO.Swagger.Model.UpdateObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseResponse>(r_id);
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
-                */
 
-            //TODO: implement
+        }
+
+        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+            
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs
+                (id: actionObjectId, robot: robotArg);
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
+                (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse>(r_id);
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+     
         }
         
         public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
@@ -901,12 +889,34 @@ namespace Base {
 
 
 
-        public async Task UpdateActionPoint(string id, string parentId, IO.Swagger.Model.Position position, string name) {
+        public async Task UpdateActionPointPosition(string id, IO.Swagger.Model.Position position) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionPointRequestArgs args = new IO.Swagger.Model.UpdateActionPointRequestArgs(actionPointId: id, newParentId: parentId, newPosition: position, newName: name);
-            IO.Swagger.Model.UpdateActionPointRequest request = new IO.Swagger.Model.UpdateActionPointRequest(r_id, "UpdateActionPoint", args);
+            IO.Swagger.Model.UpdateActionPointPositionRequestArgs args = new IO.Swagger.Model.UpdateActionPointPositionRequestArgs(actionPointId: id, newPosition: position);
+            IO.Swagger.Model.UpdateActionPointPositionRequest request = new IO.Swagger.Model.UpdateActionPointPositionRequest(r_id, "UpdateActionPointPosition", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionPointResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointResponse>(r_id);
+            IO.Swagger.Model.UpdateActionPointPositionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPositionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task UpdateActionPointParent(string id, string parentId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionPointParentRequestArgs args = new IO.Swagger.Model.UpdateActionPointParentRequestArgs(actionPointId: id, newParentId: parentId);
+            IO.Swagger.Model.UpdateActionPointParentRequest request = new IO.Swagger.Model.UpdateActionPointParentRequest(r_id, "UpdateActionPointParent", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointParentResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointParentResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+        public async Task RenameActionPoint(string id, string name) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameActionPointRequestArgs args = new IO.Swagger.Model.RenameActionPointRequestArgs(actionPointId: id, newName: name);
+            IO.Swagger.Model.RenameActionPointRequest request = new IO.Swagger.Model.RenameActionPointRequest(r_id, "RenameActionPoint", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameActionPointResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointResponse>(r_id);
 
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
@@ -1045,6 +1055,18 @@ namespace Base {
             IO.Swagger.Model.RenameActionRequest request = new IO.Swagger.Model.RenameActionRequest(r_id, "RenameAction", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionResponse response = await WaitForResult<IO.Swagger.Model.RenameActionResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
+
+        public async Task RenameAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionRequestArgs args = new IO.Swagger.Model.UpdateActionRequestArgs(actionId: actionId, parameters: parameters);
+            IO.Swagger.Model.UpdateActionRequest request = new IO.Swagger.Model.UpdateActionRequest(r_id, "UpdateAction", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
 
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);

@@ -53,7 +53,8 @@ public class AddNewActionDialog : Dialog
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
-        // TODO: add some check and set create button interactivity    
+        // TODO: add some check and set create button interactivity
+        
     }
 
     public async void CreateAction() {

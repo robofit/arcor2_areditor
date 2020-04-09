@@ -321,12 +321,18 @@ namespace Base {
         }
 
         // SceneUpdated is called from server, when another GUI makes some change.
-        public void SceneUpdated(IO.Swagger.Model.Scene scene) {
+        public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
+            bool sceneOpened = false;
+            if (Scene.Instance.Data == null && scene != null)
+                sceneOpened = true;
             sceneReady = false;
             newScene = null;
             if (scene == null) {
                 Scene.Instance.RemoveActionObjects();
+                Scene.Instance.Data = null;
+                if (GetGameState() == GameStateEnum.SceneEditor)
+                    await OpenMainScreen();
                 EndLoading();
                 return;
             }
@@ -359,6 +365,8 @@ namespace Base {
             Scene.Instance.UpdateServices();
 
             sceneReady = true;
+            if (sceneOpened)
+                OnLoadScene?.Invoke(this, EventArgs.Empty);
             OnSceneChanged?.Invoke(this, EventArgs.Empty);
             
             if (newProject != null) {
@@ -567,11 +575,18 @@ namespace Base {
 
 
         // ProjectUpdated is called from server, when another GUI makes some changes
-        public void ProjectUpdated(IO.Swagger.Model.Project project) {
+        public async void ProjectUpdated(IO.Swagger.Model.Project project) {
             StartLoading();
+            bool projectOpened = false;
+            if (CurrentProject == null && project != null)
+                projectOpened = true;
             if (project == null) {
                 CurrentProject = null;
                 Scene.Instance.RemoveActionPoints();
+                Scene.Instance.Data = null;
+                if (GetGameState() == GameStateEnum.ProjectEditor) {
+                    await OpenMainScreen();
+                }
                 EndLoading();
                 return;
             }
@@ -586,7 +601,10 @@ namespace Base {
             CurrentProject = project;
 
             Scene.Instance.UpdateActionPoints(CurrentProject);
-            
+
+            if (projectOpened)
+                OnLoadProject?.Invoke(this, EventArgs.Empty);
+
             EndLoading();
         }
 
@@ -598,45 +616,6 @@ namespace Base {
                     return scene.Id;
             }
             throw new RequestFailedException("No scene with name: " + name);
-        }
-
-
-
-        // UpdateProject updates opened project on the server.
-        public void UpdateProject() {
-            /*if (CurrentProject == null)
-                return;
-            CurrentProject.Objects.Clear();
-            CurrentProject.SceneId = Scene.Instance.Data.Id;
-            foreach (ActionObject actionObject in Scene.Instance.ActionObjects.Values) {
-                IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    actionPoint.UpdatePositionsOfPucks();
-                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = actionPoint.Data;
-                    projectActionPoint.Actions.Clear();
-                    foreach (Action action in actionPoint.Actions.Values) {
-                        IO.Swagger.Model.Action projectAction = action.Data;
-                        projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
-                        foreach (ActionParameter parameter in action.Parameters.Values) {
-                            IO.Swagger.Model.ActionParameter projectParameter = parameter;
-                            projectAction.Parameters.Add(projectParameter);
-                        }
-
-                        // TODO Discuss and solve multiple inputs/outputs possibility in Action (currently only 1 input and 1 output)
-                        projectAction.Inputs = new List<IO.Swagger.Model.ActionIO>();
-                        projectAction.Outputs = new List<IO.Swagger.Model.ActionIO>();
-
-                        projectAction.Inputs.Add(action.Input.Data);
-                        projectAction.Outputs.Add(action.Output.Data);
-
-                        projectActionPoint.Actions.Add(projectAction);
-                    }
-                    projectObject.ActionPoints.Add(projectActionPoint);
-                }
-                CurrentProject.Objects.Add(projectObject);
-            }
-
-            WebsocketManager.Instance.UpdateProject(CurrentProject);*/
         }
 
         public async Task LoadScenes() {
@@ -775,10 +754,10 @@ namespace Base {
             }
         }
 
-        public async void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionObjectPosition(actionObjectId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action object", ex.Message);
             }
@@ -1087,7 +1066,7 @@ namespace Base {
 
         public async Task<bool> RenameActionPoint(ActionPoint actionPoint, string newUserId) {
             try {
-                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, null, null, newUserId);
+                await WebsocketManager.Instance.RenameActionPoint(actionPoint.Data.Id, newUserId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -1096,7 +1075,7 @@ namespace Base {
         }
         public async Task<bool> UpdateActionPointParent(ActionPoint actionPoint, string parentId) {
             try {
-                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, parentId, null, null);
+                await WebsocketManager.Instance.UpdateActionPointParent(actionPoint.Data.Id, parentId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -1106,7 +1085,7 @@ namespace Base {
 
         public async Task<bool> UpdateActionPointPosition(ActionPoint actionPoint, Position newPosition) {
             try {
-                await WebsocketManager.Instance.UpdateActionPoint(actionPoint.Data.Id, null, newPosition, null);
+                await WebsocketManager.Instance.UpdateActionPointPosition(actionPoint.Data.Id, newPosition);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -1172,6 +1151,26 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose) {
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPose(actionObjectId, pose);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
+            try {
+                await WebsocketManager.Instance.UpdateAction(actionId, parameters);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action ", e.Message);
                 return false;
             }
         }

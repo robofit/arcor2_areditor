@@ -22,7 +22,7 @@ public class ActionObject3D : ActionObject
     private float interval = 0.1f;
     private float nextUpdate = 0;
 
-    private bool updateScene = false;
+    private bool updatePose = false;
     private Renderer modelRenderer;
     private OutlineOnClick outlineOnClick;
 
@@ -35,7 +35,7 @@ public class ActionObject3D : ActionObject
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
@@ -45,19 +45,17 @@ public class ActionObject3D : ActionObject
                     if (GameObject.ReferenceEquals(Model, tfGizmo.mainTargetRoot.gameObject)) {
                         // if Gizmo is moving, we can send UpdateProject to server
                         if (tfGizmo.isTransforming) {
-                            updateScene = true;
-                        } else if (updateScene) {
-                            updateScene = false;
-                            //GameManager.Instance.UpdateScene();
-                            //TODO: update position of the object via RPC
+                            updatePose = true;
+                        } else if (updatePose) {
+                            updatePose = false;
+                            await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
                         }
                     }
                 }
             } else {
-                if (updateScene) {
-                    updateScene = false;
-                    //GameManager.Instance.UpdateScene();
-                    //TODO: update position of the object via RPC
+                if (updatePose) {
+                    updatePose = false;
+                    await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
                 }
                 manipulationStarted = false;
                 GameManager.Instance.ActivateGizmoOverlay(false);

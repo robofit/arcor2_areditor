@@ -44,7 +44,8 @@ namespace Base {
                             InitData();
                         }
 
-                        GameManager.Instance.UpdateProject();
+                        //GameManager.Instance.UpdateProject();
+                        // TODO - implement using RPC
                     }
 
                 } else {

@@ -34,7 +34,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public void ShowDeleteActionDialog() {
         ConfirmationDialog.Open("Delete action object",
-                                "Do you want to delete action object " + CurrentObject.Data.Id + "?",
+                                "Do you want to delete action object " + CurrentObject.Data.Name + "?",
                                 () => DeleteActionObject(),
                                 () => ConfirmationDialog.Close());
     }
@@ -102,7 +102,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.Data.Id,
+        Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
             RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
     }
          

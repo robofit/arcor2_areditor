@@ -10,8 +10,8 @@ namespace Base {
     public class Scene : Singleton<Scene> {
 
         public IO.Swagger.Model.Scene Data = null;
-        
-        // string == IO.Swagger.Model.Scene Data.Id
+
+       // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionObjectsSpawn, ActionPointsOrigin;
@@ -411,6 +411,16 @@ namespace Base {
             }*/
             return null;
         }
+
+        public ActionPoint GetactionpointByName(string name) {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                if (ap.Data.Name == name)
+                    return ap;
+            }
+            throw new KeyNotFoundException("Action point " + name + " not found");
+        }
+
+
 
         /// <summary>
         /// Destroys and removes references to action point of given Id.
