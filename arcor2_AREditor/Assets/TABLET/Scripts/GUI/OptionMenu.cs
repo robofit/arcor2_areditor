@@ -10,6 +10,11 @@ public abstract class OptionMenu : MonoBehaviour
     [SerializeField]
     protected TMPro.TMP_Text label;
 
+    protected virtual void Start() {
+        Debug.Assert(menu != null);
+        Debug.Assert(label != null);
+    }
+
     protected virtual void Open(string title) {
         SetLabel(title);
         menu.Open();

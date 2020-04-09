@@ -298,12 +298,27 @@ namespace Base {
             });
         }
 
-        private void HandleProjectChanged(string obj) {
+        private async void HandleProjectChanged(string obj) {
 
             try {
 
                 IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
-                GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
+                switch (eventProjectChanged.ChangeType) {
+                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
+                        GameManager.Instance.ProjectAdded(eventProjectChanged.Data);
+                        break;
+                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
+                        await GameManager.Instance.LoadProjects();
+                        break;
+                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
+                        GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
+                        break;
+                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
+                        GameManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
                 projectArrived = true;
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleProjectChanged()");
@@ -324,7 +339,7 @@ namespace Base {
 
 
             } catch (NullReferenceException e) {
-                Debug.Log("Parse error in HandleProjectChanged()");
+                Debug.Log("Parse error in HandleCurrentAction()");
                 return;
             }
 
@@ -347,14 +362,15 @@ namespace Base {
             projectStateArrived = true;
         }
 
-        private void HandleSceneChanged(string obj) {
+        private async void HandleSceneChanged(string obj) {
             IO.Swagger.Model.SceneChanged sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChanged>(obj);
             switch (sceneChangedEvent.ChangeType) {
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Add:
                     GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Remove:
-                    throw new NotImplementedException();
+                    await GameManager.Instance.LoadScenes();
+                    break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Update:
                     GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
                     break;
@@ -784,6 +800,16 @@ namespace Base {
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
         }
+        internal async Task RemoveScene(string id) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
+            IO.Swagger.Model.DeleteSceneRequest request = new IO.Swagger.Model.DeleteSceneRequest(r_id, "DeleteScene", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeleteSceneResponse response = await WaitForResult<IO.Swagger.Model.DeleteSceneResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
 
         public async Task RenameScene(string id, string newName) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -839,7 +865,7 @@ namespace Base {
             return response.Data;
         }
 
-        public async Task CreateProject(string name, string sceneId, string description) {
+       public async Task CreateProject(string name, string sceneId, string description) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description);
             IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args);
@@ -849,6 +875,18 @@ namespace Base {
             if (!response.Result)
                 throw new RequestFailedException(response.Messages);
         }
+
+        internal async Task RemoveProject(string id) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
+            IO.Swagger.Model.DeleteProjectRequest request = new IO.Swagger.Model.DeleteProjectRequest(r_id, "DeleteProject", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeleteProjectResponse response = await WaitForResult<IO.Swagger.Model.DeleteProjectResponse>(r_id);
+
+            if (!response.Result)
+                throw new RequestFailedException(response.Messages);
+        }
+
 
         public async Task AddActionPoint(string name, string parent, IO.Swagger.Model.Position position) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -1028,7 +1066,7 @@ namespace Base {
                 
         public async Task RenameProject(string projectId, string newName) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RenameProjectRequestArgs args = new IO.Swagger.Model.RenameProjectRequestArgs(newName);
+            IO.Swagger.Model.RenameProjectRequestArgs args = new IO.Swagger.Model.RenameProjectRequestArgs(projectId: projectId, newName: newName);
             IO.Swagger.Model.RenameProjectRequest request = new IO.Swagger.Model.RenameProjectRequest(r_id, "RenameProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameProjectResponse response = await WaitForResult<IO.Swagger.Model.RenameProjectResponse>(r_id);

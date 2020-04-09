@@ -52,10 +52,12 @@ namespace Base {
         public event EventHandler OnPauseProject;
         public event EventHandler OnResumeProject;
         public event EventHandler OnCloseProject;
+
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
+
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
@@ -290,6 +292,10 @@ namespace Base {
             
         }
 
+        internal void ProjectAdded(Project data) {
+            ProjectUpdated(data);
+        }
+
         public void SceneAdded(IO.Swagger.Model.Scene scene) {
             SceneUpdated(scene);
         }
@@ -300,6 +306,17 @@ namespace Base {
                 Scene.Instance.SceneBaseUpdated(scene);
             else if (GetGameState() == GameStateEnum.MainScreen) {
                 await LoadScenes();
+            }
+        }
+
+        public async void ProjectBaseUpdated(Project data) {
+            if (GetGameState() == GameStateEnum.ProjectEditor) {
+                CurrentProject.Desc = data.Desc;
+                CurrentProject.HasLogic = data.HasLogic;
+                CurrentProject.Modified = data.Modified;
+                CurrentProject.Name = data.Name;
+            } else if (GetGameState() == GameStateEnum.MainScreen) {
+                await LoadProjects();
             }
         }
 
@@ -942,7 +959,6 @@ namespace Base {
             StartLoading();
             await LoadScenes();
             await LoadProjects();
-            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
@@ -1027,12 +1043,34 @@ namespace Base {
                 return false;
             }
         }
+
+        internal async Task<bool> RemoveScene(string sceneId) {
+            try {
+                await WebsocketManager.Instance.RemoveScene(sceneId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to remove scene", e.Message);
+                return false;
+            }
+        }
+
+
         public async Task<bool> RenameProject(string id, string newUserId) {
             try {
                 await WebsocketManager.Instance.RenameProject(id, newUserId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
+                return false;
+            }
+        }
+
+        internal async Task<bool> RemoveProject(string projectId) {
+            try {
+                await WebsocketManager.Instance.RemoveProject(projectId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to remove project", e.Message);
                 return false;
             }
         }

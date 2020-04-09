@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 using UnityEngine;
 
 namespace Base {
@@ -321,7 +322,6 @@ namespace Base {
 
             return actionPoint;
         }
-
 
 
         /// <summary>
