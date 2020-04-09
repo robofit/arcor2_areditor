@@ -34,3 +34,5 @@ ARCOR2 AR Editor
    - [JSON Object](https://assetstore.unity.com/packages/tools/input-management/json-object-710)
    - [Simple Side-Menu](https://assetstore.unity.com/packages/tools/gui/simple-side-menu-143623)
    - [UI Graph](https://assetstore.unity.com/packages/tools/gui/ui-graph-51304)
+
+ - <b>(Optional)</b> - Get Google Cloud API Key to enable Cloud Anchors (follow step 7 in [Codelabs ARCore Extensions tutorial](https://codelabs.developers.google.com/codelabs/arcore-extensions-cloud-anchors/#6))
