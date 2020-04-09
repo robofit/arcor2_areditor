@@ -236,16 +236,22 @@ namespace Base {
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (string jointsId in ap.GetAllJoints(false, null, true).Keys) {
-                    options.Add(ap.Data.Id + "." + jointsId);
+                foreach (var joints in ap.GetAllJoints(false, null, true).Values) {
+                    options.Add(ap.Data.Name + "." + joints.Name);
                 }
             }
             string selectedValue = null;
             if (value != null) {
-                selectedValue = value;
-            } else if (actionParameterMetadata.DefaultValue != null) {
-                selectedValue = actionParameterMetadata.GetDefaultValue<string>();
+                try {
+                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(value);
+                    IO.Swagger.Model.ProjectRobotJoints joints = actionPoint.GetJoints(value);
+                    selectedValue = actionPoint.Data.Name + "." + joints.Name;
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
+
             }
+
             return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
         }
 
@@ -293,7 +299,7 @@ namespace Base {
 
         private static void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
             dropdownParameter.PutData(data, selectedValue,
-                () => onChangeParameterHandler(parameterId, dropdownParameter.Dropdown.selectedText.text));
+                () => onChangeParameterHandler(parameterId, dropdownParameter.GetValue()));
             if (selectedValue == "" || selectedValue == null) {
                 string value;
                 if (dropdownParameter.Dropdown.dropdownItems.Count == 0)
@@ -301,7 +307,7 @@ namespace Base {
                 else
                     value = dropdownParameter.Dropdown.selectedText.text;
 
-                onChangeParameterHandler(parameterId, value);
+                onChangeParameterHandler(parameterId, dropdownParameter.GetValue());
             }
         }
 

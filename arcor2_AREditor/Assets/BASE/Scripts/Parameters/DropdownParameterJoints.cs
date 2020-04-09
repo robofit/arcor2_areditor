@@ -26,4 +26,13 @@ public class DropdownParameterJoints : DropdownParameter
         }
         PutData(items, selectedItem, callback);
     }
+
+    public override object GetValue() {
+        string value = (string) base.GetValue();
+        if (value == null)
+            return null;
+
+        Base.ActionPoint actionPoint = Base.Scene.Instance.GetactionpointByName(value.Split('.').First());
+        return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
+    }
 }

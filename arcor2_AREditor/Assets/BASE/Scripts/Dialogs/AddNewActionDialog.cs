@@ -17,6 +17,7 @@ public class AddNewActionDialog : Dialog
     private IActionProvider actionProvider;
     [SerializeField]
     private LabeledInput nameInput;
+    private GameObject overlay;
 
 
     private async void Init() {
@@ -75,7 +76,5 @@ public class AddNewActionDialog : Dialog
                 WindowManager.CloseWindow();
         }
     }
-
-    
 
 }

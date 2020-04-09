@@ -307,6 +307,19 @@ namespace Base {
             throw new KeyNotFoundException("Joints with id " + id + " not found");
         }
 
+        /// <summary>
+        /// Returns joints with name or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IO.Swagger.Model.ProjectRobotJoints GetJointsByName(string name) {
+            foreach (ProjectRobotJoints joints in Data.RobotJoints) {
+                if (joints.Name == name)
+                    return joints;
+            }
+            throw new KeyNotFoundException("Joints with name " + name + " not found");
+        }
+
 
         public void UpdateOrientation(NamedOrientation orientation) {
             NamedOrientation originalOrientation = GetOrientation(orientation.Id);

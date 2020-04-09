@@ -13,7 +13,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    public Button ExecuteActionBtn;
+    public Button ExecuteActionBtn, SaveParametersBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
@@ -23,6 +23,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
+
+    private bool parametersChanged;
 
     private void Start() {
         Debug.Assert(DynamicContent != null);
@@ -34,6 +36,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         Debug.Assert(inputDialog != null);
         Debug.Assert(DynamicContentLayout != null);
         Debug.Assert(CanvasRoot != null);
+        Debug.Assert(SaveParametersBtn != null);
     }
 
     public async void UpdateMenu() {
@@ -50,9 +53,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
         }
         actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        parametersChanged = false;
+        SaveParametersBtn.interactable = false;
     }
 
-    public async void Deletection() {
+    public async void DeleteAction() {
         ConfirmationDialog.Close();
         if (CurrentAction == null)
             return;
@@ -81,12 +86,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public void ShowDeleteActionDialog() {
         ConfirmationDialog.Open("Delete action",
                                 "Do you want to delete action " + CurrentAction.Data.Name + "?",
-                                () => Deletection(),
+                                () => DeleteAction(),
                                 () => ConfirmationDialog.Close());
     }
 
-    public async void OnChangeParameterHandler(string parameterId, object newValue) {
-        List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+    public void OnChangeParameterHandler(string parameterId, object newValue) {
+        /*List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
         foreach (IO.Swagger.Model.ActionParameter parameter in CurrentAction.Parameters.Values) {
             if (parameterId == parameter.Id) {
                 IO.Swagger.Model.ActionParameter updatedParameter = new IO.Swagger.Model.ActionParameter
@@ -95,7 +100,9 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             } else
                 parameters.Add(parameter);
         }
-        bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);
+        bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);*/
+        parametersChanged = true;
+        SaveParametersBtn.interactable = true;
     }
 
     public async void ExecuteAction() {
@@ -103,8 +110,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         if (await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id)) {
 
         }
-        ExecuteActionBtn.interactable = true;
-     
+        ExecuteActionBtn.interactable = true;     
     }
 
 
@@ -112,10 +118,27 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         ActionName.text = header;
     }
 
-    public void DuplicateAction() {
-        
+    public void DuplicateAction() {        
         AddNewActionDialog.InitFromAction(CurrentAction);
         AddNewActionDialog.WindowManager.OpenWindow();
 
     }
+
+    public async void SaveParameters() {
+        if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
+            List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
+            foreach (IActionParameter actionParameter in actionParameters) {
+                IO.Swagger.Model.ActionParameterMeta metadata = CurrentAction.Metadata.GetParamMetadata(actionParameter.GetName());
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
+                parameters.Add(ap);
+            }
+            bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);
+            if (success) {
+                Base.Notifications.Instance.ShowNotification("Parameters saved", "");
+                SaveParametersBtn.interactable = false;
+                parametersChanged = false;
+            }                
+        }
+    }
+
 }
