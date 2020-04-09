@@ -27,15 +27,15 @@ public class GridOverlay : MonoBehaviour {
     private int middleY;
     private int middleX;
 
-#if UNITY_EDITOR || UNITY_STANDALONE
-
     private void Start() {
+        Camera.onPostRender += OnCameraPostRender;
+
         middleZ = gridSizeZ / 2;
         middleY = gridSizeY / 2;
         middleX = gridSizeX / 2;
     }
 
-    void CreateLineMaterial() {
+    private void CreateLineMaterial() {
         if (!lineMaterial) {
             // Unity has a built-in shader that is useful for drawing
             // simple colored things.
@@ -52,7 +52,7 @@ public class GridOverlay : MonoBehaviour {
         }
     }
 
-    void OnPostRender() {
+    private void OnCameraPostRender(Camera cam) {
         CreateLineMaterial();
         // set the current material
         lineMaterial.SetPass(0);
@@ -134,5 +134,4 @@ public class GridOverlay : MonoBehaviour {
 
         GL.End();
     }
-#endif
 }
