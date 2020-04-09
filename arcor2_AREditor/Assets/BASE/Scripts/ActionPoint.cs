@@ -17,8 +17,7 @@ namespace Base {
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
-        // TODO: rename (Connection to action object)
-        public Connection ConnectionToIO;
+        public Connection ConnectionToActionObject;
 
         [System.NonSerialized]
         public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
@@ -153,8 +152,8 @@ namespace Base {
             RemoveActions();
 
             // TODO: remove connections to action objects
-            if (ConnectionToIO != null && ConnectionToIO.gameObject != null) {
-                Destroy(ConnectionToIO.gameObject);
+            if (ConnectionToActionObject != null && ConnectionToActionObject.gameObject != null) {
+                Destroy(ConnectionToActionObject.gameObject);
             }
 
             // Remove this ActionPoint reference from parent ActionObject list

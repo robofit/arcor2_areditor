@@ -1077,6 +1077,7 @@ namespace Base {
 
         public async Task UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
             int r_id = Interlocked.Increment(ref requestID);
+            inputs.ForEach(Debug.LogError);
             IO.Swagger.Model.UpdateActionLogicArgs args = new IO.Swagger.Model.UpdateActionLogicArgs(actionId: actionId, inputs: inputs, outputs: outputs);
             IO.Swagger.Model.UpdateActionLogicRequest request = new IO.Swagger.Model.UpdateActionLogicRequest(r_id, "UpdateActionLogic", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -1121,7 +1122,6 @@ namespace Base {
             return response.Result;
         }
 
-        
 
     }
 }

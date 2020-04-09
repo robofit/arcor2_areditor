@@ -1175,8 +1175,17 @@ namespace Base {
             }
         }
 
-        
+        public async Task<bool> UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
+            try {
+                await WebsocketManager.Instance.UpdateActionLogic(actionId, inputs, outputs);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action ", e.Message + " logic");
+                return false;
+            }
+        }
 
-    }    
+
+        }    
 
 }
