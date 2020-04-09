@@ -9,9 +9,9 @@ public class InputHandler : Singleton<InputHandler> {
 
     public LayerMask LayerMask;
 
-    public delegate void EventBlindClick(object sender, EventBlindClickArgs args);
-    public event EventBlindClick OnBlindClick;
-
+    public delegate void EventClick(object sender, EventClickArgs args);
+    public event EventClick OnBlindClick;
+    public event EventClick OnGeneralClick;
 
     private bool longTouch = false;
     private IEnumerator coroutine;
@@ -48,8 +48,10 @@ public class InputHandler : Singleton<InputHandler> {
                 Debug.LogError(e);
             }
         } else {
-            OnBlindClick?.Invoke(this, new EventBlindClickArgs(clickType));
+            OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
         }
+
+        OnGeneralClick?.Invoke(this, new EventClickArgs(clickType));
     }
 
 
@@ -61,6 +63,14 @@ public class InputHandler : Singleton<InputHandler> {
                     StopCoroutine(coroutine);
                 coroutine = LongTouch(touch);
                 StartCoroutine(coroutine);
+
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
+                    try {
+                        hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_BEGAN);
+                    } catch (Exception e) {
+                        Debug.LogError(e);
+                    }
+                }
             }
 
             if (touch.phase == TouchPhase.Ended) {
@@ -78,8 +88,10 @@ public class InputHandler : Singleton<InputHandler> {
                             Debug.LogError(e);
                         }
                     } else {
-                        OnBlindClick?.Invoke(this, new EventBlindClickArgs(Clickable.Click.TOUCH));
+                        OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH));
                     }
+
+                    OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH));
                 }
             }
         }
@@ -98,17 +110,19 @@ public class InputHandler : Singleton<InputHandler> {
                 Debug.LogError(e);
             }
         } else {
-            OnBlindClick?.Invoke(this, new EventBlindClickArgs(Clickable.Click.LONG_TOUCH));
+            OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.LONG_TOUCH));
         }
+
+        OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.LONG_TOUCH));
     }
 
 }
 
-public class EventBlindClickArgs : EventArgs {
+public class EventClickArgs : EventArgs {
 
     public Clickable.Click ClickType;
 
-    public EventBlindClickArgs(Clickable.Click clickType) {
+    public EventClickArgs(Clickable.Click clickType) {
         ClickType = clickType;
     }
 }
