@@ -1,5 +1,79 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1542303085
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1542303086}
+  - component: {fileID: 1542303088}
+  - component: {fileID: 1542303087}
+  m_Layer: 0
+  m_Name: CameraAddons
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1542303086
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542303085}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 7694872491458505932}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1542303088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542303085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3da0e2b6e0b820d4e897be221648044e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ControlWithMouseOnly: 1
+  CameraRotationSpeed: 4
+  WalkingSpeed: 5
+  zoomSpeed: 2
+  dragSpeed: 4
+--- !u!114 &1542303087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542303085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ff1a69b00cf624bbf15409690bbef0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showMain: 1
+  showSub: 1
+  showAxis: 1
+  gridSizeX: 6
+  gridSizeY: 0
+  gridSizeZ: 6
+  smallStep: 0.1
+  largeStep: 1
+  startX: -3
+  startY: 0
+  startZ: -3
+  mainColor: {r: 0.10980392, g: 0.50980395, b: 0.69803923, a: 1}
+  subColor: {r: 0.08627451, g: 0.31764707, b: 0.32156864, a: 1}
 --- !u!1 &7694872491458505929
 GameObject:
   m_ObjectHideFlags: 0
@@ -13,8 +87,6 @@ GameObject:
   - component: {fileID: 7313577448931428177}
   - component: {fileID: 7694872491458505934}
   - component: {fileID: 7694872491458505935}
-  - component: {fileID: 7694872491458505939}
-  - component: {fileID: 7694872491458505937}
   - component: {fileID: 7694872491458505938}
   m_Layer: 0
   m_Name: AR Camera
@@ -33,7 +105,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1542303086}
   m_Father: {fileID: 7694872492407101043}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -123,48 +196,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_UseCustomMaterial: 0
   m_CustomMaterial: {fileID: 0}
---- !u!114 &7694872491458505939
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7694872491458505929}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3da0e2b6e0b820d4e897be221648044e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ControlWithMouseOnly: 1
-  CameraRotationSpeed: 4
-  WalkingSpeed: 5
-  zoomSpeed: 2
-  dragSpeed: 4
---- !u!114 &7694872491458505937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7694872491458505929}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0ff1a69b00cf624bbf15409690bbef0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showMain: 1
-  showSub: 1
-  showAxis: 1
-  gridSizeX: 6
-  gridSizeY: 0
-  gridSizeZ: 6
-  smallStep: 0.1
-  largeStep: 1
-  startX: -3
-  startY: 0
-  startZ: -3
-  mainColor: {r: 0, g: 1, b: 0, a: 1}
-  subColor: {r: 0, g: 0.5, b: 0, a: 1}
 --- !u!114 &7694872491458505938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,7 +214,7 @@ MonoBehaviour:
   centerType: 0
   scaleType: 0
   SetMoveType: 119
-  SetRotateType: 0
+  SetRotateType: 101
   SetScaleType: 0
   SetAllTransformType: 0
   SetSpaceToggle: 0
@@ -195,9 +226,9 @@ MonoBehaviour:
   ActionKey: 0
   UndoAction: 0
   RedoAction: 0
-  xColor: {r: 1, g: 0, b: 0, a: 0.8}
-  yColor: {r: 0, g: 1, b: 0, a: 0.8}
-  zColor: {r: 0, g: 0, b: 1, a: 0.8}
+  xColor: {r: 0, g: 1, b: 0, a: 0.8}
+  yColor: {r: 0, g: 0, b: 1, a: 0.8}
+  zColor: {r: 1, g: 0, b: 0, a: 0.8}
   allColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.8}
   selectedColor: {r: 1, g: 1, b: 0, a: 0.8}
   hoverColor: {r: 1, g: 0.75, b: 0, a: 0.8}
@@ -289,7 +320,7 @@ MonoBehaviour:
   m_SerializedLibrary: {fileID: 11400000, guid: 3a31ef3bf7164194c921862a6e66c1d0,
     type: 2}
   m_MaxNumberOfMovingImages: 1
-  m_TrackedImagePrefab: {fileID: 4476520058714655711, guid: 1305cfe93b82f34419a7759751ccaedf,
+  m_TrackedImagePrefab: {fileID: 4476520058714655711, guid: 323d6551af1e8b6498377367ae54d218,
     type: 3}
 --- !u!114 &7694872492407101042
 MonoBehaviour:
@@ -303,7 +334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AnchorPrefab: {fileID: 473133093634675534, guid: 5cb36108e33618242b7e26639e6debcb,
+  m_AnchorPrefab: {fileID: 7803728040622184820, guid: 1fbe071d3397cfc459aca4ed1c6ae46f,
     type: 3}
 --- !u!114 &7694872492407101041
 MonoBehaviour:

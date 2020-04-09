@@ -12,7 +12,11 @@ public class TrackingManager : Singleton<TrackingManager> {
     public ARPlaneManager ARPlaneManager;
     public ARPointCloudManager ARPointCloudManager;
 
+    public VideoPlayerImage TrackingLostAnimation;
+
     private bool planesAndFeaturesActive = true;
+
+    private Coroutine trackingFailureNotify;
 
     //private float counter = 5f;
 
@@ -60,12 +64,18 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     private void StopTrackingNotifications(object sender, EventArgs e) {
         ARSession.stateChanged -= ARSessionStateChanged;
-        CancelInvoke("TrackingFailureNotify");
+        if (trackingFailureNotify != null) {
+            StopCoroutine(trackingFailureNotify);
+        }
     }
 
     private void ARSessionStateChanged(ARSessionStateChangedEventArgs sessionState) {
         // cancel previously invoked tracking failure notification
-        CancelInvoke("TrackingFailureNotify");
+        if (trackingFailureNotify != null) {
+            StopCoroutine(trackingFailureNotify);
+            TrackingLostAnimation.StopVideo();
+            trackingFailureNotify = null;
+        }
 
         switch (sessionState.state) {
             case ARSessionState.Unsupported:
@@ -75,18 +85,44 @@ public class TrackingManager : Singleton<TrackingManager> {
                 Notifications.Instance.ShowNotification("Tracking state", sessionState.state.ToString());
                 if (sessionState.state != ARSessionState.SessionTracking) {
                     NotTrackingReason trackingFailureReason = ARSession.notTrackingReason;
-                    if (trackingFailureReason != NotTrackingReason.None) {
-                        Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + trackingFailureReason.ToString());
-                        // notify user ever 9 seconds about tracking failure
-                        InvokeRepeating("TrackingFailureNotify", 9f, 9f);
+                    switch (trackingFailureReason) {
+                        case NotTrackingReason.InsufficientFeatures:
+                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient features!", "Try to move the device slowly around your environment.", 9f));
+                            TrackingLostAnimation.PlayVideo();
+                            break;
+                        case NotTrackingReason.ExcessiveMotion:
+                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to excessive motion!", "You are moving the device too fast.", 9f));
+                            TrackingLostAnimation.PlayVideo();
+                            break;
+                        case NotTrackingReason.InsufficientLight:
+                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient light!", "Enlight your environment.", 9f));
+                            break;
+                        default:
+                            Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + trackingFailureReason.ToString());
+                            // notify user ever 9 seconds about tracking failure
+                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Reason: " + trackingFailureReason.ToString(), 9f));
+                            break;
                     }
                 }
                 break;
         }
     }
 
-    private void TrackingFailureNotify() {
-        Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + ARSession.notTrackingReason.ToString());
+    /// <summary>
+    /// Displays user notification on display. If repeatCount is set to -1, notifications will keep displaying until Coroutine is stopped manually.
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="text"></param>
+    /// <param name="repeatRate"></param>
+    /// <param name="repeatCount"></param>
+    /// <returns></returns>
+    private IEnumerator TrackingFailureNotify(string title, string text, float repeatRate, int repeatCount = -1) {
+        int repeat = repeatCount;
+        while (repeatCount == -1 ? true : repeat >= 0) {
+            repeat -= 1;
+            Notifications.Instance.ShowNotification(title, text);
+            yield return new WaitForSeconds(repeatRate);
+        }
     }
 
     public TrackingQuality GetTrackingQuality() {

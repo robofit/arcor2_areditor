@@ -16,13 +16,17 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARPointCloudManager ARPointCloudManager;
     public GameObject WorldAnchorPrefab;
 
+    public VideoPlayerImage TrackingLostAnimation;
+
     [HideInInspector]
     public ARAnchor WorldAnchorLocal;
 
     [HideInInspector]
     public ARCloudAnchor WorldAnchorCloud;
 
-    private bool calibrated = false;
+    [HideInInspector]
+    public bool Calibrated = false;
+
     private bool activateTrackableMarkers = false;
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
@@ -75,8 +79,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         // if there is no plane beneath detected marker then display notification about unsufficient tracking
         else {
             Notifications.Instance.ShowNotification("Calibration error", "Plane beneath calibration marker is not detected");
-            //TODO play animation for moving with the device
-
+            //Play animation for moving with the device
+            TrackingLostAnimation.PlayVideo(5f);
         }
 #endif
     }
@@ -84,7 +88,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public void Recalibrate() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         ActivateTrackableMarkers(true);
-        calibrated = false;
+        Calibrated = false;
 #endif
     }
 
@@ -109,7 +113,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
             Notifications.Instance.ShowNotification("Cloud anchor created", WorldAnchorCloud.cloudAnchorState.ToString() + " ID: " + WorldAnchorCloud.cloudAnchorId);
 
-            calibrated = true;
+            Calibrated = true;
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
             Debug.LogError("Cloud anchor error: " + WorldAnchorCloud.cloudAnchorState);
@@ -168,12 +172,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         yield return new WaitUntil(() => GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor ||
                                          GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor);
 
-        //TODO Play animation, let the user move around the workspace for atleast 10 seconds
         Notifications.Instance.ShowNotification("Calibrating", "Move the device around your workspace");
+        TrackingLostAnimation.PlayVideo();
         //yield return new WaitForSeconds(10f);
 
         // Check how many features and planes the tracking has detected
         yield return new WaitUntil(() => TrackingManager.Instance.GetTrackingQuality() == TrackingManager.TrackingQuality.GOOD_QUALITY);
+        TrackingLostAnimation.StopVideo();
 
         if (Settings.Instance.UseCloudAnchors) {
             // Try to load cloud anchor defined by ID saved in PlayerPrefs
@@ -190,11 +195,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
                 Notifications.Instance.ShowNotification("Cloud anchor loaded", "Cloud anchor loaded sucessfully");
 
-                calibrated = true;
+                Calibrated = true;
             }
             //TODO If anchor is not present in the system, play animation to manually calibrate by clicking on marker
             else {
-                calibrated = false;
+                Calibrated = false;
                 Notifications.Instance.ShowNotification("Cloud anchor does not exist", "Please calibrate manually by clicking on the cube displayed on your marker");
 
                 AttachScene(null, initLocalAnchor: true);
@@ -202,7 +207,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 ActivateTrackableMarkers(true);
             }
         } else {
-            calibrated = false;
+            Calibrated = false;
             Notifications.Instance.ShowNotification("Cloud anchors are disabled", "Please calibrate manually by clicking on the cube displayed on your marker");
 
             AttachScene(null, initLocalAnchor: true);
@@ -214,7 +219,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
     
     private void ConnectedToServer(object sender, Base.StringEventArgs e) {
-        if (!calibrated) {
+        if (!Calibrated) {
             StartCoroutine(Calibrate());
         }
     }

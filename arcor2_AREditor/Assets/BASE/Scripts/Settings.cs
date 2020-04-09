@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class Settings : Singleton<Settings> {
 
+    public bool DontTurnOffScreenOnTablet = true;
+
     private bool useCloudAnchors = false;
     public bool UseCloudAnchors {
         get {
@@ -18,5 +20,11 @@ public class Settings : Singleton<Settings> {
 
     private void Start() {
         useCloudAnchors = PlayerPrefsHelper.LoadBool("use_cloud_anchors", false);
+
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        if (DontTurnOffScreenOnTablet) {
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+        }
+#endif
     }
 }
