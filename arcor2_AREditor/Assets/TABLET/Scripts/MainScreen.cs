@@ -63,6 +63,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
+        FilterScenesById(null);
         FilterLists();
     }
 
@@ -95,9 +96,27 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
     }
 
+    public void FilterScenesById(string sceneId) {
+        foreach (SceneTile tile in sceneTiles) {
+            if (sceneId == null) {
+                tile.gameObject.SetActive(true);
+                return;
+            }
+
+            if (tile.SceneId != sceneId) {
+                tile.gameObject.SetActive(false);
+            }
+        }
+    }
+
     public void ShowRelatedProjects(string sceneId) {
         SwitchToProjects();
         FilterProjectsBySceneId(sceneId);
+    }
+
+     public void ShowRelatedScene(string sceneId) {
+        SwitchToScenes();
+        FilterScenesById(sceneId);
     }
 
     public void EnableRecent(bool enable) {

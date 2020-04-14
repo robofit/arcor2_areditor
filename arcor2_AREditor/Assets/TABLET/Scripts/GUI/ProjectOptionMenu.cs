@@ -60,5 +60,10 @@ public class ProjectOptionMenu : TileOptionMenu
         }
     }
 
+    public void ShowRelatedScene() {
+        MainScreen.Instance.ShowRelatedScene(projectTile.SceneId);
+        Close();
+    }
+
 
 }
