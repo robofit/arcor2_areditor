@@ -40,7 +40,7 @@ namespace Base {
             
         }
 
-        protected virtual async void Update() {
+        protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 SetScenePosition(transform.localPosition);
                 transform.hasChanged = false;
@@ -183,9 +183,10 @@ namespace Base {
             Actions[action_id].DeleteAction();
         }
 
-        public void ShowMenu() {
+        public void ShowMenu(bool enableBackButton) {
             actionPointMenu.CurrentActionPoint = this;
             actionPointMenu.UpdateMenu();
+            actionPointMenu.EnableBackButton(enableBackButton);
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
         }
 
@@ -226,7 +227,7 @@ namespace Base {
         /// </summary>
         /// <param name="projectActionPoint"></param>
         /// <returns></returns>
-        public async Task<(List<string>, Dictionary<string, string>)> UpdateActions(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+        public (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
             if (Data.Parent != projectActionPoint.Parent) {
                 ChangeParent(projectActionPoint.Parent);
             }
@@ -238,19 +239,21 @@ namespace Base {
                 string providerName = projectAction.Type.Split('/').First();
                 string actionType = projectAction.Type.Split('/').Last();
                 IActionProvider actionProvider;
-                ActionObject originalActionObject = Scene.Instance.GetActionObject(providerName);
-                if (originalActionObject != null) {
-                    actionProvider = originalActionObject;
-                } else if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
-                    actionProvider = originalService;
-                } else {
-                    Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
-                    continue; //TODO: throw exception
+                try {
+                    actionProvider = Scene.Instance.GetActionObject(providerName);
+                } catch (KeyNotFoundException ex) {
+                    if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                        actionProvider = originalService;
+                    } else {
+                        Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
+                        continue; //TODO: throw exception
+                    }
                 }
+                
 
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = await Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    action = Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -271,13 +274,20 @@ namespace Base {
         }
 
         private void ChangeParent(string parentId) {
-            IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(parentId);
-            if (actionPointParent == null) {
-                Debug.LogError("Failed to get action point parent " + parentId);
+            if (parentId == null || parentId == "") {
+                Parent = null;
+                Data.Parent = "";
                 return;
             }
-            Parent = actionPointParent;
-            Data.Parent = parentId;
+            try {
+                IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(parentId);
+                Parent = actionPointParent;
+                Data.Parent = parentId;
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+            
+            
         }
 
         /// <summary>
@@ -368,9 +378,13 @@ namespace Base {
             Data.RobotJoints.Remove(joints);
         }
 
+        public void ShowMenu() {
+            ShowMenu(false);
+        }
 
-
-
+        public GameObject GetGameObject() {
+            return gameObject;
+        }
     }
 
 }

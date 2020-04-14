@@ -20,21 +20,21 @@ public class AddNewActionDialog : Dialog
     private GameObject overlay;
 
 
-    private async void Init() {
+    private void Init() {
         
     }
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
         actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
-        nameInput.SetValue(actionMetadata.Name);
+        nameInput.SetValue(Base.Scene.Instance.GetFreeActionName(actionMetadata.Name));
     }
 
 
     public async void InitFromAction(Base.Action action) {
         InitDialog(action.ActionProvider, action.Metadata, action.ActionPoint);
         actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
-        nameInput.SetValue(action.Data.Name);
+        nameInput.SetValue(Base.Scene.Instance.GetFreeActionName(action.Data.Name));
     }
 
     public void InitDialog(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {

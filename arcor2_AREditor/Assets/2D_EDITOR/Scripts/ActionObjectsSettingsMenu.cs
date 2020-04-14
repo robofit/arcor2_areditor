@@ -4,15 +4,17 @@ using UnityEngine;
 using System;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
+using Base;
 
 public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     public SwitchComponent Visiblity, Interactibility;
-    public GameObject DynamicContent;
+    public GameObject ActionObjectsList, ActionPointsList;
 
     private void Start() {
         Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
+        Base.GameManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
         Interactibility.SetValue(false);
     }
 
@@ -42,16 +44,38 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
-        foreach (Transform t in DynamicContent.transform) {
+        foreach (Transform t in ActionObjectsList.transform) {
             Destroy(t.gameObject);
         }
         foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
-            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, DynamicContent.transform);
+            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionObjectsList.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObject.Data.Name;
             btn.onClick.AddListener(() => ShowActionObject(actionObject));
         }
+    }
+
+    public void OnActionPointsChanged(object sender, EventArgs eventArgs) {
+        Debug.LogError("OnActionPointsChanged");
+        foreach (Transform t in ActionPointsList.transform) {
+            Destroy(t.gameObject);
+        }
+        foreach (Base.ActionPoint actionPoint in Base.Scene.Instance.GetAllGlobalActionPoints()) {
+            Debug.LogError(actionPoint.Data.Name);
+            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform);
+            btnGO.transform.localScale = new Vector3(1, 1, 1);
+            Button btn = btnGO.GetComponent<Button>();
+            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionPoint.Data.Name;
+            btn.onClick.AddListener(() => ShowActionPoint(actionPoint));
+        }
+    }
+
+    private void ShowActionPoint(ActionPoint actionPoint) {
+        MenuManager.Instance.ActionObjectSettingsMenu.Close();
+        actionPoint.ShowMenu();
+        Base.Scene.Instance.SetSelectedObject(actionPoint.gameObject);
+        actionPoint.SendMessage("Select");
     }
 
     private void ShowActionObject(Base.ActionObject actionObject) {

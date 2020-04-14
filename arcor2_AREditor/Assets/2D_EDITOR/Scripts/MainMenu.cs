@@ -26,7 +26,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;

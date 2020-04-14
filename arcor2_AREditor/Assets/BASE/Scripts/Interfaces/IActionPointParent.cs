@@ -14,4 +14,9 @@ public interface IActionPointParent
 
     Transform GetTransform();
 
+
+    void ShowMenu();
+
+    GameObject GetGameObject();
+
 }

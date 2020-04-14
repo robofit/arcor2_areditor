@@ -96,23 +96,7 @@ namespace Base {
             }
         }
 
-        private string GetFreeIOName(string ioType) {
-            int i = 1;
-            bool hasFreeName;
-            string freeName = ioType;
-            do {
-                hasFreeName = true;
-                if (ActionObjects.ContainsKey(freeName)) {
-                    hasFreeName = false;
-                }
-                if (!hasFreeName)
-                    freeName = ioType + i++.ToString();
-            } while (!hasFreeName);
-
-            return freeName;
-        }
-
-        public void SetSelectedObject(GameObject obj) {
+         public void SetSelectedObject(GameObject obj) {
             if (CurrentlySelectedObject != null) {
                 CurrentlySelectedObject.SendMessage("Deselect");
             }
@@ -160,7 +144,7 @@ namespace Base {
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
 
             if (name == "")
-                name = GetFreeIOName(type);
+                name = GetFreeAOName(type);
             
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
 
@@ -172,6 +156,24 @@ namespace Base {
 
             return actionObject;
         }
+
+        public string GetFreeAOName(string ioType) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = ioType;
+            do {
+                hasFreeName = true;
+                if (ActionObjectsContainName(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = ioType + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+
 
         /// <summary>
         /// Updates action GameObjects in ActionObjects dict based on the data present in IO.Swagger.Model.Scene Data.
@@ -310,6 +312,15 @@ namespace Base {
             return false;
         }
 
+        public bool ActionObjectsContainName(string name) {
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (actionObject.GetName() == name) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         #endregion
 
         #region ACTION_POINTS
@@ -331,12 +342,35 @@ namespace Base {
             return actionPoint;
         }
 
+        public string GetFreeAPName(string apParentName) {
+            int i = 2;
+            bool hasFreeName;
+            string freeName = apParentName + "_ap";
+            do {
+                hasFreeName = true;
+                if (ActionPointsContainsName(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = apParentName + "_ap_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+        public bool ActionPointsContainsName(string name) {
+            foreach (ActionPoint ap in GetAllActionPoints()) {
+                if (ap.Data.Name == name)
+                    return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.
         /// </summary>
         /// <param name="project"></param>
-        public async void UpdateActionPoints(IO.Swagger.Model.Project project) {
+        public void UpdateActionPoints(IO.Swagger.Model.Project project) {
             List<string> currentAP = new List<string>();
             List<string> currentActions = new List<string>();
             Dictionary<string, string> connections = new Dictionary<string, string>();
@@ -359,7 +393,7 @@ namespace Base {
                 }
 
                 // update actions in current action point 
-                (List<string>, Dictionary<string, string>) updateActionsResult = await actionPoint.UpdateActions(projectActionPoint);
+                (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
                 currentActions.AddRange(updateActionsResult.Item1);
                 // merge dictionaries
                 connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
@@ -409,15 +443,13 @@ namespace Base {
         }
 
         public IActionPointParent GetActionPointParent(string parentId) {
-            if (parentId == null)
-                return null;
+            if (parentId == null || parentId == "")
+                throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
             if (ActionObjects.TryGetValue(parentId, out ActionObject actionObject)) {
                 return actionObject;
             }
-            /*if (ActionPoints.TryGetValue(parentId, out ActionPoint actionPoint)) {
-                return actionPoint;
-            }*/
-            return null;
+            
+            throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
         }
 
         public ActionPoint GetactionpointByName(string name) {
@@ -443,14 +475,18 @@ namespace Base {
         /// <summary>
         /// Returns action point of given Id.
         /// </summary>
-        /// <param name="Id"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public ActionPoint GetActionPoint(string Id) {
-            if (ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
-                    return actionPoint;
+        public ActionPoint GetActionPoint(string id) {
+            if (ActionPoints.TryGetValue(id, out ActionPoint actionPoint)) {
+                return actionPoint;
             }
             
-            throw new KeyNotFoundException("ActionPoint " + Id + " not found!");
+            throw new KeyNotFoundException("ActionPoint \"" + id + "\" not found!");
+        }
+
+        private void tmpPrint(string v) {
+            Debug.LogError("\"" + v + "\"");
         }
 
         /// <summary>
@@ -459,6 +495,16 @@ namespace Base {
         /// <returns></returns>
         public List<ActionPoint> GetAllActionPoints() {
             return ActionPoints.Values.ToList();
+        }
+
+         /// <summary>
+        /// Returns all action points in the scene in a list [ActionPoint_object]
+        /// </summary>
+        /// <returns></returns>
+        public List<ActionPoint> GetAllGlobalActionPoints() {
+            return (from ap in ActionPoints
+                   where ap.Value.Parent == null
+                   select ap.Value).ToList();
         }
 
         /// <summary>
@@ -535,7 +581,7 @@ namespace Base {
 
         #region ACTIONS
 
-        public async Task<Action> SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
+        public Action SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
             Debug.Assert(GetActionByName(action_name) == null);
             GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
@@ -557,7 +603,7 @@ namespace Base {
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
             puck.SetActive(false);
             
-            await puck.GetComponent<Action>().Init(action_id, action_name, actionMetadata, ap, actionProvider);
+            puck.GetComponent<Action>().Init(action_id, action_name, actionMetadata, ap, actionProvider);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
@@ -573,7 +619,23 @@ namespace Base {
             return action;
         }
 
-       
+        public string GetFreeActionName(string actionName) {
+            int i = 2;
+            bool hasFreeName;
+            string freeName = actionName;
+            do {
+                hasFreeName = true;
+                if (ActionsContainsName(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = actionName + "_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+
 
         /// <summary>
         /// Updates connections between actions in the scene.
@@ -658,6 +720,14 @@ namespace Base {
             // Call function in corresponding action that will delete it and properly remove all references and connections.
             // We don't want to update project, because we are calling this method only upon received update from server.
             ActionPoints[apIdToRemove].Actions[Id].DeleteAction();
+        }
+
+        public bool ActionsContainsName(string name) {
+            foreach (Action action in GetAllActions()) {
+                if (action.Data.Name == name)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>

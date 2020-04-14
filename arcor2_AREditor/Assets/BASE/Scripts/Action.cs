@@ -28,7 +28,7 @@ namespace Base {
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public async Task Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
+        public void Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
 
             ActionPoint = ap;
             this.metadata = metadata;
@@ -172,8 +172,8 @@ namespace Base {
             return input;
         }
        
-        public static GameObject InitializeDropdownParameter(ActionParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject DropdownPrefab) {
-            DropdownParameter dropdownParameter = Instantiate(DropdownPrefab).GetComponent<DropdownParameter>();
+        public static GameObject InitializeDropdownParameter(ActionParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject dropdownPrefab) {
+            DropdownParameter dropdownParameter = Instantiate(dropdownPrefab).GetComponent<DropdownParameter>();
             dropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
             DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler);
             return dropdownParameter.gameObject;
@@ -236,7 +236,7 @@ namespace Base {
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
             foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
-                foreach (var joints in ap.GetAllJoints(false, null, true).Values) {
+                foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, true).Values) {
                     options.Add(ap.Data.Name + "." + joints.Name);
                 }
             }
@@ -342,7 +342,7 @@ namespace Base {
             }
         }
 
-        public static async Task<List<IActionParameter>> InitParameters(string actionProviderId, List<ActionParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup DynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint) {
+        public static async Task<List<IActionParameter>> InitParameters(string actionProviderId, List<ActionParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint) {
             List<Tuple<DropdownParameter, ActionParameterMetadata>> dynamicDropdowns = new List<Tuple<DropdownParameter, ActionParameterMetadata>>();
             List<IActionParameter> actionParameters = new List<IActionParameter>();
             foreach (ActionParameterMetadata parameterMetadata in parameter_metadatas) {
@@ -366,7 +366,7 @@ namespace Base {
                 if (value != null) {
                     value = JsonConvert.SerializeObject(value);
                 }
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, DynamicContentLayout, canvasRoot, value);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;

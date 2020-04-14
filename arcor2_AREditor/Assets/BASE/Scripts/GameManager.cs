@@ -61,6 +61,7 @@ namespace Base {
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
+        public event EventHandler OnActionPointsChanged;
         public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
         public event ProjectStateEventHandler OnProjectStateChanged;
@@ -403,10 +404,10 @@ namespace Base {
             action.ActionUpdateBaseData(projectAction);
         }
 
-        public async void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
+        public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
             ActionPoint actionPoint = Scene.Instance.GetActionPoint(parentId);
             IActionProvider actionProvider = Scene.Instance.GetActionProvider(Action.ParseActionType(projectAction.Type).Item1);
-            Base.Action action = await Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, Action.ParseActionType(projectAction.Type).Item2, actionPoint, actionProvider);
+            Base.Action action = Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, Action.ParseActionType(projectAction.Type).Item2, actionPoint, actionProvider);
             // updates name of the action
             action.ActionUpdateBaseData(projectAction);
             // updates parameters of the action
@@ -419,13 +420,13 @@ namespace Base {
         }
 
 
-        public async void ActionPointUpdated(ProjectActionPoint projectActionPoint) {
+        public void ActionPointUpdated(ProjectActionPoint projectActionPoint) {
             try {
                 ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
-                await actionPoint.UpdateActions(projectActionPoint);
+                actionPoint.UpdateActionPoint(projectActionPoint);
                 // TODO - update orientations, joints etc.
             } catch (KeyNotFoundException ex) {
-                Debug.Log("Action point " + projectActionPoint.Id + " not found!");
+                Debug.LogError("Action point " + projectActionPoint.Id + " not found!");
                 Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
                 return;
             }
@@ -435,25 +436,36 @@ namespace Base {
             try {
                 ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
                 actionPoint.ActionPointBaseUpdate(projectActionPoint);
+                OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             } catch (KeyNotFoundException ex) {
                 Debug.Log("Action point " + projectActionPoint.Id + " not found!");
                 Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
                 return;
             }
+
         }
 
         public void ActionPointAdded(ProjectActionPoint projectActionPoint) {
-            IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(projectActionPoint.Parent);
-            if (actionPointParent != null) {
-                Scene.Instance.SpawnActionPoint(projectActionPoint, actionPointParent);
+            if (projectActionPoint.Parent == null || projectActionPoint.Parent == "") {
+                Scene.Instance.SpawnActionPoint(projectActionPoint, null);
             } else {
-                Debug.LogError("Parent " + projectActionPoint.Name + "(" + projectActionPoint.Id + ") not found");
+                try {
+                    IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(projectActionPoint.Parent);
+                    Scene.Instance.SpawnActionPoint(projectActionPoint, actionPointParent);
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
+                
             }
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+
+
         }
 
 
         public void ActionPointRemoved(ProjectActionPoint projectActionPoint) {
             Scene.Instance.RemoveActionPoint(projectActionPoint.Id);
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
         }
 
 
@@ -609,6 +621,7 @@ namespace Base {
             CurrentProject = project;
 
             Scene.Instance.UpdateActionPoints(CurrentProject);
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
 
             if (projectOpened)
                 OnLoadProject?.Invoke(this, EventArgs.Empty);

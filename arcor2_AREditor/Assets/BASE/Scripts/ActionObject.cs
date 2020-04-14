@@ -47,6 +47,7 @@ namespace Base {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
+            //TODO: update all action points and actions.. ?
 
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
@@ -208,7 +209,11 @@ namespace Base {
             return Data.Type;
         }
 
-        
+        public GameObject GetGameObject() {
+            return gameObject;
+        }
+
+
     }
 
 }

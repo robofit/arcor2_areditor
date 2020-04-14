@@ -12,14 +12,14 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ConnectionsActive = true;
 
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
         virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
 
         Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
 
     // Update is called once per frame
-    void Update() {
+    private void Update() {
 
     }
 

@@ -46,7 +46,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         inputDialog.Open("Create action point",
                          "Type action point name",
                          "Name",
-                         "",
+                         Scene.Instance.GetFreeAPName(CurrentObject.Data.Name),
                          () => CreateNewAP(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -85,7 +85,8 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
 
     private static void ShowActionPoint(ActionPoint actionPoint) {
         MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
-        actionPoint.ShowMenu();
+        actionPoint.ShowMenu(true);
+        
         Scene.Instance.SetSelectedObject(actionPoint.gameObject);
         actionPoint.SendMessage("Select");
     }

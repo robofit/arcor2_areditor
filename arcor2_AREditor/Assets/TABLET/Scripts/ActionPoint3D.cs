@@ -67,7 +67,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (type == Click.MOUSE_LEFT_BUTTON) {
             StartManipulation();
         } else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            ShowMenu();
+            ShowMenu(false);
         }
 
         // HANDLE TOUCH
@@ -75,7 +75,7 @@ public class ActionPoint3D : Base.ActionPoint {
             if (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate) {
                 StartManipulation();
             } else {
-                ShowMenu();
+                ShowMenu(false);
             }
         }
     }

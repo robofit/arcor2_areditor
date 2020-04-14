@@ -7,6 +7,8 @@ using UnityEngine;
 public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private TransformGizmo tfGizmo;
+    [SerializeField]
+    private InputDialog InputDialog;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -41,5 +43,20 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     public void DisplayConnections(bool active) {
         ConnectionManagerArcoro.Instance.DisplayConnections(active);
+    }
+
+    public void ShowCreateGlobalActionPointDialog() {
+        InputDialog.Open("Create action point",
+                         "Type action point name",
+                         "Name",
+                         Scene.Instance.GetFreeAPName("global"),
+                         () => CreateGlobalActionPoint(InputDialog.GetValue()),
+                         () => InputDialog.Close());
+    }
+
+    public async void CreateGlobalActionPoint(string name) {
+        bool result = await GameManager.Instance.AddActionPoint(name, "", new IO.Swagger.Model.Position());
+        if (result)
+            InputDialog.Close();
     }
 }
