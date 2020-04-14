@@ -207,6 +207,8 @@ namespace Base {
         public string GetProviderType() {
             return Data.Type;
         }
+
+        
     }
 
 }

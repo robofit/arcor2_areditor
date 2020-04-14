@@ -289,17 +289,25 @@ namespace Base {
         }
 
         /// <summary>
-        /// Finds action object by user defined ID.
+        /// Finds action object by ID or throws KeyNotFoundException.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public ActionObject GetActionObject(string id) {
+            if (ActionObjects.TryGetValue(id, out Base.ActionObject actionObject))
+                return actionObject;
+            throw new KeyNotFoundException("Action object not found");
+        }
+
+        public bool TryGetActionObjectByName(string name, out ActionObject actionObjectOut) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                if (actionObject.Data.Id == id) {
-                    return actionObject;
-                }
+                if (actionObject.GetName() == name) {
+                    actionObjectOut = actionObject;
+                    return true;
+                }   
             }
-            return null;
+            actionObjectOut = null;
+            return false;
         }
 
         #endregion

@@ -14,5 +14,7 @@ public interface IActionProvider
 
 
     bool IsRobot();
-    
+
+
+
 }

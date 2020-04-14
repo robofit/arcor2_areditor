@@ -119,7 +119,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         CustomDropdown robotsListDropdown = robotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        robotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged);
+        robotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
         if (robotsListDropdown.dropdownItems.Count == 0) {
             UpdatePositionBlock.SetActive(false);
         } else {

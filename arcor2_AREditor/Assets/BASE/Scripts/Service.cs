@@ -26,13 +26,14 @@ namespace Base {
         }
 
 
-        public List<string> GetRobots() {
+        public List<string> GetRobotsNames() {
             if (!IsRobot())
                 return new List<string>();
             else {
                 return new List<string>(Robots.Keys);
             }
         }
+
 
         public async Task LoadRobots() {
             Robots.Clear();
@@ -78,6 +79,7 @@ namespace Base {
         public string GetProviderType() {
             return Data.Type;
         }
+
     }
 
 }

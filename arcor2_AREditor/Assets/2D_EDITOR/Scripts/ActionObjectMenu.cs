@@ -74,7 +74,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             RobotsListsBlock.SetActive(false);
         }
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged);
+        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
 
         if (RobotsList.Dropdown.dropdownItems.Count > 0)
             OnRobotChanged(RobotsList.Dropdown.selectedText.text);

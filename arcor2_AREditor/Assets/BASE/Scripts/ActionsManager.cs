@@ -154,21 +154,32 @@ namespace Base {
 
         
 
-        public List<string> GetRobots() {
+        public List<string> GetRobotsNames() {
             HashSet<string> robots = new HashSet<string>();
             foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
                 if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Id);
+                    robots.Add(actionObject.Data.Name);
                 }
             }
             foreach (Service service in servicesData.Values) {
                 if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobots()) {
+                    foreach (string s in service.GetRobotsNames()) {
                         robots.Add(s);
                     }
                 }                    
             }
             return robots.ToList<string>();
+        }
+
+        public List<ActionObject> GetActionObjectsRobots() {
+            List<ActionObject> robots = new List<ActionObject>();
+
+            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    robots.Add(actionObject);
+                }
+            }
+            return robots;
         }
 
 
