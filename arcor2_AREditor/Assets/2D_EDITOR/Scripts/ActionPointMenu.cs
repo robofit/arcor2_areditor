@@ -80,7 +80,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (actionPoint.Parent != null)
             ActionObjectType.text = actionPoint.Parent.GetName();
         else
-            ActionObjectType.text = "Global actoin point";
+            ActionObjectType.text = "Global action point";
 
         Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata;
         if (actionPoint.Parent == null) {

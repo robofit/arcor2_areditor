@@ -41,6 +41,7 @@ public class ProjectOptionMenu : TileOptionMenu
             inputDialog.Close();
             projectTile.SetLabel(newUserId);
             SetLabel(newUserId);
+            Close();
         }
     }
 

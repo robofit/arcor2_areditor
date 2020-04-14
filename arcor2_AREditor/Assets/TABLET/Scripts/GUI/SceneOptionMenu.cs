@@ -43,11 +43,20 @@ public class SceneOptionMenu : TileOptionMenu {
             inputDialog.Close();
             sceneTile.SetLabel(newUserId);
             SetLabel(newUserId);
+            Close();
         }
     }
 
 
-    public void ShowRemoveDialog() {
+    public async void ShowRemoveDialog() {
+        int projects = (await Base.GameManager.Instance.GetProjectsWithScene(sceneTile.SceneId)).Count;
+        if (projects == 1) {
+            Base.Notifications.Instance.ShowNotification("Failed to remove scene", "There is one project associated with this scene. Remove it first.");
+            return;
+        } else if (projects > 1) {
+            Base.Notifications.Instance.ShowNotification("Failed to remove scene", "There are " + projects + " projects associated with this scene. Remove them first.");
+            return;
+        }
         confirmationDialog.Open("Remove scene",
                          "Are you sure you want to remove scene " + sceneTile.GetLabel() + "?",
                          () => RemoveScene(),

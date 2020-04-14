@@ -134,6 +134,13 @@ namespace Base {
             OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
         }
 
+        private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
+            if (GetGameState() == GameStateEnum.ProjectRunning &&
+                args.Data.State == ProjectState.StateEnum.Stopped) {
+                OpenProjectEditor();
+            }
+        }
+
         public IO.Swagger.Model.ProjectState GetProjectState() {
             return projectState;
         }
@@ -148,6 +155,7 @@ namespace Base {
         private void Start() {
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            OnProjectStateChanged += ProjectStateChanged;
             OnLoadProject += ProjectLoaded;
             OnLoadScene += SceneLoaded;
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
@@ -957,7 +965,7 @@ namespace Base {
         }
 
         public void OpenProjectRunningScreen() {
-            EditorInfo.text = "Running: " + CurrentProject.Id;
+            EditorInfo.text = "Running: " + CurrentProject.Name;
             SetGameState(GameStateEnum.ProjectRunning);
             OnRunProject?.Invoke(this, EventArgs.Empty);            
         }
@@ -1182,6 +1190,15 @@ namespace Base {
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action ", e.Message + " logic");
                 return false;
+            }
+        }
+
+        public async Task<List<string>> GetProjectsWithScene(string sceneId) {
+            try {
+                return await WebsocketManager.Instance.GetProjectsWithScene(sceneId);
+            } catch (RequestFailedException e) {
+                Debug.LogError(e);
+                return new List<string>();
             }
         }
 
