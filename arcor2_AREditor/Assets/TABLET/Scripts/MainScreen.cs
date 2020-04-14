@@ -54,6 +54,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         ProjectsBtn.color = new Color(0, 0, 0);
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
+        FilterProjectsBySceneId(null);
+        FilterLists();
     }
 
     public void SwitchToScenes() {
@@ -61,6 +63,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
+        FilterLists();
     }
 
     public void FilterLists() {
@@ -77,6 +80,24 @@ public class MainScreen : Base.Singleton<MainScreen>
             tile.gameObject.SetActive(false);
         else
             tile.gameObject.SetActive(true);
+    }
+
+    public void FilterProjectsBySceneId(string sceneId) {
+        foreach (ProjectTile tile in projectTiles) {
+            if (sceneId == null) {
+                tile.gameObject.SetActive(true);
+                return;
+            }               
+
+            if (tile.SceneId != sceneId) {
+                tile.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void ShowRelatedProjects(string sceneId) {
+        SwitchToProjects();
+        FilterProjectsBySceneId(sceneId);
     }
 
     public void EnableRecent(bool enable) {
@@ -125,7 +146,8 @@ public class MainScreen : Base.Singleton<MainScreen>
                           () => Base.GameManager.Instance.OpenProject(project.Id),
                           () => ProjectOptionMenu.Open(tile),
                           starred,
-                          project.Id);
+                          project.Id,
+                          project.SceneId);
             projectTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();

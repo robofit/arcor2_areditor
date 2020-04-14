@@ -71,4 +71,9 @@ public class SceneOptionMenu : TileOptionMenu {
         }
     }
 
+    public void ShowRelatedProjects() {
+        MainScreen.Instance.ShowRelatedProjects(sceneTile.SceneId);
+        Close();
+    }
+
 }
