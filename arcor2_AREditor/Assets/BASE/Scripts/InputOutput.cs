@@ -19,10 +19,14 @@ namespace Base {
         }
 
         public void InitData() {
+            Data.Default = GetDefaultValue();
+        }
+
+        private string GetDefaultValue() {
             if (this.GetType() == typeof(Base.PuckInput)) {
-                Data.Default = "start";
+                return "start";
             } else {
-                Data.Default = "end";
+                return "end";
             }
         }
 
@@ -30,7 +34,35 @@ namespace Base {
             return Connection;
         }
 
-        public override async void OnClick(Click type) {
+        private void AddConnections(GameObject connectedGameObject) {
+            Debug.Assert(connectedGameObject != null);
+            UpdateConnection(connectedGameObject, connectedGameObject.transform.GetComponentInParent<Base.Action>().Data.Id, Action.Data.Id);
+        }
+
+        private void RemoveConnection(GameObject connectedGameObject) {
+            Debug.Assert(connectedGameObject != null);
+            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
+            UpdateConnection(connectedGameObject, GetDefaultValue(), connectedIO.GetDefaultValue());
+        }
+
+        private async void UpdateConnection(GameObject connectedGameObject, string localValue, string remoteValue) {
+            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
+
+            string originalLocalValue = Data.Default, originalRemoveValue = connectedIO.Data.Default;
+            Data.Default = localValue;
+            connectedIO.Data.Default = remoteValue;
+
+            bool success1 = await GameManager.Instance.UpdateActionLogic(Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { Action.Output.Data });
+            bool success2 = await GameManager.Instance.UpdateActionLogic(connectedIO.Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { connectedIO.Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { connectedIO.Action.Output.Data });
+
+            if (!success1 || !success2) {
+                Data.Default = originalLocalValue;
+                connectedIO.Data.Default = originalRemoveValue;
+            }
+
+        }
+
+        public override void OnClick(Click type) {
             if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
                 return; 
             }
@@ -38,30 +70,23 @@ namespace Base {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (Connection == null) {
                         Connection = ConnectionManagerArcoro.Instance.ConnectVirtualConnectionToObject(gameObject);
-                        GameObject connectedPuck = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
-                        if (connectedPuck != null && connectedPuck.name != "VirtualPointer") {
+                        GameObject connectedGameObject = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
+                        if (connectedGameObject != null && connectedGameObject.name != "VirtualPointer") {
                             // TODO backup and restore if request failed
-                            Data.Default = connectedPuck.transform.GetComponentInParent<Base.Action>().Data.Id;
-                            Base.InputOutput theOtherOne = connectedPuck.GetComponent<Base.InputOutput>();
-                            theOtherOne.Data.Default = transform.GetComponentInParent<Base.Action>().Data.Id;
-                           
-                            bool success1 = await GameManager.Instance.UpdateActionLogic(Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { Action.Output.Data });
-                            bool success2 = await GameManager.Instance.UpdateActionLogic(theOtherOne.Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { theOtherOne.Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { theOtherOne.Action.Output.Data });
-                           
+                            AddConnections(connectedGameObject);
                         } else {
                             InitData();
                         }
                         
-                        //GameManager.Instance.UpdateProject();
-                        // TODO - implement using RPC
                     }
 
                 } else {
                     if (Connection == null) {
-                        Connection = ConnectionManagerArcoro.Instance.CreateConnectionToMouse(gameObject);
+                        Connection = ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
                     } else {
-                        Connection = ConnectionManagerArcoro.Instance.AttachConnectionToMouse(Connection, gameObject);
-                        InitData();
+                        GameObject connectedGameObject = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
+                        Connection = ConnectionManagerArcoro.Instance.AttachConnectionToPointer(Connection, gameObject);
+                        RemoveConnection(connectedGameObject);
                         Connection = null;
                     }
                 }

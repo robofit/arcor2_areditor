@@ -41,7 +41,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return c.GetComponent<Connection>();
     }
 
-    public Connection CreateConnectionToMouse(GameObject o) {
+    public Connection CreateConnectionToPointer(GameObject o) {
         if (!ConnectionsActive)
             return null;
         if (virtualConnectionToMouse != null)
@@ -87,7 +87,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return c;
     }
 
-    public Connection AttachConnectionToMouse(Connection c, GameObject o) {
+    public Connection AttachConnectionToPointer(Connection c, GameObject o) {
         if (!ConnectionsActive)
             return null;
         int i = GetIndexOf(c, o);
