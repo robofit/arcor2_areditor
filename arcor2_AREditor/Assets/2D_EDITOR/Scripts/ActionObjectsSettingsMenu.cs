@@ -57,12 +57,10 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void OnActionPointsChanged(object sender, EventArgs eventArgs) {
-        Debug.LogError("OnActionPointsChanged");
         foreach (Transform t in ActionPointsList.transform) {
             Destroy(t.gameObject);
         }
         foreach (Base.ActionPoint actionPoint in Base.Scene.Instance.GetAllGlobalActionPoints()) {
-            Debug.LogError(actionPoint.Data.Name);
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();

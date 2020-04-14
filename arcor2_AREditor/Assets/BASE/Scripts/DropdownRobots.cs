@@ -18,26 +18,26 @@ public class DropdownRobots : MonoBehaviour
         List<string> robotNames = new List<string>();
         foreach (string robotName in Base.ActionsManager.Instance.GetRobotsNames()) {
             if (withEEOnly) {
-                if (Base.Scene.Instance.TryGetActionObjectByName(robotName, out Base.ActionObject robot))
-                {
+                if (Base.Scene.Instance.TryGetActionObjectByName(robotName, out Base.ActionObject robot)) {
                     if (robot.GetEndEffectors().Count > 0) {
                         robotNames.Add(robotName);
                     }
 
                     //not found in objects, try services
-                } else foreach (Base.Service s in Base.ActionsManager.Instance.ServicesData.Values) {
-                    
-                    if (s.IsRobot() && s.Robots.ContainsKey(robotName)) {
-                        if (s.GetEndEffectors(robotName).Count > 0) {
-                            robotNames.Add(robotName);
-                            break;
+                } else
+                    foreach (Base.Service s in Base.ActionsManager.Instance.ServicesData.Values) {
+
+                        if (s.IsRobot() && s.Robots.ContainsKey(robotName)) {
+                            if (s.GetEndEffectors(robotName).Count > 0) {
+                                robotNames.Add(robotName);
+                                break;
+                            }
                         }
-                    }                    
-                }
+                    }
 
-            }
-
-            
+            } else {
+                robotNames.Add(robotName);
+            }            
         }
         Init(robotNames, callback);
     }

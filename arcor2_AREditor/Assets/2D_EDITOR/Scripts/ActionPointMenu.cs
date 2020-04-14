@@ -147,11 +147,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             orientationDropdown.dropdownItems.Add(item);
         }
         if (orientationDropdown.dropdownItems.Count == 0) {
-            orientationDropdown.gameObject.SetActive(false);
+            OrientationsList.gameObject.SetActive(false);
             NoOrientation.gameObject.SetActive(true);
         } else {
             NoOrientation.gameObject.SetActive(false);
-            orientationDropdown.gameObject.SetActive(true);
+            OrientationsList.gameObject.SetActive(true);
             orientationDropdown.enabled = true;
             orientationDropdown.SetupDropdown();
         }
@@ -168,9 +168,9 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
-            jointsDropdown.gameObject.SetActive(true);
+            JointsList.gameObject.SetActive(true);
         } else {
-            jointsDropdown.gameObject.SetActive(false);
+            JointsList.gameObject.SetActive(false);
             NoJoints.gameObject.SetActive(true);
         }
     }

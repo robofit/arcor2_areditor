@@ -593,7 +593,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: No joints configurations. Please add some.
+  m_text: "No joints configurations. \nPlease add some."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -621,10 +621,10 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 37.5
-  m_fontSizeBase: 19
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -635,7 +635,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 0
+  m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_firstOverflowCharacterIndex: -1
@@ -662,12 +662,12 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 6943718745622652589}
-    characterCount: 42
+    characterCount: 43
     spriteCount: 0
-    spaceCount: 5
+    spaceCount: 6
     wordCount: 6
     linkCount: 0
-    lineCount: 1
+    lineCount: 2
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -2329,7 +2329,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: No orientation. Please add some.
+  m_text: "No orientation. \nPlease add some."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2357,10 +2357,10 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 34.65
-  m_fontSizeBase: 24
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -3539,12 +3539,12 @@ PrefabInstance:
     - target: {fileID: 2872410468165155094, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 16
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 2872410468165155094, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2872410468165155094, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
@@ -3564,7 +3564,7 @@ PrefabInstance:
     - target: {fileID: 2872720606825564342, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_Value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2963176739005452792, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
@@ -3679,17 +3679,17 @@ PrefabInstance:
     - target: {fileID: 3499078641966442553, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 8
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3499078641966442553, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3499078641966442553, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3499078641966442553, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
@@ -3700,6 +3700,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.pageCount
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3499078641966442553, guid: ad83977a35b64c14ba82cb729b1e96cc,
+        type: 3}
+      propertyPath: m_text
+      value: Joints
       objectReference: {fileID: 0}
     - target: {fileID: 7551255653167318226, guid: ad83977a35b64c14ba82cb729b1e96cc,
         type: 3}
