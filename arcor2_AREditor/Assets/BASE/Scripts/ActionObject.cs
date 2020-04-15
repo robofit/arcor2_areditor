@@ -24,7 +24,7 @@ namespace Base {
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
-            visibility = GameManager.Instance.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
+            visibility = PlayerPrefsHelper.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -141,7 +141,7 @@ namespace Base {
         public virtual void SetVisibility(float value) {
             Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            GameManager.Instance.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            PlayerPrefsHelper.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {

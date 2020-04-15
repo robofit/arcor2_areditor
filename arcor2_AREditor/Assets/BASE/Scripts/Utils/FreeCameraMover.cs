@@ -28,20 +28,20 @@ public class FreeCameraMover : MonoBehaviour
                 yaw += CameraRotationSpeed * Input.GetAxis("Mouse X");
                 pitch -= CameraRotationSpeed * Input.GetAxis("Mouse Y");
 
-                transform.eulerAngles = new Vector3(pitch, yaw, 0f);
+                Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0f);
             }
 
             if (ControlWithMouseOnly) {
                 //drag camera around with Middle Mouse
                 if (Input.GetMouseButton(2)) {
-                    transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
+                    Camera.main.transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
                 }
 
                 //Zoom in and out with Mouse Wheel
-                transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, Space.Self);
+                Camera.main.transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * zoomSpeed, Space.Self);
             } else {
                 Vector3 translation = GetDirection();
-                transform.Translate(translation * Time.deltaTime * WalkingSpeed);
+                Camera.main.transform.Translate(translation * Time.deltaTime * WalkingSpeed);
             }
         }
     }

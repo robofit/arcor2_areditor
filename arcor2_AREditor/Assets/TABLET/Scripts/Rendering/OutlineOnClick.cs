@@ -9,22 +9,12 @@ public class OutlineOnClick : Clickable {
     public Material ClickMaterial;
 
     public List<Renderer> Renderers = new List<Renderer>();
-    private Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
+    protected Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
     
     private void Start() {
         materials.Clear();
         foreach (Renderer renderer in Renderers) {
             materials.Add(renderer, new List<Material>(renderer.materials));
-        }
-    }
-
-    private void OnEnable() {
-        InputHandler.Instance.OnBlindClick += OnBlindClick;
-    }
-
-    private void OnDisable() {
-        if (InputHandler.Instance != null) {
-            InputHandler.Instance.OnBlindClick -= OnBlindClick;
         }
     }
 
@@ -37,17 +27,10 @@ public class OutlineOnClick : Clickable {
     }
 
     public override void OnClick(Click type) {
-        // HANDLE MOUSE
-        if (type == Click.MOUSE_RIGHT_BUTTON) {
-            Select();
-        }
-        // HANDLE TOUCH
-        else if (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-            Select();
-        }
+
     }
 
-    private void AddMaterial(Material material) {
+    protected void AddMaterial(Material material) {
         foreach (Renderer renderer in Renderers) {
             if (!materials[renderer].Contains(material)) {
                 materials[renderer].Add(material);
@@ -55,7 +38,7 @@ public class OutlineOnClick : Clickable {
         }
     }
 
-    private void RemoveMaterial(Material material) {
+    protected void RemoveMaterial(Material material) {
         foreach (Renderer renderer in Renderers) {
             if (materials[renderer].Contains(material)) {
                 materials[renderer].Remove(material);
@@ -63,25 +46,14 @@ public class OutlineOnClick : Clickable {
         }
     }
 
-    private void OnBlindClick(object sender, EventBlindClickArgs e) {
-        if (GameManager.Instance.SceneInteractable) {
-            Scene.Instance.SetSelectedObject(null);
-            RemoveMaterial(ClickMaterial);
-            foreach (Renderer renderer in Renderers) {
-                renderer.materials = materials[renderer].ToArray();
-            }
-        }
-    }
-
-    public void Deselect() {
+    protected void Deselect() {
         RemoveMaterial(ClickMaterial);
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();
         }
     }
 
-    public void Select() {
-        Scene.Instance.SetSelectedObject(gameObject);
+    protected virtual void Select() {
         AddMaterial(ClickMaterial);
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();

@@ -243,7 +243,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Show();
             }
-            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOVisibility", true);
         }
 
         /// <summary>
@@ -253,7 +253,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Hide();
             }
-            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOVisibility", false);
         }
 
          /// <summary>
@@ -263,7 +263,8 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.SetInteractivity(interactivity);
             }
-            GameManager.Instance.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
+            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
         }
 
 

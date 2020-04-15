@@ -34,7 +34,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
 
     public void DisplayTrackables(bool active) {
-        CalibrationManager.Instance.DisplayPlanes(active);
+        TrackingManager.Instance.DisplayPlanesAndFeatures(active);
     }
 
     public void ShowActionObjectSettingsMenu() {

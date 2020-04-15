@@ -140,7 +140,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
-            bool starred = Base.GameManager.Instance.LoadBool("scene/" + scene.Id + "/starred", false);
+            bool starred = PlayerPrefsHelper.LoadBool("scene/" + scene.Id + "/starred", false);
             tile.InitTile(scene.Name,
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
@@ -160,7 +160,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
-            bool starred = Base.GameManager.Instance.LoadBool("project/" + project.Id + "/starred", false);
+            bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
             tile.InitTile(project.Name,
                           () => Base.GameManager.Instance.OpenProject(project.Id),
                           () => ProjectOptionMenu.Open(tile),

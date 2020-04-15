@@ -26,12 +26,12 @@ namespace Base {
         
         public bool Locked {
             get {
-                return GameManager.Instance.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
+                return PlayerPrefsHelper.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
             }
 
             set {
                 Debug.Assert(GameManager.Instance.CurrentProject != null);
-                GameManager.Instance.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
+                PlayerPrefsHelper.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
             }
         }
 

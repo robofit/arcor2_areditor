@@ -6,17 +6,17 @@ using Michsky.UI.ModernUIPack;
 namespace Base {
     public class NotificationsModernUI : Notifications {
 
-        public GameObject NotificationGO;
+        public NotificationManager NotificationManager;
 
         private UIManagerNotification Notification;
 
         public void Start() {
-            Notification = NotificationGO.GetComponent<UIManagerNotification>();
+            Notification = NotificationManager.gameObject.GetComponent<UIManagerNotification>();
         }
         public override void ShowNotification(string title, string text) {
             Notification.title.text = title;
             Notification.description.text = text;
-            NotificationGO.GetComponent<NotificationManager>().OpenNotification();
+            NotificationManager.OpenNotification();
         }
     }
 
