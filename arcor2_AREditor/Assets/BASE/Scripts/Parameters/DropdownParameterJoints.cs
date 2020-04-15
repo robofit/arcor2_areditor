@@ -13,7 +13,7 @@ public class DropdownParameterJoints : DropdownParameter
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (IO.Swagger.Model.ProjectRobotJoints joints in robotJoints) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = joints.Id
+                itemName = joints.Name
             };
             if (joints.IsValid) {
                 item.itemIcon = ValidIcon;
@@ -25,5 +25,14 @@ public class DropdownParameterJoints : DropdownParameter
             
         }
         PutData(items, selectedItem, callback);
+    }
+
+    public override object GetValue() {
+        string value = (string) base.GetValue();
+        if (value == null)
+            return null;
+
+        Base.ActionPoint actionPoint = Base.Scene.Instance.GetactionpointByName(value.Split('.').First());
+        return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
     }
 }

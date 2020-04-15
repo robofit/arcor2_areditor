@@ -34,7 +34,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         }
     }
     
-    public object GetValue() {
+    public virtual object GetValue() {
         if (Dropdown.dropdownItems.Count > 0) {
             return Dropdown.selectedText.text;
         } else {

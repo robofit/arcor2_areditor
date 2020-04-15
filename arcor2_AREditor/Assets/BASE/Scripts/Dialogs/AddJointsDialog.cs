@@ -14,7 +14,7 @@ public class AddJointsDialog : MonoBehaviour {
             return;
         }
         string joints_id = NewJointsName.GetComponent<TMPro.TMP_InputField>().text;
-        if (ap.GetJoints().ContainsKey(joints_id)) {
+        if (ap.GetAllJoints().ContainsKey(joints_id)) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed", "Joints named " + joints_id + " already exists");
             return;
         }
@@ -22,9 +22,9 @@ public class AddJointsDialog : MonoBehaviour {
 
         
         ap.Data.RobotJoints.Add(robotJoints);
-        Base.GameManager.Instance.UpdateProject();
         NewJointsName.GetComponent<TMPro.TMP_InputField>().text = "";
         GetComponent<ModalWindowManager>().CloseWindow();
         MenuManager.Instance.ActionPointMenu.GetComponent<ActionPointMenu>().UpdateJoints(RobotId, joints_id);
+        //TODO - check if this is working
     }
 }

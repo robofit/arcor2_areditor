@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Base {
-    public abstract class ActionObject : Clickable, IActionProvider {
+    public abstract class ActionObject : Clickable, IActionProvider, IActionPointParent {
 
         // string == IO.Swagger.Model.SceneObject Data.Uuid
-        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        //public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
         protected float visibility;
 
-        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject("", DataHelper.CreatePose(new Vector3(), new Quaternion()), "");
+        public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();
         protected ActionObjectMenu actionObjectMenu;
@@ -27,12 +27,12 @@ namespace Base {
             visibility = PlayerPrefsHelper.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
-        public virtual void UpdateId(string newId, bool updateScene = true) {
-            Data.Id = newId;
+        public virtual void UpdateUserId(string newUserId) {
+            Data.Name = newUserId;
+        }
 
-            if (updateScene) {
-                GameManager.Instance.UpdateScene();
-            }
+        public async virtual void RenameActionObject(string newUserId) {
+            bool result = await GameManager.Instance.RenameActionObject(Data.Id, newUserId);
         }
 
         protected virtual void Update() {
@@ -44,7 +44,10 @@ namespace Base {
         }
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+            if (Data != null & Data.Name != actionObjectSwagger.Name)
+                UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
+            //TODO: update all action points and actions.. ?
 
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
@@ -55,6 +58,8 @@ namespace Base {
                 Hide();
 
             SetInteractivity(interactivity);
+
+            
         }
 
         public virtual bool SceneInteractable() {
@@ -91,7 +96,7 @@ namespace Base {
         }
 
         public string GetProviderName() {
-            return Data.Id;
+            return Data.Name;
         }
 
 
@@ -119,21 +124,17 @@ namespace Base {
             RemoveActionPoints();
             
             // Remove this ActionObject reference from the scene ActionObject list
-            Scene.Instance.ActionObjects.Remove(this.Data.Uuid);
+            Scene.Instance.ActionObjects.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
         
         public void RemoveActionPoints() {
             // Remove all action points of this action object
-            foreach (string actionPointUUID in ActionPoints.Keys.ToList<string>()) {
-                RemoveActionPoint(actionPointUUID);
+            List<ActionPoint> actionPoints = GetActionPoints();
+            foreach (ActionPoint actionPoint in actionPoints) {
+                actionPoint.DeleteAP();
             }
-            ActionPoints.Clear();
-        }
-
-        public void RemoveActionPoint(string uuid) {
-            ActionPoints[uuid].DeleteAP(false);
         }
 
 
@@ -169,6 +170,50 @@ namespace Base {
         public virtual void ActivateForGizmo(string layer) {
             gameObject.layer = LayerMask.NameToLayer(layer);
         }
+
+        public string GetProviderId() {
+            return Data.Id;
+        }
+
+        public List<ActionPoint> GetActionPoints() {
+            List<ActionPoint> actionPoints = new List<ActionPoint>();
+            foreach (ActionPoint actionPoint in Scene.Instance.ActionPoints.Values) {
+                if (actionPoint.Data.Parent == Data.Id) {
+                    actionPoints.Add(actionPoint);
+                }
+            }
+            return actionPoints;
+        }
+
+        public string GetName() {
+            return Data.Name;
+        }
+
+        public string GetId() {
+            return Data.Id;
+        }
+
+        public bool IsActionObject() {
+            return true;
+        }
+
+        public Base.ActionObject GetActionObject() {
+            return this;
+        }
+
+        public Transform GetTransform() {
+            return transform;
+        }
+
+        public string GetProviderType() {
+            return Data.Type;
+        }
+
+        public GameObject GetGameObject() {
+            return gameObject;
+        }
+
+
     }
 
 }

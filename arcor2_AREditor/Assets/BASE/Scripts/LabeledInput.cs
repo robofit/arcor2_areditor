@@ -44,7 +44,6 @@ public class LabeledInput : MonoBehaviour, IActionParameter
     }
 
 
-
     public object GetValue() {
         switch (ParameterType) {
             case "integer":

@@ -22,7 +22,7 @@ public class VirtualConnectionOnClick : Base.VirtualConnection {
             if (DrawVirtualConnection) {
                 DrawVirtualConnection = false;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-                Base.GameManager.Instance.UpdateProject();
+                //TODO - update connections via RPC
             }
         }
 

@@ -27,10 +27,11 @@ public class NewProjectDialog : Dialog
         bool generateLogic;
         try {
             sceneName = GetSelectedValue(ToggleGroup);
+            string sceneId = Base.GameManager.Instance.GetSceneId(sceneName);
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
-            await Base.GameManager.Instance.NewProject(name, sceneName, generateLogic);
+            await Base.GameManager.Instance.NewProject(name, sceneId, generateLogic);
             WindowManager.CloseWindow();
-        } catch (Exception ex) when (ex is Base.ItemNotFoundException) { 
+        } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
             Base.Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
         }
 

@@ -15,7 +15,7 @@ public class Dialog : MonoBehaviour
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.IdDesc> idDescs) {
         List<string> items = new List<string>();
         foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {
-            items.Add(idDesc.Id);
+            items.Add(idDesc.Name);
         }
         UpdateToggleGroup(togglePrefab, toggleGroup, items);
     }

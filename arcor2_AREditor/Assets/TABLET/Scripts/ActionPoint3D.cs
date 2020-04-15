@@ -12,14 +12,14 @@ public class ActionPoint3D : Base.ActionPoint {
     private float interval = 0.1f;
     private float nextUpdate = 0;
 
-    private bool updateProject = false;
+    private bool updatePosition = false;
 
     protected override void Start() {
         base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
     }
 
-    protected override void Update() {
+    protected override async void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
@@ -29,23 +29,25 @@ public class ActionPoint3D : Base.ActionPoint {
                     if (GameObject.ReferenceEquals(Visual, tfGizmo.mainTargetRoot.gameObject)) {
                         // if Gizmo is moving, we can send UpdateProject to server
                         if (tfGizmo.isTransforming) {
-                            updateProject = true;
-                        } else if (updateProject) {
-                            updateProject = false;
-                            GameManager.Instance.UpdateProject();
+                            updatePosition = true;
+                        } else if (updatePosition) {
+                            updatePosition = false;
+                            //GameManager.Instance.UpdateProject();
+                            await GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
+
                         }
                     }
                 }
             } else {
-                if (updateProject) {
-                    updateProject = false;
-                    GameManager.Instance.UpdateProject();
+                if (updatePosition) {
+                    updatePosition = false;
+                    await GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
                 }
                 manipulationStarted = false;
                 GameManager.Instance.ActivateGizmoOverlay(false);
             }
         }
-
+        //TODO shouldn't this be called first?
         base.Update();
     }
 
@@ -67,7 +69,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (type == Click.MOUSE_LEFT_BUTTON) {
             StartManipulation();
         } else if (type == Click.MOUSE_RIGHT_BUTTON) {
-            ShowMenu();
+            ShowMenu(false);
         }
 
         // HANDLE TOUCH
@@ -75,7 +77,7 @@ public class ActionPoint3D : Base.ActionPoint {
             if (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate) {
                 StartManipulation();
             } else {
-                ShowMenu();
+                ShowMenu(false);
             }
         }
     }

@@ -7,6 +7,12 @@ public abstract class TileOptionMenu : OptionMenu {
     private GameObject AddStarBtn, RemoveStarBtn;
 
 
+    protected override void Start() {
+        base.Start();
+        Debug.Assert(AddStarBtn != null);
+        Debug.Assert(RemoveStarBtn != null);
+    }
+
     public void Open(Tile tile) {
         AddStarBtn.SetActive(!tile.GetStarred());
         RemoveStarBtn.SetActive(tile.GetStarred());

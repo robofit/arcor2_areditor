@@ -22,21 +22,20 @@ public class ActionObject3D : ActionObject
     private float interval = 0.1f;
     private float nextUpdate = 0;
 
-    private bool updateScene = false;
+    private bool updatePose = false;
     private Renderer modelRenderer;
     private OutlineOnClick outlineOnClick;
 
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        UpdateId(Data.Id);       
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         // disable update method until model is ready
         //enabled = false;
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null) {
                 if (Time.time >= nextUpdate) {
@@ -46,17 +45,17 @@ public class ActionObject3D : ActionObject
                     if (GameObject.ReferenceEquals(Model, tfGizmo.mainTargetRoot.gameObject)) {
                         // if Gizmo is moving, we can send UpdateProject to server
                         if (tfGizmo.isTransforming) {
-                            updateScene = true;
-                        } else if (updateScene) {
-                            updateScene = false;
-                            GameManager.Instance.UpdateScene();
+                            updatePose = true;
+                        } else if (updatePose) {
+                            updatePose = false;
+                            await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
                         }
                     }
                 }
             } else {
-                if (updateScene) {
-                    updateScene = false;
-                    GameManager.Instance.UpdateScene();
+                if (updatePose) {
+                    updatePose = false;
+                    await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
                 }
                 manipulationStarted = false;
                 GameManager.Instance.ActivateGizmoOverlay(false);
@@ -106,15 +105,15 @@ public class ActionObject3D : ActionObject
         }
     }
 
-    public override void UpdateId(string newId, bool updateScene = true) {
-        base.UpdateId(newId);
-        ActionObjectName.text = newId;
+    public override void UpdateUserId(string newUserId) {
+        base.UpdateUserId(newUserId);
+        ActionObjectName.text = newUserId;
     }
 
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
         Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
-        ActionObjectName.text = actionObjectSwagger.Id;
+        ActionObjectName.text = actionObjectSwagger.Name;
 
     }
 
@@ -129,7 +128,7 @@ public class ActionObject3D : ActionObject
         Data.Type = type;
         SetScenePosition(position);
         SetSceneOrientation(orientation);
-        Data.Uuid = uuid;
+        Data.Id = uuid;
         ActionObjectMetadata = actionObjectMetadata;
         CreateModel();
         enabled = true;

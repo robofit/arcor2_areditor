@@ -6,18 +6,32 @@ using IO.Swagger.Model;
 using System.Threading.Tasks;
 
 namespace Base {
+
+    public class ServiceEventArgs : EventArgs {
+        public Service Data {
+            get; set;
+        }
+
+        public ServiceEventArgs(Service data) {
+            Data = data;
+        }
+    }
     public class ActionsManager : Singleton<ActionsManager> {
+        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
+
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
         public Action CurrentlyRunningAction = null;
         
-        public event EventHandler OnServiceMetadataUpdated, OnServicesUpdated, OnActionsLoaded;
+        public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab;
+        public event ServiceEventHandler OnServicesUpdated;
 
-        public GameObject InteractiveObjects, PuckPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab;
+
+        public GameObject InteractiveObjects;
 
         public event GameManager.StringEventHandler OnActionObjectsUpdated;
 
@@ -42,9 +56,12 @@ namespace Base {
         }
 
         private void Start() {
-            GameManager.Instance.OnSceneChanged += SceneChanged;
+            Debug.Assert(ParameterInputPrefab != null);
+            Debug.Assert(ParameterDropdownPrefab != null);
+            Debug.Assert(ParameterDropdownPosesPrefab != null);
+            Debug.Assert(ParameterDropdownJointsPrefab != null);
+            Debug.Assert(InteractiveObjects != null);
             GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
-
         }
         
         private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
@@ -79,16 +96,38 @@ namespace Base {
             ActionsReady = false;
             ServicesLoaded = false;
             ActionObjectsLoaded = false;
+        }        
+
+        public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
+            Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
+            ServicesData.TryGetValue(sceneService.Type, out Service service);
+            service.Data = sceneService;
+            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
         }
 
-        private void SceneChanged(object sender, EventArgs e) {
-            ServicesData.Clear();
-            foreach (IO.Swagger.Model.SceneService sceneService in Scene.Instance.Data.Services) {
-                if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                    ServicesData.Add(sceneService.Type, new Service(sceneService, serviceMetadata));
-                }
+        public void AddService(IO.Swagger.Model.SceneService sceneService) {
+            Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
+            if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
+                Service service = new Service(sceneService, serviceMetadata);                
+                ServicesData.Add(sceneService.Type, service);
+                OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
-            OnServicesUpdated?.Invoke(this, EventArgs.Empty);
+            
+        }
+
+        public void RemoveService(string serviceType) {
+            Debug.Assert(ServicesData.ContainsKey(serviceType));
+            ServicesData.TryGetValue(serviceType, out Service service);
+            ServicesData.Remove(serviceType);
+            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
+        }
+
+
+        public void ClearServices() {
+            List<string> servicesKeys = servicesData.Keys.ToList();
+            foreach (string service in servicesKeys) {
+                RemoveService(service);
+            }
         }
 
         public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
@@ -113,21 +152,34 @@ namespace Base {
             }
         }
 
-        public List<string> GetRobots() {
+        
+
+        public List<string> GetRobotsNames() {
             HashSet<string> robots = new HashSet<string>();
             foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
                 if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Id);
+                    robots.Add(actionObject.Data.Name);
                 }
             }
             foreach (Service service in servicesData.Values) {
                 if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobots()) {
+                    foreach (string s in service.GetRobotsNames()) {
                         robots.Add(s);
                     }
                 }                    
             }
             return robots.ToList<string>();
+        }
+
+        public List<ActionObject> GetActionObjectsRobots() {
+            List<ActionObject> robots = new List<ActionObject>();
+
+            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    robots.Add(actionObject);
+                }
+            }
+            return robots;
         }
 
 
@@ -224,11 +276,33 @@ namespace Base {
             }
         }
 
-
-        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject interactiveObject) {
+        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in InteractiveObjects.GetComponentsInChildren<ActionObject>()) {
-                if (ao == interactiveObject) {
+            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {               
+                List<ActionMetadata> freeActions = new List<ActionMetadata>();
+                if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
+                    continue;
+                }
+                foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
+                    if (am.Meta.Free)
+                        freeActions.Add(am);
+                }
+                if (freeActions.Count > 0) {
+                    actionsMetadata[ao] = freeActions;
+                }
+                
+            }
+            foreach (Service sceneService in servicesData.Values) {
+                actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
+            }
+
+            return actionsMetadata;
+        }
+
+        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
+            Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
+            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {
+                if (ao == actionObject) {
                     if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                         continue;
                     }

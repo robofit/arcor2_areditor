@@ -537,6 +537,7 @@ MonoBehaviour:
   objectName: {fileID: 343688429989649147}
   VisibilitySlider: {fileID: 7729277793992049522}
   DynamicContent: {fileID: 3071567960018087229}
+  inputDialog: {fileID: 0}
 --- !u!1 &1826031351266711520
 GameObject:
   m_ObjectHideFlags: 0
@@ -2394,7 +2395,7 @@ PrefabInstance:
     - target: {fileID: 1282326451552802060, guid: c77917a7826c62e419cc9a2867495b1f,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: CreateNewAP
+      value: ShowAddActionPointDialog
       objectReference: {fileID: 0}
     - target: {fileID: 1282326451552802060, guid: c77917a7826c62e419cc9a2867495b1f,
         type: 3}

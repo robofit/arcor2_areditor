@@ -23,17 +23,17 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private GameObject debugTools;
 
-    private List<ServiceButton> serviceButtons = new List<ServiceButton>();
+    private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
-        Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
+        //Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
         Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
         Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
@@ -56,13 +56,13 @@ public class MainMenu : MonoBehaviour, IMenu {
         HideEverything();        
     }
 
-    private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
+    /*private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectRunning &&
             args.Data.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
             HideEverything();
             OnOpenProjectEditor(this, EventArgs.Empty);
         }        
-    }
+    }*/
 
     private void OnOpenMainScreen(object sender, EventArgs eventArgs) {
         MainControlButtons.SetActive(true);
@@ -71,14 +71,14 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
         SceneControlButtons.SetActive(true);
         ActionObjects.SetActive(true);
-        ServicesUpdated(null, EventArgs.Empty);
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
         ProjectControlButtons.SetActive(true);
         ActionObjects.SetActive(false);
-        ServicesUpdated(null, EventArgs.Empty);
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
@@ -137,27 +137,40 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-    public void ServicesUpdated(object sender, EventArgs e) {
-        foreach (ServiceButton serviceButton in serviceButtons) {
-            serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
-            if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
-                //checked
-                serviceButton.gameObject.SetActive(true);
-                serviceButton.State = true;
-            } else {
-                if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                    serviceButton.gameObject.SetActive(false);
-                } else {
-                    serviceButton.gameObject.SetActive(true);
-                }
-                serviceButton.State = false;
+    public void ServicesUpdated(object sender, Base.ServiceEventArgs eventArgs) {
+        if (eventArgs.Data != null) {
+            if (serviceButtons.TryGetValue(eventArgs.Data.Data.Type, out ServiceButton btn)) {
+                UpdateServiceButton(btn);
             }
+        } else {
+            foreach (ServiceButton serviceButton in serviceButtons.Values) {
+                UpdateServiceButton(serviceButton);
+            }
+        }
+        
+        
+    }
+
+    private static void UpdateServiceButton(ServiceButton serviceButton) {
+        serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
+        
+        if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+            //checked
+            serviceButton.gameObject.SetActive(true);
+            serviceButton.State = true;
+        } else {
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                serviceButton.gameObject.SetActive(false);
+            } else {
+                serviceButton.gameObject.SetActive(true);
+            }
+            serviceButton.State = false;
         }
     }
 
     public void ServiceMetadataUpdated(object sender, EventArgs e) {
 
-        foreach (ServiceButton b in serviceButtons) {
+        foreach (ServiceButton b in serviceButtons.Values) {
             Destroy(b.gameObject);
         }
 
@@ -172,10 +185,9 @@ public class MainMenu : MonoBehaviour, IMenu {
             serviceButton.ServiceMetadata = service;
             serviceButton.gameObject.GetComponentInChildren<Button>().onClick.AddListener(() => ServiceStateChanged(serviceButton.GetComponent<ServiceButton>()));
             serviceButton.transform.SetAsLastSibling();
-            serviceButtons.Add(serviceButton);
+            serviceButtons.Add(service.Type, serviceButton);
         }
-        ServicesUpdated(this, EventArgs.Empty);
-
+        ServicesUpdated(null, new Base.ServiceEventArgs(null));
     }
 
     public void ServiceStateChanged(ServiceButton serviceButton) {
@@ -205,13 +217,15 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
 
-    public void ShowCloseSceneDialog(string type) {
-        CloseSceneDialog.WindowManager.OpenWindow();
+    public async void CloseScene() {
+        if (! await Base.GameManager.Instance.CloseScene(false))
+            CloseSceneDialog.WindowManager.OpenWindow();
     }
 
 
-    public void ShowCloseProjectDialog(string type) {
-        CloseProjectDialog.WindowManager.OpenWindow();
+    public async void ShowCloseProjectDialog(string type) {
+        if (!await Base.GameManager.Instance.CloseProject(false))
+            CloseProjectDialog.WindowManager.OpenWindow();
     }
 
 

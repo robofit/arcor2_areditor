@@ -52,24 +52,19 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void SwitchToProjects() {
         ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
         ProjectsBtn.color = new Color(0, 0, 0);
-        /*projectsList.alpha = 1;
-        projectsList.blocksRaycasts = true;
-        scenesList.alpha = 0;
-        scenesList.blocksRaycasts = false;*/
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
+        FilterProjectsBySceneId(null);
+        FilterLists();
     }
 
     public void SwitchToScenes() {
         ScenesBtn.color = new Color(0, 0, 0);
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        /*projectsList.alpha = 0;
-        projectsList.blocksRaycasts = false;
-        scenesList.alpha = 1;
-        scenesList.blocksRaycasts = true;*/
-
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
+        FilterScenesById(null);
+        FilterLists();
     }
 
     public void FilterLists() {
@@ -86,6 +81,42 @@ public class MainScreen : Base.Singleton<MainScreen>
             tile.gameObject.SetActive(false);
         else
             tile.gameObject.SetActive(true);
+    }
+
+    public void FilterProjectsBySceneId(string sceneId) {
+        foreach (ProjectTile tile in projectTiles) {
+            if (sceneId == null) {
+                tile.gameObject.SetActive(true);
+                return;
+            }               
+
+            if (tile.SceneId != sceneId) {
+                tile.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void FilterScenesById(string sceneId) {
+        foreach (SceneTile tile in sceneTiles) {
+            if (sceneId == null) {
+                tile.gameObject.SetActive(true);
+                return;
+            }
+
+            if (tile.SceneId != sceneId) {
+                tile.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void ShowRelatedProjects(string sceneId) {
+        SwitchToProjects();
+        FilterProjectsBySceneId(sceneId);
+    }
+
+     public void ShowRelatedScene(string sceneId) {
+        SwitchToScenes();
+        FilterScenesById(sceneId);
     }
 
     public void EnableRecent(bool enable) {
@@ -110,10 +141,11 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
             bool starred = PlayerPrefsHelper.LoadBool("scene/" + scene.Id + "/starred", false);
-            tile.InitTile(scene.Id,
+            tile.InitTile(scene.Name,
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
-                          starred);
+                          starred,
+                          scene.Id);
             sceneTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
@@ -129,10 +161,12 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            tile.InitTile(project.Id,
+            tile.InitTile(project.Name,
                           () => Base.GameManager.Instance.OpenProject(project.Id),
                           () => ProjectOptionMenu.Open(tile),
-                          starred);
+                          starred,
+                          project.Id,
+                          project.SceneId);
             projectTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();

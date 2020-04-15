@@ -11,45 +11,41 @@ public class AddNewActionDialog : Dialog
     public VerticalLayoutGroup DynamicContentLayout;
 
     private Base.ActionMetadata actionMetadata;
-    private List<Base.ActionParameterMetadata> actionParametersMetadata = new List<Base.ActionParameterMetadata>();
+    private Dictionary<string, Base.ActionParameterMetadata> actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
     private List<IActionParameter> actionParameters = new List<IActionParameter>();
     public Base.ActionPoint CurrentActionPoint;
     private IActionProvider actionProvider;
     [SerializeField]
     private LabeledInput nameInput;
+    private GameObject overlay;
 
 
-    private async void Init() {
-        
-        
-        
-        
-        
-
+    private void Init() {
         
     }
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
-        actionParametersMetadata = new List<Base.ActionParameterMetadata>();
-        foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
-            actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
-        }
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderName(), actionParametersMetadata, DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
-        nameInput.SetValue(actionMetadata.Name);
+        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
+        nameInput.SetValue(Base.Scene.Instance.GetFreeActionName(actionMetadata.Name));
     }
 
 
     public async void InitFromAction(Base.Action action) {
         InitDialog(action.ActionProvider, action.Metadata, action.ActionPoint);
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderName(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
-        nameInput.SetValue(action.Data.Id);
+        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        nameInput.SetValue(Base.Scene.Instance.GetFreeActionName(action.Data.Name));
     }
 
     public void InitDialog(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         this.actionMetadata = actionMetadata;
         CurrentActionPoint = actionPoint;
         this.actionProvider = actionProvider;
+        actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
+        foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
+            actionParametersMetadata.Add(meta.Name, new Base.ActionParameterMetadata(meta));
+        }
+
         foreach (Transform t in DynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -58,28 +54,27 @@ public class AddNewActionDialog : Dialog
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
-        // TODO: add some check and set create button interactivity    
+        // TODO: add some check and set create button interactivity
+        
     }
 
     public async void CreateAction() {
         string newActionName = (string) nameInput.GetValue();
         
         if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
-            Base.Action action = await Base.Scene.Instance.SpawnPuck(null, actionMetadata.Name, CurrentActionPoint.ActionObject, CurrentActionPoint, actionProvider, false, newActionName);
-            if (action == null) {
-                return;
-            }
+            List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IActionParameter actionParameter in actionParameters) {
-                object value = actionParameter.GetValue();
-                IO.Swagger.Model.ActionParameterMeta actionParameterMetadata = action.Metadata.GetParamMetadata(actionParameter.GetName());                
-                Base.ActionParameter ap = new Base.ActionParameter(actionParameterMetadata, action, value);
-                action.Parameters.Add(actionParameter.GetName(), ap);
+                if (!actionParametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ActionParameterMetadata actionParameterMetadata)) {
+                    Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
+                    return;
+                }
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                parameters.Add(ap);
             }
-            Base.GameManager.Instance.UpdateProject();
-            WindowManager.CloseWindow();
+            bool success = await Base.GameManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(actionProvider.GetProviderId(), actionMetadata.Name), newActionName);
+            if (success)
+                WindowManager.CloseWindow();
         }
     }
-
-    
 
 }

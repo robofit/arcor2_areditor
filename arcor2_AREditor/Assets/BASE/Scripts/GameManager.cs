@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -59,6 +60,7 @@ namespace Base {
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
+        public event EventHandler OnActionPointsChanged;
         public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
         public event ProjectStateEventHandler OnProjectStateChanged;
@@ -80,7 +82,7 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
-        public const string ApiVersion = "0.5.0";
+        public const string ApiVersion = "0.6.0";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -130,6 +132,13 @@ namespace Base {
             OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
         }
 
+        private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
+            if (GetGameState() == GameStateEnum.ProjectRunning &&
+                args.Data.State == ProjectState.StateEnum.Stopped) {
+                OpenProjectEditor();
+            }
+        }
+
         public IO.Swagger.Model.ProjectState GetProjectState() {
             return projectState;
         }
@@ -144,6 +153,7 @@ namespace Base {
         private void Start() {
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            OnProjectStateChanged += ProjectStateChanged;
             OnLoadProject += ProjectLoaded;
             OnLoadScene += SceneLoaded;
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
@@ -257,17 +267,16 @@ namespace Base {
         }
 
         /// <summary>
-        /// Sends request to the server to create a new Action Object of user specified type and id. Uuid has to be generated here in the client.
+        /// Sends request to the server to create a new Action Object of user specified type and id. Id has to be generated here in the client.
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="id"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string id = "") {
+        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string name) {
             StartLoading();
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            IO.Swagger.Model.SceneObject sceneObject = new IO.Swagger.Model.SceneObject(id: id, pose: pose, type: type, uuid: Guid.NewGuid().ToString());
             EndLoading();
-            return await WebsocketManager.Instance.AddObjectToScene(sceneObject: sceneObject);
+            return await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
@@ -276,7 +285,7 @@ namespace Base {
 
         public async void AddServiceToScene(string type, string configId = "") {
             StartLoading();
-            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId, uuid: Guid.NewGuid().ToString());
+            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
             try {
                 await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
             } catch (RequestFailedException e) {
@@ -287,13 +296,47 @@ namespace Base {
             
         }
 
+        internal void ProjectAdded(Project data) {
+            ProjectUpdated(data);
+        }
+
+        public void SceneAdded(IO.Swagger.Model.Scene scene) {
+            SceneUpdated(scene);
+        }
+
+        
+        public async void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
+            if (GetGameState() == GameStateEnum.SceneEditor)
+                Scene.Instance.SceneBaseUpdated(scene);
+            else if (GetGameState() == GameStateEnum.MainScreen) {
+                await LoadScenes();
+            }
+        }
+
+        public async void ProjectBaseUpdated(Project data) {
+            if (GetGameState() == GameStateEnum.ProjectEditor) {
+                CurrentProject.Desc = data.Desc;
+                CurrentProject.HasLogic = data.HasLogic;
+                CurrentProject.Modified = data.Modified;
+                CurrentProject.Name = data.Name;
+            } else if (GetGameState() == GameStateEnum.MainScreen) {
+                await LoadProjects();
+            }
+        }
+
         // SceneUpdated is called from server, when another GUI makes some change.
-        public void SceneUpdated(IO.Swagger.Model.Scene scene) {
+        public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
+            bool sceneOpened = false;
+            if (Scene.Instance.Data == null && scene != null)
+                sceneOpened = true;
             sceneReady = false;
             newScene = null;
             if (scene == null) {
                 Scene.Instance.RemoveActionObjects();
+                Scene.Instance.Data = null;
+                if (GetGameState() == GameStateEnum.SceneEditor)
+                    await OpenMainScreen();
                 EndLoading();
                 return;
             }
@@ -301,10 +344,16 @@ namespace Base {
                 newScene = scene;
                 return;
             }
-            
 
             // Set current loaded swagger scene
-            Scene.Instance.Data = scene;
+            if (Scene.Instance.Data == null) {
+                Scene.Instance.Data = scene;
+                OpenSceneEditor();
+            } else {
+                Scene.Instance.Data = scene;
+            }
+            
+            
 
             // if another scene was loaded, remove everything from current scene
             if (loadedScene != scene.Id) {
@@ -317,7 +366,11 @@ namespace Base {
             }
 
             Scene.Instance.UpdateActionObjects();
+            Scene.Instance.UpdateServices();
+
             sceneReady = true;
+            if (sceneOpened)
+                OnLoadScene?.Invoke(this, EventArgs.Empty);
             OnSceneChanged?.Invoke(this, EventArgs.Empty);
             
             if (newProject != null) {
@@ -326,21 +379,229 @@ namespace Base {
             EndLoading();
         }
 
+      
 
-        // UpdateScene updates scene on the server.
-        public void UpdateScene() {
-            Scene.Instance.Data.Objects.Clear();
-            foreach (ActionObject actionObject in Scene.Instance.ActionObjects.Values) {
-                Scene.Instance.Data.Objects.Add(actionObject.Data);
+        public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
+            Base.Action action = Scene.Instance.GetAction(projectAction.Id);
+            if (action == null) {
+                Debug.LogError("Trying to update non-existing action!");
+                return;
             }
-            WebsocketManager.Instance.UpdateScene(Scene.Instance.Data);
+            action.ActionUpdate(projectAction);
         }
 
+        public void ActionBaseUpdated(IO.Swagger.Model.Action projectAction) {
+            Base.Action action = Scene.Instance.GetAction(projectAction.Id);
+            if (action == null) {
+                Debug.LogError("Trying to update non-existing action!");
+                return;
+            }
+            action.ActionUpdateBaseData(projectAction);
+        }
+
+        public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
+            ActionPoint actionPoint = Scene.Instance.GetActionPoint(parentId);
+            IActionProvider actionProvider = Scene.Instance.GetActionProvider(Action.ParseActionType(projectAction.Type).Item1);
+            Base.Action action = Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, Action.ParseActionType(projectAction.Type).Item2, actionPoint, actionProvider);
+            // updates name of the action
+            action.ActionUpdateBaseData(projectAction);
+            // updates parameters of the action
+            action.ActionUpdate(projectAction);
+        }
+
+
+        public void ActionRemoved(IO.Swagger.Model.Action action) {
+            Scene.Instance.RemoveAction(action.Id);
+        }
+
+
+        public void ActionPointUpdated(ProjectActionPoint projectActionPoint) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
+                actionPoint.UpdateActionPoint(projectActionPoint);
+                // TODO - update orientations, joints etc.
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError("Action point " + projectActionPoint.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
+                return;
+            }
+        }
+
+        public void ActionPointBaseUpdated(ProjectActionPoint projectActionPoint) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(projectActionPoint.Id);
+                actionPoint.ActionPointBaseUpdate(projectActionPoint);
+                OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+            } catch (KeyNotFoundException ex) {
+                Debug.Log("Action point " + projectActionPoint.Id + " not found!");
+                Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
+                return;
+            }
+
+        }
+
+        public void ActionPointAdded(ProjectActionPoint projectActionPoint) {
+            if (projectActionPoint.Parent == null || projectActionPoint.Parent == "") {
+                Scene.Instance.SpawnActionPoint(projectActionPoint, null);
+            } else {
+                try {
+                    IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(projectActionPoint.Parent);
+                    Scene.Instance.SpawnActionPoint(projectActionPoint, actionPointParent);
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
+                
+            }
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+
+
+        }
+
+
+        public void ActionPointRemoved(ProjectActionPoint projectActionPoint) {
+            Scene.Instance.RemoveActionPoint(projectActionPoint.Id);
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+
+        public void SceneObjectUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                actionObject.ActionObjectUpdate(sceneObject, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+        }
+
+        public void SceneObjectBaseUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+        }
+
+        public void SceneObjectAdded(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type, false, sceneObject.Name);
+            actionObject.ActionObjectUpdate(sceneObject, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
+        }
+
+
+        public void SceneObjectRemoved(SceneObject sceneObject) {
+            ActionObject actionObject = Scene.Instance.GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                Scene.Instance.ActionObjects.Remove(sceneObject.Id);
+                Destroy(actionObject.gameObject);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }            
+        }
+
+
+        public void ActionPointOrientationUpdated(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.UpdateOrientation(orientation); 
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationBaseUpdated(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.BaseUpdateOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationAdded(NamedOrientation orientation, string actionPointIt) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(actionPointIt);
+                actionPoint.AddOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointOrientationRemoved(NamedOrientation orientation) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(orientation.Id);
+                actionPoint.RemoveOrientation(orientation);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to remove action point orientation", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsUpdated(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.UpdateJoints(joints); 
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsBaseUpdated(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.BaseUpdateJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
+                return;
+            }
+        }
+
+        public void ActionPointJointsAdded(ProjectRobotJoints joints, string actionPointIt) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPoint(actionPointIt);
+                actionPoint.AddJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add action point joints", ex.Message);
+                return;
+            }
+        }
+
+
+        public void ActionPointJointsRemoved(ProjectRobotJoints joints) {
+            try {
+                ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(joints.Id);
+                actionPoint.RemoveJoints(joints);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to remove action point joints", ex.Message);
+                return;
+            }
+        }
+
+
         // ProjectUpdated is called from server, when another GUI makes some changes
-        public void ProjectUpdated(IO.Swagger.Model.Project project) {
+        public async void ProjectUpdated(IO.Swagger.Model.Project project) {
             StartLoading();
+            bool projectOpened = false;
+            if (CurrentProject == null && project != null)
+                projectOpened = true;
             if (project == null) {
                 CurrentProject = null;
+                Scene.Instance.RemoveActionPoints();
+                Scene.Instance.Data = null;
+                if (GetGameState() == GameStateEnum.ProjectEditor) {
+                    await OpenMainScreen();
+                }
                 EndLoading();
                 return;
             }
@@ -355,46 +616,22 @@ namespace Base {
             CurrentProject = project;
 
             Scene.Instance.UpdateActionPoints(CurrentProject);
-            
+            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+
+            if (projectOpened)
+                OnLoadProject?.Invoke(this, EventArgs.Empty);
+
             EndLoading();
         }
 
+        
 
-        // UpdateProject updates opened project on the server.
-        public void UpdateProject() {
-            if (CurrentProject == null)
-                return;
-            CurrentProject.Objects.Clear();
-            CurrentProject.SceneId = Scene.Instance.Data.Id;
-            foreach (ActionObject actionObject in Scene.Instance.ActionObjects.Values) {
-                IO.Swagger.Model.ProjectObject projectObject = DataHelper.SceneObjectToProjectObject(actionObject.Data);
-                foreach (ActionPoint actionPoint in actionObject.ActionPoints.Values) {
-                    actionPoint.UpdatePositionsOfPucks();
-                    IO.Swagger.Model.ProjectActionPoint projectActionPoint = actionPoint.Data;
-                    projectActionPoint.Actions.Clear();
-                    foreach (Action action in actionPoint.Actions.Values) {
-                        IO.Swagger.Model.Action projectAction = action.Data;
-                        projectAction.Parameters = new List<IO.Swagger.Model.ActionParameter>();
-                        foreach (ActionParameter parameter in action.Parameters.Values) {
-                            IO.Swagger.Model.ActionParameter projectParameter = parameter;
-                            projectAction.Parameters.Add(projectParameter);
-                        }
-
-                        // TODO Discuss and solve multiple inputs/outputs possibility in Action (currently only 1 input and 1 output)
-                        projectAction.Inputs = new List<IO.Swagger.Model.ActionIO>();
-                        projectAction.Outputs = new List<IO.Swagger.Model.ActionIO>();
-
-                        projectAction.Inputs.Add(action.Input.Data);
-                        projectAction.Outputs.Add(action.Output.Data);
-
-                        projectActionPoint.Actions.Add(projectAction);
-                    }
-                    projectObject.ActionPoints.Add(projectActionPoint);
-                }
-                CurrentProject.Objects.Add(projectObject);
+        public string GetSceneId(string name) {
+            foreach (IdDesc scene in Scenes) {
+                if (name == scene.Name)
+                    return scene.Id;
             }
-
-            WebsocketManager.Instance.UpdateProject(CurrentProject);
+            throw new RequestFailedException("No scene with name: " + name);
         }
 
         public async Task LoadScenes() {
@@ -506,33 +743,43 @@ namespace Base {
 
         public void ExitApp() => Application.Quit();
 
-        public async void UpdateActionPointPosition(string actionPointId, string robotId, string endEffectorId, string orientationId, bool updatePosition) {
+        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointPosition(actionPointId, robotId, endEffectorId, orientationId, updatePosition);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
         }
 
-        public async void UpdateActionPointJoints(string actionPointId, string robotId, string jointsId) {
+        public async void UpdateActionPointOrientationUsingRobot(string actionPointId, string robotId, string endEffectorId, string orientationId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointJoints(actionPointId, robotId, jointsId);
+                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(actionPointId, robotId, endEffectorId, orientationId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
         }
 
-        public async void UpdateActionObjectPosition(string actionObjectId, string robotId, string endEffectorId) {
+        public async void UpdateActionPointJoints(string robotId, string jointsId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionObjectPosition(actionObjectId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionPointJoints(robotId, jointsId);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
+            }
+        }
+
+        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action object", ex.Message);
             }
         }
 
+        
         public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
             await WebsocketManager.Instance.StartObjectFocusing(objectId, robotId, endEffector);
         }
@@ -565,51 +812,64 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
                 return;
             }
-            IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
-            WebsocketManager.Instance.UpdateProject(project);
-            ProjectUpdated(project);
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
-            EndLoading();
+            //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), name: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
+            //WebsocketManager.Instance.UpdateProject(project);
+            //ProjectUpdated(project);
+            try {
+                await WebsocketManager.Instance.CreateProject(name, sceneId, "");
+                OnLoadProject?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to create project", e.Message);
+            } finally {
+                EndLoading();
+            }
+            
         }
 
 
-        public bool NewScene(string name) {
+        public async Task<bool> NewScene(string name) {
             if (name == "") {
+                Notifications.Instance.ShowNotification("Failed to create new scene", "Scane name to defined");
                 return false;
             }
-            foreach (IO.Swagger.Model.IdDesc idDesc in Scenes) {
-                if (idDesc.Id == name)
-                    return false; // scene already exist
+            try {
+                await WebsocketManager.Instance.CreateScene(name, "");
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
             }
-            IO.Swagger.Model.Scene scene = new IO.Swagger.Model.Scene(id: name, objects: new List<IO.Swagger.Model.SceneObject>(), services: new List<IO.Swagger.Model.SceneService>());
-            WebsocketManager.Instance.UpdateScene(scene);
-            SceneUpdated(scene);
-            OnLoadScene?.Invoke(this, EventArgs.Empty);
+            //OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
-        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id) {
-            return await WebsocketManager.Instance.RemoveFromScene(id);
+        public async Task<RemoveFromSceneResponse> RemoveFromScene(string id) {
+            return await WebsocketManager.Instance.RemoveFromScene(id, false);
         }
 
-        public void CloseScene() {
+        public async Task<bool> CloseScene(bool force) {
             loadedScene = "";
-            WebsocketManager.Instance.UpdateScene(null);
-            SceneUpdated(null);
-            OnCloseScene?.Invoke(this, EventArgs.Empty);
-            OpenMainScreen();
+            bool success = await WebsocketManager.Instance.CloseScene(force);
+            if (success) {
+                OpenMainScreen();
+                Scene.Instance.Data = null;
+            }                
+            return success;
         }
 
-        public void CloseProject() {
+        public async Task<bool> CloseProject(bool force) {
             loadedScene = "";
-            WebsocketManager.Instance.UpdateProject(null);
-            ProjectUpdated(null);
-            CloseScene();
-            OnCloseProject?.Invoke(this, EventArgs.Empty);
-            OpenMainScreen();
+            bool success = await WebsocketManager.Instance.CloseProject(force);
+            if (success) {
+                OpenMainScreen();
+                OnCloseProject?.Invoke(this, EventArgs.Empty);
+                Scene.Instance.Data = null;
+            }
+            return success;
+            //ProjectUpdated(null);
+            //CloseScene();
+            
         }
 
-        public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
+        public async Task<List<ObjectAction>> GetActions(string name) {
             try {
                 return await WebsocketManager.Instance.GetActions(name);
             } catch (RequestFailedException e) {
@@ -694,7 +954,6 @@ namespace Base {
             StartLoading();
             await LoadScenes();
             await LoadProjects();
-            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
@@ -702,19 +961,19 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
-            EditorInfo.text = "Scene: " + Scene.Instance.Data.Id;
+            EditorInfo.text = "Scene: " + Scene.Instance.Data.Name;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
         }
 
         public void OpenProjectEditor() {
-            EditorInfo.text = "Project: " + CurrentProject.Id;
+            EditorInfo.text = "Project: " + CurrentProject.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
         }
 
         public void OpenProjectRunningScreen() {
-            EditorInfo.text = "Running: " + CurrentProject.Id;
+            EditorInfo.text = "Running: " + CurrentProject.Name;
             SetGameState(GameStateEnum.ProjectRunning);
             OnRunProject?.Invoke(this, EventArgs.Empty);            
         }
@@ -761,6 +1020,197 @@ namespace Base {
             return btn;
         }
 
-    }    
+        public async Task<bool> RenameActionObject(string id, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameObject(id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
+                return false;
+            }
+        }
+         public async Task<bool> RenameScene(string id, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameScene(id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
+                return false;
+            }
+        }
+
+        internal async Task<bool> RemoveScene(string sceneId) {
+            try {
+                await WebsocketManager.Instance.RemoveScene(sceneId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to remove scene", e.Message);
+                return false;
+            }
+        }
+
+
+        public async Task<bool> RenameProject(string id, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameProject(id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
+                return false;
+            }
+        }
+
+        internal async Task<bool> RemoveProject(string projectId) {
+            try {
+                await WebsocketManager.Instance.RemoveProject(projectId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to remove project", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> AddActionPoint(string name, string parent, Position position) {
+            try {
+                await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RenameActionPoint(ActionPoint actionPoint, string newUserId) {
+            try {
+                await WebsocketManager.Instance.RenameActionPoint(actionPoint.Data.Id, newUserId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+        public async Task<bool> UpdateActionPointParent(ActionPoint actionPoint, string parentId) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPointParent(actionPoint.Data.Id, parentId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateActionPointPosition(ActionPoint actionPoint, Position newPosition) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPointPosition(actionPoint.Data.Id, newPosition);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, string orientationId) {
+            try {
+                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, new Orientation(), orientationId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+
+        public async Task<bool> AddActionPointJoints(ActionPoint actionPoint, string jointsId, string robotId) {
+            try {
+                await WebsocketManager.Instance.AddActionPointJoints(actionPoint.Data.Id, robotId, jointsId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+        
+        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
+            try {
+                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, name);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RenameAction(string actionId, string newName) {
+            try {
+                await WebsocketManager.Instance.RenameAction(actionId, newName);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
+                return false;
+            }
+        }
+
+
+        public async Task<bool> RemoveAction(string actionId) {
+            try {
+                await WebsocketManager.Instance.RemoveAction(actionId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RemoveActionPoint(string actionPointId) {
+            try {
+                await WebsocketManager.Instance.RemoveActionPoint(actionPointId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose) {
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPose(actionObjectId, pose);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
+            try {
+                await WebsocketManager.Instance.UpdateAction(actionId, parameters);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action ", e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
+            try {
+                await WebsocketManager.Instance.UpdateActionLogic(actionId, inputs, outputs);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action ", e.Message + " logic");
+                return false;
+            }
+        }
+
+        public async Task<List<string>> GetProjectsWithScene(string sceneId) {
+            try {
+                return await WebsocketManager.Instance.GetProjectsWithScene(sceneId);
+            } catch (RequestFailedException e) {
+                Debug.LogError(e);
+                return new List<string>();
+            }
+        }
+
+
+        }    
 
 }

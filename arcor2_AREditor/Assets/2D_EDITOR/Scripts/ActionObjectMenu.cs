@@ -8,21 +8,19 @@ using Base;
 public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
     [SerializeField]
-    private TMPro.TMP_InputField objectName;
+    private TMPro.TMP_Text objectName;
     public DropdownParameter RobotsList, EndEffectorList;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public Slider VisibilitySlider;
+    public InputDialog InputDialog;
 
     public ConfirmationDialog ConfirmationDialog;
 
     private int currentFocusPoint = -1;
 
-    public void SaveID(string new_id) {
-        CurrentObject.UpdateId(new_id);
-    }
-
+    
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {
@@ -36,9 +34,26 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public void ShowDeleteActionDialog() {
         ConfirmationDialog.Open("Delete action object",
-                                "Do you want to delete action object " + CurrentObject.Data.Id + "?",
+                                "Do you want to delete action object " + CurrentObject.Data.Name + "?",
                                 () => DeleteActionObject(),
                                 () => ConfirmationDialog.Close());
+    }
+
+    public void ShowRenameDialog() {
+        InputDialog.Open("Rename action object",
+                         "Type new name",
+                         "New name",
+                         CurrentObject.Data.Name,
+                         () => RenameObject(InputDialog.GetValue()),
+                         () => InputDialog.Close());
+    }
+
+    public async void RenameObject(string newUserId) {
+        bool result = await GameManager.Instance.RenameActionObject(CurrentObject.Data.Id, newUserId);
+        if (result) {
+            InputDialog.Close();
+            objectName.text = newUserId;
+        }
     }
 
 
@@ -59,7 +74,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             RobotsListsBlock.SetActive(false);
         }
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged);
+        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
 
         if (RobotsList.Dropdown.dropdownItems.Count > 0)
             OnRobotChanged(RobotsList.Dropdown.selectedText.text);
@@ -71,7 +86,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-        objectName.text = CurrentObject.Data.Id;
+        objectName.text = CurrentObject.Data.Name;
 
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
     }
@@ -87,7 +102,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        Base.GameManager.Instance.UpdateActionObjectPosition(CurrentObject.Data.Id,
+        Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
             RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
     }
          

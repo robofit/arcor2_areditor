@@ -11,7 +11,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public GameObject UpdatePoseBlock, UpdateJointsBlock;
     public TMPro.TMP_Text NoOrientation, NoJoints, ActionObjectType;
     [SerializeField]
-    private TMPro.TMP_InputField topText;
+    private TMPro.TMP_Text actionPointName;
 
     [SerializeField]
     private GameObject dynamicContent, updatePositionButton,
@@ -20,7 +20,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public FocusConfirmationDialog FocusConfirmationDialog;
 
-    public DropdownParameter robotsList, endEffectorList, orientationsList;
+    public DropdownParameter RobotsList, EndEffectorList, OrientationsList;
     public DropdownParameterJoints JointsList;
 
     public ConfirmationDialog ConfirmationDialog;
@@ -28,10 +28,13 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public AddNewActionDialog AddNewActionDialog;
 
     [SerializeField]
-    private Button LockedBtn, UnlockedBtn;
+    private Button LockedBtn, UnlockedBtn, UntieBtn, BackBtn;
+
+    [SerializeField]
+    private InputDialog inputDialog;
 
 
-    public async void CreatePuck(string action_id, IActionProvider actionProvider) {
+    public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
         AddNewActionDialog.WindowManager.OpenWindow();
     }
@@ -39,6 +42,24 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void SaveID(string new_id) {
         CurrentActionPoint.UpdateId(new_id);
     }
+
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename action point",
+                         "Type new name",
+                         "New name",
+                         CurrentActionPoint.Data.Name,
+                         () => RenameActionPoint(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void RenameActionPoint(string newUserId) {
+        bool result = await Base.GameManager.Instance.RenameActionPoint(CurrentActionPoint, newUserId);
+        if (result) {
+            inputDialog.Close();
+            actionPointName.text = newUserId;
+        }
+    }
+
 
     public void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
@@ -55,64 +76,82 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 Destroy(o.gameObject);
             }
         }
-        SetHeader(actionPoint.Data.Id);
-        ActionObjectType.text = actionPoint.ActionObject.GetComponent<Base.ActionObject>().Data.Type;
+        SetHeader(actionPoint.Data.Name);
+        if (actionPoint.Parent != null)
+            ActionObjectType.text = actionPoint.Parent.GetName();
+        else
+            ActionObjectType.text = "Global action point";
 
-        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in Base.ActionsManager.Instance.GetAllActionsOfObject(actionPoint.ActionObject.GetComponent<Base.ActionObject>())) {
-            GameObject collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform);
-            collapsableMenu.GetComponent<CollapsableMenu>().Name = keyval.Key.GetProviderName();
-            collapsableMenu.GetComponent<CollapsableMenu>().Collapsed = true;
+        Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata;
+        if (actionPoint.Parent == null) {
+            actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+        } else {
+            Base.ActionObject parentActionObject = actionPoint.Parent.GetActionObject();
+            if (parentActionObject == null)
+                actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+            else
+                actionsMetadata = Base.ActionsManager.Instance.GetAllActionsOfObject(parentActionObject);
+        }
+
+        foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
+            CollapsableMenu collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform).GetComponent<CollapsableMenu>();
+            collapsableMenu.Name = keyval.Key.GetProviderName();
+            collapsableMenu.Collapsed = true;
 
             foreach (Base.ActionMetadata am in keyval.Value) {
-                GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.GetComponent<CollapsableMenu>().Content.transform);
-                btnGO.transform.localScale = new Vector3(1, 1, 1);
-                Button btn = btnGO.GetComponent<Button>();
+                Button btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<Button>();
+                btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
-                btnGO.AddComponent<TooltipContent>();
-                btnGO.GetComponent<TooltipContent>().enabled = am.Description != "";
+                TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
+                btnTooltip.enabled = am.Description != "";
                 
-                if (btnGO.GetComponent<TooltipContent>().tooltipRect == null) {
-                    btnGO.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+                if (btnTooltip.tooltipRect == null) {
+                    btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
                 }
-                if (btnGO.GetComponent<TooltipContent>().descriptionText == null) {
-                    btnGO.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+                if (btnTooltip.descriptionText == null) {
+                    btnTooltip.descriptionText = Base.GameManager.Instance.Text;
                 }
-                btnGO.GetComponent<TooltipContent>().description = am.Description;
-                btn.onClick.AddListener(() => CreatePuck(am.Name, keyval.Key));
+                btnTooltip.description = am.Description;
+                btn.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
             }
 
         }
-        CustomDropdown robotsListDropdown = robotsList.Dropdown;
+        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        robotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged);
+        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
         if (robotsListDropdown.dropdownItems.Count == 0) {
             UpdatePositionBlock.SetActive(false);
         } else {
-            OnRobotChanged((string) robotsList.GetValue());
+            OnRobotChanged((string) RobotsList.GetValue());
             UpdatePositionBlock.SetActive(true);
             
         }
         
         UpdateOrientations();
         UpdateLockedBtns(CurrentActionPoint.Locked);
+        if (CurrentActionPoint.Parent == null)
+            UntieBtn.interactable = false;
+        else
+            UntieBtn.interactable = true;
         
     }
 
     public void UpdateOrientations() {
-        CustomDropdown orientationDropdown = orientationsList.Dropdown;
+        CustomDropdown orientationDropdown = OrientationsList.Dropdown;
         orientationDropdown.dropdownItems.Clear();
-        foreach (string orientation in CurrentActionPoint.GetPoses().Keys) {
+        foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = orientation
+                itemName = orientation.Name
             };
             orientationDropdown.dropdownItems.Add(item);
         }
         if (orientationDropdown.dropdownItems.Count == 0) {
-            orientationDropdown.gameObject.SetActive(false);
+            OrientationsList.gameObject.SetActive(false);
             NoOrientation.gameObject.SetActive(true);
         } else {
             NoOrientation.gameObject.SetActive(false);
+            OrientationsList.gameObject.SetActive(true);
             orientationDropdown.enabled = true;
             orientationDropdown.SetupDropdown();
         }
@@ -125,29 +164,33 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         
-        JointsList.PutData(CurrentActionPoint.GetJoints(true, robot_id).Values.ToList(), selectedJoints, null);
+        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null);
 
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
-            jointsDropdown.gameObject.SetActive(true);
+            JointsList.gameObject.SetActive(true);
         } else {
-            jointsDropdown.gameObject.SetActive(false);
+            JointsList.gameObject.SetActive(false);
             NoJoints.gameObject.SetActive(true);
         }
     }
 
     
 
-    public void DeleteAP() {
-        if (CurrentActionPoint == null)
-            return;
-        CurrentActionPoint.GetComponent<Base.ActionPoint>().DeleteAP();
-        MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+    public async void DeleteAP() {
+        Debug.Assert(CurrentActionPoint != null);
+        bool success = await Base.GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
+        if (success) {
+            ConfirmationDialog.Close();
+            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+        }    
     }
+
+   
 
     public void ShowDeleteAPDialog() {
         ConfirmationDialog.Open("Delete action point",
-                                "Do you want to delete action point " + CurrentActionPoint.Data.Id + "?",
+                                "Do you want to delete action point " + CurrentActionPoint.Data.Name + "?",
                                 () => DeleteAP(),
                                 () => ConfirmationDialog.Close());
     }
@@ -155,9 +198,9 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
    
 
     private void OnRobotChanged(string robot_id) {
-        endEffectorList.Dropdown.dropdownItems.Clear();
-        endEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
-        if (endEffectorList.Dropdown.dropdownItems.Count == 0) {
+        EndEffectorList.Dropdown.dropdownItems.Clear();
+        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
+        if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
             UpdatePoseBlock.SetActive(false);
             UpdateJointsBlock.SetActive(true);
         } else {
@@ -170,14 +213,39 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
    
 
     public void ShowAddOrientationDialog() {
-        AddOrientationDialog.GetComponent<AddOrientationDialog>().ap = CurrentActionPoint;
-        AddOrientationDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        inputDialog.Open("Create new named orientation",
+                         "Please set name of the new orientation",
+                         "Name",
+                         "",
+                         () => AddOrientation(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddOrientation(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, name);
+        if (success) {
+            inputDialog.Close();
+        }
+        UpdateOrientations();
     }
 
     public void ShowAddJointsDialog() {
-        AddJointsDialog.GetComponent<AddJointsDialog>().ap = CurrentActionPoint;
-        AddJointsDialog.GetComponent<AddJointsDialog>().RobotId = robotsList.Dropdown.selectedText.text;
-        AddJointsDialog.GetComponent<ModalWindowManager>().OpenWindow();
+        inputDialog.Open("Create new joints configuration",
+                         "Please set name of the new joints configuration",
+                         "Name",
+                         "",
+                         () => AddJoints(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddJoints(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+        bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, (string) RobotsList.GetValue());
+        if (success) {
+            inputDialog.Close();
+        }
+        UpdateJoints((string) RobotsList.GetValue());
     }
 
     public void FocusJoints() {
@@ -187,24 +255,24 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints(CurrentActionPoint.Data.Id, (string) robotsList.GetValue(), (string) JointsList.GetValue());
+            Base.GameManager.Instance.UpdateActionPointJoints((string) RobotsList.GetValue(), CurrentActionPoint.GetJoints((string) JointsList.GetValue()).Name);
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
         }
-        UpdateJoints((string) robotsList.GetValue(), (string) JointsList.GetValue());
+        UpdateJoints((string) RobotsList.GetValue(), (string) JointsList.GetValue());
     }
 
     public void ShowFocusConfirmationDialog() {
-        if (robotsList.Dropdown.dropdownItems.Count == 0 ||
-            endEffectorList.Dropdown.dropdownItems.Count == 0 ||
-            orientationsList.Dropdown.dropdownItems.Count == 0) {
+        if (RobotsList.Dropdown.dropdownItems.Count == 0 ||
+            EndEffectorList.Dropdown.dropdownItems.Count == 0 ||
+            OrientationsList.Dropdown.dropdownItems.Count == 0) {
             Base.Notifications.Instance.ShowNotification("Failed to update orientation.", "Something is not selected");
             return;
         }
-        CustomDropdown robotsListDropdown = robotsList.Dropdown;
-        CustomDropdown endEffectorDropdown = endEffectorList.Dropdown;
-        CustomDropdown orientationDropdown = orientationsList.Dropdown;
+        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
+        CustomDropdown endEffectorDropdown = EndEffectorList.Dropdown;
+        CustomDropdown orientationDropdown = OrientationsList.Dropdown;
         if (endEffectorDropdown.dropdownItems.Count == 0) {
             FocusConfirmationDialog.EndEffectorId = "";
         } else {
@@ -212,15 +280,17 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         FocusConfirmationDialog.RobotId = robotsListDropdown.selectedText.text;
 
-        FocusConfirmationDialog.OrientationId = orientationDropdown.selectedText.text;
+        FocusConfirmationDialog.OrientationId = CurrentActionPoint.GetNamedOrientationByName(orientationDropdown.selectedText.text).Id;
+        FocusConfirmationDialog.OrientationName = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
+        FocusConfirmationDialog.ActionPointName = CurrentActionPoint.Data.Name;
         FocusConfirmationDialog.Init();
         FocusConfirmationDialog.WindowManager.OpenWindow();
     }
 
     public void SetHeader(string header) {
-        topText.text = header;
+        actionPointName.text = header;
     }
 
     public void UpdateLockedBtns(bool locked) {
@@ -231,5 +301,31 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void SetLocked(bool locked) {
         CurrentActionPoint.Locked = locked;
         UpdateLockedBtns(locked);
+    }
+
+   
+    public async void UntieActionPoint() {
+        Debug.Assert(CurrentActionPoint != null);
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, "");
+        if (result) {
+            ConfirmationDialog.Close();
+        }
+    }
+
+    public void ShowUntieActionPointDialog() {
+        ConfirmationDialog.Open("Untie action point",
+                                "Do you want to untie action point " + CurrentActionPoint.Data.Name + "?",
+                                () => UntieActionPoint(),
+                                () => ConfirmationDialog.Close());
+    }
+
+    public void EnableBackButton(bool enable) {
+        BackBtn.gameObject.SetActive(enable);
+    }
+
+    public void BackToParentMenu() {
+        CurrentActionPoint.Parent.ShowMenu();
+        Base.Scene.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
+        CurrentActionPoint.Parent.GetGameObject().SendMessage("Select");
     }
 }
