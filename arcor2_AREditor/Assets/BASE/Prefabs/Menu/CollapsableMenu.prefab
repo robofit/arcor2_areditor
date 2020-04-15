@@ -132,13 +132,13 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 9156433198861585090}
-    characterCount: 0
+    characterCount: 8
     spriteCount: 0
-    spaceCount: 0
-    wordCount: 0
+    spaceCount: 1
+    wordCount: 2
     linkCount: 0
-    lineCount: 0
-    pageCount: 0
+    lineCount: 7
+    pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
@@ -167,6 +167,7 @@ GameObject:
   - component: {fileID: 3075787865342502573}
   - component: {fileID: 6000960060490082627}
   - component: {fileID: 1346055510669276245}
+  - component: {fileID: 5510472399148165326}
   m_Layer: 0
   m_Name: CollapsableMenu
   m_TagString: Untagged
@@ -257,6 +258,14 @@ MonoBehaviour:
   CollapseButton: {fileID: 4434261508921472843}
   Content: {fileID: 7435696894175101132}
   text: {fileID: 9156433198861585090}
+--- !u!222 &5510472399148165326
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920948528114228850}
+  m_CullTransparentMesh: 0
 --- !u!1 &4434261508921472843
 GameObject:
   m_ObjectHideFlags: 0
@@ -444,6 +453,7 @@ GameObject:
   - component: {fileID: 2662123842529454726}
   - component: {fileID: 6843065873936781589}
   - component: {fileID: 6079464475606588525}
+  - component: {fileID: 7558318316988337624}
   m_Layer: 0
   m_Name: Content
   m_TagString: Untagged
@@ -515,3 +525,11 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!222 &7558318316988337624
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7435696894175101132}
+  m_CullTransparentMesh: 0
