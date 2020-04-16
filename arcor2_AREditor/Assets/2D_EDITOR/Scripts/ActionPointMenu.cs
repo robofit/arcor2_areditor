@@ -101,16 +101,19 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 Button btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<Button>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
-                TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
-                btnTooltip.enabled = am.Description != "";
+                if (!string.IsNullOrEmpty(am.Description)) {
+                    TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
+                    btnTooltip.enabled = am.Description != "";
+
+                    if (btnTooltip.tooltipRect == null) {
+                        btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
+                    }
+                    if (btnTooltip.descriptionText == null) {
+                        btnTooltip.descriptionText = Base.GameManager.Instance.Text;
+                    }
+                    btnTooltip.description = am.Description;
+                }
                 
-                if (btnTooltip.tooltipRect == null) {
-                    btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
-                }
-                if (btnTooltip.descriptionText == null) {
-                    btnTooltip.descriptionText = Base.GameManager.Instance.Text;
-                }
-                btnTooltip.description = am.Description;
                 btn.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
             }
 
