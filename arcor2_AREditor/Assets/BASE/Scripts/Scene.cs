@@ -21,6 +21,9 @@ namespace Base {
 
         public GameObject CurrentlySelectedObject;
 
+        public LineConnectionsManager AOToAPConnectionsManager;
+        public GameObject LineConnectionPrefab;
+
         private bool sceneActive = true;
         private bool projectActive = true;
 
@@ -99,6 +102,9 @@ namespace Base {
          public void SetSelectedObject(GameObject obj) {
             if (CurrentlySelectedObject != null) {
                 CurrentlySelectedObject.SendMessage("Deselect");
+            }
+            if (obj != null) {
+                obj.SendMessage("OnSelected", SendMessageOptions.DontRequireReceiver);
             }
             CurrentlySelectedObject = obj;
         }

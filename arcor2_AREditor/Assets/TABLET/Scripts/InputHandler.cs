@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Base;
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 
 public class InputHandler : Singleton<InputHandler> {
 
@@ -40,46 +40,35 @@ public class InputHandler : Singleton<InputHandler> {
     }
 
     private void TryToRaycast(Clickable.Click clickType) {
-        RaycastHit hit = new RaycastHit();
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
-            try {
-                hit.transform.gameObject.SendMessage("OnClick", clickType);
-            } catch (Exception e) {
-                Debug.LogError(e);
+        // Do not raycast through UI element
+        if (!EventSystem.current.IsPointerOverGameObject()) {
+            RaycastHit hit = new RaycastHit();
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
+                try {
+                    hit.transform.gameObject.SendMessage("OnClick", clickType);
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                }
+            } else {
+                OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
             }
-        } else {
-            OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
-        }
 
-        OnGeneralClick?.Invoke(this, new EventClickArgs(clickType));
+            OnGeneralClick?.Invoke(this, new EventClickArgs(clickType));
+        }
     }
 
 
     private void HandleTouch() {
         RaycastHit hit = new RaycastHit();
         foreach (Touch touch in Input.touches) {
-            if (touch.phase == TouchPhase.Began) {
-                if (coroutine != null)
-                    StopCoroutine(coroutine);
-                coroutine = LongTouch(touch);
-                StartCoroutine(coroutine);
+            // Do not raycast through UI element
+            if (!EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
 
-                if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
-                    try {
-                        hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_BEGAN);
-                    } catch (Exception e) {
-                        Debug.LogError(e);
-                    }
-                }
-            }
-
-            if (touch.phase == TouchPhase.Ended) {
-                if (longTouch) {
-                    longTouch = false;
-
-                } else {
-                    StopCoroutine(coroutine);
-                    longTouch = false;
+                if (touch.phase == TouchPhase.Began) {
+                    if (coroutine != null)
+                        StopCoroutine(coroutine);
+                    coroutine = LongTouch(touch);
+                    StartCoroutine(coroutine);
 
                     if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
                         try {
@@ -92,6 +81,29 @@ public class InputHandler : Singleton<InputHandler> {
                     }
 
                     OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH));
+                }
+
+                // NOTE: TouchPhase.Ended always ignores UI clicking check (IsPointerOverGameObject)
+                if (touch.phase == TouchPhase.Ended) {
+                    if (longTouch) {
+                        longTouch = false;
+
+                    } else {
+                        StopCoroutine(coroutine);
+                        longTouch = false;
+
+                        if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
+                            try {
+                                hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_ENDED);
+                            } catch (Exception e) {
+                                Debug.LogError(e);
+                            }
+                        } else {
+                            OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH_ENDED));
+                        }
+
+                        OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH_ENDED));
+                    }
                 }
             }
         }

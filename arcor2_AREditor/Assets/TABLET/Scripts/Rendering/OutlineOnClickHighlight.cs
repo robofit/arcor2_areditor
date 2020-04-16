@@ -19,15 +19,17 @@ public class OutlineOnClickHighlight : OutlineOnClick {
     }
 
     public override void OnClick(Click type) {
-        if (type == Click.TOUCH_BEGAN) {
+        if (type == Click.TOUCH) {
             Select();
-        } else if (type == Click.TOUCH || type == Click.LONG_TOUCH) {
+        } else if (type == Click.TOUCH_ENDED || type == Click.LONG_TOUCH) {
             Deselect();
         }
     }
 
     private void OnGeneralClick(object sender, EventClickArgs e) {
-        Deselect();
+        if (e.ClickType == Click.TOUCH_ENDED) {
+            Deselect();
+        }
     }
 
 }
