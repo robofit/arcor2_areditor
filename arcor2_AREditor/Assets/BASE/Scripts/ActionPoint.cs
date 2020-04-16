@@ -17,7 +17,7 @@ namespace Base {
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
-        public Connection ConnectionToActionObject;
+        public LineConnection ConnectionToActionObject;
 
         [System.NonSerialized]
         public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
@@ -74,6 +74,33 @@ namespace Base {
 
         public void SetParent(IActionPointParent parent) {
             Parent = parent;
+            if(parent != null)
+                SetConnectionToActionObject(parent);
+        }
+
+        private void SetConnectionToActionObject(IActionPointParent parent) {
+            // Create new Line Connection between parent AO and child AP
+            GameObject c = Instantiate(Scene.Instance.LineConnectionPrefab);
+            c.transform.parent = transform;
+            LineConnection newConnection = c.GetComponent<LineConnection>();
+            newConnection.targets[0] = parent.GetTransform();
+            newConnection.targets[1] = this.transform;
+
+            // add the connection to connections manager
+            Scene.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
+
+            ConnectionToActionObject = newConnection;
+
+            // Add connection renderer into ChangeMaterialOnSelected script attached on parent AO 
+            ChangeMaterialOnSelected changeMaterial;            
+            changeMaterial = parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
+
+            // if the script is not attached on parent AO, then add it and initialize its click material
+            if (changeMaterial == null) {
+                changeMaterial = parent.GetGameObject().AddComponent<ChangeMaterialOnSelected>();
+                changeMaterial.ClickMaterial = ConnectionToActionObject.ClickMaterial;
+            }
+            changeMaterial.AddRenderer(ConnectionToActionObject.GetComponent<LineRenderer>());
         }
 
         public abstract void UpdatePositionsOfPucks();
@@ -151,8 +178,14 @@ namespace Base {
             // Remove all actions of this action point
             RemoveActions();
 
-            // TODO: remove connections to action objects
+            // Remove connections to action object
             if (ConnectionToActionObject != null && ConnectionToActionObject.gameObject != null) {
+                // remove renderer from ChangeMaterialOnSelected script attached on the AO
+                ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
+                changeMaterial.RemoveRenderer(ConnectionToActionObject.GetComponent<LineRenderer>());
+                // remove connection from connectinos manager
+                Scene.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToActionObject);
+                // destroy connection gameobject
                 Destroy(ConnectionToActionObject.gameObject);
             }
 
