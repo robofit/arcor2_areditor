@@ -68,7 +68,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public void ShowRenameDialog() {
         inputDialog.Open("Rename action",
-                         "Type new name",
+                         "",
                          "New name",
                          CurrentAction.Data.Name,
                          () => RenameAction(inputDialog.GetValue()),
@@ -91,18 +91,9 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
-        /*List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
-        foreach (IO.Swagger.Model.ActionParameter parameter in CurrentAction.Parameters.Values) {
-            if (parameterId == parameter.Id) {
-                IO.Swagger.Model.ActionParameter updatedParameter = new IO.Swagger.Model.ActionParameter
-                    (id: parameter.Id, type: parameter.Type, value: JsonConvert.SerializeObject(newValue));
-                parameters.Add(updatedParameter);
-            } else
-                parameters.Add(parameter);
-        }
-        bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);*/
         parametersChanged = true;
         SaveParametersBtn.interactable = true;
+        ExecuteActionBtn.interactable = false;
     }
 
     public async void ExecuteAction() {
@@ -137,6 +128,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 Base.Notifications.Instance.ShowNotification("Parameters saved", "");
                 SaveParametersBtn.interactable = false;
                 parametersChanged = false;
+                ExecuteActionBtn.interactable = true;
             }                
         }
     }
