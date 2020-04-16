@@ -28,6 +28,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     private SimpleSideMenu SideMenu;
 
+    [SerializeField]
+    private Button UpdateJointsBtn, UpdateOrientationBtn;
+
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
     }
@@ -47,6 +50,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         }
 
         UpdateOrientations();
+
     }
 
     public void UpdateOrientations() {
@@ -61,12 +65,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         if (orientationDropdown.dropdownItems.Count == 0) {
             OrientationsList.gameObject.SetActive(false);
             NoOrientation.gameObject.SetActive(true);
+            UpdateOrientationBtn.interactable =false;
         } else {
             NoOrientation.gameObject.SetActive(false);
             OrientationsList.gameObject.SetActive(true);
             orientationDropdown.enabled = true;
             orientationDropdown.SetupDropdown();
+            UpdateOrientationBtn.interactable = true;
         }
+        
 
     }
 
@@ -81,9 +88,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
             JointsList.gameObject.SetActive(true);
+            UpdateJointsBtn.interactable = true;
         } else {
             JointsList.gameObject.SetActive(false);
             NoJoints.gameObject.SetActive(true);
+            UpdateJointsBtn.interactable = false;
         }
     }
 
