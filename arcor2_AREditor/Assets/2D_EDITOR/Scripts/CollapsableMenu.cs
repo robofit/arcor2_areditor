@@ -5,14 +5,16 @@ using UnityEngine.UI;
 
 public class CollapsableMenu : MonoBehaviour
 {
-    public string Name;
+    [SerializeField]
+    private string Name;
     [SerializeField]
     private bool collapsed;
     public GameObject CollapseButton, Content;
     [SerializeField]
     private TMPro.TMP_Text text;
+    [SerializeField]
+    private Image Arrow;
 
-    private string downArrow = " - ", rightArrow = " + ";
 
     public bool Collapsed {
         get => collapsed;
@@ -21,21 +23,21 @@ public class CollapsableMenu : MonoBehaviour
 
     void Start()
     {
-        SetCollapsedState(collapsed);        
+        SetCollapsedState(collapsed);
+        text.text = Name;
     }
 
-    void Update()
-    {
-
+    public void SetLabel(string label) {
+        Name = label;
+        text.text = label;
     }
-
     public void SetCollapsedState(bool state) {
         collapsed = state;
         Content.SetActive(!state);
-        if (Collapsed) {
-            text.text = rightArrow + Name;
+        if (!Collapsed) {
+            Arrow.transform.rotation = Quaternion.Euler(0, 0, 270);
         } else {
-            text.text = downArrow + Name;
+            Arrow.transform.rotation = Quaternion.Euler(0, 0, 90);
         }
     }
 
