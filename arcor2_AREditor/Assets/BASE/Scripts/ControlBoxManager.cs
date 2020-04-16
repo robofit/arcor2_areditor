@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -9,6 +10,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private TransformGizmo tfGizmo;
     [SerializeField]
     private InputDialog InputDialog;
+
+    [SerializeField]
+    private GameObject CreateGlobalActionPointBtn;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -29,9 +33,18 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void Start() {
+        Debug.Assert(CreateGlobalActionPointBtn != null);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
     }
 
+    private void GameStateChanged(object sender, GameStateEventArgs args) {
+        if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
+            CreateGlobalActionPointBtn.SetActive(true);
+        } else {
+            CreateGlobalActionPointBtn.SetActive(false);
+        }
+    }
 
     public void DisplayTrackables(bool active) {
         TrackingManager.Instance.DisplayPlanesAndFeatures(active);
