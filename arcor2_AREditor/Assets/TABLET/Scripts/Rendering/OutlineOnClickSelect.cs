@@ -33,11 +33,13 @@ public class OutlineOnClickSelect : OutlineOnClick {
 
     
     private void OnBlindClick(object sender, EventClickArgs e) {
-        if (GameManager.Instance.SceneInteractable) {
-            Scene.Instance.SetSelectedObject(null);
-            RemoveMaterial(ClickMaterial);
-            foreach (Renderer renderer in Renderers) {
-                renderer.materials = materials[renderer].ToArray();
+        if (e.ClickType == Click.TOUCH) {
+            if (GameManager.Instance.SceneInteractable) {
+                Scene.Instance.SetSelectedObject(null);
+                RemoveMaterial(ClickMaterial);
+                foreach (Renderer renderer in Renderers) {
+                    renderer.materials = materials[renderer].ToArray();
+                }
             }
         }
     }
