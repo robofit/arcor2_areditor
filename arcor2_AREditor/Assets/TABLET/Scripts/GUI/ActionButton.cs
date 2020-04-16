@@ -6,12 +6,18 @@ using UnityEngine.UI;
 public class ActionButton : MonoBehaviour
 {
     public Image Background;
+    [SerializeField]
+    public Button Button;
+    [SerializeField]
+    private TMPro.TMP_Text text;
     // Start is called before the first frame update
     private void Awake() {
         enabled = false;
     }
-    
 
+    public void SetLabel(string label) {
+        text.text = label;
+    }
     // Update is called once per frame
     private void Update()
     {

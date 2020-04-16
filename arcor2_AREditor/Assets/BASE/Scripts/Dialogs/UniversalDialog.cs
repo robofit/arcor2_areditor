@@ -26,7 +26,12 @@ public class UniversalDialog : Dialog
     }
 
     public void SetDescription(string description) {
-        WindowManager.windowDescription.text = description;
+        if (string.IsNullOrEmpty(description)) {
+            WindowManager.windowDescription.gameObject.SetActive(false);
+        } else {
+            WindowManager.windowDescription.gameObject.SetActive(true);
+            WindowManager.windowDescription.text = description;
+        }        
     }
 
     public void SetTitle(string title) {

@@ -28,7 +28,7 @@ public class ProjectOptionMenu : TileOptionMenu
     }
     public void ShowRenameDialog() {
         inputDialog.Open("Rename project",
-                         "Type new name",
+                         "",
                          "New name",
                          projectTile.GetLabel(),
                          () => RenameProject(inputDialog.GetValue()),

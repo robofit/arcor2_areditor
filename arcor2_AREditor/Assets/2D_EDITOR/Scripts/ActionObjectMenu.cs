@@ -41,7 +41,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public void ShowRenameDialog() {
         InputDialog.Open("Rename action object",
-                         "Type new name",
+                         "",
                          "New name",
                          CurrentObject.Data.Name,
                          () => RenameObject(InputDialog.GetValue()),

@@ -9,13 +9,22 @@ using Base;
 public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     public SwitchComponent Visiblity, Interactibility;
     public GameObject ActionObjectsList, ActionPointsList;
+    [SerializeField]
+    private GameObject ActionPointsScrollable, ActionObjectsScrollable;
 
     private void Start() {
+        Debug.Assert(ActionPointsScrollable != null);
+        Debug.Assert(ActionObjectsScrollable != null);
         Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
         Base.GameManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
+        Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         Interactibility.SetValue(false);
+    }
+
+    private void GameStateChanged(object sender, GameStateEventArgs args) {
+        ActionPointsScrollable.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor);
     }
 
     public void UpdateMenu() {

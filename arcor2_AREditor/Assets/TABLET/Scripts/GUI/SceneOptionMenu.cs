@@ -30,7 +30,7 @@ public class SceneOptionMenu : TileOptionMenu {
 
     public void ShowRenameDialog() {
         inputDialog.Open("Rename scene",
-                         "Type new name",
+                         "",
                          "New name",
                          sceneTile.GetLabel(),
                          () => RenameScene(inputDialog.GetValue()),
