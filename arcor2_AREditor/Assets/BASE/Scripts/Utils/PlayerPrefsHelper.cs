@@ -9,6 +9,12 @@ public static class PlayerPrefsHelper {
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Returns float value of key, if it exist. If not, returns defaultValue. 
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static float LoadFloat(string key, float defaultValue) {
         return PlayerPrefs.GetFloat(key, defaultValue);
     }
@@ -18,6 +24,12 @@ public static class PlayerPrefsHelper {
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// Returns boolean value of key, if it exist. If not, returns defaultValue.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
     public static bool LoadBool(string key, bool defaultValue) {
         int value = PlayerPrefs.GetInt(key, defaultValue ? 1 : 0);
         return value == 1 ? true : false;

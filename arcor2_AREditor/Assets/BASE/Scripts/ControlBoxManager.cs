@@ -1,9 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
 using RuntimeGizmos;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ControlBoxManager : Singleton<ControlBoxManager> {
 
@@ -11,8 +11,10 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     [SerializeField]
     private InputDialog InputDialog;
 
-    [SerializeField]
-    private GameObject CreateGlobalActionPointBtn;
+    public Toggle MoveToggle;
+    public Toggle RotateToggle;
+    public Toggle TrackablesToggle;
+    public Toggle ConnectionsToggle;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -33,18 +35,13 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void Start() {
-        Debug.Assert(CreateGlobalActionPointBtn != null);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+        MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
+        RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
+        TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
+        ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
     }
 
-    private void GameStateChanged(object sender, GameStateEventArgs args) {
-        if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
-            CreateGlobalActionPointBtn.SetActive(true);
-        } else {
-            CreateGlobalActionPointBtn.SetActive(false);
-        }
-    }
 
     public void DisplayTrackables(bool active) {
         TrackingManager.Instance.DisplayPlanesAndFeatures(active);
@@ -71,5 +68,12 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         bool result = await GameManager.Instance.AddActionPoint(name, "", new IO.Swagger.Model.Position());
         if (result)
             InputDialog.Close();
+    }
+
+    private void OnDestroy() {
+        PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
+        PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);
+        PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
+        PlayerPrefsHelper.SaveBool("control_box_display_connections", ConnectionsToggle.isOn);
     }
 }
