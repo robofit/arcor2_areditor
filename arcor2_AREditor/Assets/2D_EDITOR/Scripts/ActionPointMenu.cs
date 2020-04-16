@@ -44,7 +44,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void ShowRenameDialog() {
         inputDialog.Open("Rename action point",
-                         "Type new name",
+                         "",
                          "New name",
                          CurrentActionPoint.Data.Name,
                          () => RenameActionPoint(inputDialog.GetValue()),

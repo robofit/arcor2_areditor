@@ -68,7 +68,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public void ShowRenameDialog() {
         inputDialog.Open("Rename action",
-                         "Type new name",
+                         "",
                          "New name",
                          CurrentAction.Data.Name,
                          () => RenameAction(inputDialog.GetValue()),
