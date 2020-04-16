@@ -13,6 +13,8 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     private Dictionary<string, GameObject> ModelMenus;
     public TMPro.TMP_InputField NameInput, BoxX, BoxY, BoxZ, SphereRadius, CylinderHeight, CylinderRadius, MeshId;
     public DropdownParameter ParentsList, ModelsList;
+    [SerializeField]
+    private Button CreateNewObjectBtn;
 
 
     private void Awake() {
@@ -38,10 +40,11 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     }
 
     public void UpdateMenu() {
-
+        ValidateFields();
     }
 
     public void UpdateModelsMenu() {
+        ValidateFields();
         string modelType = (string) ModelsList.GetValue();
         if (ModelMenus.TryGetValue(modelType, out GameObject menu)) {
             ShowModelMenu(menu);
@@ -53,7 +56,8 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         CylinderMenu.SetActive(false);
         SphereMenu.SetActive(false);
         MeshMenu.SetActive(false);
-        menu?.SetActive(true);
+        if (menu != null)
+            menu.SetActive(true);
     }
 
     public void UpdateObjectsList(object sender, Base.StringEventArgs eventArgs) {
@@ -67,6 +71,39 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         }
         ParentsList.PutData(values, originalValue, null);
         
+    }
+
+    public void ValidateFields() {
+        bool interactable = true;
+        if (string.IsNullOrEmpty(NameInput.text)) {
+            interactable = false;
+        }
+        if (interactable) {
+            string modelType = (string) ModelsList.GetValue();
+            switch (modelType) {
+                case "Box":
+                    if (string.IsNullOrEmpty(BoxX.text) ||
+                        string.IsNullOrEmpty(BoxY.text) ||
+                        string.IsNullOrEmpty(BoxZ.text))
+                        interactable = false;
+                    break;
+                case "Sphere":
+                    if (string.IsNullOrEmpty(SphereRadius.text))
+                        interactable = false;
+                    break;
+                case "Cylinder":
+                    if (string.IsNullOrEmpty(CylinderHeight.text) ||
+                        string.IsNullOrEmpty(CylinderRadius.text))
+                        interactable = false;
+                    break;
+                case "Mesh":
+                    if (string.IsNullOrEmpty(MeshId.text))
+                        interactable = false;
+                    break;
+            }
+        }
+        
+        CreateNewObjectBtn.interactable = interactable;
     }
 
     public async void CreateNewObjectType() {
