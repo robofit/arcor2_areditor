@@ -94,24 +94,27 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
             CollapsableMenu collapsableMenu = Instantiate(CollapsablePrefab, dynamicContent.transform).GetComponent<CollapsableMenu>();
-            collapsableMenu.Name = keyval.Key.GetProviderName();
+            collapsableMenu.SetLabel(keyval.Key.GetProviderName());
             collapsableMenu.Collapsed = true;
 
             foreach (Base.ActionMetadata am in keyval.Value) {
-                Button btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<Button>();
+                ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButton>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
-                btn.GetComponentInChildren<TMPro.TMP_Text>().text = am.Name;
-                TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
-                btnTooltip.enabled = am.Description != "";
+                btn.SetLabel(am.Name);
+                if (!string.IsNullOrEmpty(am.Description)) {
+                    TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
+                    btnTooltip.enabled = am.Description != "";
+
+                    if (btnTooltip.tooltipRect == null) {
+                        btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
+                    }
+                    if (btnTooltip.descriptionText == null) {
+                        btnTooltip.descriptionText = Base.GameManager.Instance.Text;
+                    }
+                    btnTooltip.description = am.Description;
+                }
                 
-                if (btnTooltip.tooltipRect == null) {
-                    btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
-                }
-                if (btnTooltip.descriptionText == null) {
-                    btnTooltip.descriptionText = Base.GameManager.Instance.Text;
-                }
-                btnTooltip.description = am.Description;
-                btn.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
+                btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
             }
 
         }

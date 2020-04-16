@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
 
+[RequireComponent(typeof(SimpleSideMenu))]
 public class ActionPointAimingMenu : MonoBehaviour, IMenu
 {
     public Base.ActionPoint CurrentActionPoint;
@@ -24,6 +25,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     [SerializeField]
     private InputDialog inputDialog;
+
+    private SimpleSideMenu SideMenu;
+
+    private void Start() {
+        SideMenu = GetComponent<SimpleSideMenu>();
+    }
 
     public void UpdateMenu() {
         ActionPointName.text = CurrentActionPoint.Data.Name;
@@ -177,7 +184,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     public void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
         UpdateMenu();
-        GetComponent<SimpleSideMenu>().Open();
+        SideMenu.Open();
+    }
+
+    public void Close() {
+        SideMenu.Close();
     }
 
 }

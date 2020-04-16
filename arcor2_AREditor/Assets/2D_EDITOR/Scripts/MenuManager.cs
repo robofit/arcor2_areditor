@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu, ActionObjectMenuProjectEditor, ActionObjectSettingsMenu;
+    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu,
+        ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
@@ -16,7 +17,8 @@ public class MenuManager : Base.Singleton<MenuManager> {
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open;
+            ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
+            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open;
     }
 
     public void ShowMenu(SimpleSideMenu menu) {
@@ -40,6 +42,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (PuckMenu.CurrentState == SimpleSideMenu.State.Open) {
             PuckMenu.Close();
         }
+        if (ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open) {
+            ActionPointAimingMenu.Close();
+        }
     }
 
     public void DisableAllMenus() {
@@ -48,6 +53,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
         ActionPointMenu.gameObject.SetActive(false);
         PuckMenu.gameObject.SetActive(false);
         ActionObjectMenuProjectEditor.gameObject.SetActive(false);
+        ActionPointAimingMenu.gameObject.SetActive(false);
     }
 
     public void EnableAllWindows() {
@@ -56,6 +62,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
         ActionPointMenu.gameObject.SetActive(true);
         PuckMenu.gameObject.SetActive(true);
         ActionObjectMenuProjectEditor.gameObject.SetActive(true);
+        ActionPointAimingMenu.gameObject.SetActive(true);
     }
 
     public void HideMenu(SimpleSideMenu menu) {

@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
+
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public Base.Action CurrentAction;
-
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
