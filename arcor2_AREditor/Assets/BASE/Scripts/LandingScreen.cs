@@ -9,6 +9,8 @@ public class LandingScreen : MonoBehaviour
     public TMPro.TMP_InputField Domain, Port;
     public Toggle KeepConnected;
     public CanvasGroup CanvasGroup;
+    [SerializeField]
+    private TMPro.TMP_Text Version;
 
     private void Start() {
         bool keepConnected = PlayerPrefs.GetInt("arserver_keep_connected", 0) == 1 ? true : false;
@@ -17,6 +19,7 @@ public class LandingScreen : MonoBehaviour
         Domain.text = PlayerPrefs.GetString("arserver_domain", "");
         Port.text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         KeepConnected.isOn = keepConnected;
+        Version.text = Base.GameManager.Instance.EditorVersion;
         if (keepConnected) {
             ConnectToServer();
         }

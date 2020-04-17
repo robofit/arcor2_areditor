@@ -237,6 +237,9 @@ namespace Base {
                     case "ProjectState":
                         HandleProjectState(data);
                         break;
+                    case "ProjectSaved":
+                        HandleProjectSaved(data);
+                        break;
                     case "ProjectException":
                         HandleProjectException(data);
                         break;
@@ -254,7 +257,9 @@ namespace Base {
 
         }
 
-        
+        private void HandleProjectSaved(string data) {
+            GameManager.Instance.ProjectSaved();
+        }
 
         private async Task<T> WaitForResult<T>(int key) {
             if (responses.TryGetValue(key, out string value)) {
@@ -285,7 +290,7 @@ namespace Base {
         private async void HandleProjectChanged(string obj) {
 
             try {
-
+                GameManager.Instance.ProjectChanged = true;
                 IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
                 switch (eventProjectChanged.ChangeType) {
                     case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
@@ -379,6 +384,7 @@ namespace Base {
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
+            GameManager.Instance.ProjectChanged = true;
             switch (actionChanged.ChangeType) {
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
                     GameManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
@@ -398,6 +404,7 @@ namespace Base {
         }
 
         private void HandleActionPointChanged(string data) {
+            GameManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
             switch (actionPointChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
@@ -418,6 +425,7 @@ namespace Base {
         }
 
         private void HandleOrientationChanged(string data) {
+            GameManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.OrientationChanged orientationChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.OrientationChanged>(data);
             switch (orientationChanged.ChangeType) {
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Add:
@@ -438,6 +446,7 @@ namespace Base {
         }
 
         private void HandleJointsChanged(string data) {
+            GameManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.JointsChanged jointsChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.JointsChanged>(data);
             switch (jointsChanged.ChangeType) {
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Add:

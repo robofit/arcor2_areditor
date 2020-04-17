@@ -26,7 +26,10 @@ public class Action3D : Base.Action {
     }
 
     public override void StopAction() {
-        Visual.material.color = colorDefault;
+        if (Visual != null) {
+            Visual.material.color = colorDefault;
+        }           
+        
     }
 
     public override void UpdateName(string newName) {

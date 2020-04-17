@@ -57,7 +57,7 @@ namespace Base {
             Data.Name = action.Name;
         }
 
-        public virtual void ActionUpdate(IO.Swagger.Model.Action action) {
+        public virtual void ActionUpdate(IO.Swagger.Model.Action action, bool updateConnections = false) {
 
             // Updates (or creates new) parameters of current action
             foreach (IO.Swagger.Model.ActionParameter projectActionParameter in action.Parameters) {
@@ -78,7 +78,47 @@ namespace Base {
                     Debug.LogError(ex);
                 }
             }
+            if (updateConnections) {
+                //at the moment, each action has exactly one input and one output
+                if (action.Outputs[0].Default != Output.Data.Default) {
+                    string actionOutput = action.Outputs[0].Default;
+                    Action refAction = null;
+                    if (actionOutput != "start" && actionOutput != "end") {
+                        refAction = Scene.Instance.GetAction(actionOutput);
+                    }
 
+                    if (Output.Connection != null) {
+                        ConnectionManagerArcoro.Instance.Connections.Remove(Output.Connection);
+                        Destroy(Output.Connection.gameObject);
+                    }
+
+                    // Create new connection only if connected action exists (it is not start nor end)
+                    if (refAction != null) {
+                        // Create new one
+                        PuckInput input = refAction.Input;
+
+                        GameObject c = Instantiate(Scene.Instance.ConnectionPrefab);
+                        c.transform.SetParent(ConnectionManager.instance.transform);
+                        Connection newConnection = c.GetComponent<Connection>();
+                        // We are always connecting output to input.
+                        newConnection.target[0] = Output.gameObject.GetComponent<RectTransform>();
+                        newConnection.target[1] = input.gameObject.GetComponent<RectTransform>();
+
+                        input.Connection = newConnection;
+                        Output.Connection = newConnection;
+                        input.Data.Default = Data.Id;
+                        Output.Data.Default = refAction.Data.Id;
+                        ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
+                    } else {
+                        refAction = Scene.Instance.GetAction(Output.Data.Default);
+                        refAction.Input.InitData();
+                        Output.InitData();
+                    }
+
+
+                }
+            }
+            
         }
 
         public void UpdateType() {
