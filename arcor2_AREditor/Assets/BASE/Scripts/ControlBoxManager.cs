@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -10,6 +11,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private TransformGizmo tfGizmo;
     [SerializeField]
     private InputDialog InputDialog;
+    [SerializeField]
+    private GameObject CreateGlobalActionPointBtn;
 
     public Toggle MoveToggle;
     public Toggle RotateToggle;
@@ -35,11 +38,21 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void Start() {
+        Debug.Assert(CreateGlobalActionPointBtn != null);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
         RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
         ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
+        Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+    }
+
+    private void GameStateChanged(object sender, GameStateEventArgs args) {
+        if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
+            CreateGlobalActionPointBtn.SetActive(true);
+        } else {
+            CreateGlobalActionPointBtn.SetActive(false);
+        }
     }
 
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
-    public GameObject ProjectControlButtons, ConnectionControl, ActionObjectsContent, ActionObjects,
+    public GameObject ProjectControlButtons, ActionObjectsContent, ActionObjects,
         SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
 
     public OpenProjectDialog OpenProjectDialog;
@@ -28,7 +28,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     // Start is called before the first frame update
     private void Start() {
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.GameManager.Instance.OnConnectingToServer += ConnectingToServer;
         Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
@@ -77,13 +76,12 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
-        ShowConnectionControl();
+       
     }
 
 
     private void HideEverything() {
         ProjectControlButtons.SetActive(false);
-        ConnectionControl.SetActive(false);
         ActionObjects.SetActive(false);
         SceneControlButtons.SetActive(false);
         MainControlButtons.SetActive(false);
@@ -264,21 +262,12 @@ public class MainMenu : MonoBehaviour, IMenu {
         ProjectControlButtons.SetActive(true);
     }
 
-    public void ShowConnectionControl() {
-        ConnectionControl.SetActive(true);
-        ConnectionControl.GetComponentInChildren<Button>().interactable = true;
-    }
-
     public void ShowDynamicContent() {
         ActionObjects.SetActive(true);
     }
 
     public void HideProjectControlButtons() {
         ProjectControlButtons.SetActive(false);
-    }
-
-    public void HideConnectionControl() {
-        ConnectionControl.SetActive(false);
     }
 
     public void HideDynamicContent() {
@@ -288,7 +277,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     
     public void ConnectedToServer(object sender, Base.StringEventArgs e) {
 
-        HideConnectionControl();
         ShowProjectControlButtons();
         ShowDynamicContent();
     }
@@ -301,10 +289,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void ShowNewObjectTypeMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
-    }
-
-    public void ConnectingToServer(object sender, Base.StringEventArgs e) {
-        ConnectionControl.GetComponentInChildren<Button>().interactable = false;
     }
 
     public async void SaveScene() {
