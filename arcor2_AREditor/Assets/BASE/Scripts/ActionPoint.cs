@@ -52,6 +52,7 @@ namespace Base {
             Data.Position = apData.Position;
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
+            ConnectionToActionObject.UpdateLine();
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }
@@ -303,7 +304,7 @@ namespace Base {
                 // local list of all actions for current action point
                 currentA.Add(projectAction.Id);
             }
-
+            ConnectionToActionObject.UpdateLine();
             return (currentA, connections);
         }
 
