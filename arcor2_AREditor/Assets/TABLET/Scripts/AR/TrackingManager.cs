@@ -27,6 +27,7 @@ public class TrackingManager : Singleton<TrackingManager> {
     }
 
     private void Start() {
+#if UNITY_ANDROID && !UNITY_EDITOR
         // We want to display notifications about tracking only when the camera feed is on screen (only in project or scene edit).
         GameManager.Instance.OnOpenProjectEditor += StartTrackingNotifications;
         GameManager.Instance.OnOpenSceneEditor += StartTrackingNotifications;
@@ -37,6 +38,7 @@ public class TrackingManager : Singleton<TrackingManager> {
 
         ARPlaneManager.planesChanged += OnPlanesChanged;
         ARPointCloudManager.pointCloudsChanged += OnPointCloudChanged;
+#endif
     }
 
     private void OnPointCloudChanged(ARPointCloudChangedEventArgs obj) {

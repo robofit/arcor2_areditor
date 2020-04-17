@@ -379,7 +379,21 @@ namespace Base {
             EndLoading();
         }
 
-      
+        internal void HandleProjectException(ProjectExceptionEventData data) {
+            Notifications.Instance.ShowNotification("Project exception", data.Message);
+        }
+
+        internal void HandleActionResult(ActionResult data) {
+            if (data.Error != null)
+                Notifications.Instance.ShowNotification("Action execution failed", data.Error);
+            else {
+                string res = "";
+                if (data.Result != null)
+                    res = "Result: " + data.Result;
+                Notifications.Instance.ShowNotification("Action execution finished sucessfully", res);
+            }
+                
+        }
 
         public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
             Base.Action action = Scene.Instance.GetAction(projectAction.Id);

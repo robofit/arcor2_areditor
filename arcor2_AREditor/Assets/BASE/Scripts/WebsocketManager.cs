@@ -237,6 +237,12 @@ namespace Base {
                     case "ProjectState":
                         HandleProjectState(data);
                         break;
+                    case "ProjectException":
+                        HandleProjectException(data);
+                        break;
+                    case "ActionResult":
+                        HandleActionResult(data);
+                        break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
                             ignoreProjectChanged = false;
@@ -247,6 +253,8 @@ namespace Base {
             }
 
         }
+
+        
 
         private async Task<T> WaitForResult<T>(int key) {
             if (responses.TryGetValue(key, out string value)) {
@@ -330,6 +338,16 @@ namespace Base {
             ActionsManager.Instance.CurrentlyRunningAction = puck;
             // Run current action (set its color to running)
             puck.RunAction();
+        }
+
+        private void HandleActionResult(string data) {
+            IO.Swagger.Model.ActionResultEvent actionResult = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionResultEvent>(data);
+            GameManager.Instance.HandleActionResult(actionResult.Data);
+        }
+
+        private void HandleProjectException(string data) {
+            IO.Swagger.Model.ProjectExceptionEvent projectException = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectExceptionEvent>(data);
+            GameManager.Instance.HandleProjectException(projectException.Data);
         }
 
         private void HandleProjectState(string obj) {
