@@ -355,9 +355,11 @@ public class MainMenu : MonoBehaviour, IMenu {
         //nothing to do.. yet
     }
 
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
     public void Recalibrate() {
         CalibrationManager.Instance.Recalibrate();
     }
+#endif
 
  
 }
