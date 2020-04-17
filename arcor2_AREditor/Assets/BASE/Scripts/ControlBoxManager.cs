@@ -42,7 +42,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
         RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
+#if UNITY_ANDROID && !UNITY_EDITOR
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
+#endif
         ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
     }
@@ -55,11 +57,13 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         }
     }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+
     public void DisplayTrackables(bool active) {
+#if UNITY_ANDROID && !UNITY_EDITOR
         TrackingManager.Instance.DisplayPlanesAndFeatures(active);
-    }
 #endif
+    }
+
 
     public void ShowActionObjectSettingsMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
@@ -87,7 +91,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
         PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);
+#if UNITY_ANDROID && !UNITY_EDITOR
         PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
+#endif
         PlayerPrefsHelper.SaveBool("control_box_display_connections", ConnectionsToggle.isOn);
     }
 }
