@@ -38,7 +38,7 @@ public class ServiceButton : MonoBehaviour
         button.interactable = interactable;
         if (!interactable) {
             tooltipContent.enabled = true;
-            tooltipContent.description = ServiceMetadata.Description + ServiceMetadata.Problem;
+            tooltipContent.description = ServiceMetadata.Description + " " + ServiceMetadata.Problem;
         } else {
             tooltipContent.enabled = false;
         }

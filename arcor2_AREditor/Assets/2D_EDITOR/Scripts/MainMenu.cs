@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ConnectionControl, ActionObjectsContent, ActionObjects,
-        ProjectsList, SceneList, DomainInput, PortInput, SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
+        SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
@@ -42,8 +42,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
         HideEverything();
         OnOpenDisconnectedScreen(this, EventArgs.Empty);
-        DomainInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetString("arserver_domain", "localhost");
-        PortInput.GetComponent<TMPro.TMP_InputField>().text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
@@ -55,14 +53,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
         HideEverything();        
     }
-
-    /*private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
-        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectRunning &&
-            args.Data.State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
-            HideEverything();
-            OnOpenProjectEditor(this, EventArgs.Empty);
-        }        
-    }*/
 
     private void OnOpenMainScreen(object sender, EventArgs eventArgs) {
         MainControlButtons.SetActive(true);
@@ -295,14 +285,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         ActionObjects.SetActive(false);
     }
 
-    public void ConnectToServer() {
-        PlayerPrefs.SetString("arserver_domain", DomainInput.GetComponent<TMPro.TMP_InputField>().text);
-        PlayerPrefs.SetInt("arserver_port", int.Parse(PortInput.GetComponent<TMPro.TMP_InputField>().text));
-        PlayerPrefs.Save();
-        Base.GameManager.Instance.ConnectToSever(GetConnectionDomain(), GetConnectionPort());
-    }
-
-
+    
     public void ConnectedToServer(object sender, Base.StringEventArgs e) {
 
         HideConnectionControl();
@@ -316,13 +299,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-    public string GetConnectionDomain() {
-        return DomainInput.GetComponent<TMPro.TMP_InputField>().text;
-    }
-
-    public int GetConnectionPort() {
-        return int.Parse(PortInput.GetComponentInChildren<TMPro.TMP_InputField>().text);
-    }
     public void ShowNewObjectTypeMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
     }
@@ -352,17 +328,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateScenes(object sender, EventArgs eventArgs) {
-        Dropdown sceneListDropdown = SceneList.GetComponent<Dropdown>();
-        sceneListDropdown.options.Clear();
-        sceneListDropdown.options.Add(new Dropdown.OptionData("Create new scene"));
-        sceneListDropdown.options.Add(new Dropdown.OptionData("---"));
-        foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
-            sceneListDropdown.options.Add(new Dropdown.OptionData(scene.Id));
-        }
-    }
-
-
+ 
     public void RunProject() {
         Base.GameManager.Instance.RunProject();
     }
