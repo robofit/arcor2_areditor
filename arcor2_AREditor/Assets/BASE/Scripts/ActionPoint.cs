@@ -70,6 +70,7 @@ namespace Base {
             Data = apData;
             transform.localPosition = GetScenePosition();
             SetSize(size);
+            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove == true || ControlBoxManager.Instance.UseGizmoRotate == true) ? "GizmoRuntime" : "Default");
             // TODO: is this neccessary?
             /*if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
