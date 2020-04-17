@@ -136,6 +136,9 @@ namespace Base {
             if (GetGameState() == GameStateEnum.ProjectRunning &&
                 args.Data.State == ProjectState.StateEnum.Stopped) {
                 OpenProjectEditor();
+            } else if (GetGameState() == GameStateEnum.ProjectEditor &&
+                args.Data.State == ProjectState.StateEnum.Running) {
+                OpenProjectRunningScreen();
             }
         }
 
