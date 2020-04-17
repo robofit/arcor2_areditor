@@ -628,6 +628,8 @@ namespace Base {
             newProject = null;
 
             CurrentProject = project;
+            Scene.Instance.SetAPSize(PlayerPrefsHelper.LoadFloat("project/" + CurrentProject.Id + "/APSize", 0.5f));
+
 
             Scene.Instance.UpdateActionPoints(CurrentProject);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);

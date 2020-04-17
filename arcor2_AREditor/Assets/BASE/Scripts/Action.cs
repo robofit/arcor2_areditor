@@ -78,6 +78,7 @@ namespace Base {
                     Debug.LogError(ex);
                 }
             }
+
         }
 
         public void UpdateType() {

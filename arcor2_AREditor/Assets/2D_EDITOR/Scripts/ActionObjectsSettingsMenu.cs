@@ -11,10 +11,13 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
+    [SerializeField]
+    private Slider APSizeSlider;
 
     private void Start() {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
+        Debug.Assert(APSizeSlider != null);
         Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -28,7 +31,7 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void UpdateMenu() {
-
+        APSizeSlider.value = Scene.Instance.APSize;
     }
 
     public void ShowActionObjects() {
@@ -91,6 +94,10 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         Base.Scene.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
 
+    }
+
+    public void OnAPSizeChange(float value) {
+        Scene.Instance.SetAPSize(value);
     }
 
 

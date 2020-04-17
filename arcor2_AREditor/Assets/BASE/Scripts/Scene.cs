@@ -29,6 +29,8 @@ namespace Base {
 
         public bool ActionObjectsInteractive, ActionObjectsVisible;
 
+        public float APSize = 0.5f;
+
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
@@ -343,7 +345,7 @@ namespace Base {
 
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
-            actionPoint.InitAP(apData, actionPointParent);
+            actionPoint.InitAP(apData, APSize, actionPointParent);
             ActionPoints.Add(actionPoint.Data.Id, actionPoint);
 
             return actionPoint;
@@ -580,6 +582,18 @@ namespace Base {
                 } catch (KeyNotFoundException ex) { }
             }
             throw new KeyNotFoundException("Action point with joints id " + id + " not found");
+        }
+
+        /// <summary>
+        /// Change size of all action points
+        /// </summary>
+        /// <param name="size"><0; 1> From barely visible to quite big</param>
+        public void SetAPSize(float size) {
+            PlayerPrefsHelper.SaveFloat("project/" + GameManager.Instance.CurrentProject.Id + "/APSize", size);
+            APSize = size;
+            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                actionPoint.SetSize(size);
+            }
         }
 
 

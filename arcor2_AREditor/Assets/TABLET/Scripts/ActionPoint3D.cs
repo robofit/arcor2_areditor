@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ActionPoint3D : Base.ActionPoint {
 
-    public GameObject Visual;
+    public GameObject Sphere, Visual;
     
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -26,7 +26,7 @@ public class ActionPoint3D : Base.ActionPoint {
                     nextUpdate += interval;
 
                     // check if gameobject with whom is Gizmo manipulating is our Visual gameobject
-                    if (GameObject.ReferenceEquals(Visual, tfGizmo.mainTargetRoot.gameObject)) {
+                    if (GameObject.ReferenceEquals(Sphere, tfGizmo.mainTargetRoot.gameObject)) {
                         // if Gizmo is moving, we can send UpdateProject to server
                         if (tfGizmo.isTransforming) {
                             updatePosition = true;
@@ -124,8 +124,15 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void ActivateForGizmo(string layer) {
         if (!Locked) {
             base.ActivateForGizmo(layer);
-            Visual.layer = LayerMask.NameToLayer(layer);
+            Sphere.layer = LayerMask.NameToLayer(layer);
         }
     }
 
+    /// <summary>
+    /// Changes size of shpere representing action point
+    /// </summary>
+    /// <param name="size"><0; 1> - 0 means invisble, 1 means 10cm in diameter</param>
+    public override void SetSize(float size) {
+        Visual.transform.localScale = new Vector3(size / 10, size / 10, size / 10);
+    }
 }
