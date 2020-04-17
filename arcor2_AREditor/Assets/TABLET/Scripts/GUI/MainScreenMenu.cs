@@ -11,8 +11,8 @@ public class MainScreenMenu : MonoBehaviour
     public Toggle CloudAnchorToggle;
 
     private void Start() {
+        Debug.Assert(ConnectionString != null);
         CloudAnchorToggle.isOn = Settings.Instance.UseCloudAnchors;
-
         Base.GameManager.Instance.OnConnectedToServer += OnConnectedToServer;
     }
 

@@ -57,7 +57,6 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         }
     }
 
-
     public void DisplayTrackables(bool active) {
 #if UNITY_ANDROID && !UNITY_EDITOR
         TrackingManager.Instance.DisplayPlanesAndFeatures(active);

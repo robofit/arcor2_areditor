@@ -589,7 +589,8 @@ namespace Base {
         /// </summary>
         /// <param name="size"><0; 1> From barely visible to quite big</param>
         public void SetAPSize(float size) {
-            PlayerPrefsHelper.SaveFloat("project/" + GameManager.Instance.CurrentProject.Id + "/APSize", size);
+            if (GameManager.Instance.CurrentProject != null)
+                PlayerPrefsHelper.SaveFloat("project/" + GameManager.Instance.CurrentProject.Id + "/APSize", size);
             APSize = size;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.SetSize(size);
