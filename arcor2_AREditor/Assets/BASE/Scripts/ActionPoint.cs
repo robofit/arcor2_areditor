@@ -52,6 +52,8 @@ namespace Base {
             Data.Position = apData.Position;
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
+            if (Parent != null)
+                ConnectionToActionObject.UpdateLine();
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }
@@ -68,6 +70,7 @@ namespace Base {
             Data = apData;
             transform.localPosition = GetScenePosition();
             SetSize(size);
+            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove == true || ControlBoxManager.Instance.UseGizmoRotate == true) ? "GizmoRuntime" : "Default");
             // TODO: is this neccessary?
             /*if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
@@ -303,7 +306,8 @@ namespace Base {
                 // local list of all actions for current action point
                 currentA.Add(projectAction.Id);
             }
-
+            if (Parent != null)
+                ConnectionToActionObject.UpdateLine();
             return (currentA, connections);
         }
 

@@ -89,8 +89,10 @@ MonoBehaviour:
     type: 3}
   SpherePrefab: {fileID: 1882225777272338896, guid: 86f57e8e80a38894c9cdf8cb5ffc41ee,
     type: 3}
-  ActionObjectMaterialTransparent: {fileID: 0}
-  ActionObjectMaterialOpaque: {fileID: 0}
+  ActionObjectMaterialTransparent: {fileID: 2100000, guid: ac6dd0a955cbb584fa6ebacfc39f8a2a,
+    type: 2}
+  ActionObjectMaterialOpaque: {fileID: 2100000, guid: a42075478d0bf9d4da97396f41dbbd78,
+    type: 2}
 --- !u!114 &3050534694925757164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117,6 +119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
+  HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
   Renderers: []
 --- !u!1 &6802618089977537743
 GameObject:

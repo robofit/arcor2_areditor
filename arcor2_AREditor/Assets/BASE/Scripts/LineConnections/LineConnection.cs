@@ -11,8 +11,11 @@ public class LineConnection : MonoBehaviour {
 
     public Material ClickMaterial;
 
-    private void Start() {
+    private void Awake() {
         lineRenderer = GetComponent<LineRenderer>();
+    }
+
+    private void Start() {
         CreateConnection(targets[0], targets[1]);
     }
 
@@ -29,7 +32,7 @@ public class LineConnection : MonoBehaviour {
         connectionActive = true;
     }
 
-    private void UpdateLine() {
+    public void UpdateLine() {
         lineRenderer.SetPositions(new Vector3[2] { targets[0].position, targets[1].position });
     }
 }

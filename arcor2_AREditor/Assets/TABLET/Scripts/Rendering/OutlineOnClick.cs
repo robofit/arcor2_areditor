@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 public class OutlineOnClick : Clickable {
 
     public Material ClickMaterial;
+    public Material HoverMaterial;
 
     public List<Renderer> Renderers = new List<Renderer>();
     protected Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
@@ -68,5 +69,19 @@ public class OutlineOnClick : Clickable {
     public void SwapMaterials(Material mat1, Material mat2) {
         RemoveMaterial(mat1);
         AddMaterial(mat2);
+    }
+
+    public void Highlight() {
+        AddMaterial(HoverMaterial);
+        foreach (Renderer renderer in Renderers) {
+            renderer.materials = materials[renderer].ToArray();
+        }
+    }
+
+    public void UnHighlight() {
+        RemoveMaterial(HoverMaterial);
+        foreach (Renderer renderer in Renderers) {
+            renderer.materials = materials[renderer].ToArray();
+        }
     }
 }
