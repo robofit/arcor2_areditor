@@ -20,7 +20,25 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     private int currentFocusPoint = -1;
 
-    
+    private void Start() {
+        Debug.Assert(objectName != null);
+        Debug.Assert(RobotsList != null);
+        Debug.Assert(EndEffectorList != null);
+        Debug.Assert(NextButton != null);
+        Debug.Assert(PreviousButton != null);
+        Debug.Assert(FocusObjectDoneButton != null);
+        Debug.Assert(StartObjectFocusingButton != null);
+        Debug.Assert(SavePositionButton != null);
+        Debug.Assert(CurrentPointLabel != null);
+        Debug.Assert(RobotsListsBlock != null);
+        Debug.Assert(UpdatePositionBlockMesh != null);
+        Debug.Assert(UpdatePositionBlockVO != null);
+        Debug.Assert(VisibilitySlider != null);
+        Debug.Assert(InputDialog != null);
+        Debug.Assert(ConfirmationDialog != null);
+    }
+
+
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {
