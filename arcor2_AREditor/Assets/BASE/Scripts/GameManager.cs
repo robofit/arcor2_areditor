@@ -82,6 +82,8 @@ namespace Base {
         private bool sceneReady;
         private IO.Swagger.Model.ProjectState projectState = null;
 
+        public bool ProjectChanged = false, ProjectRunning = false;
+
         public const string ApiVersion = "0.6.0";
         public readonly string EditorVersion = "0.4.0-rc.2";
 
@@ -138,9 +140,11 @@ namespace Base {
                 args.Data.State == ProjectState.StateEnum.Stopped) {
                 OpenProjectEditor();
             } else if (GetGameState() == GameStateEnum.ProjectEditor &&
-                args.Data.State == ProjectState.StateEnum.Running) {
+                args.Data.State != ProjectState.StateEnum.Stopped) {
                 OpenProjectRunningScreen();
             }
+            if (args.Data.State != ProjectState.StateEnum.Stopped)
+                ProjectRunning = true;
         }
 
         public IO.Swagger.Model.ProjectState GetProjectState() {
@@ -194,13 +198,9 @@ namespace Base {
                     if (newScene != null) {
                         SceneUpdated(newScene);
                     }
-                    if (sceneReady && CurrentProject == null) {
-                        OnLoadScene?.Invoke(this, EventArgs.Empty);
-                    } else if (sceneReady && CurrentProject != null && GetProjectState().State == IO.Swagger.Model.ProjectState.StateEnum.Stopped) {
-                        OnLoadProject?.Invoke(this, EventArgs.Empty);
-                    } else if (!sceneReady && CurrentProject == null) {
+                    if (!sceneReady && CurrentProject == null) {
                         await OpenMainScreen();
-                    } else {
+                    } else if (ProjectRunning) {
                         OpenProjectRunningScreen();
                     }
                     EndLoading();
@@ -252,6 +252,10 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
             }
 
+        }
+
+        internal void ProjectSaved() {
+            ProjectChanged = false;
         }
 
         public void DisconnectFromSever() {
@@ -640,8 +644,11 @@ namespace Base {
             Scene.Instance.UpdateActionPoints(CurrentProject);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
 
-            if (projectOpened)
+            if (projectOpened) {
                 OnLoadProject?.Invoke(this, EventArgs.Empty);
+               
+            }
+                
 
             EndLoading();
         }
@@ -682,7 +689,6 @@ namespace Base {
             try {
                 await WebsocketManager.Instance.OpenProject(id);
                 await Task.Run(() => WaitForProjectReady(5000));
-                OnLoadProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to open project", ex.Message);
             } catch (TimeoutException e) {
@@ -701,7 +707,6 @@ namespace Base {
             }    
             try {
                 await Task.Run(() => WaitForSceneReady(2000));
-                OnLoadScene?.Invoke(this, EventArgs.Empty);
                 return;
             } catch (TimeoutException e) {
                 EndLoading();
@@ -713,6 +718,10 @@ namespace Base {
         public async void RunProject() {
             if (CurrentProject == null)
                 return;
+            if (ProjectChanged) {
+                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it beforu run the project.");
+                return;
+            }
             try {
                 await WebsocketManager.Instance.BuildProject(CurrentProject.Id);
                 await WebsocketManager.Instance.RunProject(CurrentProject.Id);
@@ -839,7 +848,6 @@ namespace Base {
             //ProjectUpdated(project);
             try {
                 await WebsocketManager.Instance.CreateProject(name, sceneId, "");
-                OnLoadProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
             } finally {
@@ -859,7 +867,6 @@ namespace Base {
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
             }
-            //OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -886,8 +893,6 @@ namespace Base {
                 Scene.Instance.Data = null;
             }
             return success;
-            //ProjectUpdated(null);
-            //CloseScene();
             
         }
 
@@ -1006,6 +1011,7 @@ namespace Base {
         }
 
         public void ProjectLoaded(object sender, EventArgs eventArgs) {
+            ProjectChanged = false;
             OpenProjectEditor();
         }
 
@@ -1017,22 +1023,6 @@ namespace Base {
             GizmoOverlay.raycastTarget = activate;
         }
 
-        //public void SaveFloat(string key, float value) {
-        //    PlayerPrefs.SetFloat(key, value);
-        //}
-
-        //public float LoadFloat(string key, float defaultValue) {
-        //    return PlayerPrefs.GetFloat(key, defaultValue);
-        //}
-
-        //public void SaveBool(string key, bool value) {
-        //    PlayerPrefs.SetInt(key, value ? 1 : 0);
-        //}
-
-        //public bool LoadBool(string key, bool defaultValue) {
-        //    int value = PlayerPrefs.GetInt(key, defaultValue ? 1 : 0);
-        //    return value == 1 ? true : false;
-        //}
 
         public Button CreateButton(Transform parent, string label) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);
