@@ -83,11 +83,12 @@ namespace Base {
         private IO.Swagger.Model.ProjectState projectState = null;
 
         public const string ApiVersion = "0.6.0";
+        public readonly string EditorVersion = "0.4.0-rc.2";
 
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-        public TMPro.TMP_Text ConnectionInfo, MessageBox, EditorInfo;
+        public TMPro.TMP_Text VersionInfo, MessageBox, EditorInfo, ConnectionInfo, ServerVersion;
 
         public Image GizmoOverlay;
 
@@ -154,6 +155,7 @@ namespace Base {
         }
 
         private void Start() {
+            VersionInfo.text = EditorVersion;
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             OnProjectStateChanged += ProjectStateChanged;
@@ -165,13 +167,15 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    
-                    if (!await CheckApiVersion()) {
+                    IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+                    if (!await CheckApiVersion(systemInfo)) {
                         DisconnectFromSever();
                         EndLoading();
                         return;
                     }
-                    
+                    ServerVersion.text = "Editor version: " + EditorVersion +
+                        "\nServer version: " + systemInfo.Version;
+                        
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();
                     StartLoading();
@@ -203,7 +207,6 @@ namespace Base {
                     break;
                 case ConnectionStatusEnum.Disconnected:
                     OpenDisconnectedScreen();
-                    ConnectionInfo.text = "Not connected";
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -404,7 +407,7 @@ namespace Base {
                 Debug.LogError("Trying to update non-existing action!");
                 return;
             }
-            action.ActionUpdate(projectAction);
+            action.ActionUpdate(projectAction, true);
         }
 
         public void ActionBaseUpdated(IO.Swagger.Model.Action projectAction) {
@@ -931,8 +934,8 @@ namespace Base {
             return version;
         }
 
-        public async Task<bool> CheckApiVersion() {
-            IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+        public async Task<bool> CheckApiVersion(IO.Swagger.Model.SystemInfoData systemInfo) {
+            
             if (systemInfo.ApiVersion == ApiVersion)
                 return true;
             if (GetMajorVersion(systemInfo.ApiVersion) != GetMajorVersion(ApiVersion) || GetMinorVersion(systemInfo.ApiVersion) != GetMinorVersion(ApiVersion)) {

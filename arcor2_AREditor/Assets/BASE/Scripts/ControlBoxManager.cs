@@ -55,11 +55,12 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         }
     }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
     public void DisplayTrackables(bool active) {
+#if UNITY_ANDROID && !UNITY_EDITOR
         TrackingManager.Instance.DisplayPlanesAndFeatures(active);
-    }
 #endif
+    }
+ 
 
     public void ShowActionObjectSettingsMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);

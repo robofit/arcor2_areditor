@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class MainsScreen : MonoBehaviour {
+[RequireComponent(typeof(CanvasGroup))]
+public class EditorScreen : MonoBehaviour {
        
-    public CanvasGroup CanvasGroup;
+    private CanvasGroup CanvasGroup;
 
     private void Start() {
+        CanvasGroup = GetComponent<CanvasGroup>();
         Base.GameManager.Instance.OnOpenProjectEditor += ShowEditorWindow;
         Base.GameManager.Instance.OnOpenSceneEditor += ShowEditorWindow;
         Base.GameManager.Instance.OnOpenMainScreen += HideEditorWindow;
