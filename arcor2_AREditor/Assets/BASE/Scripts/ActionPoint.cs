@@ -62,11 +62,12 @@ namespace Base {
 
         }
 
-        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent parent = null) {
+        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
             transform.localPosition = GetScenePosition();
+            SetSize(size);
             // TODO: is this neccessary?
             /*if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
@@ -418,6 +419,8 @@ namespace Base {
         public GameObject GetGameObject() {
             return gameObject;
         }
+
+        public abstract void SetSize(float size);
     }
 
 }

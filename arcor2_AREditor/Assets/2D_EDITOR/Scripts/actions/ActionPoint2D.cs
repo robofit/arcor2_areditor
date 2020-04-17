@@ -63,4 +63,8 @@ public class ActionPoint2D : Base.ActionPoint {
             ++i;
         }
     }
+
+    public override void SetSize(float size) {
+        throw new System.NotImplementedException();
+    }
 }
