@@ -33,7 +33,8 @@ public class OutlineOnClickSelect : OutlineOnClick {
 
     
     private void OnBlindClick(object sender, EventClickArgs e) {
-        if (e.ClickType == Click.TOUCH) {
+        if (e.ClickType == Click.MOUSE_LEFT_BUTTON || e.ClickType == Click.MOUSE_RIGHT_BUTTON || e.ClickType == Click.MOUSE_MIDDLE_BUTTON ||
+            e.ClickType == Click.TOUCH) {
             if (GameManager.Instance.SceneInteractable) {
                 Scene.Instance.SetSelectedObject(null);
                 RemoveMaterial(ClickMaterial);
