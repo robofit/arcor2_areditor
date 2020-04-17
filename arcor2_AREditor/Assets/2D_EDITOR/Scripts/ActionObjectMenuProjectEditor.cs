@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Base;
+using UnityEngine.EventSystems;
 
 public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
@@ -60,6 +61,23 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
             Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Name);
             button.onClick.AddListener(() => ShowActionPoint(actionPoint));
+
+            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AP when hovering over button
+            OutlineOnClick APoutline = actionPoint.GetComponent<OutlineOnClick>();
+            EventTrigger eventTrigger = button.gameObject.AddComponent<EventTrigger>();
+            // Create OnPointerEnter entry
+            EventTrigger.Entry OnPointerEnter = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerEnter
+            };
+            OnPointerEnter.callback.AddListener((eventData) => APoutline.Highlight());
+            eventTrigger.triggers.Add(OnPointerEnter);
+
+            // Create OnPointerExit entry
+            EventTrigger.Entry OnPointerExit = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerExit
+            };
+            OnPointerExit.callback.AddListener((eventData) => APoutline.UnHighlight());
+            eventTrigger.triggers.Add(OnPointerExit);
         }
     }
 

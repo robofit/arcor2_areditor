@@ -5,6 +5,7 @@ using System;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using Base;
+using UnityEngine.EventSystems;
 
 public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     public SwitchComponent Visiblity, Interactibility;
@@ -65,6 +66,23 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObject.Data.Name;
             btn.onClick.AddListener(() => ShowActionObject(actionObject));
+
+            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AO when hovering over button
+            OutlineOnClick AOoutline = actionObject.GetComponent<OutlineOnClick>();
+            EventTrigger eventTrigger = btnGO.AddComponent<EventTrigger>();
+            // Create OnPointerEnter entry
+            EventTrigger.Entry OnPointerEnter = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerEnter
+            };
+            OnPointerEnter.callback.AddListener((eventData) => AOoutline.Highlight());
+            eventTrigger.triggers.Add(OnPointerEnter);
+
+            // Create OnPointerExit entry
+            EventTrigger.Entry OnPointerExit = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerExit
+            };
+            OnPointerExit.callback.AddListener((eventData) => AOoutline.UnHighlight());
+            eventTrigger.triggers.Add(OnPointerExit);
         }
     }
 
@@ -78,6 +96,23 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
             Button btn = btnGO.GetComponent<Button>();
             btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionPoint.Data.Name;
             btn.onClick.AddListener(() => ShowActionPoint(actionPoint));
+
+            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AP when hovering over button
+            OutlineOnClick APoutline = actionPoint.GetComponent<OutlineOnClick>();
+            EventTrigger eventTrigger = btnGO.AddComponent<EventTrigger>();
+            // Create OnPointerEnter entry
+            EventTrigger.Entry OnPointerEnter = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerEnter
+            };
+            OnPointerEnter.callback.AddListener((eventData) => APoutline.Highlight());
+            eventTrigger.triggers.Add(OnPointerEnter);
+
+            // Create OnPointerExit entry
+            EventTrigger.Entry OnPointerExit = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerExit
+            };
+            OnPointerExit.callback.AddListener((eventData) => APoutline.UnHighlight());
+            eventTrigger.triggers.Add(OnPointerExit);
         }
     }
 
