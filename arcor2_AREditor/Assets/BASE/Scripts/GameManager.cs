@@ -719,7 +719,7 @@ namespace Base {
             if (CurrentProject == null)
                 return;
             if (ProjectChanged) {
-                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it beforu run the project.");
+                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before run the project.");
                 return;
             }
             try {
