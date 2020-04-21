@@ -17,7 +17,7 @@ namespace Base {
         protected Vector3 offset;
         [System.NonSerialized]
         public int PuckCounter = 0;
-        public LineConnection ConnectionToActionObject;
+        public LineConnection ConnectionToParent;
 
         [System.NonSerialized]
         public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
@@ -53,7 +53,7 @@ namespace Base {
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
-                ConnectionToActionObject.UpdateLine();
+                ConnectionToParent.UpdateLine();
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }
@@ -93,7 +93,7 @@ namespace Base {
             // add the connection to connections manager
             Scene.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
 
-            ConnectionToActionObject = newConnection;
+            ConnectionToParent = newConnection;
 
             // Add connection renderer into ChangeMaterialOnSelected script attached on parent AO 
             ChangeMaterialOnSelected changeMaterial;            
@@ -102,9 +102,9 @@ namespace Base {
             // if the script is not attached on parent AO, then add it and initialize its click material
             if (changeMaterial == null) {
                 changeMaterial = parent.GetGameObject().AddComponent<ChangeMaterialOnSelected>();
-                changeMaterial.ClickMaterial = ConnectionToActionObject.ClickMaterial;
+                changeMaterial.ClickMaterial = ConnectionToParent.ClickMaterial;
             }
-            changeMaterial.AddRenderer(ConnectionToActionObject.GetComponent<LineRenderer>());
+            changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());
         }
 
         public abstract void UpdatePositionsOfPucks();
@@ -181,22 +181,25 @@ namespace Base {
         public void DeleteAP() {
             // Remove all actions of this action point
             RemoveActions();
-
-            // Remove connections to action object
-            if (ConnectionToActionObject != null && ConnectionToActionObject.gameObject != null) {
-                // remove renderer from ChangeMaterialOnSelected script attached on the AO
-                ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
-                changeMaterial.RemoveRenderer(ConnectionToActionObject.GetComponent<LineRenderer>());
-                // remove connection from connectinos manager
-                Scene.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToActionObject);
-                // destroy connection gameobject
-                Destroy(ConnectionToActionObject.gameObject);
-            }
+            RemoveConnectionToParent();
 
             // Remove this ActionPoint reference from parent ActionObject list
             Scene.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
+        }
+
+        private void RemoveConnectionToParent() {
+            // Remove connections to parent
+            if (ConnectionToParent != null && ConnectionToParent.gameObject != null) {
+                // remove renderer from ChangeMaterialOnSelected script attached on the AO
+                ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
+                changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());
+                // remove connection from connectinos manager
+                Scene.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
+                // destroy connection gameobject
+                Destroy(ConnectionToParent.gameObject);
+            }
         }
 
         public virtual bool ProjectInteractable() {
@@ -268,10 +271,12 @@ namespace Base {
             if (Data.Parent != projectActionPoint.Parent) {
                 ChangeParent(projectActionPoint.Parent);
             }
+            Data = projectActionPoint;
             List<string> currentA = new List<string>();
             // Connections between actions (action -> output --- input <- action2)
             Dictionary<string, string> connections = new Dictionary<string, string>();
 
+            //update actions
             foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                 string providerName = projectAction.Type.Split('/').First();
                 string actionType = projectAction.Type.Split('/').Last();
@@ -306,8 +311,14 @@ namespace Base {
                 // local list of all actions for current action point
                 currentA.Add(projectAction.Id);
             }
+
+
             if (Parent != null)
-                ConnectionToActionObject.UpdateLine();
+                ConnectionToParent.UpdateLine();
+
+            if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
+                actionPointMenu.UpdateMenu();
+            }
             return (currentA, connections);
         }
 
@@ -315,6 +326,7 @@ namespace Base {
             if (parentId == null || parentId == "") {
                 Parent = null;
                 Data.Parent = "";
+                RemoveConnectionToParent();
                 return;
             }
             try {
