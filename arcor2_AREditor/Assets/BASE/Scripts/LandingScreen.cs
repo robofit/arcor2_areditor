@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
+[RequireComponent(typeof(CanvasGroup))]
 public class LandingScreen : MonoBehaviour
 {
     public TMPro.TMP_InputField Domain, Port;
@@ -13,6 +14,11 @@ public class LandingScreen : MonoBehaviour
     private TMPro.TMP_Text Version;
 
     private void Start() {
+        Debug.Assert(Domain != null);
+        Debug.Assert(Port != null);
+        Debug.Assert(KeepConnected != null);
+        Debug.Assert(CanvasGroup != null);
+        Debug.Assert(Version != null);
         bool keepConnected = PlayerPrefs.GetInt("arserver_keep_connected", 0) == 1 ? true : false;
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
