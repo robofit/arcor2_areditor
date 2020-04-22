@@ -5,7 +5,7 @@ namespace Base {
     public class ActionMetadata : IO.Swagger.Model.ObjectAction {
 
         public ActionMetadata(IO.Swagger.Model.ObjectAction metadata) :
-            base(parameters: metadata.Parameters, meta: metadata.Meta, name: metadata.Name, origins: metadata.Origins, returns: metadata.Returns, description: metadata.Description) {
+            base(parameters: metadata.Parameters, meta: metadata.Meta, name: metadata.Name, origins: metadata.Origins, returns: metadata.Returns, description: metadata.Description, problem: metadata.Problem, disabled: metadata.Disabled) {
         }
 
         /// <summary>

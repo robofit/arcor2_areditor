@@ -880,9 +880,9 @@ namespace Base {
             return response.Data;
         }
 
-       public async Task CreateProject(string name, string sceneId, string description) {
+       public async Task CreateProject(string name, string sceneId, string description, bool hasLogic) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description);
+            IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description, hasLogic: hasLogic);
             IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);

@@ -823,7 +823,7 @@ namespace Base {
             await WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
-        public async Task NewProject(string name, string sceneId, bool generateLogic) {
+        public async Task NewProject(string name, string sceneId, bool hasLogic) {
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
             StartLoading();
@@ -847,7 +847,7 @@ namespace Base {
             //WebsocketManager.Instance.UpdateProject(project);
             //ProjectUpdated(project);
             try {
-                await WebsocketManager.Instance.CreateProject(name, sceneId, "");
+                await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
             } finally {

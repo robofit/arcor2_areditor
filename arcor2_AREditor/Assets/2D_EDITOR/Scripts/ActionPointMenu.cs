@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
+using Base;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -101,19 +102,13 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
                 ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButton>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.SetLabel(am.Name);
-                if (!string.IsNullOrEmpty(am.Description)) {
-                    TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
-                    btnTooltip.enabled = am.Description != "";
-
-                    if (btnTooltip.tooltipRect == null) {
-                        btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
-                    }
-                    if (btnTooltip.descriptionText == null) {
-                        btnTooltip.descriptionText = Base.GameManager.Instance.Text;
-                    }
-                    btnTooltip.description = am.Description;
+                if (am.Disabled) {
+                    CreateTooltip(am.Problem, btn);
+                    btn.Button.interactable = false;
+                } else if (!string.IsNullOrEmpty(am.Description)) {
+                    CreateTooltip(am.Description, btn);
                 }
-                
+
                 btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
             }
 
@@ -127,9 +122,23 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         
     }
 
-    
+    private static void CreateTooltip(string text, ActionButton btn) {
+        TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
+        btnTooltip.enabled = true;
 
-    
+        if (btnTooltip.tooltipRect == null) {
+            btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
+        }
+        if (btnTooltip.descriptionText == null) {
+            btnTooltip.descriptionText = Base.GameManager.Instance.Text;
+        }
+        btnTooltip.description = text;
+    }
+
+
+
+
+
 
     public async void DeleteAP() {
         Debug.Assert(CurrentActionPoint != null);
