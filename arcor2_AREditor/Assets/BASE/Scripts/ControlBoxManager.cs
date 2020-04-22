@@ -46,14 +46,16 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
 #endif
         ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
-        Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
+        GameManager.Instance.OnGameStateChanged += GameStateChanged;
     }
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
         if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
             CreateGlobalActionPointBtn.SetActive(true);
+            RotateToggle.gameObject.SetActive(false);
         } else {
             CreateGlobalActionPointBtn.SetActive(false);
+            RotateToggle.gameObject.SetActive(true);
         }
     }
 

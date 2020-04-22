@@ -5,7 +5,7 @@ using Base;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS)
 using Google.XR.ARCoreExtensions;
 #endif
 
@@ -23,7 +23,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     [HideInInspector]
     public ARAnchor WorldAnchorLocal;
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS)
     [HideInInspector]
     public ARCloudAnchor WorldAnchorCloud;
 #endif
