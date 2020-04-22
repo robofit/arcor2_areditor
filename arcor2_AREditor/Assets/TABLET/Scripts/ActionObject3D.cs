@@ -48,14 +48,18 @@ public class ActionObject3D : ActionObject
                             updatePose = true;
                         } else if (updatePose) {
                             updatePose = false;
-                            await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
+                            if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
+                                ResetPosition();
+                            }
                         }
                     }
                 }
             } else {
                 if (updatePose) {
                     updatePose = false;
-                    await GameManager.Instance.UpdateActionObjectPose(Data.Id, Data.Pose);
+                    if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
+                        ResetPosition();
+                    }
                 }
                 manipulationStarted = false;
                 GameManager.Instance.ActivateGizmoOverlay(false);
@@ -79,6 +83,11 @@ public class ActionObject3D : ActionObject
 
     public override void SetSceneOrientation(Quaternion orientation) {
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
+    }
+
+    public IO.Swagger.Model.Pose GetPose() {
+        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.position)),
+            orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.rotation)));
     }
 
     public override void OnClick(Click type) {

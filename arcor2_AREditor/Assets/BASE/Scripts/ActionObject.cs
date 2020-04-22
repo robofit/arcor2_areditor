@@ -37,8 +37,8 @@ namespace Base {
 
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
-                SetScenePosition(transform.localPosition);
-                SetSceneOrientation(transform.localRotation);
+                //SetScenePosition(transform.localPosition);
+                //SetSceneOrientation(transform.localRotation);
                 transform.hasChanged = false;
             }
         }
@@ -48,10 +48,8 @@ namespace Base {
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
             //TODO: update all action points and actions.. ?
-
+            ResetPosition();
             // update position and rotation based on received data from swagger
-            transform.localPosition = GetScenePosition();
-            transform.localRotation = GetSceneOrientation();
             if (visibility)
                 Show();
             else
@@ -60,6 +58,12 @@ namespace Base {
             SetInteractivity(interactivity);
 
             
+        }
+
+        public void ResetPosition() {
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
+
         }
 
         public virtual bool SceneInteractable() {

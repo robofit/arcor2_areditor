@@ -84,9 +84,9 @@ namespace Base {
 
         public bool ProjectChanged = false, ProjectRunning = false;
 
-        public const string ApiVersion = "0.6.0";
-        public readonly string EditorVersion = "0.4.0";
+        public const string ApiVersion = "0.6.1";
 
+        public readonly string EditorVersion = "0.4.1-rc.1";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
@@ -719,7 +719,7 @@ namespace Base {
             if (CurrentProject == null)
                 return;
             if (ProjectChanged) {
-                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it beforu run the project.");
+                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before run the project.");
                 return;
             }
             try {
@@ -823,7 +823,7 @@ namespace Base {
             await WebsocketManager.Instance.FocusObjectDone(objectId);
         }
 
-        public async Task NewProject(string name, string sceneId, bool generateLogic) {
+        public async Task NewProject(string name, string sceneId, bool hasLogic) {
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
             StartLoading();
@@ -847,7 +847,7 @@ namespace Base {
             //WebsocketManager.Instance.UpdateProject(project);
             //ProjectUpdated(project);
             try {
-                await WebsocketManager.Instance.CreateProject(name, sceneId, "");
+                await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
             } finally {

@@ -79,9 +79,13 @@ namespace Base {
                 }
             }
             if (updateConnections) {
-                //at the moment, each action has exactly one input and one output
-                if (action.Outputs[0].Default != Output.Data.Default) {
-                    string actionOutput = action.Outputs[0].Default;
+                string actionOutput = "end";
+                if (action.Outputs.Count > 0) {
+                    actionOutput = action.Outputs[0].Default;
+                }
+
+                if(actionOutput != Output.Data.Default) {
+                    //at the moment, each action has exactly one input and one output
                     Action refAction = null;
                     if (actionOutput != "start" && actionOutput != "end") {
                         refAction = Scene.Instance.GetAction(actionOutput);

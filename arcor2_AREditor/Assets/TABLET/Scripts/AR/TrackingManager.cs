@@ -61,7 +61,7 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     private void StartTrackingNotifications(object sender, EventArgs e) {
         ARSession.stateChanged += ARSessionStateChanged;
-        Notifications.Instance.ShowNotification("Tracking state", ARSession.state.ToString());
+        //Notifications.Instance.ShowNotification("Tracking state", ARSession.state.ToString());
     }
 
     private void StopTrackingNotifications(object sender, EventArgs e) {

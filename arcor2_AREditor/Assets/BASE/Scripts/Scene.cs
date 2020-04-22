@@ -50,10 +50,10 @@ namespace Base {
             }
             
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
-                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
                     ActivateActionPointsForGizmo(true);
                     projectActive = true;
-                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove)) {
                     ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }

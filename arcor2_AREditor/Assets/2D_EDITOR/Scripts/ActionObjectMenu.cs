@@ -42,7 +42,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
         if (!response.Result) {
-            Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Id, response.Messages[0]);
+            Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Name, response.Messages[0]);
             return;
         }
         CurrentObject = null;
@@ -66,11 +66,11 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
                          () => InputDialog.Close());
     }
 
-    public async void RenameObject(string newUserId) {
-        bool result = await GameManager.Instance.RenameActionObject(CurrentObject.Data.Id, newUserId);
+    public async void RenameObject(string newName) {
+        bool result = await GameManager.Instance.RenameActionObject(CurrentObject.Data.Id, newName);
         if (result) {
             InputDialog.Close();
-            objectName.text = newUserId;
+            objectName.text = newName;
         }
     }
 
