@@ -355,6 +355,15 @@ public class MainMenu : MonoBehaviour, IMenu {
         //nothing to do.. yet
     }
 
+    public void SaveLogs() {
+        string scene = "", project = "";
+        if (Base.Scene.Instance.Data != null)
+            scene = Base.Scene.Instance.Data.ToJson();
+        if (Base.GameManager.Instance.CurrentProject != null)
+            project = Base.GameManager.Instance.CurrentProject.ToJson();
+        Base.Notifications.Instance.SaveLogs(scene, project);
+    }
+
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
     public void Recalibrate() {
         CalibrationManager.Instance.Recalibrate();

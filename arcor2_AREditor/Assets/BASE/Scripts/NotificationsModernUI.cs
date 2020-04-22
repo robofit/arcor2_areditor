@@ -2,9 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using System.IO;
+using System;
 
 namespace Base {
     public class NotificationsModernUI : Notifications {
+
+        public List<LogEntry> LogEntries = new List<LogEntry>();
 
         public NotificationManager NotificationManager;
 
@@ -23,6 +27,44 @@ namespace Base {
             Notification.title.text = title;
             Notification.description.text = text;
             NotificationManager.OpenNotification();
+        }
+
+        private void OnEnable() {
+            Application.logMessageReceived += HandleLog;
+        }
+
+        private void OnDisable() {
+            Application.logMessageReceived -= HandleLog;
+        }
+
+        private void HandleLog(string logString, string stackTrace, LogType type) {
+            LogEntries.Add(new LogEntry(type, logString, stackTrace));
+        }
+
+        public override void SaveLogs(string scene, string project) {
+            string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
+            Directory.CreateDirectory(dirname);
+            StreamWriter sceneFile = File.CreateText(dirname + "/scene.json");
+            sceneFile.Write(scene);
+            sceneFile.Close();
+
+            StreamWriter projectFile = File.CreateText(dirname + "/project.json");
+            projectFile.Write(project);
+            projectFile.Close();
+
+            StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
+            foreach (LogEntry log in LogEntries) {
+                logsFile.WriteLine("Timestamp: " + log.TimeStamp.ToString());
+                logsFile.WriteLine("Type: " + log.LogType.ToString());
+                logsFile.WriteLine("Message: " + log.LogMessage);
+                if (log.LogType != LogType.Log)
+                    logsFile.WriteLine("Stacktrace: " + log.StackTrace);
+                logsFile.WriteLine("");
+            }
+            logsFile.Close();
+
+            ShowNotification("Logs saved to directory", dirname);
+
         }
     }
 
