@@ -24,7 +24,11 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         get => useGizmoMove;
         set {
             useGizmoMove = value;
-            tfGizmo.transformType = TransformType.Move;
+            if (useGizmoMove) {
+                tfGizmo.transformType = TransformType.Move;
+                useGizmoRotate = false;
+                RotateToggle.isOn = false;
+            }
         }
     }
 
@@ -33,7 +37,11 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         get => useGizmoRotate;
         set {
             useGizmoRotate = value;
-            tfGizmo.transformType = TransformType.Rotate;
+            if (useGizmoRotate) {
+                tfGizmo.transformType = TransformType.Rotate;
+                useGizmoMove = false;
+                MoveToggle.isOn = false;
+            }
         }
     }
 
