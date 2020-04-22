@@ -92,9 +92,14 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue) {
-        parametersChanged = true;
-        SaveParametersBtn.interactable = true;
-        ExecuteActionBtn.interactable = false;
+        if (CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter actionParameter)) {
+            if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
+                parametersChanged = true;
+                SaveParametersBtn.interactable = true;
+                ExecuteActionBtn.interactable = false;
+            }
+        }
+        
     }
 
     public async void ExecuteAction() {
