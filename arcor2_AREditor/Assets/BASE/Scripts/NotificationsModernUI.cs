@@ -27,6 +27,7 @@ namespace Base {
             Notification.title.text = title;
             Notification.description.text = text;
             NotificationManager.OpenNotification();
+            LogEntries.Add(new LogEntry("Notification", title, text));
         }
 
         private void OnEnable() {
@@ -38,7 +39,7 @@ namespace Base {
         }
 
         private void HandleLog(string logString, string stackTrace, LogType type) {
-            LogEntries.Add(new LogEntry(type, logString, stackTrace));
+            LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
         }
 
         public override void SaveLogs(string scene, string project) {
@@ -57,7 +58,7 @@ namespace Base {
                 logsFile.WriteLine("Timestamp: " + log.TimeStamp.ToString());
                 logsFile.WriteLine("Type: " + log.LogType.ToString());
                 logsFile.WriteLine("Message: " + log.LogMessage);
-                if (log.LogType != LogType.Log)
+                if (log.LogType != LogType.Log.ToString())
                     logsFile.WriteLine("Stacktrace: " + log.StackTrace);
                 logsFile.WriteLine("");
             }

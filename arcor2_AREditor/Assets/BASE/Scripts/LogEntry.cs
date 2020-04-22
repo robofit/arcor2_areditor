@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class LogEntry
 {
-    private readonly LogType logType;
+    private readonly string logType;
     private readonly string logMessage, stackTrace;
     private readonly DateTime timeStamp;
-	public LogEntry(LogType logType, string logMessage, string stackTrace)
+	public LogEntry(string logType, string logMessage, string stackTrace)
 	{
         this.logType = logType;
         this.logMessage = logMessage;
@@ -14,7 +14,7 @@ public class LogEntry
         timeStamp = DateTime.Now;
     }
 
-    public LogType LogType => logType;
+    public string LogType => logType;
 
     public string LogMessage => logMessage;
 
