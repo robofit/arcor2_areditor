@@ -324,9 +324,9 @@ namespace Base {
 
         private void ChangeParent(string parentId) {
             if (parentId == null || parentId == "") {
-                Parent = null;
-                Data.Parent = "";
                 RemoveConnectionToParent();
+                Parent = null;
+                Data.Parent = "";                
                 return;
             }
             try {
