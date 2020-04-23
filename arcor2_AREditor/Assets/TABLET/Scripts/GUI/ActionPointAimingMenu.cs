@@ -207,6 +207,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     }
 
     public void UpdateMenu() {
-        UpdateMenu();
+        UpdateMenu(null);
     }
 }

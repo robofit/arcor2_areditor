@@ -34,7 +34,7 @@ namespace Base {
         private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
         // Update is called once per frame
-        private async void Update() {
+        private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
@@ -66,6 +66,14 @@ namespace Base {
                 }
             }
 
+           
+        }
+
+        private void Start() {
+            InvokeRepeating("UpdateEndEffectors", 0, 0.5f);
+        }
+
+        private async void UpdateEndEffectors() {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor || GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 foreach (KeyValuePair<string, List<string>> robotWithEndEffector in GetAllRobotsWithEndEffectors()) {
                     foreach (string ee in robotWithEndEffector.Value) {
@@ -74,15 +82,13 @@ namespace Base {
                             robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
                             robotEE.RobotId = robotWithEndEffector.Key;
                             robotEE.EndEffectorId = ee;
+                            EndEffectors.Add(ee, robotEE);
                         }
                         robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
                         robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(pose.Orientation));
-                    }                    
+                    }
                 }
             }
-        }
-
-        private void Start() {
         }
 
         

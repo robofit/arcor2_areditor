@@ -191,7 +191,8 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            Debug.Log("Recieved new data: " + data);
+            if (dispatch?.response != null && dispatch.response != "GetEndEffectorPose")
+                Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
                 if (responses.ContainsKey(dispatch.id)) {
