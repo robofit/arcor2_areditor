@@ -627,12 +627,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b4bbdcf873a4164eabf85f0d7820717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d5a1d7353a8ad094d973bc8d72f496e1, type: 3}
   title: Notification Title
   description: Notification description
+  notificationAnimator: {fileID: 0}
+  iconObj: {fileID: 7813841757425455896}
+  titleObj: {fileID: 7813841756978281444}
+  descriptionObj: {fileID: 7813841756834291697}
   enableTimer: 1
-  timer: 3
+  timer: 5
   useCustomContent: 0
+  useStacking: 0
   notificationStyle: 0
 --- !u!114 &7813841757805299988
 MonoBehaviour:

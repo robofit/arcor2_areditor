@@ -12,22 +12,21 @@ namespace Base {
 
         public NotificationManager NotificationManager;
 
-        private UIManagerNotification Notification;
         [SerializeField]
         private Canvas Canvas;
 
         public GameObject NotificationEntryPrefab, NotificationMenuContent;
 
         public void Start() {
-            Notification = NotificationManager.gameObject.GetComponent<UIManagerNotification>();
+            //Notification = NotificationManager.gameObject.GetComponent<UIManagerNotification>();
         }
         public override void ShowNotification(string title, string text) {
             // HACK to make notifiaction in foreground
             // TODO - find better way
             Canvas.enabled = false;
             Canvas.enabled = true;
-            Notification.title.text = title;
-            Notification.description.text = text;
+            NotificationManager.title = title;
+            NotificationManager.description = text;
             NotificationManager.OpenNotification();
             LogEntries.Add(new LogEntry("Notification", title, text));
             NotificationEntry notificationEntry = Instantiate(NotificationEntryPrefab, NotificationMenuContent.transform).GetComponent<NotificationEntry>();
