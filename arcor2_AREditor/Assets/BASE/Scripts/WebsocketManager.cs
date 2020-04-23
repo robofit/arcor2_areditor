@@ -693,6 +693,14 @@ namespace Base {
             return response.Data;
         }
 
+        public async Task<List<IO.Swagger.Model.PackageSummary>> LoadPackages() {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ListPackagesResponse response = await WaitForResult<IO.Swagger.Model.ListPackagesResponse>(r_id);
+            return response.Data;
+        }
+
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name);

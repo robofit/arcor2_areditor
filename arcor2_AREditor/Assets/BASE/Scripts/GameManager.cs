@@ -54,6 +54,7 @@ namespace Base {
         public event EventHandler OnCloseProject;
         public event EventHandler OnCloseScene;
         public event EventHandler OnProjectsListChanged;
+        public event EventHandler OnPackagesListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
@@ -86,8 +87,9 @@ namespace Base {
 
         public const string ApiVersion = "0.6.1";
 
-        public readonly string EditorVersion = "0.4.1";
+        public readonly string EditorVersion = "0.5.0-alpha.1";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
+        public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
         public TMPro.TMP_Text VersionInfo, MessageBox, EditorInfo, ConnectionInfo, ServerVersion;
@@ -673,6 +675,11 @@ namespace Base {
             OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        public async Task LoadPackages() {
+            Packages = await WebsocketManager.Instance.LoadPackages();
+            OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
             IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
             return response;
@@ -981,6 +988,7 @@ namespace Base {
             StartLoading();
             await LoadScenes();
             await LoadProjects();
+            await LoadPackages();
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
