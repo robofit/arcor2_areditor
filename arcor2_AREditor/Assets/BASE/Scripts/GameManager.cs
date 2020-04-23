@@ -87,7 +87,7 @@ namespace Base {
 
         public const string ApiVersion = "0.6.1";
 
-        public readonly string EditorVersion = "0.5.0-alpha.1";
+        public readonly string EditorVersion = "0.5.0-alpha.2";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -365,8 +365,6 @@ namespace Base {
             } else {
                 Scene.Instance.Data = scene;
             }
-            
-            
 
             // if another scene was loaded, remove everything from current scene
             if (sceneOpened) {
