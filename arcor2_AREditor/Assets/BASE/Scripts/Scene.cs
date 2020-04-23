@@ -27,7 +27,7 @@ namespace Base {
         private bool sceneActive = true;
         private bool projectActive = true;
 
-        public bool ActionObjectsInteractive, ActionObjectsVisible;
+        public bool ActionObjectsInteractive, ActionObjectsVisible, APOrientationsVisible;
 
         public float APSize = 0.5f;
 
@@ -64,6 +64,19 @@ namespace Base {
                 }
             }
         }
+
+        private void Start() {
+        }
+
+        
+        internal void LoadSettings(string id) {
+            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/AOVisibility", true);
+            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/AOInteractivity", true);
+            APOrientationsVisible = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/APOrientationsVisibility", true);
+        }
+
+
+
 
         /// <summary>
         /// Deactivates or activates all action objects in scene for gizmo interaction.
@@ -272,7 +285,6 @@ namespace Base {
                 actionObject.SetInteractivity(interactivity);
             }
             PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
-            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
         }
 
 
@@ -374,6 +386,23 @@ namespace Base {
             }
             return false;
         }
+
+        internal void HideAPOrientations() {
+            APOrientationsVisible = false;
+            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                actionPoint.UpdateOrientationsVisuals();
+            }
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", false);
+        }
+
+        internal void ShowAPOrientations() {
+            APOrientationsVisible = true;
+            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                actionPoint.UpdateOrientationsVisuals();
+            }
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", true);
+        }
+
 
         /// <summary>
         /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.

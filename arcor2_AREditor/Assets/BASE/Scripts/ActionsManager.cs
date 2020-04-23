@@ -29,7 +29,7 @@ namespace Base {
 
         public event ServiceEventHandler OnServicesUpdated;
 
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
 
         public GameObject InteractiveObjects;
 

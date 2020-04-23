@@ -7,8 +7,8 @@ using Michsky.UI.ModernUIPack;
 using Base;
 using UnityEngine.EventSystems;
 
-public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility;
+public class EditorSettingsMenu : MonoBehaviour, IMenu {
+    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
@@ -33,6 +33,9 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         APSizeSlider.value = Scene.Instance.APSize;
+        Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);
+        Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
+        APOrientationsVisibility.SetValue(Base.Scene.Instance.APOrientationsVisible);
     }
 
     public void ShowActionObjects() {
@@ -41,6 +44,14 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
 
     public void HideActionObjects() {
          Base.Scene.Instance.HideActionObjects();
+    }
+
+    public void ShowAPOrientations() {
+        Base.Scene.Instance.ShowAPOrientations();
+    }
+
+    public void HideAPOrientations() {
+         Base.Scene.Instance.HideAPOrientations();
     }
 
     public void InteractivityOn() {
@@ -52,8 +63,7 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
-        Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);        
-        Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
+        
     }
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
@@ -128,12 +138,13 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         actionObject.ShowMenu();
         Base.Scene.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
-
     }
 
     public void OnAPSizeChange(float value) {
         Scene.Instance.SetAPSize(value);
     }
+
+
 
 
 }

@@ -340,7 +340,7 @@ namespace Base {
         public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
             bool sceneOpened = false;
-            if (Scene.Instance.Data == null && scene != null)
+            if (loadedScene != scene.Id)
                 sceneOpened = true;
             sceneReady = false;
             newScene = null;
@@ -368,13 +368,10 @@ namespace Base {
             
 
             // if another scene was loaded, remove everything from current scene
-            if (loadedScene != scene.Id) {
+            if (sceneOpened) {
                 Scene.Instance.RemoveActionObjects();
                 loadedScene = scene.Id;
-                if (loadedScene != null) {
-                    Scene.Instance.ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOVisibility", true);
-                    Scene.Instance.ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOInteractivity", true);
-                }
+                Scene.Instance.LoadSettings(scene.Id);
             }
 
             Scene.Instance.UpdateActionObjects();

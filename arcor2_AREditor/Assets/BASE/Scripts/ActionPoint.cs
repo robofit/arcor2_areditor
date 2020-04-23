@@ -23,7 +23,12 @@ namespace Base {
         public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
         protected ActionPointMenu actionPointMenu;
 
-        
+        [SerializeField]
+        private GameObject orienations;
+
+        public bool OrientationsVisible;
+
+
         public bool Locked {
             get {
                 return PlayerPrefsHelper.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
@@ -33,6 +38,10 @@ namespace Base {
                 Debug.Assert(GameManager.Instance.CurrentProject != null);
                 PlayerPrefsHelper.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
             }
+        }
+
+        private void Awake() {
+            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
         }
 
         protected virtual void Start() {
@@ -267,7 +276,7 @@ namespace Base {
         /// </summary>
         /// <param name="projectActionPoint"></param>
         /// <returns></returns>
-        public (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+        public virtual (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
             if (Data.Parent != projectActionPoint.Parent) {
                 ChangeParent(projectActionPoint.Parent);
             }
@@ -380,11 +389,16 @@ namespace Base {
         }
 
 
-        public void UpdateOrientation(NamedOrientation orientation) {
+        public virtual void UpdateOrientation(NamedOrientation orientation) {
             NamedOrientation originalOrientation = GetOrientation(orientation.Id);
             originalOrientation.Orientation = orientation.Orientation;
             BaseUpdateOrientation(originalOrientation, orientation);
         }
+
+        public virtual void AddOrientation(NamedOrientation orientation) {
+            Data.Orientations.Add(orientation);
+        }
+
 
         public void BaseUpdateOrientation(NamedOrientation orientation) {
             NamedOrientation originalOrientation = GetOrientation(orientation.Id);
@@ -395,10 +409,7 @@ namespace Base {
             originalOrientation.Name = orientation.Name;
         }
 
-        public void AddOrientation(NamedOrientation orientation) {
-            Data.Orientations.Add(orientation);
-        }
-
+        
         public void RemoveOrientation(NamedOrientation orientation) {
             Data.Orientations.Remove(orientation);
         }
@@ -437,6 +448,20 @@ namespace Base {
         }
 
         public abstract void SetSize(float size);
+
+        public void UpdateOrientationsVisuals() {
+            foreach (Transform transform in orienations.transform) {
+                Destroy(transform.gameObject);
+            }
+            if (!Scene.Instance.APOrientationsVisible)
+                return;
+            if (!OrientationsVisible)
+                return;
+            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
+                GameObject arrow = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orienations.transform);
+                arrow.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation.Orientation));
+            }
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 using Base;
 using RuntimeGizmos;
 using UnityEngine;
+using System.Collections.Generic;
+using IO.Swagger.Model;
 
 public class ActionPoint3D : Base.ActionPoint {
 
@@ -13,6 +15,8 @@ public class ActionPoint3D : Base.ActionPoint {
     private float nextUpdate = 0;
 
     private bool updatePosition = false;
+
+
 
     protected override void Start() {
         base.Start();
@@ -60,7 +64,7 @@ public class ActionPoint3D : Base.ActionPoint {
             transform.rotation = CalibrationManager.Instance.WorldAnchorLocal.transform.rotation;
         }
 #else
-        transform.rotation = Quaternion.identity;
+        ActionsSpawn.transform.rotation = Quaternion.identity;
 #endif
     }
 
@@ -135,4 +139,22 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void SetSize(float size) {
         Visual.transform.localScale = new Vector3(size / 10, size / 10, size / 10);
     }
+
+    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+        (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
+        UpdateOrientationsVisuals();
+        return result;
+    }
+
+    public override void UpdateOrientation(NamedOrientation orientation) {
+        base.UpdateOrientation(orientation);
+        UpdateOrientationsVisuals();
+    }
+
+    public override void AddOrientation(NamedOrientation orientation) {
+        base.AddOrientation(orientation);
+        UpdateOrientationsVisuals();
+    }
+
+
 }
