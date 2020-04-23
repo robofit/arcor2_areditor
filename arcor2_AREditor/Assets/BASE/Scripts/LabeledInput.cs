@@ -18,14 +18,18 @@ public class LabeledInput : MonoBehaviour, IActionParameter
     }
 
     public void SetLabel(string label, string description) {
+        
         Label.text = label;
-        if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
-            Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+        if (!string.IsNullOrEmpty(description)) {
+            if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
+                Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+            }
+            if (Label.GetComponent<TooltipContent>().descriptionText == null) {
+                Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+            }
+            Label.GetComponent<TooltipContent>().description = description;
         }
-        if (Label.GetComponent<TooltipContent>().descriptionText == null) {
-            Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
-        }
-        Label.GetComponent<TooltipContent>().description = description;
+            
     }
 
     public void SetType(string contentType) {

@@ -599,7 +599,7 @@ MonoBehaviour:
     spaceCount: 1
     wordCount: 1
     linkCount: 0
-    lineCount: 1
+    lineCount: 10
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -798,7 +798,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
+  m_firstOverflowCharacterIndex: 0
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -857,7 +857,6 @@ GameObject:
   - component: {fileID: 8391111699320355656}
   - component: {fileID: 192947754251874637}
   - component: {fileID: 1585815855424776817}
-  - component: {fileID: 1667272121245226245}
   - component: {fileID: 6703436104325399200}
   m_Layer: 5
   m_Name: Slider
@@ -996,26 +995,6 @@ MonoBehaviour:
   sliderEvent:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1667272121245226245
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7650091843164608699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae2d1475ff8202447b792ea5e136014d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UIManagerAsset: {fileID: 0}
-  hasLabel: 0
-  hasPopupLabel: 1
-  background: {fileID: 4362441057815754276}
-  bar: {fileID: 8626261240629162778}
-  handle: {fileID: 3934426934990404682}
-  label: {fileID: 0}
-  popupLabel: {fileID: 9079339784522643941}
 --- !u!114 &6703436104325399200
 MonoBehaviour:
   m_ObjectHideFlags: 0
