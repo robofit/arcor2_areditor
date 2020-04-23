@@ -171,17 +171,7 @@ namespace Base {
             return robots.ToList<string>();
         }
 
-        public List<ActionObject> GetActionObjectsRobots() {
-            List<ActionObject> robots = new List<ActionObject>();
-
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject);
-                }
-            }
-            return robots;
-        }
-
+        
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)

@@ -141,15 +141,16 @@ namespace Base {
             return "ws://" + domain + ":" + port.ToString();
         }
 
-        void OnApplicationQuit() {
+        private void OnApplicationQuit() {
             DisconnectFromSever();
         }
 
-        public void SendDataToServer(string data, int key = -1, bool storeResult = false) {
+        public void SendDataToServer(string data, int key = -1, bool storeResult = false, bool logInfo = true) {
             if (key < 0) {
                 key = Interlocked.Increment(ref requestID);
             }
-            Debug.Log("Sending data to server: " + data);
+            if (logInfo)
+                Debug.Log("Sending data to server: " + data);
 
             if (storeResult) {
                 responses[key] = null;
@@ -176,15 +177,6 @@ namespace Base {
             );
             readyToSend = true;
         }
-
-        public void UpdateObjectTypes() {
-            SendDataToServer(new IO.Swagger.Model.GetObjectTypesRequest(request: "GetObjectTypes").ToJson());
-        }
-
-        public void UpdateObjectActions(string ObjectId) {
-            SendDataToServer(new IO.Swagger.Model.GetActionsRequest(request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: ObjectId)).ToJson());
-        }
-
 
         private void HandleReceivedData(string data) {
             var dispatchType = new {
@@ -1154,6 +1146,19 @@ namespace Base {
 
             // TODO: is this correct?
             return response.Result;
+        }
+
+        public async Task<IO.Swagger.Model.Pose> GetEndEffectorPose(string robotId, string endeffectorId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.GetEndEffectorPoseArgs args = new IO.Swagger.Model.GetEndEffectorPoseArgs(robotId: robotId, endEffectorId: endeffectorId);
+            IO.Swagger.Model.GetEndEffectorPoseRequest request = new IO.Swagger.Model.GetEndEffectorPoseRequest(r_id, "GetEndEffectorPose", args);
+            SendDataToServer(request.ToJson(), r_id, true, false);
+            IO.Swagger.Model.GetEndEffectorPoseResponse response = await WaitForResult<IO.Swagger.Model.GetEndEffectorPoseResponse>(r_id);
+            if (response.Result) {
+                return response.Data;
+            } else {
+                throw new RequestFailedException();
+            }
         }
 
 

@@ -22,7 +22,7 @@ namespace Base {
         public GameObject CurrentlySelectedObject;
 
         public LineConnectionsManager AOToAPConnectionsManager;
-        public GameObject LineConnectionPrefab;
+        public GameObject LineConnectionPrefab, RobotEEPrefab;
 
         private bool sceneActive = true;
         private bool projectActive = true;
@@ -31,8 +31,10 @@ namespace Base {
 
         public float APSize = 0.5f;
 
+        private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
+
         // Update is called once per frame
-        private void Update() {
+        private async void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
@@ -61,6 +63,21 @@ namespace Base {
                 if (projectActive) {
                     ActivateActionPointsForGizmo(false);
                     projectActive = false;
+                }
+            }
+
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor || GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                foreach (KeyValuePair<string, List<string>> robotWithEndEffector in GetAllRobotsWithEndEffectors()) {
+                    foreach (string ee in robotWithEndEffector.Value) {
+                        IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
+                        if (!EndEffectors.TryGetValue(ee, out RobotEE robotEE)) {
+                            robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
+                            robotEE.RobotId = robotWithEndEffector.Key;
+                            robotEE.EndEffectorId = ee;
+                        }
+                        robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
+                        robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(pose.Orientation));
+                    }                    
                 }
             }
         }
@@ -192,6 +209,40 @@ namespace Base {
             } while (!hasFreeName);
 
             return freeName;
+        }
+
+        public Dictionary<string, List<string>> GetAllRobotsWithEndEffectors() {
+            Dictionary<string, List<string>> robotsWithEndEffectors = new Dictionary<string, List<string>>();
+            foreach (ActionObject robot in GetActionObjectsRobots()) {
+                robotsWithEndEffectors[robot.Data.Id] = new List<string>();
+                foreach (string ee in robot.GetEndEffectors()) {
+                    robotsWithEndEffectors[robot.Data.Id].Add(ee);
+                }
+            }
+            foreach (Service service in Base.ActionsManager.Instance.ServicesData.Values) {
+                if (service.Metadata.Robot) {
+                    foreach (string robot in service.GetRobotsNames()) {
+                        if (!robotsWithEndEffectors.ContainsKey(robot)) {
+                            robotsWithEndEffectors[robot] = new List<string>();
+                            foreach (string ee in service.GetEndEffectors(robot)) {
+                                robotsWithEndEffectors[robot].Add(ee);
+                            }
+                        }
+                    }
+                }
+            }
+            return robotsWithEndEffectors;
+        }
+
+        public List<ActionObject> GetActionObjectsRobots() {
+            List<ActionObject> robots = new List<ActionObject>();
+
+            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    robots.Add(actionObject);
+                }
+            }
+            return robots;
         }
 
 
