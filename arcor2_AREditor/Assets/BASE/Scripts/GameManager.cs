@@ -340,8 +340,7 @@ namespace Base {
         public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
             bool sceneOpened = false;
-            if (loadedScene != scene.Id)
-                sceneOpened = true;
+            
             sceneReady = false;
             newScene = null;
             if (scene == null) {
@@ -352,6 +351,8 @@ namespace Base {
                 EndLoading();
                 return;
             }
+            if (loadedScene != scene.Id)
+                sceneOpened = true;
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
                 return;

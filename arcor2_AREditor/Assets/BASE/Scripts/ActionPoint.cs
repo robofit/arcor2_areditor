@@ -24,7 +24,7 @@ namespace Base {
         protected ActionPointMenu actionPointMenu;
 
         [SerializeField]
-        private GameObject orienations;
+        private GameObject orientations;
 
         public bool OrientationsVisible;
 
@@ -450,7 +450,7 @@ namespace Base {
         public abstract void SetSize(float size);
 
         public void UpdateOrientationsVisuals() {
-            foreach (Transform transform in orienations.transform) {
+            foreach (Transform transform in orientations.transform) {
                 Destroy(transform.gameObject);
             }
             if (!Scene.Instance.APOrientationsVisible)
@@ -458,9 +458,16 @@ namespace Base {
             if (!OrientationsVisible)
                 return;
             foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
-                GameObject arrow = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orienations.transform);
-                arrow.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation.Orientation));
+                APOrientation apOrientation = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orientations.transform).GetComponent<APOrientation>();
+                apOrientation.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation.Orientation));
+                apOrientation.ActionPoint = this;
+                apOrientation.OrientationId = orientation.Id;
             }
+        }
+
+        internal void ShowAimingMenu(string orientationId) {
+            ShowMenu(false);
+            actionPointMenu.OpenActoinPointAimingMenu(orientationId);
         }
     }
 

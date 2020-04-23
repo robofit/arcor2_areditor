@@ -35,7 +35,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         SideMenu = GetComponent<SimpleSideMenu>();
     }
 
-    public void UpdateMenu() {
+    public void UpdateMenu(string preselectedOrientation = null) {
         ActionPointName.text = CurrentActionPoint.Data.Name;
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
@@ -49,18 +49,23 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
         }
 
-        UpdateOrientations();
+        UpdateOrientations(preselectedOrientation);
 
     }
 
-    public void UpdateOrientations() {
+    public void UpdateOrientations(string preselectedOrientation = null) {
         CustomDropdown orientationDropdown = OrientationsList.Dropdown;
         orientationDropdown.dropdownItems.Clear();
+        int selectedItem = 0;
         foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = orientation.Name
             };
             orientationDropdown.dropdownItems.Add(item);
+            if (preselectedOrientation == orientation.Id) {
+                selectedItem = orientationDropdown.dropdownItems.Count - 1;
+            }
+
         }
         if (orientationDropdown.dropdownItems.Count == 0) {
             OrientationsList.gameObject.SetActive(false);
@@ -70,6 +75,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             NoOrientation.gameObject.SetActive(false);
             OrientationsList.gameObject.SetActive(true);
             orientationDropdown.enabled = true;
+            orientationDropdown.selectedItemIndex = selectedItem;
             orientationDropdown.SetupDropdown();
             UpdateOrientationBtn.interactable = true;
         }
@@ -190,9 +196,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         FocusConfirmationDialog.WindowManager.OpenWindow();
     }
 
-    public void ShowMenu(Base.ActionPoint actionPoint) {
+    public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation = null) {
         CurrentActionPoint = actionPoint;
-        UpdateMenu();
+        UpdateMenu(preselectedOrientation);
         SideMenu.Open();
     }
 
@@ -200,4 +206,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         SideMenu.Close();
     }
 
+    public void UpdateMenu() {
+        UpdateMenu();
+    }
 }
