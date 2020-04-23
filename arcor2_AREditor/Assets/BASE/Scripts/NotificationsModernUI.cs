@@ -16,6 +16,8 @@ namespace Base {
         [SerializeField]
         private Canvas Canvas;
 
+        public GameObject NotificationEntryPrefab, NotificationMenuContent;
+
         public void Start() {
             Notification = NotificationManager.gameObject.GetComponent<UIManagerNotification>();
         }
@@ -28,6 +30,11 @@ namespace Base {
             Notification.description.text = text;
             NotificationManager.OpenNotification();
             LogEntries.Add(new LogEntry("Notification", title, text));
+            NotificationEntry notificationEntry = Instantiate(NotificationEntryPrefab, NotificationMenuContent.transform).GetComponent<NotificationEntry>();
+            notificationEntry.transform.SetAsFirstSibling();
+            notificationEntry.Title.text = title;
+            notificationEntry.Description.text = text;
+            notificationEntry.Timestamp.text = DateTime.Now.ToString();
         }
 
         private void OnEnable() {
@@ -40,17 +47,26 @@ namespace Base {
 
         private void HandleLog(string logString, string stackTrace, LogType type) {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
+            if (type == LogType.Exception) {
+                //automatially create logs in case of exception
+                SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Exception occured");
+            }
         }
 
-        public override void SaveLogs(string scene, string project) {
+        public override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
+            string sceneString = "", projectString = "";
+            if (Scene.Instance.Data != null)
+                sceneString = scene.ToJson();
+            if (GameManager.Instance.CurrentProject != null)
+                projectString = project.ToJson();
             string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
             Directory.CreateDirectory(dirname);
             StreamWriter sceneFile = File.CreateText(dirname + "/scene.json");
-            sceneFile.Write(scene);
+            sceneFile.Write(sceneString);
             sceneFile.Close();
 
             StreamWriter projectFile = File.CreateText(dirname + "/project.json");
-            projectFile.Write(project);
+            projectFile.Write(projectString);
             projectFile.Close();
 
             StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
@@ -63,8 +79,7 @@ namespace Base {
                 logsFile.WriteLine("");
             }
             logsFile.Close();
-
-            ShowNotification("Logs saved to directory", dirname);
+            ShowNotification(customNotificationTitle, "Logs saved to directory " + dirname);
 
         }
     }
