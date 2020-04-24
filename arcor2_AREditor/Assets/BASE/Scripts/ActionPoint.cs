@@ -281,6 +281,8 @@ namespace Base {
                 ChangeParent(projectActionPoint.Parent);
             }
             Data = projectActionPoint;
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
             List<string> currentA = new List<string>();
             // Connections between actions (action -> output --- input <- action2)
             Dictionary<string, string> connections = new Dictionary<string, string>();
@@ -335,13 +337,16 @@ namespace Base {
             if (parentId == null || parentId == "") {
                 RemoveConnectionToParent();
                 Parent = null;
-                Data.Parent = "";                
+                Data.Parent = "";
+                transform.parent = Scene.Instance.ActionPointsOrigin.transform;
+                transform.localRotation = Quaternion.identity;
                 return;
             }
             try {
                 IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(parentId);
                 Parent = actionPointParent;
                 Data.Parent = parentId;
+                transform.parent = actionPointParent.GetTransform();
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
             }

@@ -191,7 +191,7 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            if (dispatch?.response != null && dispatch.response != "GetEndEffectorPose")
+            if (dispatch?.response == null || dispatch?.response != "GetEndEffectorPose")
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -1158,7 +1158,7 @@ namespace Base {
             if (response.Result) {
                 return response.Data;
             } else {
-                throw new RequestFailedException();
+                throw new RequestFailedException(response.Messages);
             }
         }
 
