@@ -174,7 +174,6 @@ public class ActionObject3D : ActionObject
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
         Model.GetComponent<OnClickCollider>().Target = gameObject;
-        Model.transform.localScale = new Vector3(1, 1, 1);
         modelRenderer = Model.GetComponent<Renderer>();
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
