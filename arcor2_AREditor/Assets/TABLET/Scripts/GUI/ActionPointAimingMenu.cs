@@ -129,7 +129,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public async void AddOrientation(string name) {
         Debug.Assert(CurrentActionPoint != null);
-        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, name);
+        IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation();
+        if (CurrentActionPoint.Parent != null) {
+            orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
+        }
+        
+        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
         if (success) {
             inputDialog.Close();
         }

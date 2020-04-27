@@ -24,7 +24,7 @@ namespace Base {
         protected ActionPointMenu actionPointMenu;
 
         [SerializeField]
-        private GameObject orientations;
+        protected GameObject orientations;
 
         public bool OrientationsVisible;
 

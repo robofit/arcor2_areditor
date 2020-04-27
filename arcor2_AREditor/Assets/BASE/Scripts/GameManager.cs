@@ -1125,9 +1125,9 @@ namespace Base {
             }
         }
 
-        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, string orientationId) {
+        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, Orientation orientation, string orientationId) {
             try {
-                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, new Orientation(), orientationId);
+                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, orientation, orientationId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);

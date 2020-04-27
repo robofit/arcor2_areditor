@@ -8,7 +8,7 @@ using Base;
 using UnityEngine.EventSystems;
 
 public class EditorSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility;
+    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
@@ -19,6 +19,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
         Debug.Assert(APSizeSlider != null);
+        Debug.Assert(Visiblity != null);
+        Debug.Assert(Interactibility != null);
+        Debug.Assert(APOrientationsVisibility != null);
+        Debug.Assert(RobotsEEVisible != null);
         Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -36,6 +40,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);
         Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
         APOrientationsVisibility.SetValue(Base.Scene.Instance.APOrientationsVisible);
+        RobotsEEVisible.SetValue(Base.Scene.Instance.RobotsEEVisible);
     }
 
     public void ShowActionObjects() {
@@ -60,6 +65,14 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void InteractivityOff() {
          Base.Scene.Instance.SetActionObjectsInteractivity(false);
+    }
+
+    public void ShowRobotsEE() {
+        Scene.Instance.ShowRobotsEE();
+    }
+
+    public void HideRobotsEE() {
+        Scene.Instance.HideRobotsEE();
     }
 
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {

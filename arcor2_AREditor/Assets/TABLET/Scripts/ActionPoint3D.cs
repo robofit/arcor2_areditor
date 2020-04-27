@@ -56,16 +56,22 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     private void LateUpdate() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+/*#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         // set rotation to the WorldAnchor and ignore its parent rotation
         if (CalibrationManager.Instance.WorldAnchorCloud != null) {
             transform.rotation = CalibrationManager.Instance.WorldAnchorCloud.transform.rotation;
         } else if (CalibrationManager.Instance.WorldAnchorLocal != null) {
             transform.rotation = CalibrationManager.Instance.WorldAnchorLocal.transform.rotation;
         }
-#else
-        ActionsSpawn.transform.rotation = Quaternion.identity;
-#endif
+#else*/
+        transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+        if (Parent != null)
+            orientations.transform.rotation = Parent.GetTransform().rotation;
+        else
+            orientations.transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+
+        //TODO: test if this works on tablet as well
+//#endif
     }
 
     public override void OnClick(Click type) {

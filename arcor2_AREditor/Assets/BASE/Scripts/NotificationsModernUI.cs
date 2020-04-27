@@ -27,6 +27,7 @@ namespace Base {
             Canvas.enabled = true;
             NotificationManager.title = title;
             NotificationManager.description = text;
+            NotificationManager.UpdateUI();
             NotificationManager.OpenNotification();
             LogEntries.Add(new LogEntry("Notification", title, text));
             NotificationEntry notificationEntry = Instantiate(NotificationEntryPrefab, NotificationMenuContent.transform).GetComponent<NotificationEntry>();

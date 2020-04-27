@@ -14,7 +14,7 @@ namespace Base {
        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public GameObject ActionObjectsSpawn, ActionPointsOrigin;
+        public GameObject ActionObjectsSpawn, ActionPointsOrigin, SceneOrigin;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
@@ -28,6 +28,11 @@ namespace Base {
         private bool projectActive = true;
 
         public bool ActionObjectsInteractive, ActionObjectsVisible, APOrientationsVisible;
+
+        public bool RobotsEEVisible {
+            get;
+            private set;
+        }
 
         public float APSize = 0.5f;
 
@@ -70,35 +75,70 @@ namespace Base {
         }
 
         private void Start() {
-            InvokeRepeating("UpdateEndEffectors", 0, 0.5f);
+            GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
+            GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
+        }
+
+        private void OnSceneOrProjectLoaded(object sender, EventArgs e) {
+            CleanRobotEE();
+            if (RobotsEEVisible) {
+                ShowRobotsEE();
+            }
+        }
+
+        private void CleanRobotEE() {
+            foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
+                Destroy(ee.Value.gameObject);
+            }
+            EndEffectors.Clear();
         }
 
         private async void UpdateEndEffectors() {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor || GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 foreach (KeyValuePair<string, List<string>> robotWithEndEffector in GetAllRobotsWithEndEffectors()) {
                     foreach (string ee in robotWithEndEffector.Value) {
-                        IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
-                        if (!EndEffectors.TryGetValue(ee, out RobotEE robotEE)) {
-                            robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
-                            robotEE.RobotId = robotWithEndEffector.Key;
-                            robotEE.EndEffectorId = ee;
-                            EndEffectors.Add(ee, robotEE);
+                        try {
+                            IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
+                            if (!EndEffectors.TryGetValue(ee, out RobotEE robotEE)) {
+                                robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
+                                robotEE.RobotId = robotWithEndEffector.Key;
+                                robotEE.EndEffectorId = ee;
+                                EndEffectors.Add(ee, robotEE);
+                            }
+                            robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
+                            robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(pose.Orientation));
+                        } catch (RequestFailedException ex) {
+                            //TODO: what to do? stop updating? bother user?
                         }
-                        robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
-                        robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(pose.Orientation));
                     }
                 }
             }
+            if (!RobotsEEVisible) {
+                HideRobotsEE();
+            }
+        }
+
+        public void ShowRobotsEE() {
+            RobotsEEVisible = true;
+            InvokeRepeating("UpdateEndEffectors", 0, 0.5f);
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", true);
+            
+        }
+
+        public void HideRobotsEE() {
+            RobotsEEVisible = false;
+            CancelInvoke("UpdateEndEffectors");
+            CleanRobotEE();
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", false);
         }
 
         
-        internal void LoadSettings(string id) {
-            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/AOVisibility", true);
-            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/AOInteractivity", true);
-            APOrientationsVisible = PlayerPrefsHelper.LoadBool("scene/" + Data.Id + "/APOrientationsVisibility", true);
+        internal void LoadSettings(string sceneId) {
+            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOVisibility", true);
+            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOInteractivity", true);
+            APOrientationsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/APOrientationsVisibility", true);
+            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/RobotsEEVisibility", true);
         }
-
-
 
 
         /// <summary>

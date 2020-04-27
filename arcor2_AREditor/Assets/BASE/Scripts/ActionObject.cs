@@ -12,6 +12,8 @@ namespace Base {
         public int CounterAP = 0;
         protected float visibility;
 
+        public Collider Collider;
+
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
         public List<string> EndEffectors = new List<string>();

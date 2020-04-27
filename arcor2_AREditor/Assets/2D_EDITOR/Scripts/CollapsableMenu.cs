@@ -21,11 +21,11 @@ public class CollapsableMenu : MonoBehaviour
         set => SetCollapsedState(value);
     }
 
-    void Start()
-    {
-        SetCollapsedState(collapsed);
+    private void Start() {
         text.text = Name;
+        SetCollapsedState(collapsed);
     }
+
 
     public void SetLabel(string label) {
         Name = label;
