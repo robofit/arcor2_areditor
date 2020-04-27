@@ -87,7 +87,7 @@ namespace Base {
 
         public const string ApiVersion = "0.6.1";
 
-        public readonly string EditorVersion = "0.5.0-alpha.2";
+        public readonly string EditorVersion = "0.5.0";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -175,14 +175,19 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-                    if (!await CheckApiVersion(systemInfo)) {
+                    try {
+                        IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+                        if (!await CheckApiVersion(systemInfo)) {
+                            throw new RequestFailedException();
+                        }
+                        ServerVersion.text = "Editor version: " + EditorVersion +
+                        "\nServer version: " + systemInfo.Version;
+                    } catch (RequestFailedException ex) {
                         DisconnectFromSever();
                         EndLoading();
+                        Notifications.Instance.ShowNotification("Connection failed", "");
                         return;
                     }
-                    ServerVersion.text = "Editor version: " + EditorVersion +
-                        "\nServer version: " + systemInfo.Version;
                         
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();
@@ -272,8 +277,15 @@ namespace Base {
         }
 
         public async Task UpdateActionObjects(string highlighteObject = null) {
-            List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-            await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
+            try {
+                List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
+                await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Failed to update action objects");
+                GameManager.Instance.DisconnectFromSever();
+            }
+            
         }
 
         public async Task UpdateServices() {
@@ -339,7 +351,7 @@ namespace Base {
         }
 
         // SceneUpdated is called from server, when another GUI makes some change.
-        public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
+        public async Task SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
             bool sceneOpened = false;
             
@@ -375,8 +387,8 @@ namespace Base {
                 Scene.Instance.LoadSettings(scene.Id);
             }
 
-            Scene.Instance.UpdateActionObjects();
-            Scene.Instance.UpdateServices();
+            await Scene.Instance.UpdateActionObjects();
+            await Scene.Instance.UpdateServices();
 
             sceneReady = true;
             if (sceneOpened)
@@ -506,8 +518,8 @@ namespace Base {
             }
         }
 
-        public void SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = Scene.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type, false, sceneObject.Name);
+        public async Task SceneObjectAdded(SceneObject sceneObject) {
+            ActionObject actionObject = await Scene.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type, false, sceneObject.Name);
             actionObject.ActionObjectUpdate(sceneObject, Scene.Instance.ActionObjectsVisible, Scene.Instance.ActionObjectsInteractive);
         }
 
@@ -664,18 +676,37 @@ namespace Base {
         }
 
         public async Task LoadScenes() {
-            Scenes = await WebsocketManager.Instance.LoadScenes();
-            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
+            try {
+                Scenes = await WebsocketManager.Instance.LoadScenes();
+                OnSceneListChanged?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Failed to update action objects");
+                GameManager.Instance.DisconnectFromSever();
+            }
         }
 
         public async Task LoadProjects() {
-            Projects = await WebsocketManager.Instance.LoadProjects();
-            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
+            try {
+                Projects = await WebsocketManager.Instance.LoadProjects();
+                OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Failed to update action objects");
+                GameManager.Instance.DisconnectFromSever();
+            }
         }
 
         public async Task LoadPackages() {
-            Packages = await WebsocketManager.Instance.LoadPackages();
-            OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
+            return; // temporairly disabled
+            try {
+                Packages = await WebsocketManager.Instance.LoadPackages();
+                OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Failed to update action objects");
+                GameManager.Instance.DisconnectFromSever();
+            }
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
@@ -883,7 +914,7 @@ namespace Base {
             loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseScene(force);
             if (success) {
-                OpenMainScreen();
+                StartLoading();
                 Scene.Instance.Data = null;
             }                
             return success;
@@ -893,7 +924,6 @@ namespace Base {
             loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseProject(force);
             if (success) {
-                OpenMainScreen();
                 OnCloseProject?.Invoke(this, EventArgs.Empty);
                 Scene.Instance.Data = null;
             }

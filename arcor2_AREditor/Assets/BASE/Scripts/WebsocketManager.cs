@@ -254,30 +254,42 @@ namespace Base {
             GameManager.Instance.ProjectSaved();
         }
 
-        private async Task<T> WaitForResult<T>(int key) {
-            if (responses.TryGetValue(key, out string value)) {
-                if (value == null) {
-                    value = await WaitForResponseReady(key);
+        private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
+            return Task.Run(() => {
+                if (responses.TryGetValue(key, out string value)) {
+                    if (value == null) {
+                        Task<string> result = WaitForResponseReady(key, timeout);
+                        if (!result.Wait(timeout)) {
+                            Console.WriteLine("The timeout interval elapsed.");
+                            //TODO: throw an exception and handle it properly
+                            //throw new TimeoutException();
+                            return default;
+                        } else {
+                            value = result.Result;
+                        }
+                    }
+                    return JsonConvert.DeserializeObject<T>(value);
+                } else {
+                    return default;
                 }
-                return JsonConvert.DeserializeObject<T>(value);
-            } else {
-                return default;
-            }
+            });
         }
 
         // TODO: add timeout!
-        private Task<string> WaitForResponseReady(int key) {
+
+        private Task<string> WaitForResponseReady(int key, int timeout) {
             return Task.Run(() => {
                 while (true) {
                     if (responses.TryGetValue(key, out string value)) {
                         if (value != null) {
                             return value;
                         } else {
-                            Thread.Sleep(100);
+                            Thread.Sleep(10);
                         }
                     }
                 }
             });
+            
         }
 
         private async void HandleProjectChanged(string obj) {
@@ -459,11 +471,11 @@ namespace Base {
             }
         }
 
-        private void HandleSceneObjectChanged(string data) {
+        private async Task HandleSceneObjectChanged(string data) {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    await GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
                     GameManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
@@ -480,12 +492,12 @@ namespace Base {
         }
 
 
-        private void HandleSceneServiceChanged(string data) {
+        private async Task HandleSceneServiceChanged(string data) {
             IO.Swagger.Model.SceneServiceChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneServiceChanged>(data);
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    ActionsManager.Instance.AddService(sceneObjectChanged.Data);
+                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
                     ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
@@ -511,7 +523,7 @@ namespace Base {
             int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.GetObjectTypesRequest(id: id, request: "GetObjectTypes").ToJson(), id, true);
             IO.Swagger.Model.GetObjectTypesResponse response = await WaitForResult<IO.Swagger.Model.GetObjectTypesResponse>(id);
-            if (response.Result)
+            if (response != null && response.Result)
                 return response.Data;
             else {
                 throw new RequestFailedException("Failed to load object types");
@@ -523,7 +535,7 @@ namespace Base {
             int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.GetActionsRequest(id: id, request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: name)).ToJson(), id, true);
             IO.Swagger.Model.GetActionsResponse response = await WaitForResult<IO.Swagger.Model.GetActionsResponse>(id);
-            if (response.Result)
+            if (response != null && response.Result)
                 return response.Data;
             else
                 throw new RequestFailedException("Failed to load actions for object/service " + name);
@@ -547,8 +559,8 @@ namespace Base {
             IO.Swagger.Model.OpenProjectRequest request = new IO.Swagger.Model.OpenProjectRequest(id: r_id, request: "OpenProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.OpenProjectResponse response = await WaitForResult<IO.Swagger.Model.OpenProjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RunProject(string projectId) {
@@ -557,8 +569,8 @@ namespace Base {
             IO.Swagger.Model.RunProjectRequest request = new IO.Swagger.Model.RunProjectRequest(id: r_id, request: "RunProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunProjectResponse response = await WaitForResult<IO.Swagger.Model.RunProjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task StopProject() {
@@ -566,8 +578,8 @@ namespace Base {
             IO.Swagger.Model.StopProjectRequest request = new IO.Swagger.Model.StopProjectRequest(id: r_id, request: "StopProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.StopProjectResponse response = await WaitForResult<IO.Swagger.Model.StopProjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task PauseProject() {
@@ -575,8 +587,8 @@ namespace Base {
             IO.Swagger.Model.PauseProjectRequest request = new IO.Swagger.Model.PauseProjectRequest(id: r_id, request: "PauseProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.PauseProjectResponse response = await WaitForResult<IO.Swagger.Model.PauseProjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task ResumeProject() {
@@ -584,8 +596,8 @@ namespace Base {
             IO.Swagger.Model.ResumeProjectRequest request = new IO.Swagger.Model.ResumeProjectRequest(id: r_id, request: "ResumeProject");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ResumeProjectResponse response = await WaitForResult<IO.Swagger.Model.ResumeProjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
         
         public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
@@ -597,8 +609,8 @@ namespace Base {
             IO.Swagger.Model.UpdateActionPointUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointUsingRobotRequest(id: r_id, request: "UpdateActionPointUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointUsingRobotResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose) {
@@ -610,8 +622,8 @@ namespace Base {
                 (id: r_id, request: "UpdateObjectPose", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
 
         }
 
@@ -625,8 +637,8 @@ namespace Base {
                 (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
      
         }
         
@@ -635,8 +647,8 @@ namespace Base {
             IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewObjectTypeResponse response = await WaitForResult<IO.Swagger.Model.NewObjectTypeResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
@@ -646,8 +658,8 @@ namespace Base {
             IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: r_id, request: "FocusObjectStart", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.FocusObjectStartResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectStartResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task SavePosition(string objectId, int pointIdx) {
@@ -656,8 +668,8 @@ namespace Base {
             IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(id: r_id, request: "FocusObject", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.FocusObjectResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task FocusObjectDone(string objectId) {
@@ -666,8 +678,8 @@ namespace Base {
             IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(id: r_id, request: "FocusObjectDone", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.FocusObjectDoneResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectDoneResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task<List<IO.Swagger.Model.IdDesc>> LoadScenes() {
@@ -675,6 +687,8 @@ namespace Base {
             IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: id, request: "ListScenes");
             SendDataToServer(request.ToJson(), id, true);
             IO.Swagger.Model.ListScenesResponse response = await WaitForResult<IO.Swagger.Model.ListScenesResponse>(id);
+            if (response == null)
+                throw new RequestFailedException("Failed to load scenes");
             return response.Data;
         }
 
@@ -683,6 +697,8 @@ namespace Base {
             IO.Swagger.Model.ListProjectsRequest request = new IO.Swagger.Model.ListProjectsRequest(id: r_id, request: "ListProjects");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ListProjectsResponse response = await WaitForResult<IO.Swagger.Model.ListProjectsResponse>(r_id);
+            if (response == null)
+                throw new RequestFailedException("Failed to load projects");
             return response.Data;
         }
 
@@ -691,6 +707,8 @@ namespace Base {
             IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ListPackagesResponse response = await WaitForResult<IO.Swagger.Model.ListPackagesResponse>(r_id);
+            if (response == null)
+                throw new RequestFailedException("Failed to load packages");
             return response.Data;
         }
 
@@ -707,8 +725,8 @@ namespace Base {
             IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
             SendDataToServer(request.ToJson(), r_id, true);
             var response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
-            if (!response.Result) {
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string objectType) {
@@ -726,7 +744,7 @@ namespace Base {
             IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddServiceToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
-            return response.Result;
+            return response == null ? false : response.Result;;
         }
 
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force) {
@@ -742,7 +760,7 @@ namespace Base {
             IO.Swagger.Model.GetServicesRequest request = new IO.Swagger.Model.GetServicesRequest(id: r_id, request: "GetServices");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.GetServicesResponse response = await WaitForResult<IO.Swagger.Model.GetServicesResponse>(r_id);
-            if (response.Result)
+            if (response != null && response.Result)
                 return response.Data;
             else
                 return new List<IO.Swagger.Model.ServiceTypeMeta>();
@@ -754,8 +772,8 @@ namespace Base {
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.OpenSceneResponse response = await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
-            if (!response.Result) {
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
 
@@ -765,7 +783,7 @@ namespace Base {
             IO.Swagger.Model.ActionParamValuesRequest request = new IO.Swagger.Model.ActionParamValuesRequest(id: r_id, request: "ActionParamValues", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ActionParamValuesResponse response = await WaitForResult<IO.Swagger.Model.ActionParamValuesResponse>(r_id);
-            if (response.Result)
+            if (response != null && response.Result)
                 return response.Data;
             else
                 return new List<string>();
@@ -780,8 +798,8 @@ namespace Base {
             IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task<IO.Swagger.Model.SystemInfoData> GetSystemInfo() {
@@ -790,8 +808,8 @@ namespace Base {
              IO.Swagger.Model.SystemInfoRequest request = new IO.Swagger.Model.SystemInfoRequest(id: r_id, request: "SystemInfo");
              SendDataToServer(request.ToJson(), r_id, true);
              IO.Swagger.Model.SystemInfoResponse response = await WaitForResult<IO.Swagger.Model.SystemInfoResponse>(r_id);
-             if (!response.Result)
-                 throw new RequestFailedException(response.Messages);
+             if (response == null || !response.Result)
+                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
              return response.Data;
          }
 
@@ -802,8 +820,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
             
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task CreateScene(string name, string description) {
@@ -813,8 +831,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewSceneResponse response = await WaitForResult<IO.Swagger.Model.NewSceneResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
         internal async Task RemoveScene(string id) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -823,8 +841,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.DeleteSceneResponse response = await WaitForResult<IO.Swagger.Model.DeleteSceneResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RenameScene(string id, string newName) {
@@ -834,8 +852,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameSceneResponse response = await WaitForResult<IO.Swagger.Model.RenameSceneResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RenameObject(string id, string newName) {
@@ -845,8 +863,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameObjectResponse response = await WaitForResult<IO.Swagger.Model.RenameObjectResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task UpdateObjectPose(string id, IO.Swagger.Model.Pose pose) {
@@ -856,8 +874,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateObjectPoseResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task<bool> CloseScene(bool force) {
@@ -867,7 +885,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
             // TODO: is this correct?
-            return response.Result;
+            return response == null ? false : response.Result;;
         }
 
         public async Task<List<string>> GetProjectsWithScene(string sceneId) {
@@ -876,8 +894,8 @@ namespace Base {
             IO.Swagger.Model.ProjectsWithSceneRequest request = new IO.Swagger.Model.ProjectsWithSceneRequest(r_id, "ProjectsWithScene", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ProjectsWithSceneResponse response = await WaitForResult<IO.Swagger.Model.ProjectsWithSceneResponse>(r_id);
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             return response.Data;
         }
 
@@ -888,8 +906,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         internal async Task RemoveProject(string id) {
@@ -899,8 +917,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.DeleteProjectResponse response = await WaitForResult<IO.Swagger.Model.DeleteProjectResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -911,8 +929,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointResponse>(r_id);
 
-            if (!response.Result)   
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)   
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -924,8 +942,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointPositionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPositionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task UpdateActionPointParent(string id, string parentId) {
@@ -935,8 +953,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointParentResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointParentResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RenameActionPoint(string id, string name) {
@@ -946,8 +964,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionPointResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task AddActionPointOrientation(string id, IO.Swagger.Model.Orientation orientation, string name) {
@@ -957,8 +975,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointOrientationResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -969,8 +987,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointOrientationResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -982,8 +1000,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         
@@ -995,8 +1013,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         
@@ -1007,8 +1025,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointJointsResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task UpdateActionPointJoints(string robotId, string name) {
@@ -1018,8 +1036,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RemoveActionPointOrientation(string id, string orientationId) {
@@ -1029,8 +1047,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
          public async Task RemoveActionPointJoints(string jointsId) {
@@ -1040,8 +1058,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointJointsResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
@@ -1051,8 +1069,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionResponse response = await WaitForResult<IO.Swagger.Model.AddActionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> actionParameters) {
@@ -1062,8 +1080,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RemoveAction(string actionId) {
@@ -1073,8 +1091,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task RenameAction(string actionId, string newName) {
@@ -1084,8 +1102,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionResponse response = await WaitForResult<IO.Swagger.Model.RenameActionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -1096,8 +1114,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
 
@@ -1110,8 +1128,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionLogicResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionLogicResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
                 
         public async Task RenameProject(string projectId, string newName) {
@@ -1121,8 +1139,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameProjectResponse response = await WaitForResult<IO.Swagger.Model.RenameProjectResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
 
         }
 
@@ -1133,8 +1151,8 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionPointResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointResponse>(r_id);
 
-            if (!response.Result)
-                throw new RequestFailedException(response.Messages);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
 
         }
 
@@ -1146,7 +1164,7 @@ namespace Base {
             IO.Swagger.Model.CloseProjectResponse response = await WaitForResult<IO.Swagger.Model.CloseProjectResponse>(r_id);
 
             // TODO: is this correct?
-            return response.Result;
+            return response == null ? false : response.Result;
         }
 
         public async Task<IO.Swagger.Model.Pose> GetEndEffectorPose(string robotId, string endeffectorId) {
@@ -1155,10 +1173,10 @@ namespace Base {
             IO.Swagger.Model.GetEndEffectorPoseRequest request = new IO.Swagger.Model.GetEndEffectorPoseRequest(r_id, "GetEndEffectorPose", args);
             SendDataToServer(request.ToJson(), r_id, true, false);
             IO.Swagger.Model.GetEndEffectorPoseResponse response = await WaitForResult<IO.Swagger.Model.GetEndEffectorPoseResponse>(r_id);
-            if (response.Result) {
+            if (response != null && response.Result) {
                 return response.Data;
             } else {
-                throw new RequestFailedException(response.Messages);
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
 
