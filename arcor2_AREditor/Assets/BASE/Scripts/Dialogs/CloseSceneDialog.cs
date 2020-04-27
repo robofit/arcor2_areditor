@@ -7,7 +7,7 @@ public class CloseSceneDialog : Dialog {
     
 
     public async void CloseScene() {
-        await Base.GameManager.Instance.CloseScene(true);
+        bool result = await Base.GameManager.Instance.CloseScene(true);
         WindowManager.CloseWindow();
     }
 }

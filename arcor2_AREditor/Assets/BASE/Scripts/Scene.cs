@@ -38,6 +38,8 @@ namespace Base {
 
         private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
+        private Dictionary<string, List<string>> robotsWithEndEffector = new Dictionary<string, List<string>>();
+
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
@@ -75,7 +77,7 @@ namespace Base {
         }
 
         private void Start() {
-            GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
+            //GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
             GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         }
 
@@ -95,7 +97,7 @@ namespace Base {
 
         private async void UpdateEndEffectors() {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor || GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                foreach (KeyValuePair<string, List<string>> robotWithEndEffector in GetAllRobotsWithEndEffectors()) {
+                foreach (KeyValuePair<string, List<string>> robotWithEndEffector in robotsWithEndEffector) {
                     foreach (string ee in robotWithEndEffector.Value) {
                         try {
                             IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
@@ -118,8 +120,9 @@ namespace Base {
         }
 
         public void ShowRobotsEE() {
+            robotsWithEndEffector = GetAllRobotsWithEndEffectors();
             RobotsEEVisible = true;
-            InvokeRepeating("UpdateEndEffectors", 0, 0.5f);
+            InvokeRepeating("UpdateEndEffectors", 1, 0.5f);
             PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", true);
             
         }
@@ -197,7 +200,7 @@ namespace Base {
 
         #region ACTION_OBJECTS
 
-        public ActionObject SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
+        public async Task<ActionObject> SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -234,7 +237,7 @@ namespace Base {
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
             if (aom.Robot) {
-                actionObject.LoadEndEffectors();
+                await actionObject.LoadEndEffectors();
             }
 
             return actionObject;
@@ -295,10 +298,10 @@ namespace Base {
         /// <summary>
         /// Updates action GameObjects in ActionObjects dict based on the data present in IO.Swagger.Model.Scene Data.
         /// </summary>
-        public void UpdateActionObjects() {
+        public async Task UpdateActionObjects() {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Data.Objects) {
-                ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
+                ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
@@ -309,10 +312,10 @@ namespace Base {
         /// Updates all services from scene data.  
         /// Only called when whole scene arrived, i.e. when client is connected or scene is opened, so all service needs to be added.
         /// </summary>
-        public void UpdateServices() {
+        public async Task UpdateServices() {
             ActionsManager.Instance.ClearServices(); //just to be sure
             foreach (IO.Swagger.Model.SceneService service in Data.Services) {
-                ActionsManager.Instance.AddService(service);
+                await ActionsManager.Instance.AddService(service);
             }
         }
 

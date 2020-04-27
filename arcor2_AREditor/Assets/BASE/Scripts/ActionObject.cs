@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider, IActionPointParent {
@@ -72,7 +72,7 @@ namespace Base {
             return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
         }
 
-        public async void LoadEndEffectors() {
+        public async Task LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
             EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }

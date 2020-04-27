@@ -16,9 +16,7 @@ namespace Base {
         public Service(IO.Swagger.Model.SceneService service, ServiceMetadata metadata) {
             Metadata = metadata;
             Data = service;
-            if (metadata.Robot) {
-                LoadRobots();
-            }
+            
         }
 
         public string GetProviderName() {
