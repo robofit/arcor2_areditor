@@ -96,6 +96,8 @@ namespace Base {
 
         public Image GizmoOverlay;
 
+        public GameObject objectWithGizmo;
+
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
         }
@@ -1022,11 +1024,6 @@ namespace Base {
         public void SceneLoaded(object sender, EventArgs eventArgs) {
             OpenSceneEditor();
         }
-
-        public void ActivateGizmoOverlay(bool activate) {
-            GizmoOverlay.raycastTarget = activate;
-        }
-
 
         public Button CreateButton(Transform parent, string label) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);

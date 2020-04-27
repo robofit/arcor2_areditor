@@ -25,53 +25,32 @@ public class ActionPoint3D : Base.ActionPoint {
 
     protected override async void Update() {
         if (manipulationStarted) {
-            if (tfGizmo.mainTargetRoot != null) {
-                if (Time.time >= nextUpdate) {
-                    nextUpdate += interval;
-
-                    // check if gameobject with whom is Gizmo manipulating is our Visual gameobject
-                    if (GameObject.ReferenceEquals(Sphere, tfGizmo.mainTargetRoot.gameObject)) {
-                        // if Gizmo is moving, we can send UpdateProject to server
-                        if (tfGizmo.isTransforming) {
-                            updatePosition = true;
-                        } else if (updatePosition) {
-                            updatePosition = false;
-                            //GameManager.Instance.UpdateProject();
-                            await GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
-
-                        }
-                    }
-                }
-            } else {
-                if (updatePosition) {
+            if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
+                if (!tfGizmo.isTransforming && updatePosition) {
                     updatePosition = false;
                     await GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
                 }
+
+                if (tfGizmo.isTransforming)
+                    updatePosition = true;
+
+
+            } else {
                 manipulationStarted = false;
-                GameManager.Instance.ActivateGizmoOverlay(false);
             }
         }
+            
         //TODO shouldn't this be called first?
         base.Update();
     }
 
     private void LateUpdate() {
-/*#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        // set rotation to the WorldAnchor and ignore its parent rotation
-        if (CalibrationManager.Instance.WorldAnchorCloud != null) {
-            transform.rotation = CalibrationManager.Instance.WorldAnchorCloud.transform.rotation;
-        } else if (CalibrationManager.Instance.WorldAnchorLocal != null) {
-            transform.rotation = CalibrationManager.Instance.WorldAnchorLocal.transform.rotation;
-        }
-#else*/
+        // Fix of AP rotations - works on both PC and tablet
         transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
             orientations.transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
-
-        //TODO: test if this works on tablet as well
-//#endif
     }
 
     public override void OnClick(Click type) {
@@ -80,6 +59,7 @@ public class ActionPoint3D : Base.ActionPoint {
             StartManipulation();
         } else if (type == Click.MOUSE_RIGHT_BUTTON) {
             ShowMenu(false);
+            tfGizmo.ClearTargets();
         }
 
         // HANDLE TOUCH
@@ -97,8 +77,9 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {
             // We have clicked with left mouse and started manipulation with object
+            Debug.LogWarning("Turning on gizmo overlay");
             manipulationStarted = true;
-            GameManager.Instance.ActivateGizmoOverlay(true);
+            updatePosition = false;
         }
     }
 

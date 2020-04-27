@@ -30,40 +30,26 @@ public class ActionObject3D : ActionObject
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        // disable update method until model is ready
-        //enabled = false;
     }
 
 
     protected override async void Update() {
         if (manipulationStarted) {
-            if (tfGizmo.mainTargetRoot != null) {
-                if (Time.time >= nextUpdate) {
-                    nextUpdate += interval;
-
-                    // check if gameobject with whom is Gizmo manipulating is our Model gameobject
-                    if (GameObject.ReferenceEquals(Model, tfGizmo.mainTargetRoot.gameObject)) {
-                        // if Gizmo is moving, we can send UpdateProject to server
-                        if (tfGizmo.isTransforming) {
-                            updatePose = true;
-                        } else if (updatePose) {
-                            updatePose = false;
-                            if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
-                                ResetPosition();
-                            }
-                        }
-                    }
-                }
-            } else {
-                if (updatePose) {
+            if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
+                if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
                     if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
                         ResetPosition();
                     }
                 }
+
+                if (tfGizmo.isTransforming)
+                    updatePose = true;
+
+            } else {
                 manipulationStarted = false;
-                GameManager.Instance.ActivateGizmoOverlay(false);
-            }
+            }           
+
         }
 
         base.Update();
@@ -95,10 +81,10 @@ public class ActionObject3D : ActionObject
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
             manipulationStarted = true;
-            GameManager.Instance.ActivateGizmoOverlay(true);
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON) {
             ShowMenu();
+            tfGizmo.ClearTargets();
         }
 
         // HANDLE TOUCH
@@ -106,7 +92,6 @@ public class ActionObject3D : ActionObject
             if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                 // We have clicked with left mouse and started manipulation with object
                 manipulationStarted = true;
-                GameManager.Instance.ActivateGizmoOverlay(true);
             }
             else {
                 ShowMenu();
