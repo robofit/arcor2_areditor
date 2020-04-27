@@ -101,8 +101,7 @@ namespace Base {
                             IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
                             if (!EndEffectors.TryGetValue(ee, out RobotEE robotEE)) {
                                 robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
-                                robotEE.RobotId = robotWithEndEffector.Key;
-                                robotEE.EndEffectorId = ee;
+                                robotEE.SetEEName(robotWithEndEffector.Key, ee);
                                 EndEffectors.Add(ee, robotEE);
                             }
                             robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
