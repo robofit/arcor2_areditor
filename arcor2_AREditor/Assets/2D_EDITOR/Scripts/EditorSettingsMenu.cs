@@ -7,8 +7,8 @@ using Michsky.UI.ModernUIPack;
 using Base;
 using UnityEngine.EventSystems;
 
-public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility;
+public class EditorSettingsMenu : MonoBehaviour, IMenu {
+    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
@@ -19,6 +19,10 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
         Debug.Assert(APSizeSlider != null);
+        Debug.Assert(Visiblity != null);
+        Debug.Assert(Interactibility != null);
+        Debug.Assert(APOrientationsVisibility != null);
+        Debug.Assert(RobotsEEVisible != null);
         Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -33,6 +37,10 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         APSizeSlider.value = Scene.Instance.APSize;
+        Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);
+        Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
+        APOrientationsVisibility.SetValue(Base.Scene.Instance.APOrientationsVisible);
+        RobotsEEVisible.SetValue(Base.Scene.Instance.RobotsEEVisible);
     }
 
     public void ShowActionObjects() {
@@ -43,6 +51,14 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
          Base.Scene.Instance.HideActionObjects();
     }
 
+    public void ShowAPOrientations() {
+        Base.Scene.Instance.ShowAPOrientations();
+    }
+
+    public void HideAPOrientations() {
+         Base.Scene.Instance.HideAPOrientations();
+    }
+
     public void InteractivityOn() {
         Base.Scene.Instance.SetActionObjectsInteractivity(true);
     }
@@ -51,9 +67,16 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
          Base.Scene.Instance.SetActionObjectsInteractivity(false);
     }
 
+    public void ShowRobotsEE() {
+        Scene.Instance.ShowRobotsEE();
+    }
+
+    public void HideRobotsEE() {
+        Scene.Instance.HideRobotsEE();
+    }
+
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
-        Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);        
-        Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
+        
     }
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
@@ -128,12 +151,13 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         actionObject.ShowMenu();
         Base.Scene.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
-
     }
 
     public void OnAPSizeChange(float value) {
         Scene.Instance.SetAPSize(value);
     }
+
+
 
 
 }

@@ -54,6 +54,7 @@ namespace Base {
         public event EventHandler OnCloseProject;
         public event EventHandler OnCloseScene;
         public event EventHandler OnProjectsListChanged;
+        public event EventHandler OnPackagesListChanged;
         public event EventHandler OnSceneListChanged;
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
@@ -86,13 +87,16 @@ namespace Base {
 
         public const string ApiVersion = "0.6.1";
 
-        public readonly string EditorVersion = "0.4.1";
+        public readonly string EditorVersion = "0.5.0-alpha.2";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
+        public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
 
         public TMPro.TMP_Text VersionInfo, MessageBox, EditorInfo, ConnectionInfo, ServerVersion;
 
         public Image GizmoOverlay;
+
+        public GameObject objectWithGizmo;
 
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
@@ -338,8 +342,7 @@ namespace Base {
         public async void SceneUpdated(IO.Swagger.Model.Scene scene) {
             StartLoading();
             bool sceneOpened = false;
-            if (Scene.Instance.Data == null && scene != null)
-                sceneOpened = true;
+            
             sceneReady = false;
             newScene = null;
             if (scene == null) {
@@ -350,6 +353,8 @@ namespace Base {
                 EndLoading();
                 return;
             }
+            if (loadedScene != scene.Id)
+                sceneOpened = true;
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
                 return;
@@ -362,17 +367,12 @@ namespace Base {
             } else {
                 Scene.Instance.Data = scene;
             }
-            
-            
 
             // if another scene was loaded, remove everything from current scene
-            if (loadedScene != scene.Id) {
+            if (sceneOpened) {
                 Scene.Instance.RemoveActionObjects();
                 loadedScene = scene.Id;
-                if (loadedScene != null) {
-                    Scene.Instance.ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOVisibility", true);
-                    Scene.Instance.ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + loadedScene + "/AOInteractivity", true);
-                }
+                Scene.Instance.LoadSettings(scene.Id);
             }
 
             Scene.Instance.UpdateActionObjects();
@@ -671,6 +671,11 @@ namespace Base {
         public async Task LoadProjects() {
             Projects = await WebsocketManager.Instance.LoadProjects();
             OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async Task LoadPackages() {
+            Packages = await WebsocketManager.Instance.LoadPackages();
+            OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
@@ -981,6 +986,7 @@ namespace Base {
             StartLoading();
             await LoadScenes();
             await LoadProjects();
+            await LoadPackages();
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
@@ -1018,11 +1024,6 @@ namespace Base {
         public void SceneLoaded(object sender, EventArgs eventArgs) {
             OpenSceneEditor();
         }
-
-        public void ActivateGizmoOverlay(bool activate) {
-            GizmoOverlay.raycastTarget = activate;
-        }
-
 
         public Button CreateButton(Transform parent, string label) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent);
@@ -1121,9 +1122,9 @@ namespace Base {
             }
         }
 
-        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, string orientationId) {
+        public async Task<bool> AddActionPointOrientation(ActionPoint actionPoint, Orientation orientation, string orientationId) {
             try {
-                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, new Orientation(), orientationId);
+                await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, orientation, orientationId);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);

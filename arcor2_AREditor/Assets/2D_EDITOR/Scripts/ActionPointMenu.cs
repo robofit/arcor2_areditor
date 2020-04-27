@@ -39,8 +39,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         CurrentActionPoint.UpdateId(new_id);
     }
 
-    public void OpenActoinPointAimingMenu() {
-        ActionPointAimingMenu.ShowMenu(CurrentActionPoint);
+    public void OpenActoinPointAimingMenu(string preselectedOrientation = null) {
+        ActionPointAimingMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
     }
 
     public void ShowRenameDialog() {

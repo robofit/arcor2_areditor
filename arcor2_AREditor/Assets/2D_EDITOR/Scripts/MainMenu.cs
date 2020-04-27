@@ -356,12 +356,8 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public void SaveLogs() {
-        string scene = "", project = "";
-        if (Base.Scene.Instance.Data != null)
-            scene = Base.Scene.Instance.Data.ToJson();
-        if (Base.GameManager.Instance.CurrentProject != null)
-            project = Base.GameManager.Instance.CurrentProject.ToJson();
-        Base.Notifications.Instance.SaveLogs(scene, project);
+        
+        Base.Notifications.Instance.SaveLogs(Base.Scene.Instance.Data, Base.GameManager.Instance.CurrentProject);
     }
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR

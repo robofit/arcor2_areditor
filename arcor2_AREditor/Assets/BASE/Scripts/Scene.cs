@@ -14,7 +14,7 @@ namespace Base {
        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public GameObject ActionObjectsSpawn, ActionPointsOrigin;
+        public GameObject ActionObjectsSpawn, ActionPointsOrigin, SceneOrigin;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
@@ -22,14 +22,21 @@ namespace Base {
         public GameObject CurrentlySelectedObject;
 
         public LineConnectionsManager AOToAPConnectionsManager;
-        public GameObject LineConnectionPrefab;
+        public GameObject LineConnectionPrefab, RobotEEPrefab;
 
         private bool sceneActive = true;
         private bool projectActive = true;
 
-        public bool ActionObjectsInteractive, ActionObjectsVisible;
+        public bool ActionObjectsInteractive, ActionObjectsVisible, APOrientationsVisible;
+
+        public bool RobotsEEVisible {
+            get;
+            private set;
+        }
 
         public float APSize = 0.5f;
+
+        private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
         // Update is called once per frame
         private void Update() {
@@ -63,7 +70,75 @@ namespace Base {
                     projectActive = false;
                 }
             }
+
+           
         }
+
+        private void Start() {
+            GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
+            GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
+        }
+
+        private void OnSceneOrProjectLoaded(object sender, EventArgs e) {
+            CleanRobotEE();
+            if (RobotsEEVisible) {
+                ShowRobotsEE();
+            }
+        }
+
+        private void CleanRobotEE() {
+            foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
+                Destroy(ee.Value.gameObject);
+            }
+            EndEffectors.Clear();
+        }
+
+        private async void UpdateEndEffectors() {
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor || GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                foreach (KeyValuePair<string, List<string>> robotWithEndEffector in GetAllRobotsWithEndEffectors()) {
+                    foreach (string ee in robotWithEndEffector.Value) {
+                        try {
+                            IO.Swagger.Model.Pose pose = await WebsocketManager.Instance.GetEndEffectorPose(robotWithEndEffector.Key, ee);
+                            if (!EndEffectors.TryGetValue(ee, out RobotEE robotEE)) {
+                                robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
+                                robotEE.SetEEName(robotWithEndEffector.Key, ee);
+                                EndEffectors.Add(ee, robotEE);
+                            }
+                            robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(pose.Position));
+                            robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(pose.Orientation));
+                        } catch (RequestFailedException ex) {
+                            //TODO: what to do? stop updating? bother user?
+                        }
+                    }
+                }
+            }
+            if (!RobotsEEVisible) {
+                HideRobotsEE();
+            }
+        }
+
+        public void ShowRobotsEE() {
+            RobotsEEVisible = true;
+            InvokeRepeating("UpdateEndEffectors", 0, 0.5f);
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", true);
+            
+        }
+
+        public void HideRobotsEE() {
+            RobotsEEVisible = false;
+            CancelInvoke("UpdateEndEffectors");
+            CleanRobotEE();
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", false);
+        }
+
+        
+        internal void LoadSettings(string sceneId) {
+            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOVisibility", true);
+            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOInteractivity", true);
+            APOrientationsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/APOrientationsVisibility", true);
+            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/RobotsEEVisibility", true);
+        }
+
 
         /// <summary>
         /// Deactivates or activates all action objects in scene for gizmo interaction.
@@ -181,6 +256,40 @@ namespace Base {
             return freeName;
         }
 
+        public Dictionary<string, List<string>> GetAllRobotsWithEndEffectors() {
+            Dictionary<string, List<string>> robotsWithEndEffectors = new Dictionary<string, List<string>>();
+            foreach (ActionObject robot in GetActionObjectsRobots()) {
+                robotsWithEndEffectors[robot.Data.Id] = new List<string>();
+                foreach (string ee in robot.GetEndEffectors()) {
+                    robotsWithEndEffectors[robot.Data.Id].Add(ee);
+                }
+            }
+            foreach (Service service in Base.ActionsManager.Instance.ServicesData.Values) {
+                if (service.Metadata.Robot) {
+                    foreach (string robot in service.GetRobotsNames()) {
+                        if (!robotsWithEndEffectors.ContainsKey(robot)) {
+                            robotsWithEndEffectors[robot] = new List<string>();
+                            foreach (string ee in service.GetEndEffectors(robot)) {
+                                robotsWithEndEffectors[robot].Add(ee);
+                            }
+                        }
+                    }
+                }
+            }
+            return robotsWithEndEffectors;
+        }
+
+        public List<ActionObject> GetActionObjectsRobots() {
+            List<ActionObject> robots = new List<ActionObject>();
+
+            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot) {
+                    robots.Add(actionObject);
+                }
+            }
+            return robots;
+        }
+
 
 
         /// <summary>
@@ -272,7 +381,6 @@ namespace Base {
                 actionObject.SetInteractivity(interactivity);
             }
             PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
-            Debug.LogError("Save to: " + "scene/" + Data.Id + "/AOInteractivity: " + interactivity.ToString());
         }
 
 
@@ -374,6 +482,23 @@ namespace Base {
             }
             return false;
         }
+
+        internal void HideAPOrientations() {
+            APOrientationsVisible = false;
+            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                actionPoint.UpdateOrientationsVisuals();
+            }
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", false);
+        }
+
+        internal void ShowAPOrientations() {
+            APOrientationsVisible = true;
+            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
+                actionPoint.UpdateOrientationsVisuals();
+            }
+            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", true);
+        }
+
 
         /// <summary>
         /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.
