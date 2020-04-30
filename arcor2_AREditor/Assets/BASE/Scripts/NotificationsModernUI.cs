@@ -70,6 +70,18 @@ namespace Base {
             projectFile.Close();
 
             StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
+            logsFile.WriteLine("Editor version: " + GameManager.Instance.EditorVersion);
+            if (GameManager.Instance.SystemInfo != null) {
+                logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo.Version);
+            }
+            
+            logsFile.WriteLine("Editor API version: " + GameManager.ApiVersion);
+            if (GameManager.Instance.SystemInfo != null) {
+                logsFile.WriteLine("Server API version: " + GameManager.Instance.SystemInfo.ApiVersion);
+            } else {
+                logsFile.WriteLine("Not connected to server");
+            }
+            logsFile.WriteLine();
             foreach (LogEntry log in LogEntries) {
                 logsFile.WriteLine("Timestamp: " + log.TimeStamp.ToString());
                 logsFile.WriteLine("Type: " + log.LogType.ToString());

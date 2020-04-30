@@ -25,8 +25,33 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
+    [SerializeField]
+    private InputDialog inputDialog;
+
     // Start is called before the first frame update
     private void Start() {
+        Debug.Assert(ButtonPrefab != null);
+        Debug.Assert(ServiceButtonPrefab != null);
+        Debug.Assert(ProjectControlButtons != null);
+        Debug.Assert(ActionObjectsContent != null);
+        Debug.Assert(ActionObjects != null);
+        Debug.Assert(SceneControlButtons != null);
+        Debug.Assert(MainControlButtons != null);
+        Debug.Assert(Services != null);
+        Debug.Assert(ServicesContent != null);
+        Debug.Assert(RunningProjectControls != null);
+        Debug.Assert(OpenProjectDialog != null);
+        Debug.Assert(OpenSceneDialog != null);
+        Debug.Assert(CloseProjectDialog != null);
+        Debug.Assert(CloseSceneDialog != null);
+        Debug.Assert(ServiceSettingsDialog != null);
+        Debug.Assert(AutoAddObjectDialog != null);
+        Debug.Assert(AddNewServiceDialog != null);
+        Debug.Assert(NewProjectDialog != null);
+        Debug.Assert(NewSceneDialog != null);
+        Debug.Assert(inputDialog != null);
+
+
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
@@ -312,7 +337,37 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
 
+
+    public void ShowBuildPackageDialog() {
+        inputDialog.Open("Build package",
+                         "",
+                         "Package name",
+                         Base.GameManager.Instance.CurrentProject.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         () => BuildPackage(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
  
+    public async void BuildPackage(string name) {
+        if (await Base.GameManager.Instance.BuildPackage(name)) {
+            inputDialog.Close();
+        }
+    }
+
+    public void ShowBuildAndRunPackage() {
+        inputDialog.Open("Build and run package",
+                         "",
+                         "Package name",
+                         Base.GameManager.Instance.CurrentProject.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         () => BuildAndRunPackage(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void BuildAndRunPackage(string name) {
+        if (await Base.GameManager.Instance.BuildAndRunPackage(name)) {
+            inputDialog.Close();
+        }
+    }
+
     public void RunProject() {
         Base.GameManager.Instance.RunProject();
     }

@@ -29,11 +29,11 @@ namespace Base {
     }
 
     public class ProjectStateEventArgs : EventArgs {
-        public IO.Swagger.Model.ProjectState Data {
+        public IO.Swagger.Model.PackageState Data {
             get; set;
         }
 
-        public ProjectStateEventArgs(IO.Swagger.Model.ProjectState data) {
+        public ProjectStateEventArgs(IO.Swagger.Model.PackageState data) {
             Data = data;
         }
     }
@@ -81,7 +81,7 @@ namespace Base {
         public IO.Swagger.Model.Project CurrentProject = null;
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
-        private IO.Swagger.Model.ProjectState projectState = null;
+        private IO.Swagger.Model.PackageState packageState = null;
 
         public bool ProjectChanged = false, ProjectRunning = false;
 
@@ -97,6 +97,8 @@ namespace Base {
         public Image GizmoOverlay;
 
         public GameObject objectWithGizmo;
+
+        public IO.Swagger.Model.SystemInfoData SystemInfo;
 
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
@@ -134,25 +136,25 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
-        public void SetProjectState(IO.Swagger.Model.ProjectState state) {
-            projectState = state;
+        public void SetProjectState(IO.Swagger.Model.PackageState state) {
+            packageState = state;
             OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
         }
 
         private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
             if (GetGameState() == GameStateEnum.ProjectRunning &&
-                args.Data.State == ProjectState.StateEnum.Stopped) {
+                args.Data.State == PackageState.StateEnum.Stopped) {
                 OpenProjectEditor();
             } else if (GetGameState() == GameStateEnum.ProjectEditor &&
-                args.Data.State != ProjectState.StateEnum.Stopped) {
+                args.Data.State != PackageState.StateEnum.Stopped) {
                 OpenProjectRunningScreen();
             }
-            if (args.Data.State != ProjectState.StateEnum.Stopped)
+            if (args.Data.State != PackageState.StateEnum.Stopped)
                 ProjectRunning = true;
         }
 
-        public IO.Swagger.Model.ProjectState GetProjectState() {
-            return projectState;
+        public IO.Swagger.Model.PackageState GetPackageState() {
+            return packageState;
         }
 
         private void Awake() {
@@ -180,6 +182,7 @@ namespace Base {
                         if (!await CheckApiVersion(systemInfo)) {
                             throw new RequestFailedException();
                         }
+                        SystemInfo = systemInfo;
                         ServerVersion.text = "Editor version: " + EditorVersion +
                         "\nServer version: " + systemInfo.Version;
                     } catch (RequestFailedException ex) {
@@ -698,7 +701,6 @@ namespace Base {
         }
 
         public async Task LoadPackages() {
-            return; // temporairly disabled
             try {
                 Packages = await WebsocketManager.Instance.LoadPackages();
                 OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
@@ -752,6 +754,7 @@ namespace Base {
         }
 
         public async void RunProject() {
+            throw new NotImplementedException();
             if (CurrentProject == null)
                 return;
             if (ProjectChanged) {
@@ -759,17 +762,54 @@ namespace Base {
                 return;
             }
             try {
-                await WebsocketManager.Instance.BuildProject(CurrentProject.Id);
-                await WebsocketManager.Instance.RunProject(CurrentProject.Id);
+                //await WebsocketManager.Instance.BuildProject(CurrentProject.Id);
+                //await WebsocketManager.Instance.RunProject(CurrentProject.Id);
                 OpenProjectRunningScreen();
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to run project", ex.Message);
             }
         }
 
+        public async Task<bool> BuildPackage(string name) {
+            Debug.Assert(CurrentProject != null);
+            if (ProjectChanged) {
+                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
+                return false;
+            }
+            try {
+                StartLoading();
+                await WebsocketManager.Instance.BuildPackage(CurrentProject.Id, name);
+                return true;
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
+                return false;
+            } finally {
+                EndLoading();
+            }
+        }
+
+        public async Task<bool> BuildAndRunPackage(string name) {
+            Debug.Assert(CurrentProject != null);
+            if (ProjectChanged) {
+                Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
+                return false;
+            }
+            try {
+                StartLoading();
+                string packageId = await WebsocketManager.Instance.BuildPackage(CurrentProject.Id, name);
+                await WebsocketManager.Instance.RunPackage(packageId);
+                return true;
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
+                return false;
+            } finally {
+                EndLoading();
+            }
+        }
+
         public async void StopProject() {
             try {
-                await WebsocketManager.Instance.StopProject();
+                await WebsocketManager.Instance.StopPackage();
                 OnStopProject?.Invoke(this, EventArgs.Empty);
                 OpenProjectEditor();
             } catch (RequestFailedException ex) {
@@ -779,7 +819,7 @@ namespace Base {
 
         public async void PauseProject() {
             try {
-                await WebsocketManager.Instance.PauseProject();
+                await WebsocketManager.Instance.PausePackage();
                 OnPauseProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
@@ -789,7 +829,7 @@ namespace Base {
 
         public async void ResumeProject() {
             try {
-                await WebsocketManager.Instance.ResumeProject();
+                await WebsocketManager.Instance.ResumePackage();
                 OnResumeProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);

@@ -227,8 +227,8 @@ namespace Base {
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
-                    case "ProjectState":
-                        HandleProjectState(data);
+                    case "PackageState":
+                        HandlePackageState(data);
                         break;
                     case "ProjectSaved":
                         HandleProjectSaved(data);
@@ -260,7 +260,7 @@ namespace Base {
                     if (value == null) {
                         Task<string> result = WaitForResponseReady(key, timeout);
                         if (!result.Wait(timeout)) {
-                            Console.WriteLine("The timeout interval elapsed.");
+                            Debug.LogError("The timeout interval elapsed.");
                             //TODO: throw an exception and handle it properly
                             //throw new TimeoutException();
                             return default;
@@ -360,8 +360,8 @@ namespace Base {
             GameManager.Instance.HandleProjectException(projectException.Data);
         }
 
-        private void HandleProjectState(string obj) {
-            IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
+        private void HandlePackageState(string obj) {
+            IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
             GameManager.Instance.SetProjectState(projectState.Data);
             projectStateArrived = true;
         }
@@ -563,39 +563,39 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RunProject(string projectId) {
+        public async Task RunPackage(string packageId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: projectId);
-            IO.Swagger.Model.RunProjectRequest request = new IO.Swagger.Model.RunProjectRequest(id: r_id, request: "RunProject", args);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
+            IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RunProjectResponse response = await WaitForResult<IO.Swagger.Model.RunProjectResponse>(r_id);
+            IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task StopProject() {
+        public async Task StopPackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.StopProjectRequest request = new IO.Swagger.Model.StopProjectRequest(id: r_id, request: "StopProject");
+            IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.StopProjectResponse response = await WaitForResult<IO.Swagger.Model.StopProjectResponse>(r_id);
+            IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task PauseProject() {
+        public async Task PausePackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.PauseProjectRequest request = new IO.Swagger.Model.PauseProjectRequest(id: r_id, request: "PauseProject");
+            IO.Swagger.Model.PausePackageRequest request = new IO.Swagger.Model.PausePackageRequest(id: r_id, request: "PausePackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.PauseProjectResponse response = await WaitForResult<IO.Swagger.Model.PauseProjectResponse>(r_id);
+            IO.Swagger.Model.PausePackageResponse response = await WaitForResult<IO.Swagger.Model.PausePackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task ResumeProject() {
+        public async Task ResumePackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.ResumeProjectRequest request = new IO.Swagger.Model.ResumeProjectRequest(id: r_id, request: "ResumeProject");
+            IO.Swagger.Model.ResumePackageRequest request = new IO.Swagger.Model.ResumePackageRequest(id: r_id, request: "ResumePackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ResumeProjectResponse response = await WaitForResult<IO.Swagger.Model.ResumeProjectResponse>(r_id);
+            IO.Swagger.Model.ResumePackageResponse response = await WaitForResult<IO.Swagger.Model.ResumePackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -813,15 +813,17 @@ namespace Base {
              return response.Data;
          }
 
-        public async Task BuildProject(string project_id) {
+        public async Task<string> BuildPackage(string projectId, string packageName) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: project_id);
+            IO.Swagger.Model.BuildProjectArgs args = new IO.Swagger.Model.BuildProjectArgs(projectId: projectId, packageName: packageName);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
-            
+            IO.Swagger.Model.BuildProjectResponse response = await WaitForResult<IO.Swagger.Model.BuildProjectResponse>(r_id);
+
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            else
+                return response.Data.PackageId;
         }
 
         public async Task CreateScene(string name, string description) {

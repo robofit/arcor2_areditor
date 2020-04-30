@@ -172,7 +172,6 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void UpdatePackages(object sender, EventArgs eventArgs) {
 
         packageTiles.Clear();
-        return;
         foreach (Transform t in PackagesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
