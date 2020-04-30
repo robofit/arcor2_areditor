@@ -205,7 +205,7 @@ namespace Base {
                         return;
                     }
                     if (newScene != null) {
-                        SceneUpdated(newScene);
+                        await SceneUpdated(newScene);
                     }
                     if (!sceneReady && CurrentProject == null) {
                         await OpenMainScreen();
@@ -223,7 +223,7 @@ namespace Base {
                     CurrentProject = null;
                     loadedScene = "";
                     ProjectUpdated(null);
-                    SceneUpdated(null);
+                    await SceneUpdated(null);
                     Scene.Instance.gameObject.SetActive(false);
                     Init();
                     break;
