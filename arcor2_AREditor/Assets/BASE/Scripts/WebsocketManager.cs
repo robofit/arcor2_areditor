@@ -642,9 +642,9 @@ namespace Base {
      
         }
         
-        public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+        public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
+            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewObjectTypeResponse response = await WaitForResult<IO.Swagger.Model.NewObjectTypeResponse>(r_id);
             if (response == null || !response.Result)

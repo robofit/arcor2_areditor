@@ -839,7 +839,7 @@ namespace Base {
 
         public async Task<bool> CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
             try {
-                await WebsocketManager.Instance.CreateNewObjectType(objectType);
+                await WebsocketManager.Instance.CreateNewObjectType(objectType, false);
                 await UpdateActionObjects(objectType.Type);
                 return true;
             } catch (RequestFailedException ex) {

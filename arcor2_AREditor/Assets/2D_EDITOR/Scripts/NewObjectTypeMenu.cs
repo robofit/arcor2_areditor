@@ -73,7 +73,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         
     }
 
-    public void ValidateFields() {
+    public async void ValidateFields() {
         bool interactable = true;
         if (string.IsNullOrEmpty(NameInput.text)) {
             interactable = false;
@@ -102,6 +102,12 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                     break;
             }
         }
+
+        try {
+            await Base.WebsocketManager.Instance.CreateNewObjectType(CreateObjectTypeMeta(), true);
+        } catch (Base.RequestFailedException ex) {
+            interactable = false;
+        }
         
         CreateNewObjectBtn.interactable = interactable;
     }
@@ -109,6 +115,15 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     public async void CreateNewObjectType() {
         Debug.Assert(ModelsList.Dropdown.dropdownItems.Count > 0, "No models");
         Debug.Assert(ParentsList.Dropdown.dropdownItems.Count > 0, "No parent objects");
+        
+        
+        bool success = await Base.GameManager.Instance.CreateNewObjectType(CreateObjectTypeMeta());
+        if (success) {
+            MenuManager.Instance.NewObjectTypeMenu.Close();
+        }
+    }
+
+    public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta() {
         string objectId = NameInput.text;
 
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
@@ -148,7 +163,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                     break;
                 default:
                     Debug.LogError("Model not defined!");
-                    return;
+                    return null;
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
@@ -158,12 +173,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                 _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
         }
 
-        
-        
-        bool success = await Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
-        if (success) {
-            MenuManager.Instance.NewObjectTypeMenu.Close();
-        }
+        return objectTypeMeta;
     }
 
 }
