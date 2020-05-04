@@ -7,9 +7,9 @@ using IO.Swagger.Model;
 using UnityEngine;
 
 namespace Base {
-    public class Scene : Singleton<Scene> {
+    public class SceneManager : Singleton<SceneManager> {
 
-        public IO.Swagger.Model.Scene Data = null;
+        public IO.Swagger.Model.Scene Scene = null;
 
        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
@@ -39,6 +39,53 @@ namespace Base {
         private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
         private Dictionary<string, List<string>> robotsWithEndEffector = new Dictionary<string, List<string>>();
+
+
+        public event EventHandler OnLoadScene;
+
+
+
+        /// <summary>
+        /// Creates project from given json
+        /// </summary>
+        /// <param name="project"></param>
+        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene) {
+            if (Scene != null)
+                return false;
+            Scene = scene;
+            bool success = await UpdateScene(scene);
+            if (success) {
+                OnLoadScene?.Invoke(this, EventArgs.Empty);
+            }
+            return success;
+        }
+
+        /// <summary>
+        /// Updates project from given json
+        /// </summary>
+        /// <param name="project"></param>
+        public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene) {
+            if (scene.Id != Scene.Id)
+                return false;
+            await UpdateActionObjects();
+            await UpdateServices();
+            return true;
+        }
+
+        public bool DestroyScene() {
+            Debug.Assert(Scene != null);
+            RemoveActionObjects();
+            Scene = null;
+            return true;
+        }
+
+
+
+
+
+
+
+
 
         // Update is called once per frame
         private void Update() {
@@ -123,7 +170,7 @@ namespace Base {
             robotsWithEndEffector = GetAllRobotsWithEndEffectors();
             RobotsEEVisible = true;
             InvokeRepeating("UpdateEndEffectors", 1, 0.5f);
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);
             
         }
 
@@ -131,7 +178,7 @@ namespace Base {
             RobotsEEVisible = false;
             CancelInvoke("UpdateEndEffectors");
             CleanRobotEE();
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/RobotsEEVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", false);
         }
 
         
@@ -191,9 +238,9 @@ namespace Base {
 
         public void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
 
-            Data.Desc = scene.Desc;
-            Data.Modified = scene.Modified;
-            Data.Name = scene.Name;
+            Scene.Desc = scene.Desc;
+            Scene.Modified = scene.Modified;
+            Scene.Name = scene.Name;
         }
 
         
@@ -285,7 +332,7 @@ namespace Base {
         public List<ActionObject> GetActionObjectsRobots() {
             List<ActionObject> robots = new List<ActionObject>();
 
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
                 if (actionObject.ActionObjectMetadata.Robot) {
                     robots.Add(actionObject);
                 }
@@ -300,7 +347,7 @@ namespace Base {
         /// </summary>
         public async Task UpdateActionObjects() {
             List<string> currentAO = new List<string>();
-            foreach (IO.Swagger.Model.SceneObject aoSwagger in Data.Objects) {
+            foreach (IO.Swagger.Model.SceneObject aoSwagger in Scene.Objects) {
                 ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
@@ -314,7 +361,7 @@ namespace Base {
         /// </summary>
         public async Task UpdateServices() {
             ActionsManager.Instance.ClearServices(); //just to be sure
-            foreach (IO.Swagger.Model.SceneService service in Data.Services) {
+            foreach (IO.Swagger.Model.SceneService service in Scene.Services) {
                 await ActionsManager.Instance.AddService(service);
             }
         }
@@ -363,7 +410,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Show();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", true);
         }
 
         /// <summary>
@@ -373,7 +420,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Hide();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", false);
         }
 
          /// <summary>
@@ -383,7 +430,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.SetInteractivity(interactivity);
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/AOInteractivity", interactivity);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOInteractivity", interactivity);
         }
 
 
@@ -491,7 +538,7 @@ namespace Base {
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.UpdateOrientationsVisuals();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/APOrientationsVisibility", false);
         }
 
         internal void ShowAPOrientations() {
@@ -499,7 +546,7 @@ namespace Base {
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.UpdateOrientationsVisuals();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Data.Id + "/APOrientationsVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/APOrientationsVisibility", true);
         }
 
 

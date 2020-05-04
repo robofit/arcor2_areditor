@@ -93,14 +93,14 @@ namespace Base {
 
         private void SetConnectionToActionObject(IActionPointParent parent) {
             // Create new Line Connection between parent AO and child AP
-            GameObject c = Instantiate(Scene.Instance.LineConnectionPrefab);
+            GameObject c = Instantiate(SceneManager.Instance.LineConnectionPrefab);
             c.transform.parent = transform;
             LineConnection newConnection = c.GetComponent<LineConnection>();
             newConnection.targets[0] = parent.GetTransform();
             newConnection.targets[1] = this.transform;
 
             // add the connection to connections manager
-            Scene.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
+            SceneManager.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
 
             ConnectionToParent = newConnection;
 
@@ -193,7 +193,7 @@ namespace Base {
             RemoveConnectionToParent();
 
             // Remove this ActionPoint reference from parent ActionObject list
-            Scene.Instance.ActionPoints.Remove(this.Data.Id);
+            SceneManager.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
@@ -205,7 +205,7 @@ namespace Base {
                 ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
                 changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());
                 // remove connection from connectinos manager
-                Scene.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
+                SceneManager.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
                 // destroy connection gameobject
                 Destroy(ConnectionToParent.gameObject);
             }
@@ -293,7 +293,7 @@ namespace Base {
                 string actionType = projectAction.Type.Split('/').Last();
                 IActionProvider actionProvider;
                 try {
-                    actionProvider = Scene.Instance.GetActionObject(providerName);
+                    actionProvider = SceneManager.Instance.GetActionObject(providerName);
                 } catch (KeyNotFoundException ex) {
                     if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
                         actionProvider = originalService;
@@ -306,7 +306,7 @@ namespace Base {
 
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    action = SceneManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -338,12 +338,12 @@ namespace Base {
                 RemoveConnectionToParent();
                 Parent = null;
                 Data.Parent = "";
-                transform.parent = Scene.Instance.ActionPointsOrigin.transform;
+                transform.parent = SceneManager.Instance.ActionPointsOrigin.transform;
                 transform.localRotation = Quaternion.identity;
                 return;
             }
             try {
-                IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(parentId);
+                IActionPointParent actionPointParent = SceneManager.Instance.GetActionPointParent(parentId);
                 Parent = actionPointParent;
                 Data.Parent = parentId;
                 transform.parent = actionPointParent.GetTransform();
@@ -458,7 +458,7 @@ namespace Base {
             foreach (Transform transform in orientations.transform) {
                 Destroy(transform.gameObject);
             }
-            if (!Scene.Instance.APOrientationsVisible)
+            if (!SceneManager.Instance.APOrientationsVisible)
                 return;
             if (!OrientationsVisible)
                 return;

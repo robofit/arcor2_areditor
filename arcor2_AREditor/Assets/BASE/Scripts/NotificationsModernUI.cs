@@ -49,13 +49,13 @@ namespace Base {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
             if (type == LogType.Exception) {
                 //automatially create logs in case of exception
-                SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Exception occured");
+                SaveLogs(SceneManager.Instance.Scene, GameManager.Instance.CurrentProject, "Exception occured");
             }
         }
 
         public override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
             string sceneString = "", projectString = "";
-            if (Scene.Instance.Data != null)
+            if (SceneManager.Instance.Scene != null)
                 sceneString = scene.ToJson();
             if (GameManager.Instance.CurrentProject != null)
                 projectString = project.ToJson();

@@ -86,7 +86,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         InputDialog.Open("Create action point",
                          "Type action point name",
                          "Name",
-                         Scene.Instance.GetFreeAPName("global"),
+                         SceneManager.Instance.GetFreeAPName("global"),
                          () => CreateGlobalActionPoint(InputDialog.GetValue()),
                          () => InputDialog.Close());
     }
