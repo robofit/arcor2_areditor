@@ -29,11 +29,11 @@ namespace Base {
     }
 
     public class ProjectStateEventArgs : EventArgs {
-        public IO.Swagger.Model.PackageState Data {
+        public IO.Swagger.Model.ProjectState Data {
             get; set;
         }
 
-        public ProjectStateEventArgs(IO.Swagger.Model.PackageState data) {
+        public ProjectStateEventArgs(IO.Swagger.Model.ProjectState data) {
             Data = data;
         }
     }
@@ -81,7 +81,7 @@ namespace Base {
         public IO.Swagger.Model.Project CurrentProject = null;
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
-        private IO.Swagger.Model.PackageState packageState = null;
+        private IO.Swagger.Model.ProjectState packageState = null;
 
         public bool ProjectChanged = false, ProjectRunning = false;
 
@@ -127,6 +127,12 @@ namespace Base {
             }
         }
 
+
+        //TODO: use onvalidate in all scripts to check if everything sets correctly - it allows to check in editor
+        private void OnValidate() {
+            Debug.Assert(LoadingScreen != null);
+        }
+
         public GameStateEnum GetGameState() {
             return gameState;
         }
@@ -136,24 +142,24 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
-        public void SetProjectState(IO.Swagger.Model.PackageState state) {
+        public void SetProjectState(IO.Swagger.Model.ProjectState state) {
             packageState = state;
             OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
         }
 
         private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
             if (GetGameState() == GameStateEnum.ProjectRunning &&
-                args.Data.State == PackageState.StateEnum.Stopped) {
+                args.Data.State == ProjectState.StateEnum.Stopped) {
                 OpenProjectEditor();
             } else if (GetGameState() == GameStateEnum.ProjectEditor &&
-                args.Data.State != PackageState.StateEnum.Stopped) {
+                args.Data.State != ProjectState.StateEnum.Stopped) {
                 OpenProjectRunningScreen();
             }
-            if (args.Data.State != PackageState.StateEnum.Stopped)
+            if (args.Data.State != ProjectState.StateEnum.Stopped)
                 ProjectRunning = true;
         }
 
-        public IO.Swagger.Model.PackageState GetPackageState() {
+        public IO.Swagger.Model.ProjectState GetPackageState() {
             return packageState;
         }
 
@@ -169,10 +175,13 @@ namespace Base {
             Scene.Instance.gameObject.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             OnProjectStateChanged += ProjectStateChanged;
+            
             OnLoadProject += ProjectLoaded;
             OnLoadScene += SceneLoaded;
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
+
+        
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
@@ -675,7 +684,7 @@ namespace Base {
                 if (name == scene.Name)
                     return scene.Id;
             }
-            throw new RequestFailedException("No scene with name: " + name);
+            throw new ItemNotFoundException("No scene with name: " + name);
         }
 
         public async Task LoadScenes() {
@@ -923,7 +932,7 @@ namespace Base {
             //WebsocketManager.Instance.UpdateProject(project);
             //ProjectUpdated(project);
             try {
-                await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic);
+                await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic, false);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
             } finally {

@@ -11,6 +11,18 @@ using System.IO;
 
 
 namespace Base {
+
+    public class RobotEefUpdatedEventArgs : EventArgs {
+        public IO.Swagger.Model.RobotEefData Data {
+            get; set;
+        }
+
+        public RobotEefUpdatedEventArgs(IO.Swagger.Model.RobotEefData data) {
+            Data = data;
+        }
+    }
+
+
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
 
@@ -29,6 +41,11 @@ namespace Base {
         private int requestID = 1;
         
         private bool projectArrived = false, sceneArrived = false, projectStateArrived = false;
+
+        public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
+
+        public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
+
 
         private void Awake() {
             waitingForMessage = false;
@@ -191,7 +208,7 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            if (dispatch?.response == null || dispatch?.response != "GetEndEffectorPose")
+            if (dispatch?.@event == null || dispatch?.@event != "RobotEef")
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -227,7 +244,7 @@ namespace Base {
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
-                    case "PackageState":
+                    case "ProjectState":
                         HandlePackageState(data);
                         break;
                     case "ProjectSaved":
@@ -238,6 +255,9 @@ namespace Base {
                         break;
                     case "ActionResult":
                         HandleActionResult(data);
+                        break;
+                    case "RobotEef":
+                        HandleRobotEef(data);
                         break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
@@ -250,6 +270,7 @@ namespace Base {
 
         }
 
+        
         private void HandleProjectSaved(string data) {
             GameManager.Instance.ProjectSaved();
         }
@@ -322,6 +343,12 @@ namespace Base {
 
         }
 
+        private void HandleRobotEef(string data) {
+            IO.Swagger.Model.RobotEefEvent robotEef = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotEefEvent>(data);
+            OnRobotEefUpdated?.Invoke(this, new RobotEefUpdatedEventArgs(robotEef.Data));
+        }
+
+
         private void HandleCurrentAction(string obj) {
             string puck_id;
             try {
@@ -361,7 +388,7 @@ namespace Base {
         }
 
         private void HandlePackageState(string obj) {
-            IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
+            IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
             GameManager.Instance.SetProjectState(projectState.Data);
             projectStateArrived = true;
         }
@@ -564,40 +591,40 @@ namespace Base {
         }
 
         public async Task RunPackage(string packageId) {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
         }
 
         public async Task StopPackage() {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
         }
 
         public async Task PausePackage() {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.PausePackageRequest request = new IO.Swagger.Model.PausePackageRequest(id: r_id, request: "PausePackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.PausePackageResponse response = await WaitForResult<IO.Swagger.Model.PausePackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
         }
 
         public async Task ResumePackage() {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ResumePackageRequest request = new IO.Swagger.Model.ResumePackageRequest(id: r_id, request: "ResumePackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ResumePackageResponse response = await WaitForResult<IO.Swagger.Model.ResumePackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
         }
         
         public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
@@ -703,13 +730,14 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.PackageSummary>> LoadPackages() {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ListPackagesResponse response = await WaitForResult<IO.Swagger.Model.ListPackagesResponse>(r_id);
             if (response == null)
                 throw new RequestFailedException("Failed to load packages");
-            return response.Data;
+            return response.Data;*/
+            return new List<IO.Swagger.Model.PackageSummary>();
         }
 
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
@@ -814,7 +842,7 @@ namespace Base {
          }
 
         public async Task<string> BuildPackage(string projectId, string packageName) {
-            int r_id = Interlocked.Increment(ref requestID);
+            /*int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.BuildProjectArgs args = new IO.Swagger.Model.BuildProjectArgs(projectId: projectId, packageName: packageName);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -823,7 +851,8 @@ namespace Base {
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             else
-                return response.Data.PackageId;
+                return response.Data.PackageId;*/
+            return "";
         }
 
         public async Task CreateScene(string name, string description) {
@@ -901,10 +930,10 @@ namespace Base {
             return response.Data;
         }
 
-       public async Task CreateProject(string name, string sceneId, string description, bool hasLogic) {
+       public async Task CreateProject(string name, string sceneId, string description, bool hasLogic, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description, hasLogic: hasLogic);
-            IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args);
+            IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);
 
@@ -1181,6 +1210,19 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
+
+        public async Task<bool> RegisterForRobotEvent(string robotId, bool send, IO.Swagger.Model.RegisterForRobotEventArgs.WhatEnum what) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RegisterForRobotEventArgs args = new IO.Swagger.Model.RegisterForRobotEventArgs(robotId: robotId, send: send, what: what);
+            IO.Swagger.Model.RegisterForRobotEventRequest request = new IO.Swagger.Model.RegisterForRobotEventRequest(r_id, "RegisterForRobotEvent", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RegisterForRobotEventResponse response = await WaitForResult<IO.Swagger.Model.RegisterForRobotEventResponse>(r_id);
+
+            // TODO: is this correct?
+            return response == null ? false : response.Result;
+        }
+
+
 
 
     }
