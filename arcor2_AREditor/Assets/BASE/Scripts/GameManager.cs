@@ -29,11 +29,11 @@ namespace Base {
     }
 
     public class ProjectStateEventArgs : EventArgs {
-        public IO.Swagger.Model.ProjectState Data {
+        public IO.Swagger.Model.PackageState Data {
             get; set;
         }
 
-        public ProjectStateEventArgs(IO.Swagger.Model.ProjectState data) {
+        public ProjectStateEventArgs(IO.Swagger.Model.PackageState data) {
             Data = data;
         }
     }
@@ -81,7 +81,7 @@ namespace Base {
         public IO.Swagger.Model.Project CurrentProject = null;
         private IO.Swagger.Model.Scene newScene;
         private bool sceneReady;
-        private IO.Swagger.Model.ProjectState packageState = null;
+        private IO.Swagger.Model.PackageState packageState = null;
 
         public bool ProjectChanged = false, ProjectRunning = false;
 
@@ -142,24 +142,24 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
-        public void SetProjectState(IO.Swagger.Model.ProjectState state) {
+        public void SetProjectState(IO.Swagger.Model.PackageState state) {
             packageState = state;
             OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
         }
 
         private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
             if (GetGameState() == GameStateEnum.ProjectRunning &&
-                args.Data.State == ProjectState.StateEnum.Stopped) {
+                args.Data.State == PackageState.StateEnum.Stopped) {
                 OpenProjectEditor();
             } else if (GetGameState() == GameStateEnum.ProjectEditor &&
-                args.Data.State != ProjectState.StateEnum.Stopped) {
+                args.Data.State != PackageState.StateEnum.Stopped) {
                 OpenProjectRunningScreen();
             }
-            if (args.Data.State != ProjectState.StateEnum.Stopped)
+            if (args.Data.State != PackageState.StateEnum.Stopped)
                 ProjectRunning = true;
         }
 
-        public IO.Swagger.Model.ProjectState GetPackageState() {
+        public IO.Swagger.Model.PackageState GetPackageState() {
             return packageState;
         }
 

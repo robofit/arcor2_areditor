@@ -244,7 +244,7 @@ namespace Base {
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
-                    case "ProjectState":
+                    case "PackageState":
                         HandlePackageState(data);
                         break;
                     case "ProjectSaved":
@@ -388,7 +388,7 @@ namespace Base {
         }
 
         private void HandlePackageState(string obj) {
-            IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
+            IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
             GameManager.Instance.SetProjectState(projectState.Data);
             projectStateArrived = true;
         }
@@ -591,40 +591,40 @@ namespace Base {
         }
 
         public async Task RunPackage(string packageId) {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task StopPackage() {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task PausePackage() {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.PausePackageRequest request = new IO.Swagger.Model.PausePackageRequest(id: r_id, request: "PausePackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.PausePackageResponse response = await WaitForResult<IO.Swagger.Model.PausePackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task ResumePackage() {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ResumePackageRequest request = new IO.Swagger.Model.ResumePackageRequest(id: r_id, request: "ResumePackage");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ResumePackageResponse response = await WaitForResult<IO.Swagger.Model.ResumePackageResponse>(r_id);
             if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);*/
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
         
         public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
@@ -1217,7 +1217,7 @@ namespace Base {
             IO.Swagger.Model.RegisterForRobotEventRequest request = new IO.Swagger.Model.RegisterForRobotEventRequest(r_id, "RegisterForRobotEvent", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RegisterForRobotEventResponse response = await WaitForResult<IO.Swagger.Model.RegisterForRobotEventResponse>(r_id);
-
+            
             // TODO: is this correct?
             return response == null ? false : response.Result;
         }
