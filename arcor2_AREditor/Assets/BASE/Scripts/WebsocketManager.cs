@@ -40,7 +40,7 @@ namespace Base {
 
         private int requestID = 1;
         
-        private bool projectArrived = false, sceneArrived = false, projectStateArrived = false;
+        private bool projectArrived = false, sceneArrived = false, packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
 
@@ -60,7 +60,7 @@ namespace Base {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             projectArrived = false;
             sceneArrived = false;
-            projectStateArrived = false;
+            packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
             clientWebSocket = new ClientWebSocket();
@@ -109,7 +109,7 @@ namespace Base {
         }
 
         public bool CheckInitData() {
-            return projectArrived && sceneArrived && projectStateArrived;
+            return packageStateArrived;
         }
 
         // Update is called once per frame
@@ -262,6 +262,15 @@ namespace Base {
                     case "RobotEef":
                         HandleRobotEef(data);
                         break;
+                    case "OpenScene":
+                        HandleOpenScene(data);
+                        break;
+                    case "OpenProject":
+                        HandleOpenProject(data);
+                        break;
+                    case "OpenPackage":
+                        HandleOpenPackage(data);
+                        break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
                             ignoreProjectChanged = false;
@@ -271,11 +280,6 @@ namespace Base {
                 }
             }
 
-        }
-
-        
-        private void HandleProjectSaved(string data) {
-            GameManager.Instance.ProjectSaved();
         }
 
         private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
@@ -393,7 +397,7 @@ namespace Base {
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
             GameManager.Instance.SetPackageState(projectState.Data);
-            projectStateArrived = true;
+            packageStateArrived = true;
         }
 
         private void HandlePackageInfo(string obj) {
@@ -551,9 +555,25 @@ namespace Base {
 
 
 
-        private void HandleOpenProject(string data) {
-            IO.Swagger.Model.OpenProjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProjectResponse>(data);
+        private async void HandleOpenProject(string data) {
+            IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
+            GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
         }
+
+        private async void HandleOpenScene(string data) {
+            IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
+            Task.Run(() => GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene));
+        }
+
+        private void HandleOpenPackage(string data) {
+            throw new NotImplementedException();
+        }
+
+        private void HandleProjectSaved(string data) {
+            GameManager.Instance.ProjectSaved();
+        }
+
+
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
             int id = Interlocked.Increment(ref requestID);

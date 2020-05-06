@@ -1,6 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
+
+using System.Threading;
+using System;
+using Base;
 
 public class ProjectManager : Base.Singleton<ProjectManager>
 {
@@ -10,9 +15,18 @@ public class ProjectManager : Base.Singleton<ProjectManager>
     /// Creates project from given json
     /// </summary>
     /// <param name="project"></param>
-    public bool CreateProject(IO.Swagger.Model.Project project) {
+    public async Task<bool> CreateProject(IO.Swagger.Model.Project project, int timeout) {
         if (Project != null)
             return false;
+
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        if (sw.ElapsedMilliseconds > timeout)
+            throw new TimeoutException();
+        while (!ActionsManager.Instance.ActionsReady) {
+            Thread.Sleep(100);
+        }
+
         Project = project;
         return true;
     }
@@ -26,7 +40,6 @@ public class ProjectManager : Base.Singleton<ProjectManager>
     }
 
     public bool DestroyProject() {
-        Debug.Assert(Project != null);
         Project = null;
         return true;
     }

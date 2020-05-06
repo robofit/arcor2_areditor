@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace Base {
         public GameObject ActionObjectsSpawn, ActionPointsOrigin, SceneOrigin;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
-        public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
+        public GameObject RobotPrefab, ActionObjectPrefab;
 
         public GameObject CurrentlySelectedObject;
 
@@ -49,14 +50,25 @@ namespace Base {
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene) {
+        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, int timeout) {
             if (Scene != null)
                 return false;
+
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            
+            while (!ActionsManager.Instance.ActionsReady) {
+                if (sw.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException();
+                Thread.Sleep(100);
+            }
+            Debug.LogError("while end");
             Scene = scene;
             bool success = await UpdateScene(scene);
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
             }
+            Debug.LogError("returning " + success.ToString());
             return success;
         }
 
@@ -67,13 +79,15 @@ namespace Base {
         public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene) {
             if (scene.Id != Scene.Id)
                 return false;
+            Scene = scene;
+            Debug.LogError("UpdateActionObjects");
             await UpdateActionObjects();
+            Debug.LogError("UpdateServices");
             await UpdateServices();
             return true;
         }
 
         public bool DestroyScene() {
-            Debug.Assert(Scene != null);
             RemoveActionObjects();
             Scene = null;
             return true;
@@ -119,6 +133,8 @@ namespace Base {
                     projectActive = false;
                 }
             }
+
+
 
            
         }
@@ -250,41 +266,29 @@ namespace Base {
         #region ACTION_OBJECTS
 
         public async Task<ActionObject> SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
+            Debug.LogError(1);
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
+            Debug.LogError(2);
             GameObject obj;
+            Debug.LogError(3);
             if (aom.Robot) {
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
+                Debug.LogError(4);
             } else {
-                switch (type) {
-                    case "Box":
-                        obj = Instantiate(BoxPrefab, ActionObjectsSpawn.transform);
-                        break;
-                    case "Box2":
-                        obj = Instantiate(BoxPrefab, ActionObjectsSpawn.transform);
-                        break;
-                    case "Tester":
-                        obj = Instantiate(TesterPrefab, ActionObjectsSpawn.transform);
-                        break;
-                    case "Workspace":
-                        obj = Instantiate(WorkspacePrefab, ActionObjectsSpawn.transform);
-                        break;
-                    default:
-                        obj = Instantiate(UnknownPrefab, ActionObjectsSpawn.transform);
-                        break;
-                }
+                Debug.LogError(5);
+                obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
-
+            Debug.LogError(6);
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
-
-            if (name == "")
-                name = GetFreeAOName(type);
-            
+            Debug.LogError(7);
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
+            Debug.LogError(8);
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
+            Debug.LogError(type);
             if (aom.Robot) {
                 await actionObject.LoadEndEffectors();
             }
@@ -350,7 +354,9 @@ namespace Base {
         public async Task UpdateActionObjects() {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Scene.Objects) {
+                Debug.LogError(aoSwagger.Name);
                 ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
+                Debug.LogError(aoSwagger.Name);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }

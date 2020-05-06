@@ -85,7 +85,7 @@ namespace Base {
 
         public bool ProjectChanged = false, ProjectRunning = false;
 
-        public const string ApiVersion = "0.6.2";
+        public const string ApiVersion = "0.7.0";
 
         public readonly string EditorVersion = "0.6.0-alpha.1";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
@@ -100,6 +100,9 @@ namespace Base {
 
         public IO.Swagger.Model.SystemInfoData SystemInfo;
         public PackageInfo PackageInfo;
+
+        // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
+        bool openSceneProjectPackage = false;
 
         public bool SceneInteractable {
             get => !MenuManager.Instance.IsAnyMenuOpened();
@@ -123,7 +126,7 @@ namespace Base {
             if (ConnectionStatus != ConnectionStatusEnum.Connected)
                 return;
             // new or updated scene arrived from server
-            if (newScene != null) {
+            /*if (newScene != null) {
                 if (SceneManager.Instance.Scene == null) {
                     bool success = await SceneManager.Instance.CreateScene(newScene);
                     newScene = null;
@@ -136,13 +139,13 @@ namespace Base {
                     Debug.LogError("Loaded scene: " + SceneManager.Instance.Scene.ToString());
                     SceneManager.Instance.DestroyScene();
                 }
-            }
+            }*/
         }
 
         public ConnectionStatusEnum ConnectionStatus {
             get => connectionStatus; set {
                 if (connectionStatus != value) {                    
-                    OnConnectionStatusChanged(connectionStatus);
+                    OnConnectionStatusChanged(value);
                 }
             }
         }
@@ -197,7 +200,6 @@ namespace Base {
             OnProjectStateChanged += ProjectStateChanged;
             
             OnLoadProject += ProjectLoaded;
-            SceneManager.Instance.OnLoadScene += SceneLoaded;
             EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
@@ -207,21 +209,23 @@ namespace Base {
             StartLoading();
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
+                    IO.Swagger.Model.SystemInfoData systemInfo;
                     try {
-                        IO.Swagger.Model.SystemInfoData systemInfo = await WebsocketManager.Instance.GetSystemInfo();
-                        if (!await CheckApiVersion(systemInfo)) {
-                            throw new RequestFailedException();
-                        }
-                        SystemInfo = systemInfo;
-                        ServerVersion.text = "Editor version: " + EditorVersion +
-                        "\nServer version: " + systemInfo.Version;
+                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
                     } catch (RequestFailedException ex) {
                         DisconnectFromSever();
                         EndLoading();
                         Notifications.Instance.ShowNotification("Connection failed", "");
                         return;
                     }
-                        
+                    if (!await CheckApiVersion(systemInfo)) {
+                        EndLoading();
+                        return;
+                    }
+
+                    SystemInfo = systemInfo;
+                    ServerVersion.text = "Editor version: " + EditorVersion +
+                        "\nServer version: " + systemInfo.Version;
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();
                     
@@ -241,21 +245,9 @@ namespace Base {
                         return;
                     }
 
-                    /*
-                    if (newScene != null) {
-                        if (!await SceneManager.Instance.CreateScene(newScene)) {
-                            Notifications.Instance.ShowNotification("Failed to initialize scene", "");
-                        }
-                    }
-
-
-
-                    if (!sceneReady && CurrentProject == null) {
+                    if (!openSceneProjectPackage) {
                         await OpenMainScreen();
-                    } else if (ProjectRunning) {
-                        OpenPackageRunningScreen();
-                    }*/
-                    Scene.SetActive(true);
+                    }
                     connectionStatus = newState;
                     break;
                 case ConnectionStatusEnum.Disconnected:
@@ -287,7 +279,7 @@ namespace Base {
         }
 
         private void Init() {
-
+            openSceneProjectPackage = false;
         }
 
         public async void ConnectToSever(string domain, int port) {
@@ -300,7 +292,7 @@ namespace Base {
                     Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
                     WebsocketManager.Instance.DisconnectFromSever();
                     EndLoading();
-                }                
+                }
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
             } else {
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
@@ -597,6 +589,40 @@ namespace Base {
             }
         }
 
+        internal async Task SceneOpened(Scene scene) {
+            openSceneProjectPackage = true;
+            try {
+                if (await Task.Run(() => SceneManager.Instance.CreateScene(scene, 15000))) {
+                    Debug.LogError("scene loaded");
+                    OpenSceneEditor();                    
+                } else {
+                    Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
+                }
+            } catch (TimeoutException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
+            }
+            
+
+        }
+
+        internal async Task ProjectOpened(Scene scene, Project project) {
+            openSceneProjectPackage = true;
+            try {
+                if (!await SceneManager.Instance.CreateScene(scene, 15000)) {
+                    Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
+                }
+                if (await ProjectManager.Instance.CreateProject(project, 15000)) {
+                    OpenProjectEditor();
+                } else {
+                    Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
+                }
+            } catch (TimeoutException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs(scene, null, "Failed to initialize project");
+            }
+        }
+
         public void ActionPointOrientationAdded(NamedOrientation orientation, string actionPointIt) {
             try {
                 ActionPoint actionPoint = SceneManager.Instance.GetActionPoint(actionPointIt);
@@ -607,7 +633,6 @@ namespace Base {
                 return;
             }
         }
-
         public void ActionPointOrientationRemoved(NamedOrientation orientation) {
             try {
                 ActionPoint actionPoint = SceneManager.Instance.GetActionPointWithOrientation(orientation.Id);
@@ -1086,7 +1111,7 @@ namespace Base {
         public void WaitForSceneReady(int timeout) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            while (!sceneReady) {
+            while (SceneManager.Instance.Scene == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
                 System.Threading.Thread.Sleep(100);
@@ -1106,6 +1131,7 @@ namespace Base {
         }
 
         public async Task OpenMainScreen() {
+            Scene.SetActive(false);
             StartLoading();
             await LoadScenes();
             await LoadProjects();
@@ -1117,14 +1143,17 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
+            Debug.LogError("open scene editor");
             EditorInfo.text = "Scene: " + SceneManager.Instance.Scene.Name;
             SetGameState(GameStateEnum.SceneEditor);
+            Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
         }
 
         public void OpenProjectEditor() {
             EditorInfo.text = "Project: " + CurrentProject.Name;
             SetGameState(GameStateEnum.ProjectEditor);
+            Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1138,6 +1167,7 @@ namespace Base {
                 ProjectUpdated(null);
                 await SceneUpdated(PackageInfo.Scene);
                 ProjectUpdated(PackageInfo.Project);
+                Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, EventArgs.Empty);
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
@@ -1158,6 +1188,7 @@ namespace Base {
 
 
         public void OpenDisconnectedScreen() {
+            Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";
         }
@@ -1165,10 +1196,6 @@ namespace Base {
         public void ProjectLoaded(object sender, EventArgs eventArgs) {
             ProjectChanged = false;
             OpenProjectEditor();
-        }
-
-        public void SceneLoaded(object sender, EventArgs eventArgs) {
-            OpenSceneEditor();
         }
 
         public Button CreateButton(Transform parent, string label) {
