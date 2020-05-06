@@ -268,6 +268,12 @@ namespace Base {
                     case "OpenProject":
                         HandleOpenProject(data);
                         break;
+                    case "SceneClosed":
+                        HandleCloseScene(data);
+                        break;
+                    case "ProjectClosed":
+                        HandleCloseProject(data);
+                        break;
                     case "OpenPackage":
                         HandleOpenPackage(data);
                         break;
@@ -282,7 +288,7 @@ namespace Base {
 
         }
 
-        private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
+       private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
                     if (value == null) {
@@ -323,7 +329,7 @@ namespace Base {
         private async void HandleProjectChanged(string obj) {
 
             try {
-                GameManager.Instance.ProjectChanged = true;
+                ProjectManager.Instance.ProjectChanged = true;
                 IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
                 switch (eventProjectChanged.ChangeType) {
                     case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
@@ -336,7 +342,7 @@ namespace Base {
                         GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
                         break;
                     case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
-                        GameManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
+                        ProjectManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
                         break;
                     default:
                         throw new NotImplementedException();
@@ -371,7 +377,7 @@ namespace Base {
                 return;
             }
 
-            Action puck = SceneManager.Instance.GetAction(puck_id);
+            Action puck = ProjectManager.Instance.GetAction(puck_id);
             if (puck == null)
                 return;
 
@@ -429,19 +435,19 @@ namespace Base {
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             switch (actionChanged.ChangeType) {
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
+                    ProjectManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionRemoved(actionChanged.Data);
+                    ProjectManager.Instance.ActionRemoved(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionUpdated(actionChanged.Data);
+                    ProjectManager.Instance.ActionUpdated(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionBaseUpdated(actionChanged.Data);
+                    ProjectManager.Instance.ActionBaseUpdated(actionChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -449,20 +455,20 @@ namespace Base {
         }
 
         private void HandleActionPointChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
             switch (actionPointChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -470,20 +476,20 @@ namespace Base {
         }
 
         private void HandleOrientationChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.OrientationChanged orientationChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.OrientationChanged>(data);
             switch (orientationChanged.ChangeType) {
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
+                    ProjectManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -491,20 +497,20 @@ namespace Base {
         }
 
         private void HandleJointsChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.JointsChanged jointsChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.JointsChanged>(data);
             switch (jointsChanged.ChangeType) {
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
+                    ProjectManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -562,16 +568,27 @@ namespace Base {
 
         private async void HandleOpenScene(string data) {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
-            Task.Run(() => GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene));
+            GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
         }
+
+        private void HandleCloseProject(string data) {
+            GameManager.Instance.ProjectClosed();
+        }
+
+        private void HandleCloseScene(string data) {
+            GameManager.Instance.SceneClosed();
+        }
+
+
 
         private void HandleOpenPackage(string data) {
             throw new NotImplementedException();
         }
 
         private void HandleProjectSaved(string data) {
-            GameManager.Instance.ProjectSaved();
+            ProjectManager.Instance.ProjectSaved();
         }
+
 
 
 

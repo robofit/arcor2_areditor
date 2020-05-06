@@ -342,7 +342,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         inputDialog.Open("Build package",
                          "",
                          "Package name",
-                         Base.GameManager.Instance.CurrentProject.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         Base.ProjectManager.Instance.Project.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
                          () => BuildPackage(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -361,7 +361,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         inputDialog.Open("Build and run package",
                          "",
                          "Package name",
-                         Base.GameManager.Instance.CurrentProject.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         Base.ProjectManager.Instance.Project.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
                          () => BuildAndRunPackage(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -416,7 +416,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void SaveLogs() {
         
-        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.Scene, Base.GameManager.Instance.CurrentProject);
+        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project);
     }
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR

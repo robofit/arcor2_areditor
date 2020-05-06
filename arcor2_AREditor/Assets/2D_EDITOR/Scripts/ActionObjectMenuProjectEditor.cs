@@ -31,7 +31,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         inputDialog.Open("Create action point",
                          "Type action point name",
                          "Name",
-                         SceneManager.Instance.GetFreeAPName(CurrentObject.Data.Name),
+                         ProjectManager.Instance.GetFreeAPName(CurrentObject.Data.Name),
                          () => CreateNewAP(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }

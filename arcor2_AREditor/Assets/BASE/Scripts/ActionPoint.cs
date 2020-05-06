@@ -31,12 +31,12 @@ namespace Base {
 
         public bool Locked {
             get {
-                return PlayerPrefsHelper.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
+                return PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.Project.Id + "/AP/" + Data.Id + "/locked", false);
             }
 
             set {
-                Debug.Assert(GameManager.Instance.CurrentProject != null);
-                PlayerPrefsHelper.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
+                Debug.Assert(Base.ProjectManager.Instance.Project != null);
+                PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.Project.Id + "/AP/" + Data.Id + "/locked", value);
             }
         }
 
@@ -193,7 +193,7 @@ namespace Base {
             RemoveConnectionToParent();
 
             // Remove this ActionPoint reference from parent ActionObject list
-            SceneManager.Instance.ActionPoints.Remove(this.Data.Id);
+            ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
@@ -306,7 +306,7 @@ namespace Base {
 
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = SceneManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    action = ProjectManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -338,12 +338,12 @@ namespace Base {
                 RemoveConnectionToParent();
                 Parent = null;
                 Data.Parent = "";
-                transform.parent = SceneManager.Instance.ActionPointsOrigin.transform;
+                transform.parent = ProjectManager.Instance.ActionPointsOrigin.transform;
                 transform.localRotation = Quaternion.identity;
                 return;
             }
             try {
-                IActionPointParent actionPointParent = SceneManager.Instance.GetActionPointParent(parentId);
+                IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
                 Parent = actionPointParent;
                 Data.Parent = parentId;
                 transform.parent = actionPointParent.GetTransform();
@@ -458,7 +458,7 @@ namespace Base {
             foreach (Transform transform in orientations.transform) {
                 Destroy(transform.gameObject);
             }
-            if (!SceneManager.Instance.APOrientationsVisible)
+            if (!ProjectManager.Instance.APOrientationsVisible)
                 return;
             if (!OrientationsVisible)
                 return;

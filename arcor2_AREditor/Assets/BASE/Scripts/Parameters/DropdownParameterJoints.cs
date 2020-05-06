@@ -32,7 +32,7 @@ public class DropdownParameterJoints : DropdownParameter
         if (value == null)
             return null;
 
-        Base.ActionPoint actionPoint = Base.SceneManager.Instance.GetactionpointByName(value.Split('.').First());
+        Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(value.Split('.').First());
         return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
     }
 }

@@ -181,9 +181,10 @@ namespace Base {
             return Data.Id;
         }
 
+        //TODO: is this working?
         public List<ActionPoint> GetActionPoints() {
             List<ActionPoint> actionPoints = new List<ActionPoint>();
-            foreach (ActionPoint actionPoint in SceneManager.Instance.ActionPoints.Values) {
+            foreach (ActionPoint actionPoint in ProjectManager.Instance.ActionPoints.Values) {
                 if (actionPoint.Data.Parent == Data.Id) {
                     actionPoints.Add(actionPoint);
                 }

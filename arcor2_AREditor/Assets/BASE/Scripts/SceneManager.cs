@@ -14,10 +14,10 @@ namespace Base {
 
        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
-        public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public GameObject ActionObjectsSpawn, ActionPointsOrigin, SceneOrigin;
+        
+        public GameObject ActionObjectsSpawn, SceneOrigin;
 
-        public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
+        
         public GameObject RobotPrefab, ActionObjectPrefab;
 
         public GameObject CurrentlySelectedObject;
@@ -26,17 +26,15 @@ namespace Base {
         public GameObject LineConnectionPrefab, RobotEEPrefab;
 
         private bool sceneActive = true;
-        private bool projectActive = true;
 
-        public bool ActionObjectsInteractive, ActionObjectsVisible, APOrientationsVisible;
+        public bool ActionObjectsInteractive, ActionObjectsVisible;
 
         public bool RobotsEEVisible {
             get;
             private set;
         }
 
-        public float APSize = 0.5f;
-
+        
         private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
         private Dictionary<string, List<string>> robotsWithEndEffector = new Dictionary<string, List<string>>();
@@ -51,24 +49,17 @@ namespace Base {
         /// </summary>
         /// <param name="project"></param>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, int timeout) {
+            Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Scene != null)
                 return false;
-
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            
-            while (!ActionsManager.Instance.ActionsReady) {
-                if (sw.ElapsedMilliseconds > timeout)
-                    throw new TimeoutException();
-                Thread.Sleep(100);
-            }
-            Debug.LogError("while end");
+           
             Scene = scene;
+            LoadSettings();
             bool success = await UpdateScene(scene);
+            
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
             }
-            Debug.LogError("returning " + success.ToString());
             return success;
         }
 
@@ -80,9 +71,7 @@ namespace Base {
             if (scene.Id != Scene.Id)
                 return false;
             Scene = scene;
-            Debug.LogError("UpdateActionObjects");
             await UpdateActionObjects();
-            Debug.LogError("UpdateServices");
             await UpdateServices();
             return true;
         }
@@ -119,20 +108,7 @@ namespace Base {
                 }
             }
             
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
-                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
-                    ActivateActionPointsForGizmo(true);
-                    projectActive = true;
-                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove)) {
-                    ActivateActionPointsForGizmo(false);
-                    projectActive = false;
-                }
-            } else {
-                if (projectActive) {
-                    ActivateActionPointsForGizmo(false);
-                    projectActive = false;
-                }
-            }
+            
 
 
 
@@ -140,8 +116,7 @@ namespace Base {
         }
 
         private void Start() {
-            //GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
-            GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
+            SceneManager.Instance.OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
         }
 
@@ -162,7 +137,7 @@ namespace Base {
             }
         }
 
-        private void OnSceneOrProjectLoaded(object sender, EventArgs e) {
+        private void OnSceneLoaded(object sender, EventArgs e) {
             CleanRobotEE();
             if (RobotsEEVisible) {
                 ShowRobotsEE();
@@ -200,11 +175,10 @@ namespace Base {
         }
 
         
-        internal void LoadSettings(string sceneId) {
-            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOVisibility", true);
-            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/AOInteractivity", true);
-            APOrientationsVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/APOrientationsVisibility", true);
-            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + sceneId + "/RobotsEEVisibility", true);
+        internal void LoadSettings() {
+            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/AOVisibility", true);
+            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/AOInteractivity", true);
+            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);
         }
 
 
@@ -226,23 +200,7 @@ namespace Base {
             }
         }
 
-        /// <summary>
-        /// Deactivates or activates all action points in scene for gizmo interaction.
-        /// </summary>
-        /// <param name="activate"></param>
-        private void ActivateActionPointsForGizmo(bool activate) {
-            if (activate) {
-                gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                    actionPoint.ActivateForGizmo("GizmoRuntime");
-                }
-            } else {
-                gameObject.layer = LayerMask.NameToLayer("Default");
-                foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                    actionPoint.ActivateForGizmo("Default");
-                }
-            }
-        }
+        
 
          public void SetSelectedObject(GameObject obj) {
             if (CurrentlySelectedObject != null) {
@@ -266,29 +224,20 @@ namespace Base {
         #region ACTION_OBJECTS
 
         public async Task<ActionObject> SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
-            Debug.LogError(1);
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
-            Debug.LogError(2);
             GameObject obj;
-            Debug.LogError(3);
             if (aom.Robot) {
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
-                Debug.LogError(4);
             } else {
-                Debug.LogError(5);
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
-            Debug.LogError(6);
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
-            Debug.LogError(7);
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
-            Debug.LogError(8);
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
-            Debug.LogError(type);
             if (aom.Robot) {
                 await actionObject.LoadEndEffectors();
             }
@@ -354,9 +303,7 @@ namespace Base {
         public async Task UpdateActionObjects() {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Scene.Objects) {
-                Debug.LogError(aoSwagger.Name);
                 ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
-                Debug.LogError(aoSwagger.Name);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
@@ -496,565 +443,10 @@ namespace Base {
             return false;
         }
 
-        #endregion
-
-        #region ACTION_POINTS
-
-        public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent actionPointParent) {
-            Debug.Assert(apData != null);
-            GameObject AP;
-            if (actionPointParent == null) {
-                AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
-            } else {
-                AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
-            }
-
-            AP.transform.localScale = new Vector3(1f, 1f, 1f);
-            ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
-            actionPoint.InitAP(apData, APSize, actionPointParent);
-            ActionPoints.Add(actionPoint.Data.Id, actionPoint);
-
-            return actionPoint;
-        }
-
-        public string GetFreeAPName(string apParentName) {
-            int i = 2;
-            bool hasFreeName;
-            string freeName = apParentName + "_ap";
-            do {
-                hasFreeName = true;
-                if (ActionPointsContainsName(freeName)) {
-                    hasFreeName = false;
-                }
-                if (!hasFreeName)
-                    freeName = apParentName + "_ap_" + i++.ToString();
-            } while (!hasFreeName);
-
-            return freeName;
-        }
-
-        public bool ActionPointsContainsName(string name) {
-            foreach (ActionPoint ap in GetAllActionPoints()) {
-                if (ap.Data.Name == name)
-                    return true;
-            }
-            return false;
-        }
-
-        internal void HideAPOrientations() {
-            APOrientationsVisible = false;
-            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
-            }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/APOrientationsVisibility", false);
-        }
-
-        internal void ShowAPOrientations() {
-            APOrientationsVisible = true;
-            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
-            }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/APOrientationsVisibility", true);
-        }
-
-
-        /// <summary>
-        /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.
-        /// </summary>
-        /// <param name="project"></param>
-        public void UpdateActionPoints(IO.Swagger.Model.Project project) {
-            List<string> currentAP = new List<string>();
-            List<string> currentActions = new List<string>();
-            Dictionary<string, string> connections = new Dictionary<string, string>();
-
-            
-
-            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
-                // if action point exist, just update it
-                if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
-                    actionPoint.ActionPointBaseUpdate(projectActionPoint);
-                }
-                // if action point doesn't exist, create new one
-                else {
-                    ActionObject actionObject = null;
-                    if (projectActionPoint.Parent != null) {
-                        ActionObjects.TryGetValue(projectActionPoint.Parent, out actionObject);
-                    }
-                    //TODO: update spawn action point to not need action object
-                    actionPoint = SpawnActionPoint(projectActionPoint, actionObject);
-                }
-
-                // update actions in current action point 
-                (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
-                currentActions.AddRange(updateActionsResult.Item1);
-                // merge dictionaries
-                connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
-
-                actionPoint.UpdatePositionsOfPucks();
-
-                currentAP.Add(actionPoint.Data.Id);
-            }
-               
-            
-
-            UpdateActionConnections(project.ActionPoints, connections);
-
-            // Remove deleted actions
-            foreach (string actionId in GetAllActionsDict().Keys.ToList<string>()) {
-                if (!currentActions.Contains(actionId)) {
-                    RemoveAction(actionId);
-                }
-            }
-
-            // Remove deleted action points
-            foreach (string actionPointId in GetAllActionPointsDict().Keys.ToList<string>()) {
-                if (!currentAP.Contains(actionPointId)) {
-                    RemoveActionPoint(actionPointId);
-                }
-            }
-        }
-
-        public void RemoveActionPoints() {
-            List<ActionPoint> actionPoints = ActionPoints.Values.ToList();
-            foreach (ActionPoint actionPoint in actionPoints) {
-                actionPoint.DeleteAP();
-            }
-        }
-
-        public IActionProvider GetActionProvider(string id) {
-            try {
-                return ActionsManager.Instance.GetService(id);
-            } catch (KeyNotFoundException ex) {
-
-            }
-
-            if (ActionObjects.TryGetValue(id, out ActionObject actionObject)) {
-                return actionObject;
-            }
-            throw new KeyNotFoundException("No action provider with id: " + id);
-        }
-
-        public IActionPointParent GetActionPointParent(string parentId) {
-            if (parentId == null || parentId == "")
-                throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
-            if (ActionObjects.TryGetValue(parentId, out ActionObject actionObject)) {
-                return actionObject;
-            }
-            
-            throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
-        }
-
-        public ActionPoint GetactionpointByName(string name) {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                if (ap.Data.Name == name)
-                    return ap;
-            }
-            throw new KeyNotFoundException("Action point " + name + " not found");
-        }
-
-
-
-        /// <summary>
-        /// Destroys and removes references to action point of given Id.
-        /// </summary>
-        /// <param name="Id"></param>
-        public void RemoveActionPoint(string Id) {
-           // Call function in corresponding action point that will delete it and properly remove all references and connections.
-            // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[Id].DeleteAP();
-        }
-
-        /// <summary>
-        /// Returns action point of given Id.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public ActionPoint GetActionPoint(string id) {
-            if (ActionPoints.TryGetValue(id, out ActionPoint actionPoint)) {
-                return actionPoint;
-            }
-            
-            throw new KeyNotFoundException("ActionPoint \"" + id + "\" not found!");
-        }
-
-        private void tmpPrint(string v) {
-            Debug.LogError("\"" + v + "\"");
-        }
-
-        /// <summary>
-        /// Returns all action points in the scene in a list [ActionPoint_object]
-        /// </summary>
-        /// <returns></returns>
-        public List<ActionPoint> GetAllActionPoints() {
-            return ActionPoints.Values.ToList();
-        }
-
-         /// <summary>
-        /// Returns all action points in the scene in a list [ActionPoint_object]
-        /// </summary>
-        /// <returns></returns>
-        public List<ActionPoint> GetAllGlobalActionPoints() {
-            return (from ap in ActionPoints
-                   where ap.Value.Parent == null
-                   select ap.Value).ToList();
-        }
-
-        /// <summary>
-        /// Returns all action points in the scene in a dictionary [action_point_Id, ActionPoint_object]
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, ActionPoint> GetAllActionPointsDict() {
-            return ActionPoints;
-        }
-
-        /// <summary>
-        /// Returns joints with id or throws KeyNotFoundException
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IO.Swagger.Model.ProjectRobotJoints GetJoints(string id) {
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                try {
-                    return actionPoint.GetJoints(id);
-                } catch (KeyNotFoundException ex) { }                
-            }
-            throw new KeyNotFoundException("Joints with id " + id + " not found");
-        }
-
-        /// <summary>
-        /// Returns orientation with id or throws KeyNotFoundException
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IO.Swagger.Model.NamedOrientation GetNamedOrientation(string id) {
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                try {
-                    return actionPoint.GetOrientation(id);
-                } catch (KeyNotFoundException ex) { }                
-            }
-            throw new KeyNotFoundException("Joints with id " + id + " not found");
-        }
-
-        /// <summary>
-        /// Returns action point containing orientation with id or throws KeyNotFoundException
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public ActionPoint GetActionPointWithOrientation(string id) {
-            foreach(ActionPoint actionPoint in ActionPoints.Values) {
-                try {
-                    // if GetOrientation dont throw exception, correct action point was found
-                    actionPoint.GetOrientation(id);
-                    return actionPoint;
-                } catch (KeyNotFoundException ex) { }
-            }
-            throw new KeyNotFoundException("Action point with orientation id " + id + " not found");
-        }
-
-        /// <summary>
-        /// Returns action point containing joints with id or throws KeyNotFoundException
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public ActionPoint GetActionPointWithJoints(string id) {
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                try {
-                    // if GetJoints dont throw exception, correct action point was found
-                    actionPoint.GetJoints(id);
-                    return actionPoint;
-                } catch (KeyNotFoundException ex) { }
-            }
-            throw new KeyNotFoundException("Action point with joints id " + id + " not found");
-        }
-
-        /// <summary>
-        /// Change size of all action points
-        /// </summary>
-        /// <param name="size"><0; 1> From barely visible to quite big</param>
-        public void SetAPSize(float size) {
-            if (GameManager.Instance.CurrentProject != null)
-                PlayerPrefsHelper.SaveFloat("project/" + GameManager.Instance.CurrentProject.Id + "/APSize", size);
-            APSize = size;
-            foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.SetSize(size);
-            }
-        }
-
-
+        
 
         #endregion
 
-        #region ACTIONS
-
-        public Action SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
-            Debug.Assert(GetActionByName(action_name) == null);
-            GameManager.Instance.StartLoading();
-            ActionMetadata actionMetadata;
-
-            try {
-                actionMetadata = actionProvider.GetActionMetadata(action_type);
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-                GameManager.Instance.EndLoading();
-                return null; //TODO: throw exception
-            }
-
-            if (actionMetadata == null) {
-                Debug.LogError("Actions not ready");
-                GameManager.Instance.EndLoading();
-                return null; //TODO: throw exception
-            }
-
-            GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
-            puck.SetActive(false);
-            
-            puck.GetComponent<Action>().Init(action_id, action_name, actionMetadata, ap, actionProvider);
-
-            puck.transform.localScale = new Vector3(1f, 1f, 1f);
-
-            Action action = puck.GetComponent<Action>();
-
-            // Add new action into scene reference
-            ActionPoints[ap.Data.Id].Actions.Add(action_id, action);
-
-            ap.UpdatePositionsOfPucks();
-            puck.SetActive(true);
-            
-            GameManager.Instance.EndLoading();
-            return action;
-        }
-
-        public string GetFreeActionName(string actionName) {
-            int i = 2;
-            bool hasFreeName;
-            string freeName = actionName;
-            do {
-                hasFreeName = true;
-                if (ActionsContainsName(freeName)) {
-                    hasFreeName = false;
-                }
-                if (!hasFreeName)
-                    freeName = actionName + "_" + i++.ToString();
-            } while (!hasFreeName);
-
-            return freeName;
-        }
-
-
-
-        /// <summary>
-        /// Updates connections between actions in the scene.
-        /// </summary>
-        /// <param name="projectObjects"></param>
-        /// <param name="connections"></param>
-        public void UpdateActionConnections(List<IO.Swagger.Model.ProjectActionPoint> actionPoints, Dictionary<string, string> connections) {
-            Dictionary<string, Action> actionsToActualize = new Dictionary<string, Action>();
-
-            // traverse through all actions (even freshly created)
-            foreach (Action action in GetAllActions()) {
-                // get connection from dictionary [actionID,outputAction]
-                if (connections.TryGetValue(action.Data.Id, out string actionOutput)) {
-                    // Check if action's output action is NOT the same as actionOutput from newly received data from server,
-                    // then connection changed and we have to delete actual connection of current action and create new one
-                    Action refAction = null;
-                    // Find corresponding action defined by ID
-                    if (actionOutput != "start" && actionOutput != "end") {
-                        refAction = GetAction(actionOutput);
-                        if (refAction != null) {
-                            actionOutput = refAction.Data.Id;
-                        } else {
-                            actionOutput = "";
-                        }
-                    }
-                    if (action.Output.Data.Default != actionOutput) {
-                        // Destroy old connection if there was some
-                        if (action.Output.Connection != null) {
-                            ConnectionManagerArcoro.Instance.Connections.Remove(action.Output.Connection);
-                            Destroy(action.Output.Connection.gameObject);
-                        }
-
-                        // Create new connection only if connected action exists (it is not start nor end)
-                        if (refAction != null) {
-                            // Create new one
-                            //PuckInput input = GetAction(actionOutput).Input;
-                            PuckInput input = refAction.Input;
-                            PuckOutput output = action.Output;
-
-                            GameObject c = Instantiate(ConnectionPrefab);
-                            c.transform.SetParent(ConnectionManager.instance.transform);
-                            Connection newConnection = c.GetComponent<Connection>();
-                            // We are always connecting output to input.
-                            newConnection.target[0] = output.gameObject.GetComponent<RectTransform>();
-                            newConnection.target[1] = input.gameObject.GetComponent<RectTransform>();
-
-                            input.Connection = newConnection;
-                            output.Connection = newConnection;
-                            ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
-                        }
-                    }
-                    actionsToActualize.Add(action.Data.Id, action);
-                }
-            }
-
-            // Set action inputs and outputs for updated connections
-            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in actionPoints) {
-                foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {                        
-                    if (actionsToActualize.TryGetValue(projectAction.Id, out Action action)) {
-                        // Sets action inputs (currently each action has only 1 input)
-                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
-                            action.Input.Data = actionIO;
-                        }
-
-                        // Sets action outputs (currently each action has only 1 output)
-                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                            action.Output.Data = actionIO;
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        /// <summary>
-        /// Destroys and removes references to action of given Id.
-        /// </summary>
-        /// <param name="Id"></param>
-        public void RemoveAction(string Id) {
-            Action aToRemove = GetAction(Id);
-            string apIdToRemove = aToRemove.ActionPoint.Data.Id;
-            // Call function in corresponding action that will delete it and properly remove all references and connections.
-            // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[apIdToRemove].Actions[Id].DeleteAction();
-        }
-
-        public bool ActionsContainsName(string name) {
-            foreach (Action action in GetAllActions()) {
-                if (action.Data.Name == name)
-                    return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Returns action of given Id.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public Action GetAction(string id) {
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                if (actionPoint.Actions.TryGetValue(id, out Action action)) {
-                    return action;
-                }
-            }
-            
-            //Debug.LogError("Action " + Id + " not found!");
-            return null;
-        }
-
-        /// <summary>
-        /// Returns action of given ID.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public Action GetActionByName(string name) {
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                foreach (Action action in actionPoint.Actions.Values) {
-                    if (action.Data.Name == name) {
-                        return action;
-                    }
-                }
-            }
-            
-            //Debug.LogError("Action " + id + " not found!");
-            return null;
-        }
-
-        /// <summary>
-        /// Returns all actions in the scene in a list [Action_object]
-        /// </summary>
-        /// <returns></returns>
-        public List<Action> GetAllActions() {
-            List<Action> actions = new List<Action>();
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                foreach (Action action in actionPoint.Actions.Values) {
-                    actions.Add(action);
-                }
-            }
-            
-            return actions;
-        }
-
-        /// <summary>
-        /// Returns all actions in the scene in a dictionary [action_Id, Action_object]
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, Action> GetAllActionsDict() {
-            Dictionary<string, Action> actions = new Dictionary<string, Action>();
-            foreach (ActionPoint actionPoint in ActionPoints.Values) {
-                foreach (Action action in actionPoint.Actions.Values) {
-                    actions.Add(action.Data.Id, action);
-                }
-            }
-           
-            return actions;
-        }
-
-        #endregion
-
-
-        //// Deactivates or activates scene and all objects in scene to ignore raycasting (clicking)
-        //private void ActivateSceneForEditing(bool activate, string tagToActivate) {
-        //    //Transform[] allChildren = Helper.FindComponentsInChildrenWithTag<Transform>(gameObject, tagToActivate);
-        //    //if (activate) {
-        //    //    gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //    //    foreach (Transform child in allChildren) {
-        //    //        child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //    //    }
-        //    //} else {
-        //    //    gameObject.layer = LayerMask.NameToLayer("Default");
-        //    //    foreach (Transform child in allChildren) {
-        //    //        child.gameObject.layer = LayerMask.NameToLayer("Default");
-        //    //    }
-        //    //}
-
-        //    if (activate) {
-        //        foreach (GameObject actionObject in ActionObjects.Keys) {
-        //            actionObject.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //            foreach (Transform child in actionObject.GetComponentsInChildren<Transform>()) {
-        //                child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //            }
-        //        }
-        //    } else {
-        //        foreach (GameObject actionObject in ActionObjects.Keys) {
-        //            actionObject.gameObject.layer = LayerMask.NameToLayer("Default");
-        //            foreach (Transform child in actionObject.GetComponentsInChildren<Transform>()) {
-        //                child.gameObject.layer = LayerMask.NameToLayer("Default");
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private void ActivateProjectForEditing(bool activate, string tagToActivate) {
-        //    if (activate) {
-        //        foreach (List<GameObject> actionPoints in ActionObjects.Values) {
-        //            foreach (GameObject aP in actionPoints) {
-        //                aP.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //                foreach (Transform child in aP.GetComponentsInChildren<Transform>()) {
-        //                    child.gameObject.layer = LayerMask.NameToLayer("GizmoRuntime");
-        //                }
-        //            }
-        //        }
-        //    } else {
-        //        foreach (List<GameObject> actionPoints in ActionObjects.Values) {
-        //            foreach (GameObject aP in actionPoints) {
-        //                aP.gameObject.layer = LayerMask.NameToLayer("Default");
-        //                foreach (Transform child in aP.GetComponentsInChildren<Transform>()) {
-        //                    child.gameObject.layer = LayerMask.NameToLayer("Default");
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
     }
 }
 

@@ -49,7 +49,7 @@ namespace Base {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
             if (type == LogType.Exception) {
                 //automatially create logs in case of exception
-                SaveLogs(SceneManager.Instance.Scene, GameManager.Instance.CurrentProject, "Exception occured");
+                SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Exception occured");
             }
         }
 
@@ -57,7 +57,7 @@ namespace Base {
             string sceneString = "", projectString = "";
             if (SceneManager.Instance.Scene != null)
                 sceneString = scene.ToJson();
-            if (GameManager.Instance.CurrentProject != null)
+            if (Base.ProjectManager.Instance.Project != null)
                 projectString = project.ToJson();
             string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
             Directory.CreateDirectory(dirname);

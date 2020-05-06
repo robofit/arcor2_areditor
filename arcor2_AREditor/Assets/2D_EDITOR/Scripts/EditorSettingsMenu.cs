@@ -24,9 +24,9 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Debug.Assert(APOrientationsVisibility != null);
         Debug.Assert(RobotsEEVisible != null);
         Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
-        Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
+        Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
-        Base.GameManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
+        Base.ProjectManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         Interactibility.SetValue(false);
     }
@@ -36,10 +36,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void UpdateMenu() {
-        APSizeSlider.value = SceneManager.Instance.APSize;
+        APSizeSlider.value = ProjectManager.Instance.APSize;
         Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
-        APOrientationsVisibility.SetValue(Base.SceneManager.Instance.APOrientationsVisible);
+        APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
     }
 
@@ -52,11 +52,11 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void ShowAPOrientations() {
-        Base.SceneManager.Instance.ShowAPOrientations();
+        Base.ProjectManager.Instance.ShowAPOrientations();
     }
 
     public void HideAPOrientations() {
-         Base.SceneManager.Instance.HideAPOrientations();
+         Base.ProjectManager.Instance.HideAPOrientations();
     }
 
     public void InteractivityOn() {
@@ -113,7 +113,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         foreach (Transform t in ActionPointsList.transform) {
             Destroy(t.gameObject);
         }
-        foreach (Base.ActionPoint actionPoint in Base.SceneManager.Instance.GetAllGlobalActionPoints()) {
+        foreach (Base.ActionPoint actionPoint in Base.ProjectManager.Instance.GetAllGlobalActionPoints()) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
@@ -154,7 +154,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void OnAPSizeChange(float value) {
-        SceneManager.Instance.SetAPSize(value);
+        ProjectManager.Instance.SetAPSize(value);
     }
 
 
