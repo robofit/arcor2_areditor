@@ -36,7 +36,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
         if (e.ClickType == Click.MOUSE_LEFT_BUTTON || e.ClickType == Click.MOUSE_RIGHT_BUTTON || e.ClickType == Click.MOUSE_MIDDLE_BUTTON ||
             e.ClickType == Click.TOUCH) {
             if (GameManager.Instance.SceneInteractable) {
-                Scene.Instance.SetSelectedObject(null);
+                SceneManager.Instance.SetSelectedObject(null);
                 RemoveMaterial(ClickMaterial);
                 foreach (Renderer renderer in Renderers) {
                     renderer.materials = materials[renderer].ToArray();
@@ -46,7 +46,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
     }
 
     protected override void Select() {
-        Scene.Instance.SetSelectedObject(gameObject);
+        SceneManager.Instance.SetSelectedObject(gameObject);
         base.Select();
     }
 }

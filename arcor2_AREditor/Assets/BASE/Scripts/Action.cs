@@ -88,7 +88,7 @@ namespace Base {
                     //at the moment, each action has exactly one input and one output
                     Action refAction = null;
                     if (actionOutput != "start" && actionOutput != "end") {
-                        refAction = Scene.Instance.GetAction(actionOutput);
+                        refAction = SceneManager.Instance.GetAction(actionOutput);
                     }
 
                     if (Output.Connection != null) {
@@ -101,7 +101,7 @@ namespace Base {
                         // Create new one
                         PuckInput input = refAction.Input;
 
-                        GameObject c = Instantiate(Scene.Instance.ConnectionPrefab);
+                        GameObject c = Instantiate(SceneManager.Instance.ConnectionPrefab);
                         c.transform.SetParent(ConnectionManager.instance.transform);
                         Connection newConnection = c.GetComponent<Connection>();
                         // We are always connecting output to input.
@@ -114,7 +114,7 @@ namespace Base {
                         Output.Data.Default = refAction.Data.Id;
                         ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
                     } else {
-                        refAction = Scene.Instance.GetAction(Output.Data.Default);
+                        refAction = SceneManager.Instance.GetAction(Output.Data.Default);
                         refAction.Input.InitData();
                         Output.InitData();
                     }
@@ -258,7 +258,7 @@ namespace Base {
         public static GameObject InitializePoseParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
 
-            foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
+            foreach (Base.ActionPoint ap in Base.SceneManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.NamedOrientation orientation in ap.GetNamedOrientations()) {                    
                     options.Add(ap.Data.Name + "." + orientation.Name);
                 }
@@ -266,7 +266,7 @@ namespace Base {
             string selectedValue = null;
             if (value != null) {
                 try {
-                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(value);
+                    ActionPoint actionPoint = SceneManager.Instance.GetActionPointWithOrientation(value);
                     IO.Swagger.Model.NamedOrientation namedOrientation = actionPoint.GetNamedOrientation(value);
                     selectedValue = actionPoint.Data.Name + "." + namedOrientation.Name;
                 } catch (KeyNotFoundException ex) {
@@ -280,7 +280,7 @@ namespace Base {
 
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
-            foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
+            foreach (Base.ActionPoint ap in Base.SceneManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, true).Values) {
                     options.Add(ap.Data.Name + "." + joints.Name);
                 }
@@ -288,7 +288,7 @@ namespace Base {
             string selectedValue = null;
             if (value != null) {
                 try {
-                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(value);
+                    ActionPoint actionPoint = SceneManager.Instance.GetActionPointWithJoints(value);
                     IO.Swagger.Model.ProjectRobotJoints joints = actionPoint.GetJoints(value);
                     selectedValue = actionPoint.Data.Name + "." + joints.Name;
                 } catch (KeyNotFoundException ex) {

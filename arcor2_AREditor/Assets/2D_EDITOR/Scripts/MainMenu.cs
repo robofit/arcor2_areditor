@@ -58,7 +58,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         //Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
-        Base.GameManager.Instance.OnRunProject += OnOpenProjectRunning;
+        Base.GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
         Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
         //Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
@@ -348,9 +348,13 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
  
     public async void BuildPackage(string name) {
-        if (await Base.GameManager.Instance.BuildPackage(name)) {
+        try {
+            await Base.GameManager.Instance.BuildPackage(name);
             inputDialog.Close();
+        } catch (Base.RequestFailedException ex) {
+
         }
+        
     }
 
     public void ShowBuildAndRunPackage() {
@@ -368,8 +372,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void RunProject() {
-        Base.GameManager.Instance.RunProject();
+    public void TestRun() {
+        Base.GameManager.Instance.TestRunProject();
     }
 
     public void StopProject() {
@@ -412,7 +416,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void SaveLogs() {
         
-        Base.Notifications.Instance.SaveLogs(Base.Scene.Instance.Data, Base.GameManager.Instance.CurrentProject);
+        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.Scene, Base.GameManager.Instance.CurrentProject);
     }
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR

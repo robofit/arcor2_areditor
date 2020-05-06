@@ -247,6 +247,9 @@ namespace Base {
                     case "PackageState":
                         HandlePackageState(data);
                         break;
+                    case "PackageInfo":
+                        HandlePackageInfo(data);
+                        break;
                     case "ProjectSaved":
                         HandleProjectSaved(data);
                         break;
@@ -364,7 +367,7 @@ namespace Base {
                 return;
             }
 
-            Action puck = Scene.Instance.GetAction(puck_id);
+            Action puck = SceneManager.Instance.GetAction(puck_id);
             if (puck == null)
                 return;
 
@@ -389,8 +392,13 @@ namespace Base {
 
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
-            GameManager.Instance.SetProjectState(projectState.Data);
+            GameManager.Instance.SetPackageState(projectState.Data);
             projectStateArrived = true;
+        }
+
+        private void HandlePackageInfo(string obj) {
+            IO.Swagger.Model.PackageInfoEvent packageInfo = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageInfoEvent>(obj);
+            GameManager.Instance.PackageInfo = packageInfo.Data;
         }
 
         private async void HandleSceneChanged(string obj) {
@@ -403,7 +411,8 @@ namespace Base {
                     await GameManager.Instance.LoadScenes();
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
+                    GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
+                    //GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Updatebase:
                     GameManager.Instance.SceneBaseUpdated(sceneChangedEvent.Data);
@@ -757,6 +766,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
+
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string objectType) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.TypeArgs args = new IO.Swagger.Model.TypeArgs(type: objectType);
@@ -766,15 +776,7 @@ namespace Base {
             
         }
 
-        public async Task<bool> AddServiceToScene(string configId, string serviceType) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(configurationId: configId, type: serviceType);
-            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.AddServiceToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
-            return response == null ? false : response.Result;;
-        }
-
+       
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveFromSceneArgs args = new IO.Swagger.Model.RemoveFromSceneArgs(id: id, force: force);

@@ -26,7 +26,7 @@ namespace Base {
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
-            visibility = PlayerPrefsHelper.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
+            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -130,7 +130,7 @@ namespace Base {
             RemoveActionPoints();
             
             // Remove this ActionObject reference from the scene ActionObject list
-            Scene.Instance.ActionObjects.Remove(this.Data.Id);
+            SceneManager.Instance.ActionObjects.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
@@ -147,7 +147,7 @@ namespace Base {
         public virtual void SetVisibility(float value) {
             Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            PlayerPrefsHelper.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {
@@ -183,7 +183,7 @@ namespace Base {
 
         public List<ActionPoint> GetActionPoints() {
             List<ActionPoint> actionPoints = new List<ActionPoint>();
-            foreach (ActionPoint actionPoint in Scene.Instance.ActionPoints.Values) {
+            foreach (ActionPoint actionPoint in SceneManager.Instance.ActionPoints.Values) {
                 if (actionPoint.Data.Parent == Data.Id) {
                     actionPoints.Add(actionPoint);
                 }
