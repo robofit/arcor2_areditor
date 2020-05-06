@@ -493,11 +493,13 @@ namespace Base {
 
 
         internal void SceneClosed() {
+            ShowLoadingScreen();
             SceneManager.Instance.DestroyScene();
             _ = OpenMainScreen();
         }
 
         internal void ProjectClosed() {
+            ShowLoadingScreen();
             ProjectManager.Instance.DestroyProject();
             SceneManager.Instance.DestroyScene();
             _ = OpenMainScreen();
