@@ -48,7 +48,7 @@ namespace Base {
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, int timeout) {
+        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Scene != null)
                 return false;

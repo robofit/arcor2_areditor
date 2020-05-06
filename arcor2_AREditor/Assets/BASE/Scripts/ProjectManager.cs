@@ -32,7 +32,7 @@ namespace Base {
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public bool CreateProject(IO.Swagger.Model.Project project, int timeout) {
+        public bool CreateProject(IO.Swagger.Model.Project project) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Project != null)
                 return false;
@@ -394,20 +394,17 @@ namespace Base {
 
         public Action SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
             Debug.Assert(GetActionByName(action_name) == null);
-            GameManager.Instance.StartLoading();
             ActionMetadata actionMetadata;
 
             try {
                 actionMetadata = actionProvider.GetActionMetadata(action_type);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
-                GameManager.Instance.EndLoading();
                 return null; //TODO: throw exception
             }
 
             if (actionMetadata == null) {
                 Debug.LogError("Actions not ready");
-                GameManager.Instance.EndLoading();
                 return null; //TODO: throw exception
             }
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
@@ -425,7 +422,6 @@ namespace Base {
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
 
-            GameManager.Instance.EndLoading();
             return action;
         }
 

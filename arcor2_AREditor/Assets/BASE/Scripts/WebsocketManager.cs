@@ -40,7 +40,7 @@ namespace Base {
 
         private int requestID = 1;
         
-        private bool projectArrived = false, sceneArrived = false, packageStateArrived = false;
+        private bool packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
 
@@ -58,8 +58,6 @@ namespace Base {
 
         public async Task<bool> ConnectToServer(string domain, int port) {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
-            projectArrived = false;
-            sceneArrived = false;
             packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
@@ -91,6 +89,7 @@ namespace Base {
                 //already closed probably..
             }
             clientWebSocket = null;
+            GameManager.Instance.HideLoadingScreen();
         }
 
         /// <summary>
@@ -326,34 +325,25 @@ namespace Base {
             
         }
 
-        private async void HandleProjectChanged(string obj) {
-
-            try {
-                ProjectManager.Instance.ProjectChanged = true;
-                IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
-                switch (eventProjectChanged.ChangeType) {
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
-                        GameManager.Instance.ProjectAdded(eventProjectChanged.Data);
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
-                        await GameManager.Instance.LoadProjects();
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
-                        GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
-                        ProjectManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                projectArrived = true;
-            } catch (NullReferenceException e) {
-                Debug.Log("Parse error in HandleProjectChanged()");
-                GameManager.Instance.ProjectUpdated(null);
-
+        private async void HandleProjectChanged(string obj) {            
+            ProjectManager.Instance.ProjectChanged = true;
+            IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
+            switch (eventProjectChanged.ChangeType) {
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
+                    throw new NotImplementedException();
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
+                    await GameManager.Instance.LoadProjects();
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
+                    ProjectManager.Instance.UpdateProject(eventProjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
+                    ProjectManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
-
         }
 
         private void HandleRobotEef(string data) {
@@ -402,7 +392,7 @@ namespace Base {
 
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
-            GameManager.Instance.SetPackageState(projectState.Data);
+            GameManager.Instance.PackageStateUpdated(projectState.Data);
             packageStateArrived = true;
         }
 
@@ -430,7 +420,6 @@ namespace Base {
                 default:
                     throw new NotImplementedException();
             }
-            sceneArrived = true;
         }
 
         private void HandleActionChanged(string data) {
@@ -776,13 +765,13 @@ namespace Base {
         }
 
         public async Task<List<IO.Swagger.Model.PackageSummary>> LoadPackages() {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ListPackagesResponse response = await WaitForResult<IO.Swagger.Model.ListPackagesResponse>(r_id);
             if (response == null)
                 throw new RequestFailedException("Failed to load packages");
-            return response.Data;*/
+            return response.Data;
             return new List<IO.Swagger.Model.PackageSummary>();
         }
 
@@ -881,7 +870,7 @@ namespace Base {
          }
 
         public async Task<string> BuildPackage(string projectId, string packageName) {
-            /*int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.BuildProjectArgs args = new IO.Swagger.Model.BuildProjectArgs(projectId: projectId, packageName: packageName);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -890,7 +879,7 @@ namespace Base {
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             else
-                return response.Data.PackageId;*/
+                return response.Data.PackageId;
             return "";
         }
 

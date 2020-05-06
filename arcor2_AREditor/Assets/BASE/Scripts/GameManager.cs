@@ -28,21 +28,11 @@ namespace Base {
         }
     }
 
-    public class ProjectStateEventArgs : EventArgs {
-        public IO.Swagger.Model.PackageState Data {
-            get; set;
-        }
-
-        public ProjectStateEventArgs(IO.Swagger.Model.PackageState data) {
-            Data = data;
-        }
-    }
 
     public class GameManager : Singleton<GameManager> {
 
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
-        public delegate void ProjectStateEventHandler(object sender, ProjectStateEventArgs args);
 
         public event EventHandler OnSaveProject;
         
@@ -62,7 +52,6 @@ namespace Base {
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
-        public event ProjectStateEventHandler OnProjectStateChanged;
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
@@ -77,14 +66,13 @@ namespace Base {
         private string loadedScene;
         private IO.Swagger.Model.Project newProject;
         private IO.Swagger.Model.Scene newScene;
+        private PackageState newPackageState;
 
         private bool openProject = false;
         private bool openScene = false;
+        private bool openPackage = false;
 
         private bool sceneReady;
-        private IO.Swagger.Model.PackageState packageState = null;
-
-        public bool ProjectRunning = false;
 
         public const string ApiVersion = "0.7.0";
 
@@ -99,8 +87,13 @@ namespace Base {
 
         public GameObject objectWithGizmo, Scene;
 
+        [SerializeField]
+        private Canvas headUpCanvas;
+
         public IO.Swagger.Model.SystemInfoData SystemInfo;
         public PackageInfo PackageInfo;
+
+        private string reopenProjectId = null;
 
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
@@ -133,7 +126,7 @@ namespace Base {
                     newScene = null;
                     await SceneOpened(scene);
                 }
-                
+
             } else if (openProject) {
                 openProject = false;
                 if (newProject != null && newScene != null) {
@@ -143,6 +136,9 @@ namespace Base {
                     newProject = null;
                     ProjectOpened(scene, project);
                 }
+            } else if (openPackage) {
+                openPackage = false;
+                PackageStateUpdated(newPackageState);
             }
 
             
@@ -171,26 +167,6 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
-        public void SetPackageState(IO.Swagger.Model.PackageState state) {
-            packageState = state;
-            OnProjectStateChanged?.Invoke(this, new ProjectStateEventArgs(state));
-        }
-
-        private void ProjectStateChanged(object sender, Base.ProjectStateEventArgs args) {
-            if (GetGameState() == GameStateEnum.PackageRunning &&
-                args.Data.State == PackageState.StateEnum.Stopped) {
-                OpenProjectEditor();
-            } else if (GetGameState() == GameStateEnum.ProjectEditor &&
-                args.Data.State != PackageState.StateEnum.Stopped) {
-                OpenPackageRunningScreen();
-            }
-            if (args.Data.State != PackageState.StateEnum.Stopped)
-                ProjectRunning = true;
-        }
-
-        public IO.Swagger.Model.PackageState GetPackageState() {
-            return packageState;
-        }
 
         private void Awake() {
             loadedScene = "";
@@ -203,14 +179,11 @@ namespace Base {
             VersionInfo.text = EditorVersion;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
-            OnProjectStateChanged += ProjectStateChanged;
-            EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
         }
 
         
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
-            StartLoading();
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
                     IO.Swagger.Model.SystemInfoData systemInfo;
@@ -218,12 +191,10 @@ namespace Base {
                         systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
                     } catch (RequestFailedException ex) {
                         DisconnectFromSever();
-                        EndLoading();
                         Notifications.Instance.ShowNotification("Connection failed", "");
                         return;
                     }
-                    if (!await CheckApiVersion(systemInfo)) {
-                        EndLoading();
+                    if (!CheckApiVersion(systemInfo)) {
                         return;
                     }
 
@@ -268,15 +239,18 @@ namespace Base {
                     connectionStatus = newState;
                     break;
             }
-            EndLoading();
         }
 
-        public void StartLoading() {
+        public void ShowLoadingScreen() {
             Debug.Assert(LoadingScreen != null);
+            // HACK to make loading screen in foreground
+            // TODO - find better way
+            headUpCanvas.enabled = false;
+            headUpCanvas.enabled = true;
             LoadingScreen.SetActive(true);
         }
 
-        public void EndLoading() {
+        public void HideLoadingScreen() {
             Debug.Assert(LoadingScreen != null);
             LoadingScreen.SetActive(false);
         }
@@ -286,20 +260,22 @@ namespace Base {
         }
 
         public async void ConnectToSever(string domain, int port) {
-            StartLoading();
+            ShowLoadingScreen();
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
             if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
                 try {
                     await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
+                    ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
                 } catch (TimeoutException e) {
                     Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
                     WebsocketManager.Instance.DisconnectFromSever();
-                    EndLoading();
                 }
-                ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            
             } else {
                 ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
+                
                 Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
+                WebsocketManager.Instance.DisconnectFromSever();
             }
 
         }
@@ -310,7 +286,6 @@ namespace Base {
         }
 
         private void OnActionsLoaded(object sender, EventArgs e) {
-            EndLoading();
             MenuManager.Instance.EnableAllWindows();
         }
 
@@ -337,9 +312,7 @@ namespace Base {
         /// <param name="name"></param>
         /// <returns></returns>
         public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string name) {
-            StartLoading();
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            EndLoading();
             return await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
         }
 
@@ -348,24 +321,18 @@ namespace Base {
         }
 
         public async void AddServiceToScene(string type, string configId = "") {
-            StartLoading();
             IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(type: type, configurationId: configId);
             try {
                 await WebsocketManager.Instance.AddServiceToScene(sceneService: sceneService);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Add service failed", e.Message);
             } finally {
-                EndLoading();
             }            
             
         }
 
-        internal void ProjectAdded(Project data) {
-            ProjectUpdated(data);
-        }
 
         public void SceneAdded(IO.Swagger.Model.Scene scene) {
-            //SceneUpdated(scene);
             newScene = scene;
         }
 
@@ -378,49 +345,6 @@ namespace Base {
             }
         }
 
-        // SceneUpdated is called from server, when another GUI makes some change.
-        public async Task SceneUpdated(IO.Swagger.Model.Scene scene) {
-           /* StartLoading();
-            bool sceneOpened = false;
-            
-            sceneReady = false;
-            newScene = null;
-            
-            if (loadedScene != scene.Id)
-                sceneOpened = true;
-            if (!ActionsManager.Instance.ActionsReady) {
-                newScene = scene;
-                return;
-            }
-
-            // Set current loaded swagger scene
-            if (SceneManager.Instance.Scene == null) {
-                SceneManager.Instance.Scene = scene;
-                OpenSceneEditor();
-            } else {
-                SceneManager.Instance.Scene = scene;
-            }
-
-            // if another scene was loaded, remove everything from current scene
-            if (sceneOpened) {
-                SceneManager.Instance.RemoveActionObjects();
-                loadedScene = scene.Id;
-                SceneManager.Instance.LoadSettings(scene.Id);
-            }
-
-            await SceneManager.Instance.UpdateActionObjects();
-            await SceneManager.Instance.UpdateServices();
-
-            sceneReady = true;
-            //if (sceneOpened)
-                //SceneManager.Instance.OnLoadScene?.Invoke(this, EventArgs.Empty);
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
-            
-            if (newProject != null) {
-                ProjectUpdated(newProject);
-            }
-            EndLoading();*/
-        }
 
         internal void HandleProjectException(ProjectExceptionEventData data) {
             Notifications.Instance.ShowNotification("Project exception", data.Message);
@@ -484,7 +408,7 @@ namespace Base {
                 return;
             }
             try {
-                if (await SceneManager.Instance.CreateScene(scene, 15000)) {                    
+                if (await SceneManager.Instance.CreateScene(scene)) {                    
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
@@ -506,20 +430,66 @@ namespace Base {
                 return;
             }
             try {
-                if (!await SceneManager.Instance.CreateScene(scene, 15000)) {
+                if (!await SceneManager.Instance.CreateScene(scene)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
                     return;
                 }
-                if (ProjectManager.Instance.CreateProject(project, 15000)) {
+                if (ProjectManager.Instance.CreateProject(project)) {
                     OpenProjectEditor();
                 } else {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
                 }
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
-                Notifications.Instance.SaveLogs(scene, null, "Failed to initialize project");
+                Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
             }
         }
+
+        public async void PackageStateUpdated(IO.Swagger.Model.PackageState state) {
+            if (state.State == PackageState.StateEnum.Running ||
+                state.State == PackageState.StateEnum.Paused) {
+                openSceneProjectPackage = true;
+                if (!ActionsManager.Instance.ActionsReady) {
+                    newPackageState = state;
+                    openPackage = true;
+                    return;
+                }   
+                try {
+                    WaitUntilPackageReady(5000);
+                    if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene)) {
+                        Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
+                        return;
+                    }
+                    if (!ProjectManager.Instance.CreateProject(PackageInfo.Project)) {
+                        Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
+                    }
+                    OpenPackageRunningScreen();
+                } catch (TimeoutException ex) {
+                    Debug.LogError(ex);
+                    Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
+                }
+                
+            } else if (state.State == PackageState.StateEnum.Stopped) {
+                if (!ActionsManager.Instance.ActionsReady) {
+                    newPackageState = state;
+                    openPackage = true;
+                    return;
+                }
+                if (!string.IsNullOrEmpty(reopenProjectId)) {
+                    OpenProject(reopenProjectId);
+                    reopenProjectId = null;
+                } else {
+                    if (newProject == null &&
+                        newScene == null &&
+                        SceneManager.Instance.Scene == null &&
+                        ProjectManager.Instance.Project == null)
+                            await OpenMainScreen();
+                }                
+            }
+        }
+
+
+
 
 
         internal void SceneClosed() {
@@ -535,45 +505,6 @@ namespace Base {
 
 
 
-        // ProjectUpdated is called from server, when another GUI makes some changes
-        public async void ProjectUpdated(IO.Swagger.Model.Project project) {
-            /*StartLoading();
-            bool projectOpened = false;
-            if (CurrentProject == null && project != null)
-                projectOpened = true;
-            if (project == null) {
-                CurrentProject = null;
-                SceneManager.Instance.RemoveActionPoints();
-                SceneManager.Instance.Scene = null;
-                if (GetGameState() == GameStateEnum.ProjectEditor) {
-                    await OpenMainScreen();
-                }
-                EndLoading();
-                return;
-            }
-
-            if (project.SceneId != loadedScene || !sceneReady) {
-                newProject = project;
-                return;
-            }
-
-            newProject = null;
-
-            CurrentProject = project;
-            SceneManager.Instance.SetAPSize(PlayerPrefsHelper.LoadFloat("project/" + CurrentProject.Id + "/APSize", 0.5f));
-
-
-            SceneManager.Instance.UpdateActionPoints(CurrentProject);
-            OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
-
-            if (projectOpened) {
-                OnLoadProject?.Invoke(this, EventArgs.Empty);
-               
-            }
-                
-
-            EndLoading();*/
-        }
 
         
 
@@ -614,7 +545,7 @@ namespace Base {
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
+                DisconnectFromSever();
             }
         }
 
@@ -630,48 +561,48 @@ namespace Base {
         }
 
         public async void OpenProject(string id) {
-            StartLoading();
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.OpenProject(id);
                 await Task.Run(() => WaitForProjectReady(5000));
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to open project", ex.Message);
+                HideLoadingScreen();
             } catch (TimeoutException e) {
                 Notifications.Instance.ShowNotification("Open project failed", "Failed to load project");
-            } finally {
-                EndLoading();
-            }
+                HideLoadingScreen();
+            } 
         }
 
         public async Task OpenScene(string id) {
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.OpenScene(id);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Open scene failed", e.Message);
+                HideLoadingScreen();
                 return;
             }    
             try {
-                await Task.Run(() => WaitForSceneReady(2000));
+                await Task.Run(() => WaitForSceneReady(5000));
                 return;
             } catch (TimeoutException e) {
-                EndLoading();
                 Notifications.Instance.ShowNotification("Open scene failed", "Failed to open selected scene");
+                HideLoadingScreen();
             }
            
         }
 
         public async Task<bool> RunPackage(string packageId) {
+            ShowLoadingScreen();
             try {
-                StartLoading();
                 await WebsocketManager.Instance.RunPackage(packageId);
-                OpenPackageRunningScreen();
                 return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to run project", ex.Message);
+                HideLoadingScreen();
                 return false;
-            } finally {
-                EndLoading();
-            }
+            } 
         }
 
         internal async Task<bool> TestRunProject() {
@@ -692,57 +623,66 @@ namespace Base {
         }
 
         public async Task<string> BuildPackage(string name) {
+            ShowLoadingScreen();
             Debug.Assert(Base.ProjectManager.Instance.Project != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
+                HideLoadingScreen();
                 throw new RequestFailedException("Unsaved changes");
             }
             try {
-                StartLoading();
                 return await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
                 throw;
             } finally {
-                EndLoading();
+                HideLoadingScreen();
             }
         }
 
         public async Task<bool> BuildAndRunPackage(string name) {
+            ShowLoadingScreen();
             Debug.Assert(Base.ProjectManager.Instance.Project != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
                 return false;
             }
             try {
-                StartLoading();
                 string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
+                reopenProjectId = ProjectManager.Instance.Project.Id;
+                if (!await CloseProject(false)) {
+                    Notifications.Instance.ShowNotification("Failed to build and run package", "");
+                    reopenProjectId = null;
+                    return false;
+                }
                 await WebsocketManager.Instance.RunPackage(packageId);
                 return true;
             } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
+                Notifications.Instance.ShowNotification("Failed to build and run package", ex.Message);
                 return false;
             } finally {
-                EndLoading();
             }
         }
 
         public async void StopProject() {
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.StopPackage();
                 OnStopProject?.Invoke(this, EventArgs.Empty);
-                OpenProjectEditor();
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
+                HideLoadingScreen();
             }
         }
 
         public async void PauseProject() {
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.PausePackage();
                 OnPauseProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
+                HideLoadingScreen();
             }
         }
 
@@ -758,6 +698,7 @@ namespace Base {
 
 
         public async Task<bool> CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.CreateNewObjectType(objectType, false);
                 await UpdateActionObjects(objectType.Type);
@@ -765,6 +706,8 @@ namespace Base {
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
                 return false;
+            } finally {
+                HideLoadingScreen();
             }
         }
 
@@ -822,12 +765,10 @@ namespace Base {
         public async Task NewProject(string name, string sceneId, bool hasLogic) {
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
-            StartLoading();
             
             try {
                 await WebsocketManager.Instance.OpenScene(sceneId);
             } catch (RequestFailedException e) {
-                EndLoading();
                 Notifications.Instance.ShowNotification("Open scene failed", e.Message);
                 return;
             }           
@@ -835,7 +776,6 @@ namespace Base {
             try {
                 await Task.Run(() => WaitForSceneReady(5000));
             } catch (TimeoutException e) {
-                EndLoading();
                 Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
                 return;
             }
@@ -847,7 +787,6 @@ namespace Base {
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
             } finally {
-                EndLoading();
             }
             
         }
@@ -871,16 +810,17 @@ namespace Base {
         }
 
         public async Task<bool> CloseScene(bool force) {
+            ShowLoadingScreen();
             loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseScene(force);
             if (success) {
-                StartLoading();
                 SceneManager.Instance.Scene = null;
             }                
             return success;
         }
 
         public async Task<bool> CloseProject(bool force) {
+            ShowLoadingScreen();
             loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseProject(force);
             if (success) {
@@ -934,7 +874,7 @@ namespace Base {
             return version;
         }
 
-        public async Task<bool> CheckApiVersion(IO.Swagger.Model.SystemInfoData systemInfo) {
+        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoData systemInfo) {
             
             if (systemInfo.ApiVersion == ApiVersion)
                 return true;
@@ -977,14 +917,13 @@ namespace Base {
 
         public async Task OpenMainScreen() {
             Scene.SetActive(false);
-            StartLoading();
             await LoadScenes();
             await LoadProjects();
             await LoadPackages();
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
-            EndLoading();
+            HideLoadingScreen();
         }
 
         public void OpenSceneEditor() {
@@ -992,6 +931,7 @@ namespace Base {
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
+            HideLoadingScreen();
         }
 
         public void OpenProjectEditor() {
@@ -999,25 +939,23 @@ namespace Base {
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
+            HideLoadingScreen();
         }
 
         public async void OpenPackageRunningScreen() {
             try {
-                WaitUntilPackageReady(5000);
                 //TODO - get package name from packages list 
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
-                await SceneUpdated(null);
-                ProjectUpdated(null);
-                await SceneUpdated(PackageInfo.Scene);
-                ProjectUpdated(PackageInfo.Project);
+                
                 Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, EventArgs.Empty);
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to open package run screen", "Package info did not arrived");
+            } finally {
+                HideLoadingScreen();
             }
-            
         }
 
         public void WaitUntilPackageReady(int timeout) {

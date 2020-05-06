@@ -131,7 +131,6 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     public async void CreateNewObjectType() {
         Debug.Assert(ModelsList.Dropdown.dropdownItems.Count > 0, "No models");
         Debug.Assert(ParentsList.Dropdown.dropdownItems.Count > 0, "No parent objects");
-        Base.GameManager.Instance.StartLoading();
         CreateNewObjectBtn.interactable = false;
         
         bool success = await Base.GameManager.Instance.CreateNewObjectType(CreateObjectTypeMeta());
@@ -139,7 +138,6 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             MenuManager.Instance.NewObjectTypeMenu.Close();
         }
         CreateNewObjectBtn.interactable = true;
-        Base.GameManager.Instance.EndLoading();
     }
 
     public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta() {

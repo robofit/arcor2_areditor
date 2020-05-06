@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System;
 using Michsky.UI.ModernUIPack;
 using System.Collections.Generic;
-
+using Base;
 
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
@@ -367,8 +367,13 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void BuildAndRunPackage(string name) {
+        inputDialog.Close();
         if (await Base.GameManager.Instance.BuildAndRunPackage(name)) {
-            inputDialog.Close();
+
+
+
+        } else {
+            Base.Notifications.Instance.ShowNotification("Failed to build and run package", "");
         }
     }
 
