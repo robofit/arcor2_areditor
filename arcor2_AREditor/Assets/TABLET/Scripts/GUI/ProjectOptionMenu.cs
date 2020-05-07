@@ -36,6 +36,7 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async void RenameProject(string newUserId) {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RenameProject(projectTile.ProjectId, newUserId);
         if (result) {
             inputDialog.Close();
@@ -43,6 +44,7 @@ public class ProjectOptionMenu : TileOptionMenu
             SetLabel(newUserId);
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRemoveDialog() {
@@ -53,11 +55,13 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async void RemoveProject() {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RemoveProject(projectTile.ProjectId);
         if (result) {
             confirmationDialog.Close();
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRelatedScene() {

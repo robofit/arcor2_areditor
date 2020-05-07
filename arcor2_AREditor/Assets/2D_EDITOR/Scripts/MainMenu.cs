@@ -51,6 +51,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(NewProjectDialog != null);
         Debug.Assert(NewSceneDialog != null);
         Debug.Assert(inputDialog != null);
+        Debug.Assert(ResumeBtn != null);
+        Debug.Assert(PauseBtn != null);
 
 
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;

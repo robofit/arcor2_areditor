@@ -981,6 +981,18 @@ namespace Base {
         }
 
 
+        internal async Task RemovePackage(string id) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
+            IO.Swagger.Model.DeletePackageRequest request = new IO.Swagger.Model.DeletePackageRequest(r_id, "DeletePackage", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeletePackageResponse response = await WaitForResult<IO.Swagger.Model.DeletePackageResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+
         public async Task AddActionPoint(string name, string parent, IO.Swagger.Model.Position position) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddActionPointArgs args = new IO.Swagger.Model.AddActionPointArgs(parent: parent, position: position, name: name);
@@ -1202,6 +1214,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
 
         }
+
 
         public async Task RemoveActionPoint(string actionPointId) {
             int r_id = Interlocked.Increment(ref requestID);

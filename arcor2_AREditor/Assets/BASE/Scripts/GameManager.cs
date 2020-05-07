@@ -95,7 +95,7 @@ namespace Base {
 
         public const string ApiVersion = "0.7.0";
 
-        public readonly string EditorVersion = "0.6.0-alpha.2";
+        public readonly string EditorVersion = "0.6.0-beta.2";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -435,10 +435,12 @@ namespace Base {
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
+                    HideLoadingScreen();
                 }
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
+                HideLoadingScreen();
             }
             
 
@@ -455,16 +457,19 @@ namespace Base {
             try {
                 if (!await SceneManager.Instance.CreateScene(scene)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
+                    HideLoadingScreen();
                     return;
                 }
                 if (ProjectManager.Instance.CreateProject(project)) {
                     OpenProjectEditor();
                 } else {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
+                    HideLoadingScreen();
                 }
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
+                HideLoadingScreen();
             }
         }
 
@@ -510,17 +515,24 @@ namespace Base {
                     openPackage = true;
                     return;
                 }
+                
                 if (!string.IsNullOrEmpty(reopenProjectId)) {
+                    ProjectManager.Instance.DestroyProject();
+                    SceneManager.Instance.DestroyScene();
                     OpenProject(reopenProjectId);
                     reopenProjectId = null;
                 } else {
-                    ProjectManager.Instance.DestroyProject();
-                    SceneManager.Instance.DestroyScene();
                     if (newProject == null &&
                         newScene == null &&
                         SceneManager.Instance.Scene == null &&
-                        ProjectManager.Instance.Project == null)
-                            await OpenMainScreen();
+                        ProjectManager.Instance.Project == null) {
+                        await OpenMainScreen();
+                    } else if (GetGameState() == GameStateEnum.PackageRunning) {
+                        ProjectManager.Instance.DestroyProject();
+                        SceneManager.Instance.DestroyScene();
+                        await OpenMainScreen();
+                    }
+                            
                 }                
             }
         }
@@ -706,6 +718,7 @@ namespace Base {
                     reopenProjectId = null;
                     return false;
                 }
+                await LoadPackages();
                 await WebsocketManager.Instance.RunPackage(packageId);
                 return true;
             } catch (RequestFailedException ex) {
@@ -1081,6 +1094,16 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to remove project", e.Message);
+                return false;
+            }
+        }
+
+        internal async Task<bool> RemovePackage(string packageId) {
+            try {
+                await WebsocketManager.Instance.RemovePackage(packageId);
+                return true;
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to remove package", e.Message);
                 return false;
             }
         }

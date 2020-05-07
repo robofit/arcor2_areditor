@@ -38,6 +38,7 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async void RenameScene(string newUserId) {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId);
         if (result) {
             inputDialog.Close();
@@ -45,6 +46,7 @@ public class SceneOptionMenu : TileOptionMenu {
             SetLabel(newUserId);
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
 
@@ -64,11 +66,13 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async void RemoveScene() {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RemoveScene(sceneTile.SceneId);
         if (result) {
             confirmationDialog.Close();
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRelatedProjects() {

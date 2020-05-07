@@ -18,6 +18,9 @@ public class MainScreen : Base.Singleton<MainScreen>
     private ProjectOptionMenu ProjectOptionMenu;
 
     [SerializeField]
+    private PackageOptionMenu PackageOptionMenu;
+
+    [SerializeField]
     private CanvasGroup projectsList, scenesList, packageList;
 
     [SerializeField]
@@ -180,7 +183,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
             tile.InitTile(package.Name,
                           () => Base.GameManager.Instance.RunPackage(package.Id),
-                          null,
+                          () => PackageOptionMenu.Open(tile),
                           starred,
                           package.Id);
             packageTiles.Add(tile);
