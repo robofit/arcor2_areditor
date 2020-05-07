@@ -94,6 +94,9 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (ProjectTile tile in projectTiles) {
             FilterTile(tile);
         }
+        foreach (PackageTile tile in packageTiles) {
+            FilterTile(tile);
+        }
     }
 
     public void FilterTile(Tile tile) {

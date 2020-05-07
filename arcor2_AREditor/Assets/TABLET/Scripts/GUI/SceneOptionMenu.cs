@@ -23,7 +23,7 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public override void SetStar(bool starred) {
-        PlayerPrefsHelper.SaveBool("scene/" + GetLabel() + "/starred", starred);
+        PlayerPrefsHelper.SaveBool("scene/" + sceneTile.SceneId + "/starred", starred);
         SetStar(sceneTile, starred);
         Close();
     }

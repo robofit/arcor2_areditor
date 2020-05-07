@@ -22,7 +22,7 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public override void SetStar(bool starred) {
-        PlayerPrefsHelper.SaveBool("project/" + GetLabel() + "/starred", starred);
+        PlayerPrefsHelper.SaveBool("project/" + projectTile.ProjectId + "/starred", starred);
         projectTile.SetStar(starred);
         Close();
     }
