@@ -45,6 +45,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
+        Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;

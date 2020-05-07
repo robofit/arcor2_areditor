@@ -9,6 +9,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ActionObjectsContent, ActionObjects,
         SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
+    public GameObject PauseBtn, ResumeBtn;
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
@@ -59,6 +60,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         //Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
         Base.GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
+        Base.GameManager.Instance.OnPausePackage += OnPausePackage;
+        Base.GameManager.Instance.OnResumePackage += OnResumePackage;
         Base.GameManager.Instance.OnOpenSceneEditor += OnOpenSceneEditor;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
         //Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
@@ -73,6 +76,21 @@ public class MainMenu : MonoBehaviour, IMenu {
             debugTools.SetActive(false);
     }
 
+    private void OnResumePackage(object sender, ProjectMetaEventArgs args) {
+        ResumeBtn.SetActive(false);
+        PauseBtn.SetActive(true);
+    }
+
+    private void OnPausePackage(object sender, ProjectMetaEventArgs args) {
+        PauseBtn.SetActive(false);
+        ResumeBtn.SetActive(true);
+    }
+
+    private void OnOpenProjectRunning(object sender, ProjectMetaEventArgs args) {
+        RunningProjectControls.SetActive(true);
+        ResumeBtn.SetActive(false);
+        PauseBtn.SetActive(true);
+    }
 
     private void GameStateChanged(object sender, Base.GameStateEventArgs args) {
         HideEverything();        
@@ -91,14 +109,11 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
         ProjectControlButtons.SetActive(true);
-        ActionObjects.SetActive(false);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
-    private void OnOpenProjectRunning(object sender, EventArgs eventArgs) {
-        RunningProjectControls.SetActive(true);
-    }
+    
 
     private void OnOpenDisconnectedScreen(object sender, EventArgs eventArgs) {
        

@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
+using UnityEngine.PlayerLoop;
 
 namespace Base {
 
@@ -28,18 +29,36 @@ namespace Base {
         }
     }
 
+    public class ProjectMetaEventArgs : EventArgs {
+        public string Name {
+            get; set;
+        }
+
+        public string Id {
+            get; set;
+        }
+
+        public ProjectMetaEventArgs(string id, string name) {
+            Id = id;
+            Name = name;
+        }
+    }
+
+
+
 
     public class GameManager : Singleton<GameManager> {
 
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
+        public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
 
         public event EventHandler OnSaveProject;
         
-        public event EventHandler OnRunPackage;
-        public event EventHandler OnStopProject;
-        public event EventHandler OnPauseProject;
-        public event EventHandler OnResumeProject;
+        public event ProjectMetaEventHandler OnRunPackage;
+        public event EventHandler OnStopPackage;
+        public event ProjectMetaEventHandler OnPausePackage;
+        public event ProjectMetaEventHandler OnResumePackage;
         public event EventHandler OnCloseProject;
         public event EventHandler OnCloseScene;
         public event EventHandler OnProjectsListChanged;
@@ -76,7 +95,7 @@ namespace Base {
 
         public const string ApiVersion = "0.7.0";
 
-        public readonly string EditorVersion = "0.6.0-alpha.1";
+        public readonly string EditorVersion = "0.6.0-alpha.2";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -209,7 +228,7 @@ namespace Base {
 
                     await UpdateActionObjects();
                     await UpdateServices();
-
+                    
 
                     try {
                         await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(15000));
@@ -220,8 +239,12 @@ namespace Base {
                         return;
                     }
 
+                    await LoadScenes();
+                    await LoadProjects();
+                    await LoadPackages();
+
                     if (!openSceneProjectPackage) {
-                        await OpenMainScreen();
+                        await OpenMainScreen(false);
                     }
                     connectionStatus = newState;
                     break;
@@ -453,21 +476,33 @@ namespace Base {
                     newPackageState = state;
                     openPackage = true;
                     return;
-                }   
-                try {
-                    WaitUntilPackageReady(5000);
-                    if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene)) {
-                        Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
-                        return;
-                    }
-                    if (!ProjectManager.Instance.CreateProject(PackageInfo.Project)) {
-                        Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
-                    }
-                    OpenPackageRunningScreen();
-                } catch (TimeoutException ex) {
-                    Debug.LogError(ex);
-                    Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
                 }
+                if (GetGameState() != GameStateEnum.PackageRunning) {
+                    try {
+                        WaitUntilPackageReady(5000);
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene)) {
+                            Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
+                            return;
+                        }
+                        if (!ProjectManager.Instance.CreateProject(PackageInfo.Project)) {
+                            Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
+                        }
+                        OpenPackageRunningScreen();
+                        if (state.State == PackageState.StateEnum.Paused) {
+                            OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                        }
+                    } catch (TimeoutException ex) {
+                        Debug.LogError(ex);
+                        Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
+                    }
+                } else if (state.State == PackageState.StateEnum.Paused) {
+                    OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                    HideLoadingScreen();
+                } else if (state.State == PackageState.StateEnum.Running) {
+                    OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                    HideLoadingScreen();
+                }
+                
                 
             } else if (state.State == PackageState.StateEnum.Stopped) {
                 if (!ActionsManager.Instance.ActionsReady) {
@@ -479,6 +514,8 @@ namespace Base {
                     OpenProject(reopenProjectId);
                     reopenProjectId = null;
                 } else {
+                    ProjectManager.Instance.DestroyProject();
+                    SceneManager.Instance.DestroyScene();
                     if (newProject == null &&
                         newScene == null &&
                         SceneManager.Instance.Scene == null &&
@@ -549,6 +586,18 @@ namespace Base {
                 Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Failed to update action objects");
                 DisconnectFromSever();
             }
+        }
+
+        public PackageSummary GetPackage(string id) {
+            foreach (PackageSummary package in Packages) {
+                if (id == package.Id)
+                    return package;
+            }
+            throw new ItemNotFoundException("Package does not exist");
+        }
+
+        public string GetPackageName(string id) {
+            return GetPackage(id).Name;
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
@@ -670,7 +719,6 @@ namespace Base {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.StopPackage();
-                OnStopProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
                 HideLoadingScreen();
@@ -681,7 +729,6 @@ namespace Base {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.PausePackage();
-                OnPauseProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
                 HideLoadingScreen();
@@ -690,11 +737,12 @@ namespace Base {
 
 
         public async void ResumeProject() {
+            ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.ResumePackage();
-                OnResumeProject?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);
+                HideLoadingScreen();
             }
         }
 
@@ -917,11 +965,13 @@ namespace Base {
             return;
         }
 
-        public async Task OpenMainScreen() {
+        public async Task OpenMainScreen(bool updateResources = true) {
             Scene.SetActive(false);
-            await LoadScenes();
-            await LoadProjects();
-            await LoadPackages();
+            if (updateResources) {
+                await LoadScenes();
+                await LoadProjects();
+                await LoadPackages();
+            }            
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             EditorInfo.text = "";
@@ -946,12 +996,11 @@ namespace Base {
 
         public async void OpenPackageRunningScreen() {
             try {
-                //TODO - get package name from packages list 
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 
                 Scene.SetActive(true);
-                OnRunPackage?.Invoke(this, EventArgs.Empty);
+                OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to open package run screen", "Package info did not arrived");

@@ -14,7 +14,7 @@ public class Action3D : Base.Action {
     private Color32 colorRunnning = new Color32(255, 0, 255, 255);
 
     private void Start() {
-        GameManager.Instance.OnStopProject += OnProjectStop;
+        GameManager.Instance.OnStopPackage += OnProjectStop;
     }
 
     private void OnProjectStop(object sender, System.EventArgs e) {
