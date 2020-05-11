@@ -116,7 +116,7 @@ public class ActionObject3D : ActionObject
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
         base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;
@@ -124,12 +124,12 @@ public class ActionObject3D : ActionObject
         SetSceneOrientation(orientation);
         Data.Id = uuid;
         ActionObjectMetadata = actionObjectMetadata;
-        CreateModel();
+        CreateModel(customCollisionModels);
         enabled = true;
         SetVisibility(visibility);
     }
 
-    public void CreateModel() {
+    public void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null) {
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -137,15 +137,43 @@ public class ActionObject3D : ActionObject
             switch (ActionObjectMetadata.ObjectModel.Type) {
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
                     Model = Instantiate(CubePrefab, Visual.transform);
-                    Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
+
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
+                    } else {
+                        foreach (IO.Swagger.Model.Box box in customCollisionModels.Boxes) {
+                            if (box.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) box.SizeX, (float) box.SizeY, (float) box.SizeZ));
+                                break;
+                            }
+                        }
+                    }
                     break;
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
+                    } else {
+                        foreach (IO.Swagger.Model.Cylinder cylinder in customCollisionModels.Cylinders) {
+                            if (cylinder.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = new Vector3((float) cylinder.Radius, (float) cylinder.Height, (float) cylinder.Radius);
+                                break;
+                            }
+                        }
+                    }
                     break;
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
                     Model = Instantiate(SpherePrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
+                    } else {
+                        foreach (IO.Swagger.Model.Sphere sphere in customCollisionModels.Spheres) {
+                            if (sphere.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = new Vector3((float) sphere.Radius, (float) sphere.Radius, (float) sphere.Radius);
+                                break;
+                            }
+                        }
+                    }
                     break;
                 default:
                     Model = Instantiate(CubePrefab, Visual.transform);

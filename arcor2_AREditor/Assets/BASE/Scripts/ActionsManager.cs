@@ -105,11 +105,11 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
         }
 
-        public async Task AddService(IO.Swagger.Model.SceneService sceneService) {
+        public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
             Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
             if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
                 Service service = new Service(sceneService, serviceMetadata);
-                if (service.IsRobot()) {
+                if (loadResources && service.IsRobot()) {
                     await service.LoadRobots();
                 }
                 ServicesData.Add(sceneService.Type, service);

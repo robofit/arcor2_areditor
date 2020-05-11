@@ -25,7 +25,7 @@ namespace Base {
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
         }
 
-        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
             visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         

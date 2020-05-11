@@ -42,20 +42,23 @@ namespace Base {
 
         public event EventHandler OnLoadScene;
 
+        private bool loadResources = false;
+
 
 
         /// <summary>
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene) {
+        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Scene != null)
                 return false;
            
             Scene = scene;
+            this.loadResources = loadResources;
             LoadSettings();
-            bool success = await UpdateScene(scene);
+            bool success = await UpdateScene(scene, customCollisionModels);
             
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
@@ -67,11 +70,11 @@ namespace Base {
         /// Updates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene) {
+        public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene, CollisionModels customCollisionModels = null) {
             if (scene.Id != Scene.Id)
                 return false;
             Scene = scene;
-            await UpdateActionObjects();
+            await UpdateActionObjects(customCollisionModels);
             await UpdateServices();
             return true;
         }
@@ -223,7 +226,7 @@ namespace Base {
 
         #region ACTION_OBJECTS
 
-        public async Task<ActionObject> SpawnActionObject(string id, string type, bool updateScene = true, string name = "") {
+        public async Task<ActionObject> SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -234,11 +237,11 @@ namespace Base {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
             ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
-            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom);
+            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom, customCollisionModels);
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
-            if (aom.Robot) {
+            if (loadResources && aom.Robot) {
                 await actionObject.LoadEndEffectors();
             }
 
@@ -300,10 +303,10 @@ namespace Base {
         /// <summary>
         /// Updates action GameObjects in ActionObjects dict based on the data present in IO.Swagger.Model.Scene Data.
         /// </summary>
-        public async Task UpdateActionObjects() {
+        public async Task UpdateActionObjects(CollisionModels customCollisionModels = null) {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in Scene.Objects) {
-                ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, false, aoSwagger.Name);
+                ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
@@ -317,7 +320,7 @@ namespace Base {
         public async Task UpdateServices() {
             ActionsManager.Instance.ClearServices(); //just to be sure
             foreach (IO.Swagger.Model.SceneService service in Scene.Services) {
-                await ActionsManager.Instance.AddService(service);
+                await ActionsManager.Instance.AddService(service, loadResources);
             }
         }
 

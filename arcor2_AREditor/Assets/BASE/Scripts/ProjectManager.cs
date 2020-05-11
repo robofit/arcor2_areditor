@@ -23,6 +23,8 @@ namespace Base {
 
         public bool ProjectChanged = false;
 
+        public bool AllowEdit = false;
+
 
         public event EventHandler OnActionPointsChanged;
         public event EventHandler OnLoadProject;
@@ -32,14 +34,15 @@ namespace Base {
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public bool CreateProject(IO.Swagger.Model.Project project) {
+        public bool CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Project != null)
                 return false;
 
             Project = project;
+            this.AllowEdit = allowEdit;
             LoadSettings();
-            bool success = UpdateProject(project);
+            bool success = UpdateProject(project, true);
 
             if (success) {
                 ProjectChanged = false;
@@ -52,10 +55,16 @@ namespace Base {
         /// Updates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public bool UpdateProject(IO.Swagger.Model.Project project) {
+        public bool UpdateProject(IO.Swagger.Model.Project project, bool forceEdit = false) {
             if (project.Id != Project.Id) {
                 return false;
             }
+            if (!AllowEdit && !forceEdit) {
+                Debug.LogError("Editation of this project is not allowed!");
+                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, project, "Editation of this project is not allowed!");
+                return false;
+            }
+                
             Project = project;
             UpdateActionPoints();
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
@@ -64,6 +73,10 @@ namespace Base {
 
         public bool DestroyProject() {
             Project = null;
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                ap.DeleteAP(false);
+            }
+            ActionPoints.Clear();
             return true;
         }
 

@@ -406,7 +406,7 @@ namespace Base {
         }
 
         public async Task SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = await SceneManager.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type, false, sceneObject.Name);
+            ActionObject actionObject = await SceneManager.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type);
             actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisible, SceneManager.Instance.ActionObjectsInteractive);
         }
 
@@ -431,7 +431,7 @@ namespace Base {
                 return;
             }
             try {
-                if (await SceneManager.Instance.CreateScene(scene)) {                    
+                if (await SceneManager.Instance.CreateScene(scene, true)) {                    
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
@@ -455,12 +455,12 @@ namespace Base {
                 return;
             }
             try {
-                if (!await SceneManager.Instance.CreateScene(scene)) {
+                if (!await SceneManager.Instance.CreateScene(scene, true)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
                     HideLoadingScreen();
                     return;
                 }
-                if (ProjectManager.Instance.CreateProject(project)) {
+                if (ProjectManager.Instance.CreateProject(project, true)) {
                     OpenProjectEditor();
                 } else {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
@@ -477,7 +477,7 @@ namespace Base {
             if (state.State == PackageState.StateEnum.Running ||
                 state.State == PackageState.StateEnum.Paused) {
                 openSceneProjectPackage = true;
-                if (!ActionsManager.Instance.ActionsReady) {
+                if (!ActionsManager.Instance.ActionsReady || PackageInfo == null) {
                     newPackageState = state;
                     openPackage = true;
                     return;
@@ -485,11 +485,11 @@ namespace Base {
                 if (GetGameState() != GameStateEnum.PackageRunning) {
                     try {
                         WaitUntilPackageReady(5000);
-                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene)) {
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }
-                        if (!ProjectManager.Instance.CreateProject(PackageInfo.Project)) {
+                        if (!ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
                         OpenPackageRunningScreen();
@@ -829,22 +829,6 @@ namespace Base {
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
             
-            try {
-                await WebsocketManager.Instance.OpenScene(sceneId);
-            } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Open scene failed", e.Message);
-                return;
-            }           
-            
-            try {
-                await Task.Run(() => WaitForSceneReady(5000));
-            } catch (TimeoutException e) {
-                Notifications.Instance.ShowNotification("Open scene failed", "Scene " + sceneId + " could not be loaded (unknown reason).");
-                return;
-            }
-            //IO.Swagger.Model.Project project = new IO.Swagger.Model.Project(id: Guid.NewGuid().ToString(), name: name, objects: new List<IO.Swagger.Model.ProjectObject>(), sceneId: sceneId, hasLogic: generateLogic);
-            //WebsocketManager.Instance.UpdateProject(project);
-            //ProjectUpdated(project);
             try {
                 await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic, false);
             } catch (RequestFailedException e) {
@@ -1220,6 +1204,7 @@ namespace Base {
         }
 
         public async Task<bool> UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
+            Debug.Assert(ProjectManager.Instance.AllowEdit);
             try {
                 await WebsocketManager.Instance.UpdateAction(actionId, parameters);
                 return true;

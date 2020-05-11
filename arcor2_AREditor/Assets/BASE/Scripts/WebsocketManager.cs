@@ -532,7 +532,7 @@ namespace Base {
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data);
+                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data, true);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
                     ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);

@@ -187,13 +187,15 @@ namespace Base {
         
 
 
-        public void DeleteAP() {
+        public void DeleteAP(bool removeFromList = true) {
             // Remove all actions of this action point
             RemoveActions();
             RemoveConnectionToParent();
 
+
             // Remove this ActionPoint reference from parent ActionObject list
-            ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
+            if (removeFromList) // to allow remove all AP in foreach
+                ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
