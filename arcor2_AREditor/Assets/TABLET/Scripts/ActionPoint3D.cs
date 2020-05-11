@@ -54,6 +54,10 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
+            return;
+        }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             StartManipulation();

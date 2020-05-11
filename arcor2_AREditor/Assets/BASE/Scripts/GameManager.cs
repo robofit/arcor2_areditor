@@ -862,7 +862,9 @@ namespace Base {
             bool success = await WebsocketManager.Instance.CloseScene(force);
             if (success) {
                 SceneManager.Instance.Scene = null;
-            }                
+            } else {
+                HideLoadingScreen();
+            }          
             return success;
         }
 
@@ -873,6 +875,8 @@ namespace Base {
             if (success) {
                 OnCloseProject?.Invoke(this, EventArgs.Empty);
                 SceneManager.Instance.Scene = null;
+            } else {
+                HideLoadingScreen();
             }
             return success;
             

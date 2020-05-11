@@ -77,6 +77,11 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+            return;
+        }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object

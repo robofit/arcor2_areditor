@@ -79,7 +79,7 @@ namespace Base {
             Data = apData;
             transform.localPosition = GetScenePosition();
             SetSize(size);
-            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove == true) ? "GizmoRuntime" : "Default");
+            ActivateForGizmo(((ControlBoxManager.Instance.UseGizmoMove == true) && ProjectManager.Instance.AllowEdit) ? "GizmoRuntime" : "Default");
             // TODO: is this neccessary?
             /*if (Data.Orientations.Count == 0)
                 Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
