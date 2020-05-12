@@ -5,7 +5,6 @@ using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
-using UnityEngine.PlayerLoop;
 
 namespace Base {
 
