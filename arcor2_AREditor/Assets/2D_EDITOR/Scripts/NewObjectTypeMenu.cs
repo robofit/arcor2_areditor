@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 
 using System.Globalization;
+using Michsky.UI.ModernUIPack;
 
 public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     [SerializeField]
@@ -15,6 +16,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     public DropdownParameter ParentsList, ModelsList;
     [SerializeField]
     private Button CreateNewObjectBtn;
+
+    [SerializeField]
+    private TooltipContent buttonTooltip;
+
 
 
     private void Awake() {
@@ -32,6 +37,8 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     private void Start() {
         //TODO: find out why start is called twice
         Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
+        buttonTooltip.descriptionText = TooltipRef.Instance.Text;
+        buttonTooltip.tooltipRect = TooltipRef.Instance.Tooltip;
     }
 
     // Update is called once per frame
@@ -40,6 +47,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     }
 
     public void UpdateMenu() {
+        CreateNewObjectBtn.interactable = false;
         ValidateFields();
     }
 
@@ -73,9 +81,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         
     }
 
-    public void ValidateFields() {
+    public async void ValidateFields() {
         bool interactable = true;
         if (string.IsNullOrEmpty(NameInput.text)) {
+            buttonTooltip.description = "Name is required parameter";
             interactable = false;
         }
         if (interactable) {
@@ -101,7 +110,20 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                         interactable = false;
                     break;
             }
+            if (!interactable) {
+                buttonTooltip.description = "Some parameters has invalid value";
+            }
         }
+        if (interactable) {
+            try {
+                await Base.WebsocketManager.Instance.CreateNewObjectType(CreateObjectTypeMeta(), true);
+            } catch (Base.RequestFailedException ex) {
+                buttonTooltip.description = ex.Message;
+                interactable = false;
+            }
+        }
+
+        buttonTooltip.enabled = !interactable;
         
         CreateNewObjectBtn.interactable = interactable;
     }
@@ -109,6 +131,16 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     public async void CreateNewObjectType() {
         Debug.Assert(ModelsList.Dropdown.dropdownItems.Count > 0, "No models");
         Debug.Assert(ParentsList.Dropdown.dropdownItems.Count > 0, "No parent objects");
+        CreateNewObjectBtn.interactable = false;
+        
+        bool success = await Base.GameManager.Instance.CreateNewObjectType(CreateObjectTypeMeta());
+        if (success) {
+            MenuManager.Instance.NewObjectTypeMenu.Close();
+        }
+        CreateNewObjectBtn.interactable = true;
+    }
+
+    public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta() {
         string objectId = NameInput.text;
 
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
@@ -148,7 +180,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                     break;
                 default:
                     Debug.LogError("Model not defined!");
-                    return;
+                    return null;
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
@@ -158,12 +190,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                 _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
         }
 
-        
-        
-        bool success = await Base.GameManager.Instance.CreateNewObjectType(objectTypeMeta);
-        if (success) {
-            MenuManager.Instance.NewObjectTypeMenu.Close();
-        }
+        return objectTypeMeta;
     }
 
 }

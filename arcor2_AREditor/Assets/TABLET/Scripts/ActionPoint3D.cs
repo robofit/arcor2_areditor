@@ -46,14 +46,18 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
-            orientations.transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+            orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
+            return;
+        }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             StartManipulation();

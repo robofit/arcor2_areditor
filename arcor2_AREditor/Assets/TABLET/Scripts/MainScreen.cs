@@ -18,6 +18,9 @@ public class MainScreen : Base.Singleton<MainScreen>
     private ProjectOptionMenu ProjectOptionMenu;
 
     [SerializeField]
+    private PackageOptionMenu PackageOptionMenu;
+
+    [SerializeField]
     private CanvasGroup projectsList, scenesList, packageList;
 
     [SerializeField]
@@ -45,6 +48,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
+        Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
@@ -88,6 +92,9 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterTile(tile);
         }
         foreach (ProjectTile tile in projectTiles) {
+            FilterTile(tile);
+        }
+        foreach (PackageTile tile in packageTiles) {
             FilterTile(tile);
         }
     }
@@ -170,18 +177,16 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void UpdatePackages(object sender, EventArgs eventArgs) {
-
         packageTiles.Clear();
-        return;
         foreach (Transform t in PackagesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
-            tile.InitTile(package.Id,
-                          null,
-                          null,
+            tile.InitTile(package.Name,
+                          () => Base.GameManager.Instance.RunPackage(package.Id),
+                          () => PackageOptionMenu.Open(tile),
                           starred,
                           package.Id);
             packageTiles.Add(tile);

@@ -31,7 +31,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         inputDialog.Open("Create action point",
                          "Type action point name",
                          "Name",
-                         Scene.Instance.GetFreeAPName(CurrentObject.Data.Name),
+                         ProjectManager.Instance.GetFreeAPName(CurrentObject.Data.Name),
                          () => CreateNewAP(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -70,18 +70,18 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     }
 
     public void ShowNextAO() {
-        ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
+        ActionObject nextAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(nextAO);
     }
 
     public void ShowPreviousAO() {
-        ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
+        ActionObject previousAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(previousAO);
     }
 
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.ShowMenu();
-        Scene.Instance.SetSelectedObject(actionObject.gameObject);
+        SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
     }
 
@@ -89,7 +89,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
         actionPoint.ShowMenu(true);
         
-        Scene.Instance.SetSelectedObject(actionPoint.gameObject);
+        SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         actionPoint.SendMessage("Select");
     }
 }

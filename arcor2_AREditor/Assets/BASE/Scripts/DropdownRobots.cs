@@ -18,7 +18,7 @@ public class DropdownRobots : MonoBehaviour
         List<string> robotNames = new List<string>();
         foreach (string robotName in Base.ActionsManager.Instance.GetRobotsNames()) {
             if (withEEOnly) {
-                if (Base.Scene.Instance.TryGetActionObjectByName(robotName, out Base.ActionObject robot)) {
+                if (Base.SceneManager.Instance.TryGetActionObjectByName(robotName, out Base.ActionObject robot)) {
                     if (robot.GetEndEffectors().Count > 0) {
                         robotNames.Add(robotName);
                     }

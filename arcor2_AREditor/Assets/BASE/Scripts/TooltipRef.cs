@@ -7,4 +7,5 @@ public class TooltipRef : Base.Singleton<TooltipRef>
     public GameObject Tooltip;
     public TMPro.TextMeshProUGUI Text;
 
+    
 }

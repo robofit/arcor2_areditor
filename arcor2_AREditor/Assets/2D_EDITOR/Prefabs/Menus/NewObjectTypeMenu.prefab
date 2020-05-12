@@ -3403,6 +3403,7 @@ MonoBehaviour:
   ParentsList: {fileID: 5077352724586501192}
   ModelsList: {fileID: 7066705352849357516}
   CreateNewObjectBtn: {fileID: 1610816755847795833}
+  buttonTooltip: {fileID: 8691233374785556714}
 --- !u!1 &5842040022987489040
 GameObject:
   m_ObjectHideFlags: 0
@@ -12082,6 +12083,7 @@ GameObject:
   - component: {fileID: 2588376805313624393}
   - component: {fileID: 1610816755847795833}
   - component: {fileID: 601515872974032107}
+  - component: {fileID: 8691233374785556714}
   m_Layer: 5
   m_Name: CreateNewObjectButton
   m_TagString: Untagged
@@ -12219,6 +12221,22 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &8691233374785556714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8358649994508999012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  tooltipAnimator: {fileID: 0}
 --- !u!1 &8682045604466700751
 GameObject:
   m_ObjectHideFlags: 0

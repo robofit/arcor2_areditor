@@ -105,11 +105,11 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
         }
 
-        public async Task AddService(IO.Swagger.Model.SceneService sceneService) {
+        public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
             Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
             if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
                 Service service = new Service(sceneService, serviceMetadata);
-                if (service.IsRobot()) {
+                if (loadResources && service.IsRobot()) {
                     await service.LoadRobots();
                 }
                 ServicesData.Add(sceneService.Type, service);
@@ -159,7 +159,7 @@ namespace Base {
 
         public List<string> GetRobotsNames() {
             HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
                 if (actionObject.ActionObjectMetadata.Robot) {
                     robots.Add(actionObject.Data.Name);
                 }
@@ -271,7 +271,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {               
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
                 List<ActionMetadata> freeActions = new List<ActionMetadata>();
                 if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
@@ -294,7 +294,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {
                 if (ao == actionObject) {
                     if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                         continue;
