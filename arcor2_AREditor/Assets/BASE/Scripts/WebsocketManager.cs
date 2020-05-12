@@ -620,7 +620,7 @@ namespace Base {
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
             IO.Swagger.Model.OpenProjectRequest request = new IO.Swagger.Model.OpenProjectRequest(id: r_id, request: "OpenProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.OpenProjectResponse response = await WaitForResult<IO.Swagger.Model.OpenProjectResponse>(r_id);
+            IO.Swagger.Model.OpenProjectResponse response = await WaitForResult<IO.Swagger.Model.OpenProjectResponse>(r_id, 30000);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -630,7 +630,7 @@ namespace Base {
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id);
+            IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -780,14 +780,14 @@ namespace Base {
             IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name);
             IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id);
+            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
         }
 
         public async Task AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
             SendDataToServer(request.ToJson(), r_id, true);
-            var response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id);
+            var response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id, 30000);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
@@ -827,7 +827,7 @@ namespace Base {
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: scene_id);
             IO.Swagger.Model.OpenSceneRequest request = new IO.Swagger.Model.OpenSceneRequest(id: r_id, request: "OpenScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.OpenSceneResponse response = await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id);
+            IO.Swagger.Model.OpenSceneResponse response = await WaitForResult<IO.Swagger.Model.OpenSceneResponse>(r_id, 30000);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
@@ -874,7 +874,7 @@ namespace Base {
             IO.Swagger.Model.BuildProjectArgs args = new IO.Swagger.Model.BuildProjectArgs(projectId: projectId, packageName: packageName);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.BuildProjectResponse response = await WaitForResult<IO.Swagger.Model.BuildProjectResponse>(r_id);
+            IO.Swagger.Model.BuildProjectResponse response = await WaitForResult<IO.Swagger.Model.BuildProjectResponse>(r_id, 30000);
 
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);

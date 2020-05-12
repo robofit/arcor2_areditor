@@ -199,8 +199,6 @@ namespace Base {
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
         }
 
-        
-
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
