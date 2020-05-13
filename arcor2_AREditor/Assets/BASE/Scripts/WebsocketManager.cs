@@ -389,8 +389,8 @@ namespace Base {
         }
 
         private void HandleActionExecution(string data) {
-            IO.Swagger.Model.ActionExecutionData actionExecution = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionExecutionData>(data);
-            GameManager.Instance.HandleActionExecution(actionExecution.ActionId);
+            IO.Swagger.Model.ActionExecutionEvent actionExecution = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionExecutionEvent>(data);
+            GameManager.Instance.HandleActionExecution(actionExecution.Data.ActionId);
         }
 
         private void HandleProjectException(string data) {
