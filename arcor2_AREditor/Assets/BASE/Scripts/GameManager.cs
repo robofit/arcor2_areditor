@@ -73,6 +73,8 @@ namespace Base {
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
+        public event StringEventHandler OnActionExecution;
+        public event EventHandler OnActionExecutionFinished;
 
 
         private GameStateEnum gameState;
@@ -90,7 +92,7 @@ namespace Base {
         private bool openScene = false;
         private bool openPackage = false;
 
-        private bool sceneReady;
+        public string ExecutingAction = null;
 
         public const string ApiVersion = "0.7.0";
 
@@ -188,7 +190,6 @@ namespace Base {
 
         private void Awake() {
             loadedScene = "";
-            sceneReady = false;
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
             OpenDisconnectedScreen();
         }
@@ -379,7 +380,13 @@ namespace Base {
                     res = "Result: " + data.Result;
                 Notifications.Instance.ShowNotification("Action execution finished sucessfully", res);
             }
-                
+            ExecutingAction = null;
+            OnActionExecutionFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal void HandleActionExecution(string actionId) {
+            ExecutingAction = actionId;
+            OnActionExecution?.Invoke(this, new StringEventArgs(ExecutingAction));
         }
 
         
@@ -899,6 +906,16 @@ namespace Base {
                 await WebsocketManager.Instance.ExecuteAction(actionId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> CancelExecution() {
+            try {
+                await WebsocketManager.Instance.CancelExecution();
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to cancel action", ex.Message);
                 return false;
             }
             return true;
