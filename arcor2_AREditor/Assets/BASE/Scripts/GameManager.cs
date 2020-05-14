@@ -75,6 +75,7 @@ namespace Base {
         public event EventHandler OnOpenMainScreen;
         public event StringEventHandler OnActionExecution;
         public event EventHandler OnActionExecutionFinished;
+        public event EventHandler OnActionExecutionCanceled;
 
 
         private GameStateEnum gameState;
@@ -382,6 +383,19 @@ namespace Base {
             }
             ExecutingAction = null;
             OnActionExecutionFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal void HandleActionCanceled() {
+            try {
+                Action action = ProjectManager.Instance.GetAction(ExecutingAction);                
+                Notifications.Instance.ShowNotification("Action execution canceled", "Action " + action.Data.Name + " was cancelled");
+            } catch (ItemNotFoundException ex) {
+                Notifications.Instance.ShowNotification("Action execution canceled", "Unknown action was cancelled");
+            } finally {
+                ExecutingAction = null;
+                OnActionExecutionCanceled?.Invoke(this, EventArgs.Empty);
+            }           
+            
         }
 
         internal void HandleActionExecution(string actionId) {

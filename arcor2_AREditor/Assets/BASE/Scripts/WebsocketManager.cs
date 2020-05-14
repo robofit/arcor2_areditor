@@ -258,6 +258,9 @@ namespace Base {
                     case "ActionResult":
                         HandleActionResult(data);
                         break;
+                    case "ActionCancelled":
+                        HandleActionCanceled(data);
+                        break;
                     case "ActionExecution":
                         HandleActionExecution(data);
                         break;
@@ -386,6 +389,10 @@ namespace Base {
         private void HandleActionResult(string data) {
             IO.Swagger.Model.ActionResultEvent actionResult = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionResultEvent>(data);
             GameManager.Instance.HandleActionResult(actionResult.Data);
+        }
+
+        private void HandleActionCanceled(string data) {
+            GameManager.Instance.HandleActionCanceled();
         }
 
         private void HandleActionExecution(string data) {

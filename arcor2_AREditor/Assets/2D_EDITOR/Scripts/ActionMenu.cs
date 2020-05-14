@@ -44,10 +44,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
         GameManager.Instance.OnActionExecution += OnActionExecution;
         GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinished;
+        GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinished;
 
         StopActionBtnTooltip = StopActionBtn.gameObject.GetComponent<TooltipContent>();
         Debug.Assert(StopActionBtnTooltip != null);
     }
+
 
     private void OnActionExecutionFinished(object sender, EventArgs e) {
         ExecuteActionBtn.gameObject.SetActive(true);
