@@ -35,4 +35,19 @@ public static class PlayerPrefsHelper {
         return value == 1 ? true : false;
     }
 
+    public static void SaveString(string key, string value) {
+        PlayerPrefs.SetString(key, value);
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// Returns boolean value of key, if it exist. If not, returns defaultValue.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static string LoadString(string key, string defaultValue) {
+        return PlayerPrefs.GetString(key, defaultValue);
+    }
+
 }

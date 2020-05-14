@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
+
 public class PackageOptionMenu : TileOptionMenu {
 
     private PackageTile packageTile;
@@ -37,5 +38,14 @@ public class PackageOptionMenu : TileOptionMenu {
         }
         GameManager.Instance.HideLoadingScreen();
     }
+
+    public void ChangeImage() {
+        Sprite sprite = ImageHelper.LoadSpriteAndSaveToDb(out string filename);
+        if (sprite != null) {
+            PlayerPrefsHelper.SaveString(packageTile.PackageId + "/image", filename);
+            packageTile.TopImage.sprite = sprite;
+        }
+    }
+
 
 }

@@ -1,10 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using DanielLochner.Assets.SimpleSideMenu;
+using USFB;
+using System.IO;
+using System;
+using Base;
+using UnityEngine.UI;
 
 public class SceneOptionMenu : TileOptionMenu {
-    
+
     private SceneTile sceneTile;
     [SerializeField]
     private InputDialog inputDialog;
@@ -79,5 +81,22 @@ public class SceneOptionMenu : TileOptionMenu {
         MainScreen.Instance.ShowRelatedProjects(sceneTile.SceneId);
         Close();
     }
+
+
+    public void ChangeImage() {
+        Sprite sprite = ImageHelper.LoadSpriteAndSaveToDb(out string filename);
+        if (sprite != null) {
+            PlayerPrefsHelper.SaveString(sceneTile.SceneId + "/image", filename);
+            sceneTile.TopImage.sprite = sprite;
+        }   
+        /*NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
+        {
+           Notifications.Instance.ShowNotification("Image path: ", path);
+            
+        }, "Select a PNG image", "image/png");*/
+    }
+
+   
+
 
 }

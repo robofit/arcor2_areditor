@@ -84,7 +84,6 @@ namespace Base {
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
-        private string loadedScene;
         private IO.Swagger.Model.Project newProject;
         private IO.Swagger.Model.Scene newScene;
         private PackageState newPackageState;
@@ -190,7 +189,6 @@ namespace Base {
 
 
         private void Awake() {
-            loadedScene = "";
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
             OpenDisconnectedScreen();
         }
@@ -253,7 +251,6 @@ namespace Base {
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-                    loadedScene = "";
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
                     Scene.SetActive(false);
@@ -876,7 +873,6 @@ namespace Base {
 
         public async Task<bool> CloseScene(bool force) {
             ShowLoadingScreen();
-            loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseScene(force);
             if (success) {
                 SceneManager.Instance.Scene = null;
@@ -888,7 +884,6 @@ namespace Base {
 
         public async Task<bool> CloseProject(bool force) {
             ShowLoadingScreen();
-            loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseProject(force);
             if (success) {
                 OnCloseProject?.Invoke(this, EventArgs.Empty);
