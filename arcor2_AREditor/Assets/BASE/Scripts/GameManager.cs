@@ -972,7 +972,7 @@ namespace Base {
             }
             if ((GetMajorVersion(systemInfo.ApiVersion) > 0 && (GetMinorVersion(systemInfo.ApiVersion) < GetMinorVersion(ApiVersion))) ||
                 GetPatchVersion(systemInfo.ApiVersion) < GetPatchVersion(ApiVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problems, you have been warned.");
+                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can cause problems, you have been warned.");
                 return true;
             }
             
