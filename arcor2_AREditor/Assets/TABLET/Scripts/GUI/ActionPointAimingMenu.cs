@@ -122,7 +122,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         inputDialog.Open("Create new named orientation",
                          "Please set name of the new orientation",
                          "Name",
-                         "",
+                         CurrentActionPoint.GetFreeOrientationName(),
                          () => AddOrientation(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -145,7 +145,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         inputDialog.Open("Create new joints configuration",
                          "Please set name of the new joints configuration",
                          "Name",
-                         "",
+                         CurrentActionPoint.GetFreeJointsName(),
                          () => AddJoints(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
