@@ -95,7 +95,7 @@ namespace Base {
         private GameStateEnum gameState;
         private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen;
+        public GameObject LoadingScreen, MainMenuBtn, StatusPanel;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
@@ -125,6 +125,9 @@ namespace Base {
         [SerializeField]
         private Canvas headUpCanvas;
 
+        [SerializeField]
+        private SelectObjectInfo SelectObjectInfo;
+
         public IO.Swagger.Model.SystemInfoData SystemInfo;
         public PackageInfo PackageInfo;
 
@@ -134,7 +137,7 @@ namespace Base {
         [SerializeField]
         private ARSession ARSession;
 
-        private Action<ActionObject> ActionObjectCallback;
+        private Action<object> ObjectCallback;
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
 
@@ -219,22 +222,44 @@ namespace Base {
         private void SetEditorState(EditorStateEnum newState) {
             editorState = newState;
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
+            switch (newState) {
+                case EditorStateEnum.Normal:
+                    MainMenuBtn.SetActive(true);
+                    StatusPanel.SetActive(true);
+                    break;
+                default:
+                    MainMenuBtn.SetActive(false);
+                    MenuManager.Instance.HideAllMenus();
+                    StatusPanel.SetActive(false);
+                    break;
+            }
         }
 
         public EditorStateEnum GetEditorState() {
             return editorState;
         }
 
-        public void RequestActionObject(Action<ActionObject> callback, string message) {
-            SetEditorState(EditorStateEnum.SelectingActionObject);
-            ActionObjectCallback = callback;
+        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message) {
+            Debug.Assert(requestType != EditorStateEnum.Closed && requestType != EditorStateEnum.Normal);
+            SetEditorState(requestType);
+            ObjectCallback = callback;
+            SelectObjectInfo.Show(message, () => CancelSelection());
         }
 
-        public void ActionObjectSelected(ActionObject actionObject) {
-            if (ActionObjectCallback != null)
-                ActionObjectCallback.Invoke(actionObject);
-            ActionObjectCallback = null;
+        public void CancelSelection() {
+            if (ObjectCallback != null) {
+                ObjectCallback.Invoke(null);
+                ObjectCallback = null;
+            }
             SetEditorState(EditorStateEnum.Normal);
+        }
+
+        public void ObjectSelected(object selectedObject) {
+            if (ObjectCallback != null)
+                ObjectCallback.Invoke(selectedObject);
+            ObjectCallback = null;
+            SetEditorState(EditorStateEnum.Normal);
+            SelectObjectInfo.gameObject.SetActive(false);
         }
 
         private void Awake() {
@@ -765,7 +790,6 @@ namespace Base {
                 return false;
             }
             try {
-
                 string packageId = await BuildPackage(Guid.NewGuid().ToString());
                 return await RunPackage(packageId);
             } catch (RequestFailedException ex) {
@@ -1353,7 +1377,6 @@ namespace Base {
             }
         }
 
-
-        }    
+    }    
 
 }

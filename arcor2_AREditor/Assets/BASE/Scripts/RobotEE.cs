@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 
 public class RobotEE : Base.Clickable {
@@ -18,7 +19,9 @@ public class RobotEE : Base.Clickable {
     }
 
     public override void OnClick(Click type) {
-        // nothing to do yet
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
     }
 
 

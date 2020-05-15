@@ -43,6 +43,13 @@ public class Action3D : Base.Action {
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingAction) {
+            GameManager.Instance.ObjectSelected(this);
+            return;
+        }
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action only allowed in project editor");
             return;

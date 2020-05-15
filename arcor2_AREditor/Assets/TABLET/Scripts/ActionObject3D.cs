@@ -78,7 +78,7 @@ public class ActionObject3D : ActionObject
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
-            GameManager.Instance.ActionObjectSelected(this);
+            GameManager.Instance.ObjectSelected(this);
             return;
         }
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {

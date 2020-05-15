@@ -7,6 +7,9 @@ public class Recalibrate : Clickable {
 
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
         if (type == Click.LONG_TOUCH) {
             Calibrate();
         }
