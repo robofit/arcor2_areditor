@@ -174,6 +174,23 @@ namespace Base {
             return robots.ToList<string>();
         }
 
+        public string RobotNameToId(string robotName) {
+            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot && actionObject.Data.Name == robotName) {
+                    return actionObject.Data.Id;
+                }
+            }
+            foreach (Service service in servicesData.Values) {
+                if (service.Metadata.Robot) {
+                    foreach (string s in service.GetRobotsNames()) {
+                        if (s == robotName)
+                            return s;
+                    }
+                }
+            }
+            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
+        }
+
         
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {

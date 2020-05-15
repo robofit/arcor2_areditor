@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
+using UnityEngine.Events;
 
 namespace Base {
 
@@ -25,6 +26,16 @@ namespace Base {
         }
 
         public GameStateEventArgs(GameManager.GameStateEnum data) {
+            Data = data;
+        }
+    }
+
+    public class EditorStateEventArgs : EventArgs {
+        public GameManager.EditorStateEnum Data {
+            get; set;
+        }
+
+        public EditorStateEventArgs(GameManager.EditorStateEnum data) {
             Data = data;
         }
     }
@@ -51,6 +62,7 @@ namespace Base {
 
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
+        public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
         public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
 
         public event EventHandler OnSaveProject;
@@ -71,6 +83,7 @@ namespace Base {
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
+        public event EditorStateEventHandler OnEditorStateChanged;
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
@@ -80,8 +93,9 @@ namespace Base {
 
 
         private GameStateEnum gameState;
+        private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen;
+        public GameObject LoadingScreen, MainMenuBtn, StatusPanel;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
@@ -111,18 +125,19 @@ namespace Base {
         [SerializeField]
         private Canvas headUpCanvas;
 
+        [SerializeField]
+        private SelectObjectInfo SelectObjectInfo;
+
         public IO.Swagger.Model.SystemInfoData SystemInfo;
         public PackageInfo PackageInfo;
 
         private string reopenProjectId = null;
 
-        //#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-
+        
         [SerializeField]
         private ARSession ARSession;
-        
-        //#endif
 
+        private Action<object> ObjectCallback;
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
 
@@ -140,6 +155,15 @@ namespace Base {
             SceneEditor,
             ProjectEditor,
             PackageRunning
+        }
+
+        public enum EditorStateEnum {
+            Closed,
+            Normal,
+            SelectingActionObject,
+            SelectingActionPoint,
+            SelectingAction,
+            InteractionDisabled
         }
 
         private ConnectionStatusEnum connectionStatus;
@@ -195,6 +219,48 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
+        private void SetEditorState(EditorStateEnum newState) {
+            editorState = newState;
+            OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
+            switch (newState) {
+                case EditorStateEnum.Normal:
+                    MainMenuBtn.SetActive(true);
+                    StatusPanel.SetActive(true);
+                    break;
+                default:
+                    MainMenuBtn.SetActive(false);
+                    MenuManager.Instance.HideAllMenus();
+                    StatusPanel.SetActive(false);
+                    break;
+            }
+        }
+
+        public EditorStateEnum GetEditorState() {
+            return editorState;
+        }
+
+        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message) {
+            Debug.Assert(requestType != EditorStateEnum.Closed && requestType != EditorStateEnum.Normal);
+            SetEditorState(requestType);
+            ObjectCallback = callback;
+            SelectObjectInfo.Show(message, () => CancelSelection());
+        }
+
+        public void CancelSelection() {
+            if (ObjectCallback != null) {
+                ObjectCallback.Invoke(null);
+                ObjectCallback = null;
+            }
+            SetEditorState(EditorStateEnum.Normal);
+        }
+
+        public void ObjectSelected(object selectedObject) {
+            if (ObjectCallback != null)
+                ObjectCallback.Invoke(selectedObject);
+            ObjectCallback = null;
+            SetEditorState(EditorStateEnum.Normal);
+            SelectObjectInfo.gameObject.SetActive(false);
+        }
 
         private void Awake() {
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
@@ -342,9 +408,16 @@ namespace Base {
         /// <param name="type"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string name) {
-            IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            return await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+        public async Task<bool> AddObjectToScene(string type, string name) {
+            try {
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+                await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add object to scene", ex.Message);
+                return false;
+            }
+            return true;
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
@@ -392,6 +465,9 @@ namespace Base {
             }
             ExecutingAction = null;
             OnActionExecutionFinished?.Invoke(this, EventArgs.Empty);
+            // Stop previously running action (change its color to default)
+            if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
         }
 
         internal void HandleActionCanceled() {
@@ -403,16 +479,28 @@ namespace Base {
             } finally {
                 ExecutingAction = null;
                 OnActionExecutionCanceled?.Invoke(this, EventArgs.Empty);
-            }           
-            
+                
+                // Stop previously running action (change its color to default)
+                if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                    ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+
+            }
+
         }
 
         internal void HandleActionExecution(string actionId) {
             ExecutingAction = actionId;
             OnActionExecution?.Invoke(this, new StringEventArgs(ExecutingAction));
+            Action puck = ProjectManager.Instance.GetAction(actionId);
+            if (puck == null)
+                return;
+
+            ActionsManager.Instance.CurrentlyRunningAction = puck;
+            // Run current action (set its color to running)
+            puck.RunAction();
         }
 
-        
+
 
         public void SceneObjectUpdated(SceneObject sceneObject) {
             ActionObject actionObject = SceneManager.Instance.GetActionObject(sceneObject.Id);
@@ -702,7 +790,6 @@ namespace Base {
                 return false;
             }
             try {
-
                 string packageId = await BuildPackage(Guid.NewGuid().ToString());
                 return await RunPackage(packageId);
             } catch (RequestFailedException ex) {
@@ -972,7 +1059,7 @@ namespace Base {
             }
             if ((GetMajorVersion(systemInfo.ApiVersion) > 0 && (GetMinorVersion(systemInfo.ApiVersion) < GetMinorVersion(ApiVersion))) ||
                 GetPatchVersion(systemInfo.ApiVersion) < GetPatchVersion(ApiVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can casuse problems, you have been warned.");
+                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can cause problems, you have been warned.");
                 return true;
             }
             
@@ -1013,6 +1100,7 @@ namespace Base {
             }            
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Closed);
             EditorInfo.text = "";
             HideLoadingScreen();
         }
@@ -1025,6 +1113,7 @@ namespace Base {
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen();
         }
 
@@ -1036,6 +1125,7 @@ namespace Base {
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen();
         }
 
@@ -1046,7 +1136,7 @@ namespace Base {
             try {
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
-                
+                SetEditorState(EditorStateEnum.InteractionDisabled);
                 Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
             } catch (TimeoutException ex) {
@@ -1287,7 +1377,6 @@ namespace Base {
             }
         }
 
-
-        }    
+    }    
 
 }

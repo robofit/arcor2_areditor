@@ -5,6 +5,9 @@ using Michsky.UI.ModernUIPack;
 using System.Linq;
 using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
+using Base;
+using System;
+using MongoDB.Bson;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionPointAimingMenu : MonoBehaviour, IMenu
@@ -89,7 +92,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
 
-        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null);
+        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null, CurrentActionPoint.Data.Name);
 
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
@@ -102,17 +105,25 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         }
     }
 
-    private void OnRobotChanged(string robot_id) {
+    private void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
-        if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
-            UpdatePoseBlock.SetActive(false);
-            UpdateJointsBlock.SetActive(true);
-        } else {
-            UpdatePoseBlock.SetActive(true);
-            UpdateJointsBlock.SetActive(false);
+        
+        try {
+            string robotId = ActionsManager.Instance.RobotNameToId(robot_name);
+            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId);
+            if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
+                UpdatePoseBlock.SetActive(false);
+                UpdateJointsBlock.SetActive(true);
+            } else {
+                UpdatePoseBlock.SetActive(true);
+                UpdateJointsBlock.SetActive(false);
+            }
+            UpdateJoints(robot_name);
+        } catch (KeyNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
-        UpdateJoints(robot_id);
+        
     }
 
 
@@ -122,7 +133,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         inputDialog.Open("Create new named orientation",
                          "Please set name of the new orientation",
                          "Name",
-                         "",
+                         CurrentActionPoint.GetFreeOrientationName(),
                          () => AddOrientation(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -145,7 +156,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         inputDialog.Open("Create new joints configuration",
                          "Please set name of the new joints configuration",
                          "Name",
-                         "",
+                         CurrentActionPoint.GetFreeJointsName(),
                          () => AddJoints(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -167,12 +178,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints((string) RobotsList.GetValue(), CurrentActionPoint.GetJoints((string) JointsList.GetValue()).Name);
+            string robotId = ActionsManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+            Base.GameManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
-        } catch (Base.RequestFailedException ex) {
+            
+            UpdateJoints(robotId, (string) JointsList.GetValue());
+        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is KeyNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
         }
-        UpdateJoints((string) RobotsList.GetValue(), (string) JointsList.GetValue());
+        
     }
 
     public void ShowFocusConfirmationDialog() {
@@ -190,15 +204,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         } else {
             FocusConfirmationDialog.EndEffectorId = endEffectorDropdown.selectedText.text;
         }
-        FocusConfirmationDialog.RobotId = robotsListDropdown.selectedText.text;
+        FocusConfirmationDialog.RobotName = robotsListDropdown.selectedText.text;
 
         FocusConfirmationDialog.OrientationId = CurrentActionPoint.GetNamedOrientationByName(orientationDropdown.selectedText.text).Id;
         FocusConfirmationDialog.OrientationName = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
         FocusConfirmationDialog.ActionPointName = CurrentActionPoint.Data.Name;
-        FocusConfirmationDialog.Init();
-        FocusConfirmationDialog.WindowManager.OpenWindow();
+        if (FocusConfirmationDialog.Init())
+            FocusConfirmationDialog.WindowManager.OpenWindow();
     }
 
     public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation = null) {

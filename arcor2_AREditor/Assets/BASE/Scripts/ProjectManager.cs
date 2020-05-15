@@ -83,7 +83,9 @@ namespace Base {
 
 
         private void Update() {
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor && GameManager.Instance.SceneInteractable) {
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
+                GameManager.Instance.SceneInteractable &&
+                GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
                 if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
                     ActivateActionPointsForGizmo(true);
                     projectActive = true;

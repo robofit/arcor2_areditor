@@ -18,7 +18,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     public ServiceSettingsDialog ServiceSettingsDialog;
     public AutoAddObjectDialog AutoAddObjectDialog;
     public AddSerivceDialog AddNewServiceDialog;
-    public AddNewObjectDialog AddNewObjectDialog;
     public NewProjectDialog NewProjectDialog;
     public NewSceneDialog NewSceneDialog;
 
@@ -260,8 +259,19 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
     public void ShowAddObjectDialog(string type) {
-        AddNewObjectDialog.Init(type);
-        AddNewObjectDialog.WindowManager.OpenWindow();
+        inputDialog.Open("Add object of type " + type,
+                         "",
+                         "Object name",
+                         SceneManager.Instance.GetFreeAOName(type),
+                         () => AddObject(type, inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddObject(string type, string name) {
+        if (await Base.GameManager.Instance.AddObjectToScene(type: type, name: name)) {
+            inputDialog.Close();
+        }
+        
     }
 
 

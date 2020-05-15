@@ -116,6 +116,38 @@ namespace Base {
             changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());
         }
 
+        internal string GetFreeOrientationName() {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = "defaulf";
+            do {
+                hasFreeName = true;
+                if (OrientationNameExist(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = "default_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+        internal string GetFreeJointsName() {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = "defaulf";
+            do {
+                hasFreeName = true;
+                if (JointsNameExist(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = "default_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
         public abstract void UpdatePositionsOfPucks();
 
         public Dictionary<string, IO.Swagger.Model.Pose> GetPoses() {
@@ -236,7 +268,6 @@ namespace Base {
 
         public void ShowMenu(bool enableBackButton) {
             actionPointMenu.CurrentActionPoint = this;
-            actionPointMenu.UpdateMenu();
             actionPointMenu.EnableBackButton(enableBackButton);
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
         }
@@ -326,8 +357,13 @@ namespace Base {
             }
 
 
-            if (Parent != null)
-                ConnectionToParent.UpdateLine();
+            if (Parent != null) {
+
+                if (ConnectionToParent != null)
+                    ConnectionToParent.UpdateLine();
+                else
+                    SetConnectionToActionObject(Parent);
+            }
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
                 actionPointMenu.UpdateMenu();
@@ -355,6 +391,24 @@ namespace Base {
             
             
         }
+
+        public bool OrientationNameExist(string name) {
+            try {
+                GetOrientationByName(name);
+                return true;
+            } catch (KeyNotFoundException ex) {
+                return false;
+            } 
+        } 
+
+        public bool JointsNameExist(string name) {
+            try {
+                GetJointsByName(name);
+                return true;
+            } catch (KeyNotFoundException ex) {
+                return false;
+            } 
+        } 
 
         /// <summary>
         /// Returns orientation with id or throws KeyNotFoundException
@@ -393,6 +447,20 @@ namespace Base {
                     return joints;
             }
             throw new KeyNotFoundException("Joints with name " + name + " not found");
+        }
+
+
+        /// <summary>
+        /// Returns joints with name or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IO.Swagger.Model.NamedOrientation GetOrientationByName(string name) {
+            foreach (NamedOrientation orientation in Data.Orientations) {
+                if (orientation.Name == name)
+                    return orientation;
+            }
+            throw new KeyNotFoundException("Orientation with name " + name + " not found");
         }
 
 
