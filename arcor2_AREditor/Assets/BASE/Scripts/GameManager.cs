@@ -392,6 +392,9 @@ namespace Base {
             }
             ExecutingAction = null;
             OnActionExecutionFinished?.Invoke(this, EventArgs.Empty);
+            // Stop previously running action (change its color to default)
+            if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
         }
 
         internal void HandleActionCanceled() {
@@ -403,16 +406,28 @@ namespace Base {
             } finally {
                 ExecutingAction = null;
                 OnActionExecutionCanceled?.Invoke(this, EventArgs.Empty);
-            }           
-            
+                
+                // Stop previously running action (change its color to default)
+                if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                    ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+
+            }
+
         }
 
         internal void HandleActionExecution(string actionId) {
             ExecutingAction = actionId;
             OnActionExecution?.Invoke(this, new StringEventArgs(ExecutingAction));
+            Action puck = ProjectManager.Instance.GetAction(actionId);
+            if (puck == null)
+                return;
+
+            ActionsManager.Instance.CurrentlyRunningAction = puck;
+            // Run current action (set its color to running)
+            puck.RunAction();
         }
 
-        
+
 
         public void SceneObjectUpdated(SceneObject sceneObject) {
             ActionObject actionObject = SceneManager.Instance.GetActionObject(sceneObject.Id);

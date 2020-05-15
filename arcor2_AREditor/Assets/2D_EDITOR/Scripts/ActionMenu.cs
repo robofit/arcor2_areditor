@@ -21,7 +21,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public ConfirmationDialog ConfirmationDialog;
     [SerializeField]
     private InputDialog inputDialog;
-    private TooltipContent StopActionBtnTooltip;
+    private TooltipContent StopActionBtnTooltip, ExecuteActionBtnTooltip;
 
 
     public VerticalLayoutGroup DynamicContentLayout;
@@ -47,26 +47,17 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinished;
 
         StopActionBtnTooltip = StopActionBtn.gameObject.GetComponent<TooltipContent>();
+        ExecuteActionBtnTooltip = ExecuteActionBtn.gameObject.GetComponent<TooltipContent>();
         Debug.Assert(StopActionBtnTooltip != null);
     }
 
 
     private void OnActionExecutionFinished(object sender, EventArgs e) {
-        ExecuteActionBtn.gameObject.SetActive(true);
-        StopActionBtn.gameObject.SetActive(false);
+        UpdateExecuteAndStopBtns();
     }
 
     private void OnActionExecution(object sender, StringEventArgs args) {
-        ExecuteActionBtn.gameObject.SetActive(false);
-        StopActionBtn.gameObject.SetActive(true);
-        Base.Action action = ProjectManager.Instance.GetAction(args.Data);
-        if (action.Metadata.Meta.Cancellable) {
-            StopActionBtn.interactable = true;
-            StopActionBtnTooltip.description = "Cancel action.";
-        } else {
-            StopActionBtn.interactable = false;
-            StopActionBtnTooltip.description = "This action cannot be cancelled.";
-        }
+        UpdateExecuteAndStopBtns();
     }
 
     public async void UpdateMenu() {
@@ -78,14 +69,37 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         }
         SetHeader(CurrentAction.Data.Name);
         ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
-        /*List<Base.ActionParameterMetadata> actionParametersMetadata = new List<Base.ActionParameterMetadata>();
-        foreach (IO.Swagger.Model.ActionParameterMeta meta in CurrentAction.Metadata.Parameters) {
-            actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
-        }*/
+
         actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
         parametersChanged = false;
         SaveParametersBtn.interactable = false;
+        UpdateExecuteAndStopBtns();
     }
+
+    private void UpdateExecuteAndStopBtns() {
+        if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction) && CurrentAction.Data.Id == GameManager.Instance.ExecutingAction) {
+            StopActionBtn.gameObject.SetActive(true);
+            ExecuteActionBtn.gameObject.SetActive(false);
+            if (CurrentAction.Metadata.Meta.Cancellable) {
+                StopActionBtn.interactable = true;
+                StopActionBtnTooltip.description = "Stop execution";
+            } else {
+                StopActionBtn.interactable = false;
+                StopActionBtnTooltip.description = "Execution cannot be cancelled";
+            }
+        } else {
+            StopActionBtn.gameObject.SetActive(false);
+            ExecuteActionBtn.gameObject.SetActive(true);
+            if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
+                ExecuteActionBtn.interactable = false;
+                ExecuteActionBtnTooltip.description = "Another action runs already";
+            } else {
+                ExecuteActionBtn.interactable = true;
+                ExecuteActionBtnTooltip.description = "Execute action";
+            }
+        }
+    }
+
 
     public async void DeleteAction() {
         ConfirmationDialog.Close();
