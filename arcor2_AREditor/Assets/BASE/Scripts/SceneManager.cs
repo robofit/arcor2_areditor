@@ -96,7 +96,9 @@ namespace Base {
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor && GameManager.Instance.SceneInteractable) {
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.SceneInteractable &&
+                GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
                     ActivateActionObjectsForGizmo(true);
                     sceneActive = true;
@@ -123,6 +125,7 @@ namespace Base {
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
         }
 
+
         private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
                 CleanRobotEE();
@@ -132,7 +135,7 @@ namespace Base {
                 if (!EndEffectors.TryGetValue(args.Data.RobotId + "/" + eefPose.EndEffectorId, out RobotEE robotEE)) {
                     robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
                     robotEE.SetEEName(args.Data.RobotId, eefPose.EndEffectorId);
-                    EndEffectors.Add(args.Data.RobotId + "/" + eefPose.EndEffectorId, robotEE);
+                    EndEffectors.Add(ProjectManager.Instance.GetActionProvider(args.Data.RobotId).GetProviderName() + "/" + eefPose.EndEffectorId, robotEE);
                 }
                 robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position));
                 robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation));

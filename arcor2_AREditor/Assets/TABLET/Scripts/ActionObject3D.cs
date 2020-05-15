@@ -77,6 +77,13 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+            GameManager.Instance.ActionObjectSelected(this);
+            return;
+        }
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");

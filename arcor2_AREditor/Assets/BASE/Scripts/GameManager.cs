@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
+using UnityEngine.Events;
 
 namespace Base {
 
@@ -25,6 +26,16 @@ namespace Base {
         }
 
         public GameStateEventArgs(GameManager.GameStateEnum data) {
+            Data = data;
+        }
+    }
+
+    public class EditorStateEventArgs : EventArgs {
+        public GameManager.EditorStateEnum Data {
+            get; set;
+        }
+
+        public EditorStateEventArgs(GameManager.EditorStateEnum data) {
             Data = data;
         }
     }
@@ -51,6 +62,7 @@ namespace Base {
 
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
+        public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
         public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
 
         public event EventHandler OnSaveProject;
@@ -71,6 +83,7 @@ namespace Base {
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
         public event GameStateEventHandler OnGameStateChanged;
+        public event EditorStateEventHandler OnEditorStateChanged;
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
@@ -80,6 +93,7 @@ namespace Base {
 
 
         private GameStateEnum gameState;
+        private EditorStateEnum editorState;
 
         public GameObject LoadingScreen;
         public GameObject ButtonPrefab;
@@ -116,13 +130,11 @@ namespace Base {
 
         private string reopenProjectId = null;
 
-        //#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-
+        
         [SerializeField]
         private ARSession ARSession;
-        
-        //#endif
 
+        private Action<ActionObject> ActionObjectCallback;
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
 
@@ -140,6 +152,15 @@ namespace Base {
             SceneEditor,
             ProjectEditor,
             PackageRunning
+        }
+
+        public enum EditorStateEnum {
+            Closed,
+            Normal,
+            SelectingActionObject,
+            SelectingActionPoint,
+            SelectingAction,
+            InteractionDisabled
         }
 
         private ConnectionStatusEnum connectionStatus;
@@ -195,6 +216,26 @@ namespace Base {
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
         }
 
+        private void SetEditorState(EditorStateEnum newState) {
+            editorState = newState;
+            OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
+        }
+
+        public EditorStateEnum GetEditorState() {
+            return editorState;
+        }
+
+        public void RequestActionObject(Action<ActionObject> callback) {
+            SetEditorState(EditorStateEnum.SelectingActionObject);
+            ActionObjectCallback = callback;
+        }
+
+        public void ActionObjectSelected(ActionObject actionObject) {
+            if (ActionObjectCallback != null)
+                ActionObjectCallback.Invoke(actionObject);
+            ActionObjectCallback = null;
+            SetEditorState(EditorStateEnum.Normal);
+        }
 
         private void Awake() {
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
@@ -1035,6 +1076,7 @@ namespace Base {
             }            
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Closed);
             EditorInfo.text = "";
             HideLoadingScreen();
         }
@@ -1047,6 +1089,7 @@ namespace Base {
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen();
         }
 
@@ -1058,6 +1101,7 @@ namespace Base {
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
+            SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen();
         }
 
@@ -1068,7 +1112,7 @@ namespace Base {
             try {
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
-                
+                SetEditorState(EditorStateEnum.InteractionDisabled);
                 Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
             } catch (TimeoutException ex) {

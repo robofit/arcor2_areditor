@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
 using Base;
+using System;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -115,10 +116,14 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         
         UpdateLockedBtns(CurrentActionPoint.Locked);
-        if (CurrentActionPoint.Parent == null)
-            UntieBtn.interactable = false;
-        else
-            UntieBtn.interactable = true;
+        if (CurrentActionPoint.Parent == null) {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => AssignToParent());
+        } else {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => ShowUntieActionPointDialog());
+        }
+            
         
     }
 
@@ -137,7 +142,13 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
 
 
+    private void AssignToParent() {
+        Action<ActionObject> action = AssignToParent;
+        GameManager.Instance.RequestActionObject(action);
+    }
 
+    private void AssignToParent(ActionObject actionObject) {
+    }
 
 
     public async void DeleteAP() {
