@@ -118,6 +118,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         UpdateLockedBtns(CurrentActionPoint.Locked);
         if (CurrentActionPoint.Parent == null) {
             UntieBtn.onClick.RemoveAllListeners();
+            Debug.LogError("removing listeners");
             UntieBtn.onClick.AddListener(() => AssignToParent());
         } else {
             UntieBtn.onClick.RemoveAllListeners();
@@ -144,10 +145,14 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     private void AssignToParent() {
         Action<ActionObject> action = AssignToParent;
-        GameManager.Instance.RequestActionObject(action);
+        GameManager.Instance.RequestActionObject(action, "Select new parent (action object)");
     }
 
-    private void AssignToParent(ActionObject actionObject) {
+    private async void AssignToParent(ActionObject actionObject) {
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, actionObject.Data.Id);
+        if (result) {
+            //
+        }
     }
 
 

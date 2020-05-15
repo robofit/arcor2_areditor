@@ -225,7 +225,7 @@ namespace Base {
             return editorState;
         }
 
-        public void RequestActionObject(Action<ActionObject> callback) {
+        public void RequestActionObject(Action<ActionObject> callback, string message) {
             SetEditorState(EditorStateEnum.SelectingActionObject);
             ActionObjectCallback = callback;
         }

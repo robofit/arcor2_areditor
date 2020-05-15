@@ -268,7 +268,6 @@ namespace Base {
 
         public void ShowMenu(bool enableBackButton) {
             actionPointMenu.CurrentActionPoint = this;
-            actionPointMenu.UpdateMenu();
             actionPointMenu.EnableBackButton(enableBackButton);
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
         }
@@ -358,8 +357,13 @@ namespace Base {
             }
 
 
-            if (Parent != null)
-                ConnectionToParent.UpdateLine();
+            if (Parent != null) {
+
+                if (ConnectionToParent != null)
+                    ConnectionToParent.UpdateLine();
+                else
+                    SetConnectionToActionObject(Parent);
+            }
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
                 actionPointMenu.UpdateMenu();
