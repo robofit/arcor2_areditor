@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
+using UnityEngine.XR.ARFoundation;
 
 namespace Base {
 
@@ -115,6 +116,13 @@ namespace Base {
 
         private string reopenProjectId = null;
 
+        //#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+
+        [SerializeField]
+        private ARSession ARSession;
+        
+        //#endif
+
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
 
@@ -194,6 +202,10 @@ namespace Base {
         }
 
         private void Start() {
+
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             VersionInfo.text = EditorVersion;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
@@ -990,6 +1002,9 @@ namespace Base {
         }
 
         public async Task OpenMainScreen(bool updateResources = true) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             Scene.SetActive(false);
             if (updateResources) {
                 await LoadScenes();
@@ -1003,6 +1018,9 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             EditorInfo.text = "Scene: " + SceneManager.Instance.Scene.Name;
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
@@ -1011,6 +1029,9 @@ namespace Base {
         }
 
         public void OpenProjectEditor() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             EditorInfo.text = "Project: " + Base.ProjectManager.Instance.Project.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
@@ -1019,6 +1040,9 @@ namespace Base {
         }
 
         public async void OpenPackageRunningScreen() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             try {
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
@@ -1045,6 +1069,9 @@ namespace Base {
 
 
         public void OpenDisconnectedScreen() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";

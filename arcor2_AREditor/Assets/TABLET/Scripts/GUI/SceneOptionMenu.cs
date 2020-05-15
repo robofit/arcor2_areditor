@@ -83,17 +83,22 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
 
-    public void ChangeImage() {
-        Sprite sprite = ImageHelper.LoadSpriteAndSaveToDb(out string filename);
-        if (sprite != null) {
-            PlayerPrefsHelper.SaveString(sceneTile.SceneId + "/image", filename);
-            sceneTile.TopImage.sprite = sprite;
-        }   
+    public async void ChangeImage() {
+        GameManager.Instance.ShowLoadingScreen();
+        Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        if (image != null) {
+            PlayerPrefsHelper.SaveString(sceneTile.SceneId + "/image", image.Item2);
+            sceneTile.TopImage.sprite = image.Item1;
+        }
+        Close();
+        GameManager.Instance.HideLoadingScreen();
         /*NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
         {
            Notifications.Instance.ShowNotification("Image path: ", path);
             
-        }, "Select a PNG image", "image/png");*/
+        }, "Select a PNG image", "image/png");
+        */
+
     }
 
    

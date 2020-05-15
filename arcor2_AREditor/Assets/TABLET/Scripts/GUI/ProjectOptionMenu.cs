@@ -70,12 +70,15 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
 
-    public void ChangeImage() {
-        Sprite sprite = ImageHelper.LoadSpriteAndSaveToDb(out string filename);
-        if (sprite != null) {
-            PlayerPrefsHelper.SaveString(projectTile.ProjectId + "/image", filename);
-            projectTile.TopImage.sprite = sprite;
+    public async void ChangeImage() {
+        Base.GameManager.Instance.ShowLoadingScreen();
+        System.Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        if (image != null) {
+            PlayerPrefsHelper.SaveString(projectTile.ProjectId + "/image", image.Item2);
+            projectTile.TopImage.sprite = image.Item1;
         }
+        Close();
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
 

@@ -39,12 +39,15 @@ public class PackageOptionMenu : TileOptionMenu {
         GameManager.Instance.HideLoadingScreen();
     }
 
-    public void ChangeImage() {
-        Sprite sprite = ImageHelper.LoadSpriteAndSaveToDb(out string filename);
-        if (sprite != null) {
-            PlayerPrefsHelper.SaveString(packageTile.PackageId + "/image", filename);
-            packageTile.TopImage.sprite = sprite;
+    public async void ChangeImage() {
+        GameManager.Instance.ShowLoadingScreen();
+        System.Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        if (image != null) {
+            PlayerPrefsHelper.SaveString(packageTile.PackageId + "/image", image.Item2);
+            packageTile.TopImage.sprite = image.Item1;
         }
+        Close();
+        GameManager.Instance.HideLoadingScreen();
     }
 
 
