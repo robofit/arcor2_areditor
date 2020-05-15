@@ -247,18 +247,21 @@ namespace Base {
 
             return actionObject;
         }
+        public static string ToUnderscoreCase(string str) {
+            return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+        }
 
         public string GetFreeAOName(string ioType) {
             int i = 1;
             bool hasFreeName;
-            string freeName = ioType;
+            string freeName = ToUnderscoreCase(ioType);
             do {
                 hasFreeName = true;
                 if (ActionObjectsContainName(freeName)) {
                     hasFreeName = false;
                 }
                 if (!hasFreeName)
-                    freeName = ioType + i++.ToString();
+                    freeName = ToUnderscoreCase(ioType) + "_" + i++.ToString();
             } while (!hasFreeName);
 
             return freeName;
@@ -439,7 +442,7 @@ namespace Base {
 
         public bool ActionObjectsContainName(string name) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                if (actionObject.GetName() == name) {
+                if (actionObject.Data.Name == name) {
                     return true;
                 }
             }

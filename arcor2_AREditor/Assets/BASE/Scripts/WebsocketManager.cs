@@ -787,15 +787,17 @@ namespace Base {
             if (response == null)
                 throw new RequestFailedException("Failed to load packages");
             return response.Data;
-            return new List<IO.Swagger.Model.PackageSummary>();
         }
 
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
+        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name);
             IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
+            IO.Swagger.Model.AddObjectToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            }
         }
 
         public async Task AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {

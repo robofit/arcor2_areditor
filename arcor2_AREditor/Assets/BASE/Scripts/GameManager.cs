@@ -342,9 +342,16 @@ namespace Base {
         /// <param name="type"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string type, string name) {
-            IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-            return await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+        public async Task<bool> AddObjectToScene(string type, string name) {
+            try {
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+                await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to add object to scene", ex.Message);
+                return false;
+            }
+            return true;
         }
 
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
