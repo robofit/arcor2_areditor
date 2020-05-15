@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using IO.Swagger.Model;
+using UnityEngine.XR.ARFoundation;
 
 namespace Base {
 
@@ -73,6 +74,9 @@ namespace Base {
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
+        public event StringEventHandler OnActionExecution;
+        public event EventHandler OnActionExecutionFinished;
+        public event EventHandler OnActionExecutionCanceled;
 
 
         private GameStateEnum gameState;
@@ -81,7 +85,6 @@ namespace Base {
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
-        private string loadedScene;
         private IO.Swagger.Model.Project newProject;
         private IO.Swagger.Model.Scene newScene;
         private PackageState newPackageState;
@@ -90,11 +93,11 @@ namespace Base {
         private bool openScene = false;
         private bool openPackage = false;
 
-        private bool sceneReady;
+        public string ExecutingAction = null;
 
         public const string ApiVersion = "0.7.0";
 
-        public readonly string EditorVersion = "0.6.0-beta.2";
+        public readonly string EditorVersion = "0.6.0-beta.3";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -112,6 +115,13 @@ namespace Base {
         public PackageInfo PackageInfo;
 
         private string reopenProjectId = null;
+
+        //#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+
+        [SerializeField]
+        private ARSession ARSession;
+        
+        //#endif
 
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
@@ -187,13 +197,15 @@ namespace Base {
 
 
         private void Awake() {
-            loadedScene = "";
-            sceneReady = false;
             ConnectionStatus = ConnectionStatusEnum.Disconnected;
             OpenDisconnectedScreen();
         }
 
         private void Start() {
+
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             VersionInfo.text = EditorVersion;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
@@ -251,7 +263,6 @@ namespace Base {
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
                     Scenes = new List<IO.Swagger.Model.IdDesc>();
 
-                    loadedScene = "";
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
                     Scene.SetActive(false);
@@ -379,7 +390,26 @@ namespace Base {
                     res = "Result: " + data.Result;
                 Notifications.Instance.ShowNotification("Action execution finished sucessfully", res);
             }
-                
+            ExecutingAction = null;
+            OnActionExecutionFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal void HandleActionCanceled() {
+            try {
+                Action action = ProjectManager.Instance.GetAction(ExecutingAction);                
+                Notifications.Instance.ShowNotification("Action execution canceled", "Action " + action.Data.Name + " was cancelled");
+            } catch (ItemNotFoundException ex) {
+                Notifications.Instance.ShowNotification("Action execution canceled", "Unknown action was cancelled");
+            } finally {
+                ExecutingAction = null;
+                OnActionExecutionCanceled?.Invoke(this, EventArgs.Empty);
+            }           
+            
+        }
+
+        internal void HandleActionExecution(string actionId) {
+            ExecutingAction = actionId;
+            OnActionExecution?.Invoke(this, new StringEventArgs(ExecutingAction));
         }
 
         
@@ -855,7 +885,6 @@ namespace Base {
 
         public async Task<bool> CloseScene(bool force) {
             ShowLoadingScreen();
-            loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseScene(force);
             if (success) {
                 SceneManager.Instance.Scene = null;
@@ -867,7 +896,6 @@ namespace Base {
 
         public async Task<bool> CloseProject(bool force) {
             ShowLoadingScreen();
-            loadedScene = "";
             bool success = await WebsocketManager.Instance.CloseProject(force);
             if (success) {
                 OnCloseProject?.Invoke(this, EventArgs.Empty);
@@ -899,6 +927,16 @@ namespace Base {
                 await WebsocketManager.Instance.ExecuteAction(actionId);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> CancelExecution() {
+            try {
+                await WebsocketManager.Instance.CancelExecution();
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to cancel action", ex.Message);
                 return false;
             }
             return true;
@@ -964,6 +1002,9 @@ namespace Base {
         }
 
         public async Task OpenMainScreen(bool updateResources = true) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             Scene.SetActive(false);
             if (updateResources) {
                 await LoadScenes();
@@ -977,6 +1018,9 @@ namespace Base {
         }
 
         public void OpenSceneEditor() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             EditorInfo.text = "Scene: " + SceneManager.Instance.Scene.Name;
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
@@ -985,6 +1029,9 @@ namespace Base {
         }
 
         public void OpenProjectEditor() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             EditorInfo.text = "Project: " + Base.ProjectManager.Instance.Project.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
@@ -993,6 +1040,9 @@ namespace Base {
         }
 
         public async void OpenPackageRunningScreen() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = true;
+#endif
             try {
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
@@ -1019,6 +1069,9 @@ namespace Base {
 
 
         public void OpenDisconnectedScreen() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            ARSession.enabled = false;
+#endif
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";

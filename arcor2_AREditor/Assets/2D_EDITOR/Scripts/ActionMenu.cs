@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
-
+using Base;
+using Michsky.UI.ModernUIPack;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
@@ -14,12 +15,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    public Button ExecuteActionBtn, SaveParametersBtn;
+    public Button ExecuteActionBtn, SaveParametersBtn, StopActionBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
     [SerializeField]
     private InputDialog inputDialog;
+    private TooltipContent StopActionBtnTooltip;
 
 
     public VerticalLayoutGroup DynamicContentLayout;
@@ -32,12 +34,39 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         Debug.Assert(ActionName != null);
         Debug.Assert(ActionType != null);
         Debug.Assert(ExecuteActionBtn != null);
+        Debug.Assert(StopActionBtn != null);
         Debug.Assert(AddNewActionDialog != null);
         Debug.Assert(ConfirmationDialog != null);
         Debug.Assert(inputDialog != null);
         Debug.Assert(DynamicContentLayout != null);
         Debug.Assert(CanvasRoot != null);
         Debug.Assert(SaveParametersBtn != null);
+
+        GameManager.Instance.OnActionExecution += OnActionExecution;
+        GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinished;
+        GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinished;
+
+        StopActionBtnTooltip = StopActionBtn.gameObject.GetComponent<TooltipContent>();
+        Debug.Assert(StopActionBtnTooltip != null);
+    }
+
+
+    private void OnActionExecutionFinished(object sender, EventArgs e) {
+        ExecuteActionBtn.gameObject.SetActive(true);
+        StopActionBtn.gameObject.SetActive(false);
+    }
+
+    private void OnActionExecution(object sender, StringEventArgs args) {
+        ExecuteActionBtn.gameObject.SetActive(false);
+        StopActionBtn.gameObject.SetActive(true);
+        Base.Action action = ProjectManager.Instance.GetAction(args.Data);
+        if (action.Metadata.Meta.Cancellable) {
+            StopActionBtn.interactable = true;
+            StopActionBtnTooltip.description = "Cancel action.";
+        } else {
+            StopActionBtn.interactable = false;
+            StopActionBtnTooltip.description = "This action cannot be cancelled.";
+        }
     }
 
     public async void UpdateMenu() {
@@ -49,10 +78,10 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         }
         SetHeader(CurrentAction.Data.Name);
         ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
-        List<Base.ActionParameterMetadata> actionParametersMetadata = new List<Base.ActionParameterMetadata>();
+        /*List<Base.ActionParameterMetadata> actionParametersMetadata = new List<Base.ActionParameterMetadata>();
         foreach (IO.Swagger.Model.ActionParameterMeta meta in CurrentAction.Metadata.Parameters) {
             actionParametersMetadata.Add(new Base.ActionParameterMetadata(meta));
-        }
+        }*/
         actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
         parametersChanged = false;
         SaveParametersBtn.interactable = false;
@@ -64,7 +93,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             return;
         if (await Base.GameManager.Instance.RemoveAction(CurrentAction.Data.Id)) {
             MenuManager.Instance.PuckMenu.Close();
-        }        
+        }
     }
 
     public void ShowRenameDialog() {
@@ -99,15 +128,18 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 ExecuteActionBtn.interactable = false;
             }
         }
-        
+
     }
 
     public async void ExecuteAction() {
         ExecuteActionBtn.interactable = false;
-        if (await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id)) {
-
+        if (!await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id) && GameManager.Instance.ExecutingAction == null) {
         }
-        ExecuteActionBtn.interactable = true;     
+        ExecuteActionBtn.interactable = true;
+    }
+
+    public void StopExecution() {
+        _ = GameManager.Instance.CancelExecution();
     }
 
 
@@ -134,7 +166,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 Base.Notifications.Instance.ShowNotification("Parameters saved", "");
                 SaveParametersBtn.interactable = false;
                 parametersChanged = false;
-                ExecuteActionBtn.interactable = true;
+                if (GameManager.Instance.ExecutingAction == null)
+                    ExecuteActionBtn.interactable = true;
             }                
         }
     }

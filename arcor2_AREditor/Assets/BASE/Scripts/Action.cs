@@ -301,33 +301,37 @@ namespace Base {
         }
 
         public static GameObject InitializeIntegerParameter(ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
-            GameObject input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
+            LabeledInput input = Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
             int? selectedValue = null;
             if (value != null) {
                 selectedValue = value;
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
-            input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
-            input.GetComponent<LabeledInput>().Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            input.SetType(actionParameterMetadata.Type);
+            input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
+            input.Input.onEndEdit.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, int.Parse(newValue)));
-            return input;
+            input.Input.onEndEdit.AddListener((string newValue)
+                => ValidateIntegerParameter(input, actionParameterMetadata, int.Parse(newValue)));
+            return input.gameObject;
         }
 
         public static GameObject InitializeDoubleParameter(ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, double? value) {
-            GameObject input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
-            input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
+            LabeledInput input = Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
+            input.SetType(actionParameterMetadata.Type);
             double? selectedValue = null;
             if (value != null) {
                 selectedValue = value;
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<double>();
             }
-            input.GetComponent<LabeledInput>().Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
+            input.Input.onEndEdit.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue)));
-            return input;
+            input.Input.onEndEdit.AddListener((string newValue)
+                => ValidateDoubleParameter(input, actionParameterMetadata, ParseDouble(newValue)));
+            return input.gameObject;
         }
 
         public static double ParseDouble(string value) {
@@ -556,6 +560,43 @@ namespace Base {
 
         public static string BuildActionType(string actionProviderId, string actionType) {
             return actionProviderId + "/" + actionType;
+        }
+
+        private static void ValidateIntegerParameter(LabeledInput input, ActionParameterMetadata actionMetadata, int newValue) {
+            Debug.LogError(actionMetadata.ParameterExtra);
+            if (actionMetadata.ParameterExtra == null)
+                return;
+            ARServer.Models.IntParameterExtra intParameterExtra = (ARServer.Models.IntParameterExtra) actionMetadata.ParameterExtra;
+            bool valid = true;
+            if (newValue < intParameterExtra.Minimum) {
+                input.Input.text = intParameterExtra.Minimum.ToString();
+                valid = false;
+            } else if (newValue > intParameterExtra.Maximum) {
+                input.Input.text = intParameterExtra.Maximum.ToString();
+                valid = false;
+            }
+            if (!valid) {
+                Notifications.Instance.ShowNotification("Not valid value", "Parameter " + actionMetadata.Name +
+                    " has to be between " + intParameterExtra.Minimum.ToString() + " and " + intParameterExtra.Maximum);
+            }
+        }
+
+        private static void ValidateDoubleParameter(LabeledInput input, ActionParameterMetadata actionMetadata, double newValue) {
+            if (actionMetadata.ParameterExtra == null)
+                return;
+            ARServer.Models.DoubleParameterExtra doubleParameterExtra = (ARServer.Models.DoubleParameterExtra) actionMetadata.ParameterExtra;
+            bool valid = true;
+            if (newValue < doubleParameterExtra.Minimum) {
+                input.Input.text = doubleParameterExtra.Minimum.ToString();
+                valid = false;
+            } else if (newValue > doubleParameterExtra.Maximum) {
+                input.Input.text = doubleParameterExtra.Maximum.ToString();
+                valid = false;
+            }
+            if (!valid) {
+                Notifications.Instance.ShowNotification("Not valid value", "Parameter " + actionMetadata.Name +
+                    " has to be between " + doubleParameterExtra.Minimum.ToString() + " and " + doubleParameterExtra.Maximum);
+            }
         }
     }
 

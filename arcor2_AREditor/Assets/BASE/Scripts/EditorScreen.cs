@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Base;
-using TMPro.EditorUtilities;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class EditorScreen : MonoBehaviour {

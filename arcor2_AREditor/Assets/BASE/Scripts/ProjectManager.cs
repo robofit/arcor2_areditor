@@ -406,7 +406,7 @@ namespace Base {
         #region ACTIONS
 
         public Action SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
-            Debug.Assert(GetActionByName(action_name) == null);
+            Debug.Assert(!ActionsContainsName(action_name));
             ActionMetadata actionMetadata;
 
             try {
@@ -562,7 +562,7 @@ namespace Base {
             }
 
             //Debug.LogError("Action " + Id + " not found!");
-            return null;
+            throw new ItemNotFoundException("Action with ID " + id + " not found");
         }
 
         /// <summary>
@@ -580,7 +580,7 @@ namespace Base {
             }
 
             //Debug.LogError("Action " + id + " not found!");
-            return null;
+            throw new ItemNotFoundException("Action with name " + name + " not found");
         }
 
         /// <summary>

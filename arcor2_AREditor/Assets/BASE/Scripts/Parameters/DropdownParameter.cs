@@ -103,6 +103,8 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         }
 
         SetLoading(false);
+        if (Dropdown == null)
+            return; // e.g. when object is destroyed before init completed
         if (Dropdown.dropdownItems.Count > 0) {
             Dropdown.SetupDropdown();
         } else {

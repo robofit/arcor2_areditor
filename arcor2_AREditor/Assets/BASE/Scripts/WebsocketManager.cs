@@ -258,6 +258,12 @@ namespace Base {
                     case "ActionResult":
                         HandleActionResult(data);
                         break;
+                    case "ActionCancelled":
+                        HandleActionCanceled(data);
+                        break;
+                    case "ActionExecution":
+                        HandleActionExecution(data);
+                        break;
                     case "RobotEef":
                         HandleRobotEef(data);
                         break;
@@ -383,6 +389,15 @@ namespace Base {
         private void HandleActionResult(string data) {
             IO.Swagger.Model.ActionResultEvent actionResult = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionResultEvent>(data);
             GameManager.Instance.HandleActionResult(actionResult.Data);
+        }
+
+        private void HandleActionCanceled(string data) {
+            GameManager.Instance.HandleActionCanceled();
+        }
+
+        private void HandleActionExecution(string data) {
+            IO.Swagger.Model.ActionExecutionEvent actionExecution = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionExecutionEvent>(data);
+            GameManager.Instance.HandleActionExecution(actionExecution.Data.ActionId);
         }
 
         private void HandleProjectException(string data) {
@@ -854,6 +869,16 @@ namespace Base {
             IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task CancelExecution() {
+            int r_id = Interlocked.Increment(ref requestID);
+
+            IO.Swagger.Model.CancelActionRequest request = new IO.Swagger.Model.CancelActionRequest(id: r_id, request: "CancelAction");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CancelActionResponse response = await WaitForResult<IO.Swagger.Model.CancelActionResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
