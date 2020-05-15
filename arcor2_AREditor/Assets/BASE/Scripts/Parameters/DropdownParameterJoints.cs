@@ -9,7 +9,10 @@ public class DropdownParameterJoints : DropdownParameter
 {
 
     public Sprite ValidIcon, InvalidIcon;
-    public void PutData(List<IO.Swagger.Model.ProjectRobotJoints> robotJoints, string selectedItem, UnityAction callback) {
+    private string apName;
+
+    public void PutData(List<IO.Swagger.Model.ProjectRobotJoints> robotJoints, string selectedItem, UnityAction callback, string apName = null) {
+        this.apName = apName;
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (IO.Swagger.Model.ProjectRobotJoints joints in robotJoints) {
             CustomDropdown.Item item = new CustomDropdown.Item {
@@ -32,7 +35,9 @@ public class DropdownParameterJoints : DropdownParameter
         if (value == null)
             return null;
 
-        Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(value.Split('.').First());
+        if (string.IsNullOrEmpty(apName))
+            apName = value.Split('.').First();
+        Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(apName);
         return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
     }
 }

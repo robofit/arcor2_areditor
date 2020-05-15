@@ -2,24 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using Base;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
-    public string RobotId, EndEffectorId, OrientationId, OrientationName, ActionPointId, ActionPointName;
+    public string RobotName, EndEffectorId, OrientationId, OrientationName, ActionPointId, ActionPointName;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
 
-    public void Init() {
-        SettingsText.text = "Robot: " + RobotId +
+    private string RobotId;
+
+    public bool Init() {
+        try {
+            RobotId = ActionsManager.Instance.RobotNameToId(RobotName);
+        } catch (KeyNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
+            return false;
+        }
+
+        SettingsText.text = "Robot: " + RobotName +
             "\nEnd effector: " + EndEffectorId +
             "\nOrientation: " + OrientationName +
             "\nAction point: " + ActionPointName +
             "\nUpdate position: " + UpdatePosition.ToString();
-
+        return true;
     }
 
     public void UpdatePositionOrientation() {
+
         try {
             if (EndEffectorId == "") {
                 Base.GameManager.Instance.UpdateActionPointJoints(RobotId, OrientationId);
