@@ -14,7 +14,9 @@ namespace Base {
        // string == IO.Swagger.Model.Scene Data.Id
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public GameObject ActionObjectsSpawn, ActionPointsOrigin;
+        public List<Base.Robot> Robots = new List<Base.Robot>();
+
+        public GameObject ActionObjectsSpawn, ActionPointsOrigin, RobotsOrigin;
 
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
         public GameObject RobotPrefab, TesterPrefab, BoxPrefab, WorkspacePrefab, UnknownPrefab;
@@ -818,6 +820,13 @@ namespace Base {
 
         #endregion
 
+        #region ROBOTS
+
+        public void SpawnRobot(string robotUrl) {            
+            Robots = ImportURDF.Instance.DownloadAndBuildURDF(robotUrl);
+        }
+
+        #endregion
 
         //// Deactivates or activates scene and all objects in scene to ignore raycasting (clicking)
         //private void ActivateSceneForEditing(bool activate, string tagToActivate) {

@@ -165,7 +165,7 @@ namespace Base {
             OnProjectStateChanged += ProjectStateChanged;
             OnLoadProject += ProjectLoaded;
             OnLoadScene += SceneLoaded;
-            EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order
+            EndLoading(); // GameManager is executed after all other scripts, set in Edit | Project Settings | Script Execution Order            
         }
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
@@ -185,6 +185,10 @@ namespace Base {
                     StartLoading();
                     Scene.Instance.gameObject.SetActive(true);
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
+
+                    //TODO Spawn robot somewhere else
+                    Scene.Instance.SpawnRobot("C:/Users/bambu/Documents/VUT/ARCOR2_KINALI/URDF_EXAMPLES/KINALI/AUBO-i5_downloaded.zip");
+
                     await UpdateActionObjects();
                     await UpdateServices();
                     try {
