@@ -6,8 +6,8 @@ using System;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
-    public TMPro.TMP_Text ScenesBtn, ProjectsBtn;
-    public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, ScenesDynamicContent, ProjectsDynamicContent;
+    public TMPro.TMP_Text ScenesBtn, ProjectsBtn, PackagesBtn;
+    public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewSceneDialog NewSceneDialog;
     public NewProjectDialog NewProjectDialog;
 
@@ -18,13 +18,17 @@ public class MainScreen : Base.Singleton<MainScreen>
     private ProjectOptionMenu ProjectOptionMenu;
 
     [SerializeField]
-    private CanvasGroup projectsList, scenesList;
+    private PackageOptionMenu PackageOptionMenu;
+
+    [SerializeField]
+    private CanvasGroup projectsList, scenesList, packageList;
 
     [SerializeField]
     private CanvasGroup CanvasGroup;
 
     private List<SceneTile> sceneTiles = new List<SceneTile>();
     private List<ProjectTile> projectTiles = new List<ProjectTile>();
+    private List<PackageTile> packageTiles = new List<PackageTile>();
 
     //filters
     private bool starredOnly = false;
@@ -44,16 +48,20 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
+        Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
+        Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
         SwitchToScenes();
     }
 
     public void SwitchToProjects() {
         ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        PackagesBtn.color = new Color(0.687f, 0.687f, 0.687f);
         ProjectsBtn.color = new Color(0, 0, 0);
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
+        packageList.gameObject.SetActive(false);
         FilterProjectsBySceneId(null);
         FilterLists();
     }
@@ -61,9 +69,21 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void SwitchToScenes() {
         ScenesBtn.color = new Color(0, 0, 0);
         ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        PackagesBtn.color = new Color(0.687f, 0.687f, 0.687f);
         projectsList.gameObject.SetActive(false);
+        packageList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
         FilterScenesById(null);
+        FilterLists();
+    }
+
+    public void SwitchToPackages() {
+        PackagesBtn.color = new Color(0, 0, 0);
+        ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        projectsList.gameObject.SetActive(false);
+        scenesList.gameObject.SetActive(false);
+        packageList.gameObject.SetActive(true);
         FilterLists();
     }
 
@@ -72,6 +92,9 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterTile(tile);
         }
         foreach (ProjectTile tile in projectTiles) {
+            FilterTile(tile);
+        }
+        foreach (PackageTile tile in packageTiles) {
             FilterTile(tile);
         }
     }
@@ -151,6 +174,24 @@ public class MainScreen : Base.Singleton<MainScreen>
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         button.onClick.AddListener(() => NewSceneDialog.WindowManager.OpenWindow());
+    }
+
+    public void UpdatePackages(object sender, EventArgs eventArgs) {
+        packageTiles.Clear();
+        foreach (Transform t in PackagesDynamicContent.transform) {
+            Destroy(t.gameObject);
+        }
+        foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
+            PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
+            bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
+            tile.InitTile(package.Name,
+                          () => Base.GameManager.Instance.RunPackage(package.Id),
+                          () => PackageOptionMenu.Open(tile),
+                          starred,
+                          package.Id);
+            packageTiles.Add(tile);
+        }
+        
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {

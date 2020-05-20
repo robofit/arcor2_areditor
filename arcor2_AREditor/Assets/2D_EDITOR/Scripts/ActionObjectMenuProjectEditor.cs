@@ -17,25 +17,9 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
         IO.Swagger.Model.Position offset = new IO.Swagger.Model.Position();
-        if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
-            switch (CurrentObject.ActionObjectMetadata.ObjectModel.Type) {
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
-                    offset.Z = CurrentObject.ActionObjectMetadata.ObjectModel.Box.SizeY / 2m + 0.1m;
-                    break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
-                    offset.Z = CurrentObject.ActionObjectMetadata.ObjectModel.Cylinder.Height / 2m + 0.1m;
-                    break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Mesh:
-                    //TODO: how to handle meshes? do i know dimensions?
-                    break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
-                    offset.Z = CurrentObject.ActionObjectMetadata.ObjectModel.Sphere.Radius / 2m + 0.1m;
-                    break;
-                default:
-                    offset.Z = 0.15m;
-                    break;
-            }
-        }
+        Vector3 aboveModel = CurrentObject.transform.position;
+        aboveModel.y += CurrentObject.Collider.bounds.extents.y + 0.1f;
+        offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentObject.transform.InverseTransformPoint(aboveModel)));
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
         //Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
         if (result)
@@ -47,7 +31,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         inputDialog.Open("Create action point",
                          "Type action point name",
                          "Name",
-                         Scene.Instance.GetFreeAPName(CurrentObject.Data.Name),
+                         ProjectManager.Instance.GetFreeAPName(CurrentObject.Data.Name),
                          () => CreateNewAP(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -86,18 +70,18 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     }
 
     public void ShowNextAO() {
-        ActionObject nextAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
+        ActionObject nextAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(nextAO);
     }
 
     public void ShowPreviousAO() {
-        ActionObject previousAO = Scene.Instance.GetNextActionObject(CurrentObject.Data.Id);
+        ActionObject previousAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(previousAO);
     }
 
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.ShowMenu();
-        Scene.Instance.SetSelectedObject(actionObject.gameObject);
+        SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
     }
 
@@ -105,7 +89,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
         actionPoint.ShowMenu(true);
         
-        Scene.Instance.SetSelectedObject(actionPoint.gameObject);
+        SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         actionPoint.SendMessage("Select");
     }
 }

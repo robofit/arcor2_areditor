@@ -544,7 +544,6 @@ GameObject:
   - component: {fileID: 7813841757805299985}
   - component: {fileID: 7813841757805299990}
   - component: {fileID: 7813841757805299991}
-  - component: {fileID: 7813841757805299988}
   m_Layer: 5
   m_Name: Notification
   m_TagString: Untagged
@@ -627,27 +626,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b4bbdcf873a4164eabf85f0d7820717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d5a1d7353a8ad094d973bc8d72f496e1, type: 3}
   title: Notification Title
   description: Notification description
+  notificationAnimator: {fileID: 0}
+  iconObj: {fileID: 7813841757425455896}
+  titleObj: {fileID: 7813841756978281444}
+  descriptionObj: {fileID: 7813841756834291697}
   enableTimer: 1
-  timer: 3
+  timer: 5
   useCustomContent: 0
+  useStacking: 0
   notificationStyle: 0
---- !u!114 &7813841757805299988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7813841757805299989}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb3339e2f5f66dd42b96285c9d99c82f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UIManagerAsset: {fileID: 11400000, guid: 2a619a9609984be49b53b928dd94e61b, type: 2}
-  background: {fileID: 7813841757254010251}
-  icon: {fileID: 7813841757425455896}
-  title: {fileID: 7813841756978281444}
-  description: {fileID: 7813841756834291697}

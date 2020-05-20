@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
 using Base;
+using System;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -29,6 +30,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private ActionPointAimingMenu ActionPointAimingMenu;
 
+    private TooltipContent UntieBtnTooltip;
+
+    private void Start() {
+        UntieBtnTooltip = UntieBtn.gameObject.GetComponent<TooltipContent>();
+    }
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
@@ -39,8 +45,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         CurrentActionPoint.UpdateId(new_id);
     }
 
-    public void OpenActoinPointAimingMenu() {
-        ActionPointAimingMenu.ShowMenu(CurrentActionPoint);
+    public void OpenActoinPointAimingMenu(string preselectedOrientation = null) {
+        ActionPointAimingMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
     }
 
     public void ShowRenameDialog() {
@@ -115,10 +121,16 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         
         UpdateLockedBtns(CurrentActionPoint.Locked);
-        if (CurrentActionPoint.Parent == null)
-            UntieBtn.interactable = false;
-        else
-            UntieBtn.interactable = true;
+        if (CurrentActionPoint.Parent == null) {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => AssignToParent());
+            UntieBtnTooltip.description = "Assign to parent";
+        } else {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => ShowUntieActionPointDialog());
+            UntieBtnTooltip.description = "Untie from parent";
+        }
+            
         
     }
 
@@ -137,7 +149,20 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
 
 
+    private void AssignToParent() {
+        Action<object> action = AssignToParent;
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)");
+    }
 
+    private async void AssignToParent(object selectedObject) {
+        ActionObject actionObject = (ActionObject) selectedObject;
+        if (actionObject == null)
+            return;
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, actionObject.Data.Id);
+        if (result) {
+            //
+        }
+    }
 
 
     public async void DeleteAP() {
@@ -197,7 +222,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void BackToParentMenu() {
         CurrentActionPoint.Parent.ShowMenu();
-        Base.Scene.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
+        Base.SceneManager.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
         CurrentActionPoint.Parent.GetGameObject().SendMessage("Select");
     }
 }

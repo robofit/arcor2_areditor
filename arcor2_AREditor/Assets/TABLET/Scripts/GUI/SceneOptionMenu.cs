@@ -1,10 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using DanielLochner.Assets.SimpleSideMenu;
+using System.IO;
+using System;
+using Base;
+using UnityEngine.UI;
 
 public class SceneOptionMenu : TileOptionMenu {
-    
+
     private SceneTile sceneTile;
     [SerializeField]
     private InputDialog inputDialog;
@@ -23,7 +24,7 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public override void SetStar(bool starred) {
-        PlayerPrefsHelper.SaveBool("scene/" + GetLabel() + "/starred", starred);
+        PlayerPrefsHelper.SaveBool("scene/" + sceneTile.SceneId + "/starred", starred);
         SetStar(sceneTile, starred);
         Close();
     }
@@ -38,6 +39,7 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async void RenameScene(string newUserId) {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId);
         if (result) {
             inputDialog.Close();
@@ -45,6 +47,7 @@ public class SceneOptionMenu : TileOptionMenu {
             SetLabel(newUserId);
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
 
@@ -64,16 +67,40 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async void RemoveScene() {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RemoveScene(sceneTile.SceneId);
         if (result) {
             confirmationDialog.Close();
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRelatedProjects() {
         MainScreen.Instance.ShowRelatedProjects(sceneTile.SceneId);
         Close();
     }
+
+
+    public async void ChangeImage() {
+        GameManager.Instance.ShowLoadingScreen();
+        Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        if (image != null) {
+            PlayerPrefsHelper.SaveString(sceneTile.SceneId + "/image", image.Item2);
+            sceneTile.TopImage.sprite = image.Item1;
+        }
+        Close();
+        GameManager.Instance.HideLoadingScreen();
+        /*NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
+        {
+           Notifications.Instance.ShowNotification("Image path: ", path);
+            
+        }, "Select a PNG image", "image/png");
+        */
+
+    }
+
+   
+
 
 }

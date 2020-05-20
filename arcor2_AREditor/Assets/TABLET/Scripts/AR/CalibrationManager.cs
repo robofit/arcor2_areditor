@@ -141,18 +141,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void AttachScene(GameObject worldAnchor, bool initLocalAnchor = false) {
         if (initLocalAnchor) {
             WorldAnchorLocal = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
-            Scene.Instance.transform.parent = WorldAnchorLocal.gameObject.transform;
+            GameManager.Instance.Scene.transform.parent = WorldAnchorLocal.gameObject.transform;
         } else if(worldAnchor != null) {
-            Scene.Instance.transform.parent = worldAnchor.transform;
+            GameManager.Instance.Scene.transform.parent = worldAnchor.transform;
         }
 
-        Scene.Instance.transform.localPosition = Vector3.zero;
-        Scene.Instance.transform.localScale = new Vector3(1f, 1f, 1f);
-        Scene.Instance.transform.localEulerAngles = Vector3.zero;
+        GameManager.Instance.Scene.transform.localPosition = Vector3.zero;
+        GameManager.Instance.Scene.transform.localScale = new Vector3(1f, 1f, 1f);
+        GameManager.Instance.Scene.transform.localEulerAngles = Vector3.zero;
     }
 
     private void DetachScene() {
-        Scene.Instance.transform.parent = null;
+        GameManager.Instance.Scene.transform.parent = null;
     }
 
     private bool LoadCloudAnchor() {

@@ -1,13 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
+using Base;
 
 public class CreateAnchor : Base.Clickable {
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
         CalibrationManager.Instance.CreateAnchor(transform);
     }
 

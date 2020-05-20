@@ -5,8 +5,11 @@ using Michsky.UI.ModernUIPack;
 public class CloseProjectDialog : Dialog
 {
 
-    public void CloseProject() {
-        Base.GameManager.Instance.CloseProject(true);
+    public async void CloseProject() {
+        bool result = await Base.GameManager.Instance.CloseProject(true);
+        if (result) {
+            Base.GameManager.Instance.LoadingScreen.SetActive(true);
+        }
         WindowManager.CloseWindow();
     }
 }

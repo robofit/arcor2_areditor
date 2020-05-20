@@ -36,7 +36,7 @@ namespace Base {
 
             Data.Id = id;
 
-            if (!GameManager.Instance.CurrentProject.HasLogic) {
+            if (!Base.ProjectManager.Instance.Project.HasLogic) {
                 InputArrow.gameObject.SetActive(false);
                 OutputArrow.gameObject.SetActive(false);
             }
@@ -88,7 +88,7 @@ namespace Base {
                     //at the moment, each action has exactly one input and one output
                     Action refAction = null;
                     if (actionOutput != "start" && actionOutput != "end") {
-                        refAction = Scene.Instance.GetAction(actionOutput);
+                        refAction = ProjectManager.Instance.GetAction(actionOutput);
                     }
 
                     if (Output.Connection != null) {
@@ -101,7 +101,7 @@ namespace Base {
                         // Create new one
                         PuckInput input = refAction.Input;
 
-                        GameObject c = Instantiate(Scene.Instance.ConnectionPrefab);
+                        GameObject c = Instantiate(ProjectManager.Instance.ConnectionPrefab);
                         c.transform.SetParent(ConnectionManager.instance.transform);
                         Connection newConnection = c.GetComponent<Connection>();
                         // We are always connecting output to input.
@@ -114,7 +114,7 @@ namespace Base {
                         Output.Data.Default = refAction.Data.Id;
                         ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
                     } else {
-                        refAction = Scene.Instance.GetAction(Output.Data.Default);
+                        refAction = ProjectManager.Instance.GetAction(Output.Data.Default);
                         refAction.Input.InitData();
                         Output.InitData();
                     }
@@ -258,7 +258,7 @@ namespace Base {
         public static GameObject InitializePoseParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
 
-            foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
+            foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.NamedOrientation orientation in ap.GetNamedOrientations()) {                    
                     options.Add(ap.Data.Name + "." + orientation.Name);
                 }
@@ -266,7 +266,7 @@ namespace Base {
             string selectedValue = null;
             if (value != null) {
                 try {
-                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithOrientation(value);
+                    ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(value);
                     IO.Swagger.Model.NamedOrientation namedOrientation = actionPoint.GetNamedOrientation(value);
                     selectedValue = actionPoint.Data.Name + "." + namedOrientation.Name;
                 } catch (KeyNotFoundException ex) {
@@ -280,7 +280,7 @@ namespace Base {
 
         public static GameObject InitializeJointsParameter(ActionParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
             List<string> options = new List<string>();
-            foreach (Base.ActionPoint ap in Base.Scene.Instance.GetAllActionPoints()) {
+            foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, true).Values) {
                     options.Add(ap.Data.Name + "." + joints.Name);
                 }
@@ -288,7 +288,7 @@ namespace Base {
             string selectedValue = null;
             if (value != null) {
                 try {
-                    ActionPoint actionPoint = Scene.Instance.GetActionPointWithJoints(value);
+                    ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithJoints(value);
                     IO.Swagger.Model.ProjectRobotJoints joints = actionPoint.GetJoints(value);
                     selectedValue = actionPoint.Data.Name + "." + joints.Name;
                 } catch (KeyNotFoundException ex) {
@@ -301,33 +301,37 @@ namespace Base {
         }
 
         public static GameObject InitializeIntegerParameter(ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
-            GameObject input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
+            LabeledInput input = Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
             int? selectedValue = null;
             if (value != null) {
                 selectedValue = value;
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
-            input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
-            input.GetComponent<LabeledInput>().Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            input.SetType(actionParameterMetadata.Type);
+            input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
+            input.Input.onEndEdit.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, int.Parse(newValue)));
-            return input;
+            input.Input.onEndEdit.AddListener((string newValue)
+                => ValidateIntegerParameter(input, actionParameterMetadata, int.Parse(newValue)));
+            return input.gameObject;
         }
 
         public static GameObject InitializeDoubleParameter(ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, double? value) {
-            GameObject input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
-            input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
+            LabeledInput input = Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
+            input.SetType(actionParameterMetadata.Type);
             double? selectedValue = null;
             if (value != null) {
                 selectedValue = value;
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<double>();
             }
-            input.GetComponent<LabeledInput>().Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
+            input.Input.onEndEdit.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue)));
-            return input;
+            input.Input.onEndEdit.AddListener((string newValue)
+                => ValidateDoubleParameter(input, actionParameterMetadata, ParseDouble(newValue)));
+            return input.gameObject;
         }
 
         public static double ParseDouble(string value) {
@@ -556,6 +560,43 @@ namespace Base {
 
         public static string BuildActionType(string actionProviderId, string actionType) {
             return actionProviderId + "/" + actionType;
+        }
+
+        private static void ValidateIntegerParameter(LabeledInput input, ActionParameterMetadata actionMetadata, int newValue) {
+            Debug.LogError(actionMetadata.ParameterExtra);
+            if (actionMetadata.ParameterExtra == null)
+                return;
+            ARServer.Models.IntParameterExtra intParameterExtra = (ARServer.Models.IntParameterExtra) actionMetadata.ParameterExtra;
+            bool valid = true;
+            if (newValue < intParameterExtra.Minimum) {
+                input.Input.text = intParameterExtra.Minimum.ToString();
+                valid = false;
+            } else if (newValue > intParameterExtra.Maximum) {
+                input.Input.text = intParameterExtra.Maximum.ToString();
+                valid = false;
+            }
+            if (!valid) {
+                Notifications.Instance.ShowNotification("Not valid value", "Parameter " + actionMetadata.Name +
+                    " has to be between " + intParameterExtra.Minimum.ToString() + " and " + intParameterExtra.Maximum);
+            }
+        }
+
+        private static void ValidateDoubleParameter(LabeledInput input, ActionParameterMetadata actionMetadata, double newValue) {
+            if (actionMetadata.ParameterExtra == null)
+                return;
+            ARServer.Models.DoubleParameterExtra doubleParameterExtra = (ARServer.Models.DoubleParameterExtra) actionMetadata.ParameterExtra;
+            bool valid = true;
+            if (newValue < doubleParameterExtra.Minimum) {
+                input.Input.text = doubleParameterExtra.Minimum.ToString();
+                valid = false;
+            } else if (newValue > doubleParameterExtra.Maximum) {
+                input.Input.text = doubleParameterExtra.Maximum.ToString();
+                valid = false;
+            }
+            if (!valid) {
+                Notifications.Instance.ShowNotification("Not valid value", "Parameter " + actionMetadata.Name +
+                    " has to be between " + doubleParameterExtra.Minimum.ToString() + " and " + doubleParameterExtra.Maximum);
+            }
         }
     }
 

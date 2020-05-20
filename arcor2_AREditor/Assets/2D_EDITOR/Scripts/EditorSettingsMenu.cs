@@ -7,8 +7,8 @@ using Michsky.UI.ModernUIPack;
 using Base;
 using UnityEngine.EventSystems;
 
-public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility;
+public class EditorSettingsMenu : MonoBehaviour, IMenu {
+    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
@@ -19,10 +19,14 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
         Debug.Assert(APSizeSlider != null);
-        Base.GameManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
-        Base.GameManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
+        Debug.Assert(Visiblity != null);
+        Debug.Assert(Interactibility != null);
+        Debug.Assert(APOrientationsVisibility != null);
+        Debug.Assert(RobotsEEVisible != null);
+        Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
+        Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
-        Base.GameManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
+        Base.ProjectManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         Interactibility.SetValue(false);
     }
@@ -32,35 +36,54 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void UpdateMenu() {
-        APSizeSlider.value = Scene.Instance.APSize;
+        APSizeSlider.value = ProjectManager.Instance.APSize;
+        Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
+        Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
+        APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
+        RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
     }
 
     public void ShowActionObjects() {
-        Base.Scene.Instance.ShowActionObjects();
+        Base.SceneManager.Instance.ShowActionObjects();
     }
 
     public void HideActionObjects() {
-         Base.Scene.Instance.HideActionObjects();
+         Base.SceneManager.Instance.HideActionObjects();
+    }
+
+    public void ShowAPOrientations() {
+        Base.ProjectManager.Instance.ShowAPOrientations();
+    }
+
+    public void HideAPOrientations() {
+         Base.ProjectManager.Instance.HideAPOrientations();
     }
 
     public void InteractivityOn() {
-        Base.Scene.Instance.SetActionObjectsInteractivity(true);
+        Base.SceneManager.Instance.SetActionObjectsInteractivity(true);
     }
 
     public void InteractivityOff() {
-         Base.Scene.Instance.SetActionObjectsInteractivity(false);
+         Base.SceneManager.Instance.SetActionObjectsInteractivity(false);
+    }
+
+    public void ShowRobotsEE() {
+        SceneManager.Instance.ShowRobotsEE();
+    }
+
+    public void HideRobotsEE() {
+        SceneManager.Instance.HideRobotsEE();
     }
 
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
-        Visiblity.SetValue(Base.Scene.Instance.ActionObjectsVisible);        
-        Interactibility.SetValue(Base.Scene.Instance.ActionObjectsInteractive);
+        
     }
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
         foreach (Transform t in ActionObjectsList.transform) {
             Destroy(t.gameObject);
         }
-        foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+        foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionObjectsList.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
@@ -90,7 +113,7 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
         foreach (Transform t in ActionPointsList.transform) {
             Destroy(t.gameObject);
         }
-        foreach (Base.ActionPoint actionPoint in Base.Scene.Instance.GetAllGlobalActionPoints()) {
+        foreach (Base.ActionPoint actionPoint in Base.ProjectManager.Instance.GetAllGlobalActionPoints()) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform);
             btnGO.transform.localScale = new Vector3(1, 1, 1);
             Button btn = btnGO.GetComponent<Button>();
@@ -119,21 +142,22 @@ public class ActionObjectsSettingsMenu : MonoBehaviour, IMenu {
     private void ShowActionPoint(ActionPoint actionPoint) {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
         actionPoint.ShowMenu();
-        Base.Scene.Instance.SetSelectedObject(actionPoint.gameObject);
+        Base.SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         actionPoint.SendMessage("Select");
     }
 
     private void ShowActionObject(Base.ActionObject actionObject) {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
         actionObject.ShowMenu();
-        Base.Scene.Instance.SetSelectedObject(actionObject.gameObject);
+        Base.SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select");
-
     }
 
     public void OnAPSizeChange(float value) {
-        Scene.Instance.SetAPSize(value);
+        ProjectManager.Instance.SetAPSize(value);
     }
+
+
 
 
 }

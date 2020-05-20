@@ -78,7 +78,7 @@ public class ActionObject2D : Base.ActionObject {
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
         throw new System.NotImplementedException();
     }
 

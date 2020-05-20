@@ -1,15 +1,16 @@
 using System;
+using Base;
 using UnityEngine;
 
 public class ArrowActivator : MonoBehaviour {
 
     private void Start() {
-        Base.GameManager.Instance.OnRunProject += ActivateArrow;
-        Base.GameManager.Instance.OnResumeProject += ActivateArrow;
-        Base.GameManager.Instance.OnStopProject += DeactivateArrow;
+        Base.GameManager.Instance.OnRunPackage += ActivateArrow;
+        Base.GameManager.Instance.OnResumePackage += ActivateArrow;
+        Base.GameManager.Instance.OnStopPackage += DeactivateArrow;
     }
-    
-    private void ActivateArrow(object sender, EventArgs eventArgs) {
+
+    private void ActivateArrow(object sender, ProjectMetaEventArgs args) {
         gameObject.SetActive(true);
     }
 

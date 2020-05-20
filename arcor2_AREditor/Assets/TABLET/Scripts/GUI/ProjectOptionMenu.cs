@@ -22,7 +22,7 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public override void SetStar(bool starred) {
-        PlayerPrefsHelper.SaveBool("project/" + GetLabel() + "/starred", starred);
+        PlayerPrefsHelper.SaveBool("project/" + projectTile.ProjectId + "/starred", starred);
         projectTile.SetStar(starred);
         Close();
     }
@@ -36,6 +36,7 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async void RenameProject(string newUserId) {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RenameProject(projectTile.ProjectId, newUserId);
         if (result) {
             inputDialog.Close();
@@ -43,6 +44,7 @@ public class ProjectOptionMenu : TileOptionMenu
             SetLabel(newUserId);
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRemoveDialog() {
@@ -53,16 +55,30 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async void RemoveProject() {
+        Base.GameManager.Instance.ShowLoadingScreen();
         bool result = await Base.GameManager.Instance.RemoveProject(projectTile.ProjectId);
         if (result) {
             confirmationDialog.Close();
             Close();
         }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRelatedScene() {
         MainScreen.Instance.ShowRelatedScene(projectTile.SceneId);
         Close();
+    }
+
+
+    public async void ChangeImage() {
+        Base.GameManager.Instance.ShowLoadingScreen();
+        System.Tuple<Sprite, string> image = await ImageHelper.LoadSpriteAndSaveToDb();
+        if (image != null) {
+            PlayerPrefsHelper.SaveString(projectTile.ProjectId + "/image", image.Item2);
+            projectTile.TopImage.sprite = image.Item1;
+        }
+        Close();
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
 

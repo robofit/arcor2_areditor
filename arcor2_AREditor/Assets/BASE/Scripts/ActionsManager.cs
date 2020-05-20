@@ -29,13 +29,15 @@ namespace Base {
 
         public event ServiceEventHandler OnServicesUpdated;
 
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
 
         public GameObject InteractiveObjects;
 
         public event GameManager.StringEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
+
+        public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
 
         public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
@@ -105,10 +107,13 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
         }
 
-        public void AddService(IO.Swagger.Model.SceneService sceneService) {
+        public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
             Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
             if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                Service service = new Service(sceneService, serviceMetadata);                
+                Service service = new Service(sceneService, serviceMetadata);
+                if (loadResources && service.IsRobot()) {
+                    await service.LoadRobots();
+                }
                 ServicesData.Add(sceneService.Type, service);
                 OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
@@ -140,6 +145,14 @@ namespace Base {
             OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
         }
 
+        // TODO - solve somehow better.. perhaps own class for robot objects and services?
+        internal void UpdateRobotsMetadata(List<RobotMeta> list) {
+            RobotsMeta.Clear();
+            foreach (RobotMeta robotMeta in list) {
+                RobotsMeta[robotMeta.Type] = robotMeta;
+            }
+        }
+
         public bool ServiceInScene(string type) {
             return ServicesData.ContainsKey(type);
         }
@@ -156,7 +169,7 @@ namespace Base {
 
         public List<string> GetRobotsNames() {
             HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
+            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
                 if (actionObject.ActionObjectMetadata.Robot) {
                     robots.Add(actionObject.Data.Name);
                 }
@@ -171,17 +184,24 @@ namespace Base {
             return robots.ToList<string>();
         }
 
-        public List<ActionObject> GetActionObjectsRobots() {
-            List<ActionObject> robots = new List<ActionObject>();
-
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject);
+        public string RobotNameToId(string robotName) {
+            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
+                if (actionObject.ActionObjectMetadata.Robot && actionObject.Data.Name == robotName) {
+                    return actionObject.Data.Id;
                 }
             }
-            return robots;
+            foreach (Service service in servicesData.Values) {
+                if (service.Metadata.Robot) {
+                    foreach (string s in service.GetRobotsNames()) {
+                        if (s == robotName)
+                            return s;
+                    }
+                }
+            }
+            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
         }
 
+        
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
@@ -278,7 +298,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {               
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
                 List<ActionMetadata> freeActions = new List<ActionMetadata>();
                 if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
@@ -301,7 +321,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {
                 if (ao == actionObject) {
                     if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                         continue;
@@ -328,9 +348,7 @@ namespace Base {
             return actionsMetadata;
         }
 
-
-
-
+        
     }
 }
 
