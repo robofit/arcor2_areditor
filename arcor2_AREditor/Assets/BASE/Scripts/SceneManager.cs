@@ -1,14 +1,36 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Base {
+
+    public class RobotUrdfArgs : EventArgs {
+        public string RobotType {
+            get; set;
+        }
+
+        public string Path {
+            get; set;
+        }
+
+        public RobotUrdfArgs(string path, string robotType) {
+            RobotType = robotType;
+            Path = path;
+        }
+    }
+
+
     public class SceneManager : Singleton<SceneManager> {
+
+        public delegate void RobotUrdfEventHandler(object sender, RobotUrdfArgs args);
 
         public IO.Swagger.Model.Scene Scene = null;
 
@@ -41,6 +63,7 @@ namespace Base {
 
 
         public event EventHandler OnLoadScene;
+        public event RobotUrdfEventHandler OnUrdfReady;
 
         private bool loadResources = false;
 
@@ -62,6 +85,13 @@ namespace Base {
             
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
+            }
+
+            // TODO - do this when robot is added to scene
+            foreach (KeyValuePair<string, RobotMeta> robotMeta in ActionsManager.Instance.RobotsMeta) {
+                if (!string.IsNullOrEmpty(robotMeta.Value.UrdfPackageFilename)) {
+                    StartCoroutine(DownloadUrdfPackage(robotMeta.Value.UrdfPackageFilename, robotMeta.Key));
+                }
             }
             return success;
         }
@@ -89,7 +119,44 @@ namespace Base {
 
 
 
+        private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
+            string uri = WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+            using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
+                // Request and wait for the desired page.
+                yield return www.Send();
+                if (www.isNetworkError || www.isHttpError) {
+                    Debug.LogError(www.error + " (" + uri + ")");
+                    Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
+                } else {
+                    string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
+                    Directory.CreateDirectory(robotDictionary);
+                    string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
+                    System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+                    string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
+                    try {
+                        Directory.Delete(urdfDictionary, true);
+                    } catch (DirectoryNotFoundException) {
+                        // ok, nothing to delete..
+                    }
 
+                    try {
+                        ZipFile.ExtractToDirectory(savePath, urdfDictionary);
+                        OnUrdfReady?.Invoke(this, new RobotUrdfArgs(urdfDictionary, robotType));
+                    } catch (Exception ex) when (ex is ArgumentException ||
+                                                 ex is ArgumentNullException ||
+                                                 ex is DirectoryNotFoundException ||
+                                                 ex is PathTooLongException ||
+                                                 ex is IOException ||
+                                                 ex is FileNotFoundException ||
+                                                 ex is InvalidDataException ||
+                                                 ex is UnauthorizedAccessException) {
+                        Debug.LogError(ex);
+                        Notifications.Instance.ShowNotification("Failed to extract URDF", "");
+                    }
+
+                }
+            }
+        }
 
 
 
