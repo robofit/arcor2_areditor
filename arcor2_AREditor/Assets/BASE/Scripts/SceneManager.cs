@@ -120,7 +120,7 @@ namespace Base {
 
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
-            string uri = WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+            string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
             using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
                 // Request and wait for the desired page.
                 yield return www.Send();
