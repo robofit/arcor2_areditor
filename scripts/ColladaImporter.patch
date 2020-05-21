@@ -1,5 +1,5 @@
 --- ColladaImporter.cs	Sat Dec 22 16:02:59 2018
-+++ ColladaImporter.cs	Wed May 20 16:44:45 2020
++++ ColladaImporter.cs	Fri May 22 00:17:23 2020
 @@ -23 +23,4 @@ public class ColladaException: ApplicationExceptio
 -public class ColladaImporter {
 +public class ImportedColladaEventArgs : EventArgs {
@@ -141,6 +141,8 @@
 +        importedGameObject.transform.localScale = Vector3.one;
 +        importedGameObject.transform.rotation = Quaternion.identity;
 +
++        importedGameObject.transform.SetParent(gameObjectToAppend.transform, worldPositionStays: false);
++
 +        for (int k = 0; library_scenes != null && k < library_scenes.Count; k++) {
 +            Hashtable scene = library_scenes.GetHashtable(k);
 +            if (scene != null) {
@@ -158,8 +160,6 @@
 +        importedGameObject.transform.position = translate;
 +        importedGameObject.transform.localScale = scale;
 +        importedGameObject.transform.rotation = rotate;
-+
-+        importedGameObject.transform.SetParent(gameObjectToAppend.transform, worldPositionStays:false);
 +
 +        OnModelImported?.Invoke(this, new ImportedColladaEventArgs(importedGameObject));
 +    }
