@@ -37,6 +37,8 @@ namespace Base {
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
 
+        public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
+
         public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
@@ -141,6 +143,14 @@ namespace Base {
             }
             ServicesLoaded = true;
             OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        // TODO - solve somehow better.. perhaps own class for robot objects and services?
+        internal void UpdateRobotsMetadata(List<RobotMeta> list) {
+            RobotsMeta.Clear();
+            foreach (RobotMeta robotMeta in list) {
+                RobotsMeta[robotMeta.Type] = robotMeta;
+            }
         }
 
         public bool ServiceInScene(string type) {
@@ -338,9 +348,7 @@ namespace Base {
             return actionsMetadata;
         }
 
-
-
-
+        
     }
 }
 

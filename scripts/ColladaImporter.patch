@@ -1,0 +1,559 @@
+--- ColladaImporter.cs	Sat Dec 22 16:02:59 2018
++++ ColladaImporter.cs	Fri May 22 00:17:23 2020
+@@ -23 +23,4 @@ public class ColladaException: ApplicationExceptio
+-public class ColladaImporter {
++public class ImportedColladaEventArgs : EventArgs {
++    public GameObject Data {
++        get; set;
++    }
+@@ -25 +28,157 @@ public class ColladaException: ApplicationExceptio
+-	public static GameObject Import(string colladaString, bool includeEmptyNodes = false, string colliderName = "") {
++    public ImportedColladaEventArgs(GameObject data) {
++        Data = data;
++    }
++}
++
++public class ColladaImporter : MonoBehaviour {
++
++    #region SINGLETON
++    // Check to see if we're about to be destroyed.
++    private static bool m_ShuttingDown = false;
++    private static object m_Lock = new object();
++    private static ColladaImporter m_Instance;
++
++    /// <summary>
++    /// Access singleton instance through this propriety.
++    /// </summary>
++    public static ColladaImporter Instance {
++        get {
++            if (m_ShuttingDown) {
++                Debug.LogWarning("[Singleton] Instance '" + typeof(ColladaImporter) +
++                    "' already destroyed. Returning null.");
++                return null;
++            }
++
++            lock (m_Lock) {
++                if (m_Instance == null) {
++                    // Search for existing instance.
++                    m_Instance = (ColladaImporter) FindObjectOfType(typeof(ColladaImporter));
++
++                    // Create new instance if one doesn't already exist.
++                    if (m_Instance == null) {
++                        // Need to create a new GameObject to attach the singleton to.
++                        GameObject singletonObject = new GameObject();
++                        m_Instance = singletonObject.AddComponent<ColladaImporter>();
++                        singletonObject.name = typeof(ColladaImporter).ToString() + " (Singleton)";
++
++                        // Make instance persistent.
++                        DontDestroyOnLoad(singletonObject);
++                    }
++                }
++
++                return m_Instance;
++            }
++        }
++    }
++
++    private void OnApplicationQuit() {
++        m_ShuttingDown = true;
++    }
++
++
++    private void OnDestroy() {
++        m_ShuttingDown = true;
++    }
++    #endregion
++
++    private static int up_axis = 2;
++
++    public delegate void ImportedColladaEventHandler(object sender, ImportedColladaEventArgs args);
++    public event ImportedColladaEventHandler OnModelImported;
++
++
++    public IEnumerator ImportAsync(GameObject gameObjectToAppend, string colladaString, Quaternion rotate, Vector3 scale, Vector3 translate, bool includeEmptyNodes = false, string colliderName = "") {
++        GameObject importedGameObject = null;
++
++        Hashtable assetInfo = SimpleXmlImporter.Import(colladaString, "asset");
++        if (assetInfo != null) {
++            Hashtable asset = assetInfo.GetHashtable("asset");
++            if (asset != null) {
++                switch (asset.GetString("up_axis")) {
++                    case "X_UP":
++                        up_axis = 0;
++                        break;
++                    case "Y_UP":
++                        up_axis = 1;
++                        break;
++                    case "Z_UP":
++                        up_axis = 2;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
++                        break;
++                }
++            }
++            if (asset != null && asset.ContainsKey("unit")) {
++                Hashtable unit = asset.GetHashtable("unit");
++                if (unit != null && unit.ContainsKey("meter")) {
++                    float meter = unit.GetFloat("meter");
++                    if (meter > 0.001f)
++                        scale *= meter;
++                }
++            }
++        }
++
++        // Get the material properties...
++        ArrayList library_effects = null;
++        Hashtable collada = SimpleXmlImporter.Import(colladaString, "library_effects");
++        if (collada != null)
++            library_effects = collada.GetArrayList("library_effects", true);
++
++        ArrayList library_materials = null;
++        collada = SimpleXmlImporter.Import(colladaString, "library_materials");
++        if (collada != null)
++            library_materials = collada.GetArrayList("library_materials", true);
++
++        ArrayList library_images = null;
++        collada = SimpleXmlImporter.Import(colladaString, "library_images");
++        if (collada != null)
++            library_images = collada.GetArrayList("library_images", true);
++
++        // Hashtable collada = SimpleXmlImporter.Import(colladaString, "library_geometries");
++        collada = SimpleXmlImporter.Import(colladaString, "library_geometries");
++        if (collada == null) {
++            Debug.LogWarning("path COLLADA / library_geometries not found in source");
++            throw new ColladaException("path COLLADA / library_geometries not found in source");
++        }
++
++        ArrayList library_geometries = collada.GetArrayList("library_geometries", true);
++        if (library_geometries == null || library_geometries.Count == 0) {
++            Debug.LogWarning("path COLLADA / library_geometries not found in source");
++            throw new ColladaException("path COLLADA / library_geometries not found in source");
++        }
++
++        collada = SimpleXmlImporter.Import(colladaString, "library_nodes");
++        ArrayList library_nodes = null;
++        if (collada != null)
++            library_nodes = collada.GetArrayList("library_nodes", true);
++
++        ArrayList library_scenes = SimpleXmlImporter.Import(colladaString, "library_visual_scenes").GetArrayList("library_visual_scenes", true);
++
++        importedGameObject = new GameObject("ImportedColladaObject");
++        importedGameObject.transform.position = Vector3.zero;
++        importedGameObject.transform.localScale = Vector3.one;
++        importedGameObject.transform.rotation = Quaternion.identity;
++
++        importedGameObject.transform.SetParent(gameObjectToAppend.transform, worldPositionStays: false);
++
++        for (int k = 0; library_scenes != null && k < library_scenes.Count; k++) {
++            Hashtable scene = library_scenes.GetHashtable(k);
++            if (scene != null) {
++                ArrayList visual_scenes = scene.GetArrayList("visual_scene", true);
++                for (int l = 0; visual_scenes != null && l < visual_scenes.Count; l++) {
++                    Hashtable visual_scene = visual_scenes.GetHashtable(l);
++                    if (visual_scene != null) {
++                        yield return StartCoroutine(AppendGameObjectsFromNodes(importedGameObject, visual_scene.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName));
++                        //yield return null;
++                    }
++                }
++            }
++        }
++
++        importedGameObject.transform.position = translate;
++        importedGameObject.transform.localScale = scale;
++        importedGameObject.transform.rotation = rotate;
++
++        OnModelImported?.Invoke(this, new ImportedColladaEventArgs(importedGameObject));
++    }
++
++    public static GameObject Import(string colladaString, bool includeEmptyNodes = false, string colliderName = "") {
+@@ -35,4 +194,15 @@ public class ColladaException: ApplicationExceptio
+-			if(asset != null && asset.GetString("up_axis") == "Z_UP") {
+-				rotate = rotate * Quaternion.Euler(new Vector3(-90,0,0));
+-			}
+-			if(asset != null && asset.ContainsKey("unit")) {
++            if (asset != null) {
++                switch (asset.GetString("up_axis")) {
++                    case "X_UP":
++                        up_axis = 0;
++                        break;
++                    case "Y_UP":
++                        up_axis = 1;
++                        break;
++                    case "Z_UP":
++                        up_axis = 2;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
++                        break;
++                }
++            }
++            if (asset != null && asset.ContainsKey("unit")) {
+@@ -79 +249 @@ public class ColladaException: ApplicationExceptio
+-		importedGameObject = new GameObject("ImportedColladaScene");
++		importedGameObject = new GameObject("ImportedColladaObject");
+@@ -91 +261 @@ public class ColladaException: ApplicationExceptio
+-						AppendGameObjectsFromNodes(importedGameObject, visual_scene.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
++						//AppendGameObjectsFromNodes(importedGameObject, visual_scene.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
+@@ -97,12 +267,3 @@ public class ColladaException: ApplicationExceptio
+-		MeshFilter[] meshFilters = importedGameObject.GetComponentsInChildren<MeshFilter>();
+-		if(meshFilters.Length == 1) {
+-			GameObject emptyObject = importedGameObject;
+-			importedGameObject = meshFilters[0].gameObject;
+-			importedGameObject.transform.parent = null;
+-			GameObject.Destroy(emptyObject);
+-			meshFilters[0].mesh = meshFilters[0].mesh.ScaledRotatedTranslatedMesh(scale, rotate, translate);
+-		} else {
+-			importedGameObject.transform.position = translate;
+-			importedGameObject.transform.localScale = scale;
+-			importedGameObject.transform.rotation = rotate;
+-		}
++		importedGameObject.transform.position = translate;
++		importedGameObject.transform.localScale = scale;
++		importedGameObject.transform.rotation = rotate;
+@@ -124,2 +285,2 @@ public class ColladaException: ApplicationExceptio
+-	private static void AppendGameObjectsFromNodes(GameObject parentGo, ArrayList nodes, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, ArrayList library_geometries, ArrayList library_nodes, bool includeEmptyNodes, string colliderName) {
+-		if(nodes == null) return;
++	private IEnumerator AppendGameObjectsFromNodes(GameObject parentGo, ArrayList nodes, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, ArrayList library_geometries, ArrayList library_nodes, bool includeEmptyNodes, string colliderName) {
++		if(nodes == null) yield break;
+@@ -150,3 +311,3 @@ public class ColladaException: ApplicationExceptio
+-							GameObject go = ReadGeometry(url, instance_geometry, library_geometries, library_effects, library_materials, library_images);
+-							if(go != null) {
+-//								Debug.Log("new gameObject:"+go.name);
++                            GameObject go = null;
++                            yield return StartCoroutine(ReadGeometry(url, instance_geometry, library_geometries, library_effects, library_materials, library_images, callback: returnValue => { go = returnValue; }));
++							if(go != null) {								
+@@ -155 +316,2 @@ public class ColladaException: ApplicationExceptio
+-							}
++                                //Debug.Log("new gameObject:" + go.name);
++                            }
+@@ -159 +321 @@ public class ColladaException: ApplicationExceptio
+-						AppendGameObjectsFromNodes(firstGo, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
++						yield return StartCoroutine(AppendGameObjectsFromNodes(firstGo, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName));
+@@ -165 +327 @@ public class ColladaException: ApplicationExceptio
+-					AppendGameObjectsFromNodes(go, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
++                    yield return StartCoroutine(AppendGameObjectsFromNodes(go, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName));
+@@ -171 +333 @@ public class ColladaException: ApplicationExceptio
+-	private static void AppendGameObjectToNode(GameObject parentGo, GameObject go, Hashtable node, string colliderName) {
++	private void AppendGameObjectToNode(GameObject parentGo, GameObject go, Hashtable node, string colliderName) {
+@@ -205 +367,3 @@ public class ColladaException: ApplicationExceptio
+-		float rotX=0f;
++        //Quaternion tr = Quaternion.identity;
++
++        float rotX=0f;
+@@ -209,27 +373,84 @@ public class ColladaException: ApplicationExceptio
+-		for(int r=0;rotates!=null && r<rotates.Count;r++) {
+-			Hashtable rotate = rotates.GetHashtable(r);
+-			if(rotate!=null) {
+-				if(rotate.GetString("sid") == "rotationX" || rotate.GetString("sid") == "jointOrientX") {
+-					string vecString = rotate.GetString("rotate");
+-					if(vecString!=null) {
+-						float[] rotVec = vecString.ToFloatArray(' ');
+-						if(rotVec.Length>=4) rotX = rotVec[3];
+-					}
+-				}
+-				if(rotate.GetString("sid") == "rotationY" || rotate.GetString("sid") == "jointOrientY") {
+-					string vecString = rotate.GetString("rotate");
+-					if(vecString!=null) {
+-						float[] rotVec = vecString.ToFloatArray(' ');
+-						if(rotVec.Length>=4) rotY = rotVec[3];
+-					}
+-				}
+-				if(rotate.GetString("sid") == "rotationZ" || rotate.GetString("sid") == "jointOrientZ") { 
+-					string vecString = rotate.GetString("rotate");
+-					if(vecString!=null) {
+-						float[] rotVec = vecString.ToFloatArray(' ');
+-						if(rotVec.Length>=4) rotZ = rotVec[3];
+-					}
+-				}
+-			}
+-		}
+-		nodeRotation = Quaternion.Euler(new Vector3(rotX, rotY, rotZ));
++        if (rotates != null) {
++            for (int r = 0; rotates != null && r < rotates.Count; r++) {
++                Hashtable rotate = rotates.GetHashtable(r);
++                if (rotate != null) {
++                    if (rotate.GetString("sid") == "rotateX" || rotate.GetString("sid") == "jointOrientX") {
++                        string vecString = rotate.GetString("rotate");
++                        if (vecString != null) {
++                            float[] rotVec = vecString.ToFloatArray(' ');
++                            if (rotVec.Length >= 4)
++                                rotX = rotVec[3];
++
++                            Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                            tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                            nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                        }
++                    }
++                    if (rotate.GetString("sid") == "rotateY" || rotate.GetString("sid") == "jointOrientY") {
++                        string vecString = rotate.GetString("rotate");
++                        if (vecString != null) {
++                            float[] rotVec = vecString.ToFloatArray(' ');
++                            if (rotVec.Length >= 4)
++                                rotY = rotVec[3];
++
++                            Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                            tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                            nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                        }
++                    }
++                    if (rotate.GetString("sid") == "rotateZ" || rotate.GetString("sid") == "jointOrientZ") {
++                        string vecString = rotate.GetString("rotate");
++                        if (vecString != null) {
++                            float[] rotVec = vecString.ToFloatArray(' ');
++                            if (rotVec.Length >= 4)
++                                rotZ = rotVec[3];
++
++                            Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                            tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                            nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                        }
++                    }
++                }
++            }
++        } else {
++            Hashtable rotate = node.GetHashtable("rotate");
++            if (rotate != null) {
++                if (rotate.GetString("sid") == "rotateX" || rotate.GetString("sid") == "jointOrientX") {
++                    string vecString = rotate.GetString("rotate");
++                    if (vecString != null) {
++                        float[] rotVec = vecString.ToFloatArray(' ');
++                        if (rotVec.Length >= 4)
++                            rotX = rotVec[3];
++
++                        Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                        tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                        nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                    }
++                }
++                if (rotate.GetString("sid") == "rotateY" || rotate.GetString("sid") == "jointOrientY") {
++                    string vecString = rotate.GetString("rotate");
++                    if (vecString != null) {
++                        float[] rotVec = vecString.ToFloatArray(' ');
++                        if (rotVec.Length >= 4)
++                            rotY = rotVec[3];
++
++                        Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                        tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                        nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                    }
++                }
++                if (rotate.GetString("sid") == "rotateZ" || rotate.GetString("sid") == "jointOrientZ") {
++                    string vecString = rotate.GetString("rotate");
++                    if (vecString != null) {
++                        float[] rotVec = vecString.ToFloatArray(' ');
++                        if (rotVec.Length >= 4)
++                            rotZ = rotVec[3];
++
++                        Vector3 tdir = new Vector3(rotVec[0], rotVec[1], rotVec[2]);
++                        tdir = UpRotDirConv(tdir); //Sort&reverse direction
++                        nodeRotation *= Quaternion.AngleAxis(rotVec[3], tdir);
++                    }
++                }
++            }
++        }
++		
+@@ -239,8 +460,2 @@ public class ColladaException: ApplicationExceptio
+-		if(matrixString != null && matrixString.Length > 0) {
+-			float[] values = matrixString.ToFloatArray(' ');
+-			if(values != null && values.Length == 16) {
+-				Matrix4x4 matrix = new Matrix4x4();
+-				for(int m=0;m<16;m++) matrix[m/4, m%4] = values[m];
+-				nodeTranslation = matrix.MultiplyPoint3x4(nodeTranslation);
+-				nodeRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+-				nodeScale = new Vector3(Vector3.Magnitude((Vector3)matrix.GetRow(0)), Vector3.Magnitude((Vector3)matrix.GetRow(1)), Vector3.Magnitude((Vector3)matrix.GetRow(2)));
++        if (matrixString != null && matrixString.Length > 0) {
++            nodeRotation = Quaternion.Euler(new Vector3(rotX, rotY, rotZ));
+@@ -248,13 +463,25 @@ public class ColladaException: ApplicationExceptio
+-				// This is playing dirty. You can not determin a negative scale from a matrix
+-				// see http://hub.jmonkeyengine.org/t/problem-with-fetching-the-scale-from-transformation-matrix/28048
+-				// Yet, unity somehow imports some objects with rotation 0,180,0 and scale -1,-1,-1
+-				// I don't know how to replicate this, so instead I can only cheat
+-				if((Vector3)matrix.GetRow(0) == new Vector3(1,0,0) && (Vector3)matrix.GetRow(1) == new Vector3(0,-1,0) && (Vector3)matrix.GetRow(2) == new Vector3(0,0,1)) nodeScale = new Vector3(-1,-1,-1);
+-			}
+-		}
+-		go.transform.localPosition = ConvertPosition(nodeTranslation);
+-		go.transform.localScale = nodeScale;
+-        if (node.GetString("type") == "JOINT") {
+-            go.transform.Rotate(Vector3.forward,rotZ * -1f, Space.Self);
+-            go.transform.Rotate(Vector3.up, rotY * -1f, Space.Self);
+-            go.transform.Rotate(Vector3.right, rotX, Space.Self);
++            float[] values = matrixString.ToFloatArray(' ');
++            if (values != null && values.Length == 16) {
++                Matrix4x4 matrix = new Matrix4x4();
++                for (int m = 0; m < 16; m++)
++                    matrix[m / 4, m % 4] = values[m];
++                nodeTranslation = matrix.MultiplyPoint3x4(nodeTranslation);
++                nodeRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
++                nodeScale = new Vector3(Vector3.Magnitude((Vector3) matrix.GetRow(0)), Vector3.Magnitude((Vector3) matrix.GetRow(1)), Vector3.Magnitude((Vector3) matrix.GetRow(2)));
++
++                // This is playing dirty. You can not determin a negative scale from a matrix
++                // see http://hub.jmonkeyengine.org/t/problem-with-fetching-the-scale-from-transformation-matrix/28048
++                // Yet, unity somehow imports some objects with rotation 0,180,0 and scale -1,-1,-1
++                // I don't know how to replicate this, so instead I can only cheat
++                if ((Vector3) matrix.GetRow(0) == new Vector3(1, 0, 0) && (Vector3) matrix.GetRow(1) == new Vector3(0, -1, 0) && (Vector3) matrix.GetRow(2) == new Vector3(0, 0, 1))
++                    nodeScale = new Vector3(-1, -1, -1);
++            }
++            go.transform.localPosition = UpPosConv(nodeTranslation);
++            go.transform.localScale = nodeScale;
++            if (node.GetString("type") == "JOINT") {
++                go.transform.Rotate(Vector3.forward, rotZ * -1f, Space.Self);
++                go.transform.Rotate(Vector3.up, rotY * -1f, Space.Self);
++                go.transform.Rotate(Vector3.right, rotX, Space.Self);
++            } else {
++                go.transform.localRotation = Quaternion.Euler(UpRotDirConv(nodeRotation.eulerAngles));
++            }
+@@ -262,2 +489,10 @@ public class ColladaException: ApplicationExceptio
+-            go.transform.localRotation = ConvertRotation(nodeRotation);
+-        }
++            go.transform.localPosition = UpPosConv(nodeTranslation);
++            go.transform.localScale = nodeScale;
++            if (node.GetString("type") == "JOINT") {
++                go.transform.Rotate(Vector3.forward, rotZ * -1f, Space.Self);
++                go.transform.Rotate(Vector3.up, rotY * -1f, Space.Self);
++                go.transform.Rotate(Vector3.right, rotX, Space.Self);
++            } else {
++                go.transform.localRotation = nodeRotation;
++            }
++        }        
+@@ -265,0 +501,17 @@ public class ColladaException: ApplicationExceptio
++    private static Vector3 UpPosConv(Vector3 v) {
++        Vector3 r = new Vector3();
++        //All x,y,z Up right handed to convert to Y_up left handed Position
++        switch (up_axis) {
++            case 0: //xR-yL
++                r = new Vector3(0 - v.y, v.x, 0 - v.z);
++                break;
++            case 1: //yR-yL
++                r = new Vector3(v.x, v.y, 0 - v.z);
++                break;
++            case 2: //zR-zL
++                //r = new Vector3(v.x, v.z, v.y);
++                r = new Vector3(0-v.x, v.y, v.z);
++                break;
++        }
++        return r;
++    }
+@@ -267 +519,37 @@ public class ColladaException: ApplicationExceptio
+-	private static Vector3 ConvertPosition(Vector3 pos)
++    private static Vector3 UpScaleConv(Vector3 v) {
++        Vector3 r = new Vector3();
++        //All x,y,z Up right handed to convert to Y_up left handed Position
++        switch (up_axis) {
++            case 0: //xR-yL
++                r = new Vector3(v.y, v.x, v.z);
++                break;
++            case 1: //yR-yL
++                r = new Vector3(v.x, v.y, v.z);
++                break;
++            case 2: //zR-zL
++                r = new Vector3(v.x, v.z, v.y);
++                break;
++        }
++        return r;
++    }
++
++    private static Vector3 UpRotDirConv(Vector3 v) {
++        Vector3 r = new Vector3();
++        //All x,y,z Up right handed to convert to Y_up left Rotation //Currently reversed rotation on all axis
++        switch (up_axis) {
++            case 0: //xR-yL
++                r = new Vector3(v.y, 0 - v.x, v.z);
++                break;
++            case 1: //yR-yL
++                r = new Vector3(0 - v.x, 0 - v.y, v.z);
++                break;
++            case 2: //zR-zL
++                //r = new Vector3(0 - v.x, 0 - v.z, 0 - v.y);
++                r = new Vector3(v.x, 0 - v.y, 0 - v.z);
++                break;
++        }
++        return r;
++    }
++
++
++    private static Vector3 ConvertPosition(Vector3 pos)
+@@ -278,7 +566,14 @@ public class ColladaException: ApplicationExceptio
+-		if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 180f) rotEuler = new Vector3(0,180,0);
+-		else if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 90f) rotEuler = new Vector3(0,180,270);
+-		else if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 270f) rotEuler = new Vector3(0,0,90);
+-		else if(rotEuler.x==0f && rotEuler.y==180f && rotEuler.z == 90f) rotEuler = new Vector3(0,0,270);
+-		else if(rotEuler.x==0f && rotEuler.y==180f && rotEuler.z == 270f) rotEuler = new Vector3(0,180,90);
+-		else rotEuler = new Vector3(rotEuler.x, rotEuler.y * -1f, rotEuler.z * -1f);
+-		return rotEuler;
++        if (IsApproximately(rotEuler.x, 0f) && IsApproximately(rotEuler.y, 0f) && IsApproximately(rotEuler.z, 180f))
++            rotEuler = new Vector3(0, 180, 0);
++        else if (IsApproximately(rotEuler.x, 0f) && IsApproximately(rotEuler.y, 0f) && IsApproximately(rotEuler.z, 90f))
++            rotEuler = new Vector3(0, 180, 270);
++        else if (IsApproximately(rotEuler.x, 0f) && IsApproximately(rotEuler.y, 0f) && IsApproximately(rotEuler.z, 270f))
++            rotEuler = new Vector3(0, 0, 90);
++        else if (IsApproximately(rotEuler.x, 0f) && IsApproximately(rotEuler.y, 180f) && IsApproximately(rotEuler.z, 90f))
++            rotEuler = new Vector3(0, 0, 270);
++        else if (IsApproximately(rotEuler.x, 0f) && IsApproximately(rotEuler.y, 180f) && IsApproximately(rotEuler.z, 270f))
++            rotEuler = new Vector3(0, 180, 90);
++        else
++            rotEuler = new Vector3(rotEuler.x, rotEuler.y * -1f, rotEuler.z * -1f);
++        
++        return rotEuler;
+@@ -286,0 +582,3 @@ public class ColladaException: ApplicationExceptio
++    private static bool IsApproximately(float a, float b) {
++        return Mathf.Abs(a - b) < 0.002;
++    }
+@@ -288 +585,0 @@ public class ColladaException: ApplicationExceptio
+-	private static GameObject ReadGeometry(string url, Hashtable instance_geometry, ArrayList library_geometries, ArrayList library_effects, ArrayList library_materials, ArrayList library_images) {
+@@ -289,0 +587,3 @@ public class ColladaException: ApplicationExceptio
++
++    private IEnumerator ReadGeometry(string url, Hashtable instance_geometry, ArrayList library_geometries, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, Action<GameObject> callback) {
++
+@@ -319,0 +620 @@ public class ColladaException: ApplicationExceptio
++                        yield return null;
+@@ -329,2 +630,3 @@ public class ColladaException: ApplicationExceptio
+-						
+-						ArrayList triangleDefs = meshDef.GetArrayList("triangles", true);
++                        yield return null;
++
++                        ArrayList triangleDefs = meshDef.GetArrayList("triangles", true);
+@@ -337,0 +640,2 @@ public class ColladaException: ApplicationExceptio
++                        yield return null;
++
+@@ -403,6 +707,12 @@ public class ColladaException: ApplicationExceptio
+-								float opacity = GetFirstTransparencyFromTechniques(effectTechniques);
+-								if(opacity < 1f) diffuseColor.a = opacity;
+-								if(diffuseColor.a < 1f) {
+-									sh = Shader.Find("Transparent/Diffuse");
+-									if(sh != null) mats[k].shader = sh;
+-								}
++								float alpha = GetFirstTransparencyFromTechniques(effectTechniques);
++								//if(opacity < 1f) diffuseColor.a = opacity;
++								diffuseColor.a = 1 - alpha;
++                                if (diffuseColor.a < 1f) {
++                                    sh = Shader.Find("Transparent/Diffuse");
++                                    if (sh != null)
++                                        mats[k].shader = sh;
++                                } else {
++                                    sh = Shader.Find("Standard");
++                                    if (sh != null)
++                                        mats[k].shader = sh;
++                                }
+@@ -411 +721 @@ public class ColladaException: ApplicationExceptio
+-								// Debug.Log("GetNewParamForTextureUrl:"+textureUrl);
++								//Debug.Log("GetNewParamForTextureUrl:"+textureUrl);
+@@ -413 +723 @@ public class ColladaException: ApplicationExceptio
+-								//Debug.Log("GetFileUrlForTexture:"+textureUrl);
++                                //Debug.Log("GetFileUrlForTexture:"+textureUrl);
+@@ -414,0 +725 @@ public class ColladaException: ApplicationExceptio
++                                mats[k].SetFloat("_Glossiness", 0f);
+@@ -423,0 +735,2 @@ public class ColladaException: ApplicationExceptio
++
++                        yield return null;
+@@ -426,0 +740 @@ public class ColladaException: ApplicationExceptio
++            yield return null;
+@@ -428 +742 @@ public class ColladaException: ApplicationExceptio
+-		return go;
++        callback(go);
+@@ -544,2 +858,4 @@ public class ColladaException: ApplicationExceptio
+-							string[] diffuseArray = diffuseString.Split(new char[' '], StringSplitOptions.RemoveEmptyEntries);
+-							if(diffuseArray.Length == 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0]), float.Parse(diffuseArray[1]), float.Parse(diffuseArray[2]), 1f);
++							// split by all whitespace chars and remove empty entries
++							string[] diffuseArray = diffuseString.Split(new char[0], StringSplitOptions.RemoveEmptyEntries);
++
++                            if (diffuseArray.Length == 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0]), float.Parse(diffuseArray[1]), float.Parse(diffuseArray[2]), 1f);
+@@ -582 +898 @@ public class ColladaException: ApplicationExceptio
+-		return 1f;
++		return 0;

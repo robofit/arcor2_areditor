@@ -12,6 +12,7 @@ namespace Base {
         public IO.Swagger.Model.Project Project = null;
 
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+
         public GameObject ActionPointsOrigin;
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
 
@@ -616,11 +617,6 @@ namespace Base {
         }
 
         #endregion
-
-
-
-
-
 
 
         public void ActionUpdated(IO.Swagger.Model.Action projectAction) {

@@ -6,3 +6,4 @@ ln -snf `pwd`/../arcor2_AREditor/Submodules/MixedRealityToolkit-Unity/Assets ../
 ln -snf `pwd`/../arcor2_AREditor/Submodules/UnityDynamicPanels/Plugins ../arcor2_AREditor/Assets/Submodules/UnityDynamicPanels
 ln -snf `pwd`/../arcor2_AREditor/Submodules/UnityRuntimeInspector/Plugins ../arcor2_AREditor/Assets/Submodules/UnityRuntimeInspector
 ln -snf `pwd`/../arcor2_AREditor/Submodules/Unity3DRuntimeTransformGizmo/Assets ../arcor2_AREditor/Assets/Submodules/Unity3DRuntimeTransformGizmo
+ln -snf `pwd`/../arcor2_AREditor/Submodules/RosSharp/Unity3D/Assets/RosSharp ../arcor2_AREditor/Assets/Submodules/RosSharp

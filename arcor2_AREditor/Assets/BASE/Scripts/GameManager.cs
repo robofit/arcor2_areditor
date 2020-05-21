@@ -303,7 +303,7 @@ namespace Base {
 
                     await UpdateActionObjects();
                     await UpdateServices();
-                    
+                    await UpdateRobotsMeta();
 
                     try {
                         await Task.Run(() => ActionsManager.Instance.WaitUntilActionsReady(15000));
@@ -337,6 +337,7 @@ namespace Base {
                     break;
             }
         }
+
 
         public void ShowLoadingScreen() {
             Debug.Assert(LoadingScreen != null);
@@ -400,6 +401,11 @@ namespace Base {
 
         public async Task UpdateServices() {
             await ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
+        }
+
+
+        private async Task UpdateRobotsMeta() {
+            ActionsManager.Instance.UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
         }
 
         /// <summary>

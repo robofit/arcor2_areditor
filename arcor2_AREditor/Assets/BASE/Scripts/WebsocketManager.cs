@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
 using System.IO;
-
+using RestSharp.Extensions;
 
 namespace Base {
 
@@ -46,6 +46,9 @@ namespace Base {
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
 
+        
+
+        private string serverDomain;
 
         private void Awake() {
             waitingForMessage = false;
@@ -61,6 +64,7 @@ namespace Base {
             packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
+            serverDomain = domain;
             clientWebSocket = new ClientWebSocket();
             Debug.Log("[WS]:Attempting connection.");
             try {
@@ -89,7 +93,15 @@ namespace Base {
                 //already closed probably..
             }
             clientWebSocket = null;
+            serverDomain = null;
             GameManager.Instance.HideLoadingScreen();
+        }
+
+        public string GetServerDomain() {
+            if (clientWebSocket.State != WebSocketState.Open) {
+                return null;
+            }
+            return serverDomain;
         }
 
         /// <summary>
@@ -1289,6 +1301,20 @@ namespace Base {
             // TODO: is this correct?
             return response == null ? false : response.Result;
         }
+
+        public async Task<List<IO.Swagger.Model.RobotMeta>> GetRobotMeta() {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.GetRobotMetaRequest request = new IO.Swagger.Model.GetRobotMetaRequest(r_id, "GetRobotMeta");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetRobotMetaResponse response = await WaitForResult<IO.Swagger.Model.GetRobotMetaResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get robot meta" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+
 
 
 

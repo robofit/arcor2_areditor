@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
 using Base;
 using System;
-using MongoDB.Bson;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionPointAimingMenu : MonoBehaviour, IMenu
