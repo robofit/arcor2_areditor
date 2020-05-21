@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Base;
 using UnityEngine;
 
 public class ProjectOptionMenu : TileOptionMenu
@@ -32,13 +34,20 @@ public class ProjectOptionMenu : TileOptionMenu
                          "New name",
                          projectTile.GetLabel(),
                          () => RenameProject(inputDialog.GetValue()),
-                         () => inputDialog.Close());
+                         () => inputDialog.Close(),
+                         validateInput: ValidateProjectName);
+    }
+
+    public RequestResult ValidateProjectName(string newName) {
+        Task<RequestResult> result = Task.Run(async () => await GameManager.Instance.RenameProject(projectTile.ProjectId, newName, true));
+       
+        return result.Result;        
     }
 
     public async void RenameProject(string newUserId) {
         Base.GameManager.Instance.ShowLoadingScreen();
-        bool result = await Base.GameManager.Instance.RenameProject(projectTile.ProjectId, newUserId);
-        if (result) {
+        Base.RequestResult result = await Base.GameManager.Instance.RenameProject(projectTile.ProjectId, newUserId, false);
+        if (result.Success) {
             inputDialog.Close();
             projectTile.SetLabel(newUserId);
             SetLabel(newUserId);

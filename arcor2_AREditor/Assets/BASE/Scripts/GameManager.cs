@@ -827,8 +827,9 @@ namespace Base {
             try {
                 string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
                 reopenProjectId = ProjectManager.Instance.Project.Id;
-                if (!await CloseProject(false)) {
-                    Notifications.Instance.ShowNotification("Failed to build and run package", "");
+                RequestResult result = await CloseProject(false);
+                if (!result.Success) {
+                    Notifications.Instance.ShowNotification("Failed to build and run package", result.Message);
                     reopenProjectId = null;
                     return false;
                 }
@@ -970,27 +971,38 @@ namespace Base {
             return await WebsocketManager.Instance.RemoveFromScene(id, false);
         }
 
-        public async Task<bool> CloseScene(bool force) {
-            ShowLoadingScreen();
-            bool success = await WebsocketManager.Instance.CloseScene(force);
-            if (success) {
+        public async Task<RequestResult> CloseScene(bool force, bool dryRun = false) {
+            if (!dryRun)
+                ShowLoadingScreen();
+            try {
+                await WebsocketManager.Instance.CloseScene(force, dryRun);
                 SceneManager.Instance.Scene = null;
-            } else {
-                HideLoadingScreen();
+                return (true, "");
+            } catch (RequestFailedException ex) {
+                if (!dryRun) {
+                    Notifications.Instance.ShowNotification("Failed to close scene", ex.Message);
+                    HideLoadingScreen();                   
+                }
+                return (false, ex.Message);
             }          
-            return success;
+            
         }
 
-        public async Task<bool> CloseProject(bool force) {
-            ShowLoadingScreen();
-            bool success = await WebsocketManager.Instance.CloseProject(force);
-            if (success) {
+        public async Task<RequestResult> CloseProject(bool force, bool dryRun = false) {
+            if (!dryRun)
+                ShowLoadingScreen();
+            try {
+                await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
                 OnCloseProject?.Invoke(this, EventArgs.Empty);
                 SceneManager.Instance.Scene = null;
-            } else {
-                HideLoadingScreen();
-            }
-            return success;
+                return (true, "");
+            } catch (RequestFailedException ex) {
+                if (!dryRun) {
+                    Notifications.Instance.ShowNotification("Failed to close project", ex.Message);
+                    HideLoadingScreen();
+                }                
+                return (false, ex.Message);
+            }           
             
         }
 
@@ -1206,13 +1218,14 @@ namespace Base {
         }
 
 
-        public async Task<bool> RenameProject(string id, string newUserId) {
+        public async Task<RequestResult> RenameProject(string id, string newUserId, bool dryRun) {
             try {
-                await WebsocketManager.Instance.RenameProject(id, newUserId);
-                return true;
+                await WebsocketManager.Instance.RenameProject(id, newUserId, dryRun);
+                return (true, "");
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
-                return false;
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
+                return (false, e.Message);
             }
         }
 
@@ -1317,19 +1330,20 @@ namespace Base {
         }
 
 
-        public async Task<bool> RemoveAction(string actionId) {
+        public async Task<Tuple<bool, string>> RemoveAction(string actionId, bool dryRun) {
             try {
-                await WebsocketManager.Instance.RemoveAction(actionId);
-                return true;
+                await WebsocketManager.Instance.RemoveAction(actionId, dryRun);
+                return new Tuple<bool, string>(true, null);
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
-                return false;
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                return new Tuple<bool, string>(false, e.Message);
             }
         }
 
-        public async Task<bool> RemoveActionPoint(string actionPointId) {
+        public async Task<bool> RemoveActionPoint(string actionPointId, bool dryRun = false) {
             try {
-                await WebsocketManager.Instance.RemoveActionPoint(actionPointId);
+                await WebsocketManager.Instance.RemoveActionPoint(actionPointId, dryRun: dryRun);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
@@ -1377,6 +1391,41 @@ namespace Base {
             }
         }
 
-    }    
+    }
 
+    public struct RequestResult {
+        public bool Success;
+        public string Message;
+
+        public RequestResult(bool success, string message) {
+            this.Success = success;
+            this.Message = message;
+        }
+
+        public override bool Equals(object obj) {
+            return obj is RequestResult other &&
+                   Success == other.Success &&
+                   Message == other.Message;
+        }
+
+        public override int GetHashCode() {
+            int hashCode = 151515764;
+            hashCode = hashCode * -1521134295 + Success.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Message);
+            return hashCode;
+        }
+
+        public void Deconstruct(out bool success, out string message) {
+            success = Success;
+            message = Message;
+        }
+
+        public static implicit operator (bool success, string message)(RequestResult value) {
+            return (value.Success, value.Message);
+        }
+
+        public static implicit operator RequestResult((bool success, string message) value) {
+            return new RequestResult(value.success, value.message);
+        }
+    }
 }

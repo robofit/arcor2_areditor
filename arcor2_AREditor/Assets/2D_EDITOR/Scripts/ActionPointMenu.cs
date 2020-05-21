@@ -25,15 +25,18 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     private Button LockedBtn, UnlockedBtn, UntieBtn, BackBtn;
 
     [SerializeField]
+    private ButtonWithTooltip RemoveBtn;
+
+    [SerializeField]
     private InputDialog inputDialog;
 
     [SerializeField]
     private ActionPointAimingMenu ActionPointAimingMenu;
 
-    private TooltipContent UntieBtnTooltip;
+    private ManualTooltip UntieBtnTooltip;
 
     private void Start() {
-        UntieBtnTooltip = UntieBtn.gameObject.GetComponent<TooltipContent>();
+        UntieBtnTooltip = UntieBtn.gameObject.GetComponent<ManualTooltip>();
     }
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
@@ -67,7 +70,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
 
         Base.ActionPoint actionPoint;
@@ -124,14 +127,14 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (CurrentActionPoint.Parent == null) {
             UntieBtn.onClick.RemoveAllListeners();
             UntieBtn.onClick.AddListener(() => AssignToParent());
-            UntieBtnTooltip.description = "Assign to parent";
+            UntieBtnTooltip.ShowAlternativeDescription();
         } else {
             UntieBtn.onClick.RemoveAllListeners();
             UntieBtn.onClick.AddListener(() => ShowUntieActionPointDialog());
-            UntieBtnTooltip.description = "Untie from parent";
+            UntieBtnTooltip.ShowDefaultDescription();
         }
-            
-        
+
+        RemoveBtn.SetInteractivity(await GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true));
     }
 
     private static void CreateTooltip(string text, ActionButton btn) {

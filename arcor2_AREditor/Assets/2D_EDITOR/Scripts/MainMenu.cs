@@ -11,6 +11,9 @@ public class MainMenu : MonoBehaviour, IMenu {
         SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
     public GameObject PauseBtn, ResumeBtn;
 
+    [SerializeField]
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn;
+
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
     public CloseProjectDialog CloseProjectDialog;
@@ -247,13 +250,15 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
     public async void CloseScene() {
-        if (! await Base.GameManager.Instance.CloseScene(false))
+        (bool success, string message) = await Base.GameManager.Instance.CloseScene(false);
+        if (!success)
             CloseSceneDialog.WindowManager.OpenWindow();
     }
 
 
     public async void ShowCloseProjectDialog(string type) {
-        if (!await Base.GameManager.Instance.CloseProject(false))
+        (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
+        if (!success)
             CloseProjectDialog.WindowManager.OpenWindow();
     }
 
@@ -438,8 +443,27 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void UpdateMenu() {
-        //nothing to do..
+    public async void UpdateMenu() {
+        bool success = false;
+        string message = "";
+        ButtonWithTooltip button = null;
+        switch (GameManager.Instance.GetGameState()) {
+            case GameManager.GameStateEnum.ProjectEditor:
+                (success, message) = await GameManager.Instance.CloseProject(true, true);
+                button = CloseProjectBtn;
+                break;
+            case GameManager.GameStateEnum.SceneEditor:
+                (success, message) = await GameManager.Instance.CloseScene(true, true);
+                button = CloseSceneBtn;
+                break;
+        }
+        if (button != null) {
+            if (success) {
+                button.SetInteractivity(true);
+            } else {
+                button.SetInteractivity(false, message);
+            }
+        }
     }
 
     public void SetHeader(string header) {
@@ -447,7 +471,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public void SaveLogs() {
-        
         Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project);
     }
 
