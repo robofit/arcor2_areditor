@@ -88,11 +88,13 @@ namespace Base {
             }
 
             // TODO - do this when robot is added to scene
-            foreach (KeyValuePair<string, RobotMeta> robotMeta in ActionsManager.Instance.RobotsMeta) {
-                if (!string.IsNullOrEmpty(robotMeta.Value.UrdfPackageFilename)) {
-                    StartCoroutine(DownloadUrdfPackage(robotMeta.Value.UrdfPackageFilename, robotMeta.Key));
-                }
-            }
+            //foreach (KeyValuePair<string, RobotMeta> robotMeta in ActionsManager.Instance.RobotsMeta) {
+            //    if (!string.IsNullOrEmpty(robotMeta.Value.UrdfPackageFilename)) {
+            //        StartCoroutine(DownloadUrdfPackage(robotMeta.Value.UrdfPackageFilename, robotMeta.Key));
+            //    }
+            //}
+            //SpawnActionObject("123456789", "DobotMagician");
+
             return success;
         }
 
@@ -114,10 +116,6 @@ namespace Base {
             Scene = null;
             return true;
         }
-
-
-
-
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
             string uri = WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
@@ -153,12 +151,9 @@ namespace Base {
                         Debug.LogError(ex);
                         Notifications.Instance.ShowNotification("Failed to extract URDF", "");
                     }
-
                 }
             }
         }
-
-
 
         // Update is called once per frame
         private void Update() {
@@ -179,12 +174,6 @@ namespace Base {
                     sceneActive = false;
                 }
             }
-            
-            
-
-
-
-           
         }
 
         private void Start() {
@@ -302,11 +291,16 @@ namespace Base {
             }
             GameObject obj;
             if (aom.Robot) {
+                if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
+                    if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+                        StartCoroutine(DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+                    }
+                }
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
-            ActionObject actionObject = obj.GetComponentInChildren<ActionObject>();
+            ActionObject actionObject = obj.GetComponent<ActionObject>();
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom, customCollisionModels);
 
             // Add the Action Object into scene reference
@@ -317,6 +311,7 @@ namespace Base {
 
             return actionObject;
         }
+
         public static string ToUnderscoreCase(string str) {
             return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
         }

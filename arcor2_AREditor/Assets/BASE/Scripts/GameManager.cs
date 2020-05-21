@@ -406,7 +406,6 @@ namespace Base {
 
         private async Task UpdateRobotsMeta() {
             ActionsManager.Instance.UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
-
         }
 
         /// <summary>

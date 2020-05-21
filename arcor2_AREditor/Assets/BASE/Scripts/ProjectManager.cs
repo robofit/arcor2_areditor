@@ -12,9 +12,8 @@ namespace Base {
         public IO.Swagger.Model.Project Project = null;
 
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
-        public List<Base.Robot> Robots = new List<Base.Robot>();
 
-        public GameObject ActionPointsOrigin, RobotsOrigin;
+        public GameObject ActionPointsOrigin;
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
 
 
@@ -618,18 +617,6 @@ namespace Base {
         }
 
         #endregion
-
-        #region ROBOTS
-
-        public void SpawnRobot(string robotUrl) {            
-            Robots = ImportURDF.Instance.DownloadAndBuildURDF(robotUrl);
-        }
-
-        #endregion
-
-
-
-
 
 
         public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
