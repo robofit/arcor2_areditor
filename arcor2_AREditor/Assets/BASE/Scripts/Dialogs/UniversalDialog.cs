@@ -7,6 +7,9 @@ public class UniversalDialog : Dialog
     [SerializeField]
     private TMPro.TMP_Text OKButtonLabelNormal, OKButtonLabelHighlighted, CancelButtonLabelNormal, CancelButtonLabelHighlighted;
 
+    [SerializeField]
+    protected ButtonWithTooltip okBtn, cancelBtn;
+
     public void SetConfirmLabel(string name) {
         OKButtonLabelNormal.text = name;
         OKButtonLabelHighlighted.text = name;

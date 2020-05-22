@@ -15,13 +15,14 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    public Button ExecuteActionBtn, SaveParametersBtn, StopActionBtn;
+    public Button SaveParametersBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
     [SerializeField]
     private InputDialog inputDialog;
-    private TooltipContent StopActionBtnTooltip, ExecuteActionBtnTooltip;
+    [SerializeField]
+    private ButtonWithTooltip ExecuteActionBtn, StopActionBtn, RemoveActionBtn;
 
 
     public VerticalLayoutGroup DynamicContentLayout;
@@ -46,9 +47,6 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinished;
         GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionFinished;
 
-        StopActionBtnTooltip = StopActionBtn.gameObject.GetComponent<TooltipContent>();
-        ExecuteActionBtnTooltip = ExecuteActionBtn.gameObject.GetComponent<TooltipContent>();
-        Debug.Assert(StopActionBtnTooltip != null);
     }
 
 
@@ -74,28 +72,31 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         parametersChanged = false;
         SaveParametersBtn.interactable = false;
         UpdateExecuteAndStopBtns();
+        Tuple<bool, string> actionRemovable = await GameManager.Instance.RemoveAction(CurrentAction.Data.Id, true);
+        if (actionRemovable.Item1) {
+            RemoveActionBtn.SetInteractivity(true);
+        } else {
+            RemoveActionBtn.SetInteractivity(false, actionRemovable.Item2);
+        }
     }
 
     private void UpdateExecuteAndStopBtns() {
         if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction) && CurrentAction.Data.Id == GameManager.Instance.ExecutingAction) {
             StopActionBtn.gameObject.SetActive(true);
             ExecuteActionBtn.gameObject.SetActive(false);
+            ExecuteActionBtn.HideTooltip();
             if (CurrentAction.Metadata.Meta.Cancellable) {
-                StopActionBtn.interactable = true;
-                StopActionBtnTooltip.description = "Stop execution";
+                StopActionBtn.SetInteractivity(true);
             } else {
-                StopActionBtn.interactable = false;
-                StopActionBtnTooltip.description = "Execution cannot be cancelled";
+                StopActionBtn.SetInteractivity(false);
             }
         } else {
             StopActionBtn.gameObject.SetActive(false);
             ExecuteActionBtn.gameObject.SetActive(true);
             if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
-                ExecuteActionBtn.interactable = false;
-                ExecuteActionBtnTooltip.description = "Another action runs already";
+                ExecuteActionBtn.SetInteractivity(false, "Another action runs already");
             } else {
-                ExecuteActionBtn.interactable = true;
-                ExecuteActionBtnTooltip.description = "Execute action";
+                ExecuteActionBtn.SetInteractivity(true);
             }
         }
     }
@@ -105,7 +106,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         ConfirmationDialog.Close();
         if (CurrentAction == null)
             return;
-        if (await Base.GameManager.Instance.RemoveAction(CurrentAction.Data.Id)) {
+        if ((await Base.GameManager.Instance.RemoveAction(CurrentAction.Data.Id, false)).Item1) {
             MenuManager.Instance.PuckMenu.Close();
         }
     }
@@ -139,17 +140,17 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
                 parametersChanged = true;
                 SaveParametersBtn.interactable = true;
-                ExecuteActionBtn.interactable = false;
+                ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
             }
         }
 
     }
 
     public async void ExecuteAction() {
-        ExecuteActionBtn.interactable = false;
+        ExecuteActionBtn.SetInteractivity(false, "Action already runs");
         if (!await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id) && GameManager.Instance.ExecutingAction == null) {
         }
-        ExecuteActionBtn.interactable = true;
+        ExecuteActionBtn.SetInteractivity(true);
     }
 
     public void StopExecution() {
@@ -181,7 +182,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 SaveParametersBtn.interactable = false;
                 parametersChanged = false;
                 if (GameManager.Instance.ExecutingAction == null)
-                    ExecuteActionBtn.interactable = true;
+                    ExecuteActionBtn.SetInteractivity(true);
             }                
         }
     }

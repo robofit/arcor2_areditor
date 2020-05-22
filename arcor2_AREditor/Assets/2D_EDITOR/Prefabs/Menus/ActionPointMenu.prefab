@@ -165,7 +165,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooltipContent: {fileID: 1819996781755791412}
-  description: Unlock
+  Description: 
+  DescriptionAlternative: 
 --- !u!114 &1819996781755791412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1532,7 +1533,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooltipContent: {fileID: 8793932845943478636}
-  description: Lock
+  Description: 
+  DescriptionAlternative: 
 --- !u!1 &8820185114254805781
 GameObject:
   m_ObjectHideFlags: 0
@@ -1725,6 +1727,7 @@ MonoBehaviour:
   UnlockedBtn: {fileID: 4125118879918598002}
   UntieBtn: {fileID: 6988817590356995011}
   BackBtn: {fileID: 7529427960402864237}
+  RemoveBtn: {fileID: 5568830578763968615}
   inputDialog: {fileID: 0}
   ActionPointAimingMenu: {fileID: 0}
 --- !u!1 &8970925155946651209
@@ -2011,6 +2014,16 @@ PrefabInstance:
       propertyPath: description
       value: Remove action point
       objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: Description
+      value: Remove action point
+      objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: DescriptionAlternative
+      value: 'Action point can''t be removed '
+      objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -2020,6 +2033,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: ShowDeleteAPDialog
+      objectReference: {fileID: 0}
+    - target: {fileID: 6290073754276278303, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: tooltipDisabled
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2126,8 +2144,21 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5888559990071933526, guid: a37f66d2914458b4c85e50f9fa33cf93, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: a37f66d2914458b4c85e50f9fa33cf93, type: 3}
+--- !u!114 &5568830578763968615 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6290073754276278303, guid: a37f66d2914458b4c85e50f9fa33cf93,
+    type: 3}
+  m_PrefabInstance: {fileID: 1874237591787274360}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &8141728901964711190 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
@@ -2150,6 +2181,16 @@ PrefabInstance:
         type: 3}
       propertyPath: description
       value: Untie from parent
+      objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: Description
+      value: Untie from parent
+      objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: DescriptionAlternative
+      value: Assign to parent
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2324,6 +2365,11 @@ PrefabInstance:
       propertyPath: description
       value: Back to action object
       objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: Description
+      value: Back to parent menu
+      objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -2497,6 +2543,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a37f66d2914458b4c85e50f9fa33cf93, type: 3}
+--- !u!224 &5171850896008222735 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
+    type: 3}
+  m_PrefabInstance: {fileID: 3258777198249794913}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &7529427960402864237 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
@@ -2509,12 +2561,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!224 &5171850896008222735 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
-    type: 3}
-  m_PrefabInstance: {fileID: 3258777198249794913}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5174708143617636696
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2531,6 +2577,11 @@ PrefabInstance:
         type: 3}
       propertyPath: description
       value: Robot aiming
+      objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: Description
+      value: Open aiming menu
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2696,6 +2747,11 @@ PrefabInstance:
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: description
+      value: Rename action point
+      objectReference: {fileID: 0}
+    - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: Description
       value: Rename action point
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
