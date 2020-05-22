@@ -35,10 +35,11 @@ ARCOR2 AR Editor
    - [Simple Side-Menu](https://assetstore.unity.com/packages/tools/gui/simple-side-menu-143623)
    - [UI Graph](https://assetstore.unity.com/packages/tools/gui/ui-graph-51304)
    - [Simple Collada](https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579)
-     - requires to apply patch (<b>/scripts/ColladaImporter.patch</b>) on script ColladaImporter.cs
+     - requires to apply patch (<b>/scripts/ColladaImporter.patch</b> and <b>/scripts/StringExtensions.patch</b>) on script ColladaImporter.cs and OrbCreationExtensions/StringExtensions.cs
      - on Windows, you can download [UnxUtils](http://unxutils.sourceforge.net/) and use batch file in /scripts/patch_simple_collada_asset.bat (if UnxUtils extracted to "C:\Program Files\") or use this command:
      ```bash       
      path_to_UnxUtils\UnxUtils\usr\local\wbin\patch.exe ..\arcor2_AREditor\Assets\Submodules\SimpleCollada\ColladaImporter.cs -i ColladaImporter.patch
+     path_to_UnxUtils\UnxUtils\usr\local\wbin\patch.exe ..\arcor2_AREditor\Assets\Submodules\SimpleCollada\OrbCreationExtensions\StringExtensions.cs -i StringExtensions.patch
      ```
      - on Linux, you can use bash script in /scripts/patch_simple_collada_asset.sh
 
