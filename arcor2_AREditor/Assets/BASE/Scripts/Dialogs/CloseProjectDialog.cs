@@ -6,8 +6,8 @@ public class CloseProjectDialog : Dialog
 {
 
     public async void CloseProject() {
-        bool result = await Base.GameManager.Instance.CloseProject(true);
-        if (result) {
+        (bool success, _) = await Base.GameManager.Instance.CloseProject(true);
+        if (success) {
             Base.GameManager.Instance.LoadingScreen.SetActive(true);
         }
         WindowManager.CloseWindow();
