@@ -231,7 +231,7 @@ namespace Base {
         }*/
 
         public List<string> GetEndEffectors() {
-            throw new System.NotImplementedException();
+            return EndEffectors;
         }
 
         public async Task LoadEndEffectors() {

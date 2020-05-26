@@ -90,8 +90,6 @@ namespace Base {
         }
 
 
-
-
         /// <summary>
         /// Creates project from given json
         /// </summary>
@@ -100,7 +98,9 @@ namespace Base {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Scene != null)
                 return false;
-           
+            robotsWithEndEffector.Clear();
+            CleanRobotEE();
+
             Scene = scene;
             this.loadResources = loadResources;
             LoadSettings();

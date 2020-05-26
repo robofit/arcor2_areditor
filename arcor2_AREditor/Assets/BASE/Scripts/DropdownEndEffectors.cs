@@ -2,23 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using Base;
 
 public class DropdownEndEffectors : MonoBehaviour {
     public DropdownParameter Dropdown;
 
 
-    public void Init(string robot_id) {
-        if (robot_id == "") {
+    public void Init(string robotId) {
+        if (robotId == "") {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;
-        }        
-
-        foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
+        }
+        try {
+            IRobot robot = SceneManager.Instance.GetRobot(robotId);
             Dropdown.Dropdown.dropdownItems.Clear();
             PutData(robot.GetEndEffectors());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors");
         }
-        Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors");
+        
+        
     }
 
     public void PutData(List<string> data) {
