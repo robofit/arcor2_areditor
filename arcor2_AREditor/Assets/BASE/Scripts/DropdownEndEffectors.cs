@@ -12,34 +12,13 @@ public class DropdownEndEffectors : MonoBehaviour {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;
-        }
-        foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
-            if (actionObject.Data.Id == robot_id) {
-                UpdateEndEffectorList(actionObject);
-                return;
-            }
-        }
-        //not found in objects, try services
-        foreach (Base.Service s in Base.ActionsManager.Instance.ServicesData.Values) {
-            if (!s.IsRobot()) {
-                continue;
-            }
-            if (s.Robots.ContainsKey(robot_id)) {
-                UpdateEndEffectorList(s, robot_id);
-                return;
-            }
+        }        
+
+        foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
+            Dropdown.Dropdown.dropdownItems.Clear();
+            PutData(robot.GetEndEffectors());
         }
         Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors");
-    }
-
-    public void UpdateEndEffectorList(Base.ActionObject robot) {
-        Dropdown.Dropdown.dropdownItems.Clear();
-        PutData(robot.EndEffectors);
-    }
-
-    public void UpdateEndEffectorList(Base.Service service, string robot_id) {
-        Dropdown.Dropdown.dropdownItems.Clear();
-        PutData(service.GetEndEffectors(robot_id));
     }
 
     public void PutData(List<string> data) {

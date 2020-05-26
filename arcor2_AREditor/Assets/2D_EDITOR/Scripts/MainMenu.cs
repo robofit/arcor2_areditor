@@ -58,7 +58,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
+        Base.SceneManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
@@ -186,7 +186,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     private static void UpdateServiceButton(ServiceButton serviceButton) {
         serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
         
-        if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+        if (Base.SceneManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
             //checked
             serviceButton.gameObject.SetActive(true);
             serviceButton.State = true;

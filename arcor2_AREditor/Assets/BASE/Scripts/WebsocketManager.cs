@@ -559,16 +559,16 @@ namespace Base {
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data, true);
+                    await SceneManager.Instance.AddService(sceneObjectChanged.Data, true);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
+                    SceneManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();

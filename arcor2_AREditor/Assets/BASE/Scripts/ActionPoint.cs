@@ -119,7 +119,7 @@ namespace Base {
         internal string GetFreeOrientationName() {
             int i = 1;
             bool hasFreeName;
-            string freeName = "defaulf";
+            string freeName = "default";
             do {
                 hasFreeName = true;
                 if (OrientationNameExist(freeName)) {
@@ -135,7 +135,7 @@ namespace Base {
         internal string GetFreeJointsName() {
             int i = 1;
             bool hasFreeName;
-            string freeName = "defaulf";
+            string freeName = "default";
             do {
                 hasFreeName = true;
                 if (JointsNameExist(freeName)) {
@@ -328,7 +328,7 @@ namespace Base {
                 try {
                     actionProvider = SceneManager.Instance.GetActionObject(providerName);
                 } catch (KeyNotFoundException ex) {
-                    if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                    if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
                         actionProvider = originalService;
                     } else {
                         Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);

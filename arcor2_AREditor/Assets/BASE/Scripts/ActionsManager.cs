@@ -7,28 +7,16 @@ using System.Threading.Tasks;
 
 namespace Base {
 
-    public class ServiceEventArgs : EventArgs {
-        public Service Data {
-            get; set;
-        }
-
-        public ServiceEventArgs(Service data) {
-            Data = data;
-        }
-    }
     public class ActionsManager : Singleton<ActionsManager> {
-        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
 
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
-        private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
-
+        
         public Action CurrentlyRunningAction = null;
         
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
-        public event ServiceEventHandler OnServicesUpdated;
-
+        
         public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
 
         public GameObject InteractiveObjects;
@@ -46,11 +34,7 @@ namespace Base {
             get => servicesMetadata;
             set => servicesMetadata = value;
         }
-        public Dictionary<string, Service> ServicesData {
-            get => servicesData;
-            set => servicesData = value;
-        }
-
+        
         private void Awake() {
             ActionsReady = false;
             ServicesLoaded = false;
@@ -92,7 +76,6 @@ namespace Base {
         }
 
         public void Init() {
-            servicesData.Clear();
             servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
             ActionsReady = false;
@@ -100,41 +83,9 @@ namespace Base {
             ActionObjectsLoaded = false;
         }        
 
-        public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
-            Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
-            ServicesData.TryGetValue(sceneService.Type, out Service service);
-            service.Data = sceneService;
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-        }
+       
 
-        public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
-            Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
-            if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                Service service = new Service(sceneService, serviceMetadata);
-                if (loadResources && service.IsRobot()) {
-                    await service.LoadRobots();
-                }
-                ServicesData.Add(sceneService.Type, service);
-                OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            }
-            
-        }
-
-        public void RemoveService(string serviceType) {
-            Debug.Assert(ServicesData.ContainsKey(serviceType));
-            ServicesData.TryGetValue(serviceType, out Service service);
-            ServicesData.Remove(serviceType);
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-        }
-
-
-        public void ClearServices() {
-            List<string> servicesKeys = servicesData.Keys.ToList();
-            foreach (string service in servicesKeys) {
-                RemoveService(service);
-            }
-        }
-
+        
         public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
@@ -153,54 +104,11 @@ namespace Base {
             }
         }
 
-        public bool ServiceInScene(string type) {
-            return ServicesData.ContainsKey(type);
-        }
-
-        public Service GetService(string type) {
-            if (ServicesData.TryGetValue(type, out Service sceneService)) {
-                return sceneService;
-            } else {
-                throw new KeyNotFoundException("Service not in scene!");
-            }
-        }
-
         
 
-        public List<string> GetRobotsNames() {
-            HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Name);
-                }
-            }
-            foreach (Service service in servicesData.Values) {
-                if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobotsNames()) {
-                        robots.Add(s);
-                    }
-                }                    
-            }
-            return robots.ToList<string>();
-        }
+       
 
-        public string RobotNameToId(string robotName) {
-            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot && actionObject.Data.Name == robotName) {
-                    return actionObject.Data.Id;
-                }
-            }
-            foreach (Service service in servicesData.Values) {
-                if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobotsNames()) {
-                        if (s == robotName)
-                            return s;
-                    }
-                }
-            }
-            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
-        }
-
+        
         
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
@@ -312,7 +220,7 @@ namespace Base {
                 }
                 
             }
-            foreach (Service sceneService in servicesData.Values) {
+            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
             }
 
@@ -341,7 +249,7 @@ namespace Base {
                     }
                 }
             }
-            foreach (Service sceneService in servicesData.Values) {
+            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
             }
 

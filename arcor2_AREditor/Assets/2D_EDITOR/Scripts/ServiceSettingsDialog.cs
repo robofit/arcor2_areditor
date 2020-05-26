@@ -15,7 +15,7 @@ public class ServiceSettingsDialog : Dialog
         set {
             type = value;
             Base.Service sceneService;
-            sceneService = Base.ActionsManager.Instance.GetService(type);
+            sceneService = Base.SceneManager.Instance.GetService(type);
             ServiceName.text = "Service name: " + sceneService.Data.Type;
             ConfigID.text = "Configuration ID: " + sceneService.Data.ConfigurationId; // only first one, for now
             
