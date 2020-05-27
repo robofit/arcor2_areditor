@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// Inherit from this base class to create a singleton.
@@ -26,10 +26,12 @@ namespace Base {
                 lock (m_Lock) {
                     if (m_Instance == null) {
                         // Search for existing instance.
-                        m_Instance = (T) FindObjectOfType(typeof(T));
-
-                        // Create new instance if one doesn't already exist.
-                        if (m_Instance == null) {
+                        Object[] objects = Resources.FindObjectsOfTypeAll(typeof(T));
+                        // use first found object
+                        if (objects.Length > 0)
+                            m_Instance = (T) objects[0];
+                        // or create new instance
+                        else {
                             // Need to create a new GameObject to attach the singleton to.
                             GameObject singletonObject = new GameObject();
                             m_Instance = singletonObject.AddComponent<T>();
