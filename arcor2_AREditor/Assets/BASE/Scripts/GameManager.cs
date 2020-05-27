@@ -95,7 +95,8 @@ namespace Base {
         private GameStateEnum gameState;
         private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen, MainMenuBtn, StatusPanel;
+        public GameObject LoadingScreen;
+        public CanvasGroup MainMenuBtnCG, StatusPanelCG;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
@@ -224,13 +225,13 @@ namespace Base {
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
             switch (newState) {
                 case EditorStateEnum.Normal:
-                    MainMenuBtn.SetActive(true);
-                    StatusPanel.SetActive(true);
+                    EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
+                    EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                     break;
                 default:
-                    MainMenuBtn.SetActive(false);
+                    EditorHelper.EnableCanvasGroup(MainMenuBtnCG, false);
+                    EditorHelper.EnableCanvasGroup(StatusPanelCG, false);
                     MenuManager.Instance.HideAllMenus();
-                    StatusPanel.SetActive(false);
                     break;
             }
         }
@@ -986,7 +987,7 @@ namespace Base {
                     SceneManager.Instance.Scene = null;
                 return (true, "");
             } catch (RequestFailedException ex) {
-                if (!dryRun) {
+                if (!dryRun && force) {
                     Notifications.Instance.ShowNotification("Failed to close scene", ex.Message);
                     HideLoadingScreen();                   
                 }

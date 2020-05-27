@@ -251,15 +251,20 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public async void CloseScene() {
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(false);
-        if (!success)
+        if (!success) {
+            GameManager.Instance.HideLoadingScreen();
             CloseSceneDialog.WindowManager.OpenWindow();
+        }
     }
 
 
     public async void ShowCloseProjectDialog(string type) {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
-        if (!success)
+        if (!success) {
+            GameManager.Instance.HideLoadingScreen();
             CloseProjectDialog.WindowManager.OpenWindow();
+        }
+            
     }
 
 
