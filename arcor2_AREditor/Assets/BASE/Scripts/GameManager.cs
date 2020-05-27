@@ -925,10 +925,10 @@ namespace Base {
             }
         }
 
-        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId, UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId, pivot);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action object", ex.Message);
             }

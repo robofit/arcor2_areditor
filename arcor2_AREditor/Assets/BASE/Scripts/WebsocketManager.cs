@@ -716,12 +716,13 @@ namespace Base {
 
         }
 
-        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
             
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs
-                (id: actionObjectId, robot: robotArg);
+                (id: actionObjectId, robot: robotArg, pivot: pivot);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
                 (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
