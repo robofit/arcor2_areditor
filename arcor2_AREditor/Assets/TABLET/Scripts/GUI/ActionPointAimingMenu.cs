@@ -108,7 +108,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         EndEffectorList.Dropdown.dropdownItems.Clear();
         
         try {
-            string robotId = ActionsManager.Instance.RobotNameToId(robot_name);
+            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
             EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId);
             if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
                 UpdatePoseBlock.SetActive(false);
@@ -177,7 +177,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         }
         try {
-            string robotId = ActionsManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+            string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
             Base.GameManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
             

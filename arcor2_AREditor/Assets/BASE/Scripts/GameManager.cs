@@ -95,7 +95,8 @@ namespace Base {
         private GameStateEnum gameState;
         private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen, MainMenuBtn, StatusPanel;
+        public GameObject LoadingScreen;
+        public CanvasGroup MainMenuBtnCG, StatusPanelCG;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
         public TMPro.TextMeshProUGUI Text;
@@ -224,13 +225,13 @@ namespace Base {
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
             switch (newState) {
                 case EditorStateEnum.Normal:
-                    MainMenuBtn.SetActive(true);
-                    StatusPanel.SetActive(true);
+                    EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
+                    EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                     break;
                 default:
-                    MainMenuBtn.SetActive(false);
+                    EditorHelper.EnableCanvasGroup(MainMenuBtnCG, false);
+                    EditorHelper.EnableCanvasGroup(StatusPanelCG, false);
                     MenuManager.Instance.HideAllMenus();
-                    StatusPanel.SetActive(false);
                     break;
             }
         }
@@ -924,10 +925,10 @@ namespace Base {
             }
         }
 
-        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async void UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId, UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(actionObjectId, robotId, endEffectorId, pivot);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action object", ex.Message);
             }
@@ -982,10 +983,11 @@ namespace Base {
                 ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.CloseScene(force, dryRun);
-                SceneManager.Instance.Scene = null;
+                if (!dryRun)
+                    SceneManager.Instance.Scene = null;
                 return (true, "");
             } catch (RequestFailedException ex) {
-                if (!dryRun) {
+                if (!dryRun && force) {
                     Notifications.Instance.ShowNotification("Failed to close scene", ex.Message);
                     HideLoadingScreen();                   
                 }
@@ -999,11 +1001,13 @@ namespace Base {
                 ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
-                OnCloseProject?.Invoke(this, EventArgs.Empty);
-                SceneManager.Instance.Scene = null;
+                if (!dryRun) {
+                    OnCloseProject?.Invoke(this, EventArgs.Empty);
+                    SceneManager.Instance.Scene = null;                    
+                }
                 return (true, "");
             } catch (RequestFailedException ex) {
-                if (!dryRun) {
+                if (!dryRun && force) {
                     Notifications.Instance.ShowNotification("Failed to close project", ex.Message);
                     HideLoadingScreen();
                 }                
@@ -1270,7 +1274,7 @@ namespace Base {
                 await WebsocketManager.Instance.RenameActionPoint(actionPoint.Data.Id, newUserId);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
                 return false;
             }
         }
@@ -1279,7 +1283,7 @@ namespace Base {
                 await WebsocketManager.Instance.UpdateActionPointParent(actionPoint.Data.Id, parentId);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                Notifications.Instance.ShowNotification("Failed to update action point parent", e.Message);
                 return false;
             }
         }
@@ -1289,7 +1293,7 @@ namespace Base {
                 await WebsocketManager.Instance.UpdateActionPointPosition(actionPoint.Data.Id, newPosition);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
                 return false;
             }
         }
@@ -1299,7 +1303,7 @@ namespace Base {
                 await WebsocketManager.Instance.AddActionPointOrientation(actionPoint.Data.Id, orientation, orientationId);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                Notifications.Instance.ShowNotification("Failed to add action point orientation", e.Message);
                 return false;
             }
         }
@@ -1310,7 +1314,7 @@ namespace Base {
                 await WebsocketManager.Instance.AddActionPointJoints(actionPoint.Data.Id, robotId, jointsId);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                Notifications.Instance.ShowNotification("Failed to add action point joints", e.Message);
                 return false;
             }
         }
@@ -1342,7 +1346,7 @@ namespace Base {
                 return new Tuple<bool, string>(true, null);
             } catch (RequestFailedException e) {
                 if (!dryRun)
-                    Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                    Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
                 return new Tuple<bool, string>(false, e.Message);
             }
         }
@@ -1352,7 +1356,8 @@ namespace Base {
                 await WebsocketManager.Instance.RemoveActionPoint(actionPointId, dryRun: dryRun);
                 return true;
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
                 return false;
             }
         }

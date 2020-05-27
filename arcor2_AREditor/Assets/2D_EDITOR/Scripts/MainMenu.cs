@@ -58,7 +58,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.ActionsManager.Instance.OnServicesUpdated += ServicesUpdated;
+        Base.SceneManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
         Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
@@ -186,7 +186,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     private static void UpdateServiceButton(ServiceButton serviceButton) {
         serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
         
-        if (Base.ActionsManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
+        if (Base.SceneManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
             //checked
             serviceButton.gameObject.SetActive(true);
             serviceButton.State = true;
@@ -251,15 +251,20 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public async void CloseScene() {
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(false);
-        if (!success)
+        if (!success) {
+            GameManager.Instance.HideLoadingScreen();
             CloseSceneDialog.WindowManager.OpenWindow();
+        }
     }
 
 
     public async void ShowCloseProjectDialog(string type) {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
-        if (!success)
+        if (!success) {
+            GameManager.Instance.HideLoadingScreen();
             CloseProjectDialog.WindowManager.OpenWindow();
+        }
+            
     }
 
 

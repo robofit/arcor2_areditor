@@ -16,27 +16,14 @@ public class DropdownRobots : MonoBehaviour
     /// <param name="withEEOnly">Only puts robots with at lease one end effector</param>
     public void Init(UnityAction<string> callback, bool withEEOnly) {
         List<string> robotNames = new List<string>();
-        foreach (string robotName in Base.ActionsManager.Instance.GetRobotsNames()) {
+        foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
+            List<string> endEffectors = robot.GetEndEffectors();
             if (withEEOnly) {
-                if (Base.SceneManager.Instance.TryGetActionObjectByName(robotName, out Base.ActionObject robot)) {
-                    if (robot.GetEndEffectors().Count > 0) {
-                        robotNames.Add(robotName);
-                    }
-
-                    //not found in objects, try services
-                } else
-                    foreach (Base.Service s in Base.ActionsManager.Instance.ServicesData.Values) {
-
-                        if (s.IsRobot() && s.Robots.ContainsKey(robotName)) {
-                            if (s.GetEndEffectors(robotName).Count > 0) {
-                                robotNames.Add(robotName);
-                                break;
-                            }
-                        }
-                    }
-
+                if (endEffectors.Count > 0) {
+                    robotNames.Add(robot.GetName());
+                }
             } else {
-                robotNames.Add(robotName);
+                robotNames.Add(robot.GetName());
             }            
         }
         Init(robotNames, callback);

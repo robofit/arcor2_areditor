@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// Inherit from this base class to create a singleton.
@@ -28,7 +28,17 @@ namespace Base {
                         // Search for existing instance.
                         m_Instance = (T) FindObjectOfType(typeof(T));
 
-                        // Create new instance if one doesn't already exist.
+                        //if there is no active object of given type, try to find in inactive objects
+                        if (m_Instance == null) {
+                            Object[] objects = Resources.FindObjectsOfTypeAll(typeof(T));
+                            // if there is such object, it is bug and it shuld to be reported
+                            if (objects.Length > 0) {
+                                m_Instance = (T) objects[0];
+                                Debug.LogError("Calling method of inactive object");
+                            }                                
+                        }
+                        
+                        // or create new instance
                         if (m_Instance == null) {
                             // Need to create a new GameObject to attach the singleton to.
                             GameObject singletonObject = new GameObject();

@@ -248,7 +248,7 @@ namespace Base {
 
         public IActionProvider GetActionProvider(string id) {
             try {
-                return ActionsManager.Instance.GetService(id);
+                return SceneManager.Instance.GetService(id);
             } catch (KeyNotFoundException ex) {
 
             }

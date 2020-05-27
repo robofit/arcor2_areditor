@@ -559,16 +559,16 @@ namespace Base {
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data, true);
+                    await SceneManager.Instance.AddService(sceneObjectChanged.Data, true);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
+                    SceneManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -716,12 +716,13 @@ namespace Base {
 
         }
 
-        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
             
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs
-                (id: actionObjectId, robot: robotArg);
+                (id: actionObjectId, robot: robotArg, pivot: pivot);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
                 (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);

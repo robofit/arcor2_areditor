@@ -16,7 +16,6 @@ namespace Base {
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
-        public List<string> EndEffectors = new List<string>();
         protected ActionObjectMenu actionObjectMenu;
         protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
@@ -72,11 +71,7 @@ namespace Base {
             return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
         }
 
-        public async Task LoadEndEffectors() {
-            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
-        }
-
+        
                 
         public abstract Vector3 GetScenePosition();
 
@@ -117,9 +112,6 @@ namespace Base {
             return null; //TODO: throw exception
         }
 
-        public List<string> GetEndEffectors() {
-            return EndEffectors;
-        }
 
         public bool IsRobot() {
             return ActionObjectMetadata.Robot;

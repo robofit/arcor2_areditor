@@ -1,17 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
 using UnityEngine;
 
 namespace Base {
-    public class Robot : ActionObject {
+    public class RobotActionObject : ActionObject, IRobot {
 
         public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
 
         private bool robotLoaded = false;
+
+        public List<string> EndEffectors = new List<string>();
+
 
         protected override void Start() {
             base.Start();
@@ -70,7 +74,7 @@ namespace Base {
         private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
             Transform importedModel = args.Data.transform;
 
-            Base.Robot robot = importedModel.GetComponentInParent<Base.Robot>();
+            Base.RobotActionObject robot = importedModel.GetComponentInParent<Base.RobotActionObject>();
             if (robot != null) {
                 // check if imported model corresponds to this robot
                 if (ReferenceEquals(robot, this)) {
@@ -222,5 +226,18 @@ namespace Base {
         public override void OnClick(Click type) {
 
         }
+        /*public List<string> GetEndEffectors() {
+            return EndEffectors;
+        }*/
+
+        public List<string> GetEndEffectors() {
+            return EndEffectors;
+        }
+
+        public async Task LoadEndEffectors() {
+            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
+            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+        }
+
     }
 }

@@ -13,10 +13,11 @@ public class ButtonWithTooltip : MonoBehaviour {
     [SerializeField]
     private TooltipContent TooltipContent;
 
-    private void Start() {
+    private void Awake() {
         Button = gameObject.GetComponent<Button>();
         TooltipContent = gameObject.GetComponent<TooltipContent>();
     }
+
 
     public void SetInteractivity(bool interactable) {
         Button.interactable = interactable;

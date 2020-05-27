@@ -4,12 +4,14 @@ using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 using Base;
+using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
+using System.Collections.Generic;
 
 public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
     [SerializeField]
     private TMPro.TMP_Text objectName;
-    public DropdownParameter RobotsList, EndEffectorList;
+    public DropdownParameter RobotsList, EndEffectorList, PivotList;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
@@ -36,6 +38,12 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         Debug.Assert(VisibilitySlider != null);
         Debug.Assert(InputDialog != null);
         Debug.Assert(ConfirmationDialog != null);
+
+        List<string> pivots = new List<string>();
+        foreach (string item in Enum.GetNames(typeof(PivotEnum))) {
+            pivots.Add(item);
+        }
+        PivotList.PutData(pivots, "Middle", null);
     }
 
 
@@ -120,8 +128,10 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
+        PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
+
         Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-            RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
+            RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text, pivot);
     }
          
 
