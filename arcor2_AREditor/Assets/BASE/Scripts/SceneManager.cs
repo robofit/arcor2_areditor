@@ -99,11 +99,12 @@ namespace Base {
             if (Scene != null)
                 return false;
             robotsWithEndEffector.Clear();
-            CleanRobotEE();
-
+            
             Scene = scene;
             this.loadResources = loadResources;
             LoadSettings();
+            
+
             bool success = await UpdateScene(scene, customCollisionModels);
             
             if (success) {
@@ -284,6 +285,7 @@ namespace Base {
         }
 
         private void CleanRobotEE() {
+            Debug.LogError("CleanRobotEE");
             foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
                 Destroy(ee.Value.gameObject);
             }
@@ -292,6 +294,8 @@ namespace Base {
 
 
         public async void ShowRobotsEE() {
+            Debug.LogError("ShowRobotsEE");
+            Debug.LogError(GetRobots().Count());
             foreach (IRobot robot in GetRobots()) {
                 List<string> endEffectors = robot.GetEndEffectors();
                 if (endEffectors.Count > 0) {
@@ -299,6 +303,7 @@ namespace Base {
                 }
             }
             RobotsEEVisible = true;
+            Debug.LogError(robotsWithEndEffector.Count());
             foreach (KeyValuePair<string, List<string>> robot in robotsWithEndEffector) {
                 if (robot.Value.Count > 0)
                     await WebsocketManager.Instance.RegisterForRobotEvent(robot.Key, true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
@@ -308,6 +313,7 @@ namespace Base {
         }
 
         public async void HideRobotsEE() {
+            Debug.LogError("HideRobotsEE");
             RobotsEEVisible = false;
             foreach (KeyValuePair<string, List<string>> robot in robotsWithEndEffector) {
                 if (robot.Value.Count > 0)
@@ -316,6 +322,14 @@ namespace Base {
             robotsWithEndEffector.Clear();
             CleanRobotEE();
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", false);
+        }
+
+        public RobotEE GetRobotEE(string robotId, string eeId) {
+            if (EndEffectors.TryGetValue(robotId + "/" + eeId, out RobotEE robotEE)) {
+                return robotEE;
+            } else {
+                throw new ItemNotFoundException("No ee with id: " + robotId + "/" + eeId);
+            }
         }
 
         

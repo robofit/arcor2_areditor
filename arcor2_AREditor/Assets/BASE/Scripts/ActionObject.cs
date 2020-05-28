@@ -156,7 +156,6 @@ namespace Base {
         public void ShowMenu() {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
-                actionObjectMenu.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
             } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
                 actionObjectMenuProjectEditor.CurrentObject = this;
@@ -212,7 +211,8 @@ namespace Base {
             return gameObject;
         }
 
-
+        public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
+        internal abstract GameObject GetModelCopy();
     }
 
 }

@@ -109,7 +109,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId);
+            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
             if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
                 UpdatePoseBlock.SetActive(false);
                 UpdateJointsBlock.SetActive(true);

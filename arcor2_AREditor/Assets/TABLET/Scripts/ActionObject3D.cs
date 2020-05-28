@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Base;
 using RuntimeGizmos;
+using IO.Swagger.Model;
 
 public class ActionObject3D : ActionObject
 {
@@ -141,7 +142,57 @@ public class ActionObject3D : ActionObject
         SetVisibility(visibility);
     }
 
-    public void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+    public override void SetVisibility(float value) {
+        base.SetVisibility(value);
+        // Set opaque material
+        if (value >= 1) {
+            transparent = false;
+            Material oldMaterial = modelRenderer.material;
+            modelRenderer.material = ActionObjectMaterialOpaque;
+            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+        }
+        // Set transparent material
+        else {
+            if (!transparent) {
+                Material oldMaterial = modelRenderer.material;
+                modelRenderer.material = ActionObjectMaterialTransparent;
+                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
+                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+                transparent = true;
+            }
+            // set alpha of the material
+            Color color = modelRenderer.material.color;
+            color.a = value;
+            modelRenderer.material.color = color;
+        }
+    }
+
+    public override void Show() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = true;
+        }
+    }
+
+    public override void Hide() {
+        Debug.Assert(Model != null);
+        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+            renderer.enabled = false;
+        }
+    }
+
+    public override void SetInteractivity(bool interactivity) {
+        Debug.Assert(Model != null);
+        Model.GetComponent<Collider>().enabled = interactivity;
+    }
+
+    public override void ActivateForGizmo(string layer) {
+        base.ActivateForGizmo(layer);
+        Model.layer = LayerMask.NameToLayer(layer);
+    }
+
+    public override void CreateModel(CollisionModels customCollisionModels = null) {
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -204,54 +255,9 @@ public class ActionObject3D : ActionObject
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
     }
 
-
-    public override void SetVisibility(float value) {
-        base.SetVisibility(value);
-        // Set opaque material
-        if (value >= 1) {
-            transparent = false;
-            Material oldMaterial = modelRenderer.material;
-            modelRenderer.material = ActionObjectMaterialOpaque;
-            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
-        }
-        // Set transparent material
-        else {
-            if (!transparent) {
-                Material oldMaterial = modelRenderer.material;
-                modelRenderer.material = ActionObjectMaterialTransparent;
-                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
-                transparent = true;
-            }
-            // set alpha of the material
-            Color color = modelRenderer.material.color;
-            color.a = value;
-            modelRenderer.material.color = color;
-        }
-    }
-
-    public override void Show() {
-        Debug.Assert(Model != null);
-        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
-            renderer.enabled = true;
-        }
-    }
-
-    public override void Hide() {
-        Debug.Assert(Model != null);
-        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
-            renderer.enabled = false;
-        }
-    }
-
-    public override void SetInteractivity(bool interactivity) {
-        Debug.Assert(Model != null);
-        Model.GetComponent<Collider>().enabled = interactivity;
-    }
-
-    public override void ActivateForGizmo(string layer) {
-        base.ActivateForGizmo(layer);
-        Model.layer = LayerMask.NameToLayer(layer);
+    internal override GameObject GetModelCopy() {
+        GameObject model = Instantiate(Model);
+        model.transform.localScale = Visual.transform.localScale;
+        return model;
     }
 }

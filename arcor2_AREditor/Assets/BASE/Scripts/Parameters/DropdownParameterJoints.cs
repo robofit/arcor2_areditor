@@ -11,7 +11,7 @@ public class DropdownParameterJoints : DropdownParameter
     public Sprite ValidIcon, InvalidIcon;
     private string apName;
 
-    public void PutData(List<IO.Swagger.Model.ProjectRobotJoints> robotJoints, string selectedItem, UnityAction callback, string apName = null) {
+    public void PutData(List<IO.Swagger.Model.ProjectRobotJoints> robotJoints, string selectedItem, UnityAction<string> callback, string apName = null) {
         this.apName = apName;
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (IO.Swagger.Model.ProjectRobotJoints joints in robotJoints) {

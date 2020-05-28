@@ -75,7 +75,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
     }
 
-    public virtual void PutData(List<string> data, string selectedItem, UnityAction callback) {
+    public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback) {
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (string d in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
@@ -86,14 +86,14 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         PutData(items, selectedItem, callback);
     }
 
-    public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction callback) {
+    public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction<string> callback) {
         Dropdown.dropdownItems.Clear();
         foreach (CustomDropdown.Item item in items) {
             if (callback != null) {
                 if (item.OnItemSelection == null) {
                     item.OnItemSelection = new UnityEvent();
                 }
-                item.OnItemSelection.AddListener(callback);
+                item.OnItemSelection.AddListener(() => callback(item.itemName));
             }
 
             Dropdown.dropdownItems.Add(item);
