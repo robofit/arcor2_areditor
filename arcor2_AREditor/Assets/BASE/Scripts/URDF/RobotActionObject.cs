@@ -37,25 +37,9 @@ namespace Base {
             SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
-            // TODO - create basic cube and replace it later with robot model
-            CreatePlaceholderModel(customCollisionModels);
+            CreateModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
-        }
-
-        public void CreatePlaceholderModel(IO.Swagger.Model.CollisionModels customCollisionModels = null) {
-            RobotPlaceholder = Instantiate(RobotPlaceholderPrefab, transform);
-            RobotPlaceholder.transform.parent = transform;
-            RobotPlaceholder.transform.localPosition = Vector3.zero;
-            RobotPlaceholder.transform.localPosition = Vector3.zero;
-            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
-
-            RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
-            Renderer[] modelRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
-            List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(modelRenderers);
-            outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-            outlineOnClick.InitRenderers(ren);
         }
         
         private void OnUrdfDownloaded(object sender, RobotUrdfArgs args) {
@@ -296,7 +280,18 @@ namespace Base {
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
-            
+            RobotPlaceholder = Instantiate(RobotPlaceholderPrefab, transform);
+            RobotPlaceholder.transform.parent = transform;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+
+            RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
+            Renderer[] modelRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
+            List<Renderer> ren = new List<Renderer>();
+            ren.AddRange(modelRenderers);
+            outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+            outlineOnClick.InitRenderers(ren);
         }
 
         internal override GameObject GetModelCopy() {
