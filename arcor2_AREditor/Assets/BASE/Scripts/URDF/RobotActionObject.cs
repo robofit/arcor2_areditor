@@ -286,8 +286,6 @@ namespace Base {
             }
         }
 
-        }
-
         public List<string> GetEndEffectors() {
             return EndEffectors;
         }
