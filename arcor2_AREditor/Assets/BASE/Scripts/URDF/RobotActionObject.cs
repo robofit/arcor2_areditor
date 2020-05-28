@@ -10,11 +10,17 @@ using UnityEngine;
 namespace Base {
     public class RobotActionObject : ActionObject, IRobot {
 
+        public GameObject RobotPlaceholderPrefab;
+
         public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
 
         private bool robotLoaded = false;
 
         public List<string> EndEffectors = new List<string>();
+
+        private GameObject RobotPlaceholder;
+
+        private OutlineOnClick outlineOnClick;
 
 
         protected override void Start() {
@@ -31,11 +37,26 @@ namespace Base {
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
             // TODO - create basic cube and replace it later with robot model
-            //CreateModel(customCollisionModels);
+            CreatePlaceholderModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
         }
 
+        public void CreatePlaceholderModel(IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+            RobotPlaceholder = Instantiate(RobotPlaceholderPrefab, transform);
+            RobotPlaceholder.transform.parent = transform;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+
+            RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
+            Renderer[] modelRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
+            List<Renderer> ren = new List<Renderer>();
+            ren.AddRange(modelRenderers);
+            outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+            outlineOnClick.InitRenderers(ren);
+        }
+        
         private void OnUrdfDownloaded(object sender, RobotUrdfArgs args) {
             // check if downloaded urdf contains this robot
             if (ActionObjectMetadata.Type == args.RobotType) {
@@ -93,7 +114,7 @@ namespace Base {
             }
         }
 
-        private static void AddColliders(GameObject gameObject, bool setConvex = false) {
+        private void AddColliders(GameObject gameObject, bool setConvex = false) {
             MeshFilter[] meshFilters = gameObject.GetComponentsInChildren<MeshFilter>();
             foreach (MeshFilter meshFilter in meshFilters) {
                 GameObject child = meshFilter.gameObject;
@@ -101,6 +122,10 @@ namespace Base {
                 meshCollider.sharedMesh = meshFilter.sharedMesh;
 
                 meshCollider.convex = setConvex;
+                
+                // Add OnClick functionality aswell
+                OnClickCollider click = child.AddComponent<OnClickCollider>();
+                click.Target = this.gameObject;
             }
         }
 
@@ -176,13 +201,27 @@ namespace Base {
                         return false;
                     }
                 }
-                robotLoaded = true;
-
-                // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
-                ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
             }
-            SetActiveAllVisuals(true);
+            robotLoaded = true;
+            OnRobotLoaded();
+
             return true;
+        }
+
+        private void OnRobotLoaded() {
+            SetActiveAllVisuals(true);
+
+            // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
+            ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
+
+            outlineOnClick.ClearRenderers();
+            RobotPlaceholder.SetActive(false);
+            Destroy(RobotPlaceholder);
+
+            Renderer[] modelRenderers = gameObject.GetComponentsInChildren<Renderer>();
+            List<Renderer> ren = new List<Renderer>();
+            ren.AddRange(modelRenderers);
+            outlineOnClick.InitRenderers(ren);
         }
 
         /// <summary>
@@ -224,8 +263,28 @@ namespace Base {
         }
 
         public override void OnClick(Click type) {
-
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+                GameManager.Instance.ObjectSelected(this);
+                return;
+            }
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+                return;
+            }
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+                Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+                return;
+            }
+            // HANDLE MOUSE
+            if (type == Click.MOUSE_RIGHT_BUTTON) {
+                ShowMenu();
+            }
+            // HANDLE TOUCH
+            else if (type == Click.TOUCH) {
+                ShowMenu();
+            }
         }
+
         /*public List<string> GetEndEffectors() {
             return EndEffectors;
         }*/
