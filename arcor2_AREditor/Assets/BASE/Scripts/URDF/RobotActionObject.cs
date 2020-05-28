@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
@@ -285,9 +286,7 @@ namespace Base {
             }
         }
 
-        /*public List<string> GetEndEffectors() {
-            return EndEffectors;
-        }*/
+        }
 
         public List<string> GetEndEffectors() {
             return EndEffectors;
@@ -298,5 +297,12 @@ namespace Base {
             EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }
 
+        public override void CreateModel(CollisionModels customCollisionModels = null) {
+            
+        }
+
+        internal override GameObject GetModelCopy() {
+            throw new System.NotImplementedException();
+        }
     }
 }

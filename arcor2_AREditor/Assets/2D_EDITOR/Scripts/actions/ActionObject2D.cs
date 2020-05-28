@@ -1,4 +1,5 @@
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 
 
@@ -98,6 +99,13 @@ public class ActionObject2D : Base.ActionObject {
         throw new System.NotImplementedException();
     }
 
+    public override void CreateModel(CollisionModels customCollisionModels = null) {
+        throw new System.NotImplementedException();
+    }
+
+    internal override GameObject GetModelCopy() {
+        throw new System.NotImplementedException();
+    }
 }
 
 

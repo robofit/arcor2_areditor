@@ -6,7 +6,9 @@ using Michsky.UI.ModernUIPack;
 using Base;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
 using System.Collections.Generic;
+using UnityEditor.Callbacks;
 
+[RequireComponent(typeof(SimpleSideMenu))]
 public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Base.ActionObject CurrentObject;
     [SerializeField]
@@ -18,11 +20,18 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public Slider VisibilitySlider;
     public InputDialog InputDialog;
 
+    public SwitchComponent ShowModelSwitch;
+
     public ConfirmationDialog ConfirmationDialog;
 
     private int currentFocusPoint = -1;
 
+    private GameObject model;
+
+    private SimpleSideMenu menu;
+
     private void Start() {
+        menu = GetComponent<SimpleSideMenu>();
         Debug.Assert(objectName != null);
         Debug.Assert(RobotsList != null);
         Debug.Assert(EndEffectorList != null);
@@ -43,7 +52,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         foreach (string item in Enum.GetNames(typeof(PivotEnum))) {
             pivots.Add(item);
         }
-        PivotList.PutData(pivots, "Middle", null);
+        PivotList.PutData(pivots, "Middle", OnPivotChanged);
     }
 
 
@@ -115,13 +124,27 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         objectName.text = CurrentObject.Data.Name;
 
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+
+        ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
+        if (ShowModelSwitch.Switch.isOn) {
+            ShowModelOnEE();
+        }
     }
 
     private void OnRobotChanged(string robot_id) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
+        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
+        UpdateModelOnEE();
     }
-    
+
+    private void OnEEChanged(string eeId) {
+        UpdateModelOnEE();
+    }
+
+    private void OnPivotChanged(string pivot) {
+        UpdateModelOnEE();
+    }
+       
 
     public void UpdateObjectPosition() {
         if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
@@ -131,7 +154,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
 
         Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-            RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text, pivot);
+            (string) RobotsList.GetValue(), (string) EndEffectorList.GetValue(), pivot);
     }
          
 
@@ -234,6 +257,58 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public void OnVisibilityChange(float value) {
         CurrentObject.SetVisibility(value / 100f);
+    }
+
+    public void ShowModelOnEE() {
+        if (model != null)
+            HideModelOnEE();
+        Debug.LogError("ShowModelOnEE");
+        model = CurrentObject.GetModelCopy();
+        UpdateModelOnEE();
+    }
+
+    private void UpdateModelOnEE() {
+        if (model == null)
+            return;
+        string robotId = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
+        if (string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+            throw new RequestFailedException("Robot or end effector not selected!");
+        }
+        try {
+            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            model.transform.parent = ee.gameObject.transform;
+
+            switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
+                case PivotEnum.Top:
+                    model.transform.localPosition = new Vector3(0, model.transform.localScale.y / 2, 0);
+                    break;
+                case PivotEnum.Bottom:
+                    model.transform.localPosition = new Vector3(0, -model.transform.localScale.y / 2, 0);
+                    break;
+                case PivotEnum.Middle:
+                    model.transform.localPosition = new Vector3(0, 0, 0);
+                    break;
+            }
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("End-effector position unknown", "Robot did not send position of selected end effector");
+        }
+        
+    }
+
+    public void HideModelOnEE() {
+        if (model != null) {
+            Destroy(model);
+        }            
+        model = null;
+    }
+
+    public void OnStateChanged() {
+        switch (menu.CurrentState) {
+            case SimpleSideMenu.State.Closed:
+                HideModelOnEE();
+                break;
+        }
     }
 
 }
