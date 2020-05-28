@@ -6,6 +6,7 @@ using Michsky.UI.ModernUIPack;
 using Base;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
 using System.Collections.Generic;
+using UnityEditor.Callbacks;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionObjectMenu : MonoBehaviour, IMenu {
@@ -273,20 +274,26 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         if (string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
-        RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
-        model.transform.parent = ee.gameObject.transform;
+        try {
+            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            model.transform.parent = ee.gameObject.transform;
 
-        switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
-            case PivotEnum.Top:
-                model.transform.localPosition = new Vector3(0, model.transform.localScale.y / 2, 0);
-                break;
-            case PivotEnum.Bottom:
-                model.transform.localPosition = new Vector3(0, -model.transform.localScale.y / 2, 0);
-                break;
-            case PivotEnum.Middle:
-                model.transform.localPosition = new Vector3(0, 0, 0);
-                break;
+            switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
+                case PivotEnum.Top:
+                    model.transform.localPosition = new Vector3(0, model.transform.localScale.y / 2, 0);
+                    break;
+                case PivotEnum.Bottom:
+                    model.transform.localPosition = new Vector3(0, -model.transform.localScale.y / 2, 0);
+                    break;
+                case PivotEnum.Middle:
+                    model.transform.localPosition = new Vector3(0, 0, 0);
+                    break;
+            }
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("End-effector position unknown", "Robot did not send position of selected end effector");
         }
+        
     }
 
     public void HideModelOnEE() {
