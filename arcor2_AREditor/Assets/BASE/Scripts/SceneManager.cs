@@ -293,6 +293,7 @@ namespace Base {
 
 
         public async void ShowRobotsEE() {
+            CleanRobotEE();
             foreach (IRobot robot in GetRobots()) {
                 List<string> endEffectors = robot.GetEndEffectors();
                 if (endEffectors.Count > 0) {
@@ -309,7 +310,6 @@ namespace Base {
         }
 
         public async void HideRobotsEE() {
-            Debug.LogError("HideRobotsEE");
             RobotsEEVisible = false;
             foreach (KeyValuePair<string, List<string>> robot in robotsWithEndEffector) {
                 if (robot.Value.Count > 0)
