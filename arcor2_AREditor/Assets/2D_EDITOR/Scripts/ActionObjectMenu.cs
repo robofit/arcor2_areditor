@@ -95,19 +95,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public void UpdateMenu() {
         if (currentFocusPoint >= 0)
             return;
-        if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
-            UpdatePositionBlockVO.SetActive(false);
-            UpdatePositionBlockMesh.SetActive(true);
-            RobotsListsBlock.SetActive(true);
-        } else if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
-            UpdatePositionBlockVO.SetActive(true);
-            UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(true);
-        } else {
-            UpdatePositionBlockVO.SetActive(false);
-            UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(false);
-        }
+        
 
         RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
 
@@ -118,6 +106,24 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             UpdatePositionBlockMesh.SetActive(false);
             RobotsListsBlock.SetActive(false);
         }
+        if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(true);
+            RobotsListsBlock.SetActive(true);
+        } else if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
+            UpdatePositionBlockVO.SetActive(true);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(true);
+            ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
+            if (ShowModelSwitch.Switch.isOn) {
+                ShowModelOnEE();
+            }
+        } else {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+        }
+
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
@@ -125,10 +131,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
 
-        ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
-        if (ShowModelSwitch.Switch.isOn) {
-            ShowModelOnEE();
-        }
+        
     }
 
     private void OnRobotChanged(string robot_id) {
@@ -256,13 +259,13 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
 
     public void OnVisibilityChange(float value) {
-        CurrentObject.SetVisibility(value / 100f);
+        if (CurrentObject != null)
+            CurrentObject.SetVisibility(value / 100f);
     }
 
     public void ShowModelOnEE() {
         if (model != null)
             HideModelOnEE();
-        Debug.LogError("ShowModelOnEE");
         model = CurrentObject.GetModelCopy();
         UpdateModelOnEE();
     }
