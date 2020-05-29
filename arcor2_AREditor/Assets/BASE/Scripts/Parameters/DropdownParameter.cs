@@ -13,7 +13,13 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     public GameObject LoadingObject;
     public bool Loading;
     public VerticalLayoutGroup LayoutGroupToBeDisabled;
+
+    private TooltipContent tooltipContent;
     public GameObject Trigger, CanvasRoot;
+
+    private void Awake() {
+        tooltipContent = Label.GetComponent<TooltipContent>();
+    }
 
     private void Start() {
         if (CanvasRoot != null)
@@ -44,13 +50,20 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
-            Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+        if (tooltipContent == null)
+            return;
+        if (!string.IsNullOrEmpty(description)) {
+            tooltipContent.enabled = true;
+            if (tooltipContent.tooltipRect == null) {
+                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
+            }
+            if (tooltipContent.descriptionText == null) {
+                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
+            }
+            tooltipContent.description = description;
+        } else {
+            tooltipContent.enabled = false;
         }
-        if (Label.GetComponent<TooltipContent>().descriptionText == null) {
-            Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
-        }
-        Label.GetComponent<TooltipContent>().description = description;
     }
 
     public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, bool enableIcons = false) {
