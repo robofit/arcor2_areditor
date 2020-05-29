@@ -731,7 +731,7 @@ namespace Base {
         }
 
         public string GetPackageName(string id) {
-            return GetPackage(id).Name;
+            return GetPackage(id).PackageMeta.Name;
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {

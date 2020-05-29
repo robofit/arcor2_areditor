@@ -184,8 +184,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
-            tile.InitTile(package.Name,
-                          () => Base.GameManager.Instance.RunPackage(package.Id),
+            tile.InitTile(package.PackageMeta.Name,
+                          async () => await Base.GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
                           starred,
                           package.Id);
