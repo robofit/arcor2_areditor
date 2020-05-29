@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.Playables;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
@@ -217,5 +218,9 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void NotImplemented() {
         Base.Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
+    }
+
+    public void SaveLogs() {
+        Base.Notifications.Instance.SaveLogs();
     }
 }
