@@ -6,7 +6,7 @@ using IO.Swagger.Model;
 
 public class ActionPoint3D : Base.ActionPoint {
 
-    public GameObject Sphere, Visual;
+    public GameObject Sphere, Visual, CollapsedPucksVisual;
     
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -112,11 +112,21 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void UpdatePositionsOfPucks() {
-        int i = 1;
-        foreach (Action3D action in Actions.Values) {
-            action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
-            ++i;
-        }
+        CollapsedPucksVisual.SetActive(ActionsCollapsed);
+        if (ActionsCollapsed) {
+            foreach (Action3D action in Actions.Values) {
+                action.transform.localPosition = new Vector3(0, 0, 0);
+                action.transform.localScale = new Vector3(0, 0, 0);
+            }
+            
+        } else {
+            int i = 1;
+            foreach (Action3D action in Actions.Values) {
+                action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
+                ++i;
+                action.transform.localScale = new Vector3(1, 1, 1);
+            }
+        }        
     }
     
     public override bool ProjectInteractable() {

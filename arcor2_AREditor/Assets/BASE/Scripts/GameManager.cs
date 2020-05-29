@@ -82,6 +82,7 @@ namespace Base {
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
+
         public event GameStateEventHandler OnGameStateChanged;
         public event EditorStateEventHandler OnEditorStateChanged;
         public event EventHandler OnOpenProjectEditor;
@@ -731,7 +732,7 @@ namespace Base {
         }
 
         public string GetPackageName(string id) {
-            return GetPackage(id).Name;
+            return GetPackage(id).PackageMeta.Name;
         }
 
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
@@ -1156,9 +1157,12 @@ namespace Base {
             ARSession.enabled = true;
 #endif
             try {
+                
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
+                EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
+                EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                 Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
             } catch (TimeoutException ex) {
@@ -1238,6 +1242,19 @@ namespace Base {
                 return (false, e.Message);
             }
         }
+
+        public async Task<RequestResult> RenamePackage(string packageId, string newUserId, bool dryRun) {
+            try {
+                await WebsocketManager.Instance.RenamePackage(packageId, newUserId, dryRun);
+                return (true, "");
+            } catch (RequestFailedException e) {
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to rename package", e.Message);
+                return (false, e.Message);
+            }
+        }
+
+
 
         internal async Task<bool> RemoveProject(string projectId) {
             try {

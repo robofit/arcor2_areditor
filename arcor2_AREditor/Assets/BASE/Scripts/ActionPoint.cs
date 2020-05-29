@@ -26,7 +26,7 @@ namespace Base {
         [SerializeField]
         protected GameObject orientations;
 
-        public bool OrientationsVisible;
+        public bool OrientationsVisible, ActionsCollapsed;
 
 
         public bool Locked {
@@ -41,7 +41,8 @@ namespace Base {
         }
 
         private void Awake() {
-            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+           
+            
         }
 
         protected virtual void Start() {
@@ -77,12 +78,11 @@ namespace Base {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
+            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+            ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
             ActivateForGizmo(((ControlBoxManager.Instance.UseGizmoMove == true) && ProjectManager.Instance.AllowEdit) ? "GizmoRuntime" : "Default");
-            // TODO: is this neccessary?
-            /*if (Data.Orientations.Count == 0)
-                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
         }
 
         public void SetParent(IActionPointParent parent) {

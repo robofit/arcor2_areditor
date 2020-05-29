@@ -32,7 +32,7 @@ namespace Base {
 
         public float APSize = 0.5f;
 
-        public bool ProjectChanged = false;
+        public bool ProjectChanged = false, ProjectLoaded = false;
 
         public bool AllowEdit = false;
 
@@ -60,6 +60,7 @@ namespace Base {
                 ProjectChanged = false;
                 OnLoadProject?.Invoke(this, EventArgs.Empty);
             }
+            ProjectLoaded = success;
             return success;
         }
 
@@ -84,6 +85,7 @@ namespace Base {
         }
 
         public bool DestroyProject() {
+            ProjectLoaded = false;
             Project = null;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.DeleteAP(false);

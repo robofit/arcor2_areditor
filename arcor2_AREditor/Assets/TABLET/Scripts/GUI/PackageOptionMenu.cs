@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
@@ -48,6 +49,35 @@ public class PackageOptionMenu : TileOptionMenu {
         }
         Close();
         GameManager.Instance.HideLoadingScreen();
+    }
+
+    // TODO: add validation once the rename rename package RPC has dryRun parameter
+    public void ShowRenameDialog() {
+        inputDialog.Open("Rename package",
+                         "",
+                         "New name",
+                         packageTile.GetLabel(),
+                         () => RenamePackage(inputDialog.GetValue()),
+                         () => inputDialog.Close(),
+                         /*validateInput: ValidateProjectName*/ 
+                         null);
+    }
+
+    public RequestResult ValidateProjectName(string newName) {
+        Task<RequestResult> result = Task.Run(async () => await GameManager.Instance.RenamePackage(packageTile.PackageId, newName, true));
+        return result.Result;
+    }
+
+    public async void RenamePackage(string newUserId) {
+        Base.GameManager.Instance.ShowLoadingScreen();
+        Base.RequestResult result = await Base.GameManager.Instance.RenamePackage(packageTile.PackageId, newUserId, false);
+        if (result.Success) {
+            inputDialog.Close();
+            packageTile.SetLabel(newUserId);
+            SetLabel(newUserId);
+            Close();
+        }
+        Base.GameManager.Instance.HideLoadingScreen();
     }
 
 
