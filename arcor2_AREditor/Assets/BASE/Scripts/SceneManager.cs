@@ -567,6 +567,7 @@ namespace Base {
                 actionObject.Show();
             }
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", true);
+            ActionObjectsVisible = true;
         }
 
         /// <summary>
@@ -577,6 +578,7 @@ namespace Base {
                 actionObject.Hide();
             }
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", false);
+            ActionObjectsVisible = false;
         }
 
          /// <summary>
@@ -587,6 +589,7 @@ namespace Base {
                 actionObject.SetInteractivity(interactivity);
             }
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOInteractivity", interactivity);
+            ActionObjectsInteractive = interactivity;
         }
 
 
