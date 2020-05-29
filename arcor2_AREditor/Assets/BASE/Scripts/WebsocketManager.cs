@@ -372,6 +372,10 @@ namespace Base {
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
+            if (!ProjectManager.Instance.ProjectLoaded) {
+                Debug.LogWarning("Project not yet loaded, ignoring current action");
+                return;
+            }
             try {
                 
                 IO.Swagger.Model.CurrentActionEvent currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentActionEvent>(obj);
@@ -384,18 +388,23 @@ namespace Base {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
             }
-
-            Action puck = ProjectManager.Instance.GetAction(puck_id);
-            if (puck == null)
-                return;
-
             // Stop previously running action (change its color to default)
-            if(ActionsManager.Instance.CurrentlyRunningAction != null)
+            if (ActionsManager.Instance.CurrentlyRunningAction != null)
                 ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+            try {
+                Action puck = ProjectManager.Instance.GetAction(puck_id);
+                ActionsManager.Instance.CurrentlyRunningAction = puck;
+                // Run current action (set its color to running)
+                puck.RunAction();
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+            
+            
 
-            ActionsManager.Instance.CurrentlyRunningAction = puck;
-            // Run current action (set its color to running)
-            puck.RunAction();
+            
+
+            
         }
 
         private void HandleActionResult(string data) {

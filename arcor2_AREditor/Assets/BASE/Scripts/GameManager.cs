@@ -1157,9 +1157,12 @@ namespace Base {
             ARSession.enabled = true;
 #endif
             try {
+                
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
+                EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
+                EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                 Scene.SetActive(true);
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
             } catch (TimeoutException ex) {
