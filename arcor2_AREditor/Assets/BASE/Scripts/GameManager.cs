@@ -1419,6 +1419,14 @@ namespace Base {
             }
         }
 
+        public string GetProjectName(string projectId) {
+            foreach (ListProjectsResponseData project in Projects) {
+                if (project.Id == projectId)
+                    return project.Name;
+            }
+            throw new ItemNotFoundException("Project with id: " + projectId + " not found");
+        }
+
     }
 
     public struct RequestResult {
@@ -1455,5 +1463,6 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
     }
 }

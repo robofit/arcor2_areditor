@@ -8,9 +8,12 @@ using System;
 public class PackageTile : Tile
 {
     public string PackageId;
-   
 
-    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string packageId) {
+    [SerializeField]
+    private TMPro.TMP_Text projectName, timestamp;
+
+    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string packageId,
+        string projectName, string timestamp) {
         base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible);
         PackageId = packageId;
         string filename = PlayerPrefsHelper.LoadString(packageId + "/image", "");
@@ -18,6 +21,8 @@ public class PackageTile : Tile
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
+        this.projectName.text = "Project: " + projectName;
+        this.timestamp.text = "Created: " + timestamp;
     }
 
 

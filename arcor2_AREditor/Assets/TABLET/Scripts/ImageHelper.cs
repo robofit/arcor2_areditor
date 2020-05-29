@@ -5,8 +5,9 @@ using UnityEngine;
 using USFB;
 #endif
 using System.Threading.Tasks;
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
 using System.Threading;
-
+#endif
 public class ImageHelper
 {
     private static string pathToReturn;
@@ -53,7 +54,7 @@ public class ImageHelper
         binary.Write(bytes);
         file.Close();
     }
-
+    
     public async static Task<string> OpenImageDialog() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         waitingForCallback = true;
