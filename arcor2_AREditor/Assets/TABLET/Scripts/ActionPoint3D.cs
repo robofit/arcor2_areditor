@@ -16,11 +16,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private bool updatePosition = false;
 
-
+    private OutlineOnClick outlineOnClick;
 
     protected override void Start() {
         base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        outlineOnClick = GetComponent<OutlineOnClick>();
     }
 
     protected override async void Update() {
@@ -164,5 +165,11 @@ public class ActionPoint3D : Base.ActionPoint {
         UpdateOrientationsVisuals();
     }
 
-
+    public override void HighlightAP(bool highlight) {
+        if (highlight) {
+            outlineOnClick.Highlight();
+        } else {
+            outlineOnClick.UnHighlight();
+        }
+    }
 }

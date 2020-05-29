@@ -544,6 +544,7 @@ namespace Base {
             ShowMenu(false);
             actionPointMenu.OpenActoinPointAimingMenu(orientationId);
         }
-    }
 
+        public abstract void HighlightAP(bool highlight);
+    }
 }
