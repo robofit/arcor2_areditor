@@ -1255,6 +1255,16 @@ namespace Base {
 
         }
 
+        public async Task RenamePackage(string packageId, string newUserId, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenamePackageArgs args = new IO.Swagger.Model.RenamePackageArgs(packageId: packageId, newName: newUserId);
+            IO.Swagger.Model.RenamePackageRequest request = new IO.Swagger.Model.RenamePackageRequest(r_id, "RenamePackage", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenamePackageResponse response = await WaitForResult<IO.Swagger.Model.RenamePackageResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
 
         public async Task RemoveActionPoint(string actionPointId, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);

@@ -82,6 +82,7 @@ namespace Base {
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
+
         public event GameStateEventHandler OnGameStateChanged;
         public event EditorStateEventHandler OnEditorStateChanged;
         public event EventHandler OnOpenProjectEditor;
@@ -1238,6 +1239,19 @@ namespace Base {
                 return (false, e.Message);
             }
         }
+
+        public async Task<RequestResult> RenamePackage(string packageId, string newUserId, bool dryRun) {
+            try {
+                await WebsocketManager.Instance.RenamePackage(packageId, newUserId, dryRun);
+                return (true, "");
+            } catch (RequestFailedException e) {
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to rename package", e.Message);
+                return (false, e.Message);
+            }
+        }
+
+
 
         internal async Task<bool> RemoveProject(string projectId) {
             try {
