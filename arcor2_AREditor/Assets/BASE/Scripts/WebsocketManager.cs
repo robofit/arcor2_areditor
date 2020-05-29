@@ -372,6 +372,10 @@ namespace Base {
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
+            if (!ProjectManager.Instance.ProjectLoaded) {
+                Debug.LogWarning("Project not yet loaded, ignoring current action");
+                return;
+            }
             try {
                 
                 IO.Swagger.Model.CurrentActionEvent currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentActionEvent>(obj);
@@ -384,18 +388,23 @@ namespace Base {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
             }
-
-            Action puck = ProjectManager.Instance.GetAction(puck_id);
-            if (puck == null)
-                return;
-
             // Stop previously running action (change its color to default)
-            if(ActionsManager.Instance.CurrentlyRunningAction != null)
+            if (ActionsManager.Instance.CurrentlyRunningAction != null)
                 ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+            try {
+                Action puck = ProjectManager.Instance.GetAction(puck_id);
+                ActionsManager.Instance.CurrentlyRunningAction = puck;
+                // Run current action (set its color to running)
+                puck.RunAction();
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+            
+            
 
-            ActionsManager.Instance.CurrentlyRunningAction = puck;
-            // Run current action (set its color to running)
-            puck.RunAction();
+            
+
+            
         }
 
         private void HandleActionResult(string data) {
@@ -559,16 +568,16 @@ namespace Base {
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data, true);
+                    await SceneManager.Instance.AddService(sceneObjectChanged.Data, true);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
+                    SceneManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -716,12 +725,13 @@ namespace Base {
 
         }
 
-        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
             
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs
-                (id: actionObjectId, robot: robotArg);
+                (id: actionObjectId, robot: robotArg, pivot: pivot);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
                 (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -1254,6 +1264,16 @@ namespace Base {
 
         }
 
+        public async Task RenamePackage(string packageId, string newUserId, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenamePackageArgs args = new IO.Swagger.Model.RenamePackageArgs(packageId: packageId, newName: newUserId);
+            IO.Swagger.Model.RenamePackageRequest request = new IO.Swagger.Model.RenamePackageRequest(r_id, "RenamePackage", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenamePackageResponse response = await WaitForResult<IO.Swagger.Model.RenamePackageResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
 
         public async Task RemoveActionPoint(string actionPointId, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);

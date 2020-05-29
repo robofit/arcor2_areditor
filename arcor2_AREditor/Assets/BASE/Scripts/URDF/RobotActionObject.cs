@@ -1,17 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using IO.Swagger.Model;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
 using UnityEngine;
 
 namespace Base {
-    public class Robot : ActionObject {
+    public class RobotActionObject : ActionObject, IRobot {
+
+        public GameObject RobotPlaceholderPrefab;
 
         public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
 
         private bool robotLoaded = false;
+
+        public List<string> EndEffectors = new List<string>();
+
+        private GameObject RobotPlaceholder;
+        private GameObject RobotModel;
+        private UrdfRobot UrdfRobot;
+        private Renderer[] robotRenderers;
+        private Collider[] robotColliders;
+
+        private OutlineOnClick outlineOnClick;
+
 
         protected override void Start() {
             base.Start();
@@ -26,12 +41,11 @@ namespace Base {
             SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
-            // TODO - create basic cube and replace it later with robot model
-            //CreateModel(customCollisionModels);
+            CreateModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
         }
-
+        
         private void OnUrdfDownloaded(object sender, RobotUrdfArgs args) {
             // check if downloaded urdf contains this robot
             if (ActionObjectMetadata.Type == args.RobotType) {
@@ -58,11 +72,13 @@ namespace Base {
         /// </summary>
         /// <param name="filename"></param>
         private void ImportUrdfObject(string filename) {
-            UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
-            urdfRobot.transform.parent = transform;
-            urdfRobot.transform.localPosition = Vector3.zero;
+            UrdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
+            UrdfRobot.transform.parent = transform;
+            UrdfRobot.transform.localPosition = Vector3.zero;
 
-            urdfRobot.SetRigidbodiesIsKinematic(true);
+            UrdfRobot.SetRigidbodiesIsKinematic(true);
+
+            RobotModel = UrdfRobot.gameObject;
 
             LoadLinks();
         }
@@ -70,7 +86,7 @@ namespace Base {
         private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
             Transform importedModel = args.Data.transform;
 
-            Base.Robot robot = importedModel.GetComponentInParent<Base.Robot>();
+            Base.RobotActionObject robot = importedModel.GetComponentInParent<Base.RobotActionObject>();
             if (robot != null) {
                 // check if imported model corresponds to this robot
                 if (ReferenceEquals(robot, this)) {
@@ -89,7 +105,7 @@ namespace Base {
             }
         }
 
-        private static void AddColliders(GameObject gameObject, bool setConvex = false) {
+        private void AddColliders(GameObject gameObject, bool setConvex = false) {
             MeshFilter[] meshFilters = gameObject.GetComponentsInChildren<MeshFilter>();
             foreach (MeshFilter meshFilter in meshFilters) {
                 GameObject child = meshFilter.gameObject;
@@ -97,6 +113,10 @@ namespace Base {
                 meshCollider.sharedMesh = meshFilter.sharedMesh;
 
                 meshCollider.convex = setConvex;
+                
+                // Add OnClick functionality aswell
+                OnClickCollider click = child.AddComponent<OnClickCollider>();
+                click.Target = this.gameObject;
             }
         }
 
@@ -172,13 +192,28 @@ namespace Base {
                         return false;
                     }
                 }
-                robotLoaded = true;
-
-                // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
-                ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
             }
-            SetActiveAllVisuals(true);
+            robotLoaded = true;
+            OnRobotLoaded();
+
             return true;
+        }
+
+        private void OnRobotLoaded() {
+            SetActiveAllVisuals(true);
+
+            // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
+            ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
+
+            outlineOnClick.ClearRenderers();
+            RobotPlaceholder.SetActive(false);
+            Destroy(RobotPlaceholder);
+
+            robotColliders = gameObject.GetComponentsInChildren<Collider>();
+            robotRenderers = gameObject.GetComponentsInChildren<Renderer>();
+            List<Renderer> ren = new List<Renderer>();
+            ren.AddRange(robotRenderers);
+            outlineOnClick.InitRenderers(ren);
         }
 
         /// <summary>
@@ -208,19 +243,73 @@ namespace Base {
         }
 
         public override void Show() {
-
+            foreach (Renderer renderer in robotRenderers) {
+                renderer.enabled = true;
+            }
         }
 
         public override void Hide() {
-
+            foreach (Renderer renderer in robotRenderers) {
+                renderer.enabled = false;
+            }
         }
 
         public override void SetInteractivity(bool interactive) {
-
+            foreach (Collider collider in robotColliders) {
+                collider.enabled = interactive;
+            }
         }
 
         public override void OnClick(Click type) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+                GameManager.Instance.ObjectSelected(this);
+                return;
+            }
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+                return;
+            }
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+                Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+                return;
+            }
+            // HANDLE MOUSE
+            if (type == Click.MOUSE_RIGHT_BUTTON) {
+                ShowMenu();
+            }
+            // HANDLE TOUCH
+            else if (type == Click.TOUCH) {
+                ShowMenu();
+            }
+        }
 
+        public List<string> GetEndEffectors() {
+            return EndEffectors;
+        }
+
+        public async Task LoadEndEffectors() {
+            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
+            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+        }
+
+        public override void CreateModel(CollisionModels customCollisionModels = null) {
+            RobotPlaceholder = Instantiate(RobotPlaceholderPrefab, transform);
+            RobotPlaceholder.transform.parent = transform;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            RobotPlaceholder.transform.localPosition = Vector3.zero;
+            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+
+            RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
+            robotColliders = RobotPlaceholder.GetComponentsInChildren<Collider>();
+            robotRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
+            List<Renderer> ren = new List<Renderer>();
+            ren.AddRange(robotRenderers);
+            outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+            outlineOnClick.InitRenderers(ren);
+        }
+
+        internal override GameObject GetModelCopy() {
+            throw new System.NotImplementedException();
         }
     }
 }

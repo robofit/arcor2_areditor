@@ -26,7 +26,7 @@ namespace Base {
         [SerializeField]
         protected GameObject orientations;
 
-        public bool OrientationsVisible;
+        public bool OrientationsVisible, ActionsCollapsed;
 
 
         public bool Locked {
@@ -41,7 +41,8 @@ namespace Base {
         }
 
         private void Awake() {
-            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+           
+            
         }
 
         protected virtual void Start() {
@@ -77,12 +78,11 @@ namespace Base {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
+            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+            ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
             ActivateForGizmo(((ControlBoxManager.Instance.UseGizmoMove == true) && ProjectManager.Instance.AllowEdit) ? "GizmoRuntime" : "Default");
-            // TODO: is this neccessary?
-            /*if (Data.Orientations.Count == 0)
-                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
         }
 
         public void SetParent(IActionPointParent parent) {
@@ -119,7 +119,7 @@ namespace Base {
         internal string GetFreeOrientationName() {
             int i = 1;
             bool hasFreeName;
-            string freeName = "defaulf";
+            string freeName = "default";
             do {
                 hasFreeName = true;
                 if (OrientationNameExist(freeName)) {
@@ -135,7 +135,7 @@ namespace Base {
         internal string GetFreeJointsName() {
             int i = 1;
             bool hasFreeName;
-            string freeName = "defaulf";
+            string freeName = "default";
             do {
                 hasFreeName = true;
                 if (JointsNameExist(freeName)) {
@@ -328,7 +328,7 @@ namespace Base {
                 try {
                     actionProvider = SceneManager.Instance.GetActionObject(providerName);
                 } catch (KeyNotFoundException ex) {
-                    if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                    if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
                         actionProvider = originalService;
                     } else {
                         Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
@@ -544,6 +544,7 @@ namespace Base {
             ShowMenu(false);
             actionPointMenu.OpenActoinPointAimingMenu(orientationId);
         }
-    }
 
+        public abstract void HighlightAP(bool highlight);
+    }
 }

@@ -25,7 +25,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     private Button LockedBtn, UnlockedBtn, UntieBtn, BackBtn;
 
     [SerializeField]
-    private ButtonWithTooltip RemoveBtn;
+    private ButtonWithTooltip RemoveBtn, CollapseBtn, ExpandBtn;
 
     [SerializeField]
     private InputDialog inputDialog;
@@ -135,6 +135,8 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
 
         RemoveBtn.SetInteractivity(await GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true));
+        ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
+        CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
     }
 
     private static void CreateTooltip(string text, ActionButton btn) {
@@ -227,5 +229,21 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         CurrentActionPoint.Parent.ShowMenu();
         Base.SceneManager.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
         CurrentActionPoint.Parent.GetGameObject().SendMessage("Select");
+    }
+
+    public void CollapseActions() {
+        PlayerPrefsHelper.SaveBool("/AP/" + CurrentActionPoint.Data.Id + "/actionsCollapsed", true);
+        CurrentActionPoint.ActionsCollapsed = true;
+        CurrentActionPoint.UpdatePositionsOfPucks();
+        CollapseBtn.gameObject.SetActive(false);
+        ExpandBtn.gameObject.SetActive(true);
+    }
+
+    public void ExpandActions() {
+        PlayerPrefsHelper.SaveBool("/AP/" + CurrentActionPoint.Data.Id + "/actionsCollapsed", false);
+        CurrentActionPoint.ActionsCollapsed = false;
+        CurrentActionPoint.UpdatePositionsOfPucks();
+        CollapseBtn.gameObject.SetActive(true);
+        ExpandBtn.gameObject.SetActive(false);
     }
 }

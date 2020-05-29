@@ -348,7 +348,7 @@ namespace Base {
 
         private static void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
             dropdownParameter.PutData(data, selectedValue,
-                () => onChangeParameterHandler(parameterId, dropdownParameter.GetValue()));
+                (value) => onChangeParameterHandler(parameterId, dropdownParameter.GetValue()));
             if (selectedValue == "" || selectedValue == null) {
                 string value;
                 if (dropdownParameter.Dropdown.dropdownItems.Count == 0)

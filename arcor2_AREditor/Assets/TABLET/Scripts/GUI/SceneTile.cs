@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
+using System.IO;
 
 public class SceneTile : Tile
 {
@@ -17,7 +18,7 @@ public class SceneTile : Tile
         base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible);
         SceneId = sceneId;
         string filename = PlayerPrefsHelper.LoadString(SceneId + "/image", "");
-        if (!string.IsNullOrEmpty(filename)) {
+        if (!string.IsNullOrEmpty(filename) && File.Exists(filename)) {
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }

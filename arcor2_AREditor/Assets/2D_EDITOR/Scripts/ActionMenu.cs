@@ -23,6 +23,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     private InputDialog inputDialog;
     [SerializeField]
     private ButtonWithTooltip ExecuteActionBtn, StopActionBtn, RemoveActionBtn;
+    [SerializeField]
+    private TMPro.TMP_Text ActionPointName;
 
 
     public VerticalLayoutGroup DynamicContentLayout;
@@ -60,6 +62,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public async void UpdateMenu() {
         DynamicContent.GetComponent<VerticalLayoutGroup>().enabled = true;
+        ActionPointName.text = CurrentAction.ActionPoint.Data.Name;
         foreach (RectTransform o in DynamicContent.GetComponentsInChildren<RectTransform>()) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
@@ -78,6 +81,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         } else {
             RemoveActionBtn.SetInteractivity(false, actionRemovable.Item2);
         }
+        
     }
 
     private void UpdateExecuteAndStopBtns() {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,7 +14,7 @@ public class ProjectTile : Tile
         ProjectId = projectId;
         SceneId = sceneId;
         string filename = PlayerPrefsHelper.LoadString(projectId + "/image", "");
-        if (!string.IsNullOrEmpty(filename)) {
+        if (!string.IsNullOrEmpty(filename) && File.Exists(filename)) {
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }

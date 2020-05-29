@@ -8,7 +8,17 @@ using IO.Swagger.Model;
 using System.Linq;
 
 namespace Base {
+    public class ActionPointUpdatedEventArgs : EventArgs {
+        public ActionPoint Data {
+            get; set;
+        }
+
+        public ActionPointUpdatedEventArgs(ActionPoint data) {
+            Data = data;
+        }
+    }
     public class ProjectManager : Base.Singleton<ProjectManager> {
+        public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
         public IO.Swagger.Model.Project Project = null;
 
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
@@ -22,12 +32,13 @@ namespace Base {
 
         public float APSize = 0.5f;
 
-        public bool ProjectChanged = false;
+        public bool ProjectChanged = false, ProjectLoaded = false;
 
         public bool AllowEdit = false;
 
 
         public event EventHandler OnActionPointsChanged;
+        public event ActionPointUpdatedEventHandler OnActionPointUpdated;
         public event EventHandler OnLoadProject;
 
 
@@ -49,6 +60,7 @@ namespace Base {
                 ProjectChanged = false;
                 OnLoadProject?.Invoke(this, EventArgs.Empty);
             }
+            ProjectLoaded = success;
             return success;
         }
 
@@ -73,6 +85,7 @@ namespace Base {
         }
 
         public bool DestroyProject() {
+            ProjectLoaded = false;
             Project = null;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.DeleteAP(false);
@@ -248,7 +261,7 @@ namespace Base {
 
         public IActionProvider GetActionProvider(string id) {
             try {
-                return ActionsManager.Instance.GetService(id);
+                return SceneManager.Instance.GetService(id);
             } catch (KeyNotFoundException ex) {
 
             }
@@ -657,6 +670,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(projectActionPoint.Id);
                 actionPoint.UpdateActionPoint(projectActionPoint);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
                 // TODO - update orientations, joints etc.
             } catch (KeyNotFoundException ex) {
                 Debug.LogError("Action point " + projectActionPoint.Id + " not found!");
@@ -670,6 +684,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPoint(projectActionPoint.Id);
                 actionPoint.ActionPointBaseUpdate(projectActionPoint);
                 OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.Log("Action point " + projectActionPoint.Id + " not found!");
                 Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
@@ -706,6 +721,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
                 actionPoint.AddOrientation(orientation);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point orientation", ex.Message);
@@ -716,6 +732,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithOrientation(orientation.Id);
                 actionPoint.RemoveOrientation(orientation);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to remove action point orientation", ex.Message);
@@ -727,6 +744,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.UpdateJoints(joints);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -738,6 +756,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.BaseUpdateJoints(joints);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -749,6 +768,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
                 actionPoint.AddJoints(joints);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point joints", ex.Message);
@@ -761,6 +781,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.RemoveJoints(joints);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to remove action point joints", ex.Message);
@@ -772,6 +793,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
                 actionPoint.UpdateOrientation(orientation);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
@@ -783,6 +805,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
                 actionPoint.BaseUpdateOrientation(orientation);
+                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);

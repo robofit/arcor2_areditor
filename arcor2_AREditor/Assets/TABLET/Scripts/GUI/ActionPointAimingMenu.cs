@@ -33,8 +33,20 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     [SerializeField]
     private Button UpdateJointsBtn, UpdateOrientationBtn;
 
+    private string preselectedOrientation = null;
+    private string preselectedJoints = null;
+
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
+        ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
+    }
+
+    private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
+        if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.Data)) {
+            UpdateOrientations(preselectedOrientation);
+            UpdateJoints((string) RobotsList.GetValue(), preselectedJoints);
+            preselectedOrientation = null;
+        }
     }
 
     public void UpdateMenu(string preselectedOrientation = null) {
@@ -64,7 +76,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                 itemName = orientation.Name
             };
             orientationDropdown.dropdownItems.Add(item);
-            if (preselectedOrientation == orientation.Id) {
+            if (preselectedOrientation == orientation.Name) {
                 selectedItem = orientationDropdown.dropdownItems.Count - 1;
             }
 
@@ -108,8 +120,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         EndEffectorList.Dropdown.dropdownItems.Clear();
         
         try {
-            string robotId = ActionsManager.Instance.RobotNameToId(robot_name);
-            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId);
+            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
+            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
             if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
                 UpdatePoseBlock.SetActive(false);
                 UpdateJointsBlock.SetActive(true);
@@ -143,12 +155,14 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         if (CurrentActionPoint.Parent != null) {
             orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
         }
-        
+        preselectedOrientation = name;
         bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
         if (success) {
             inputDialog.Close();
+        } else {
+            preselectedOrientation = null;
         }
-        UpdateOrientations();
+        
     }
 
     public void ShowAddJointsDialog() {
@@ -162,11 +176,14 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public async void AddJoints(string name) {
         Debug.Assert(CurrentActionPoint != null);
+        preselectedJoints = name;
         bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, (string) RobotsList.GetValue());
         if (success) {
             inputDialog.Close();
+        } else {
+            preselectedJoints = null;
         }
-        UpdateJoints((string) RobotsList.GetValue());
+        
     }
 
 
@@ -177,13 +194,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         }
         try {
-            string robotId = ActionsManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+            preselectedJoints = name;
+            string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
             Base.GameManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
+
             
-            UpdateJoints(robotId, (string) JointsList.GetValue());
         } catch (Exception ex) when (ex is Base.RequestFailedException || ex is KeyNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
+            preselectedJoints = null;
         }
         
     }

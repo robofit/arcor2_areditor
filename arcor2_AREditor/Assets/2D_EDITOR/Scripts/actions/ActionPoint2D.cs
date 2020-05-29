@@ -67,4 +67,8 @@ public class ActionPoint2D : Base.ActionPoint {
     public override void SetSize(float size) {
         throw new System.NotImplementedException();
     }
+
+    public override void HighlightAP(bool highlight) {
+        throw new System.NotImplementedException();
+    }
 }

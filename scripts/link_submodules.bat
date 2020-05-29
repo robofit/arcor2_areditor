@@ -5,6 +5,7 @@ mklink /j ..\arcor2_AREditor\Assets\Submodules\UnityRuntimeInspector ..\arcor2_A
 mklink /j ..\arcor2_AREditor\Assets\Submodules\UnityStandaloneFileBrowser ..\arcor2_AREditor\Submodules\usfb\Assets\UniStandaloneFileBrowser
 mklink /j ..\arcor2_AREditor\Assets\Submodules\Unity3DRuntimeTransformGizmo ..\arcor2_AREditor\Submodules\Unity3DRuntimeTransformGizmo\Assets
 mklink /j ..\arcor2_AREditor\Assets\Submodules\RosSharp ..\arcor2_AREditor\Submodules\RosSharp\Unity3D\Assets\RosSharp
+mklink /j ..\arcor2_AREditor\Assets\Submodules\Simple-Side-Menu ..\arcor2_AREditor\Submodules\Simple-Side-Menu
 del ..\arcor2_AREditor\Submodules\RosSharp\Unity3D\Assets\RosSharp\Plugins\External\Newtonsoft.Json.dll*
 del ..\arcor2_AREditor\Submodules\RosSharp\Unity3D\Assets\RosSharp\Plugins\External\Newtonsoft.Json.xml*
 pause

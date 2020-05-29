@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.Playables;
+using Base;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
@@ -184,11 +186,19 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
-            tile.InitTile(package.Name,
-                          () => Base.GameManager.Instance.RunPackage(package.Id),
+            string projectName = "unknown";
+            try {
+                projectName = GameManager.Instance.GetProjectName(package.Id);
+            } catch (ItemNotFoundException ex) {
+                Debug.Log(ex);
+            }            
+            tile.InitTile(package.PackageMeta.Name,
+                          async () => await Base.GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
                           starred,
-                          package.Id);
+                          package.Id,
+                          projectName,
+                          package.PackageMeta.Built.ToString());
             packageTiles.Add(tile);
         }
         
@@ -217,5 +227,9 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void NotImplemented() {
         Base.Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
+    }
+
+    public void SaveLogs() {
+        Base.Notifications.Instance.SaveLogs();
     }
 }

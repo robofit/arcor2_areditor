@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Base;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class LandingScreen : MonoBehaviour
@@ -49,5 +50,9 @@ public class LandingScreen : MonoBehaviour
     private void DisconnectedFromServer(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
         CanvasGroup.blocksRaycasts = true;
+    }
+
+    public void SaveLogs() {
+        Notifications.Instance.SaveLogs();
     }
 }

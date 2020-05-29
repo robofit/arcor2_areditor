@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -15,6 +16,16 @@ public class Action3D : Base.Action {
 
     private void Start() {
         GameManager.Instance.OnStopPackage += OnProjectStop;
+    }
+
+    private void OnEnable() {
+        InputHandler.Instance.OnBlindClick += OnBlindClick;
+    }
+
+    private void OnDisable() {
+        if (InputHandler.Instance != null) {
+            InputHandler.Instance.OnBlindClick -= OnBlindClick;
+        }
     }
 
     private void OnProjectStop(object sender, System.EventArgs e) {
@@ -57,6 +68,19 @@ public class Action3D : Base.Action {
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             ActionMenu.Instance.CurrentAction = this;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+            ActionPoint.HighlightAP(true);
         }
     }
+
+    private void OnBlindClick(object sender, EventClickArgs e) {
+        if (e.ClickType == Click.MOUSE_LEFT_BUTTON || e.ClickType == Click.MOUSE_RIGHT_BUTTON || e.ClickType == Click.MOUSE_MIDDLE_BUTTON ||
+            e.ClickType == Click.TOUCH) {
+            ActionPoint.HighlightAP(false);
+        }
+    }
+
+    private void Deselect() {
+        ActionPoint.HighlightAP(false);
+    }
+
 }
