@@ -20,6 +20,10 @@ namespace Base {
         public List<string> EndEffectors = new List<string>();
 
         private GameObject RobotPlaceholder;
+        private GameObject RobotModel;
+        private UrdfRobot UrdfRobot;
+        private Renderer[] robotRenderers;
+        private Collider[] robotColliders;
 
         private OutlineOnClick outlineOnClick;
 
@@ -68,11 +72,13 @@ namespace Base {
         /// </summary>
         /// <param name="filename"></param>
         private void ImportUrdfObject(string filename) {
-            UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
-            urdfRobot.transform.parent = transform;
-            urdfRobot.transform.localPosition = Vector3.zero;
+            UrdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
+            UrdfRobot.transform.parent = transform;
+            UrdfRobot.transform.localPosition = Vector3.zero;
 
-            urdfRobot.SetRigidbodiesIsKinematic(true);
+            UrdfRobot.SetRigidbodiesIsKinematic(true);
+
+            RobotModel = UrdfRobot.gameObject;
 
             LoadLinks();
         }
@@ -203,9 +209,10 @@ namespace Base {
             RobotPlaceholder.SetActive(false);
             Destroy(RobotPlaceholder);
 
-            Renderer[] modelRenderers = gameObject.GetComponentsInChildren<Renderer>();
+            robotColliders = gameObject.GetComponentsInChildren<Collider>();
+            robotRenderers = gameObject.GetComponentsInChildren<Renderer>();
             List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(modelRenderers);
+            ren.AddRange(robotRenderers);
             outlineOnClick.InitRenderers(ren);
         }
 
@@ -236,15 +243,21 @@ namespace Base {
         }
 
         public override void Show() {
-
+            foreach (Renderer renderer in robotRenderers) {
+                renderer.enabled = true;
+            }
         }
 
         public override void Hide() {
-
+            foreach (Renderer renderer in robotRenderers) {
+                renderer.enabled = false;
+            }
         }
 
         public override void SetInteractivity(bool interactive) {
-
+            foreach (Collider collider in robotColliders) {
+                collider.enabled = interactive;
+            }
         }
 
         public override void OnClick(Click type) {
@@ -287,9 +300,10 @@ namespace Base {
             //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
 
             RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
-            Renderer[] modelRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
+            robotColliders = RobotPlaceholder.GetComponentsInChildren<Collider>();
+            robotRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
             List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(modelRenderers);
+            ren.AddRange(robotRenderers);
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(ren);
         }
