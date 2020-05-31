@@ -27,6 +27,9 @@ public class ActionObject3D : ActionObject
     private Renderer modelRenderer;
     private OutlineOnClick outlineOnClick;
 
+    private Shader standardShader;
+    private Shader transparentShader;
+
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
@@ -126,7 +129,7 @@ public class ActionObject3D : ActionObject
 
 
     public override bool SceneInteractable() {
-        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
     public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
@@ -144,21 +147,24 @@ public class ActionObject3D : ActionObject
 
     public override void SetVisibility(float value) {
         base.SetVisibility(value);
-        // Set opaque material
+
+        if (standardShader == null) {
+            standardShader = Shader.Find("Standard");
+        }
+
+        if (transparentShader == null) {
+            transparentShader = Shader.Find("Transparent/Diffuse");
+        }
+
+        // Set opaque shader
         if (value >= 1) {
             transparent = false;
-            Material oldMaterial = modelRenderer.material;
-            modelRenderer.material = ActionObjectMaterialOpaque;
-            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+            modelRenderer.material.shader = standardShader;
         }
-        // Set transparent material
+        // Set transparent shader
         else {
             if (!transparent) {
-                Material oldMaterial = modelRenderer.material;
-                modelRenderer.material = ActionObjectMaterialTransparent;
-                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+                modelRenderer.material.shader = transparentShader;
                 transparent = true;
             }
             // set alpha of the material

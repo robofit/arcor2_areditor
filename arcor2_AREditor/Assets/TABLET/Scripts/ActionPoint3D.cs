@@ -131,7 +131,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
     
     public override bool ProjectInteractable() {
-        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
     public override void ActivateForGizmo(string layer) {

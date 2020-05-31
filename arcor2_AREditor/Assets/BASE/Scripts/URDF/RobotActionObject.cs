@@ -26,7 +26,10 @@ namespace Base {
         private Collider[] robotColliders;
 
         private OutlineOnClick outlineOnClick;
+        private bool transparent = false;
 
+        private Shader standardShader;
+        private Shader transparentShader;
 
         protected override void Start() {
             base.Start();
@@ -257,6 +260,41 @@ namespace Base {
         public override void SetInteractivity(bool interactive) {
             foreach (Collider collider in robotColliders) {
                 collider.enabled = interactive;
+            }
+        }
+
+        public override void SetVisibility(float value) {
+            base.SetVisibility(value);
+
+            if (standardShader == null) {
+                standardShader = Shader.Find("Standard");
+            }
+
+            if (transparentShader == null) {
+                transparentShader = Shader.Find("Transparent/Diffuse");
+            }
+
+            // Set opaque shader
+            if (value >= 1) {
+                transparent = false;
+                foreach (Renderer renderer in robotRenderers) {
+                    renderer.material.shader = standardShader;
+                }
+            }
+            // Set transparent shader
+            else {
+                if (!transparent) {
+                    foreach (Renderer renderer in robotRenderers) {
+                        renderer.material.shader = transparentShader;
+                    }
+                    transparent = true;
+                }
+                // set alpha of the material
+                foreach (Renderer renderer in robotRenderers) {
+                    Color color = renderer.material.color;
+                    color.a = value;
+                    renderer.material.color = color;
+                }
             }
         }
 

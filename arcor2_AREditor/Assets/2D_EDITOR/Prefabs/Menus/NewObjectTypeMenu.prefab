@@ -3361,7 +3361,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b06ff4a9418848ae9320a01c38075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurMaterial: {fileID: 0}
   placement: 1
   defaultState: 0
   transitionSpeed: 10
@@ -3376,6 +3375,31 @@ MonoBehaviour:
   useBlur: 0
   blurRadius: 10
   overlayCloseOnPressed: 1
+  onStateChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnMenuStateChanged
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 5741164686854156197}
+          m_ObjectArgumentAssemblyTypeName: DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu,
+            Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onStateSelected:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateChanging:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateSelecting:
+    m_PersistentCalls:
+      m_Calls: []
+  blurMaterial: {fileID: 0}
 --- !u!114 &2386795012394017466
 MonoBehaviour:
   m_ObjectHideFlags: 0

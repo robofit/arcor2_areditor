@@ -403,7 +403,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190b06ff4a9418848ae9320a01c38075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurMaterial: {fileID: 0}
   placement: 0
   defaultState: 0
   transitionSpeed: 10
@@ -418,6 +417,31 @@ MonoBehaviour:
   useBlur: 0
   blurRadius: 10
   overlayCloseOnPressed: 1
+  onStateChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnMenuStateChanged
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1381519021888774109}
+          m_ObjectArgumentAssemblyTypeName: DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu,
+            Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onStateSelected:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateChanging:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateSelecting:
+    m_PersistentCalls:
+      m_Calls: []
+  blurMaterial: {fileID: 0}
 --- !u!114 &1349415282727003576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2143,6 +2167,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &922705802334208577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5790224043457328313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 1465823398872943011}
+  Description: 
+  DescriptionAlternative: 
 --- !u!114 &1465823398872943011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2159,21 +2198,6 @@ MonoBehaviour:
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
---- !u!114 &922705802334208577
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5790224043457328313}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltipContent: {fileID: 1465823398872943011}
-  Description: 
-  DescriptionAlternative: 
 --- !u!114 &8616855374179830428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2187,21 +2211,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooltip: {fileID: 922705802334208577}
-  Button: {fileID: 0}
-  TooltipContent: {fileID: 0}
---- !u!114 &3405079512723995730
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6418294503858662566}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltip: {fileID: 5166314182476372107}
   Button: {fileID: 0}
   TooltipContent: {fileID: 0}
 --- !u!114 &3283393729855080066
@@ -2220,6 +2229,21 @@ MonoBehaviour:
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
+--- !u!114 &3405079512723995730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6418294503858662566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltip: {fileID: 5166314182476372107}
+  Button: {fileID: 0}
+  TooltipContent: {fileID: 0}
 --- !u!114 &5166314182476372107
 MonoBehaviour:
   m_ObjectHideFlags: 0
