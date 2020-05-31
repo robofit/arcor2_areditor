@@ -143,6 +143,7 @@ namespace Base {
         }
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
+            Debug.Log("URDF: download started");
             string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
             using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
                 // Request and wait for the desired page.
@@ -164,6 +165,7 @@ namespace Base {
 
                     try {
                         ZipFile.ExtractToDirectory(savePath, urdfDictionary);
+                        Debug.Log("URDF: zip extracted");
                         OnUrdfReady?.Invoke(this, new RobotUrdfArgs(urdfDictionary, robotType));
                     } catch (Exception ex) when (ex is ArgumentException ||
                                                  ex is ArgumentNullException ||
@@ -272,7 +274,6 @@ namespace Base {
                 }
                 robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position));
                 robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation));
-
             }
         }
 
@@ -383,12 +384,15 @@ namespace Base {
             }
             GameObject obj;
             if (aom.Robot) {
+                Debug.Log("URDF: spawning RobotActionObject");
+
+                obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
+
                 if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
                     if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                         StartCoroutine(DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
                     }
                 }
-                obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
