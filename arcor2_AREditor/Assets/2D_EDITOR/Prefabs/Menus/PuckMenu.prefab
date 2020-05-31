@@ -222,7 +222,19 @@ MonoBehaviour:
   overlayCloseOnPressed: 1
   onStateChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnMenuStateChanged
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 3031174425981514268}
+          m_ObjectArgumentAssemblyTypeName: DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu,
+            Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onStateSelected:
     m_PersistentCalls:
       m_Calls: []
@@ -249,7 +261,7 @@ MonoBehaviour:
   DynamicContent: {fileID: 6952931850470715294}
   ActionName: {fileID: 3565214433668187050}
   ActionType: {fileID: 5758408933129896914}
-  SaveParametersBtn: {fileID: 5791811402293889550}
+  SaveParametersBtn: {fileID: 4731903139293993036}
   AddNewActionDialog: {fileID: 0}
   ConfirmationDialog: {fileID: 0}
   inputDialog: {fileID: 0}
@@ -851,7 +863,7 @@ RectTransform:
   - {fileID: 8060851646620406526}
   - {fileID: 4946019616688833240}
   - {fileID: 1492509869375874259}
-  - {fileID: 5791811402293889145}
+  - {fileID: 5220619236192247584}
   m_Father: {fileID: 7694413810973813292}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1711,13 +1723,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c77917a7826c62e419cc9a2867495b1f, type: 3}
---- !u!224 &5791811402293889145 stripped
+--- !u!224 &5220619236192247584 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1735003242729280096, guid: c77917a7826c62e419cc9a2867495b1f,
     type: 3}
   m_PrefabInstance: {fileID: 5791811402293890368}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5791811402293889550 stripped
+--- !u!114 &4731903139293993036 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1282326451552802060, guid: c77917a7826c62e419cc9a2867495b1f,
     type: 3}

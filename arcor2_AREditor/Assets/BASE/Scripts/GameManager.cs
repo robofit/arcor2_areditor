@@ -82,6 +82,8 @@ namespace Base {
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
         public event EventHandler OnServicesChanged;
+        public event EventHandler OnSceneInteractable; // Invoked when in SceneEditor or ProjectEditor state and no menus are opened
+        public event EventHandler OnSceneNotInteractable; // Invoked when any menu is opened
 
         public event GameStateEventHandler OnGameStateChanged;
         public event EditorStateEventHandler OnEditorStateChanged;
@@ -144,7 +146,15 @@ namespace Base {
         bool openSceneProjectPackage = false;
 
         public bool SceneInteractable {
-            get => !MenuManager.Instance.IsAnyMenuOpened();
+            get => !MenuManager.Instance.IsAnyMenuOpened;
+        }
+
+        public void InvokeSceneInteractable(bool interactable) {
+            if (interactable && (gameState == GameStateEnum.SceneEditor || gameState == GameStateEnum.ProjectEditor)) {
+                OnSceneInteractable?.Invoke(this, EventArgs.Empty);
+            } else {
+                OnSceneNotInteractable?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public enum ConnectionStatusEnum {

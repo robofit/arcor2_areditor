@@ -305,7 +305,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         model = null;
     }
 
-    public void OnStateChanged() {
+    public void OnMenuStateChanged() {
         switch (menu.CurrentState) {
             case SimpleSideMenu.State.Closed:
                 HideModelOnEE();

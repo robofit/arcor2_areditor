@@ -26,7 +26,10 @@ namespace Base {
         private Collider[] robotColliders;
 
         private OutlineOnClick outlineOnClick;
+        private bool transparent = false;
 
+        private Shader standardShader;
+        private Shader transparentShader;
 
         protected override void Start() {
             base.Start();
@@ -47,18 +50,27 @@ namespace Base {
         }
         
         private void OnUrdfDownloaded(object sender, RobotUrdfArgs args) {
+            Debug.Log("URDF: urdf is downloaded and extracted");
             // check if downloaded urdf contains this robot
             if (ActionObjectMetadata.Type == args.RobotType) {
                 DirectoryInfo dir = new DirectoryInfo(args.Path);
+
+                Debug.Log("URDF: searching directory for urdf file");
+
                 FileInfo[] files = dir.GetFiles("*.urdf", SearchOption.TopDirectoryOnly);
 
                 // if .urdf is missing, try to find .xml file
                 if (files.Length == 0) {
+                    Debug.Log("URDF: searching directory for xml file");
+
                     files = dir.GetFiles("*.xml", SearchOption.TopDirectoryOnly);
                 }
 
                 // import only first found file
                 if (files.Length > 0) {
+                    Debug.Log("URDF: found file " + files[0].FullName);
+                    Debug.Log("URDF: starting collada import");
+
                     ImportUrdfObject(files[0].FullName);
 
                     // subscribe for ColladaImporter event in order to load robot links
@@ -81,6 +93,9 @@ namespace Base {
             RobotModel = UrdfRobot.gameObject;
 
             LoadLinks();
+
+            Debug.Log("URDF: robot created (without models yet)");
+
         }
 
         private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
@@ -101,6 +116,9 @@ namespace Base {
                     Destroy(placeholderGameObject.gameObject);
 
                     SetLinkVisualLoaded(importedModel.parent.parent.parent.name, importedModel.parent.gameObject.GetComponent<UrdfVisual>());
+
+                    Debug.Log("URDF: dae model of the link: " + importedModel.parent.parent.parent.name + " imported");
+
                 }
             }
         }
@@ -200,6 +218,8 @@ namespace Base {
         }
 
         private void OnRobotLoaded() {
+            Debug.Log("URDF: robot is fully loaded");
+
             SetActiveAllVisuals(true);
 
             // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
@@ -257,6 +277,41 @@ namespace Base {
         public override void SetInteractivity(bool interactive) {
             foreach (Collider collider in robotColliders) {
                 collider.enabled = interactive;
+            }
+        }
+
+        public override void SetVisibility(float value) {
+            base.SetVisibility(value);
+
+            if (standardShader == null) {
+                standardShader = Shader.Find("Standard");
+            }
+
+            if (transparentShader == null) {
+                transparentShader = Shader.Find("Transparent/Diffuse");
+            }
+
+            // Set opaque shader
+            if (value >= 1) {
+                transparent = false;
+                foreach (Renderer renderer in robotRenderers) {
+                    renderer.material.shader = standardShader;
+                }
+            }
+            // Set transparent shader
+            else {
+                if (!transparent) {
+                    foreach (Renderer renderer in robotRenderers) {
+                        renderer.material.shader = transparentShader;
+                    }
+                    transparent = true;
+                }
+                // set alpha of the material
+                foreach (Renderer renderer in robotRenderers) {
+                    Color color = renderer.material.color;
+                    color.a = value;
+                    renderer.material.color = color;
+                }
             }
         }
 
