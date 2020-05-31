@@ -89,7 +89,8 @@ public class InputHandler : Singleton<InputHandler> {
                         longTouch = false;
 
                     } else {
-                        StopCoroutine(coroutine);
+                        if (coroutine != null)
+                            StopCoroutine(coroutine);
                         longTouch = false;
 
                         if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
