@@ -261,9 +261,15 @@ public class ActionObject3D : ActionObject
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
     }
 
-    internal override GameObject GetModelCopy() {
+    public override GameObject GetModelCopy() {
         GameObject model = Instantiate(Model);
         model.transform.localScale = Visual.transform.localScale;
         return model;
+    }
+
+    public override Vector3 GetTopPoint() {
+        Vector3 position = transform.position;
+        position.y += Collider.bounds.extents.y + 0.1f;
+        return position;
     }
 }
