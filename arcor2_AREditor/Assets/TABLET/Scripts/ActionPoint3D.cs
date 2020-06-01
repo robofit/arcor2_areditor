@@ -6,7 +6,7 @@ using IO.Swagger.Model;
 
 public class ActionPoint3D : Base.ActionPoint {
 
-    public GameObject Sphere, Visual;
+    public GameObject Sphere, Visual, CollapsedPucksVisual;
     
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -16,11 +16,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private bool updatePosition = false;
 
-
+    private OutlineOnClick outlineOnClick;
 
     protected override void Start() {
         base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        outlineOnClick = GetComponent<OutlineOnClick>();
     }
 
     protected override async void Update() {
@@ -46,14 +47,25 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
-            orientations.transform.rotation = Base.Scene.Instance.SceneOrigin.transform.rotation;
+            orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint) {
+            GameManager.Instance.ObjectSelected(this);
+            return;
+        }
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
+            return;
+        }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             StartManipulation();
@@ -101,15 +113,25 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void UpdatePositionsOfPucks() {
-        int i = 1;
-        foreach (Action3D action in Actions.Values) {
-            action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
-            ++i;
-        }
+        CollapsedPucksVisual.SetActive(ProjectManager.Instance.AllowEdit && ActionsCollapsed);
+        if (ProjectManager.Instance.AllowEdit && ActionsCollapsed) {
+            foreach (Action3D action in Actions.Values) {
+                action.transform.localPosition = new Vector3(0, 0, 0);
+                action.transform.localScale = new Vector3(0, 0, 0);
+            }
+            
+        } else {
+            int i = 1;
+            foreach (Action3D action in Actions.Values) {
+                action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
+                ++i;
+                action.transform.localScale = new Vector3(1, 1, 1);
+            }
+        }        
     }
     
     public override bool ProjectInteractable() {
-        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
     public override void ActivateForGizmo(string layer) {
@@ -143,5 +165,11 @@ public class ActionPoint3D : Base.ActionPoint {
         UpdateOrientationsVisuals();
     }
 
-
+    public override void HighlightAP(bool highlight) {
+        if (highlight) {
+            outlineOnClick.Highlight();
+        } else {
+            outlineOnClick.UnHighlight();
+        }
+    }
 }

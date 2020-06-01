@@ -31,6 +31,7 @@ public class TrackingManager : Singleton<TrackingManager> {
         // We want to display notifications about tracking only when the camera feed is on screen (only in project or scene edit).
         GameManager.Instance.OnOpenProjectEditor += StartTrackingNotifications;
         GameManager.Instance.OnOpenSceneEditor += StartTrackingNotifications;
+        GameManager.Instance.OnRunPackage += StartTrackingNotifications;
 
         // We want to stop notifications everywhere else.
         GameManager.Instance.OnCloseProject += StopTrackingNotifications;

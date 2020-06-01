@@ -1,4 +1,5 @@
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 
 
@@ -75,10 +76,10 @@ public class ActionObject2D : Base.ActionObject {
     }
 
     public override bool SceneInteractable() {
-        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
         throw new System.NotImplementedException();
     }
 
@@ -98,6 +99,17 @@ public class ActionObject2D : Base.ActionObject {
         throw new System.NotImplementedException();
     }
 
+    public override void CreateModel(CollisionModels customCollisionModels = null) {
+        throw new System.NotImplementedException();
+    }
+
+    public override GameObject GetModelCopy() {
+        throw new System.NotImplementedException();
+    }
+
+    public override Vector3 GetTopPoint() {
+        throw new System.NotImplementedException();
+    }
 }
 
 

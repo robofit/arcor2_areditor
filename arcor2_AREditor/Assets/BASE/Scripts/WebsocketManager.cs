@@ -8,9 +8,21 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
 using System.IO;
-
+using RestSharp.Extensions;
 
 namespace Base {
+
+    public class RobotEefUpdatedEventArgs : EventArgs {
+        public IO.Swagger.Model.RobotEefData Data {
+            get; set;
+        }
+
+        public RobotEefUpdatedEventArgs(IO.Swagger.Model.RobotEefData data) {
+            Data = data;
+        }
+    }
+
+
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
 
@@ -28,7 +40,15 @@ namespace Base {
 
         private int requestID = 1;
         
-        private bool projectArrived = false, sceneArrived = false, projectStateArrived = false;
+        private bool packageStateArrived = false;
+
+        public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
+
+        public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
+
+        
+
+        private string serverDomain;
 
         private void Awake() {
             waitingForMessage = false;
@@ -41,11 +61,10 @@ namespace Base {
 
         public async Task<bool> ConnectToServer(string domain, int port) {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
-            projectArrived = false;
-            sceneArrived = false;
-            projectStateArrived = false;
+            packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
+            serverDomain = domain;
             clientWebSocket = new ClientWebSocket();
             Debug.Log("[WS]:Attempting connection.");
             try {
@@ -74,6 +93,15 @@ namespace Base {
                 //already closed probably..
             }
             clientWebSocket = null;
+            serverDomain = null;
+            GameManager.Instance.HideLoadingScreen();
+        }
+
+        public string GetServerDomain() {
+            if (clientWebSocket.State != WebSocketState.Open) {
+                return null;
+            }
+            return serverDomain;
         }
 
         /// <summary>
@@ -92,7 +120,7 @@ namespace Base {
         }
 
         public bool CheckInitData() {
-            return projectArrived && sceneArrived && projectStateArrived;
+            return packageStateArrived;
         }
 
         // Update is called once per frame
@@ -191,7 +219,7 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            if (dispatch?.response == null || dispatch?.response != "GetEndEffectorPose")
+            if (dispatch?.@event == null || dispatch?.@event != "RobotEef")
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -227,8 +255,11 @@ namespace Base {
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
-                    case "ProjectState":
-                        HandleProjectState(data);
+                    case "PackageState":
+                        HandlePackageState(data);
+                        break;
+                    case "PackageInfo":
+                        HandlePackageInfo(data);
                         break;
                     case "ProjectSaved":
                         HandleProjectSaved(data);
@@ -238,6 +269,30 @@ namespace Base {
                         break;
                     case "ActionResult":
                         HandleActionResult(data);
+                        break;
+                    case "ActionCancelled":
+                        HandleActionCanceled(data);
+                        break;
+                    case "ActionExecution":
+                        HandleActionExecution(data);
+                        break;
+                    case "RobotEef":
+                        HandleRobotEef(data);
+                        break;
+                    case "OpenScene":
+                        HandleOpenScene(data);
+                        break;
+                    case "OpenProject":
+                        HandleOpenProject(data);
+                        break;
+                    case "SceneClosed":
+                        HandleCloseScene(data);
+                        break;
+                    case "ProjectClosed":
+                        HandleCloseProject(data);
+                        break;
+                    case "OpenPackage":
+                        HandleOpenPackage(data);
                         break;
                     case "ProjectChanged":
                         if (ignoreProjectChanged)
@@ -250,17 +305,13 @@ namespace Base {
 
         }
 
-        private void HandleProjectSaved(string data) {
-            GameManager.Instance.ProjectSaved();
-        }
-
-        private Task<T> WaitForResult<T>(int key, int timeout = 10000) {
+       private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
                     if (value == null) {
                         Task<string> result = WaitForResponseReady(key, timeout);
                         if (!result.Wait(timeout)) {
-                            Console.WriteLine("The timeout interval elapsed.");
+                            Debug.LogError("The timeout interval elapsed.");
                             //TODO: throw an exception and handle it properly
                             //throw new TimeoutException();
                             return default;
@@ -292,38 +343,39 @@ namespace Base {
             
         }
 
-        private async void HandleProjectChanged(string obj) {
-
-            try {
-                GameManager.Instance.ProjectChanged = true;
-                IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
-                switch (eventProjectChanged.ChangeType) {
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
-                        GameManager.Instance.ProjectAdded(eventProjectChanged.Data);
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
-                        await GameManager.Instance.LoadProjects();
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
-                        GameManager.Instance.ProjectUpdated(eventProjectChanged.Data);
-                        break;
-                    case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
-                        GameManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                projectArrived = true;
-            } catch (NullReferenceException e) {
-                Debug.Log("Parse error in HandleProjectChanged()");
-                GameManager.Instance.ProjectUpdated(null);
-
+        private async void HandleProjectChanged(string obj) {            
+            ProjectManager.Instance.ProjectChanged = true;
+            IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
+            switch (eventProjectChanged.ChangeType) {
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
+                    throw new NotImplementedException();
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
+                    await GameManager.Instance.LoadProjects();
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
+                    ProjectManager.Instance.UpdateProject(eventProjectChanged.Data);
+                    break;
+                case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
+                    ProjectManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
-
         }
+
+        private void HandleRobotEef(string data) {
+            IO.Swagger.Model.RobotEefEvent robotEef = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotEefEvent>(data);
+            OnRobotEefUpdated?.Invoke(this, new RobotEefUpdatedEventArgs(robotEef.Data));
+        }
+
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
+            if (!ProjectManager.Instance.ProjectLoaded) {
+                Debug.LogWarning("Project not yet loaded, ignoring current action");
+                return;
+            }
             try {
                 
                 IO.Swagger.Model.CurrentActionEvent currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentActionEvent>(obj);
@@ -336,18 +388,23 @@ namespace Base {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
             }
-
-            Action puck = Scene.Instance.GetAction(puck_id);
-            if (puck == null)
-                return;
-
             // Stop previously running action (change its color to default)
-            if(ActionsManager.Instance.CurrentlyRunningAction != null)
+            if (ActionsManager.Instance.CurrentlyRunningAction != null)
                 ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+            try {
+                Action puck = ProjectManager.Instance.GetAction(puck_id);
+                ActionsManager.Instance.CurrentlyRunningAction = puck;
+                // Run current action (set its color to running)
+                puck.RunAction();
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+            
+            
 
-            ActionsManager.Instance.CurrentlyRunningAction = puck;
-            // Run current action (set its color to running)
-            puck.RunAction();
+            
+
+            
         }
 
         private void HandleActionResult(string data) {
@@ -355,15 +412,29 @@ namespace Base {
             GameManager.Instance.HandleActionResult(actionResult.Data);
         }
 
+        private void HandleActionCanceled(string data) {
+            GameManager.Instance.HandleActionCanceled();
+        }
+
+        private void HandleActionExecution(string data) {
+            IO.Swagger.Model.ActionExecutionEvent actionExecution = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionExecutionEvent>(data);
+            GameManager.Instance.HandleActionExecution(actionExecution.Data.ActionId);
+        }
+
         private void HandleProjectException(string data) {
             IO.Swagger.Model.ProjectExceptionEvent projectException = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectExceptionEvent>(data);
             GameManager.Instance.HandleProjectException(projectException.Data);
         }
 
-        private void HandleProjectState(string obj) {
-            IO.Swagger.Model.ProjectStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectStateEvent>(obj);
-            GameManager.Instance.SetProjectState(projectState.Data);
-            projectStateArrived = true;
+        private void HandlePackageState(string obj) {
+            IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
+            GameManager.Instance.PackageStateUpdated(projectState.Data);
+            packageStateArrived = true;
+        }
+
+        private void HandlePackageInfo(string obj) {
+            IO.Swagger.Model.PackageInfoEvent packageInfo = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageInfoEvent>(obj);
+            GameManager.Instance.PackageInfo = packageInfo.Data;
         }
 
         private async void HandleSceneChanged(string obj) {
@@ -376,7 +447,8 @@ namespace Base {
                     await GameManager.Instance.LoadScenes();
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
+                    GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
+                    //GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Updatebase:
                     GameManager.Instance.SceneBaseUpdated(sceneChangedEvent.Data);
@@ -384,24 +456,23 @@ namespace Base {
                 default:
                     throw new NotImplementedException();
             }
-            sceneArrived = true;
         }
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             switch (actionChanged.ChangeType) {
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
+                    ProjectManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionRemoved(actionChanged.Data);
+                    ProjectManager.Instance.ActionRemoved(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionUpdated(actionChanged.Data);
+                    ProjectManager.Instance.ActionUpdated(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionBaseUpdated(actionChanged.Data);
+                    ProjectManager.Instance.ActionBaseUpdated(actionChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -409,20 +480,20 @@ namespace Base {
         }
 
         private void HandleActionPointChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
             switch (actionPointChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
+                    ProjectManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -430,20 +501,20 @@ namespace Base {
         }
 
         private void HandleOrientationChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.OrientationChanged orientationChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.OrientationChanged>(data);
             switch (orientationChanged.ChangeType) {
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
+                    ProjectManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
+                    ProjectManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -451,20 +522,20 @@ namespace Base {
         }
 
         private void HandleJointsChanged(string data) {
-            GameManager.Instance.ProjectChanged = true;
+            ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.JointsChanged jointsChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.JointsChanged>(data);
             switch (jointsChanged.ChangeType) {
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
+                    ProjectManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
+                    ProjectManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -497,16 +568,16 @@ namespace Base {
 
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await ActionsManager.Instance.AddService(sceneObjectChanged.Data);
+                    await SceneManager.Instance.AddService(sceneObjectChanged.Data, true);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    ActionsManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
+                    SceneManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    ActionsManager.Instance.UpdateService(sceneObjectChanged.Data);
+                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -515,9 +586,36 @@ namespace Base {
 
 
 
-        private void HandleOpenProject(string data) {
-            IO.Swagger.Model.OpenProjectResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProjectResponse>(data);
+        private async void HandleOpenProject(string data) {
+            IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
+            GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
         }
+
+        private async void HandleOpenScene(string data) {
+            IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
+            GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
+        }
+
+        private void HandleCloseProject(string data) {
+            GameManager.Instance.ProjectClosed();
+        }
+
+        private void HandleCloseScene(string data) {
+            GameManager.Instance.SceneClosed();
+        }
+
+
+
+        private void HandleOpenPackage(string data) {
+            throw new NotImplementedException();
+        }
+
+        private void HandleProjectSaved(string data) {
+            ProjectManager.Instance.ProjectSaved();
+        }
+
+
+
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
             int id = Interlocked.Increment(ref requestID);
@@ -563,39 +661,39 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RunProject(string projectId) {
+        public async Task RunPackage(string packageId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: projectId);
-            IO.Swagger.Model.RunProjectRequest request = new IO.Swagger.Model.RunProjectRequest(id: r_id, request: "RunProject", args);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
+            IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RunProjectResponse response = await WaitForResult<IO.Swagger.Model.RunProjectResponse>(r_id, 30000);
+            IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task StopProject() {
+        public async Task StopPackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.StopProjectRequest request = new IO.Swagger.Model.StopProjectRequest(id: r_id, request: "StopProject");
+            IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.StopProjectResponse response = await WaitForResult<IO.Swagger.Model.StopProjectResponse>(r_id);
+            IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task PauseProject() {
+        public async Task PausePackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.PauseProjectRequest request = new IO.Swagger.Model.PauseProjectRequest(id: r_id, request: "PauseProject");
+            IO.Swagger.Model.PausePackageRequest request = new IO.Swagger.Model.PausePackageRequest(id: r_id, request: "PausePackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.PauseProjectResponse response = await WaitForResult<IO.Swagger.Model.PauseProjectResponse>(r_id);
+            IO.Swagger.Model.PausePackageResponse response = await WaitForResult<IO.Swagger.Model.PausePackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task ResumeProject() {
+        public async Task ResumePackage() {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.ResumeProjectRequest request = new IO.Swagger.Model.ResumeProjectRequest(id: r_id, request: "ResumeProject");
+            IO.Swagger.Model.ResumePackageRequest request = new IO.Swagger.Model.ResumePackageRequest(id: r_id, request: "ResumePackage");
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ResumeProjectResponse response = await WaitForResult<IO.Swagger.Model.ResumeProjectResponse>(r_id);
+            IO.Swagger.Model.ResumePackageResponse response = await WaitForResult<IO.Swagger.Model.ResumePackageResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -627,12 +725,13 @@ namespace Base {
 
         }
 
-        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId) {
+        public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs.PivotEnum pivot) {
             
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs
-                (id: actionObjectId, robot: robotArg);
+                (id: actionObjectId, robot: robotArg, pivot: pivot);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
                 (id: r_id, request: "UpdateObjectPoseUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -642,9 +741,9 @@ namespace Base {
      
         }
         
-        public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType) {
+        public async Task CreateNewObjectType(IO.Swagger.Model.ObjectTypeMeta objectType, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType);
+            IO.Swagger.Model.NewObjectTypeRequest request = new IO.Swagger.Model.NewObjectTypeRequest(id: r_id, request: "NewObjectType", args: objectType, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewObjectTypeResponse response = await WaitForResult<IO.Swagger.Model.NewObjectTypeResponse>(r_id);
             if (response == null || !response.Result)
@@ -712,12 +811,15 @@ namespace Base {
             return response.Data;
         }
 
-        public async Task<IO.Swagger.Model.AddObjectToSceneResponse> AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
+        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name);
             IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
+            IO.Swagger.Model.AddObjectToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            }
         }
 
         public async Task AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
@@ -729,6 +831,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
+
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string objectType) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.TypeArgs args = new IO.Swagger.Model.TypeArgs(type: objectType);
@@ -738,15 +841,7 @@ namespace Base {
             
         }
 
-        public async Task<bool> AddServiceToScene(string configId, string serviceType) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.SceneService sceneService = new IO.Swagger.Model.SceneService(configurationId: configId, type: serviceType);
-            IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.AddServiceToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddServiceToSceneResponse>(r_id, 30000);
-            return response == null ? false : response.Result;;
-        }
-
+       
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveFromSceneArgs args = new IO.Swagger.Model.RemoveFromSceneArgs(id: id, force: force);
@@ -802,6 +897,16 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
+        public async Task CancelExecution() {
+            int r_id = Interlocked.Increment(ref requestID);
+
+            IO.Swagger.Model.CancelActionRequest request = new IO.Swagger.Model.CancelActionRequest(id: r_id, request: "CancelAction");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CancelActionResponse response = await WaitForResult<IO.Swagger.Model.CancelActionResponse>(r_id);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
         public async Task<IO.Swagger.Model.SystemInfoData> GetSystemInfo() {
              int r_id = Interlocked.Increment(ref requestID);
 
@@ -813,15 +918,18 @@ namespace Base {
              return response.Data;
          }
 
-        public async Task BuildProject(string project_id) {
+        public async Task<string> BuildPackage(string projectId, string packageName) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: project_id);
+            IO.Swagger.Model.BuildProjectArgs args = new IO.Swagger.Model.BuildProjectArgs(projectId: projectId, packageName: packageName);
             IO.Swagger.Model.BuildProjectRequest request = new IO.Swagger.Model.BuildProjectRequest(id: r_id, request: "BuildProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id, 30000);
-            
+            IO.Swagger.Model.BuildProjectResponse response = await WaitForResult<IO.Swagger.Model.BuildProjectResponse>(r_id, 30000);
+
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            else
+                return response.Data.PackageId;
+            return "";
         }
 
         public async Task CreateScene(string name, string description) {
@@ -878,14 +986,14 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task<bool> CloseScene(bool force) {
+        public async Task CloseScene(bool force, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CloseSceneRequestArgs args = new IO.Swagger.Model.CloseSceneRequestArgs(force);
-            IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(r_id, "CloseScene", args);
+            IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(r_id, "CloseScene", args, dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
-            // TODO: is this correct?
-            return response == null ? false : response.Result;;
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task<List<string>> GetProjectsWithScene(string sceneId) {
@@ -899,10 +1007,10 @@ namespace Base {
             return response.Data;
         }
 
-       public async Task CreateProject(string name, string sceneId, string description, bool hasLogic) {
+       public async Task CreateProject(string name, string sceneId, string description, bool hasLogic, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description, hasLogic: hasLogic);
-            IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args);
+            IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);
 
@@ -916,6 +1024,18 @@ namespace Base {
             IO.Swagger.Model.DeleteProjectRequest request = new IO.Swagger.Model.DeleteProjectRequest(r_id, "DeleteProject", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.DeleteProjectResponse response = await WaitForResult<IO.Swagger.Model.DeleteProjectResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+
+        internal async Task RemovePackage(string id) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: id);
+            IO.Swagger.Model.DeletePackageRequest request = new IO.Swagger.Model.DeletePackageRequest(r_id, "DeletePackage", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeletePackageResponse response = await WaitForResult<IO.Swagger.Model.DeletePackageResponse>(r_id);
 
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
@@ -974,6 +1094,18 @@ namespace Base {
             IO.Swagger.Model.AddActionPointOrientationRequest request = new IO.Swagger.Model.AddActionPointOrientationRequest(r_id, "AddActionPointOrientation", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointOrientationResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+
+        public async Task RemoveActionPointOrientation(string actionPointId, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(actionPointId: actionPointId, orientationId: orientationId);
+            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "AddActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
 
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
@@ -1040,16 +1172,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RemoveActionPointOrientation(string id, string orientationId) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(actionPointId: id, orientationId: orientationId);
-            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
-
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-        }
+       
 
          public async Task RemoveActionPointJoints(string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -1084,10 +1207,10 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RemoveAction(string actionId) {
+        public async Task RemoveAction(string actionId, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: actionId);
-            IO.Swagger.Model.RemoveActionRequest request = new IO.Swagger.Model.RemoveActionRequest(r_id, "RemoveAction", args);
+            IO.Swagger.Model.RemoveActionRequest request = new IO.Swagger.Model.RemoveActionRequest(r_id, "RemoveAction", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionResponse>(r_id);
 
@@ -1132,10 +1255,10 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
                 
-        public async Task RenameProject(string projectId, string newName) {
+        public async Task RenameProject(string projectId, string newName, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RenameProjectRequestArgs args = new IO.Swagger.Model.RenameProjectRequestArgs(projectId: projectId, newName: newName);
-            IO.Swagger.Model.RenameProjectRequest request = new IO.Swagger.Model.RenameProjectRequest(r_id, "RenameProject", args);
+            IO.Swagger.Model.RenameProjectRequest request = new IO.Swagger.Model.RenameProjectRequest(r_id, "RenameProject", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameProjectResponse response = await WaitForResult<IO.Swagger.Model.RenameProjectResponse>(r_id);
 
@@ -1144,10 +1267,21 @@ namespace Base {
 
         }
 
-        public async Task RemoveActionPoint(string actionPointId) {
+        public async Task RenamePackage(string packageId, string newUserId, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenamePackageArgs args = new IO.Swagger.Model.RenamePackageArgs(packageId: packageId, newName: newUserId);
+            IO.Swagger.Model.RenamePackageRequest request = new IO.Swagger.Model.RenamePackageRequest(r_id, "RenamePackage", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenamePackageResponse response = await WaitForResult<IO.Swagger.Model.RenamePackageResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task RemoveActionPoint(string actionPointId, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(actionPointId);
-            IO.Swagger.Model.RemoveActionPointRequest request = new IO.Swagger.Model.RemoveActionPointRequest(r_id, "RemoveActionPoint", args);
+            IO.Swagger.Model.RemoveActionPointRequest request = new IO.Swagger.Model.RemoveActionPointRequest(r_id, "RemoveActionPoint", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionPointResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointResponse>(r_id);
 
@@ -1156,15 +1290,15 @@ namespace Base {
 
         }
 
-        public async Task<bool> CloseProject(bool force) {
+        public async Task CloseProject(bool force, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CloseProjectRequestArgs args = new IO.Swagger.Model.CloseProjectRequestArgs(force);
-            IO.Swagger.Model.CloseProjectRequest request = new IO.Swagger.Model.CloseProjectRequest(r_id, "CloseProject", args);
+            IO.Swagger.Model.CloseProjectRequest request = new IO.Swagger.Model.CloseProjectRequest(r_id, "CloseProject", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CloseProjectResponse response = await WaitForResult<IO.Swagger.Model.CloseProjectResponse>(r_id);
 
-            // TODO: is this correct?
-            return response == null ? false : response.Result;
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
         public async Task<IO.Swagger.Model.Pose> GetEndEffectorPose(string robotId, string endeffectorId) {
@@ -1179,6 +1313,33 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
+
+        public async Task<bool> RegisterForRobotEvent(string robotId, bool send, IO.Swagger.Model.RegisterForRobotEventArgs.WhatEnum what) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RegisterForRobotEventArgs args = new IO.Swagger.Model.RegisterForRobotEventArgs(robotId: robotId, send: send, what: what);
+            IO.Swagger.Model.RegisterForRobotEventRequest request = new IO.Swagger.Model.RegisterForRobotEventRequest(r_id, "RegisterForRobotEvent", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RegisterForRobotEventResponse response = await WaitForResult<IO.Swagger.Model.RegisterForRobotEventResponse>(r_id);
+            
+            // TODO: is this correct?
+            return response == null ? false : response.Result;
+        }
+
+        public async Task<List<IO.Swagger.Model.RobotMeta>> GetRobotMeta() {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.GetRobotMetaRequest request = new IO.Swagger.Model.GetRobotMetaRequest(r_id, "GetRobotMeta");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetRobotMetaResponse response = await WaitForResult<IO.Swagger.Model.GetRobotMetaResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get robot meta" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+
+
+
 
 
     }

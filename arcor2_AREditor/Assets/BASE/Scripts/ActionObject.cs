@@ -16,7 +16,6 @@ namespace Base {
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
-        public List<string> EndEffectors = new List<string>();
         protected ActionObjectMenu actionObjectMenu;
         protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
@@ -25,8 +24,8 @@ namespace Base {
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
         }
 
-        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
-            visibility = PlayerPrefsHelper.LoadFloat(Scene.Instance.Data.Id + "/ActionObject/" + id + "/visibility", 1);
+        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -72,11 +71,7 @@ namespace Base {
             return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
         }
 
-        public async Task LoadEndEffectors() {
-            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
-        }
-
+        
                 
         public abstract Vector3 GetScenePosition();
 
@@ -117,9 +112,6 @@ namespace Base {
             return null; //TODO: throw exception
         }
 
-        public List<string> GetEndEffectors() {
-            return EndEffectors;
-        }
 
         public bool IsRobot() {
             return ActionObjectMetadata.Robot;
@@ -130,7 +122,7 @@ namespace Base {
             RemoveActionPoints();
             
             // Remove this ActionObject reference from the scene ActionObject list
-            Scene.Instance.ActionObjects.Remove(this.Data.Id);
+            SceneManager.Instance.ActionObjects.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
@@ -147,7 +139,7 @@ namespace Base {
         public virtual void SetVisibility(float value) {
             Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            PlayerPrefsHelper.SaveFloat(Scene.Instance.Data.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {
@@ -164,7 +156,6 @@ namespace Base {
         public void ShowMenu() {
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
-                actionObjectMenu.UpdateMenu();
                 MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
             } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
                 actionObjectMenuProjectEditor.CurrentObject = this;
@@ -181,9 +172,10 @@ namespace Base {
             return Data.Id;
         }
 
+        //TODO: is this working?
         public List<ActionPoint> GetActionPoints() {
             List<ActionPoint> actionPoints = new List<ActionPoint>();
-            foreach (ActionPoint actionPoint in Scene.Instance.ActionPoints.Values) {
+            foreach (ActionPoint actionPoint in ProjectManager.Instance.ActionPoints.Values) {
                 if (actionPoint.Data.Parent == Data.Id) {
                     actionPoints.Add(actionPoint);
                 }
@@ -219,7 +211,10 @@ namespace Base {
             return gameObject;
         }
 
+        public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
+        public abstract GameObject GetModelCopy();
 
+        public abstract Vector3 GetTopPoint();
     }
 
 }

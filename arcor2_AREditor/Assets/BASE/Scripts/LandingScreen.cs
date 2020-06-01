@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Base;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class LandingScreen : MonoBehaviour
@@ -32,7 +33,6 @@ public class LandingScreen : MonoBehaviour
     }
 
     public void ConnectToServer() {
-        Base.GameManager.Instance.StartLoading();
         string domain = Domain.text;
         int port = int.Parse(Port.text);
         PlayerPrefs.SetString("arserver_domain", domain);
@@ -50,6 +50,9 @@ public class LandingScreen : MonoBehaviour
     private void DisconnectedFromServer(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
         CanvasGroup.blocksRaycasts = true;
-        Base.GameManager.Instance.EndLoading();
+    }
+
+    public void SaveLogs() {
+        Notifications.Instance.SaveLogs();
     }
 }

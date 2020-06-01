@@ -10,24 +10,43 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 {
     public string ParameterType;
 
-    public TMPro.TMP_Text Label;
+    [SerializeField]
+    private TMPro.TMP_Text Label;
     public TMPro.TMP_InputField Input;
+
+    private TooltipContent tooltipContent;
 
     public void Init() {
         
     }
 
-    public void SetLabel(string label, string description) {
+    private void Awake() {
+        Debug.Assert(Label != null);
+        Debug.Assert(Input != null);
+        tooltipContent = Label.GetComponent<TooltipContent>();
+    }
+
+    private void Start() {
         
+        
+    }
+
+    public void SetLabel(string label, string description) {
+
         Label.text = label;
+        if (tooltipContent == null)
+            return;
         if (!string.IsNullOrEmpty(description)) {
-            if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
-                Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+            tooltipContent.enabled = true;
+            if (tooltipContent.tooltipRect == null) {
+                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
             }
-            if (Label.GetComponent<TooltipContent>().descriptionText == null) {
-                Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
+            if (tooltipContent.descriptionText == null) {
+                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
             }
-            Label.GetComponent<TooltipContent>().description = description;
+            tooltipContent.description = description;
+        } else {
+            tooltipContent.enabled = false;
         }
             
     }

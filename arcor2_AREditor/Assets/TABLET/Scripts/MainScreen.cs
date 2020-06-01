@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using UnityEngine.Playables;
+using Base;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
@@ -16,6 +18,9 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     [SerializeField]
     private ProjectOptionMenu ProjectOptionMenu;
+
+    [SerializeField]
+    private PackageOptionMenu PackageOptionMenu;
 
     [SerializeField]
     private CanvasGroup projectsList, scenesList, packageList;
@@ -45,6 +50,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
+        Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
@@ -88,6 +94,9 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterTile(tile);
         }
         foreach (ProjectTile tile in projectTiles) {
+            FilterTile(tile);
+        }
+        foreach (PackageTile tile in packageTiles) {
             FilterTile(tile);
         }
     }
@@ -170,20 +179,26 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void UpdatePackages(object sender, EventArgs eventArgs) {
-
         packageTiles.Clear();
-        return;
         foreach (Transform t in PackagesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
-            tile.InitTile(package.Id,
-                          null,
-                          null,
+            string projectName = "unknown";
+            try {
+                projectName = GameManager.Instance.GetProjectName(package.ProjectId);
+            } catch (ItemNotFoundException ex) {
+                Debug.Log(ex);
+            }            
+            tile.InitTile(package.PackageMeta.Name,
+                          async () => await Base.GameManager.Instance.RunPackage(package.Id),
+                          () => PackageOptionMenu.Open(tile),
                           starred,
-                          package.Id);
+                          package.Id,
+                          projectName,
+                          package.PackageMeta.Built.ToString());
             packageTiles.Add(tile);
         }
         
@@ -212,5 +227,9 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void NotImplemented() {
         Base.Notifications.Instance.ShowNotification("Not implemented", "Not implemented");
+    }
+
+    public void SaveLogs() {
+        Base.Notifications.Instance.SaveLogs();
     }
 }

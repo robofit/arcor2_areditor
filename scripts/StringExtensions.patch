@@ -1,0 +1,40 @@
+--- StringExtensions.cs	Sat Dec 22 16:02:55 2018
++++ StringExtensions.cs	Fri May 22 18:40:50 2020
+@@ -44 +44 @@ namespace OrbCreationExtensions
+-            if(str!=null && int.TryParse(str, out parsedInt)) return parsedInt;
++            if(str!=null && int.TryParse(str, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedInt)) return parsedInt;
+@@ -49 +49 @@ namespace OrbCreationExtensions
+-            if (aStr!=null && float.TryParse(aStr, out parsedFloat)) return parsedFloat;
++            if (aStr!=null && float.TryParse(aStr, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedFloat)) return parsedFloat;
+@@ -54 +54 @@ namespace OrbCreationExtensions
+-            if (aStr!=null && double.TryParse(aStr, out parsed)) return parsed;
++            if (aStr!=null && double.TryParse(aStr, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsed)) return parsed;
+@@ -60 +60 @@ namespace OrbCreationExtensions
+-            if(aStr!=null && int.TryParse(aStr, out parsedInt)) return (parsedInt > 0);
++            if(aStr!=null && int.TryParse(aStr, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedInt)) return (parsedInt > 0);
+@@ -240 +240 @@ namespace OrbCreationExtensions
+-                        if(int.TryParse(str.Substring(begin, i-begin), out parsedInt)) {
++                        if(int.TryParse(str.Substring(begin, i-begin), NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedInt)) {
+@@ -271 +271 @@ namespace OrbCreationExtensions
+-                        if(float.TryParse(str.Substring(begin, i-begin), out parsedFloat)) {
++                        if(float.TryParse(str.Substring(begin, i-begin), NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedFloat)) {
+@@ -304 +304 @@ namespace OrbCreationExtensions
+-                        if(float.TryParse(str.Substring(begin, i-begin), out parsedFloat)) {
++                        if(float.TryParse(str.Substring(begin, i-begin), NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedFloat)) {
+@@ -334 +334 @@ namespace OrbCreationExtensions
+-            int vectorIdx=0;
++            int vectorIdx =0;
+@@ -343,2 +343,2 @@ namespace OrbCreationExtensions
+-                        float parsedFloat = 0.0f;
+-                        if(float.TryParse(str.Substring(begin, i-begin), out parsedFloat)) {
++                    float parsedFloat = 0.0f;
++                        if (float.TryParse(str.Substring(begin, i - begin), NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out parsedFloat)) {
+@@ -346 +346 @@ namespace OrbCreationExtensions
+-                            if(vectorIdx == 3) {
++                            if (vectorIdx == 3) {
+@@ -349 +349 @@ namespace OrbCreationExtensions
+-                                vector = new Vector3(0,0,0);
++                                vector = new Vector3(0, 0, 0);
+@@ -352 +352 @@ namespace OrbCreationExtensions
+-                        digitPassed=false;
++                        digitPassed = false;

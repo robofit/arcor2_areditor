@@ -2,51 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using Base;
+using UnityEngine.Events;
 
 public class DropdownEndEffectors : MonoBehaviour {
     public DropdownParameter Dropdown;
 
 
-    public void Init(string robot_id) {
-        if (robot_id == "") {
+    public void Init(string robotId, UnityAction<string> onChangeCallback) {
+        if (robotId == "") {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;
         }
-        foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
-            if (actionObject.Data.Id == robot_id) {
-                UpdateEndEffectorList(actionObject);
-                return;
-            }
+        try {
+            IRobot robot = SceneManager.Instance.GetRobot(robotId);
+            Dropdown.Dropdown.dropdownItems.Clear();
+            PutData(robot.GetEndEffectors(), onChangeCallback);
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");
         }
-        //not found in objects, try services
-        foreach (Base.Service s in Base.ActionsManager.Instance.ServicesData.Values) {
-            if (!s.IsRobot()) {
-                continue;
-            }
-            if (s.Robots.ContainsKey(robot_id)) {
-                UpdateEndEffectorList(s, robot_id);
-                return;
-            }
-        }
-        Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors");
+        
+        
     }
 
-    public void UpdateEndEffectorList(Base.ActionObject robot) {
-        Dropdown.Dropdown.dropdownItems.Clear();
-        PutData(robot.EndEffectors);
-    }
-
-    public void UpdateEndEffectorList(Base.Service service, string robot_id) {
-        Dropdown.Dropdown.dropdownItems.Clear();
-        PutData(service.GetEndEffectors(robot_id));
-    }
-
-    public void PutData(List<string> data) {
+    public void PutData(List<string> data, UnityAction<string> onChangeCallback) {
         foreach (string ee in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = ee
             };
+            if (onChangeCallback != null) {
+                if (item.OnItemSelection == null) {
+                    item.OnItemSelection = new UnityEvent();
+                }
+                item.OnItemSelection.AddListener(() => onChangeCallback(ee));
+            }
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
         if (Dropdown.Dropdown.dropdownItems.Count > 0) {

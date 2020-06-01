@@ -8,6 +8,22 @@ public class SwitchComponent : MonoBehaviour, IActionParameter
     public SwitchManager Switch;
     public TMPro.TMP_Text Label;
 
+    private Button switchButton;
+
+    private bool interactable;
+
+    private void Start() {
+        switchButton = Switch.gameObject.GetComponent<Button>();
+    }
+
+    public bool Interactable {
+        get => interactable;
+        set {
+            interactable = value;
+            switchButton.interactable = value;
+        }
+    }
+
     public string GetName() {
         return Label.text;
     }
@@ -31,4 +47,6 @@ public class SwitchComponent : MonoBehaviour, IActionParameter
         Switch.enabled = false;
         Switch.enabled = true;
     }
+
+
 }

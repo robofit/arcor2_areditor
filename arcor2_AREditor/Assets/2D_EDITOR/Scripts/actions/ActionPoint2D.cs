@@ -53,7 +53,7 @@ public class ActionPoint2D : Base.ActionPoint {
     }
 
     public override bool ProjectInteractable() {
-        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
     public override void UpdatePositionsOfPucks() {
@@ -65,6 +65,10 @@ public class ActionPoint2D : Base.ActionPoint {
     }
 
     public override void SetSize(float size) {
+        throw new System.NotImplementedException();
+    }
+
+    public override void HighlightAP(bool highlight) {
         throw new System.NotImplementedException();
     }
 }

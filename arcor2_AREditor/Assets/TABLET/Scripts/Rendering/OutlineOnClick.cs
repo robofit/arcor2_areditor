@@ -27,6 +27,11 @@ public class OutlineOnClick : Clickable {
         }
     }
 
+    public void ClearRenderers() {
+        Renderers.Clear();
+        materials.Clear();
+    }
+
     public override void OnClick(Click type) {
 
     }

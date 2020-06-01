@@ -45,7 +45,7 @@ public class InputHandler : Singleton<InputHandler> {
             RaycastHit hit = new RaycastHit();
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
                 try {
-                    hit.transform.gameObject.SendMessage("OnClick", clickType);
+                    hit.collider.transform.gameObject.SendMessage("OnClick", clickType);
                 } catch (Exception e) {
                     Debug.LogError(e);
                 }
@@ -72,7 +72,7 @@ public class InputHandler : Singleton<InputHandler> {
 
                     if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
                         try {
-                            hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH);
+                            hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH);
                         } catch (Exception e) {
                             Debug.LogError(e);
                         }
@@ -89,12 +89,13 @@ public class InputHandler : Singleton<InputHandler> {
                         longTouch = false;
 
                     } else {
-                        StopCoroutine(coroutine);
+                        if (coroutine != null)
+                            StopCoroutine(coroutine);
                         longTouch = false;
 
                         if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
                             try {
-                                hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_ENDED);
+                                hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_ENDED);
                             } catch (Exception e) {
                                 Debug.LogError(e);
                             }
@@ -117,7 +118,7 @@ public class InputHandler : Singleton<InputHandler> {
 
         if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
             try {
-                hit.transform.gameObject.SendMessage("OnClick", Clickable.Click.LONG_TOUCH);
+                hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.LONG_TOUCH);
             } catch (Exception e) {
                 Debug.LogError(e);
             }

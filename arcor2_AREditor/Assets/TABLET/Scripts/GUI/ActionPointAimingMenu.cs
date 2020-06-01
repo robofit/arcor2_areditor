@@ -5,6 +5,8 @@ using Michsky.UI.ModernUIPack;
 using System.Linq;
 using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
+using Base;
+using System;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionPointAimingMenu : MonoBehaviour, IMenu
@@ -31,8 +33,20 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     [SerializeField]
     private Button UpdateJointsBtn, UpdateOrientationBtn;
 
+    private string preselectedOrientation = null;
+    private string preselectedJoints = null;
+
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
+        ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
+    }
+
+    private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
+        if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.Data)) {
+            UpdateOrientations(preselectedOrientation);
+            UpdateJoints((string) RobotsList.GetValue(), preselectedJoints);
+            preselectedOrientation = null;
+        }
     }
 
     public void UpdateMenu(string preselectedOrientation = null) {
@@ -62,7 +76,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                 itemName = orientation.Name
             };
             orientationDropdown.dropdownItems.Add(item);
-            if (preselectedOrientation == orientation.Id) {
+            if (preselectedOrientation == orientation.Name) {
                 selectedItem = orientationDropdown.dropdownItems.Count - 1;
             }
 
@@ -89,7 +103,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         CustomDropdown jointsDropdown = JointsList.Dropdown;
 
-        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null);
+        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null, CurrentActionPoint.Data.Name);
 
         if (jointsDropdown.dropdownItems.Count > 0) {
             NoJoints.gameObject.SetActive(false);
@@ -102,17 +116,27 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         }
     }
 
-    private void OnRobotChanged(string robot_id) {
+    private void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id);
-        if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
-            UpdatePoseBlock.SetActive(false);
-            UpdateJointsBlock.SetActive(true);
-        } else {
-            UpdatePoseBlock.SetActive(true);
-            UpdateJointsBlock.SetActive(false);
+        
+        try {
+            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
+            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
+                UpdatePoseBlock.SetActive(false);
+                UpdateJointsBlock.SetActive(true);
+                UpdateJoints(robot_name);
+            } else {
+                
+                UpdatePoseBlock.SetActive(true);
+                UpdateJointsBlock.SetActive(false);
+            }
+           
+        } catch (KeyNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
-        UpdateJoints(robot_id);
+        
     }
 
 
@@ -122,41 +146,52 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         inputDialog.Open("Create new named orientation",
                          "Please set name of the new orientation",
                          "Name",
-                         "",
-                         () => AddOrientation(inputDialog.GetValue()),
+                         CurrentActionPoint.GetFreeOrientationName(),
+                         () => AddOrientation(inputDialog.GetValue(), (string) RobotsList.GetValue()),
                          () => inputDialog.Close());
     }
 
-    public async void AddOrientation(string name) {
+    public async void AddOrientation(string name, string robotId) {
         Debug.Assert(CurrentActionPoint != null);
+        if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
+            Notifications.Instance.ShowNotification("Failed to add orientation", "There already exists orientation or joints with name " + name);
+            return;
+        }
         IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation();
         if (CurrentActionPoint.Parent != null) {
             orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
         }
-        
-        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
-        if (success) {
+        preselectedOrientation = name;
+        bool successOrientation = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
+        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robotId);
+        if (successOrientation && successJoints) {
             inputDialog.Close();
+        } else {
+            
+            preselectedOrientation = null;
         }
-        UpdateOrientations();
+        
     }
 
     public void ShowAddJointsDialog() {
         inputDialog.Open("Create new joints configuration",
                          "Please set name of the new joints configuration",
                          "Name",
-                         "",
+                         CurrentActionPoint.GetFreeJointsName(),
                          () => AddJoints(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
 
     public async void AddJoints(string name) {
         Debug.Assert(CurrentActionPoint != null);
+        preselectedJoints = name;
         bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, (string) RobotsList.GetValue());
         if (success) {
             inputDialog.Close();
+        } else {
+            preselectedJoints = null;
         }
-        UpdateJoints((string) RobotsList.GetValue());
+        
     }
 
 
@@ -167,12 +202,17 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             return;
         }
         try {
-            Base.GameManager.Instance.UpdateActionPointJoints((string) RobotsList.GetValue(), CurrentActionPoint.GetJoints((string) JointsList.GetValue()).Name);
+            preselectedJoints = name;
+            string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+            Base.GameManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
-        } catch (Base.RequestFailedException ex) {
+
+            
+        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is KeyNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
+            preselectedJoints = null;
         }
-        UpdateJoints((string) RobotsList.GetValue(), (string) JointsList.GetValue());
+        
     }
 
     public void ShowFocusConfirmationDialog() {
@@ -190,15 +230,16 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         } else {
             FocusConfirmationDialog.EndEffectorId = endEffectorDropdown.selectedText.text;
         }
-        FocusConfirmationDialog.RobotId = robotsListDropdown.selectedText.text;
+        FocusConfirmationDialog.RobotName = robotsListDropdown.selectedText.text;
 
         FocusConfirmationDialog.OrientationId = CurrentActionPoint.GetNamedOrientationByName(orientationDropdown.selectedText.text).Id;
+        FocusConfirmationDialog.JointsId = CurrentActionPoint.GetJointsByName(orientationDropdown.selectedText.text).Id;
         FocusConfirmationDialog.OrientationName = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;
         FocusConfirmationDialog.ActionPointName = CurrentActionPoint.Data.Name;
-        FocusConfirmationDialog.Init();
-        FocusConfirmationDialog.WindowManager.OpenWindow();
+        if (FocusConfirmationDialog.Init())
+            FocusConfirmationDialog.WindowManager.OpenWindow();
     }
 
     public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation = null) {

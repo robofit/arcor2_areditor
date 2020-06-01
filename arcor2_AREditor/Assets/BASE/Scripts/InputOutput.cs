@@ -63,8 +63,15 @@ namespace Base {
         }
 
         public override void OnClick(Click type) {
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+                return;
+            }
             if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
                 return; 
+            }
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+                Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");
+                return;
             }
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.TOUCH) {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {

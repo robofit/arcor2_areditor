@@ -49,15 +49,15 @@ namespace Base {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
             if (type == LogType.Exception) {
                 //automatially create logs in case of exception
-                SaveLogs(Scene.Instance.Data, GameManager.Instance.CurrentProject, "Exception occured");
+                SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Exception occured");
             }
         }
 
         public override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
             string sceneString = "", projectString = "";
-            if (Scene.Instance.Data != null)
+            if (SceneManager.Instance.Scene != null)
                 sceneString = scene.ToJson();
-            if (GameManager.Instance.CurrentProject != null)
+            if (Base.ProjectManager.Instance.Project != null)
                 projectString = project.ToJson();
             string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
             Directory.CreateDirectory(dirname);
@@ -70,6 +70,18 @@ namespace Base {
             projectFile.Close();
 
             StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
+            logsFile.WriteLine("Editor version: " + GameManager.Instance.EditorVersion);
+            if (GameManager.Instance.SystemInfo != null) {
+                logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo.Version);
+            }
+            
+            logsFile.WriteLine("Editor API version: " + GameManager.ApiVersion);
+            if (GameManager.Instance.SystemInfo != null) {
+                logsFile.WriteLine("Server API version: " + GameManager.Instance.SystemInfo.ApiVersion);
+            } else {
+                logsFile.WriteLine("Not connected to server");
+            }
+            logsFile.WriteLine();
             foreach (LogEntry log in LogEntries) {
                 logsFile.WriteLine("Timestamp: " + log.TimeStamp.ToString());
                 logsFile.WriteLine("Type: " + log.LogType.ToString());

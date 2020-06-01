@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Base;
 using RuntimeGizmos;
+using IO.Swagger.Model;
 
 public class ActionObject3D : ActionObject
 {
@@ -25,6 +26,9 @@ public class ActionObject3D : ActionObject
     private bool updatePose = false;
     private Renderer modelRenderer;
     private OutlineOnClick outlineOnClick;
+
+    private Shader standardShader;
+    private Shader transparentShader;
 
     protected override void Start() {
         base.Start();
@@ -77,6 +81,18 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+            GameManager.Instance.ObjectSelected(this);
+            return;
+        }
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+            return;
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+            return;
+        }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON) {
             // We have clicked with left mouse and started manipulation with object
@@ -113,10 +129,10 @@ public class ActionObject3D : ActionObject
 
 
     public override bool SceneInteractable() {
-        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened();
+        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
         base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;
@@ -124,64 +140,31 @@ public class ActionObject3D : ActionObject
         SetSceneOrientation(orientation);
         Data.Id = uuid;
         ActionObjectMetadata = actionObjectMetadata;
-        CreateModel();
+        CreateModel(customCollisionModels);
         enabled = true;
         SetVisibility(visibility);
     }
 
-    public void CreateModel() {
-        if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
-            Model = Instantiate(CubePrefab, Visual.transform);
-            Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
-        } else {
-            switch (ActionObjectMetadata.ObjectModel.Type) {
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
-                    Model = Instantiate(CubePrefab, Visual.transform);
-                    Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
-                    break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
-                    Model = Instantiate(CylinderPrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
-                    break;
-                case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
-                    Model = Instantiate(SpherePrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
-                    break;
-                default:
-                    Model = Instantiate(CubePrefab, Visual.transform);
-                    Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
-                    break;
-            }
-        }
-        if (IsRobot()) {
-            Model.tag = "Robot";
-        }
-        gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
-        Collider = Model.GetComponent<Collider>();
-        Model.GetComponent<OnClickCollider>().Target = gameObject;
-        modelRenderer = Model.GetComponent<Renderer>();
-        outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
-    }
-
-
     public override void SetVisibility(float value) {
         base.SetVisibility(value);
-        // Set opaque material
+
+        if (standardShader == null) {
+            standardShader = Shader.Find("Standard");
+        }
+
+        if (transparentShader == null) {
+            transparentShader = Shader.Find("Transparent/Diffuse");
+        }
+
+        // Set opaque shader
         if (value >= 1) {
             transparent = false;
-            Material oldMaterial = modelRenderer.material;
-            modelRenderer.material = ActionObjectMaterialOpaque;
-            // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-            outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+            modelRenderer.material.shader = standardShader;
         }
-        // Set transparent material
+        // Set transparent shader
         else {
             if (!transparent) {
-                Material oldMaterial = modelRenderer.material;
-                modelRenderer.material = ActionObjectMaterialTransparent;
-                // actualize switched materials in OutlineOnClick, otherwise the script would mess up the materials 
-                outlineOnClick.SwapMaterials(oldMaterial, modelRenderer.material);
+                modelRenderer.material.shader = transparentShader;
                 transparent = true;
             }
             // set alpha of the material
@@ -213,5 +196,80 @@ public class ActionObject3D : ActionObject
     public override void ActivateForGizmo(string layer) {
         base.ActivateForGizmo(layer);
         Model.layer = LayerMask.NameToLayer(layer);
+    }
+
+    public override void CreateModel(CollisionModels customCollisionModels = null) {
+        if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
+            Model = Instantiate(CubePrefab, Visual.transform);
+            Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+        } else {
+            switch (ActionObjectMetadata.ObjectModel.Type) {
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                    Model = Instantiate(CubePrefab, Visual.transform);
+
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
+                    } else {
+                        foreach (IO.Swagger.Model.Box box in customCollisionModels.Boxes) {
+                            if (box.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = TransformConvertor.ROSToUnityScale(new Vector3((float) box.SizeX, (float) box.SizeY, (float) box.SizeZ));
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                    Model = Instantiate(CylinderPrefab, Visual.transform);
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
+                    } else {
+                        foreach (IO.Swagger.Model.Cylinder cylinder in customCollisionModels.Cylinders) {
+                            if (cylinder.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = new Vector3((float) cylinder.Radius, (float) cylinder.Height, (float) cylinder.Radius);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                    Model = Instantiate(SpherePrefab, Visual.transform);
+                    if (customCollisionModels == null) {
+                        Visual.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius);
+                    } else {
+                        foreach (IO.Swagger.Model.Sphere sphere in customCollisionModels.Spheres) {
+                            if (sphere.Id == ActionObjectMetadata.Type) {
+                                Visual.transform.localScale = new Vector3((float) sphere.Radius, (float) sphere.Radius, (float) sphere.Radius);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    Model = Instantiate(CubePrefab, Visual.transform);
+                    Visual.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+                    break;
+            }
+        }
+        if (IsRobot()) {
+            Model.tag = "Robot";
+        }
+        gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
+        Collider = Model.GetComponent<Collider>();
+        Model.GetComponent<OnClickCollider>().Target = gameObject;
+        modelRenderer = Model.GetComponent<Renderer>();
+        outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
+        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
+    }
+
+    public override GameObject GetModelCopy() {
+        GameObject model = Instantiate(Model);
+        model.transform.localScale = Visual.transform.localScale;
+        return model;
+    }
+
+    public override Vector3 GetTopPoint() {
+        Vector3 position = transform.position;
+        position.y += Collider.bounds.extents.y + 0.1f;
+        return position;
     }
 }

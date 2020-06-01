@@ -26,22 +26,23 @@ namespace Base {
         [SerializeField]
         protected GameObject orientations;
 
-        public bool OrientationsVisible;
+        public bool OrientationsVisible, ActionsCollapsed;
 
 
         public bool Locked {
             get {
-                return PlayerPrefsHelper.LoadBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", false);
+                return PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.Project.Id + "/AP/" + Data.Id + "/locked", false);
             }
 
             set {
-                Debug.Assert(GameManager.Instance.CurrentProject != null);
-                PlayerPrefsHelper.SaveBool("project/" + GameManager.Instance.CurrentProject.Id + "/AP/" + Data.Id + "/locked", value);
+                Debug.Assert(Base.ProjectManager.Instance.Project != null);
+                PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.Project.Id + "/AP/" + Data.Id + "/locked", value);
             }
         }
 
         private void Awake() {
-            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+           
+            
         }
 
         protected virtual void Start() {
@@ -77,12 +78,11 @@ namespace Base {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
+            OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
+            ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
-            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove == true) ? "GizmoRuntime" : "Default");
-            // TODO: is this neccessary?
-            /*if (Data.Orientations.Count == 0)
-                Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation: new IO.Swagger.Model.Orientation()));*/
+            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove && ProjectManager.Instance.AllowEdit && !MenuManager.Instance.IsAnyMenuOpened) ? "GizmoRuntime" : "Default");
         }
 
         public void SetParent(IActionPointParent parent) {
@@ -93,14 +93,14 @@ namespace Base {
 
         private void SetConnectionToActionObject(IActionPointParent parent) {
             // Create new Line Connection between parent AO and child AP
-            GameObject c = Instantiate(Scene.Instance.LineConnectionPrefab);
+            GameObject c = Instantiate(SceneManager.Instance.LineConnectionPrefab);
             c.transform.parent = transform;
             LineConnection newConnection = c.GetComponent<LineConnection>();
             newConnection.targets[0] = parent.GetTransform();
             newConnection.targets[1] = this.transform;
 
             // add the connection to connections manager
-            Scene.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
+            SceneManager.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
 
             ConnectionToParent = newConnection;
 
@@ -114,6 +114,38 @@ namespace Base {
                 changeMaterial.ClickMaterial = ConnectionToParent.ClickMaterial;
             }
             changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());
+        }
+
+        internal string GetFreeOrientationName() {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = "default";
+            do {
+                hasFreeName = true;
+                if (OrientationNameExist(freeName) || JointsNameExist(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = "default_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+        internal string GetFreeJointsName() {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = "default";
+            do {
+                hasFreeName = true;
+                if (JointsNameExist(freeName) || OrientationNameExist(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = "default_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
         }
 
         public abstract void UpdatePositionsOfPucks();
@@ -187,13 +219,15 @@ namespace Base {
         
 
 
-        public void DeleteAP() {
+        public void DeleteAP(bool removeFromList = true) {
             // Remove all actions of this action point
             RemoveActions();
             RemoveConnectionToParent();
 
+
             // Remove this ActionPoint reference from parent ActionObject list
-            Scene.Instance.ActionPoints.Remove(this.Data.Id);
+            if (removeFromList) // to allow remove all AP in foreach
+                ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
 
             Destroy(gameObject);
         }
@@ -205,7 +239,7 @@ namespace Base {
                 ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
                 changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());
                 // remove connection from connectinos manager
-                Scene.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
+                SceneManager.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
                 // destroy connection gameobject
                 Destroy(ConnectionToParent.gameObject);
             }
@@ -234,7 +268,6 @@ namespace Base {
 
         public void ShowMenu(bool enableBackButton) {
             actionPointMenu.CurrentActionPoint = this;
-            actionPointMenu.UpdateMenu();
             actionPointMenu.EnableBackButton(enableBackButton);
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
         }
@@ -293,9 +326,9 @@ namespace Base {
                 string actionType = projectAction.Type.Split('/').Last();
                 IActionProvider actionProvider;
                 try {
-                    actionProvider = Scene.Instance.GetActionObject(providerName);
+                    actionProvider = SceneManager.Instance.GetActionObject(providerName);
                 } catch (KeyNotFoundException ex) {
-                    if (ActionsManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                    if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
                         actionProvider = originalService;
                     } else {
                         Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
@@ -306,7 +339,7 @@ namespace Base {
 
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = Scene.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    action = ProjectManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -324,8 +357,13 @@ namespace Base {
             }
 
 
-            if (Parent != null)
-                ConnectionToParent.UpdateLine();
+            if (Parent != null) {
+
+                if (ConnectionToParent != null)
+                    ConnectionToParent.UpdateLine();
+                else
+                    SetConnectionToActionObject(Parent);
+            }
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
                 actionPointMenu.UpdateMenu();
@@ -338,12 +376,12 @@ namespace Base {
                 RemoveConnectionToParent();
                 Parent = null;
                 Data.Parent = "";
-                transform.parent = Scene.Instance.ActionPointsOrigin.transform;
+                transform.parent = ProjectManager.Instance.ActionPointsOrigin.transform;
                 transform.localRotation = Quaternion.identity;
                 return;
             }
             try {
-                IActionPointParent actionPointParent = Scene.Instance.GetActionPointParent(parentId);
+                IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
                 Parent = actionPointParent;
                 Data.Parent = parentId;
                 transform.parent = actionPointParent.GetTransform();
@@ -353,6 +391,24 @@ namespace Base {
             
             
         }
+
+        public bool OrientationNameExist(string name) {
+            try {
+                GetOrientationByName(name);
+                return true;
+            } catch (KeyNotFoundException ex) {
+                return false;
+            } 
+        } 
+
+        public bool JointsNameExist(string name) {
+            try {
+                GetJointsByName(name);
+                return true;
+            } catch (KeyNotFoundException ex) {
+                return false;
+            } 
+        } 
 
         /// <summary>
         /// Returns orientation with id or throws KeyNotFoundException
@@ -391,6 +447,20 @@ namespace Base {
                     return joints;
             }
             throw new KeyNotFoundException("Joints with name " + name + " not found");
+        }
+
+
+        /// <summary>
+        /// Returns joints with name or throws KeyNotFoundException
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IO.Swagger.Model.NamedOrientation GetOrientationByName(string name) {
+            foreach (NamedOrientation orientation in Data.Orientations) {
+                if (orientation.Name == name)
+                    return orientation;
+            }
+            throw new KeyNotFoundException("Orientation with name " + name + " not found");
         }
 
 
@@ -458,7 +528,7 @@ namespace Base {
             foreach (Transform transform in orientations.transform) {
                 Destroy(transform.gameObject);
             }
-            if (!Scene.Instance.APOrientationsVisible)
+            if (!ProjectManager.Instance.APOrientationsVisible)
                 return;
             if (!OrientationsVisible)
                 return;
@@ -474,6 +544,7 @@ namespace Base {
             ShowMenu(false);
             actionPointMenu.OpenActoinPointAimingMenu(orientationId);
         }
-    }
 
+        public abstract void HighlightAP(bool highlight);
+    }
 }

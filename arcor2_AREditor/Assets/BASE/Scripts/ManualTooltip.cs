@@ -4,22 +4,40 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 
 [RequireComponent(typeof(TooltipContent))]
-public class ManualTooltip : MonoBehaviour
-{
+public class ManualTooltip : MonoBehaviour {
     [SerializeField]
     private TooltipContent tooltipContent;
     [SerializeField]
-    private string description;
+    public string Description, DescriptionAlternative;
 
     private void Start() {
         Debug.Assert(tooltipContent != null);
-        if (string.IsNullOrEmpty(description)) {
-            Destroy(this);
-            Destroy(tooltipContent);
+        if (string.IsNullOrEmpty(Description)) {
+            tooltipContent.enabled = false;
             return;
         }
-        tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
-        tooltipContent.descriptionText = TooltipRef.Instance.Text;
-        tooltipContent.description = description;
+        if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
+            tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
+            tooltipContent.descriptionText = TooltipRef.Instance.Text;            
+        }
+        ShowDefaultDescription();
+    }
+
+    public void ShowDefaultDescription() {
+        if (string.IsNullOrEmpty(Description)) {
+            tooltipContent.enabled = false;
+        } else {
+            tooltipContent.description = Description;
+            tooltipContent.enabled = true;
+        }
+    }
+
+    public void ShowAlternativeDescription() {        
+        if (string.IsNullOrEmpty(DescriptionAlternative)) {
+            tooltipContent.enabled = false;
+        } else {
+            tooltipContent.description = DescriptionAlternative;
+            tooltipContent.enabled = true;
+        }
     }
 }

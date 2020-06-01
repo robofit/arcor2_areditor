@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
 using Base;
+using System;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -24,11 +25,19 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     private Button LockedBtn, UnlockedBtn, UntieBtn, BackBtn;
 
     [SerializeField]
+    private ButtonWithTooltip RemoveBtn, CollapseBtn, ExpandBtn;
+
+    [SerializeField]
     private InputDialog inputDialog;
 
     [SerializeField]
     private ActionPointAimingMenu ActionPointAimingMenu;
 
+    private ManualTooltip UntieBtnTooltip;
+
+    private void Start() {
+        UntieBtnTooltip = UntieBtn.gameObject.GetComponent<ManualTooltip>();
+    }
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
@@ -61,7 +70,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
 
         Base.ActionPoint actionPoint;
@@ -115,11 +124,19 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         
         UpdateLockedBtns(CurrentActionPoint.Locked);
-        if (CurrentActionPoint.Parent == null)
-            UntieBtn.interactable = false;
-        else
-            UntieBtn.interactable = true;
-        
+        if (CurrentActionPoint.Parent == null) {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => AssignToParent());
+            UntieBtnTooltip.ShowAlternativeDescription();
+        } else {
+            UntieBtn.onClick.RemoveAllListeners();
+            UntieBtn.onClick.AddListener(() => ShowUntieActionPointDialog());
+            UntieBtnTooltip.ShowDefaultDescription();
+        }
+
+        RemoveBtn.SetInteractivity(await GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true));
+        ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
+        CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
     }
 
     private static void CreateTooltip(string text, ActionButton btn) {
@@ -137,7 +154,20 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
 
 
+    private void AssignToParent() {
+        Action<object> action = AssignToParent;
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)");
+    }
 
+    private async void AssignToParent(object selectedObject) {
+        ActionObject actionObject = (ActionObject) selectedObject;
+        if (actionObject == null)
+            return;
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, actionObject.Data.Id);
+        if (result) {
+            //
+        }
+    }
 
 
     public async void DeleteAP() {
@@ -197,7 +227,23 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void BackToParentMenu() {
         CurrentActionPoint.Parent.ShowMenu();
-        Base.Scene.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
+        Base.SceneManager.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
         CurrentActionPoint.Parent.GetGameObject().SendMessage("Select");
+    }
+
+    public void CollapseActions() {
+        PlayerPrefsHelper.SaveBool("/AP/" + CurrentActionPoint.Data.Id + "/actionsCollapsed", true);
+        CurrentActionPoint.ActionsCollapsed = true;
+        CurrentActionPoint.UpdatePositionsOfPucks();
+        CollapseBtn.gameObject.SetActive(false);
+        ExpandBtn.gameObject.SetActive(true);
+    }
+
+    public void ExpandActions() {
+        PlayerPrefsHelper.SaveBool("/AP/" + CurrentActionPoint.Data.Id + "/actionsCollapsed", false);
+        CurrentActionPoint.ActionsCollapsed = false;
+        CurrentActionPoint.UpdatePositionsOfPucks();
+        CollapseBtn.gameObject.SetActive(true);
+        ExpandBtn.gameObject.SetActive(false);
     }
 }

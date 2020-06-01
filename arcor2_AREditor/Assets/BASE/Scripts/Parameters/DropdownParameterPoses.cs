@@ -9,7 +9,7 @@ public class DropdownParameterPoses : DropdownParameter
         if (value == null)
             return null;
 
-        Base.ActionPoint actionPoint = Base.Scene.Instance.GetactionpointByName(value.Split('.').First());
+        Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(value.Split('.').First());
         return actionPoint.GetNamedOrientationByName(value.Split('.').Last()).Id;
     }
 

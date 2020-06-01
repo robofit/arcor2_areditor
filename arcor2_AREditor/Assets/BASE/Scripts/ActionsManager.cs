@@ -7,28 +7,16 @@ using System.Threading.Tasks;
 
 namespace Base {
 
-    public class ServiceEventArgs : EventArgs {
-        public Service Data {
-            get; set;
-        }
-
-        public ServiceEventArgs(Service data) {
-            Data = data;
-        }
-    }
     public class ActionsManager : Singleton<ActionsManager> {
-        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
 
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
         private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
-        private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
-
+        
         public Action CurrentlyRunningAction = null;
         
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
-        public event ServiceEventHandler OnServicesUpdated;
-
+        
         public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
 
         public GameObject InteractiveObjects;
@@ -37,6 +25,8 @@ namespace Base {
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
 
+        public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
+
         public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
@@ -44,11 +34,7 @@ namespace Base {
             get => servicesMetadata;
             set => servicesMetadata = value;
         }
-        public Dictionary<string, Service> ServicesData {
-            get => servicesData;
-            set => servicesData = value;
-        }
-
+        
         private void Awake() {
             ActionsReady = false;
             ServicesLoaded = false;
@@ -90,7 +76,6 @@ namespace Base {
         }
 
         public void Init() {
-            servicesData.Clear();
             servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
             ActionsReady = false;
@@ -98,41 +83,9 @@ namespace Base {
             ActionObjectsLoaded = false;
         }        
 
-        public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
-            Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
-            ServicesData.TryGetValue(sceneService.Type, out Service service);
-            service.Data = sceneService;
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-        }
+       
 
-        public async Task AddService(IO.Swagger.Model.SceneService sceneService) {
-            Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
-            if (servicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                Service service = new Service(sceneService, serviceMetadata);
-                if (service.IsRobot()) {
-                    await service.LoadRobots();
-                }
-                ServicesData.Add(sceneService.Type, service);
-                OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            }
-            
-        }
-
-        public void RemoveService(string serviceType) {
-            Debug.Assert(ServicesData.ContainsKey(serviceType));
-            ServicesData.TryGetValue(serviceType, out Service service);
-            ServicesData.Remove(serviceType);
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-        }
-
-
-        public void ClearServices() {
-            List<string> servicesKeys = servicesData.Keys.ToList();
-            foreach (string service in servicesKeys) {
-                RemoveService(service);
-            }
-        }
-
+        
         public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
@@ -143,37 +96,19 @@ namespace Base {
             OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
         }
 
-        public bool ServiceInScene(string type) {
-            return ServicesData.ContainsKey(type);
-        }
-
-        public Service GetService(string type) {
-            if (ServicesData.TryGetValue(type, out Service sceneService)) {
-                return sceneService;
-            } else {
-                throw new KeyNotFoundException("Service not in scene!");
+        // TODO - solve somehow better.. perhaps own class for robot objects and services?
+        internal void UpdateRobotsMetadata(List<RobotMeta> list) {
+            RobotsMeta.Clear();
+            foreach (RobotMeta robotMeta in list) {
+                RobotsMeta[robotMeta.Type] = robotMeta;
             }
         }
 
         
 
-        public List<string> GetRobotsNames() {
-            HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.Scene.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Name);
-                }
-            }
-            foreach (Service service in servicesData.Values) {
-                if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobotsNames()) {
-                        robots.Add(s);
-                    }
-                }                    
-            }
-            return robots.ToList<string>();
-        }
+       
 
+        
         
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
@@ -271,7 +206,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {               
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
                 List<ActionMetadata> freeActions = new List<ActionMetadata>();
                 if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
@@ -285,7 +220,7 @@ namespace Base {
                 }
                 
             }
-            foreach (Service sceneService in servicesData.Values) {
+            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
             }
 
@@ -294,7 +229,7 @@ namespace Base {
 
         public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in Scene.Instance.ActionObjects.Values) {
+            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {
                 if (ao == actionObject) {
                     if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                         continue;
@@ -314,16 +249,14 @@ namespace Base {
                     }
                 }
             }
-            foreach (Service sceneService in servicesData.Values) {
+            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
             }
 
             return actionsMetadata;
         }
 
-
-
-
+        
     }
 }
 

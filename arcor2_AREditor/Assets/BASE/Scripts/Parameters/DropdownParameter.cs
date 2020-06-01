@@ -13,7 +13,13 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
     public GameObject LoadingObject;
     public bool Loading;
     public VerticalLayoutGroup LayoutGroupToBeDisabled;
+
+    private TooltipContent tooltipContent;
     public GameObject Trigger, CanvasRoot;
+
+    private void Awake() {
+        tooltipContent = Label.GetComponent<TooltipContent>();
+    }
 
     private void Start() {
         if (CanvasRoot != null)
@@ -44,13 +50,20 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        if (Label.GetComponent<TooltipContent>().tooltipRect == null) {
-            Label.GetComponent<TooltipContent>().tooltipRect = Base.GameManager.Instance.Tooltip;
+        if (tooltipContent == null)
+            return;
+        if (!string.IsNullOrEmpty(description)) {
+            tooltipContent.enabled = true;
+            if (tooltipContent.tooltipRect == null) {
+                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
+            }
+            if (tooltipContent.descriptionText == null) {
+                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
+            }
+            tooltipContent.description = description;
+        } else {
+            tooltipContent.enabled = false;
         }
-        if (Label.GetComponent<TooltipContent>().descriptionText == null) {
-            Label.GetComponent<TooltipContent>().descriptionText = Base.GameManager.Instance.Text;
-        }
-        Label.GetComponent<TooltipContent>().description = description;
     }
 
     public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, bool enableIcons = false) {
@@ -75,7 +88,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
     }
 
-    public virtual void PutData(List<string> data, string selectedItem, UnityAction callback) {
+    public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback) {
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
         foreach (string d in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
@@ -86,14 +99,15 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         PutData(items, selectedItem, callback);
     }
 
-    public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction callback) {
+    public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction<string> callback) {
         Dropdown.dropdownItems.Clear();
+        Dropdown.selectedItemIndex = 0;
         foreach (CustomDropdown.Item item in items) {
             if (callback != null) {
                 if (item.OnItemSelection == null) {
                     item.OnItemSelection = new UnityEvent();
                 }
-                item.OnItemSelection.AddListener(callback);
+                item.OnItemSelection.AddListener(() => callback(item.itemName));
             }
 
             Dropdown.dropdownItems.Add(item);
@@ -103,7 +117,10 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         }
 
         SetLoading(false);
+        if (Dropdown == null)
+            return; // e.g. when object is destroyed before init completed
         if (Dropdown.dropdownItems.Count > 0) {
+            
             Dropdown.SetupDropdown();
         } else {
             Dropdown.gameObject.SetActive(false);

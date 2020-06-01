@@ -11,6 +11,9 @@ public class Tile : MonoBehaviour
     private Button MainButton, OptionButton;
     [SerializeField]
     private GameObject star;
+    public Image TopImage;
+
+
 
     public void SetLabel(string label) {
         Label.text = label;

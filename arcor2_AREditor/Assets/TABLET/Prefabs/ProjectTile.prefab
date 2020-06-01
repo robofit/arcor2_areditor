@@ -16,6 +16,9 @@ MonoBehaviour:
   MainButton: {fileID: 9094245238966222363}
   OptionButton: {fileID: 4318907418865586597}
   star: {fileID: 2104712010368211220}
+  TopImage: {fileID: 4567353453458366528}
+  ProjectId: 
+  SceneId: 
 --- !u!1001 &8217384714284741153
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23,6 +26,12 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5577844582234173772, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
     - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -80,26 +89,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
         type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -701
-      objectReference: {fileID: 0}
-    - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 35
-      objectReference: {fileID: 0}
-    - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 700
-      objectReference: {fileID: 0}
-    - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 600
-      objectReference: {fileID: 0}
-    - target: {fileID: 5577844582604083518, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
-        type: 3}
       propertyPath: m_AnchorMin.x
       value: 0.5
       objectReference: {fileID: 0}
@@ -151,6 +140,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4567353453458366528 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5577844582908990049, guid: e3a3e61aa1e8c804a9a7034839f1cc61,
+    type: 3}
+  m_PrefabInstance: {fileID: 8217384714284741153}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &4567353453605356397 stripped
