@@ -644,9 +644,11 @@ namespace Base {
                 
                 
             } else if (state.State == PackageState.StateEnum.Stopped) {
+                PackageInfo = null;
                 if (!ActionsManager.Instance.ActionsReady) {
                     newPackageState = state;
                     openPackage = true;
+                    
                     return;
                 }
                 
