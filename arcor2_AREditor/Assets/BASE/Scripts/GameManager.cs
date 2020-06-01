@@ -852,6 +852,7 @@ namespace Base {
                 if (!result.Success) {
                     Notifications.Instance.ShowNotification("Failed to build and run package", result.Message);
                     reopenProjectId = null;
+                    HideLoadingScreen();
                     return false;
                 }
                 await LoadPackages();
@@ -859,6 +860,7 @@ namespace Base {
                 return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to build and run package", ex.Message);
+                HideLoadingScreen();
                 return false;
             } finally {
             }
