@@ -122,7 +122,7 @@ namespace Base {
             string freeName = "default";
             do {
                 hasFreeName = true;
-                if (OrientationNameExist(freeName)) {
+                if (OrientationNameExist(freeName) || JointsNameExist(freeName)) {
                     hasFreeName = false;
                 }
                 if (!hasFreeName)
@@ -138,7 +138,7 @@ namespace Base {
             string freeName = "default";
             do {
                 hasFreeName = true;
-                if (JointsNameExist(freeName)) {
+                if (JointsNameExist(freeName) || OrientationNameExist(freeName)) {
                     hasFreeName = false;
                 }
                 if (!hasFreeName)
