@@ -115,7 +115,7 @@ namespace Base {
 
         public const string ApiVersion = "0.7.0";
 
-        public readonly string EditorVersion = "0.6.0-beta.3";
+        public readonly string EditorVersion = "0.6.0";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
