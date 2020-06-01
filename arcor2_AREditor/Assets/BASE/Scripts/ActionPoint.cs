@@ -82,7 +82,7 @@ namespace Base {
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
-            ActivateForGizmo(((ControlBoxManager.Instance.UseGizmoMove == true) && ProjectManager.Instance.AllowEdit) ? "GizmoRuntime" : "Default");
+            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove && ProjectManager.Instance.AllowEdit && !MenuManager.Instance.IsAnyMenuOpened) ? "GizmoRuntime" : "Default");
         }
 
         public void SetParent(IActionPointParent parent) {
