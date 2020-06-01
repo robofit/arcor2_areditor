@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,9 +10,13 @@ public class MenuManager : Base.Singleton<MenuManager> {
         ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
+    
+    public bool IsAnyMenuOpened {
+        get;
+        private set;
+    } = false;
 
-
-    public bool IsAnyMenuOpened() {
+    private bool CheckIsAnyMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             PuckMenu.CurrentState == SimpleSideMenu.State.Open ||
@@ -70,6 +76,23 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (MenuOpened != null) {
             MenuOpened.Close();
             MenuOpened = null;
+        }
+    }
+
+    public void OnMenuStateChanged(SimpleSideMenu menu) {
+        switch (menu.CurrentState) {
+            case SimpleSideMenu.State.Open:
+                IsAnyMenuOpened = true;
+                GameManager.Instance.InvokeSceneInteractable(false);
+                break;
+            case SimpleSideMenu.State.Closed:
+                if (!CheckIsAnyMenuOpened()) {
+                    IsAnyMenuOpened = false;
+                    // no menus are opened, scene should be interactable
+                    // invoke an event from GameManager to let everyone know, that scene is interactable
+                    GameManager.Instance.InvokeSceneInteractable(true);
+                }
+                break;
         }
     }
 }
