@@ -411,6 +411,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
         } else {
             Base.Notifications.Instance.ShowNotification("Failed to build and run package", "");
+            GameManager.Instance.HideLoadingScreen();
         }
     }
 
