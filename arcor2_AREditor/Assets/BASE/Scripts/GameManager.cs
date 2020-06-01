@@ -564,7 +564,7 @@ namespace Base {
                 return;
             }
             try {
-                if (await SceneManager.Instance.CreateScene(scene, true)) {                    
+                if (await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.SceneEditor)) {                    
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
@@ -588,7 +588,7 @@ namespace Base {
                 return;
             }
             try {
-                if (!await SceneManager.Instance.CreateScene(scene, true)) {
+                if (!await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.ProjectEditor)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
                     HideLoadingScreen();
                     return;
@@ -618,7 +618,8 @@ namespace Base {
                 if (GetGameState() != GameStateEnum.PackageRunning) {
                     try {
                         WaitUntilPackageReady(5000);
-                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
+                        
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, GameStateEnum.PackageRunning, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }
