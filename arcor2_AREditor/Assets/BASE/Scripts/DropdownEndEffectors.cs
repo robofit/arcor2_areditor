@@ -21,7 +21,7 @@ public class DropdownEndEffectors : MonoBehaviour {
             PutData(robot.GetEndEffectors(), onChangeCallback);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
-            Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors");
+            Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");
         }
         
         

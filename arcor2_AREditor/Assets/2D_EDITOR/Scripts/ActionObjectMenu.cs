@@ -294,6 +294,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("End-effector position unknown", "Robot did not send position of selected end effector");
+            ShowModelSwitch.Switch.isOn = false;
         }
         
     }

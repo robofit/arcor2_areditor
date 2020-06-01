@@ -94,7 +94,7 @@ namespace Base {
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
+        public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, GameManager.GameStateEnum requestedGameState, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Scene != null)
                 return false;

@@ -103,7 +103,11 @@ public class ActionObject2D : Base.ActionObject {
         throw new System.NotImplementedException();
     }
 
-    internal override GameObject GetModelCopy() {
+    public override GameObject GetModelCopy() {
+        throw new System.NotImplementedException();
+    }
+
+    public override Vector3 GetTopPoint() {
         throw new System.NotImplementedException();
     }
 }

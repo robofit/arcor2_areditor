@@ -363,8 +363,15 @@ namespace Base {
             outlineOnClick.InitRenderers(ren);
         }
 
-        internal override GameObject GetModelCopy() {
+        public override GameObject GetModelCopy() {
             throw new System.NotImplementedException();
+        }
+
+        public override Vector3 GetTopPoint() {
+            Vector3 position = transform.position;
+            //TODO: will not work for robot with URDF! need to solve better
+            position.y += 0.2f;
+            return position;
         }
     }
 }

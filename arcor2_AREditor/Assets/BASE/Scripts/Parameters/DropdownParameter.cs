@@ -101,6 +101,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction<string> callback) {
         Dropdown.dropdownItems.Clear();
+        Dropdown.selectedItemIndex = 0;
         foreach (CustomDropdown.Item item in items) {
             if (callback != null) {
                 if (item.OnItemSelection == null) {
@@ -119,6 +120,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         if (Dropdown == null)
             return; // e.g. when object is destroyed before init completed
         if (Dropdown.dropdownItems.Count > 0) {
+            
             Dropdown.SetupDropdown();
         } else {
             Dropdown.gameObject.SetActive(false);

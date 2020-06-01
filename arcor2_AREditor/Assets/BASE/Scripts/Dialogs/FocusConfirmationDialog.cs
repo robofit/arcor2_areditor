@@ -6,7 +6,7 @@ using Base;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
-    public string RobotName, EndEffectorId, OrientationId, OrientationName, ActionPointId, ActionPointName;
+    public string RobotName, EndEffectorId, OrientationId, JointsId, OrientationName, ActionPointId, ActionPointName;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
@@ -33,15 +33,12 @@ public class FocusConfirmationDialog : MonoBehaviour
     public void UpdatePositionOrientation() {
 
         try {
-            if (EndEffectorId == "") {
-                Base.GameManager.Instance.UpdateActionPointJoints(RobotId, OrientationId);
-            } else {
-                if (UpdatePosition)
-                    Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
-                Base.GameManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
-            }
+           if (UpdatePosition)
+                Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
+            Base.GameManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
+            Base.GameManager.Instance.UpdateActionPointJoints(RobotId, JointsId);
+            
             GetComponent<ModalWindowManager>().CloseWindow();
-            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update", ex.Message);
         }

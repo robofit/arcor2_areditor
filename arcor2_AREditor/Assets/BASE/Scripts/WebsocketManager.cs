@@ -1100,6 +1100,18 @@ namespace Base {
         }
 
 
+        public async Task RemoveActionPointOrientation(string actionPointId, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(actionPointId: actionPointId, orientationId: orientationId);
+            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "AddActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+
         public async Task UpdateActionPointOrientation(IO.Swagger.Model.Orientation orientation, string orientationId) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointOrientationRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationRequestArgs(orientation: orientation, orientationId: orientationId);
@@ -1160,16 +1172,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RemoveActionPointOrientation(string id, string orientationId) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(actionPointId: id, orientationId: orientationId);
-            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
-
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-        }
+       
 
          public async Task RemoveActionPointJoints(string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);

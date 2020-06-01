@@ -125,11 +125,13 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
                 UpdatePoseBlock.SetActive(false);
                 UpdateJointsBlock.SetActive(true);
+                UpdateJoints(robot_name);
             } else {
+                
                 UpdatePoseBlock.SetActive(true);
                 UpdateJointsBlock.SetActive(false);
             }
-            UpdateJoints(robot_name);
+           
         } catch (KeyNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
@@ -145,21 +147,27 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                          "Please set name of the new orientation",
                          "Name",
                          CurrentActionPoint.GetFreeOrientationName(),
-                         () => AddOrientation(inputDialog.GetValue()),
+                         () => AddOrientation(inputDialog.GetValue(), (string) RobotsList.GetValue()),
                          () => inputDialog.Close());
     }
 
-    public async void AddOrientation(string name) {
+    public async void AddOrientation(string name, string robotId) {
         Debug.Assert(CurrentActionPoint != null);
+        if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
+            Notifications.Instance.ShowNotification("Failed to add orientation", "There already exists orientation or joints with name " + name);
+            return;
+        }
         IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation();
         if (CurrentActionPoint.Parent != null) {
             orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
         }
         preselectedOrientation = name;
-        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
-        if (success) {
+        bool successOrientation = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
+        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robotId);
+        if (successOrientation && successJoints) {
             inputDialog.Close();
         } else {
+            
             preselectedOrientation = null;
         }
         
@@ -225,6 +233,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         FocusConfirmationDialog.RobotName = robotsListDropdown.selectedText.text;
 
         FocusConfirmationDialog.OrientationId = CurrentActionPoint.GetNamedOrientationByName(orientationDropdown.selectedText.text).Id;
+        FocusConfirmationDialog.JointsId = CurrentActionPoint.GetJointsByName(orientationDropdown.selectedText.text).Id;
         FocusConfirmationDialog.OrientationName = orientationDropdown.selectedText.text;
         FocusConfirmationDialog.UpdatePosition = UpdatePositionToggle.GetComponent<Toggle>().isOn;
         FocusConfirmationDialog.ActionPointId = CurrentActionPoint.Data.Id;

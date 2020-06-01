@@ -188,7 +188,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
             string projectName = "unknown";
             try {
-                projectName = GameManager.Instance.GetProjectName(package.Id);
+                projectName = GameManager.Instance.GetProjectName(package.ProjectId);
             } catch (ItemNotFoundException ex) {
                 Debug.Log(ex);
             }            

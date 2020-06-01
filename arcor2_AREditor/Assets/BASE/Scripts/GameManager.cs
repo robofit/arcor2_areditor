@@ -115,7 +115,7 @@ namespace Base {
 
         public const string ApiVersion = "0.7.0";
 
-        public readonly string EditorVersion = "0.6.0-beta.3";
+        public readonly string EditorVersion = "0.6.0";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
@@ -564,7 +564,7 @@ namespace Base {
                 return;
             }
             try {
-                if (await SceneManager.Instance.CreateScene(scene, true)) {                    
+                if (await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.SceneEditor)) {                    
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
@@ -588,7 +588,7 @@ namespace Base {
                 return;
             }
             try {
-                if (!await SceneManager.Instance.CreateScene(scene, true)) {
+                if (!await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.ProjectEditor)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
                     HideLoadingScreen();
                     return;
@@ -618,7 +618,8 @@ namespace Base {
                 if (GetGameState() != GameStateEnum.PackageRunning) {
                     try {
                         WaitUntilPackageReady(5000);
-                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
+                        
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, GameStateEnum.PackageRunning, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }
@@ -643,9 +644,11 @@ namespace Base {
                 
                 
             } else if (state.State == PackageState.StateEnum.Stopped) {
+                PackageInfo = null;
                 if (!ActionsManager.Instance.ActionsReady) {
                     newPackageState = state;
                     openPackage = true;
+                    
                     return;
                 }
                 
