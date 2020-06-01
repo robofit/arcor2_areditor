@@ -41,7 +41,6 @@ public class FocusConfirmationDialog : MonoBehaviour
                 Base.GameManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
             }
             GetComponent<ModalWindowManager>().CloseWindow();
-            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update", ex.Message);
         }
