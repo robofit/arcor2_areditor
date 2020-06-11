@@ -16,7 +16,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
-    public CloseProjectDialog CloseProjectDialog;
     public CloseSceneDialog CloseSceneDialog;
     public ServiceSettingsDialog ServiceSettingsDialog;
     public AutoAddObjectDialog AutoAddObjectDialog;
@@ -30,6 +29,10 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     [SerializeField]
     private InputDialog inputDialog;
+
+    [SerializeField]
+    private ConfirmationDialog confirmationDialog;
+
 
     // Start is called before the first frame update
     private void Start() {
@@ -45,7 +48,6 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(RunningProjectControls != null);
         Debug.Assert(OpenProjectDialog != null);
         Debug.Assert(OpenSceneDialog != null);
-        Debug.Assert(CloseProjectDialog != null);
         Debug.Assert(CloseSceneDialog != null);
         Debug.Assert(ServiceSettingsDialog != null);
         Debug.Assert(AutoAddObjectDialog != null);
@@ -53,6 +55,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(NewProjectDialog != null);
         Debug.Assert(NewSceneDialog != null);
         Debug.Assert(inputDialog != null);
+        Debug.Assert(confirmationDialog != null);
         Debug.Assert(ResumeBtn != null);
         Debug.Assert(PauseBtn != null);
 
@@ -268,9 +271,19 @@ public class MainMenu : MonoBehaviour, IMenu {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
-            CloseProjectDialog.WindowManager.OpenWindow();
+            confirmationDialog.Open("Close project",
+                         "Are you sure you want to close current project? Unsaved changes will be lost.",
+                         () => CloseProject(),
+                         () => inputDialog.Close());
         }
             
+    }
+
+    public async void CloseProject() {
+        GameManager.Instance.ShowLoadingScreen("Closing project");
+        _ = await GameManager.Instance.CloseProject(true);
+        inputDialog.Close();
+        GameManager.Instance.HideLoadingScreen();
     }
 
 

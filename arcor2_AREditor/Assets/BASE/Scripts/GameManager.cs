@@ -99,7 +99,7 @@ namespace Base {
         private GameStateEnum gameState;
         private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen;
+        public LoadingScreen LoadingScreen;
         public CanvasGroup MainMenuBtnCG, StatusPanelCG;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
@@ -357,18 +357,18 @@ namespace Base {
         }
 
 
-        public void ShowLoadingScreen() {
+        public void ShowLoadingScreen(string text = "Loading...", bool forceToHide = false) {
             Debug.Assert(LoadingScreen != null);
             // HACK to make loading screen in foreground
             // TODO - find better way
             headUpCanvas.enabled = false;
             headUpCanvas.enabled = true;
-            LoadingScreen.SetActive(true);
+            LoadingScreen.Show(text, forceToHide);
         }
 
-        public void HideLoadingScreen() {
+        public void HideLoadingScreen(bool force = false) {
             Debug.Assert(LoadingScreen != null);
-            LoadingScreen.SetActive(false);
+            LoadingScreen.Hide(force);
         }
 
         private void Init() {
@@ -376,7 +376,7 @@ namespace Base {
         }
 
         public async void ConnectToSever(string domain, int port) {
-            ShowLoadingScreen();
+            ShowLoadingScreen("Connecting to server");
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
             /*if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
                 try {
@@ -846,7 +846,7 @@ namespace Base {
         }
 
         public async Task<bool> BuildAndRunPackage(string name) {
-            ShowLoadingScreen();
+            ShowLoadingScreen("Building package", true);
             Debug.Assert(Base.ProjectManager.Instance.Project != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
@@ -855,19 +855,21 @@ namespace Base {
             try {
                 string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
                 reopenProjectId = ProjectManager.Instance.Project.Id;
-                RequestResult result = await CloseProject(false);
+                RequestResult result = await CloseProject(true);
                 if (!result.Success) {
                     Notifications.Instance.ShowNotification("Failed to build and run package", result.Message);
                     reopenProjectId = null;
-                    HideLoadingScreen();
+                    HideLoadingScreen(true);
                     return false;
                 }
+                ShowLoadingScreen("Updating packages", true);
                 await LoadPackages();
+                ShowLoadingScreen("Running package", true);
                 await WebsocketManager.Instance.RunPackage(packageId);
                 return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to build and run package", ex.Message);
-                HideLoadingScreen();
+                HideLoadingScreen(true);
                 return false;
             } finally {
             }
@@ -1021,7 +1023,7 @@ namespace Base {
 
         public async Task<RequestResult> CloseProject(bool force, bool dryRun = false) {
             if (!dryRun)
-                ShowLoadingScreen();
+                ShowLoadingScreen("Closing project");
             try {
                 await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
                 if (!dryRun) {
@@ -1159,7 +1161,7 @@ namespace Base {
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
-            HideLoadingScreen();
+            HideLoadingScreen(true);
         }
 
         public void OpenProjectEditor() {
@@ -1171,7 +1173,7 @@ namespace Base {
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
-            HideLoadingScreen();
+            HideLoadingScreen(true);
         }
 
         public async void OpenPackageRunningScreen() {
@@ -1191,7 +1193,7 @@ namespace Base {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to open package run screen", "Package info did not arrived");
             } finally {
-                HideLoadingScreen();
+                HideLoadingScreen(true);
             }
         }
 
@@ -1213,6 +1215,7 @@ namespace Base {
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";
+            HideLoadingScreen(true);
         }
 
 
