@@ -12,7 +12,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
-    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn;
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn;
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
@@ -115,6 +115,12 @@ public class MainMenu : MonoBehaviour, IMenu {
         ProjectControlButtons.SetActive(true);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
+        if (ProjectManager.Instance.Project.HasLogic) {
+            BuildAndRunBtn.SetInteractivity(true);
+        } else {
+            BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
+
+        }
     }
 
     
@@ -369,6 +375,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
+        UpdateMenu();
         Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
@@ -449,24 +456,30 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateMenu() {
-        bool success = false;
-        string message = "";
+        bool successForce = false;
+        string messageForce = "";
         ButtonWithTooltip button = null;
         switch (GameManager.Instance.GetGameState()) {
             case GameManager.GameStateEnum.ProjectEditor:
-                (success, message) = await GameManager.Instance.CloseProject(true, true);
+                (bool success, _) = await GameManager.Instance.CloseProject(false, true);
+                (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
                 button = CloseProjectBtn;
+                if (success) {
+                    BuildBtn.SetInteractivity(true);
+                } else {
+                    BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
+                }
                 break;
             case GameManager.GameStateEnum.SceneEditor:
-                (success, message) = await GameManager.Instance.CloseScene(true, true);
+                (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
                 button = CloseSceneBtn;
                 break;
         }
         if (button != null) {
-            if (success) {
+            if (successForce) {
                 button.SetInteractivity(true);
             } else {
-                button.SetInteractivity(false, message);
+                button.SetInteractivity(false, messageForce);
             }
         }
     }
