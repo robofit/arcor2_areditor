@@ -35,4 +35,8 @@ public class ButtonWithTooltip : MonoBehaviour {
     public void HideTooltip() {
         TooltipContent.tooltipAnimator.Play("Out");
     }
+
+    public bool IsInteractive() {
+        return Button.interactable;
+    }
 }
