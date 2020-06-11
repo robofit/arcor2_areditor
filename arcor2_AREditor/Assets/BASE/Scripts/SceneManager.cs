@@ -52,7 +52,7 @@ namespace Base {
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
 
-        public GameObject ActionObjectsSpawn, SceneOrigin;
+        public GameObject ActionObjectsSpawn, SceneOrigin, EEOrigin;
 
         
         public GameObject RobotPrefab, ActionObjectPrefab;
@@ -269,7 +269,7 @@ namespace Base {
             }
             foreach (EefPose eefPose in args.Data.EndEffectors) {
                 if (!EndEffectors.TryGetValue(args.Data.RobotId + "/" + eefPose.EndEffectorId, out RobotEE robotEE)) {
-                    robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
+                    robotEE = Instantiate(RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                     robotEE.SetEEName(GetRobot(args.Data.RobotId).GetName(), eefPose.EndEffectorId);
                     EndEffectors.Add(args.Data.RobotId + "/" + eefPose.EndEffectorId, robotEE);
                 }

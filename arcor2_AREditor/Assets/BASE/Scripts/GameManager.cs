@@ -973,6 +973,7 @@ namespace Base {
         }
 
         public async Task NewProject(string name, string sceneId, bool hasLogic) {
+            ShowLoadingScreen("Creating new project...");
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
             
@@ -980,21 +981,25 @@ namespace Base {
                 await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic, false);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
+                HideLoadingScreen();
             } finally {
-            }
-            
+            }        
         }
 
 
         public async Task<bool> NewScene(string name) {
+            ShowLoadingScreen("Creating new scene...");
+
             if (name == "") {
-                Notifications.Instance.ShowNotification("Failed to create new scene", "Scane name to defined");
+                Notifications.Instance.ShowNotification("Failed to create new scene", "Scene name not defined");
+                HideLoadingScreen();
                 return false;
             }
             try {
                 await WebsocketManager.Instance.CreateScene(name, "");
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
+                HideLoadingScreen();
             }
             return true;
         }
