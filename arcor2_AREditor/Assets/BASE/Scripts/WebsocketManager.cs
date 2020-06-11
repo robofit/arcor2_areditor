@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
 using System.IO;
-using RestSharp.Extensions;
+
+using NativeWebSocket;
+using UnityEditor.Callbacks;
+using System.ComponentModel;
 
 namespace Base {
 
@@ -26,7 +27,7 @@ namespace Base {
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
 
-        private ClientWebSocket clientWebSocket;
+        private WebSocket websocket;
 
         private Queue<KeyValuePair<int, string>> sendingQueue = new Queue<KeyValuePair<int, string>>();
 
@@ -45,6 +46,7 @@ namespace Base {
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
+        public event EventHandler OnConnectedEvent;
 
         
 
@@ -56,49 +58,59 @@ namespace Base {
             ignoreProjectChanged = false;
             connecting = false;            
             receivedData = "";
+
+            
         }
 
+       
 
-        public async Task<bool> ConnectToServer(string domain, int port) {
+        private void OnClose(WebSocketCloseCode closeCode) {
+            Debug.Log("Connection closed!");
+        }
+
+        private void OnError(string errorMsg) {
+            Debug.LogError(errorMsg);
+            connecting = false;
+        }
+
+        private void OnConnected() {
+            connecting = false;
+            Debug.Log("On connected");
+            OnConnectedEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async void ConnectToServer(string domain, int port) {
+           
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
-            serverDomain = domain;
-            clientWebSocket = new ClientWebSocket();
-            Debug.Log("[WS]:Attempting connection.");
-            try {
-                Uri uri = new Uri(APIDomainWS);
-                await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
-
-                Debug.Log("[WS][connect]:" + "Connected");
-            } catch (Exception e) {
-                Debug.Log("[WS][exception]:" + e.Message);
-                if (e.InnerException != null) {
-                    Debug.Log("[WS][inner exception]:" + e.InnerException.Message);
-                }
-            }
-
-            connecting = false;
+            websocket = new WebSocket(APIDomainWS);
             
-            return clientWebSocket.State == WebSocketState.Open;
-        }
 
+            websocket.OnOpen += OnConnected;
+            websocket.OnError += OnError;
+            websocket.OnClose += OnClose;
+            websocket.OnMessage += HandleReceivedData;
+
+            await websocket.Connect();
+        }
+        
         async public void DisconnectFromSever() {
             Debug.Log("Disconnecting");
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             try {
-                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+                await websocket.Close();
             } catch (WebSocketException e) {
                 //already closed probably..
             }
-            clientWebSocket = null;
+            websocket = null;
             serverDomain = null;
             GameManager.Instance.HideLoadingScreen();
         }
-
+        
         public string GetServerDomain() {
-            if (clientWebSocket.State != WebSocketState.Open) {
+            if (websocket.State != WebSocketState.Open) {
                 return null;
             }
             return serverDomain;
@@ -123,56 +135,16 @@ namespace Base {
             return packageStateArrived;
         }
 
-        // Update is called once per frame
-        private async void Update() {
-            if (clientWebSocket == null)
-                return;
-            if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-            }
-
-            if (!waitingForMessage && clientWebSocket.State == WebSocketState.Open) {
-                WebSocketReceiveResult result = null;
-                waitingForMessage = true;
-                ArraySegment<byte> bytesReceived = WebSocket.CreateClientBuffer(8192, 8192);
-                MemoryStream ms = new MemoryStream();
-                try {
-                    do {
-                        result = await clientWebSocket.ReceiveAsync(
-                            bytesReceived,
-                            CancellationToken.None
-                        );
-
-                        if (bytesReceived.Array != null)
-                            ms.Write(bytesReceived.Array, bytesReceived.Offset, result.Count);
-
-                    } while (!result.EndOfMessage);
-                } catch (WebSocketException e) {
-                    DisconnectFromSever();
-                    return;
-                }
-                
-                receivedData = Encoding.Default.GetString(ms.ToArray());
-                HandleReceivedData(receivedData);
-                receivedData = "";
-                waitingForMessage = false;
-
-            }
-
-            if (sendingQueue.Count > 0 && readyToSend) {
-                SendDataToServer();
-            }
-
-        }
+     
 
         public string GetWSURI(string domain, int port) {
             return "ws://" + domain + ":" + port.ToString();
         }
-
+        
         private void OnApplicationQuit() {
             DisconnectFromSever();
         }
-
+        
         public void SendDataToServer(string data, int key = -1, bool storeResult = false, bool logInfo = true) {
             if (key < 0) {
                 key = Interlocked.Increment(ref requestID);
@@ -183,30 +155,18 @@ namespace Base {
             if (storeResult) {
                 responses[key] = null;
             }
-            sendingQueue.Enqueue(new KeyValuePair<int, string>(key, data));
+            SendWebSocketMessage(data);
+        }
+      
+
+        private async void SendWebSocketMessage(string data) {
+            if (websocket.State == WebSocketState.Open) {
+                await websocket.SendText(data);
+            }
         }
 
-        async public void SendDataToServer() {
-            if (sendingQueue.Count == 0)
-                return;
-            KeyValuePair<int, string> keyVal = sendingQueue.Dequeue();
-            readyToSend = false;
-            if (clientWebSocket.State != WebSocketState.Open)
-                return;
-
-            ArraySegment<byte> bytesToSend = new ArraySegment<byte>(
-                         Encoding.UTF8.GetBytes(keyVal.Value)
-                     );
-            await clientWebSocket.SendAsync(
-                bytesToSend,
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-            );
-            readyToSend = true;
-        }
-
-        private void HandleReceivedData(string data) {
+        private void HandleReceivedData(byte[] message) {
+            string data = Encoding.Default.GetString(message);
             var dispatchType = new {
                 id = 0,
                 response = "",
@@ -953,10 +913,10 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RenameScene(string id, string newName) {
+        public async Task RenameScene(string id, string newName, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(id: id, newName: newName);
-            IO.Swagger.Model.RenameSceneRequest request = new IO.Swagger.Model.RenameSceneRequest(r_id, "RenameScene", args);
+            IO.Swagger.Model.RenameSceneRequest request = new IO.Swagger.Model.RenameSceneRequest(r_id, "RenameScene", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameSceneResponse response = await WaitForResult<IO.Swagger.Model.RenameSceneResponse>(r_id);
 

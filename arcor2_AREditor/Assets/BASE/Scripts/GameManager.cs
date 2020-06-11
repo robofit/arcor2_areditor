@@ -76,6 +76,7 @@ namespace Base {
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnPackagesListChanged;
         public event EventHandler OnSceneListChanged;
+
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
@@ -287,7 +288,12 @@ namespace Base {
             VersionInfo.text = EditorVersion;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            WebsocketManager.Instance.OnConnectedEvent += OnConnected;
         }
+        private void OnConnected(object sender, EventArgs args) {
+            ConnectionStatus = ConnectionStatusEnum.Connected;
+        }
+
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
@@ -372,7 +378,7 @@ namespace Base {
         public async void ConnectToSever(string domain, int port) {
             ShowLoadingScreen();
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
+            /*if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
                 try {
                     await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
                     ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
@@ -386,13 +392,14 @@ namespace Base {
                 
                 Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
                 WebsocketManager.Instance.DisconnectFromSever();
-            }
+            }*/
 
+            WebsocketManager.Instance.ConnectToServer(domain, port);
         }
 
         
         public void DisconnectFromSever() {
-            WebsocketManager.Instance.DisconnectFromSever();
+            //WebsocketManager.Instance.DisconnectFromSever();
         }
 
         private void OnActionsLoaded(object sender, EventArgs e) {
@@ -1226,13 +1233,14 @@ namespace Base {
                 return false;
             }
         }
-         public async Task<bool> RenameScene(string id, string newUserId) {
+         public async Task<RequestResult> RenameScene(string id, string newUserId, bool dryRun) {
             try {
-                await WebsocketManager.Instance.RenameScene(id, newUserId);
-                return true;
+                await WebsocketManager.Instance.RenameScene(id, newUserId, dryRun);
+                return (true, "");
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
-                return false;
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
+                return (false, e.Message);
             }
         }
 

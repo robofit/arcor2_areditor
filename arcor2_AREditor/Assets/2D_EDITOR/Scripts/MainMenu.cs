@@ -338,7 +338,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     
     public void ConnectedToServer(object sender, Base.StringEventArgs e) {
-
         ShowProjectControlButtons();
         ShowDynamicContent();
     }
