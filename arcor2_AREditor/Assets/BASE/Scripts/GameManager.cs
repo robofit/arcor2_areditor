@@ -1458,6 +1458,14 @@ namespace Base {
             throw new ItemNotFoundException("Project with id: " + projectId + " not found");
         }
 
+        public string GetSceneName(string sceneId) {
+            foreach (IdDesc scene in Scenes) {
+                if (scene.Id == sceneId)
+                    return scene.Name;
+            }
+            throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
+        }
+
     }
 
     public struct RequestResult {
@@ -1494,6 +1502,8 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
+        
 
     }
 }
