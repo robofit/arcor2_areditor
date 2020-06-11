@@ -294,6 +294,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
                     model.transform.localPosition = new Vector3(0, 0, 0);
                     break;
             }
+            model.transform.localRotation = new Quaternion(0, 0, 0, 1);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("End-effector position unknown", "Robot did not send position of selected end effector");
