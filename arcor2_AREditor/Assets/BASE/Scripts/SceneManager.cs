@@ -286,6 +286,14 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Return true if there is any robot in scene
+        /// </summary>
+        /// <returns></returns>
+        public bool RobotInScene() {
+            return GetRobots().Count > 0;
+        }
+
         private void CleanRobotEE() {
             foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
                 Destroy(ee.Value.gameObject);
