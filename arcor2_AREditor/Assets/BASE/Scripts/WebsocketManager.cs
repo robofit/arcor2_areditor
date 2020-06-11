@@ -265,7 +265,7 @@ namespace Base {
 
         }
 
-       private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
+       private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
                     if (value == null) {
@@ -359,11 +359,6 @@ namespace Base {
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
             }
-            
-            
-
-            
-
             
         }
 
