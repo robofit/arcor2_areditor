@@ -464,12 +464,14 @@ public class MainMenu : MonoBehaviour, IMenu {
                 (bool success, _) = await GameManager.Instance.CloseProject(false, true);
                 (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
                 button = CloseProjectBtn;
-                if (ProjectManager.Instance.Project.HasLogic && success) {
+                if (success) {
                     BuildBtn.SetInteractivity(true);
-                    BuildAndRunBtn.SetInteractivity(true);                    
+                    if (ProjectManager.Instance.Project.HasLogic)
+                        BuildAndRunBtn.SetInteractivity(true);                    
                 } else {
                     BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
-                    BuildAndRunBtn.SetInteractivity(false, "There are unsaved changes on project");
+                    if (!ProjectManager.Instance.Project.HasLogic)
+                        BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
                 }
                 break;
             case GameManager.GameStateEnum.SceneEditor:
