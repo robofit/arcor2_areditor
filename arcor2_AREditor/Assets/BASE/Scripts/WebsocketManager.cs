@@ -29,13 +29,8 @@ namespace Base {
 
         private WebSocket websocket;
 
-        private Queue<KeyValuePair<int, string>> sendingQueue = new Queue<KeyValuePair<int, string>>();
 
-        private bool waitingForMessage = false;
-
-        private string receivedData;
-
-        private bool readyToSend, ignoreProjectChanged, connecting;
+        private bool ignoreProjectChanged, connecting;
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
@@ -47,25 +42,23 @@ namespace Base {
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
         public event EventHandler OnConnectedEvent;
+        public event EventHandler OnDisconnectEvent;
 
         
 
         private string serverDomain;
 
         private void Awake() {
-            waitingForMessage = false;
-            readyToSend = true;
             ignoreProjectChanged = false;
-            connecting = false;            
-            receivedData = "";
-
-            
+            connecting = false;             
         }
 
        
 
         private void OnClose(WebSocketCloseCode closeCode) {
             Debug.Log("Connection closed!");
+            CleanupAfterDisconnect();
+            OnDisconnectEvent?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnError(string errorMsg) {
@@ -104,8 +97,15 @@ namespace Base {
             } catch (WebSocketException e) {
                 //already closed probably..
             }
+            CleanupAfterDisconnect();
+        }
+
+        public void CleanupAfterDisconnect() {
+            GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             websocket = null;
             serverDomain = null;
+            packageStateArrived = false;
+            connecting = false;
             GameManager.Instance.HideLoadingScreen();
         }
         

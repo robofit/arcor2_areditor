@@ -47,10 +47,11 @@ namespace Base {
             Debug.Assert(ParameterDropdownPosesPrefab != null);
             Debug.Assert(ParameterDropdownJointsPrefab != null);
             Debug.Assert(InteractiveObjects != null);
-            GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+            Init();
+            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
         }
         
-        private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
+        private void OnDisconnected(object sender, EventArgs args) {
             Init();
         }
 

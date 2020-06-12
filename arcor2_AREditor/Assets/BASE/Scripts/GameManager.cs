@@ -289,9 +289,21 @@ namespace Base {
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
+            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
         }
-        private void OnConnected(object sender, EventArgs args) {
-            ConnectionStatus = ConnectionStatusEnum.Connected;
+
+        private void OnDisconnected(object sender, EventArgs e) {
+            
+        }
+
+        private async void OnConnected(object sender, EventArgs args) {
+            try {
+                await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
+                ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            } catch (TimeoutException e) {
+                Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
+                WebsocketManager.Instance.DisconnectFromSever();
+            }
         }
 
 
@@ -328,7 +340,6 @@ namespace Base {
                     } catch (TimeoutException e) {
                         Notifications.Instance.ShowNotification("Connection failed", "Some actions were not loaded within timeout");
                         DisconnectFromSever();
-                        ActionsManager.Instance.Init();
                         return;
                     }
 
@@ -399,7 +410,7 @@ namespace Base {
 
         
         public void DisconnectFromSever() {
-            //WebsocketManager.Instance.DisconnectFromSever();
+            WebsocketManager.Instance.DisconnectFromSever();
         }
 
         private void OnActionsLoaded(object sender, EventArgs e) {
