@@ -144,7 +144,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     private void ActionObjectsUpdated(object sender, Base.StringEventArgs eventArgs) {
 
-        foreach (Button b in ActionObjectsContent.GetComponentsInChildren<Button>()) {
+        foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b.gameObject.tag == "PersistentButton") {
                 continue;
             } else {
@@ -165,6 +165,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             ActionObjectButton btn = btnGO.GetComponent<ActionObjectButton>();
             btn.SetLabel(actionObjectMetadata.Type);
             btn.Button.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
+            btn.RemoveBtn.onClick.AddListener(() => ShowRemoveActionObjectDialog(actionObjectMetadata.Type));
             btnGO.transform.SetAsFirstSibling();
             
             if (eventArgs.Data == actionObjectMetadata.Type) {
@@ -173,6 +174,8 @@ public class MainMenu : MonoBehaviour, IMenu {
             btn.Button.interactable = !actionObjectMetadata.Disabled;
 
         }
+
+        UpdateRemoveBtns();
 
     }
 
@@ -188,6 +191,25 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
         
         
+    }
+
+    public void ShowRemoveActionObjectDialog(string type) {
+        confirmationDialog.Open("Delete object",
+                         "Are you sure you want to delete action object " + type + "?",
+                         () => RemoveActionObject(type),
+                         () => confirmationDialog.Close());        
+    }
+
+    public async void RemoveActionObject(string type) {
+        try {
+            await WebsocketManager.Instance.DeleteObjectType(type, false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove object type.", ex.Message);
+            Debug.LogError(ex);
+        }
+        finally {
+            confirmationDialog.Close();
+        }
     }
 
     private static void UpdateServiceButton(ServiceButton serviceButton) {
@@ -272,7 +294,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             confirmationDialog.Open("Close project",
                          "Are you sure you want to close current project? Unsaved changes will be lost.",
                          () => CloseProject(),
-                         () => inputDialog.Close());
+                         () => confirmationDialog.Close());
         }
             
     }
@@ -496,6 +518,23 @@ public class MainMenu : MonoBehaviour, IMenu {
             } else {
                 button.SetInteractivity(false, messageForce);
             }
+        }
+
+        UpdateRemoveBtns();
+    }
+
+    public async void UpdateRemoveBtns() {
+        foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
+            if (b == null || b.RemoveBtn == null)
+                return;
+            ButtonWithTooltip btn = b.RemoveBtn.GetComponent<ButtonWithTooltip>();
+            try {
+                await WebsocketManager.Instance.DeleteObjectType(b.GetLabel(), true);
+                btn.SetInteractivity(true);
+            } catch (RequestFailedException ex) {
+                btn.SetInteractivity(false, ex.Message);
+            }
+
         }
     }
 

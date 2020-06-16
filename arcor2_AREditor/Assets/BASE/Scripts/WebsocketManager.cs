@@ -212,6 +212,9 @@ namespace Base {
                     case "JointsChanged":
                         HandleJointsChanged(data);
                         break;
+                    case "ObjectTypesChanged":
+                        HandleObjectTypesChanged(data);
+                        break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
@@ -265,7 +268,8 @@ namespace Base {
 
         }
 
-       private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
+        
+        private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
                     if (value == null) {
@@ -412,6 +416,24 @@ namespace Base {
                     throw new NotImplementedException();
             }
         }
+
+        private void HandleObjectTypesChanged(string data) {
+            IO.Swagger.Model.ObjectTypesChangedEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ObjectTypesChangedEvent>(data);
+            switch (objectTypesChangedEvent.ChangeType) {
+                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Add:
+                    foreach (string type in objectTypesChangedEvent.Data)
+                        ActionsManager.Instance.ObjectTypeAdded(type);
+                    break;
+                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Remove:
+                    foreach (string type in objectTypesChangedEvent.Data)
+                        ActionsManager.Instance.ObjectTypeRemoved(type);
+                    break;
+                
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
@@ -803,6 +825,17 @@ namespace Base {
             IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);            
+        }
+
+        public async Task DeleteObjectType(string type, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
+            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            var response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            }
         }
 
         public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {

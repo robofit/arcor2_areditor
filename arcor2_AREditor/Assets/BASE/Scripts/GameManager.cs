@@ -923,7 +923,6 @@ namespace Base {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.CreateNewObjectType(objectType, false);
-                await UpdateActionObjects(objectType.Type);
                 return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to create new object type", ex.Message);
