@@ -736,7 +736,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task<List<IO.Swagger.Model.IdDesc>> LoadScenes() {
+        public async Task<List<IO.Swagger.Model.ListScenesResponseData>> LoadScenes() {
             int id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: id, request: "ListScenes");
             SendDataToServer(request.ToJson(), id, true);
