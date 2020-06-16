@@ -454,7 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7fc28f7c682aa9468d8a084dfc840e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ButtonPrefab: {fileID: 8389814341572876305, guid: c77917a7826c62e419cc9a2867495b1f,
+  ActionObjectButtonPrefab: {fileID: 2638395605978149841, guid: 6fcd779ba18a1e3429b883036d99e185,
     type: 3}
   ServiceButtonPrefab: {fileID: 3253339550665930605, guid: 9cb559101effb934298dea7bf7287a89,
     type: 3}
@@ -474,7 +474,6 @@ MonoBehaviour:
   BuildBtn: {fileID: 2440574801711755902}
   OpenProjectDialog: {fileID: 0}
   OpenSceneDialog: {fileID: 0}
-  CloseProjectDialog: {fileID: 0}
   CloseSceneDialog: {fileID: 0}
   ServiceSettingsDialog: {fileID: 0}
   AutoAddObjectDialog: {fileID: 0}
@@ -482,6 +481,7 @@ MonoBehaviour:
   NewProjectDialog: {fileID: 0}
   NewSceneDialog: {fileID: 0}
   inputDialog: {fileID: 0}
+  confirmationDialog: {fileID: 0}
 --- !u!114 &307953342950748948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2462,20 +2462,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &2440574801711755902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8564798022532319774}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltip: {fileID: 9150355320384950388}
-  TooltipContent: {fileID: 810452417757070402}
 --- !u!114 &810452417757070402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2492,6 +2478,20 @@ MonoBehaviour:
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
+--- !u!114 &2440574801711755902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8564798022532319774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltip: {fileID: 9150355320384950388}
+  TooltipContent: {fileID: 810452417757070402}
 --- !u!114 &9150355320384950388
 MonoBehaviour:
   m_ObjectHideFlags: 0

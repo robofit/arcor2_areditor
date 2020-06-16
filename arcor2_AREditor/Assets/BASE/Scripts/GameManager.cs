@@ -114,12 +114,12 @@ namespace Base {
 
         public string ExecutingAction = null;
 
-        public const string ApiVersion = "0.7.0";
+        public const string ApiVersion = "0.7.1";
 
         public readonly string EditorVersion = "0.6.0";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
-        public List<IO.Swagger.Model.IdDesc> Scenes = new List<IO.Swagger.Model.IdDesc>();
+        public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
 
         public TMPro.TMP_Text VersionInfo, MessageBox, EditorInfo, ConnectionInfo, ServerVersion;
 
@@ -319,6 +319,7 @@ namespace Base {
                         return;
                     }
                     if (!CheckApiVersion(systemInfo)) {
+                        DisconnectFromSever();
                         return;
                     }
 
@@ -356,7 +357,7 @@ namespace Base {
                     OpenDisconnectedScreen();
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
-                    Scenes = new List<IO.Swagger.Model.IdDesc>();
+                    Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
 
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
@@ -714,7 +715,7 @@ namespace Base {
         
 
         public string GetSceneId(string name) {
-            foreach (IdDesc scene in Scenes) {
+            foreach (ListScenesResponseData scene in Scenes) {
                 if (name == scene.Name)
                     return scene.Id;
             }
@@ -1120,13 +1121,9 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Incompatibile api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion);
                 return false;
             }
-            if ((GetMajorVersion(systemInfo.ApiVersion) > 0 && (GetMinorVersion(systemInfo.ApiVersion) < GetMinorVersion(ApiVersion))) ||
-                GetPatchVersion(systemInfo.ApiVersion) < GetPatchVersion(ApiVersion)) {
-                Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can cause problems, you have been warned.");
-                return true;
-            }
-            
-            return false;
+            Notifications.Instance.ShowNotification("Different api versions", "Editor API version: " + ApiVersion + ", server API version: " + systemInfo.ApiVersion + ". It can cause problems, you have been warned.");
+
+            return true;
         }
 
         public void WaitForSceneReady(int timeout) {
@@ -1470,7 +1467,7 @@ namespace Base {
         }
 
         public string GetSceneName(string sceneId) {
-            foreach (IdDesc scene in Scenes) {
+            foreach (ListScenesResponseData scene in Scenes) {
                 if (scene.Id == sceneId)
                     return scene.Name;
             }

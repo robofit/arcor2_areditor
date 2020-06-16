@@ -12,10 +12,10 @@ public class Dialog : MonoBehaviour
         WindowManager = GetComponent<ModalWindowManager>();
     }
 
-    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.IdDesc> idDescs) {
+    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListScenesResponseData> scenes) {
         List<string> items = new List<string>();
-        foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {
-            items.Add(idDesc.Name);
+        foreach (IO.Swagger.Model.ListScenesResponseData scene in scenes) {
+            items.Add(scene.Name);
         }
         UpdateToggleGroup(togglePrefab, toggleGroup, items);
     }

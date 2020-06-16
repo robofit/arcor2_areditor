@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Base;
 
 public class MainMenu : MonoBehaviour, IMenu {
-    public GameObject ButtonPrefab, ServiceButtonPrefab;
+    public GameObject ActionObjectButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ActionObjectsContent, ActionObjects,
         SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
     public GameObject PauseBtn, ResumeBtn;
@@ -36,7 +36,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     // Start is called before the first frame update
     private void Start() {
-        Debug.Assert(ButtonPrefab != null);
+        Debug.Assert(ActionObjectButtonPrefab != null);
         Debug.Assert(ServiceButtonPrefab != null);
         Debug.Assert(ProjectControlButtons != null);
         Debug.Assert(ActionObjectsContent != null);
@@ -161,18 +161,16 @@ public class MainMenu : MonoBehaviour, IMenu {
                 continue;
             }
 
-            GameObject btnGO = Instantiate(ButtonPrefab);
-            btnGO.transform.SetParent(ActionObjectsContent.transform);
-            btnGO.transform.localScale = new Vector3(1, 1, 1);
-            Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionObjectMetadata.Type;
-            btn.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
+            GameObject btnGO = Instantiate(ActionObjectButtonPrefab, ActionObjectsContent.transform);
+            ActionObjectButton btn = btnGO.GetComponent<ActionObjectButton>();
+            btn.SetLabel(actionObjectMetadata.Type);
+            btn.Button.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
             btnGO.transform.SetAsFirstSibling();
             
             if (eventArgs.Data == actionObjectMetadata.Type) {
                 btn.GetComponent<ActionButton>().Highlight(2f);
             }
-            btn.interactable = !actionObjectMetadata.Disabled;
+            btn.Button.interactable = !actionObjectMetadata.Disabled;
 
         }
 
