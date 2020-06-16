@@ -12,11 +12,10 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
-    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn;
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn;
 
     public OpenProjectDialog OpenProjectDialog;
     public OpenSceneDialog OpenSceneDialog;
-    public CloseProjectDialog CloseProjectDialog;
     public CloseSceneDialog CloseSceneDialog;
     public ServiceSettingsDialog ServiceSettingsDialog;
     public AutoAddObjectDialog AutoAddObjectDialog;
@@ -30,6 +29,10 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     [SerializeField]
     private InputDialog inputDialog;
+
+    [SerializeField]
+    private ConfirmationDialog confirmationDialog;
+
 
     // Start is called before the first frame update
     private void Start() {
@@ -45,7 +48,6 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(RunningProjectControls != null);
         Debug.Assert(OpenProjectDialog != null);
         Debug.Assert(OpenSceneDialog != null);
-        Debug.Assert(CloseProjectDialog != null);
         Debug.Assert(CloseSceneDialog != null);
         Debug.Assert(ServiceSettingsDialog != null);
         Debug.Assert(AutoAddObjectDialog != null);
@@ -53,6 +55,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(NewProjectDialog != null);
         Debug.Assert(NewSceneDialog != null);
         Debug.Assert(inputDialog != null);
+        Debug.Assert(confirmationDialog != null);
         Debug.Assert(ResumeBtn != null);
         Debug.Assert(PauseBtn != null);
 
@@ -115,6 +118,12 @@ public class MainMenu : MonoBehaviour, IMenu {
         ProjectControlButtons.SetActive(true);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
+        if (ProjectManager.Instance.Project.HasLogic) {
+            BuildAndRunBtn.SetInteractivity(true);
+        } else {
+            BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
+
+        }
     }
 
     
@@ -262,9 +271,19 @@ public class MainMenu : MonoBehaviour, IMenu {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
-            CloseProjectDialog.WindowManager.OpenWindow();
+            confirmationDialog.Open("Close project",
+                         "Are you sure you want to close current project? Unsaved changes will be lost.",
+                         () => CloseProject(),
+                         () => inputDialog.Close());
         }
             
+    }
+
+    public async void CloseProject() {
+        GameManager.Instance.ShowLoadingScreen("Closing project");
+        _ = await GameManager.Instance.CloseProject(true);
+        inputDialog.Close();
+        GameManager.Instance.HideLoadingScreen();
     }
 
 
@@ -338,7 +357,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     
     public void ConnectedToServer(object sender, Base.StringEventArgs e) {
-
         ShowProjectControlButtons();
         ShowDynamicContent();
     }
@@ -370,6 +388,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
+        UpdateMenu();
         Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
@@ -411,6 +430,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
         } else {
             Base.Notifications.Instance.ShowNotification("Failed to build and run package", "");
+            GameManager.Instance.HideLoadingScreen();
         }
     }
 
@@ -449,24 +469,34 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateMenu() {
-        bool success = false;
-        string message = "";
+        bool successForce = false;
+        string messageForce = "";
         ButtonWithTooltip button = null;
         switch (GameManager.Instance.GetGameState()) {
             case GameManager.GameStateEnum.ProjectEditor:
-                (success, message) = await GameManager.Instance.CloseProject(true, true);
+                (bool success, _) = await GameManager.Instance.CloseProject(false, true);
+                (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
                 button = CloseProjectBtn;
+                if (success) {
+                    BuildBtn.SetInteractivity(true);
+                    if (ProjectManager.Instance.Project.HasLogic)
+                        BuildAndRunBtn.SetInteractivity(true);                    
+                } else {
+                    BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
+                    if (!ProjectManager.Instance.Project.HasLogic)
+                        BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
+                }
                 break;
             case GameManager.GameStateEnum.SceneEditor:
-                (success, message) = await GameManager.Instance.CloseScene(true, true);
+                (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
                 button = CloseSceneBtn;
                 break;
         }
         if (button != null) {
-            if (success) {
+            if (successForce) {
                 button.SetInteractivity(true);
             } else {
-                button.SetInteractivity(false, message);
+                button.SetInteractivity(false, messageForce);
             }
         }
     }

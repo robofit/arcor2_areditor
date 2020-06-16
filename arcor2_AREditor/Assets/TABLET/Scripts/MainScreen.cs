@@ -212,13 +212,21 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            tile.InitTile(project.Name,
-                          () => Base.GameManager.Instance.OpenProject(project.Id),
-                          () => ProjectOptionMenu.Open(tile),
-                          starred,
-                          project.Id,
-                          project.SceneId);
-            projectTiles.Add(tile);
+            try {
+                string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                tile.InitTile(project.Name,
+                              () => GameManager.Instance.OpenProject(project.Id),
+                              () => ProjectOptionMenu.Open(tile),
+                              starred,
+                              project.Id,
+                              project.SceneId,
+                              sceneName,
+                              "");
+                projectTiles.Add(tile);
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs("Failed to load scene name.");
+            }            
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene

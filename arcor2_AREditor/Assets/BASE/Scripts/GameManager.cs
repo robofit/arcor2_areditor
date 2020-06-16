@@ -76,6 +76,7 @@ namespace Base {
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnPackagesListChanged;
         public event EventHandler OnSceneListChanged;
+
         public event StringEventHandler OnConnectedToServer;
         public event StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
@@ -98,7 +99,7 @@ namespace Base {
         private GameStateEnum gameState;
         private EditorStateEnum editorState;
 
-        public GameObject LoadingScreen;
+        public LoadingScreen LoadingScreen;
         public CanvasGroup MainMenuBtnCG, StatusPanelCG;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
@@ -287,7 +288,24 @@ namespace Base {
             VersionInfo.text = EditorVersion;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
+            WebsocketManager.Instance.OnConnectedEvent += OnConnected;
+            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
         }
+
+        private void OnDisconnected(object sender, EventArgs e) {
+            
+        }
+
+        private async void OnConnected(object sender, EventArgs args) {
+            try {
+                await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
+                ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            } catch (TimeoutException e) {
+                Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
+                WebsocketManager.Instance.DisconnectFromSever();
+            }
+        }
+
 
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
@@ -322,7 +340,6 @@ namespace Base {
                     } catch (TimeoutException e) {
                         Notifications.Instance.ShowNotification("Connection failed", "Some actions were not loaded within timeout");
                         DisconnectFromSever();
-                        ActionsManager.Instance.Init();
                         return;
                     }
 
@@ -351,18 +368,18 @@ namespace Base {
         }
 
 
-        public void ShowLoadingScreen() {
+        public void ShowLoadingScreen(string text = "Loading...", bool forceToHide = false) {
             Debug.Assert(LoadingScreen != null);
             // HACK to make loading screen in foreground
             // TODO - find better way
             headUpCanvas.enabled = false;
             headUpCanvas.enabled = true;
-            LoadingScreen.SetActive(true);
+            LoadingScreen.Show(text, forceToHide);
         }
 
-        public void HideLoadingScreen() {
+        public void HideLoadingScreen(bool force = false) {
             Debug.Assert(LoadingScreen != null);
-            LoadingScreen.SetActive(false);
+            LoadingScreen.Hide(force);
         }
 
         private void Init() {
@@ -370,9 +387,9 @@ namespace Base {
         }
 
         public async void ConnectToSever(string domain, int port) {
-            ShowLoadingScreen();
+            ShowLoadingScreen("Connecting to server");
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
+            /*if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
                 try {
                     await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
                     ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
@@ -386,8 +403,9 @@ namespace Base {
                 
                 Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
                 WebsocketManager.Instance.DisconnectFromSever();
-            }
+            }*/
 
+            WebsocketManager.Instance.ConnectToServer(domain, port);
         }
 
         
@@ -839,7 +857,7 @@ namespace Base {
         }
 
         public async Task<bool> BuildAndRunPackage(string name) {
-            ShowLoadingScreen();
+            ShowLoadingScreen("Building package", true);
             Debug.Assert(Base.ProjectManager.Instance.Project != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
@@ -848,17 +866,21 @@ namespace Base {
             try {
                 string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
                 reopenProjectId = ProjectManager.Instance.Project.Id;
-                RequestResult result = await CloseProject(false);
+                RequestResult result = await CloseProject(true);
                 if (!result.Success) {
                     Notifications.Instance.ShowNotification("Failed to build and run package", result.Message);
                     reopenProjectId = null;
+                    HideLoadingScreen(true);
                     return false;
                 }
+                ShowLoadingScreen("Updating packages", true);
                 await LoadPackages();
+                ShowLoadingScreen("Running package", true);
                 await WebsocketManager.Instance.RunPackage(packageId);
                 return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to build and run package", ex.Message);
+                HideLoadingScreen(true);
                 return false;
             } finally {
             }
@@ -962,6 +984,7 @@ namespace Base {
         }
 
         public async Task NewProject(string name, string sceneId, bool hasLogic) {
+            ShowLoadingScreen("Creating new project...");
             Debug.Assert(sceneId != null && sceneId != "");
             Debug.Assert(name != null && name != "");
             
@@ -969,21 +992,25 @@ namespace Base {
                 await WebsocketManager.Instance.CreateProject(name, sceneId, "", hasLogic, false);
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create project", e.Message);
+                HideLoadingScreen();
             } finally {
-            }
-            
+            }        
         }
 
 
         public async Task<bool> NewScene(string name) {
+            ShowLoadingScreen("Creating new scene...");
+
             if (name == "") {
-                Notifications.Instance.ShowNotification("Failed to create new scene", "Scane name to defined");
+                Notifications.Instance.ShowNotification("Failed to create new scene", "Scene name not defined");
+                HideLoadingScreen();
                 return false;
             }
             try {
                 await WebsocketManager.Instance.CreateScene(name, "");
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to create new scene", e.Message);
+                HideLoadingScreen();
             }
             return true;
         }
@@ -1012,7 +1039,7 @@ namespace Base {
 
         public async Task<RequestResult> CloseProject(bool force, bool dryRun = false) {
             if (!dryRun)
-                ShowLoadingScreen();
+                ShowLoadingScreen("Closing project");
             try {
                 await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
                 if (!dryRun) {
@@ -1150,7 +1177,7 @@ namespace Base {
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
-            HideLoadingScreen();
+            HideLoadingScreen(true);
         }
 
         public void OpenProjectEditor() {
@@ -1162,7 +1189,7 @@ namespace Base {
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
-            HideLoadingScreen();
+            HideLoadingScreen(true);
         }
 
         public async void OpenPackageRunningScreen() {
@@ -1182,7 +1209,7 @@ namespace Base {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to open package run screen", "Package info did not arrived");
             } finally {
-                HideLoadingScreen();
+                HideLoadingScreen(true);
             }
         }
 
@@ -1204,6 +1231,7 @@ namespace Base {
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";
+            HideLoadingScreen(true);
         }
 
 
@@ -1224,13 +1252,14 @@ namespace Base {
                 return false;
             }
         }
-         public async Task<bool> RenameScene(string id, string newUserId) {
+         public async Task<RequestResult> RenameScene(string id, string newUserId, bool dryRun) {
             try {
-                await WebsocketManager.Instance.RenameScene(id, newUserId);
-                return true;
+                await WebsocketManager.Instance.RenameScene(id, newUserId, dryRun);
+                return (true, "");
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
-                return false;
+                if (!dryRun)
+                    Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
+                return (false, e.Message);
             }
         }
 
@@ -1440,6 +1469,14 @@ namespace Base {
             throw new ItemNotFoundException("Project with id: " + projectId + " not found");
         }
 
+        public string GetSceneName(string sceneId) {
+            foreach (IdDesc scene in Scenes) {
+                if (scene.Id == sceneId)
+                    return scene.Name;
+            }
+            throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
+        }
+
     }
 
     public struct RequestResult {
@@ -1476,6 +1513,8 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
+        
 
     }
 }

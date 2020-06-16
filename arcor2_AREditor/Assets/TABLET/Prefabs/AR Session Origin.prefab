@@ -208,7 +208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c0ad0e8e55c95c4e931911c4b943a64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  space: 0
+  space: 1
   transformType: 0
   pivot: 0
   centerType: 0
@@ -221,6 +221,7 @@ MonoBehaviour:
   SetPivotModeToggle: 0
   SetCenterTypeToggle: 0
   SetScaleTypeToggle: 0
+  translationSnapping: 306
   AddSelection: 0
   RemoveSelection: 0
   ActionKey: 0
@@ -233,6 +234,9 @@ MonoBehaviour:
   selectedColor: {r: 1, g: 1, b: 0, a: 0.8}
   hoverColor: {r: 1, g: 0.75, b: 0, a: 0.8}
   planesOpacity: 0.5
+  movementSnap: 0.25
+  rotationSnap: 15
+  scaleSnap: 1
   handleLength: 0.25
   handleWidth: 0.003
   planeSize: 0.035

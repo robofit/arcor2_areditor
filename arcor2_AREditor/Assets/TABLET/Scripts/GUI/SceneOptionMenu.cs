@@ -3,6 +3,7 @@ using System.IO;
 using System;
 using Base;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 public class SceneOptionMenu : TileOptionMenu {
 
@@ -35,12 +36,17 @@ public class SceneOptionMenu : TileOptionMenu {
                          "New name",
                          sceneTile.GetLabel(),
                          () => RenameScene(inputDialog.GetValue()),
-                         () => inputDialog.Close());
+                         () => inputDialog.Close(),
+                         validateInput: ValidateSceneNameAsync);
+    }
+
+    public async Task<RequestResult> ValidateSceneNameAsync(string newName) {
+        return await GameManager.Instance.RenameScene(sceneTile.SceneId, newName, true);
     }
 
     public async void RenameScene(string newUserId) {
         Base.GameManager.Instance.ShowLoadingScreen();
-        bool result = await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId);
+        bool result = (await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId, false)).Success;
         if (result) {
             inputDialog.Close();
             sceneTile.SetLabel(newUserId);
@@ -91,12 +97,6 @@ public class SceneOptionMenu : TileOptionMenu {
         }
         Close();
         GameManager.Instance.HideLoadingScreen();
-        /*NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
-        {
-           Notifications.Instance.ShowNotification("Image path: ", path);
-            
-        }, "Select a PNG image", "image/png");
-        */
 
     }
 
