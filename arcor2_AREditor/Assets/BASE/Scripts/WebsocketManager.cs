@@ -6,6 +6,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using NativeWebSocket;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -15,6 +16,16 @@ namespace Base {
         }
 
         public RobotEefUpdatedEventArgs(IO.Swagger.Model.RobotEefData data) {
+            Data = data;
+        }
+    }
+
+    public class RobotJointsUpdatedEventArgs {
+        public IO.Swagger.Model.RobotJointsData Data {
+            get; set;
+        }
+
+        public RobotJointsUpdatedEventArgs(IO.Swagger.Model.RobotJointsData data) {
             Data = data;
         }
     }
@@ -35,14 +46,17 @@ namespace Base {
         private bool packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
+        public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
+        public event RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
         public event EventHandler OnConnectedEvent;
         public event EventHandler OnDisconnectEvent;
 
         
 
         private string serverDomain;
+
 
         private void Awake() {
             ignoreProjectChanged = false;
@@ -175,7 +189,8 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            if (dispatch?.@event == null || dispatch?.@event != "RobotEef")
+            // remove comment in next line to disable loging of joints message
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef"/* && dispatch?.@event != "RobotJoints"*/))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -238,6 +253,9 @@ namespace Base {
                     case "RobotEef":
                         HandleRobotEef(data);
                         break;
+                    case "RobotJoints":
+                        HandleRobotJoints(data);
+                        break;
                     case "OpenScene":
                         HandleOpenScene(data);
                         break;
@@ -264,7 +282,6 @@ namespace Base {
 
         }
 
-        
         private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
@@ -329,6 +346,10 @@ namespace Base {
             OnRobotEefUpdated?.Invoke(this, new RobotEefUpdatedEventArgs(robotEef.Data));
         }
 
+        private void HandleRobotJoints(string data) {
+            IO.Swagger.Model.RobotJointsEvent robotJoints = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotJointsEvent>(data);
+            OnRobotJointsUpdated?.Invoke(this, new RobotJointsUpdatedEventArgs(robotJoints.Data));
+        }
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
@@ -1327,4 +1348,6 @@ namespace Base {
 
 
     }
+
+    
 }

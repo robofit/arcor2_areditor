@@ -74,7 +74,7 @@ namespace Base {
         
         private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
 
-        private Dictionary<string, List<string>> robotsWithEndEffector = new Dictionary<string, List<string>>();
+        private List<IRobot> robotsWithEndEffector = new List<IRobot>();
 
 
         public event EventHandler OnLoadScene;
@@ -260,8 +260,47 @@ namespace Base {
         private void Start() {
             OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
+            WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
         }
 
+        private void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
+            if (!RobotsEEVisible) {
+                CleanRobotEE();
+                return;
+            }
+            // check if robotId is really a robot
+            if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
+               if (actionObject.IsRobot()) {
+                    RobotActionObject robot = (RobotActionObject) actionObject;
+                    foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
+                        switch (joint.Name) {
+                            case "joint1":
+                                robot.SetJointAngle("magician_link_1", ((float) joint.Value) * 3.14f / 180f);
+                                break;
+                            case "joint2":
+                                robot.SetJointAngle("magician_link_2", ((float) joint.Value) * 3.14f / 180f);
+                                break;
+                            case "joint3":
+                                robot.SetJointAngle("magician_link_3", ((float) joint.Value) * 3.14f / 180f);
+                                break;
+                            case "joint4":
+                                robot.SetJointAngle("magician_link_4", ((float) joint.Value) * 3.14f / 180f);
+                                break;
+                            case "joint5":
+                                robot.SetJointAngle("magician_link_5", ((float) joint.Value) * 3.14f / 180f);
+                                break;
+                        }
+                        
+                    }
+                } else {
+                    Debug.LogError("My robot is not a robot?");
+                    Notifications.Instance.SaveLogs();
+                }
+            } else {
+                Debug.LogError("Robot not found!");
+            }
+            
+        }
 
         private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
@@ -306,15 +345,15 @@ namespace Base {
         public async void ShowRobotsEE() {
             CleanRobotEE();
             foreach (IRobot robot in GetRobots()) {
-                List<string> endEffectors = robot.GetEndEffectors();
-                if (endEffectors.Count > 0) {
-                    robotsWithEndEffector.Add(robot.GetId(), endEffectors);
+                if (robot.GetEndEffectors().Count > 0) {
+                    robotsWithEndEffector.Add(robot);
                 }
             }
             RobotsEEVisible = true;
-            foreach (KeyValuePair<string, List<string>> robot in robotsWithEndEffector) {
-                if (robot.Value.Count > 0)
-                    await WebsocketManager.Instance.RegisterForRobotEvent(robot.Key, true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+            foreach (IRobot robot in robotsWithEndEffector) {
+                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
+                    
             }
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);
             
@@ -322,9 +361,9 @@ namespace Base {
 
         public async void HideRobotsEE() {
             RobotsEEVisible = false;
-            foreach (KeyValuePair<string, List<string>> robot in robotsWithEndEffector) {
-                if (robot.Value.Count > 0)
-                    await WebsocketManager.Instance.RegisterForRobotEvent(robot.Key, false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+            foreach (IRobot robot in robotsWithEndEffector) {
+                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
             }
             robotsWithEndEffector.Clear();
             CleanRobotEE();
