@@ -275,19 +275,19 @@ namespace Base {
                     foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
                         switch (joint.Name) {
                             case "joint1":
-                                robot.SetJointAngle("magician_link_1", ((float) joint.Value) * 3.14f / 180f);
+                                robot.SetJointAngle("magician_joint_1", (float) joint.Value);
                                 break;
                             case "joint2":
-                                robot.SetJointAngle("magician_link_2", ((float) joint.Value) * 3.14f / 180f);
+                                robot.SetJointAngle("magician_joint_2", (float) joint.Value);
                                 break;
                             case "joint3":
-                                robot.SetJointAngle("magician_link_3", ((float) joint.Value) * 3.14f / 180f);
+                                robot.SetJointAngle("magician_joint_3", (float) joint.Value);
                                 break;
                             case "joint4":
-                                robot.SetJointAngle("magician_link_4", ((float) joint.Value) * 3.14f / 180f);
+                                robot.SetJointAngle("magician_joint_4", (float) joint.Value);
                                 break;
                             case "joint5":
-                                robot.SetJointAngle("magician_link_5", ((float) joint.Value) * 3.14f / 180f);
+                                robot.SetJointAngle("magician_joint_5", (float) joint.Value);
                                 break;
                         }
                         
@@ -434,14 +434,7 @@ namespace Base {
             GameObject obj;
             if (aom.Robot) {
                 Debug.Log("URDF: spawning RobotActionObject");
-
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
-
-                if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
-                    if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                        StartCoroutine(DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-                    }
-                }
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
@@ -450,8 +443,17 @@ namespace Base {
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
-            if (loadResources && aom.Robot) {
-                await ((RobotActionObject) actionObject).LoadEndEffectors();
+
+            if (aom.Robot) {
+                if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
+                    if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+                        StartCoroutine(DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+                    }
+                }
+
+                if (loadResources) {
+                    await ((RobotActionObject) actionObject).LoadEndEffectors();
+                }
             }
 
             return actionObject;

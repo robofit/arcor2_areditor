@@ -20,10 +20,15 @@ public class RobotLink {
         get;
     }
 
+    public UrdfJoint UrdfJoint {
+        get;
+    }
+
     private JointStateWriter jointWriter;
 
-    public RobotLink(string link_name, JointStateWriter joint_writer, Dictionary<UrdfVisual, bool> visuals_gameObject = null, bool is_base_link = false) {
+    public RobotLink(string link_name, UrdfJoint urdf_joint, JointStateWriter joint_writer, Dictionary<UrdfVisual, bool> visuals_gameObject = null, bool is_base_link = false) {
         LinkName = link_name;
+        UrdfJoint = urdf_joint;
         jointWriter = joint_writer;
         Visuals = visuals_gameObject ?? new Dictionary<UrdfVisual, bool>();
         IsBaseLink = is_base_link;

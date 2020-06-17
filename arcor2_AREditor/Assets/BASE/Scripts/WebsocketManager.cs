@@ -190,7 +190,7 @@ namespace Base {
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
             // remove comment in next line to disable loging of joints message
-            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef"/* && dispatch?.@event != "RobotJoints"*/))
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
