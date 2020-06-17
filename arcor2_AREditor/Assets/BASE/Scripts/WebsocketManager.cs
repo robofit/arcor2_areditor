@@ -5,11 +5,7 @@ using System.Threading;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using System.IO;
-
 using NativeWebSocket;
-using UnityEditor.Callbacks;
-using System.ComponentModel;
 
 namespace Base {
 
@@ -79,7 +75,7 @@ namespace Base {
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
             websocket = new WebSocket(APIDomainWS);
-            
+            serverDomain = domain;
 
             websocket.OnOpen += OnConnected;
             websocket.OnError += OnError;

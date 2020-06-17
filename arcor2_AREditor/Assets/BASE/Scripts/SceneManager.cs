@@ -144,6 +144,7 @@ namespace Base {
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
             Debug.Log("URDF: download started");
+            
             string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
             using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
                 // Request and wait for the desired page.
