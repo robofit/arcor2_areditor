@@ -47,10 +47,11 @@ namespace Base {
             Debug.Assert(ParameterDropdownPosesPrefab != null);
             Debug.Assert(ParameterDropdownJointsPrefab != null);
             Debug.Assert(InteractiveObjects != null);
-            GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+            Init();
+            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
         }
         
-        private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
+        private void OnDisconnected(object sender, EventArgs args) {
             Init();
         }
 
@@ -104,11 +105,33 @@ namespace Base {
             }
         }
 
-        
 
-       
 
-        
+        public void ObjectTypeRemoved(string type) {
+            if (actionObjectsMetadata.ContainsKey(type)) {
+                actionObjectsMetadata.Remove(type);
+                OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(null));
+            }            
+        }
+
+        public async void ObjectTypeAdded(string type) {
+            List<ObjectTypeMeta> objects = await WebsocketManager.Instance.GetObjectTypes();
+            ObjectTypeMeta objectTypeMeta = null;
+            foreach (ObjectTypeMeta obj in objects) {
+                if (obj.Type == type) {
+                    objectTypeMeta = obj;
+                    break;
+                }
+            }
+            if (objectTypeMeta == null)
+                return;
+
+            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectTypeMeta);
+            await UpdateActionsOfActionObject(m);
+            m.Robot = IsDescendantOfType("Robot", m);               
+            actionObjectsMetadata.Add(type, m);
+            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(type));
+        }
         
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {

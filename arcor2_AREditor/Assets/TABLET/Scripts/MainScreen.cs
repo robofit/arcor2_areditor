@@ -163,14 +163,15 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (Transform t in ScenesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
-        foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
+        foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
             bool starred = PlayerPrefsHelper.LoadBool("scene/" + scene.Id + "/starred", false);
             tile.InitTile(scene.Name,
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
                           starred,
-                          scene.Id);
+                          scene.Id,
+                          scene.Modified.ToString());
             sceneTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
@@ -212,13 +213,21 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            tile.InitTile(project.Name,
-                          () => Base.GameManager.Instance.OpenProject(project.Id),
-                          () => ProjectOptionMenu.Open(tile),
-                          starred,
-                          project.Id,
-                          project.SceneId);
-            projectTiles.Add(tile);
+            try {
+                string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                tile.InitTile(project.Name,
+                              () => GameManager.Instance.OpenProject(project.Id),
+                              () => ProjectOptionMenu.Open(tile),
+                              starred,
+                              project.Id,
+                              project.SceneId,
+                              sceneName,
+                              project.Modified.ToString());
+                projectTiles.Add(tile);
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs("Failed to load scene name.");
+            }            
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene

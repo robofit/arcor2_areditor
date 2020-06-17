@@ -94,35 +94,36 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     public void UpdateMenu() {
         if (currentFocusPoint >= 0)
             return;
-        
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-
-        if (RobotsList.Dropdown.dropdownItems.Count > 0)
+        if (SceneManager.Instance.RobotInScene()) {
+            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             OnRobotChanged(RobotsList.Dropdown.selectedText.text);
-        else {
-            UpdatePositionBlockVO.SetActive(false);
-            UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(false);
-        }
-        if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
-            UpdatePositionBlockVO.SetActive(false);
-            UpdatePositionBlockMesh.SetActive(true);
-            RobotsListsBlock.SetActive(true);
-        } else if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
-            UpdatePositionBlockVO.SetActive(true);
-            UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(true);
-            ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
-            if (ShowModelSwitch.Switch.isOn) {
-                ShowModelOnEE();
+
+            if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+                UpdatePositionBlockVO.SetActive(false);
+                UpdatePositionBlockMesh.SetActive(true);
+                RobotsListsBlock.SetActive(true);
+            } else if (CurrentObject.ActionObjectMetadata.ObjectModel != null) {
+                UpdatePositionBlockVO.SetActive(true);
+                UpdatePositionBlockMesh.SetActive(false);
+                RobotsListsBlock.SetActive(true);
+                ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
+                if (ShowModelSwitch.Interactable && ShowModelSwitch.Switch.isOn) {
+                    ShowModelOnEE();
+                }
+            } else {
+                UpdatePositionBlockVO.SetActive(false);
+                UpdatePositionBlockMesh.SetActive(false);
+                RobotsListsBlock.SetActive(false);
             }
+
         } else {
             UpdatePositionBlockVO.SetActive(false);
             UpdatePositionBlockMesh.SetActive(false);
             RobotsListsBlock.SetActive(false);
         }
 
+        
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
@@ -266,6 +267,8 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         if (model != null)
             HideModelOnEE();
         model = CurrentObject.GetModelCopy();
+        if (model == null)
+            return;
         UpdateModelOnEE();
     }
 
@@ -291,6 +294,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
                     model.transform.localPosition = new Vector3(0, 0, 0);
                     break;
             }
+            model.transform.localRotation = new Quaternion(0, 0, 0, 1);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("End-effector position unknown", "Robot did not send position of selected end effector");

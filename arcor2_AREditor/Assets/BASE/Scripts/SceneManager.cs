@@ -52,7 +52,7 @@ namespace Base {
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
 
-        public GameObject ActionObjectsSpawn, SceneOrigin;
+        public GameObject ActionObjectsSpawn, SceneOrigin, EEOrigin;
 
         
         public GameObject RobotPrefab, ActionObjectPrefab;
@@ -144,6 +144,7 @@ namespace Base {
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
             Debug.Log("URDF: download started");
+            
             string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
             using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
                 // Request and wait for the desired page.
@@ -180,6 +181,7 @@ namespace Base {
                     }
                 }
             }
+            
         }
 
         public void ClearServices() {
@@ -268,7 +270,7 @@ namespace Base {
             }
             foreach (EefPose eefPose in args.Data.EndEffectors) {
                 if (!EndEffectors.TryGetValue(args.Data.RobotId + "/" + eefPose.EndEffectorId, out RobotEE robotEE)) {
-                    robotEE = Instantiate(RobotEEPrefab, transform).GetComponent<RobotEE>();
+                    robotEE = Instantiate(RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                     robotEE.SetEEName(GetRobot(args.Data.RobotId).GetName(), eefPose.EndEffectorId);
                     EndEffectors.Add(args.Data.RobotId + "/" + eefPose.EndEffectorId, robotEE);
                 }
@@ -283,6 +285,14 @@ namespace Base {
             if (RobotsEEVisible) {
                 ShowRobotsEE();
             }
+        }
+
+        /// <summary>
+        /// Return true if there is any robot in scene
+        /// </summary>
+        /// <returns></returns>
+        public bool RobotInScene() {
+            return GetRobots().Count > 0;
         }
 
         private void CleanRobotEE() {

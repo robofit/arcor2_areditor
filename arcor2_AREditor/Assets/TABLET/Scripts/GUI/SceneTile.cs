@@ -9,12 +9,14 @@ using System.IO;
 public class SceneTile : Tile
 {
     public string SceneId;
+    [SerializeField]
+    private TMPro.TMP_Text timestamp;
 
     public void ShowMessage(string msg) {
         Debug.LogError(msg);
     }
 
-    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string sceneId) {
+    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string sceneId, string timestamp) {
         base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible);
         SceneId = sceneId;
         string filename = PlayerPrefsHelper.LoadString(SceneId + "/image", "");
@@ -22,6 +24,7 @@ public class SceneTile : Tile
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
+        this.timestamp.text = "Last modified: " + timestamp;
     }
 
 
