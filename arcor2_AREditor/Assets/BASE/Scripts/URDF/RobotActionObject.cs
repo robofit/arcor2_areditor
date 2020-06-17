@@ -373,5 +373,12 @@ namespace Base {
             position.y += 0.2f;
             return position;
         }
+
+        public bool HasUrdf() {
+            if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
+                return !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename);
+            }
+            return false;
+        }
     }
 }
