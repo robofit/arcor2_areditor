@@ -89,6 +89,7 @@ namespace Base {
             UrdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
             UrdfRobot.transform.parent = transform;
             UrdfRobot.transform.localPosition = Vector3.zero;
+            UrdfRobot.transform.localEulerAngles = Vector3.zero;
 
             UrdfRobot.SetRigidbodiesIsKinematic(true);
 
