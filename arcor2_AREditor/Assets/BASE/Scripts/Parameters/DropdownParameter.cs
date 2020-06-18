@@ -8,7 +8,7 @@ using UnityEngine.Events;
 
 public class DropdownParameter : MonoBehaviour, IActionParameter {
 
-    public TMPro.TMP_Text Label;
+    public TMPro.TMP_Text Label, NoOption;
     public CustomDropdown Dropdown;
     public GameObject LoadingObject;
     public bool Loading;
@@ -124,6 +124,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
             Dropdown.SetupDropdown();
         } else {
             Dropdown.gameObject.SetActive(false);
+            NoOption.gameObject.SetActive(true);
         }
     }
 

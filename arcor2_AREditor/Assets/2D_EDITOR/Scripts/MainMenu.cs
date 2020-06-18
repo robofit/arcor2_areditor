@@ -524,6 +524,9 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateRemoveBtns() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
+            return;
+        }
         foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b == null || b.RemoveBtn == null)
                 return;

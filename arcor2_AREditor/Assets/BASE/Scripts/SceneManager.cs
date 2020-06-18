@@ -273,24 +273,7 @@ namespace Base {
                if (actionObject.IsRobot()) {
                     RobotActionObject robot = (RobotActionObject) actionObject;
                     foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
-                        switch (joint.Name) {
-                            case "joint1":
-                                robot.SetJointAngle("magician_joint_1", (float) joint.Value);
-                                break;
-                            case "joint2":
-                                robot.SetJointAngle("magician_joint_2", (float) joint.Value);
-                                break;
-                            case "joint3":
-                                robot.SetJointAngle("magician_joint_3", (float) joint.Value);
-                                break;
-                            case "joint4":
-                                robot.SetJointAngle("magician_joint_4", (float) joint.Value);
-                                break;
-                            case "joint5":
-                                robot.SetJointAngle("magician_joint_5", (float) joint.Value);
-                                break;
-                        }
-                        
+                        robot.SetJointAngle(joint.Name, (float) joint.Value);                        
                     }
                 } else {
                     Debug.LogError("My robot is not a robot?");

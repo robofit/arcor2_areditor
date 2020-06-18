@@ -173,8 +173,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.Data.Id);
         if (successOrientation && successJoints) {
             inputDialog.Close();
-        } else {
-            
+        } else {            
             preselectedOrientation = null;
         }
         
