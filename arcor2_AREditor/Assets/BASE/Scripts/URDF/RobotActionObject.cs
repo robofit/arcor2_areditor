@@ -392,7 +392,8 @@ namespace Base {
         }
 
         private void OnDestroy() {
-            SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
+            if(SceneManager.Instance != null)
+                SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
         }
     }
 }
