@@ -79,6 +79,8 @@ namespace Base {
 
 
         public event EventHandler OnLoadScene;
+        public event EventHandler OnSceneChanged;
+        public event EventHandler OnSceneSaved;
         public event RobotUrdfEventHandler OnUrdfReady;
         public event ServiceEventHandler OnServicesUpdated;
 
@@ -89,6 +91,7 @@ namespace Base {
             get => servicesData;
             set => servicesData = value;
         }
+        
 
 
         /// <summary>
@@ -133,6 +136,7 @@ namespace Base {
             Scene = scene;
             await UpdateActionObjects(customCollisionModels);
             await UpdateServices();
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -198,6 +202,7 @@ namespace Base {
             ServicesData.TryGetValue(sceneService.Type, out Service service);
             service.Data = sceneService;
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
@@ -214,7 +219,7 @@ namespace Base {
                 ServicesData.Add(sceneService.Type, service);
                 OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
-
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RemoveService(string serviceType) {
@@ -222,6 +227,7 @@ namespace Base {
             ServicesData.TryGetValue(serviceType, out Service service);
             ServicesData.Remove(serviceType);
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
         }
 
 
@@ -561,7 +567,43 @@ namespace Base {
         }
 
 
+        public void SceneObjectUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisible, SceneManager.Instance.ActionObjectsInteractive);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+        }
 
+        public void SceneObjectBaseUpdated(SceneObject sceneObject) {
+            ActionObject actionObject = GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async Task SceneObjectAdded(SceneObject sceneObject) {
+            ActionObject actionObject = await SpawnActionObject(sceneObject.Id, sceneObject.Type);
+            actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisible, ActionObjectsInteractive);
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+
+        public void SceneObjectRemoved(SceneObject sceneObject) {
+            ActionObject actionObject = GetActionObject(sceneObject.Id);
+            if (actionObject != null) {
+                ActionObjects.Remove(sceneObject.Id);
+                Destroy(actionObject.gameObject);
+            } else {
+                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
+            }
+            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         /// <summary>
         /// Updates action GameObjects in ActionObjects dict based on the data present in IO.Swagger.Model.Scene Data.
@@ -600,6 +642,10 @@ namespace Base {
                 throw new ItemNotFoundException("This should never happen");
             }
             return actionObject;
+        }
+
+        internal void SceneSaved() {
+            OnSceneSaved?.Invoke(this, EventArgs.Empty);
         }
 
         public ActionObject GetPreviousActionObject(string aoId) {

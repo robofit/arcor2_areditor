@@ -237,6 +237,9 @@ namespace Base {
                     case "ProjectSaved":
                         HandleProjectSaved(data);
                         break;
+                    case "SceneSaved":
+                        HandleSceneSaved(data);
+                        break;
                     case "ProjectException":
                         HandleProjectException(data);
                         break;
@@ -281,6 +284,7 @@ namespace Base {
 
         }
 
+        
         private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
@@ -539,16 +543,16 @@ namespace Base {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    await GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    await SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -607,7 +611,9 @@ namespace Base {
             ProjectManager.Instance.ProjectSaved();
         }
 
-
+        private void HandleSceneSaved(string data) {
+            SceneManager.Instance.SceneSaved();
+        }
 
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {

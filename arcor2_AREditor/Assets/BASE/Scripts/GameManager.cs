@@ -539,39 +539,7 @@ namespace Base {
 
 
 
-        public void SceneObjectUpdated(SceneObject sceneObject) {
-            ActionObject actionObject = SceneManager.Instance.GetActionObject(sceneObject.Id);
-            if (actionObject != null) {
-                actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisible, SceneManager.Instance.ActionObjectsInteractive);
-            } else {
-                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
-            }
-        }
-
-        public void SceneObjectBaseUpdated(SceneObject sceneObject) {
-            ActionObject actionObject = SceneManager.Instance.GetActionObject(sceneObject.Id);
-            if (actionObject != null) {
-                
-            } else {
-                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
-            }
-        }
-
-        public async Task SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = await SceneManager.Instance.SpawnActionObject(sceneObject.Id, sceneObject.Type);
-            actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisible, SceneManager.Instance.ActionObjectsInteractive);
-        }
-
-
-        public void SceneObjectRemoved(SceneObject sceneObject) {
-            ActionObject actionObject = SceneManager.Instance.GetActionObject(sceneObject.Id);
-            if (actionObject != null) {
-                SceneManager.Instance.ActionObjects.Remove(sceneObject.Id);
-                Destroy(actionObject.gameObject);
-            } else {
-                Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
-            }            
-        }
+        
 
 
         

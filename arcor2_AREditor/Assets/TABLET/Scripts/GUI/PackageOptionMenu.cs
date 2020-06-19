@@ -24,8 +24,8 @@ public class PackageOptionMenu : TileOptionMenu {
     }
 
     public void ShowRemoveDialog() {
-        confirmationDialog.Open("Remove scene",
-                         "Are you sure you want to remove scene " + packageTile.GetLabel() + "?",
+        confirmationDialog.Open("Remove package",
+                         "Are you sure you want to remove package " + packageTile.GetLabel() + "?",
                          () => RemovePackage(),
                          () => inputDialog.Close());
     }
