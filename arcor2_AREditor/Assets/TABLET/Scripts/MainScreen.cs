@@ -10,8 +10,8 @@ public class MainScreen : Base.Singleton<MainScreen>
 {
     public TMPro.TMP_Text ScenesBtn, ProjectsBtn, PackagesBtn;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
-    public NewSceneDialog NewSceneDialog;
     public NewProjectDialog NewProjectDialog;
+    public InputDialog InputDialog;
 
     [SerializeField]
     private SceneOptionMenu SceneOptionMenu;
@@ -176,7 +176,22 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(() => NewSceneDialog.WindowManager.OpenWindow());
+        button.onClick.AddListener(ShowNewSceneDialog);
+    }
+
+    public async void NewScene(string name) {
+        if (await Base.GameManager.Instance.NewScene(name)) {
+            InputDialog.Close();
+        }
+    }
+
+    public void ShowNewSceneDialog() {
+        InputDialog.Open("Create new scene",
+                         "Type new scene name",
+                         "Name",
+                         "",
+                         () => NewScene(InputDialog.GetValue()),
+                         () => InputDialog.Close());
     }
 
     public void UpdatePackages(object sender, EventArgs eventArgs) {
@@ -231,7 +246,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(() => NewProjectDialog.WindowManager.OpenWindow());
+        button.onClick.AddListener(() => NewProjectDialog.Open());
     }
 
     public void NotImplemented() {

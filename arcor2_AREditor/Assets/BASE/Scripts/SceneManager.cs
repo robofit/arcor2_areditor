@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -263,10 +264,14 @@ namespace Base {
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
         }
 
-        private void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
+        private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
                 CleanRobotEE();
                 return;
+            }
+            Debug.LogError(args.Data.RobotId);
+            foreach (var obj in ActionObjects) {
+                Debug.LogError(obj.Key);
             }
             // check if robotId is really a robot
             if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
@@ -281,6 +286,8 @@ namespace Base {
                 }
             } else {
                 Debug.LogError("Robot not found!");
+                await WebsocketManager.Instance.RegisterForRobotEvent(args.Data.RobotId,
+                    false, RegisterForRobotEventArgs.WhatEnum.Joints);
             }
             
         }
@@ -335,7 +342,8 @@ namespace Base {
             RobotsEEVisible = true;
             foreach (IRobot robot in robotsWithEndEffector) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
+                if (robot.HasUrdf())
+                    await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
                     
             }
             PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);

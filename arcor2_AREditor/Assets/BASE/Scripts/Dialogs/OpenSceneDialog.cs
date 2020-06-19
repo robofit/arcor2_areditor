@@ -22,9 +22,13 @@ public class OpenSceneDialog : Dialog {
         try {
             sceneName = GetSelectedValue(ToggleGroup);
             await Base.GameManager.Instance.OpenScene(sceneName);
-            WindowManager.CloseWindow();
+            Close();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open scene", ex.Message);
         }
+    }
+
+    public override void Confirm() {
+        OpenScene();
     }
 }

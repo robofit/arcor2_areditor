@@ -10,6 +10,8 @@ public class UniversalDialog : Dialog
     [SerializeField]
     protected ButtonWithTooltip okBtn, cancelBtn;
 
+    protected UnityAction confirmCallback;
+
     public void SetConfirmLabel(string name) {
         OKButtonLabelNormal.text = name;
         OKButtonLabelHighlighted.text = name;
@@ -21,39 +23,40 @@ public class UniversalDialog : Dialog
     }
 
     public void AddConfirmCallback(UnityAction callback) {
-        WindowManager.onConfirm.AddListener(callback);
+        windowManager.onConfirm.AddListener(callback);
+        confirmCallback = callback;
     }
 
     public void AddCancelCallback(UnityAction callback) {
-        WindowManager.onCancel.AddListener(callback);
+        windowManager.onCancel.AddListener(callback);
     }
 
     public void SetDescription(string description) {
         if (string.IsNullOrEmpty(description)) {
-            WindowManager.windowDescription.gameObject.SetActive(false);
+            windowManager.windowDescription.gameObject.SetActive(false);
         } else {
-            WindowManager.windowDescription.gameObject.SetActive(true);
-            WindowManager.windowDescription.text = description;
+            windowManager.windowDescription.gameObject.SetActive(true);
+            windowManager.windowDescription.text = description;
         }        
     }
 
     public void SetTitle(string title) {
-        WindowManager.windowTitle.text = title;
+        windowManager.windowTitle.text = title;
     }
 
     public virtual void Open(string title, string description, UnityAction confirmationCallback, UnityAction cancelCallback, string confirmLabel = "Confirm", string cancelLabel = "Cancel") {
-        WindowManager.onConfirm.RemoveAllListeners();
-        WindowManager.onCancel.RemoveAllListeners();
+        windowManager.onConfirm.RemoveAllListeners();
+        windowManager.onCancel.RemoveAllListeners();
         SetTitle(title);
         SetDescription(description);
         AddConfirmCallback(confirmationCallback);
         AddCancelCallback(cancelCallback);
         SetConfirmLabel(confirmLabel);
         SetCancelLabel(cancelLabel);
-        WindowManager.OpenWindow();
+        Open();
     }
 
-    public void Close() {
-        WindowManager.CloseWindow();
+    public override void Confirm() {
+        confirmCallback();
     }
 }

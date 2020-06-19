@@ -116,7 +116,7 @@ namespace Base {
 
         public const string ApiVersion = "0.7.1";
 
-        public readonly string EditorVersion = "0.6.0";
+        //public readonly string EditorVersion = "0.7.0-beta.1";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
@@ -285,7 +285,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif
-            VersionInfo.text = EditorVersion;
+            VersionInfo.text = Application.version;
             Scene.SetActive(false);
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
@@ -324,7 +324,7 @@ namespace Base {
                     }
 
                     SystemInfo = systemInfo;
-                    ServerVersion.text = "Editor version: " + EditorVersion +
+                    ServerVersion.text = "Editor version: " + Application.version +
                         "\nServer version: " + systemInfo.Version;
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MenuManager.Instance.DisableAllMenus();

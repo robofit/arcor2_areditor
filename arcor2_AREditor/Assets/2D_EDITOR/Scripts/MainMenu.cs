@@ -14,14 +14,9 @@ public class MainMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn;
 
-    public OpenProjectDialog OpenProjectDialog;
-    public OpenSceneDialog OpenSceneDialog;
-    public CloseSceneDialog CloseSceneDialog;
     public ServiceSettingsDialog ServiceSettingsDialog;
     public AutoAddObjectDialog AutoAddObjectDialog;
     public AddSerivceDialog AddNewServiceDialog;
-    public NewProjectDialog NewProjectDialog;
-    public NewSceneDialog NewSceneDialog;
 
     private GameObject debugTools;
 
@@ -46,14 +41,9 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(Services != null);
         Debug.Assert(ServicesContent != null);
         Debug.Assert(RunningProjectControls != null);
-        Debug.Assert(OpenProjectDialog != null);
-        Debug.Assert(OpenSceneDialog != null);
-        Debug.Assert(CloseSceneDialog != null);
         Debug.Assert(ServiceSettingsDialog != null);
         Debug.Assert(AutoAddObjectDialog != null);
         Debug.Assert(AddNewServiceDialog != null);
-        Debug.Assert(NewProjectDialog != null);
-        Debug.Assert(NewSceneDialog != null);
         Debug.Assert(inputDialog != null);
         Debug.Assert(confirmationDialog != null);
         Debug.Assert(ResumeBtn != null);
@@ -276,18 +266,27 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-
-
-    public async void CloseScene() {
-        (bool success, string message) = await Base.GameManager.Instance.CloseScene(false);
+    public async void ShowCloseSceneDialog() {
+        (bool success, _) = await Base.GameManager.Instance.CloseScene(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
-            CloseSceneDialog.WindowManager.OpenWindow();
+            confirmationDialog.Open("Close scene",
+                         "Are you sure you want to close current scene? Unsaved changes will be lost.",
+                         () => CloseScene(),
+                         () => confirmationDialog.Close());
         }
     }
 
 
-    public async void ShowCloseProjectDialog(string type) {
+    public async void CloseScene() {
+        (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
+        if (success) {
+            confirmationDialog.Close();
+        }
+    }
+
+
+    public async void ShowCloseProjectDialog() {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
@@ -326,37 +325,17 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void ShowAutoAddObjectDialog(string type) {
         AutoAddObjectDialog.ObjectToBeAdded = type;
-        AutoAddObjectDialog.WindowManager.OpenWindow();
+        AutoAddObjectDialog.Open();
     }
 
     public void ShowAddServiceDialog(string type) {
         AddNewServiceDialog.UpdateMenu(type);
-        AddNewServiceDialog.WindowManager.OpenWindow();
+        AddNewServiceDialog.Open();
     }
 
     public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
         bool sceneEditor = Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor;
         ServiceSettingsDialog.Show(serviceButton.ServiceMetadata.Type, sceneEditor);
-    }
-
-    public void ShowNewProjectDialog() {
-        NewProjectDialog.WindowManager.OpenWindow();
-
-    }
-
-    public void ShowNewSceneDialog() {
-        NewSceneDialog.WindowManager.OpenWindow();
-
-    }
-
-    public void ShowOpenProjectDialog() {
-        OpenProjectDialog.WindowManager.OpenWindow();
-
-    }
-
-    public void ShowOpenSceneDialog() {
-        OpenSceneDialog.WindowManager.OpenWindow();
-
     }
 
     public void ShowProjectControlButtons() {

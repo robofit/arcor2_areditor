@@ -26,7 +26,7 @@ public class LandingScreen : MonoBehaviour
         Domain.text = PlayerPrefs.GetString("arserver_domain", "");
         Port.text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         KeepConnected.isOn = keepConnected;
-        Version.text = Base.GameManager.Instance.EditorVersion;
+        Version.text = Application.version;
         if (keepConnected) {
             ConnectToServer();
         }
