@@ -503,9 +503,8 @@ public class MainMenu : MonoBehaviour, IMenu {
                         BuildAndRunBtn.SetInteractivity(true);                    
                 } else {
                     BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
+                    BuildAndRunBtn.SetInteractivity(false, "There are unsaved changes on project");
                     SaveProjectBtn.SetInteractivity(true);
-                    if (!ProjectManager.Instance.Project.HasLogic)
-                        BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
                 }
                 break;
             case GameManager.GameStateEnum.SceneEditor:
