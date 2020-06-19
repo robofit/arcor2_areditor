@@ -194,7 +194,7 @@ namespace Base {
                 input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
                 input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
                 input.GetComponent<LabeledInput>().SetValue(selectedValue);
-                input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+                input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
                     => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
             }
             return input;
@@ -211,7 +211,7 @@ namespace Base {
             input = Instantiate(ActionsManager.Instance.ParameterInputPrefab);
             input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
             input.GetComponent<LabeledInput>().SetValue(selectedValue);
-            input.GetComponent<LabeledInput>().Input.onEndEdit.AddListener((string newValue)
+            input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue)));
 
             return input;
@@ -310,9 +310,9 @@ namespace Base {
             }
             input.SetType(actionParameterMetadata.Type);
             input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.Input.onEndEdit.AddListener((string newValue)
+            input.Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, int.Parse(newValue)));
-            input.Input.onEndEdit.AddListener((string newValue)
+            input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateIntegerParameter(input, actionParameterMetadata, int.Parse(newValue)));
             return input.gameObject;
         }
@@ -327,9 +327,9 @@ namespace Base {
                 selectedValue = actionParameterMetadata.GetDefaultValue<double>();
             }
             input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.Input.onEndEdit.AddListener((string newValue)
+            input.Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue)));
-            input.Input.onEndEdit.AddListener((string newValue)
+            input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateDoubleParameter(input, actionParameterMetadata, ParseDouble(newValue)));
             return input.gameObject;
         }
