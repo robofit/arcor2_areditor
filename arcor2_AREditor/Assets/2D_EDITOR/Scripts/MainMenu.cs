@@ -282,6 +282,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
         if (success) {
             confirmationDialog.Close();
+            MenuManager.Instance.MainMenu.Close();
         }
     }
 
@@ -299,9 +300,10 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void CloseProject() {
-        GameManager.Instance.ShowLoadingScreen("Closing project");
+        GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         inputDialog.Close();
+        MenuManager.Instance.MainMenu.Close();
         GameManager.Instance.HideLoadingScreen();
     }
 
