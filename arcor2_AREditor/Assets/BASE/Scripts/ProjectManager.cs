@@ -142,7 +142,7 @@ namespace Base {
         public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent actionPointParent) {
             Debug.Assert(apData != null);
             GameObject AP;
-            if (actionPointParent == null) {
+            if (actionPointParent == null) {               
                 AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
             } else {
                 AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());

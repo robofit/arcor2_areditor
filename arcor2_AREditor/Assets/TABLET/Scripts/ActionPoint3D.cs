@@ -172,4 +172,5 @@ public class ActionPoint3D : Base.ActionPoint {
             outlineOnClick.UnHighlight();
         }
     }
+
 }

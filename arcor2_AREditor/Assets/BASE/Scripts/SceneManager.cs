@@ -414,7 +414,22 @@ namespace Base {
             Scene.Name = scene.Name;
         }
 
-        
+        public Vector3 GetCollisionFreePointAbove(Vector3 originalPosition) {
+            Vector3 aboveModel = Vector3.zero;
+            Collider[] colliders = Physics.OverlapSphere(originalPosition + aboveModel, 0.025f);
+            // to avoid infinite loop
+            int i = 0;
+            while (colliders.Length > 0 && i < 20) {
+                Collider collider = colliders[0];
+                aboveModel.y = collider.gameObject.transform.position.y + collider.bounds.extents.y + 0.05f;
+                colliders = Physics.OverlapSphere(originalPosition + aboveModel, 0.025f);
+                ++i;
+            }
+            return originalPosition + aboveModel;
+        }
+
+
+
 
         #region ACTION_OBJECTS
 
