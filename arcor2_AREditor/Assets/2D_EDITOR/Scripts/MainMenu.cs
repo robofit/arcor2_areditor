@@ -4,7 +4,10 @@ using System;
 using Michsky.UI.ModernUIPack;
 using System.Collections.Generic;
 using Base;
+using DanielLochner.Assets.SimpleSideMenu;
+using System.Threading.Tasks;
 
+[RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ActionObjectButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ActionObjectsContent, ActionObjects,
@@ -12,7 +15,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
-    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn;
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn;
 
     public ServiceSettingsDialog ServiceSettingsDialog;
     public AutoAddObjectDialog AutoAddObjectDialog;
@@ -28,9 +31,14 @@ public class MainMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
 
+    private SimpleSideMenu menu;
+
+    [SerializeField]
+    private GameObject loadingScreen;
 
     // Start is called before the first frame update
     private void Start() {
+        menu = GetComponent<SimpleSideMenu>();
         Debug.Assert(ActionObjectButtonPrefab != null);
         Debug.Assert(ServiceButtonPrefab != null);
         Debug.Assert(ProjectControlButtons != null);
@@ -48,6 +56,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Debug.Assert(confirmationDialog != null);
         Debug.Assert(ResumeBtn != null);
         Debug.Assert(PauseBtn != null);
+        Debug.Assert(loadingScreen != null);
 
 
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
@@ -470,27 +479,43 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateMenu() {
-        bool successForce = false;
+        if (menu.CurrentState == SimpleSideMenu.State.Open) {
+            menu.Close();
+            return;
+        } else {
+            loadingScreen.SetActive(true);
+            menu.Open();
+        }
+        bool success = false, successForce = false;
         string messageForce = "";
         ButtonWithTooltip button = null;
         switch (GameManager.Instance.GetGameState()) {
             case GameManager.GameStateEnum.ProjectEditor:
-                (bool success, _) = await GameManager.Instance.CloseProject(false, true);
+                (success, _) = await GameManager.Instance.CloseProject(false, true);
                 (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
                 button = CloseProjectBtn;
+                
                 if (success) {
                     BuildBtn.SetInteractivity(true);
+                    SaveProjectBtn.SetInteractivity(false, "There are no unsaved changes");
                     if (ProjectManager.Instance.Project.HasLogic)
                         BuildAndRunBtn.SetInteractivity(true);                    
                 } else {
                     BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
+                    SaveProjectBtn.SetInteractivity(true);
                     if (!ProjectManager.Instance.Project.HasLogic)
                         BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
                 }
                 break;
             case GameManager.GameStateEnum.SceneEditor:
+                (success, _) = await GameManager.Instance.CloseScene(false, true);
                 (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
                 button = CloseSceneBtn;
+                if (success) {
+                    SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
+                } else {
+                    SaveSceneBtn.SetInteractivity(true);
+                }
                 break;
         }
         if (button != null) {
@@ -502,6 +527,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
 
         UpdateRemoveBtns();
+        loadingScreen.SetActive(false);
     }
 
     public async void UpdateRemoveBtns() {

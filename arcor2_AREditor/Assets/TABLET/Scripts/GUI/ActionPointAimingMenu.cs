@@ -153,12 +153,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public async void AddOrientation(string name, string robotName) {
          Debug.Assert(CurrentActionPoint != null);
-        if (!SceneManager.Instance.TryGetActionObjectByName(robotName, out ActionObject robot)) {
+        IRobot robot;
+        try {
+            robot = SceneManager.Instance.GetRobotByName(robotName);
+        } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to add orientation", "Could not found robot called: " + robotName);
-            Debug.LogError("Could not found robot called: " + robotName);
+            Debug.LogError(ex);
             return;
         }
-        
+               
 
         if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
             Notifications.Instance.ShowNotification("Failed to add orientation", "There already exists orientation or joints with name " + name);
@@ -170,7 +173,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         }
         preselectedOrientation = name;
         bool successOrientation = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
-        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.Data.Id);
+        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.GetId());
         if (successOrientation && successJoints) {
             inputDialog.Close();
         } else {            

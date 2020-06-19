@@ -529,6 +529,13 @@ namespace Base {
             throw new ItemNotFoundException("No robot with id: " + robotId);
         }
 
+        public IRobot GetRobotByName(string robotName) {
+            foreach (IRobot robot in GetRobots())
+                if (robot.GetName() == robotName)
+                    return robot;
+            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
+        }
+
 
         /*public List<string> GetRobotsNames() {
             HashSet<string> robots = new HashSet<string>();
@@ -550,10 +557,7 @@ namespace Base {
 
 
         public string RobotNameToId(string robotName) {
-            foreach (IRobot robot in GetRobots())
-                if (robot.GetName() == robotName)
-                    return robot.GetId();
-            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
+            return GetRobotByName(robotName).GetId();
         }
 
 
