@@ -164,7 +164,8 @@ public class MainMenu : MonoBehaviour, IMenu {
             ActionObjectButton btn = btnGO.GetComponent<ActionObjectButton>();
             btn.SetLabel(actionObjectMetadata.Type);
             btn.Button.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
-            btn.RemoveBtn.onClick.AddListener(() => ShowRemoveActionObjectDialog(actionObjectMetadata.Type));
+            btn.RemoveBtn.Button.onClick.AddListener(() => ShowRemoveActionObjectDialog(actionObjectMetadata.Type));
+            btn.RemoveBtn.SetInteractivity(false, "");
             btnGO.transform.SetAsFirstSibling();
             
             if (eventArgs.Data == actionObjectMetadata.Type) {
@@ -537,14 +538,12 @@ public class MainMenu : MonoBehaviour, IMenu {
         foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b == null || b.RemoveBtn == null)
                 return;
-            ButtonWithTooltip btn = b.RemoveBtn.GetComponent<ButtonWithTooltip>();
             try {
                 await WebsocketManager.Instance.DeleteObjectType(b.GetLabel(), true);
-                btn.SetInteractivity(true);
+                b.RemoveBtn.SetInteractivity(true);
             } catch (RequestFailedException ex) {
-                btn.SetInteractivity(false, ex.Message);
+                b.RemoveBtn.SetInteractivity(false, ex.Message);
             }
-
         }
     }
 

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class ButtonWithTooltip : MonoBehaviour {
     [SerializeField]
     private ManualTooltip tooltip;
-    private Button Button;
+    public Button Button;
     [SerializeField]
     private TooltipContent TooltipContent;
 
