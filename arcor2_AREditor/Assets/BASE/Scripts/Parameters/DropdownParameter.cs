@@ -122,6 +122,7 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
         if (Dropdown.dropdownItems.Count > 0) {
             
             Dropdown.SetupDropdown();
+            NoOption.gameObject.SetActive(false);
         } else {
             Dropdown.gameObject.SetActive(false);
             NoOption.gameObject.SetActive(true);
