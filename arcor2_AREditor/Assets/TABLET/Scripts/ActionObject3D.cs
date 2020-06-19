@@ -76,8 +76,8 @@ public class ActionObject3D : ActionObject
     }
 
     public IO.Swagger.Model.Pose GetPose() {
-        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.position)),
-            orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.rotation)));
+        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
+            orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
     }
 
     public override void OnClick(Click type) {

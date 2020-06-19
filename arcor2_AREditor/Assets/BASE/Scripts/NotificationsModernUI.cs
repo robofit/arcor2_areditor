@@ -70,7 +70,7 @@ namespace Base {
             projectFile.Close();
 
             StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
-            logsFile.WriteLine("Editor version: " + GameManager.Instance.EditorVersion);
+            logsFile.WriteLine("Editor version: " + Application.version);
             if (GameManager.Instance.SystemInfo != null) {
                 logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo.Version);
             }

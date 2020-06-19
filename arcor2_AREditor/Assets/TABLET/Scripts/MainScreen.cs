@@ -10,8 +10,8 @@ public class MainScreen : Base.Singleton<MainScreen>
 {
     public TMPro.TMP_Text ScenesBtn, ProjectsBtn, PackagesBtn;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
-    public NewSceneDialog NewSceneDialog;
     public NewProjectDialog NewProjectDialog;
+    public InputDialog InputDialog;
 
     [SerializeField]
     private SceneOptionMenu SceneOptionMenu;
@@ -163,19 +163,35 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (Transform t in ScenesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
-        foreach (IO.Swagger.Model.IdDesc scene in Base.GameManager.Instance.Scenes) {
+        foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
             bool starred = PlayerPrefsHelper.LoadBool("scene/" + scene.Id + "/starred", false);
             tile.InitTile(scene.Name,
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
                           starred,
-                          scene.Id);
+                          scene.Id,
+                          scene.Modified.ToString());
             sceneTiles.Add(tile);
         }
         Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(() => NewSceneDialog.WindowManager.OpenWindow());
+        button.onClick.AddListener(ShowNewSceneDialog);
+    }
+
+    public async void NewScene(string name) {
+        if (await Base.GameManager.Instance.NewScene(name)) {
+            InputDialog.Close();
+        }
+    }
+
+    public void ShowNewSceneDialog() {
+        InputDialog.Open("Create new scene",
+                         "Type new scene name",
+                         "Name",
+                         "",
+                         () => NewScene(InputDialog.GetValue()),
+                         () => InputDialog.Close());
     }
 
     public void UpdatePackages(object sender, EventArgs eventArgs) {
@@ -212,17 +228,25 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            tile.InitTile(project.Name,
-                          () => Base.GameManager.Instance.OpenProject(project.Id),
-                          () => ProjectOptionMenu.Open(tile),
-                          starred,
-                          project.Id,
-                          project.SceneId);
-            projectTiles.Add(tile);
+            try {
+                string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                tile.InitTile(project.Name,
+                              () => GameManager.Instance.OpenProject(project.Id),
+                              () => ProjectOptionMenu.Open(tile),
+                              starred,
+                              project.Id,
+                              project.SceneId,
+                              sceneName,
+                              project.Modified.ToString());
+                projectTiles.Add(tile);
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs("Failed to load scene name.");
+            }            
         }
         Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(() => NewProjectDialog.WindowManager.OpenWindow());
+        button.onClick.AddListener(() => NewProjectDialog.Open());
     }
 
     public void NotImplemented() {

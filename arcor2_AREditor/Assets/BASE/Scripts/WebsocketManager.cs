@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System.Threading.Tasks;
-using System.IO;
-using RestSharp.Extensions;
+using NativeWebSocket;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -22,19 +20,24 @@ namespace Base {
         }
     }
 
+    public class RobotJointsUpdatedEventArgs {
+        public IO.Swagger.Model.RobotJointsData Data {
+            get; set;
+        }
+
+        public RobotJointsUpdatedEventArgs(IO.Swagger.Model.RobotJointsData data) {
+            Data = data;
+        }
+    }
+
 
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
 
-        private ClientWebSocket clientWebSocket;
+        private WebSocket websocket;
 
-        private Queue<KeyValuePair<int, string>> sendingQueue = new Queue<KeyValuePair<int, string>>();
 
-        private bool waitingForMessage = false;
-
-        private string receivedData;
-
-        private bool readyToSend, ignoreProjectChanged, connecting;
+        private bool ignoreProjectChanged, connecting;
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
@@ -43,62 +46,81 @@ namespace Base {
         private bool packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
+        public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
+        public event RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
+        public event EventHandler OnConnectedEvent;
+        public event EventHandler OnDisconnectEvent;
 
         
 
         private string serverDomain;
 
+
         private void Awake() {
-            waitingForMessage = false;
-            readyToSend = true;
             ignoreProjectChanged = false;
-            connecting = false;            
-            receivedData = "";
+            connecting = false;             
         }
 
+       
 
-        public async Task<bool> ConnectToServer(string domain, int port) {
+        private void OnClose(WebSocketCloseCode closeCode) {
+            Debug.Log("Connection closed!");
+            CleanupAfterDisconnect();
+            OnDisconnectEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnError(string errorMsg) {
+            Debug.LogError(errorMsg);
+            connecting = false;
+        }
+
+        private void OnConnected() {
+            connecting = false;
+            Debug.Log("On connected");
+            OnConnectedEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        public async void ConnectToServer(string domain, int port) {
+           
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
+            websocket = new WebSocket(APIDomainWS);
             serverDomain = domain;
-            clientWebSocket = new ClientWebSocket();
-            Debug.Log("[WS]:Attempting connection.");
-            try {
-                Uri uri = new Uri(APIDomainWS);
-                await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
 
-                Debug.Log("[WS][connect]:" + "Connected");
-            } catch (Exception e) {
-                Debug.Log("[WS][exception]:" + e.Message);
-                if (e.InnerException != null) {
-                    Debug.Log("[WS][inner exception]:" + e.InnerException.Message);
-                }
-            }
+            websocket.OnOpen += OnConnected;
+            websocket.OnError += OnError;
+            websocket.OnClose += OnClose;
+            websocket.OnMessage += HandleReceivedData;
 
-            connecting = false;
-            
-            return clientWebSocket.State == WebSocketState.Open;
+            await websocket.Connect();
         }
-
+        
         async public void DisconnectFromSever() {
             Debug.Log("Disconnecting");
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             try {
-                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+                await websocket.Close();
             } catch (WebSocketException e) {
                 //already closed probably..
             }
-            clientWebSocket = null;
-            serverDomain = null;
-            GameManager.Instance.HideLoadingScreen();
+            CleanupAfterDisconnect();
         }
 
+        public void CleanupAfterDisconnect() {
+            GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
+            websocket = null;
+            serverDomain = null;
+            packageStateArrived = false;
+            connecting = false;
+            GameManager.Instance.HideLoadingScreen();
+        }
+        
         public string GetServerDomain() {
-            if (clientWebSocket.State != WebSocketState.Open) {
+            if (websocket.State != WebSocketState.Open) {
                 return null;
             }
             return serverDomain;
@@ -123,56 +145,16 @@ namespace Base {
             return packageStateArrived;
         }
 
-        // Update is called once per frame
-        private async void Update() {
-            if (clientWebSocket == null)
-                return;
-            if (clientWebSocket.State != WebSocketState.Open && GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Connected) {
-                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-            }
-
-            if (!waitingForMessage && clientWebSocket.State == WebSocketState.Open) {
-                WebSocketReceiveResult result = null;
-                waitingForMessage = true;
-                ArraySegment<byte> bytesReceived = WebSocket.CreateClientBuffer(8192, 8192);
-                MemoryStream ms = new MemoryStream();
-                try {
-                    do {
-                        result = await clientWebSocket.ReceiveAsync(
-                            bytesReceived,
-                            CancellationToken.None
-                        );
-
-                        if (bytesReceived.Array != null)
-                            ms.Write(bytesReceived.Array, bytesReceived.Offset, result.Count);
-
-                    } while (!result.EndOfMessage);
-                } catch (WebSocketException e) {
-                    DisconnectFromSever();
-                    return;
-                }
-                
-                receivedData = Encoding.Default.GetString(ms.ToArray());
-                HandleReceivedData(receivedData);
-                receivedData = "";
-                waitingForMessage = false;
-
-            }
-
-            if (sendingQueue.Count > 0 && readyToSend) {
-                SendDataToServer();
-            }
-
-        }
+     
 
         public string GetWSURI(string domain, int port) {
             return "ws://" + domain + ":" + port.ToString();
         }
-
+        
         private void OnApplicationQuit() {
             DisconnectFromSever();
         }
-
+        
         public void SendDataToServer(string data, int key = -1, bool storeResult = false, bool logInfo = true) {
             if (key < 0) {
                 key = Interlocked.Increment(ref requestID);
@@ -183,30 +165,18 @@ namespace Base {
             if (storeResult) {
                 responses[key] = null;
             }
-            sendingQueue.Enqueue(new KeyValuePair<int, string>(key, data));
+            SendWebSocketMessage(data);
+        }
+      
+
+        private async void SendWebSocketMessage(string data) {
+            if (websocket.State == WebSocketState.Open) {
+                await websocket.SendText(data);
+            }
         }
 
-        async public void SendDataToServer() {
-            if (sendingQueue.Count == 0)
-                return;
-            KeyValuePair<int, string> keyVal = sendingQueue.Dequeue();
-            readyToSend = false;
-            if (clientWebSocket.State != WebSocketState.Open)
-                return;
-
-            ArraySegment<byte> bytesToSend = new ArraySegment<byte>(
-                         Encoding.UTF8.GetBytes(keyVal.Value)
-                     );
-            await clientWebSocket.SendAsync(
-                bytesToSend,
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-            );
-            readyToSend = true;
-        }
-
-        private void HandleReceivedData(string data) {
+        private void HandleReceivedData(byte[] message) {
+            string data = Encoding.Default.GetString(message);
             var dispatchType = new {
                 id = 0,
                 response = "",
@@ -219,7 +189,7 @@ namespace Base {
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
             //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
-            if (dispatch?.@event == null || dispatch?.@event != "RobotEef")
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -252,6 +222,9 @@ namespace Base {
                     case "JointsChanged":
                         HandleJointsChanged(data);
                         break;
+                    case "ObjectTypesChanged":
+                        HandleObjectTypesChanged(data);
+                        break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
                         break;
@@ -263,6 +236,9 @@ namespace Base {
                         break;
                     case "ProjectSaved":
                         HandleProjectSaved(data);
+                        break;
+                    case "SceneSaved":
+                        HandleSceneSaved(data);
                         break;
                     case "ProjectException":
                         HandleProjectException(data);
@@ -278,6 +254,9 @@ namespace Base {
                         break;
                     case "RobotEef":
                         HandleRobotEef(data);
+                        break;
+                    case "RobotJoints":
+                        HandleRobotJoints(data);
                         break;
                     case "OpenScene":
                         HandleOpenScene(data);
@@ -305,7 +284,8 @@ namespace Base {
 
         }
 
-       private Task<T> WaitForResult<T>(int key, int timeout = 5000) {
+        
+        private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
                     if (value == null) {
@@ -369,6 +349,10 @@ namespace Base {
             OnRobotEefUpdated?.Invoke(this, new RobotEefUpdatedEventArgs(robotEef.Data));
         }
 
+        private void HandleRobotJoints(string data) {
+            IO.Swagger.Model.RobotJointsEvent robotJoints = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotJointsEvent>(data);
+            OnRobotJointsUpdated?.Invoke(this, new RobotJointsUpdatedEventArgs(robotJoints.Data));
+        }
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
@@ -399,11 +383,6 @@ namespace Base {
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
             }
-            
-            
-
-            
-
             
         }
 
@@ -457,6 +436,24 @@ namespace Base {
                     throw new NotImplementedException();
             }
         }
+
+        private void HandleObjectTypesChanged(string data) {
+            IO.Swagger.Model.ObjectTypesChangedEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ObjectTypesChangedEvent>(data);
+            switch (objectTypesChangedEvent.ChangeType) {
+                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Add:
+                    foreach (string type in objectTypesChangedEvent.Data)
+                        ActionsManager.Instance.ObjectTypeAdded(type);
+                    break;
+                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Remove:
+                    foreach (string type in objectTypesChangedEvent.Data)
+                        ActionsManager.Instance.ObjectTypeRemoved(type);
+                    break;
+                
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
 
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
@@ -546,16 +543,16 @@ namespace Base {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    await GameManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    await SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
-                    GameManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectUpdated(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectBaseUpdated(sceneObjectChanged.Data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -614,7 +611,9 @@ namespace Base {
             ProjectManager.Instance.ProjectSaved();
         }
 
-
+        private void HandleSceneSaved(string data) {
+            SceneManager.Instance.SceneSaved();
+        }
 
 
         public async Task<List<IO.Swagger.Model.ObjectTypeMeta>> GetObjectTypes() {
@@ -781,7 +780,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task<List<IO.Swagger.Model.IdDesc>> LoadScenes() {
+        public async Task<List<IO.Swagger.Model.ListScenesResponseData>> LoadScenes() {
             int id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: id, request: "ListScenes");
             SendDataToServer(request.ToJson(), id, true);
@@ -848,6 +847,17 @@ namespace Base {
             IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);            
+        }
+
+        public async Task DeleteObjectType(string type, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
+            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            var response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            }
         }
 
         public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {
@@ -953,10 +963,10 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RenameScene(string id, string newName) {
+        public async Task RenameScene(string id, string newName, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RenameArgs args = new IO.Swagger.Model.RenameArgs(id: id, newName: newName);
-            IO.Swagger.Model.RenameSceneRequest request = new IO.Swagger.Model.RenameSceneRequest(r_id, "RenameScene", args);
+            IO.Swagger.Model.RenameSceneRequest request = new IO.Swagger.Model.RenameSceneRequest(r_id, "RenameScene", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameSceneResponse response = await WaitForResult<IO.Swagger.Model.RenameSceneResponse>(r_id);
 
@@ -1343,4 +1353,6 @@ namespace Base {
 
 
     }
+
+    
 }

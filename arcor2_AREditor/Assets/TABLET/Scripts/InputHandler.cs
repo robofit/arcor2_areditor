@@ -12,6 +12,8 @@ public class InputHandler : Singleton<InputHandler> {
     public delegate void EventClick(object sender, EventClickArgs args);
     public event EventClick OnBlindClick;
     public event EventClick OnGeneralClick;
+    public event EventHandler OnEscPressed;
+    public event EventHandler OnEnterPressed;
 
     private bool longTouch = false;
     private IEnumerator coroutine;
@@ -25,6 +27,11 @@ public class InputHandler : Singleton<InputHandler> {
     }
 
     private void HandleClick() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            OnEscPressed?.Invoke(this, EventArgs.Empty);
+        } else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) {
+            OnEnterPressed?.Invoke(this, EventArgs.Empty);
+        }
         // Left Button
         if (Input.GetMouseButtonDown(0)) {
             TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
@@ -139,3 +146,4 @@ public class EventClickArgs : EventArgs {
         ClickType = clickType;
     }
 }
+

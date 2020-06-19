@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
+using System;
 
-public class Dialog : MonoBehaviour
+public abstract class Dialog : MonoBehaviour
 {
-    public ModalWindowManager WindowManager;
+    protected ModalWindowManager windowManager;
 
     public virtual void Start() {
-        WindowManager = GetComponent<ModalWindowManager>();
+        windowManager = GetComponent<ModalWindowManager>();
     }
 
-    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.IdDesc> idDescs) {
+    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListScenesResponseData> scenes) {
         List<string> items = new List<string>();
-        foreach (IO.Swagger.Model.IdDesc idDesc in idDescs) {
-            items.Add(idDesc.Name);
+        foreach (IO.Swagger.Model.ListScenesResponseData scene in scenes) {
+            items.Add(scene.Name);
         }
         UpdateToggleGroup(togglePrefab, toggleGroup, items);
     }
@@ -51,4 +52,26 @@ public class Dialog : MonoBehaviour
         }
         throw new Base.ItemNotFoundException("Nothing selected");
     }
+
+    public virtual void Close() {
+        InputHandler.Instance.OnEscPressed -= OnEscPressed;
+        InputHandler.Instance.OnEnterPressed -= OnEnterPressed;
+        windowManager.CloseWindow();
+    }
+
+    public virtual void Open() {
+        InputHandler.Instance.OnEscPressed += OnEscPressed;
+        InputHandler.Instance.OnEnterPressed += OnEnterPressed;
+        windowManager.OpenWindow();
+    }
+
+    private void OnEnterPressed(object sender, EventArgs e) {
+        Confirm();
+    }
+
+    private void OnEscPressed(object sender, EventArgs e) {
+        Close();
+    }
+
+    public abstract void Confirm();
 }

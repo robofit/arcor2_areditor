@@ -16,7 +16,7 @@ public class FocusConfirmationDialog : MonoBehaviour
     public bool Init() {
         try {
             RobotId = SceneManager.Instance.RobotNameToId(RobotName);
-        } catch (KeyNotFoundException ex) {
+        } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
             return false;

@@ -168,7 +168,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public void DuplicateAction() {        
         AddNewActionDialog.InitFromAction(CurrentAction);
-        AddNewActionDialog.WindowManager.OpenWindow();
+        AddNewActionDialog.Open();
 
     }
 

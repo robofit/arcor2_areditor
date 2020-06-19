@@ -24,8 +24,8 @@ public class PackageOptionMenu : TileOptionMenu {
     }
 
     public void ShowRemoveDialog() {
-        confirmationDialog.Open("Remove scene",
-                         "Are you sure you want to remove scene " + packageTile.GetLabel() + "?",
+        confirmationDialog.Open("Remove package",
+                         "Are you sure you want to remove package " + packageTile.GetLabel() + "?",
                          () => RemovePackage(),
                          () => inputDialog.Close());
     }
@@ -59,13 +59,11 @@ public class PackageOptionMenu : TileOptionMenu {
                          packageTile.GetLabel(),
                          () => RenamePackage(inputDialog.GetValue()),
                          () => inputDialog.Close(),
-                         /*validateInput: ValidateProjectName*/ 
-                         null);
+                         validateInput: ValidateProjectName);
     }
 
-    public RequestResult ValidateProjectName(string newName) {
-        Task<RequestResult> result = Task.Run(async () => await GameManager.Instance.RenamePackage(packageTile.PackageId, newName, true));
-        return result.Result;
+    public async Task<RequestResult> ValidateProjectName(string newName) {
+        return await GameManager.Instance.RenamePackage(packageTile.PackageId, newName, true);
     }
 
     public async void RenamePackage(string newUserId) {

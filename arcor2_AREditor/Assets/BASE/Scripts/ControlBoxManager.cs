@@ -92,11 +92,15 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-        bool result = await GameManager.Instance.AddActionPoint(name, "", new IO.Swagger.Model.Position());
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(ProjectManager.Instance.ActionPointsOrigin.transform.position);
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(ProjectManager.Instance.ActionPointsOrigin.transform.InverseTransformPoint(abovePoint)));
+
+        bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
         if (result)
             InputDialog.Close();
     }
 
+    
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
         PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);

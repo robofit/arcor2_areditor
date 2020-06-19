@@ -29,7 +29,7 @@ public class ServiceSettingsDialog : Dialog
         } else {
             RemoveButton.gameObject.SetActive(false);
         }
-        WindowManager.OpenWindow();
+        Open();
     }
 
     public async void RemoveService() {
@@ -37,7 +37,15 @@ public class ServiceSettingsDialog : Dialog
         if (!response.Result) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to remove service " + type, response.Messages[0]);
         } else {
-            WindowManager.CloseWindow();
+            Close();
+        }
+    }
+
+    public override void Confirm() {
+        if (RemoveButton.IsActive()) {
+            RemoveService();
+        } else {
+            Close();
         }
     }
 }

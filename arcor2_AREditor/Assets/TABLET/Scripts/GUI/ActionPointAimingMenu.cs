@@ -132,7 +132,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                 UpdateJointsBlock.SetActive(false);
             }
            
-        } catch (KeyNotFoundException ex) {
+        } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
@@ -151,8 +151,18 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                          () => inputDialog.Close());
     }
 
-    public async void AddOrientation(string name, string robotId) {
-        Debug.Assert(CurrentActionPoint != null);
+    public async void AddOrientation(string name, string robotName) {
+         Debug.Assert(CurrentActionPoint != null);
+        IRobot robot;
+        try {
+            robot = SceneManager.Instance.GetRobotByName(robotName);
+        } catch (ItemNotFoundException ex) {
+            Notifications.Instance.ShowNotification("Failed to add orientation", "Could not found robot called: " + robotName);
+            Debug.LogError(ex);
+            return;
+        }
+               
+
         if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
             Notifications.Instance.ShowNotification("Failed to add orientation", "There already exists orientation or joints with name " + name);
             return;
@@ -163,11 +173,10 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         }
         preselectedOrientation = name;
         bool successOrientation = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
-        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robotId);
+        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.GetId());
         if (successOrientation && successJoints) {
             inputDialog.Close();
-        } else {
-            
+        } else {            
             preselectedOrientation = null;
         }
         
@@ -208,7 +217,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
 
             
-        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is KeyNotFoundException) {
+        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is ItemNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
             preselectedJoints = null;
         }

@@ -22,9 +22,13 @@ public class OpenProjectDialog : Dialog {
         try {
             projectName = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.OpenProject(projectName);
-            WindowManager.CloseWindow();
+            Close();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to open project", ex.Message);
         }
+    }
+
+    public override void Confirm() {
+        OpenProject();
     }
 }

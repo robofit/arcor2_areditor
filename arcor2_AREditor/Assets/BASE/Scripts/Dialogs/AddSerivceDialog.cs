@@ -22,9 +22,13 @@ public class AddSerivceDialog : Dialog
         try {
             string configId = GetSelectedValue(ToggleGroup);
             Base.GameManager.Instance.AddServiceToScene(type: ServiceToBeAdded, configId: configId);
-            WindowManager.CloseWindow();
+            Close();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add service", ex.Message);
         }
+    }
+
+    public override void Confirm() {
+        AddServiceToScene();
     }
 }

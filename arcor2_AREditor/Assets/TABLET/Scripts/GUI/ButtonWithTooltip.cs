@@ -8,8 +8,7 @@ using UnityEngine.UI;
 public class ButtonWithTooltip : MonoBehaviour {
     [SerializeField]
     private ManualTooltip tooltip;
-    [SerializeField]
-    private Button Button;
+    public Button Button;
     [SerializeField]
     private TooltipContent TooltipContent;
 
@@ -35,5 +34,9 @@ public class ButtonWithTooltip : MonoBehaviour {
 
     public void HideTooltip() {
         TooltipContent.tooltipAnimator.Play("Out");
+    }
+
+    public bool IsInteractive() {
+        return Button.interactable;
     }
 }

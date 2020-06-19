@@ -73,8 +73,11 @@ public class AddNewActionDialog : Dialog
             }
             bool success = await Base.GameManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(actionProvider.GetProviderId(), actionMetadata.Name), newActionName);
             if (success)
-                WindowManager.CloseWindow();
+                Close();
         }
     }
 
+    public override void Confirm() {
+        CreateAction();
+    }
 }
