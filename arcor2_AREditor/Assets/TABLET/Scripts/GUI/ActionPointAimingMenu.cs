@@ -132,7 +132,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
                 UpdateJointsBlock.SetActive(false);
             }
            
-        } catch (KeyNotFoundException ex) {
+        } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
@@ -217,7 +217,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
 
             
-        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is KeyNotFoundException) {
+        } catch (Exception ex) when (ex is Base.RequestFailedException || ex is ItemNotFoundException) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", ex.Message);
             preselectedJoints = null;
         }

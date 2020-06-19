@@ -533,7 +533,7 @@ namespace Base {
             foreach (IRobot robot in GetRobots())
                 if (robot.GetName() == robotName)
                     return robot;
-            throw new KeyNotFoundException("Robot with name " + robotName + " does not exists!");
+            throw new ItemNotFoundException("Robot with name " + robotName + " does not exists!");
         }
 
 

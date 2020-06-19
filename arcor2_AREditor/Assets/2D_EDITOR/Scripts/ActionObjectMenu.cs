@@ -97,7 +97,19 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
         if (SceneManager.Instance.RobotInScene()) {
             RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-            OnRobotChanged(RobotsList.Dropdown.selectedText.text);
+            string robotId = null;
+            try {
+                robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+                robotId = null;
+            }
+            if (string.IsNullOrEmpty(robotId)) {
+                Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+
+            } else {
+                OnRobotChanged(robotId);
+            }            
 
             if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 UpdatePositionBlockVO.SetActive(false);
