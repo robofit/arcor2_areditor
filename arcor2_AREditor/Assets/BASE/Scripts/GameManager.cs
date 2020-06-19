@@ -747,6 +747,9 @@ namespace Base {
         public async Task LoadPackages() {
             try {
                 Packages = await WebsocketManager.Instance.LoadPackages();
+                Packages.Sort(delegate(PackageSummary x, PackageSummary y) {
+                    return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
+                });
                 OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
