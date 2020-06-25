@@ -114,9 +114,7 @@ namespace Base {
 
         public string ExecutingAction = null;
 
-        public const string ApiVersion = "0.7.1";
-
-        //public readonly string EditorVersion = "0.7.0-beta.1";
+        public const string ApiVersion = "0.8.0";
         public List<IO.Swagger.Model.ListProjectsResponseData> Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
         public List<IO.Swagger.Model.PackageSummary> Packages = new List<IO.Swagger.Model.PackageSummary>();
         public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
@@ -580,7 +578,7 @@ namespace Base {
                     HideLoadingScreen();
                     return;
                 }
-                if (ProjectManager.Instance.CreateProject(project, true)) {
+                if (await ProjectManager.Instance.CreateProject(project, true)) {
                     OpenProjectEditor();
                 } else {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize project");
@@ -610,7 +608,7 @@ namespace Base {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }
-                        if (!ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
+                        if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
                         OpenPackageRunningScreen();

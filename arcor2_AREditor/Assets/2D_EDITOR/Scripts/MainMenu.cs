@@ -36,7 +36,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private GameObject loadingScreen;
 
-    private bool unsavedChanges = false;
 
     // Start is called before the first frame update
     private void Start() {
@@ -74,10 +73,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
         //Base.GameManager.Instance.OnOpenMainScreen += OnOpenMainScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
-        Base.SceneManager.Instance.OnSceneChanged += OnSceneOrProjectChanged;
-        Base.ProjectManager.Instance.OnProjectChanged += OnSceneOrProjectChanged;
-        Base.SceneManager.Instance.OnSceneSaved += OnSceneOrProjectSaved;
-        Base.ProjectManager.Instance.OnProjectSaved += OnSceneOrProjectSaved;
+        Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneOrProjectSavedStatusChanged;
+        Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnSceneOrProjectSavedStatusChanged;
 
 
         HideEverything();
@@ -89,13 +86,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             debugTools.SetActive(false);
     }
 
-    private void OnSceneOrProjectSaved(object sender, EventArgs e) {
-        unsavedChanges = false;
-        _ = UpdateBuildAndSaveBtns();
-    }
-
-    private void OnSceneOrProjectChanged(object sender, EventArgs e) {
-        unsavedChanges = true;
+    private void OnSceneOrProjectSavedStatusChanged(object sender, EventArgs e) {
         _ = UpdateBuildAndSaveBtns();
     }
 
@@ -124,7 +115,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
-        unsavedChanges = true;
         SceneControlButtons.SetActive(true);
         ActionObjects.SetActive(true);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
@@ -132,7 +122,6 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
-        unsavedChanges = true;
         ProjectControlButtons.SetActive(true);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
@@ -444,29 +433,21 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-    public void ShowBuildAndRunPackage() {
-        inputDialog.Open("Build and run package",
-                         "",
-                         "Package name",
-                         Base.ProjectManager.Instance.Project.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
-                         () => BuildAndRunPackage(inputDialog.GetValue()),
-                         () => inputDialog.Close());
-    }
-
-    public async void BuildAndRunPackage(string name) {
+    
+    public async void RunProject() {
         inputDialog.Close();
-        if (await Base.GameManager.Instance.BuildAndRunPackage(name)) {
-
-
-
-        } else {
-            Base.Notifications.Instance.ShowNotification("Failed to build and run package", "");
-            GameManager.Instance.HideLoadingScreen();
+        try  {
+            await Base.WebsocketManager.Instance.TemporaryPackage();
+            GameManager.Instance.ShowLoadingScreen("Running project", true);
+        } catch (RequestFailedException ex) {
+            Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
+            Debug.LogError(ex);
+            GameManager.Instance.HideLoadingScreen(true);
         }
     }
 
     public void TestRun() {
-        Base.GameManager.Instance.TestRunProject();
+        _ = Base.GameManager.Instance.TestRunProject();
     }
 
     public void StopProject() {
@@ -522,7 +503,7 @@ public class MainMenu : MonoBehaviour, IMenu {
                 (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
                 button = CloseProjectBtn;
 
-                if (!unsavedChanges) {
+                if (!ProjectManager.Instance.ProjectChanged) {
                     BuildBtn.SetInteractivity(true);
                     SaveProjectBtn.SetInteractivity(false, "There are no unsaved changes");
                     if (ProjectManager.Instance.Project.HasLogic)
@@ -536,7 +517,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             case GameManager.GameStateEnum.SceneEditor:
                 (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
                 button = CloseSceneBtn;
-                if (!unsavedChanges) {
+                if (!SceneManager.Instance.SceneChanged) {
                     SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
                 } else {
                     SaveSceneBtn.SetInteractivity(true);

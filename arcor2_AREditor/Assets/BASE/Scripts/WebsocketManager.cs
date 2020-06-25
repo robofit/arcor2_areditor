@@ -223,7 +223,7 @@ namespace Base {
                         HandleJointsChanged(data);
                         break;
                     case "ObjectTypesChanged":
-                        HandleObjectTypesChanged(data);
+                        HandleChangedObjectTypesEvent(data);
                         break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
@@ -437,15 +437,15 @@ namespace Base {
             }
         }
 
-        private void HandleObjectTypesChanged(string data) {
-            IO.Swagger.Model.ObjectTypesChangedEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ObjectTypesChangedEvent>(data);
+        private void HandleChangedObjectTypesEvent(string data) {
+            IO.Swagger.Model.ChangedObjectTypesEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypesEvent>(data);
             switch (objectTypesChangedEvent.ChangeType) {
-                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Add:
-                    foreach (string type in objectTypesChangedEvent.Data)
+                case IO.Swagger.Model.ChangedObjectTypesEvent.ChangeTypeEnum.Add:
+                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
                         ActionsManager.Instance.ObjectTypeAdded(type);
                     break;
-                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Remove:
-                    foreach (string type in objectTypesChangedEvent.Data)
+                case IO.Swagger.Model.ChangedObjectTypesEvent.ChangeTypeEnum.Remove:
+                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
                         ActionsManager.Instance.ObjectTypeRemoved(type);
                     break;
                 
@@ -660,12 +660,21 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RunPackage(string packageId) {
+        public async Task RunPackage(string packageId, bool cleanupAfterRun=true) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
+            IO.Swagger.Model.RunPackageArgs args = new IO.Swagger.Model.RunPackageArgs(id: packageId, cleanupAfterRun: cleanupAfterRun);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task TemporaryPackage() {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.TemporaryPackageResponse response = await WaitForResult<IO.Swagger.Model.TemporaryPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }

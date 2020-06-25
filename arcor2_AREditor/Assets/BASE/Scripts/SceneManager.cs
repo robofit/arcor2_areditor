@@ -62,6 +62,7 @@ namespace Base {
 
         public LineConnectionsManager AOToAPConnectionsManager;
         public GameObject LineConnectionPrefab, RobotEEPrefab;
+        private bool sceneChanged = false;
 
         private bool sceneActive = true;
 
@@ -80,6 +81,7 @@ namespace Base {
 
         public event EventHandler OnLoadScene;
         public event EventHandler OnSceneChanged;
+        public event EventHandler OnSceneSavedStatusChanged;
         public event EventHandler OnSceneSaved;
         public event RobotUrdfEventHandler OnUrdfReady;
         public event ServiceEventHandler OnServicesUpdated;
@@ -91,7 +93,18 @@ namespace Base {
             get => servicesData;
             set => servicesData = value;
         }
-        
+        public bool SceneChanged {
+            get => sceneChanged;
+            set {
+                bool origVal = SceneChanged;
+                sceneChanged = value;
+                OnSceneChanged?.Invoke(this, EventArgs.Empty);
+                if (origVal != value) {
+                    OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -136,7 +149,7 @@ namespace Base {
             Scene = scene;
             await UpdateActionObjects(customCollisionModels);
             await UpdateServices();
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
             return true;
         }
 
@@ -202,7 +215,7 @@ namespace Base {
             ServicesData.TryGetValue(sceneService.Type, out Service service);
             service.Data = sceneService;
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
@@ -219,7 +232,7 @@ namespace Base {
                 ServicesData.Add(sceneService.Type, service);
                 OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public void RemoveService(string serviceType) {
@@ -227,7 +240,7 @@ namespace Base {
             ServicesData.TryGetValue(serviceType, out Service service);
             ServicesData.Remove(serviceType);
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
 
@@ -543,24 +556,6 @@ namespace Base {
         }
 
 
-        /*public List<string> GetRobotsNames() {
-            HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Name);
-                }
-            }
-            foreach (Service service in servicesData.Values) {
-                if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobotsNames()) {
-                        robots.Add(s);
-                    }
-                }
-            }
-            return robots.ToList<string>();
-        }*/
-
-
 
         public string RobotNameToId(string robotName) {
             return GetRobotByName(robotName).GetId();
@@ -574,7 +569,7 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public void SceneObjectBaseUpdated(SceneObject sceneObject) {
@@ -584,13 +579,13 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public async Task SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = await SpawnActionObject(sceneObject.Id, sceneObject.Type);
             actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisible, ActionObjectsInteractive);
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
 
@@ -602,7 +597,7 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         /// <summary>
@@ -646,6 +641,7 @@ namespace Base {
 
         internal void SceneSaved() {
             OnSceneSaved?.Invoke(this, EventArgs.Empty);
+            SceneChanged = false;
         }
 
         public ActionObject GetPreviousActionObject(string aoId) {

@@ -32,23 +32,36 @@ namespace Base {
 
         public float APSize = 0.5f;
 
-        public bool ProjectChanged = false, ProjectLoaded = false;
+        public bool ProjectLoaded = false;
 
         public bool AllowEdit = false;
+        private bool projectChanged;
 
-        
+        public bool ProjectChanged {
+            get => projectChanged;
+            set {
+                bool origVal = projectChanged;
+                projectChanged = value;
+                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                if (origVal != value) {
+                    OnProjectSavedSatusChanged?.Invoke(this, EventArgs.Empty);
+                }
+            } 
+        }
+
         public event EventHandler OnActionPointsChanged;
         public event ActionPointUpdatedEventHandler OnActionPointUpdated;
         public event EventHandler OnLoadProject;
         public event EventHandler OnProjectChanged;
         public event EventHandler OnProjectSaved;
+        public event EventHandler OnProjectSavedSatusChanged;
 
 
         /// <summary>
         /// Creates project from given json
         /// </summary>
         /// <param name="project"></param>
-        public bool CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
+        public async Task<bool> CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (Project != null)
                 return false;
@@ -63,6 +76,8 @@ namespace Base {
                 OnLoadProject?.Invoke(this, EventArgs.Empty);
             }
             ProjectLoaded = success;
+            (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
+            ProjectChanged = !successClose;
             return success;
         }
 
@@ -95,8 +110,6 @@ namespace Base {
             ActionPoints.Clear();
             return true;
         }
-
-
 
         private void Update() {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
@@ -641,7 +654,7 @@ namespace Base {
                 return;
             }
             action.ActionUpdate(projectAction, true);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
         }
 
         public void ActionBaseUpdated(IO.Swagger.Model.Action projectAction) {
@@ -651,7 +664,7 @@ namespace Base {
                 return;
             }
             action.ActionUpdateBaseData(projectAction);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
         }
 
         public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
@@ -662,13 +675,13 @@ namespace Base {
             action.ActionUpdateBaseData(projectAction);
             // updates parameters of the action
             action.ActionUpdate(projectAction);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
         }
 
 
         public void ActionRemoved(IO.Swagger.Model.Action action) {
             ProjectManager.Instance.RemoveAction(action.Id);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
         }
 
 
@@ -677,7 +690,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPoint(projectActionPoint.Id);
                 actionPoint.UpdateActionPoint(projectActionPoint);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
                 // TODO - update orientations, joints etc.
             } catch (KeyNotFoundException ex) {
                 Debug.LogError("Action point " + projectActionPoint.Id + " not found!");
@@ -692,7 +705,7 @@ namespace Base {
                 actionPoint.ActionPointBaseUpdate(projectActionPoint);
                 OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.Log("Action point " + projectActionPoint.Id + " not found!");
                 Notifications.Instance.ShowNotification("", "Action point " + projectActionPoint.Id + " not found!");
@@ -714,7 +727,7 @@ namespace Base {
 
             }
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
 
 
         }
@@ -723,7 +736,7 @@ namespace Base {
         public void ActionPointRemoved(ProjectActionPoint projectActionPoint) {
             RemoveActionPoint(projectActionPoint.Id);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
-            OnProjectChanged?.Invoke(this, EventArgs.Empty);
+            ProjectChanged = true;
         }
 
 
@@ -732,7 +745,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
                 actionPoint.AddOrientation(orientation);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point orientation", ex.Message);
@@ -744,7 +757,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPointWithOrientation(orientation.Id);
                 actionPoint.RemoveOrientation(orientation);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to remove action point orientation", ex.Message);
@@ -757,7 +770,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.UpdateJoints(joints);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -770,7 +783,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.BaseUpdateJoints(joints);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -782,9 +795,8 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
                 actionPoint.AddJoints(joints);
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point joints", ex.Message);
@@ -798,7 +810,7 @@ namespace Base {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
                 actionPoint.RemoveJoints(joints);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to remove action point joints", ex.Message);
@@ -811,7 +823,7 @@ namespace Base {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
                 actionPoint.UpdateOrientation(orientation);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
@@ -824,7 +836,7 @@ namespace Base {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
                 actionPoint.BaseUpdateOrientation(orientation);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
@@ -843,7 +855,7 @@ namespace Base {
                 Project.HasLogic = data.HasLogic;
                 Project.Modified = data.Modified;
                 Project.Name = data.Name;
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                ProjectChanged = true;
             } else if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen) {
                 await GameManager.Instance.LoadProjects();
             }
