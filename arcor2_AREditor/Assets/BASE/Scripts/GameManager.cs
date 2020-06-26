@@ -659,11 +659,6 @@ namespace Base {
             OnCloseProject?.Invoke(this, EventArgs.Empty);
         }
 
-
-
-
-        
-
         public string GetSceneId(string name) {
             foreach (ListScenesResponseData scene in Scenes) {
                 if (name == scene.Name)
@@ -1407,16 +1402,17 @@ namespace Base {
                 return false;
             }
         }
-
+        /*
         public async Task<bool> UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
-            try {
-                await WebsocketManager.Instance.UpdateActionLogic(actionId, inputs, outputs);
-                return true;
-            } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to update action ", e.Message + " logic");
-                return false;
-            }
-        }
+              try {
+                  await WebsocketManager.Instance.UpdateActionLogic(actionId, inputs, outputs);
+                  return true;
+              } catch (RequestFailedException e) {
+                  Notifications.Instance.ShowNotification("Failed to update action ", e.Message + " logic");
+                  return false;
+              }
+            
+        }*/
 
         public async Task<List<string>> GetProjectsWithScene(string sceneId) {
             try {

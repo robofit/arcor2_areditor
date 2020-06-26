@@ -23,18 +23,17 @@ namespace Base {
 
         public ActionPoint ActionPoint;
 
-        public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), "", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
+        public IO.Swagger.Model.Action Data = null;
 
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public void Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
+        public void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
 
             ActionPoint = ap;
             this.metadata = metadata;
             this.ActionProvider = actionProvider;
-
-            Data.Id = id;
+            Data = projectAction;
 
             if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
                 InputArrow.gameObject.SetActive(false);
@@ -78,7 +77,7 @@ namespace Base {
                     Debug.LogError(ex);
                 }
             }
-            if (updateConnections) {
+            /*if (updateConnections) {
                 string actionOutput = "end";
                 if (action.Outputs.Count > 0) {
                     actionOutput = action.Outputs[0].Default;
@@ -121,7 +120,7 @@ namespace Base {
 
 
                 }
-            }
+            }*/
             
         }
 
@@ -140,7 +139,7 @@ namespace Base {
 
         public void DeleteAction() {
             // Delete connection on input and set the gameobject that was connected through its output to the "end" value.
-            if (Input.Connection != null) {
+            /*if (Input.Connection != null) {
                 InputOutput connectedActionIO = Input.Connection.target[0].GetComponent<InputOutput>();
                 connectedActionIO.Data.Default = "end";
                 // Remove the reference in connections manager.
@@ -154,7 +153,7 @@ namespace Base {
                 // Remove the reference in connections manager.
                 ConnectionManagerArcoro.Instance.Connections.Remove(Output.Connection);
                 Destroy(Output.Connection.gameObject);
-            }
+            }*/
 
             Destroy(gameObject);
 

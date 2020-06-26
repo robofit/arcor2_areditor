@@ -135,14 +135,14 @@ namespace Base {
                     IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(id: action.Data.Id,
                         name: action.Data.Name, type: action.Data.Type) {
                         Parameters = new List<IO.Swagger.Model.ActionParameter>(),
-                        Inputs = new List<ActionIO>(),
-                        Outputs = new List<ActionIO>()
+                        //Inputs = new List<ActionIO>(),
+                        //Outputs = new List<ActionIO>()
                     };
                     foreach (ActionParameter param in action.Parameters.Values) {
                         projectAction.Parameters.Add(param);
                     }
-                    projectAction.Inputs.Add(action.Input.Data);
-                    projectAction.Outputs.Add(action.Output.Data);
+                    //projectAction.Inputs.Add(action.Input.Data);
+                   // projectAction.Outputs.Add(action.Output.Data);
                 }
                 project.ActionPoints.Add(projectActionPoint);
             }
@@ -472,12 +472,26 @@ namespace Base {
 
         #region ACTIONS
 
-        public Action SpawnAction(string action_id, string action_name, string action_type, ActionPoint ap, IActionProvider actionProvider) {
-            Debug.Assert(!ActionsContainsName(action_name));
+        public Action SpawnAction(IO.Swagger.Model.Action projectAction, ActionPoint ap) {
+            //string action_id, string action_name, string action_type, 
+            Debug.Assert(!ActionsContainsName(projectAction.Name));
             ActionMetadata actionMetadata;
+            string providerName = projectAction.Type.Split('/').First();
+            string actionType = projectAction.Type.Split('/').Last();
+            IActionProvider actionProvider;
+            try {
+                actionProvider = SceneManager.Instance.GetActionObject(providerName);
+            } catch (KeyNotFoundException ex) {
+                if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
+                    actionProvider = originalService;
+                } else {
+                    Debug.LogError(ex);
+                    throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
+                }
+            }
 
             try {
-                actionMetadata = actionProvider.GetActionMetadata(action_type);
+                actionMetadata = actionProvider.GetActionMetadata(actionType);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 return null; //TODO: throw exception
@@ -490,14 +504,14 @@ namespace Base {
             GameObject puck = Instantiate(PuckPrefab, ap.ActionsSpawn.transform);
             puck.SetActive(false);
 
-            puck.GetComponent<Action>().Init(action_id, action_name, actionMetadata, ap, actionProvider);
+            puck.GetComponent<Action>().Init(projectAction, actionMetadata, ap, actionProvider);
 
             puck.transform.localScale = new Vector3(1f, 1f, 1f);
 
             Action action = puck.GetComponent<Action>();
 
             // Add new action into scene reference
-            ActionPoints[ap.Data.Id].Actions.Add(action_id, action);
+            ActionPoints[ap.Data.Id].Actions.Add(action.Data.Id, action);
 
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
@@ -547,7 +561,7 @@ namespace Base {
                             actionOutput = "";
                         }
                     }
-                    if (action.Output.Data.Default != actionOutput) {
+                    /*if (action.Output.Data.Default != actionOutput) {
                         // Destroy old connection if there was some
                         if (action.Output.Connection != null) {
                             ConnectionManagerArcoro.Instance.Connections.Remove(action.Output.Connection);
@@ -572,13 +586,13 @@ namespace Base {
                             output.Connection = newConnection;
                             ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
                         }
-                    }
+                    }*/
                     actionsToActualize.Add(action.Data.Id, action);
                 }
             }
 
             // Set action inputs and outputs for updated connections
-            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in actionPoints) {
+            /*foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in actionPoints) {
                 foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
                     if (actionsToActualize.TryGetValue(projectAction.Id, out Action action)) {
                         // Sets action inputs (currently each action has only 1 input)
@@ -592,7 +606,7 @@ namespace Base {
                         }
                     }
                 }
-            }
+            }*/
 
         }
 
@@ -705,13 +719,16 @@ namespace Base {
 
         public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
             ActionPoint actionPoint = GetActionPoint(parentId);
-            IActionProvider actionProvider = GetActionProvider(Action.ParseActionType(projectAction.Type).Item1);
-            Base.Action action = SpawnAction(projectAction.Id, projectAction.Name, Action.ParseActionType(projectAction.Type).Item2, actionPoint, actionProvider);
-            // updates name of the action
-            action.ActionUpdateBaseData(projectAction);
-            // updates parameters of the action
-            action.ActionUpdate(projectAction);
-            ProjectChanged = true;
+            try {
+                Base.Action action = SpawnAction(projectAction, actionPoint);
+                // updates name of the action
+                action.ActionUpdateBaseData(projectAction);
+                // updates parameters of the action
+                action.ActionUpdate(projectAction);
+                ProjectChanged = true;
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+            }            
         }
 
 

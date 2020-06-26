@@ -5,7 +5,6 @@ namespace Base {
     public class InputOutput : Clickable {
         public Connection Connection;
         public Action Action;
-        public IO.Swagger.Model.ActionIO Data = new IO.Swagger.Model.ActionIO("");
 
         protected virtual void Awake() {
         }
@@ -19,7 +18,7 @@ namespace Base {
         }
 
         public void InitData() {
-            Data.Default = GetDefaultValue();
+            //Data.Default = GetDefaultValue();
         }
 
         private string GetDefaultValue() {
@@ -46,7 +45,7 @@ namespace Base {
         }
 
         private async void UpdateConnection(GameObject connectedGameObject, string localValue, string remoteValue) {
-            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
+           /* InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
 
             string originalLocalValue = Data.Default, originalRemoveValue = connectedIO.Data.Default;
             Data.Default = localValue;
@@ -58,12 +57,12 @@ namespace Base {
             if (!success1 || !success2) {
                 Data.Default = originalLocalValue;
                 connectedIO.Data.Default = originalRemoveValue;
-            }
+            }*/
 
         }
 
         public override void OnClick(Click type) {
-            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+           /* if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
                 return;
             }
             if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
@@ -97,7 +96,7 @@ namespace Base {
                         Connection = null;
                     }
                 }
-            }
+            }*/
         }
     }
 

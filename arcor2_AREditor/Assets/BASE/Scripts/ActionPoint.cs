@@ -322,24 +322,15 @@ namespace Base {
 
             //update actions
             foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                string providerName = projectAction.Type.Split('/').First();
-                string actionType = projectAction.Type.Split('/').Last();
-                IActionProvider actionProvider;
-                try {
-                    actionProvider = SceneManager.Instance.GetActionObject(providerName);
-                } catch (KeyNotFoundException ex) {
-                    if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
-                        actionProvider = originalService;
-                    } else {
-                        Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
-                        continue; //TODO: throw exception
-                    }
-                }
                 
-
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = ProjectManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    try {
+                        action = ProjectManager.Instance.SpawnAction(projectAction, this);
+                    } catch (RequestFailedException ex) {
+                        Debug.LogError(ex);
+                        continue;
+                    }                    
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -347,10 +338,10 @@ namespace Base {
                 action.ActionUpdate(projectAction);
 
                 // Add current connection from the server, we will only map the outputs
-                foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                /*foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
                     //if(!connections.ContainsKey(projectAction.Id))
                     connections.Add(projectAction.Id, actionIO.Default);
-                }
+                }*/
 
                 // local list of all actions for current action point
                 currentA.Add(projectAction.Id);
