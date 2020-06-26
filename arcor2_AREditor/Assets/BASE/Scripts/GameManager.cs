@@ -675,6 +675,9 @@ namespace Base {
         public async Task LoadScenes() {
             try {
                 Scenes = await WebsocketManager.Instance.LoadScenes();
+                Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
+                    return y.Modified.CompareTo(x.Modified);
+                });
                 OnSceneListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -686,6 +689,9 @@ namespace Base {
         public async Task LoadProjects() {
             try {
                 Projects = await WebsocketManager.Instance.LoadProjects();
+                Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
+                    return y.Modified.CompareTo(x.Modified);
+                });
                 OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
