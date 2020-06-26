@@ -882,6 +882,7 @@ namespace Base {
 
         internal void ProjectSaved() {
             ProjectChanged = false;
+            Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 

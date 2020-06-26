@@ -408,8 +408,6 @@ public class MainMenu : MonoBehaviour, IMenu {
             Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
-        UpdateMenu();
-        Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
 
