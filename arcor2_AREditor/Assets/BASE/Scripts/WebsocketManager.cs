@@ -175,7 +175,7 @@ namespace Base {
             }
         }
 
-        private void HandleReceivedData(byte[] message) {
+        private async void HandleReceivedData(byte[] message) {
             string data = Encoding.Default.GetString(message);
             var dispatchType = new {
                 id = 0,
@@ -259,7 +259,7 @@ namespace Base {
                         HandleRobotJoints(data);
                         break;
                     case "OpenScene":
-                        HandleOpenScene(data);
+                        await HandleOpenScene(data);
                         break;
                     case "OpenProject":
                         HandleOpenProject(data);
@@ -588,9 +588,9 @@ namespace Base {
             GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
         }
 
-        private async void HandleOpenScene(string data) {
+        private async Task HandleOpenScene(string data) {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
-            GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
+            await GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
         }
 
         private void HandleCloseProject(string data) {

@@ -36,7 +36,7 @@ namespace Base {
 
             Data.Id = id;
 
-            if (!Base.ProjectManager.Instance.Project.HasLogic) {
+            if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
                 InputArrow.gameObject.SetActive(false);
                 OutputArrow.gameObject.SetActive(false);
             }

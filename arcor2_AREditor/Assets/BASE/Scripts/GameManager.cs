@@ -422,7 +422,7 @@ namespace Base {
                 await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
-                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, ProjectManager.Instance.Project, "Failed to update action objects");
+                Notifications.Instance.SaveLogs("Failed to update action objects");
                 GameManager.Instance.DisconnectFromSever();
             }
             
@@ -536,10 +536,6 @@ namespace Base {
         }
 
 
-
-        
-
-
         
         internal async Task SceneOpened(Scene scene) {
             openSceneProjectPackage = true;
@@ -559,6 +555,8 @@ namespace Base {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
                 HideLoadingScreen();
+            } catch (Exception ex) {
+                throw ex;
             }
             
 
@@ -645,8 +643,8 @@ namespace Base {
                 } else {
                     if (newProject == null &&
                         newScene == null &&
-                        SceneManager.Instance.Scene == null &&
-                        ProjectManager.Instance.Project == null) {
+                        SceneManager.Instance.SceneMeta == null &&
+                        ProjectManager.Instance.ProjectMeta == null) {
                         await OpenMainScreen();
                     } else if (GetGameState() == GameStateEnum.PackageRunning) {
                         ProjectManager.Instance.DestroyProject();
@@ -665,6 +663,7 @@ namespace Base {
         internal void SceneClosed() {
             ShowLoadingScreen();
             SceneManager.Instance.DestroyScene();
+            OnCloseScene?.Invoke(this, EventArgs.Empty);
             _ = OpenMainScreen();
         }
 
@@ -672,6 +671,7 @@ namespace Base {
             ShowLoadingScreen();
             ProjectManager.Instance.DestroyProject();
             SceneManager.Instance.DestroyScene();
+            OnCloseProject?.Invoke(this, EventArgs.Empty);
             _ = OpenMainScreen();
         }
 
@@ -694,7 +694,7 @@ namespace Base {
                 OnSceneListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
-                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Failed to update action objects");
+                Notifications.Instance.SaveLogs("Failed to update action objects");
                 GameManager.Instance.DisconnectFromSever();
             }
         }
@@ -705,7 +705,7 @@ namespace Base {
                 OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
-                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Failed to update action objects");
+                Notifications.Instance.SaveLogs("Failed to update action objects");
                 GameManager.Instance.DisconnectFromSever();
             }
         }
@@ -719,7 +719,7 @@ namespace Base {
                 OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
-                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Failed to update action objects");
+                Notifications.Instance.SaveLogs("Failed to update action objects");
                 DisconnectFromSever();
             }
         }
@@ -793,7 +793,7 @@ namespace Base {
         }
 
         internal async Task<bool> TestRunProject() {
-            Debug.Assert(Base.ProjectManager.Instance.Project != null);
+            Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
                 return false;
@@ -810,14 +810,14 @@ namespace Base {
 
         public async Task<string> BuildPackage(string name) {
             ShowLoadingScreen();
-            Debug.Assert(Base.ProjectManager.Instance.Project != null);
+            Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
                 HideLoadingScreen();
                 throw new RequestFailedException("Unsaved changes");
             }
             try {
-                return await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
+                return await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.ProjectMeta.Id, name);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to build package", ex.Message);
                 throw;
@@ -828,14 +828,14 @@ namespace Base {
 
         public async Task<bool> BuildAndRunPackage(string name) {
             ShowLoadingScreen("Building package", true);
-            Debug.Assert(Base.ProjectManager.Instance.Project != null);
+            Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
             if (ProjectManager.Instance.ProjectChanged) {
                 Notifications.Instance.ShowNotification("Unsaved changes", "There are some unsaved changes in project. Save it before build the package.");
                 return false;
             }
             try {
-                string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.Project.Id, name);
-                reopenProjectId = ProjectManager.Instance.Project.Id;
+                string packageId = await WebsocketManager.Instance.BuildPackage(Base.ProjectManager.Instance.ProjectMeta.Id, name);
+                reopenProjectId = ProjectManager.Instance.ProjectMeta.Id;
                 RequestResult result = await CloseProject(true);
                 if (!result.Success) {
                     Notifications.Instance.ShowNotification("Failed to build and run package", result.Message);
@@ -993,8 +993,6 @@ namespace Base {
                 ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.CloseScene(force, dryRun);
-                if (!dryRun)
-                    SceneManager.Instance.Scene = null;
                 return (true, "");
             } catch (RequestFailedException ex) {
                 if (!dryRun && force) {
@@ -1011,10 +1009,6 @@ namespace Base {
                 ShowLoadingScreen("Closing project");
             try {
                 await WebsocketManager.Instance.CloseProject(force, dryRun: dryRun);
-                if (!dryRun) {
-                    OnCloseProject?.Invoke(this, EventArgs.Empty);
-                    SceneManager.Instance.Scene = null;                    
-                }
                 return (true, "");
             } catch (RequestFailedException ex) {
                 if (!dryRun && force) {
@@ -1097,7 +1091,7 @@ namespace Base {
         public void WaitForSceneReady(int timeout) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            while (SceneManager.Instance.Scene == null) {
+            while (SceneManager.Instance.SceneMeta == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
                 System.Threading.Thread.Sleep(100);
@@ -1108,7 +1102,7 @@ namespace Base {
         public void WaitForProjectReady(int timeout) {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            while (Base.ProjectManager.Instance.Project == null) {
+            while (Base.ProjectManager.Instance.ProjectMeta == null) {
                 if (sw.ElapsedMilliseconds > timeout)
                     throw new TimeoutException();
                 System.Threading.Thread.Sleep(100);
@@ -1137,7 +1131,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = true;
 #endif
-            EditorInfo.text = "Scene: " + SceneManager.Instance.Scene.Name;
+            EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;
             SetGameState(GameStateEnum.SceneEditor);
             Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
@@ -1149,7 +1143,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = true;
 #endif
-            EditorInfo.text = "Project: " + Base.ProjectManager.Instance.Project.Name;
+            EditorInfo.text = "Project: " + Base.ProjectManager.Instance.ProjectMeta.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
