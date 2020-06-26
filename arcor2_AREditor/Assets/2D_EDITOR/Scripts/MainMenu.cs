@@ -435,10 +435,10 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     
     public async void RunProject() {
-        inputDialog.Close();
+        GameManager.Instance.ShowLoadingScreen("Running project", true);
         try  {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-            GameManager.Instance.ShowLoadingScreen("Running project", true);
+           
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);

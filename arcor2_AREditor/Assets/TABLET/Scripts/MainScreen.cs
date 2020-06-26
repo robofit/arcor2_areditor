@@ -89,6 +89,27 @@ public class MainScreen : Base.Singleton<MainScreen>
         FilterLists();
     }
 
+    public void HighlightTile(string tileId) {
+        foreach (SceneTile s in sceneTiles) {
+            if (s.SceneId == tileId) {
+                s.Highlight();
+                return;
+            }            
+        }
+        foreach (ProjectTile p in projectTiles) {
+            if (p.ProjectId == tileId) {
+                p.Highlight();
+                return;
+            }            
+        }
+        foreach (PackageTile p in packageTiles) {
+            if (p.PackageId == tileId) {
+                p.Highlight();
+                return;
+            }            
+        }
+    }
+
     public void FilterLists() {
         foreach (SceneTile tile in sceneTiles) {
             FilterTile(tile);

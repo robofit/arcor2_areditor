@@ -134,6 +134,10 @@ namespace Base {
         public IO.Swagger.Model.SystemInfoData SystemInfo;
         public PackageInfo PackageInfo;
 
+        private bool openMainScreenRequest = false;
+
+        private ShowMainScreenData openMainScreenData;
+
         private string reopenProjectId = null;
 
         
@@ -203,8 +207,11 @@ namespace Base {
                 openPackage = false;
                 PackageStateUpdated(newPackageState);
             }
+            if (openMainScreenRequest && ActionsManager.Instance.ActionsReady) {
+                openMainScreenRequest = false;
+                await OpenMainScreen(openMainScreenData.What, openMainScreenData.Highlight);
+            }               
 
-            
         }
 
         public ConnectionStatusEnum ConnectionStatus {
@@ -288,20 +295,25 @@ namespace Base {
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
+            WebsocketManager.Instance.OnShowMainScreen += OnShowMainScreen;
+        }
+
+        private async void OnShowMainScreen(object sender, ShowMainScreenEventArgs args) {
+            if (ActionsManager.Instance.ActionsReady)
+                await OpenMainScreen(args.Data.What, args.Data.Highlight);
+            else {
+                openMainScreenRequest = true;
+                openMainScreenData = args.Data;
+            }
+                
         }
 
         private void OnDisconnected(object sender, EventArgs e) {
             
         }
 
-        private async void OnConnected(object sender, EventArgs args) {
-            try {
-                await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
-                ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            } catch (TimeoutException e) {
-                Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
-                WebsocketManager.Instance.DisconnectFromSever();
-            }
+        private void OnConnected(object sender, EventArgs args) {
+            ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
         }
 
 
@@ -346,9 +358,6 @@ namespace Base {
                     await LoadProjects();
                     await LoadPackages();
 
-                    if (!openSceneProjectPackage) {
-                        await OpenMainScreen(false);
-                    }
                     connectionStatus = newState;
                     break;
                 case ConnectionStatusEnum.Disconnected:
@@ -627,32 +636,9 @@ namespace Base {
                 
                 
             } else if (state.State == PackageState.StateEnum.Stopped) {
-                PackageInfo = null;
-                if (!ActionsManager.Instance.ActionsReady) {
-                    newPackageState = state;
-                    openPackage = true;
-                    
-                    return;
-                }
-                
-                if (!string.IsNullOrEmpty(reopenProjectId)) {
-                    ProjectManager.Instance.DestroyProject();
-                    SceneManager.Instance.DestroyScene();
-                    OpenProject(reopenProjectId);
-                    reopenProjectId = null;
-                } else {
-                    if (newProject == null &&
-                        newScene == null &&
-                        SceneManager.Instance.SceneMeta == null &&
-                        ProjectManager.Instance.ProjectMeta == null) {
-                        await OpenMainScreen();
-                    } else if (GetGameState() == GameStateEnum.PackageRunning) {
-                        ProjectManager.Instance.DestroyProject();
-                        SceneManager.Instance.DestroyScene();
-                        await OpenMainScreen();
-                    }
-                            
-                }                
+                ShowLoadingScreen("Stopping package...");
+                ProjectManager.Instance.DestroyProject();
+                SceneManager.Instance.DestroyScene();
             }
         }
 
@@ -664,7 +650,6 @@ namespace Base {
             ShowLoadingScreen();
             SceneManager.Instance.DestroyScene();
             OnCloseScene?.Invoke(this, EventArgs.Empty);
-            _ = OpenMainScreen();
         }
 
         internal void ProjectClosed() {
@@ -672,7 +657,6 @@ namespace Base {
             ProjectManager.Instance.DestroyProject();
             SceneManager.Instance.DestroyScene();
             OnCloseProject?.Invoke(this, EventArgs.Empty);
-            _ = OpenMainScreen();
         }
 
 
@@ -1110,7 +1094,8 @@ namespace Base {
             return;
         }
 
-        public async Task OpenMainScreen(bool updateResources = true) {
+        public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight, bool updateResources = true) {
+            
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif
@@ -1119,7 +1104,22 @@ namespace Base {
                 await LoadScenes();
                 await LoadProjects();
                 await LoadPackages();
-            }            
+            }
+            switch (what) {
+                case ShowMainScreenData.WhatEnum.PackagesList:
+                    MainScreen.Instance.SwitchToPackages();
+                    
+                    break;
+                case ShowMainScreenData.WhatEnum.ScenesList:
+                    MainScreen.Instance.SwitchToScenes();
+                    break;
+                case ShowMainScreenData.WhatEnum.ProjectsList:
+                    MainScreen.Instance.SwitchToProjects();
+                    break;
+            }
+            if (!string.IsNullOrEmpty(highlight)) {
+                MainScreen.Instance.HighlightTile(highlight);
+            }
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Closed);
@@ -1163,7 +1163,8 @@ namespace Base {
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
                 EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                 Scene.SetActive(true);
-                OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                
+                OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to open package run screen", "Package info did not arrived");

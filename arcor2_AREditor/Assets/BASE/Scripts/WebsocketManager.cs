@@ -30,6 +30,16 @@ namespace Base {
         }
     }
 
+    public class ShowMainScreenEventArgs {
+        public IO.Swagger.Model.ShowMainScreenData Data {
+            get; set;
+        }
+
+        public ShowMainScreenEventArgs(IO.Swagger.Model.ShowMainScreenData data) {
+            Data = data;
+        }
+    }
+
 
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
@@ -42,16 +52,16 @@ namespace Base {
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
         private int requestID = 1;
-        
-        private bool packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
         public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
+        public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
         public event RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
         public event EventHandler OnConnectedEvent;
         public event EventHandler OnDisconnectEvent;
+        public event ShowMainScreenEventHandler OnShowMainScreen;
 
         
 
@@ -85,7 +95,6 @@ namespace Base {
         public async void ConnectToServer(string domain, int port) {
            
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
-            packageStateArrived = false;
             connecting = true;
             APIDomainWS = GetWSURI(domain, port);
             websocket = new WebSocket(APIDomainWS);
@@ -114,7 +123,6 @@ namespace Base {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             websocket = null;
             serverDomain = null;
-            packageStateArrived = false;
             connecting = false;
             GameManager.Instance.HideLoadingScreen();
         }
@@ -126,32 +134,14 @@ namespace Base {
             return serverDomain;
         }
 
-        /// <summary>
-        /// Waits until all post-connection data arrived from server or until timeout exprires
-        /// </summary>
-        /// <param name="timeout">Timeout in ms</param>
-        public async Task WaitForInitData(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            while (!CheckInitData()) {
-                if (sw.ElapsedMilliseconds > timeout)
-                    throw new TimeoutException();
-                Thread.Sleep(100);
-            }
-            return;
-        }
-
-        public bool CheckInitData() {
-            return packageStateArrived;
-        }
-
-     
+       
 
         public string GetWSURI(string domain, int port) {
             return "ws://" + domain + ":" + port.ToString();
         }
         
         private void OnApplicationQuit() {
+            Debug.LogError("Stopping app");
             DisconnectFromSever();
         }
         
@@ -188,7 +178,6 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
             if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
@@ -279,12 +268,14 @@ namespace Base {
                         else
                             HandleProjectChanged(data);
                         break;
+                    case "ShowMainScreen":
+                        HandleShowMainScreen(data);
+                        break;
                 }
             }
 
         }
 
-        
         private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
@@ -353,6 +344,12 @@ namespace Base {
             IO.Swagger.Model.RobotJointsEvent robotJoints = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotJointsEvent>(data);
             OnRobotJointsUpdated?.Invoke(this, new RobotJointsUpdatedEventArgs(robotJoints.Data));
         }
+        private void HandleShowMainScreen(string data) {
+            IO.Swagger.Model.ShowMainScreenEvent showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreenEvent>(data);
+            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
+        }
+
+
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
@@ -408,7 +405,6 @@ namespace Base {
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
             GameManager.Instance.PackageStateUpdated(projectState.Data);
-            packageStateArrived = true;
         }
 
         private void HandlePackageInfo(string obj) {
