@@ -30,6 +30,7 @@ public class ButtonWithTooltip : MonoBehaviour {
     public void SetInteractivity(bool interactable, string alternativeDescription) {
         tooltip.DescriptionAlternative = alternativeDescription;
         SetInteractivity(interactable);
+        
     }
 
     public void HideTooltip() {

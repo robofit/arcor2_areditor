@@ -25,7 +25,7 @@ namespace Base {
 
         public IO.Swagger.Model.Action Data = new IO.Swagger.Model.Action("", new List<IO.Swagger.Model.ActionIO>(), "", new List<IO.Swagger.Model.ActionIO>(), new List<IO.Swagger.Model.ActionParameter>(), "");
 
-        public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue);
+        public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, bool isValueValid=true);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
         public void Init(string id, string name, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
@@ -212,9 +212,18 @@ namespace Base {
             input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
             input.GetComponent<LabeledInput>().SetValue(selectedValue);
             input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue)));
+                => OnChangeRelativePose(actionParameterMetadata.Name, newValue, onChangeParameterHandler));
 
             return input;
+        }
+
+        public static void OnChangeRelativePose(string parameterName, string newValue, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
+            try {
+                IO.Swagger.Model.Pose pose = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue);
+                onChangeParameterHandler(parameterName, pose);
+            } catch (JsonReaderException) {
+                onChangeParameterHandler(parameterName, null, false);
+            }            
         }
        
         public static GameObject InitializeDropdownParameter(ActionParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject dropdownPrefab) {
