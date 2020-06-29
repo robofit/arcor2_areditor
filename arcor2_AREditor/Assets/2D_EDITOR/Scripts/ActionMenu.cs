@@ -15,14 +15,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    public Button SaveParametersBtn;
     List<IActionParameter> actionParameters = new List<IActionParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
     [SerializeField]
     private InputDialog inputDialog;
     [SerializeField]
-    private ButtonWithTooltip ExecuteActionBtn, StopActionBtn, RemoveActionBtn;
+    private ButtonWithTooltip ExecuteActionBtn, StopActionBtn, RemoveActionBtn, SaveParametersBtn;
     [SerializeField]
     private TMPro.TMP_Text ActionPointName;
 
@@ -73,7 +72,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
         actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
         parametersChanged = false;
-        SaveParametersBtn.interactable = false;
+        SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
         UpdateExecuteAndStopBtns();
         Tuple<bool, string> actionRemovable = await GameManager.Instance.RemoveAction(CurrentAction.Data.Id, true);
         if (actionRemovable.Item1) {
@@ -139,20 +138,29 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue) {
-        if (CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter actionParameter)) {
-            if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
-                parametersChanged = true;
-                SaveParametersBtn.interactable = true;
+    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+        if (!isValueValid) {
+            SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
+            ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
+        } else  if (CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter actionParameter)) {
+            try {
+                if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
+                    parametersChanged = true;
+                    SaveParametersBtn.SetInteractivity(true);
+                    ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
+                }
+            } catch (JsonReaderException) {
+                SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
                 ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
             }
+            
         }
 
     }
 
     public async void ExecuteAction() {
         ExecuteActionBtn.SetInteractivity(false, "Action already runs");
-        if (!await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id) && GameManager.Instance.ExecutingAction == null) {
+        if (!await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id) && string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
         }
         ExecuteActionBtn.SetInteractivity(true);
     }
@@ -183,9 +191,9 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);
             if (success) {
                 Base.Notifications.Instance.ShowNotification("Parameters saved", "");
-                SaveParametersBtn.interactable = false;
+                SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
                 parametersChanged = false;
-                if (GameManager.Instance.ExecutingAction == null)
+                if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
                     ExecuteActionBtn.SetInteractivity(true);
             }                
         }

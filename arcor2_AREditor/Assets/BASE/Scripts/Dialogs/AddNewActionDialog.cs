@@ -53,7 +53,7 @@ public class AddNewActionDialog : Dialog
         nameInput.SetType("string");
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
         // TODO: add some check and set create button interactivity
         
     }
