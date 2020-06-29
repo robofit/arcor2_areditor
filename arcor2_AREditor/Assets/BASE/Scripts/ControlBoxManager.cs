@@ -28,6 +28,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
                 tfGizmo.transformType = TransformType.Move;
                 useGizmoRotate = false;
                 RotateToggle.isOn = false;
+                MoveToggle.isOn = true;
             }
         }
     }
@@ -40,6 +41,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
             if (useGizmoRotate) {
                 tfGizmo.transformType = TransformType.Rotate;
                 useGizmoMove = false;
+                RotateToggle.isOn = true;
                 MoveToggle.isOn = false;
             }
         }
@@ -60,7 +62,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void GameStateChanged(object sender, GameStateEventArgs args) {
         if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
             CreateGlobalActionPointBtn.SetActive(true);
+            // never use rotate toggle in project editor
             RotateToggle.gameObject.SetActive(false);
+            UseGizmoMove = true;
         } else {
             CreateGlobalActionPointBtn.SetActive(false);
             RotateToggle.gameObject.SetActive(true);
