@@ -64,7 +64,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
             CreateGlobalActionPointBtn.SetActive(true);
             // never use rotate toggle in project editor
             RotateToggle.gameObject.SetActive(false);
-            UseGizmoMove = true;
+            // but use move only if the gizmo was previously active (for tablet version)
+            if(UseGizmoMove || UseGizmoRotate)
+                UseGizmoMove = true;
         } else {
             CreateGlobalActionPointBtn.SetActive(false);
             RotateToggle.gameObject.SetActive(true);
