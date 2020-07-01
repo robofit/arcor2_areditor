@@ -1200,9 +1200,9 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
+        public async Task AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name, List<Flow> flows) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddActionRequestArgs args = new IO.Swagger.Model.AddActionRequestArgs(actionPointId: actionPointId, parameters: actionParameters, type: type, name: name);
+            IO.Swagger.Model.AddActionRequestArgs args = new IO.Swagger.Model.AddActionRequestArgs(actionPointId: actionPointId, parameters: actionParameters, type: type, name: name, flows: flows);
             IO.Swagger.Model.AddActionRequest request = new IO.Swagger.Model.AddActionRequest(r_id, "AddAction", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionResponse response = await WaitForResult<IO.Swagger.Model.AddActionResponse>(r_id);
@@ -1211,9 +1211,9 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> actionParameters) {
+        public async Task UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> actionParameters, List<Flow> flows) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionRequestArgs args = new IO.Swagger.Model.UpdateActionRequestArgs(actionId: actionId, parameters: actionParameters);
+            IO.Swagger.Model.UpdateActionRequestArgs args = new IO.Swagger.Model.UpdateActionRequestArgs(actionId: actionId, parameters: actionParameters, flows: flows);
             IO.Swagger.Model.UpdateActionRequest request = new IO.Swagger.Model.UpdateActionRequest(r_id, "UpdateAction", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
@@ -1244,31 +1244,6 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-
-        public async Task RenameAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionRequestArgs args = new IO.Swagger.Model.UpdateActionRequestArgs(actionId: actionId, parameters: parameters);
-            IO.Swagger.Model.UpdateActionRequest request = new IO.Swagger.Model.UpdateActionRequest(r_id, "UpdateAction", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionResponse>(r_id);
-
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-        }
-
-
-
-        /*
-        public async Task UpdateActionLogic(string actionId, List<IO.Swagger.Model.ActionIO> inputs, List<IO.Swagger.Model.ActionIO> outputs) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionLogicArgs args = new IO.Swagger.Model.UpdateActionLogicArgs(actionId: actionId, inputs: inputs, outputs: outputs);
-            IO.Swagger.Model.UpdateActionLogicRequest request = new IO.Swagger.Model.UpdateActionLogicRequest(r_id, "UpdateActionLogic", args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateActionLogicResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionLogicResponse>(r_id);
-
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-        }*/
                 
         public async Task RenameProject(string projectId, string newName, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);

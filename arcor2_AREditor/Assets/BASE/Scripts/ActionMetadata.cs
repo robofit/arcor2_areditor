@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IO.Swagger.Model;
 using UnityEngine;
 
 namespace Base {
@@ -19,6 +20,16 @@ namespace Base {
                     return actionParameterMeta;
             }
             throw new ItemNotFoundException("Action does not exist");
+        }
+
+        public List<Flow> GetFlows(string actionName) {
+            List<string> outputs = new List<string>();
+            foreach (string output in Returns) {
+                outputs.Add(actionName + "_" + output);
+            }
+            return new List<Flow> {
+                new Flow(type: Flow.TypeEnum.Default, outputs: outputs)
+            };
         }
 
 

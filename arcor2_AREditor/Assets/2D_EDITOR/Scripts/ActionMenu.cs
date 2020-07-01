@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using Base;
 using Michsky.UI.ModernUIPack;
+using IO.Swagger.Model;
 
 public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
@@ -188,7 +189,8 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
                 parameters.Add(ap);
             }
-            bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters);
+            
+            bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters, CurrentAction.GetFlows());
             if (success) {
                 Base.Notifications.Instance.ShowNotification("Parameters saved", "");
                 SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");

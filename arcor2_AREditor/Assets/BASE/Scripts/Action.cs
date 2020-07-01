@@ -7,6 +7,7 @@ using System.Globalization;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
+using IO.Swagger.Model;
 
 namespace Base {
     public abstract class Action : Clickable {
@@ -622,6 +623,10 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Not valid value", "Parameter " + actionMetadata.Name +
                     " has to be between " + doubleParameterExtra.Minimum.ToString() + " and " + doubleParameterExtra.Maximum);
             }
+        }
+
+        public List<Flow> GetFlows() {
+            return Data.Flows;
         }
     }
 

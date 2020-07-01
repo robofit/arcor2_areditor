@@ -1338,10 +1338,10 @@ namespace Base {
                 return false;
             }
         }
-        
-        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name) {
+
+        public async Task<bool> AddAction(string actionPointId, List<IO.Swagger.Model.ActionParameter> actionParameters, string type, string name, List<Flow> flows) {
             try {
-                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, name);
+                await WebsocketManager.Instance.AddAction(actionPointId, actionParameters, type, name, flows);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action", e.Message);
@@ -1392,10 +1392,10 @@ namespace Base {
             }
         }
 
-        public async Task<bool> UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters) {
+        public async Task<bool> UpdateAction(string actionId, List<IO.Swagger.Model.ActionParameter> parameters, List<Flow> flows) {
             Debug.Assert(ProjectManager.Instance.AllowEdit);
             try {
-                await WebsocketManager.Instance.UpdateAction(actionId, parameters);
+                await WebsocketManager.Instance.UpdateAction(actionId, parameters, flows);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action ", e.Message);

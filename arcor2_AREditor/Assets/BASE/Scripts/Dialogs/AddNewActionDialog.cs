@@ -71,7 +71,7 @@ public class AddNewActionDialog : Dialog
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
                 parameters.Add(ap);
             }
-            bool success = await Base.GameManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(actionProvider.GetProviderId(), actionMetadata.Name), newActionName);
+            bool success = await Base.GameManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(actionProvider.GetProviderId(), actionMetadata.Name), newActionName, actionMetadata.GetFlows(newActionName));
             if (success)
                 Close();
         }
