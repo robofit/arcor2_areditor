@@ -10,58 +10,24 @@ using IO.Swagger.Model;
 
 namespace Base {
 
-    public class RobotEefUpdatedEventArgs : EventArgs {
-        public IO.Swagger.Model.RobotEefData Data {
-            get; set;
-        }
-
-        public RobotEefUpdatedEventArgs(IO.Swagger.Model.RobotEefData data) {
-            Data = data;
-        }
-    }
-
-    public class RobotJointsUpdatedEventArgs {
-        public IO.Swagger.Model.RobotJointsData Data {
-            get; set;
-        }
-
-        public RobotJointsUpdatedEventArgs(IO.Swagger.Model.RobotJointsData data) {
-            Data = data;
-        }
-    }
-
-    public class ShowMainScreenEventArgs {
-        public IO.Swagger.Model.ShowMainScreenData Data {
-            get; set;
-        }
-
-        public ShowMainScreenEventArgs(IO.Swagger.Model.ShowMainScreenData data) {
-            Data = data;
-        }
-    }
-
-
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
-
         private WebSocket websocket;
-
 
         private bool ignoreProjectChanged, connecting;
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
         private int requestID = 1;
-
-        public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
-        public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
-        public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
-
-        public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
-        public event RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
+        
+        public event AREditorEventArgs.RobotEefUpdatedEventHandler OnRobotEefUpdated;
+        public event AREditorEventArgs.RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
         public event EventHandler OnConnectedEvent;
         public event EventHandler OnDisconnectEvent;
-        public event ShowMainScreenEventHandler OnShowMainScreen;
+        public event AREditorEventArgs.ShowMainScreenEventHandler OnShowMainScreen;
+        public event AREditorEventArgs.LogicItemChangedEventHandler OnLogicItemAdded;
+        public event AREditorEventArgs.StringEventHandler OnLogicItemRemoved;
+        public event AREditorEventArgs.LogicItemChangedEventHandler OnLogicItemUpdated;
 
         
 
@@ -204,6 +170,9 @@ namespace Base {
                         break;
                     case "ActionChanged":
                         HandleActionChanged(data);
+                        break;
+                    case "LogicItemChanged":
+                        HandleLogicItemChanged(data);
                         break;
                     case "OrientationChanged":
                         HandleOrientationChanged(data);
@@ -471,6 +440,26 @@ namespace Base {
                     throw new NotImplementedException();
             }
         }
+
+        private void HandleLogicItemChanged(string data) {
+            LogicItemChanged logicItemChanged = JsonConvert.DeserializeObject<LogicItemChanged>(data);
+            ProjectManager.Instance.ProjectChanged = true;
+            switch (logicItemChanged.ChangeType) {
+                case LogicItemChanged.ChangeTypeEnum.Add:
+                    OnLogicItemAdded?.Invoke(this, new LogicItemChangedEventArgs(logicItemChanged.Data));
+                    break;
+                case LogicItemChanged.ChangeTypeEnum.Remove:
+                    OnLogicItemRemoved?.Invoke(this, new StringEventArgs(logicItemChanged.Data.Id));
+                    break;
+                case LogicItemChanged.ChangeTypeEnum.Update:
+                    OnLogicItemUpdated?.Invoke(this, new LogicItemChangedEventArgs(logicItemChanged.Data));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+
 
         private void HandleActionPointChanged(string data) {
             ProjectManager.Instance.ProjectChanged = true;
@@ -1244,7 +1233,39 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-                
+        public async Task AddLogicItem(string startActionId, string endActionId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddLogicItemArgs args = new IO.Swagger.Model.AddLogicItemArgs(start: startActionId, end: endActionId);
+            IO.Swagger.Model.AddLogicItemRequest request = new IO.Swagger.Model.AddLogicItemRequest(r_id, "AddLogicItem", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddLogicItemResponse response = await WaitForResult<IO.Swagger.Model.AddLogicItemResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task UpdateLogicItem(string logicItemId, string startActionId, string endActionId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateLogicItemArgs args = new IO.Swagger.Model.UpdateLogicItemArgs(start: startActionId, end: endActionId, logicItemId: logicItemId);
+            IO.Swagger.Model.UpdateLogicItemRequest request = new IO.Swagger.Model.UpdateLogicItemRequest(r_id, "UpdateLogicItem", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateLogicItemResponse response = await WaitForResult<IO.Swagger.Model.UpdateLogicItemResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task RemoveLogicItem(string logicItemId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveLogicItemArgs args = new IO.Swagger.Model.RemoveLogicItemArgs(logicItemId: logicItemId);
+            IO.Swagger.Model.RemoveLogicItemRequest request = new IO.Swagger.Model.RemoveLogicItemRequest(r_id, "RemoveLogicItem", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveLogicItemResponse response = await WaitForResult<IO.Swagger.Model.RemoveLogicItemResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
         public async Task RenameProject(string projectId, string newName, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RenameProjectRequestArgs args = new IO.Swagger.Model.RenameProjectRequestArgs(projectId: projectId, newName: newName);

@@ -10,75 +10,23 @@ using UnityEngine.Events;
 
 namespace Base {
 
-    public class StringEventArgs : EventArgs {
-        public string Data {
-            get; set;
-        }
-
-        public StringEventArgs(string data) {
-            Data = data;
-        }
-    }
-
-    public class GameStateEventArgs : EventArgs {
-        public GameManager.GameStateEnum Data {
-            get; set;
-        }
-
-        public GameStateEventArgs(GameManager.GameStateEnum data) {
-            Data = data;
-        }
-    }
-
-    public class EditorStateEventArgs : EventArgs {
-        public GameManager.EditorStateEnum Data {
-            get; set;
-        }
-
-        public EditorStateEventArgs(GameManager.EditorStateEnum data) {
-            Data = data;
-        }
-    }
-
-    public class ProjectMetaEventArgs : EventArgs {
-        public string Name {
-            get; set;
-        }
-
-        public string Id {
-            get; set;
-        }
-
-        public ProjectMetaEventArgs(string id, string name) {
-            Id = id;
-            Name = name;
-        }
-    }
-
-
-
-
     public class GameManager : Singleton<GameManager> {
 
-        public delegate void StringEventHandler(object sender, StringEventArgs args);
-        public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
-        public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
-        public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
 
         public event EventHandler OnSaveProject;
         
-        public event ProjectMetaEventHandler OnRunPackage;
+        public event AREditorEventArgs.ProjectMetaEventHandler OnRunPackage;
         public event EventHandler OnStopPackage;
-        public event ProjectMetaEventHandler OnPausePackage;
-        public event ProjectMetaEventHandler OnResumePackage;
+        public event AREditorEventArgs.ProjectMetaEventHandler OnPausePackage;
+        public event AREditorEventArgs.ProjectMetaEventHandler OnResumePackage;
         public event EventHandler OnCloseProject;
         public event EventHandler OnCloseScene;
         public event EventHandler OnProjectsListChanged;
         public event EventHandler OnPackagesListChanged;
         public event EventHandler OnSceneListChanged;
 
-        public event StringEventHandler OnConnectedToServer;
-        public event StringEventHandler OnConnectingToServer;
+        public event AREditorEventArgs.StringEventHandler OnConnectedToServer;
+        public event AREditorEventArgs.StringEventHandler OnConnectingToServer;
         public event EventHandler OnDisconnectedFromServer;
         public event EventHandler OnSceneChanged;
         public event EventHandler OnActionObjectsChanged;
@@ -86,12 +34,12 @@ namespace Base {
         public event EventHandler OnSceneInteractable; // Invoked when in SceneEditor or ProjectEditor state and no menus are opened
         public event EventHandler OnSceneNotInteractable; // Invoked when any menu is opened
 
-        public event GameStateEventHandler OnGameStateChanged;
-        public event EditorStateEventHandler OnEditorStateChanged;
+        public event AREditorEventArgs.GameStateEventHandler OnGameStateChanged;
+        public event AREditorEventArgs.EditorStateEventHandler OnEditorStateChanged;
         public event EventHandler OnOpenProjectEditor;
         public event EventHandler OnOpenSceneEditor;
         public event EventHandler OnOpenMainScreen;
-        public event StringEventHandler OnActionExecution;
+        public event AREditorEventArgs.StringEventHandler OnActionExecution;
         public event EventHandler OnActionExecutionFinished;
         public event EventHandler OnActionExecutionCanceled;
 

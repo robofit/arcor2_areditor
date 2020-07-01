@@ -22,7 +22,7 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event GameManager.StringEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
 

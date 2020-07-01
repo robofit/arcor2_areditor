@@ -8,20 +8,12 @@ using IO.Swagger.Model;
 using System.Linq;
 
 namespace Base {
-    public class ActionPointUpdatedEventArgs : EventArgs {
-        public ActionPoint Data {
-            get; set;
-        }
-
-        public ActionPointUpdatedEventArgs(ActionPoint data) {
-            Data = data;
-        }
-    }
+    
     public class ProjectManager : Base.Singleton<ProjectManager> {
-        public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
         public IO.Swagger.Model.Project ProjectMeta = null;
 
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
 
         public GameObject ActionPointsOrigin;
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
@@ -50,12 +42,17 @@ namespace Base {
         }
 
         public event EventHandler OnActionPointsChanged;
-        public event ActionPointUpdatedEventHandler OnActionPointUpdated;
+        public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated;
         public event EventHandler OnLoadProject;
         public event EventHandler OnProjectChanged;
         public event EventHandler OnProjectSaved;
         public event EventHandler OnProjectSavedSatusChanged;
 
+        private void Start() {
+            WebsocketManager.Instance.OnLogicItemAdded += OnLogicItemAdded;
+            WebsocketManager.Instance.OnLogicItemRemoved += OnLogicItemRemoved;
+            WebsocketManager.Instance.OnLogicItemUpdated += OnLogicItemUpdated;
+        }
 
         /// <summary>
         /// Creates project from given json
@@ -97,8 +94,21 @@ namespace Base {
 
             SetProjectMeta(project);
             UpdateActionPoints(project);
+            if (project.HasLogic)
+                UpdateLogicItems(project.Logic);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             return true;
+        }
+
+        private void UpdateLogicItems(List<IO.Swagger.Model.LogicItem> logic) {
+            foreach (IO.Swagger.Model.LogicItem projectLogicItem in logic) {
+                if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
+                    logicItem = new LogicItem(projectLogicItem);
+                    LogicItems.Add(logicItem.Data.Id, logicItem);
+                }
+                logicItem.UpdateConnection(projectLogicItem);
+
+            }
         }
 
         public bool DestroyProject() {
@@ -109,6 +119,29 @@ namespace Base {
             }
             ActionPoints.Clear();
             return true;
+        }
+
+        private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {
+            if (LogicItems.TryGetValue(args.Data.Id, out LogicItem logicItem)) {
+                logicItem.Data = args.Data;
+                logicItem.UpdateConnection(args.Data);
+            } else {
+                Debug.LogError("Server tries to update logic item that does not exists (id: " + args.Data.Id + ")");
+            }
+        }
+
+        private void OnLogicItemRemoved(object sender, StringEventArgs args) {
+            if (LogicItems.TryGetValue(args.Data, out LogicItem logicItem)) {
+                logicItem.Remove();
+                LogicItems.Remove(args.Data);
+            } else {
+                Debug.LogError("Server tries to remove logic item that does not exists (id: " + args.Data + ")");
+            }
+        }
+
+        private void OnLogicItemAdded(object sender, LogicItemChangedEventArgs args) {
+            LogicItem logicItem = new LogicItem(args.Data);
+            LogicItems.Add(args.Data.Id, logicItem);
         }
 
         public void SetProjectMeta(Project project) {
@@ -279,14 +312,14 @@ namespace Base {
                 (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
                 currentActions.AddRange(updateActionsResult.Item1);
                 // merge dictionaries
-                connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
+                //connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
 
                 actionPoint.UpdatePositionsOfPucks();
 
                 currentAP.Add(actionPoint.Data.Id);
             }
 
-            UpdateActionConnections(project.ActionPoints, connections);
+            //UpdateActionConnections(project.ActionPoints, connections);
 
             // Remove deleted actions
             foreach (string actionId in GetAllActionsDict().Keys.ToList<string>()) {

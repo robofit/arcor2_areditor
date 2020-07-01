@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Base {
     public class InputOutput : Clickable {
-        public Connection Connection;
         public Action Action;
+        private string logicItemId;
 
         protected virtual void Awake() {
         }
@@ -17,8 +17,8 @@ namespace Base {
 
         }
 
-        public void InitData() {
-            //Data.Default = GetDefaultValue();
+        public void Init(string logicItemId) {
+            this.logicItemId = logicItemId;
         }
 
         private string GetDefaultValue() {
@@ -29,10 +29,15 @@ namespace Base {
             }
         }
 
-        public Connection GetConnection() {
-            return Connection;
+        public LogicItem GetLogicItem() {
+            Debug.Assert(logicItemId != null);
+            if (ProjectManager.Instance.LogicItems.TryGetValue(logicItemId, out LogicItem logicItem)) {
+                return logicItem;
+            } else {
+                throw new ItemNotFoundException("Logic item with ID " + logicItemId + " does not exists");
+            }
         }
-
+        /*
         private void AddConnections(GameObject connectedGameObject) {
             Debug.Assert(connectedGameObject != null);
             UpdateConnection(connectedGameObject, connectedGameObject.transform.GetComponentInParent<Base.Action>().Data.Id, Action.Data.Id);
@@ -45,7 +50,7 @@ namespace Base {
         }
 
         private async void UpdateConnection(GameObject connectedGameObject, string localValue, string remoteValue) {
-           /* InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
+            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
 
             string originalLocalValue = Data.Default, originalRemoveValue = connectedIO.Data.Default;
             Data.Default = localValue;
@@ -57,12 +62,12 @@ namespace Base {
             if (!success1 || !success2) {
                 Data.Default = originalLocalValue;
                 connectedIO.Data.Default = originalRemoveValue;
-            }*/
+            }
 
-        }
+        }*/
 
-        public override void OnClick(Click type) {
-           /* if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+        public override async void OnClick(Click type) {
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
                 return;
             }
             if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
@@ -74,29 +79,39 @@ namespace Base {
             }
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.TOUCH) {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
-                    if (Connection == null) {
-                        Connection = ConnectionManagerArcoro.Instance.ConnectVirtualConnectionToObject(gameObject);
-                        GameObject connectedGameObject = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
-                        if (connectedGameObject != null && connectedGameObject.name != "VirtualPointer") {
-                            // TODO backup and restore if request failed
-                            AddConnections(connectedGameObject);
-                        } else {
-                            InitData();
+                    if (string.IsNullOrEmpty(logicItemId)) {
+                        Action theOtherOne = ConnectionManagerArcoro.Instance.GetActionConnectedToPointer();
+                        try {
+                            if (typeof(PuckInput) == GetType()) {
+                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Data.Id, Action.Data.Id);
+                            } else {
+                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Data.Id);
+                            }
+                            ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+                        } catch (RequestFailedException ex) {
+                            Debug.LogError(ex);
+                            Notifications.Instance.SaveLogs("Failed to add connection");
                         }
                         
                     }
 
                 } else {
-                    if (Connection == null) {
-                        Connection = ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
+                    Debug.LogError(logicItemId);
+                    if (string.IsNullOrEmpty(logicItemId)) {
+                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
                     } else {
-                        GameObject connectedGameObject = ConnectionManagerArcoro.Instance.GetConnectedTo(Connection, gameObject);
-                        Connection = ConnectionManagerArcoro.Instance.AttachConnectionToPointer(Connection, gameObject);
-                        RemoveConnection(connectedGameObject);
-                        Connection = null;
+                        GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItem().GetConnection(), gameObject);
+                        try {
+                            await WebsocketManager.Instance.RemoveLogicItem(logicItemId);
+                        } catch (RequestFailedException ex) {
+                            Debug.LogError(ex);
+                            Notifications.Instance.SaveLogs("Failed to add connection");
+                        }
+                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                        
                     }
                 }
-            }*/
+            }
         }
     }
 
