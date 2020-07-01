@@ -17,7 +17,8 @@ namespace Base {
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
         
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab,
+            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab;
 
         public GameObject InteractiveObjects;
 
@@ -46,6 +47,7 @@ namespace Base {
             Debug.Assert(ParameterDropdownPrefab != null);
             Debug.Assert(ParameterDropdownPosesPrefab != null);
             Debug.Assert(ParameterDropdownJointsPrefab != null);
+            Debug.Assert(ParameterRelPosePrefab != null);
             Debug.Assert(InteractiveObjects != null);
             Init();
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
