@@ -14,6 +14,7 @@ namespace Base {
         public string APIDomainWS = "";
         private WebSocket websocket;
 
+        private bool ignoreProjectChanged;
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
