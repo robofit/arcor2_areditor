@@ -201,7 +201,7 @@ namespace Base {
         }
 
         public static GameObject InitializeRelativePoseParameter(Base.ActionParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, IO.Swagger.Model.Pose value) {
-            GameObject input;
+            /*GameObject input;
             string selectedValue = JsonConvert.SerializeObject(new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));
             if (value != null) {
                 selectedValue = JsonConvert.SerializeObject(value);
@@ -214,7 +214,22 @@ namespace Base {
             input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
                 => OnChangeRelativePose(actionParameterMetadata.Name, newValue, onChangeParameterHandler));
 
-            return input;
+            return input;*/
+
+            RelPoseParam input;
+            IO.Swagger.Model.Pose selectedValue = new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(),
+                new IO.Swagger.Model.Position());
+            if (value != null) {
+                selectedValue = value;
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(actionParameterMetadata.DefaultValue);
+            }
+            
+            input = Instantiate(ActionsManager.Instance.ParameterRelPosePrefab).GetComponent<RelPoseParam>();
+            input.SetValue(selectedValue);
+            input.OnValueChangedEvent.AddListener((IO.Swagger.Model.Pose newValue)
+                => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
+            return input.gameObject;
         }
 
         public static void OnChangeRelativePose(string parameterName, string newValue, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
@@ -344,6 +359,8 @@ namespace Base {
         }
 
         public static double ParseDouble(string value) {
+            if (string.IsNullOrEmpty(value))
+                return 0;
             //Try parsing in the current culture
             if (!double.TryParse(value, System.Globalization.NumberStyles.Any, CultureInfo.CurrentCulture, out double result) &&
                 //Then try in US english
