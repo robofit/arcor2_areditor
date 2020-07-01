@@ -41,7 +41,7 @@ namespace Base {
             }
 
 
-            UpdateName(name);
+            UpdateName(Data.Name);
             //UpdateUuid(Guid.NewGuid().ToString());
             UpdateType();
             foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
