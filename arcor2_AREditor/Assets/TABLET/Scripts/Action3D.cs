@@ -81,4 +81,12 @@ public class Action3D : Base.Action {
         }
     }
 
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
+
 }

@@ -18,6 +18,10 @@ namespace Base
         // Implement by inheriting from Clickable abstract class.
         public abstract void OnClick(Click type);
 
+        public abstract void OnHoverStart();
+
+        public abstract void OnHoverEnd();
+
     }
 
     

@@ -173,4 +173,12 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
+
 }

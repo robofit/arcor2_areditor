@@ -272,4 +272,12 @@ public class ActionObject3D : ActionObject
         position.y += Collider.bounds.extents.y + 0.1f;
         return position;
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

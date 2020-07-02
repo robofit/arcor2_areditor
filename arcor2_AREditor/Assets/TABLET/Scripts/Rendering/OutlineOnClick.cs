@@ -89,4 +89,12 @@ public class OutlineOnClick : Clickable {
             renderer.materials = materials[renderer].ToArray();
         }
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

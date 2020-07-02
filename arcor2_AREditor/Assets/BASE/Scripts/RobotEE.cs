@@ -20,5 +20,11 @@ public class RobotEE : Base.Clickable {
         }
     }
 
+    public override void OnHoverStart() {
+        
+    }
 
+    public override void OnHoverEnd() {
+        
+    }
 }

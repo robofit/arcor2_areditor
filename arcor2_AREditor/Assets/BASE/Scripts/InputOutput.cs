@@ -1,32 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Base {
     public class InputOutput : Clickable {
         public Action Action;
         private string logicItemId;
 
-        protected virtual void Awake() {
-        }
-
-        protected virtual void Start() {
-        }
-
-        // Update is called once per frame
-        protected virtual void Update() {
-
-        }
-
         public void Init(string logicItemId) {
             this.logicItemId = logicItemId;
-        }
-
-        private string GetDefaultValue() {
-            if (this.GetType() == typeof(Base.PuckInput)) {
-                return "start";
-            } else {
-                return "end";
-            }
         }
 
         public LogicItem GetLogicItem() {
@@ -53,14 +35,20 @@ namespace Base {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (string.IsNullOrEmpty(logicItemId)) {
                         InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
-                        if (GetType() == theOtherOne.GetType() || theOtherOne.Action.Data.Id.Equals(Action.Data.Id)) {
+                        // check if this connection is valid
+                        bool result;
+                        if (GetType() == typeof(PuckInput)) {
+                            result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this);
+                        } else {
+                            result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne);
+                        }
+                        if (!result)
                             return;
-                        } 
                         try {
                             if (typeof(PuckInput) == GetType()) {
-                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id);
+                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id, false);
                             } else {
-                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Action.Data.Id);
+                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Action.Data.Id, false);
                             }
                             ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                         } catch (RequestFailedException ex) {
@@ -75,19 +63,44 @@ namespace Base {
                         ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
                     } else {
                         GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItem().GetConnection(), gameObject);
+                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
                         try {
                             await WebsocketManager.Instance.RemoveLogicItem(logicItemId);
                         } catch (RequestFailedException ex) {
                             Debug.LogError(ex);
-                            Notifications.Instance.SaveLogs("Failed to add connection");
+                            Notifications.Instance.SaveLogs("Failed to remove connection");
+                            ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                         }
-                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                        
                         
                     }
                 }
             }
         }
+
+        public async override void OnHoverStart() {
+            if (!ConnectionManagerArcoro.Instance.IsConnecting())
+                return;
+            InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
+            bool result;
+            if (GetType() == typeof(PuckInput)) {
+                result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this);
+            } else {
+                result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne);
+            }
+            if (!result)
+                ConnectionManagerArcoro.Instance.DisableConnectionToMouse();
+                
+        }
+
+        public override void OnHoverEnd() {
+            if (!ConnectionManagerArcoro.Instance.IsConnecting())
+                return;
+            ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
+        }
     }
+
+
 
 }
 

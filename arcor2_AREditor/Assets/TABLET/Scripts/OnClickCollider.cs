@@ -14,6 +14,14 @@ public class OnClickCollider : Clickable {
         }
     }
 
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
+
     //public void OnMouseOver() {
     //    // if we are clicking on UI
     //    if (EventSystem.current.IsPointerOverGameObject()) {

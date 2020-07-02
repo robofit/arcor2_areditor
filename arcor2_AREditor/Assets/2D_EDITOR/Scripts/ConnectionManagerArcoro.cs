@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
@@ -9,6 +11,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public List<Connection> Connections = new List<Connection>();
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
+    [SerializeField]
+    private Material EnabledMaterial, DisabledMaterial;
 
     public bool ConnectionsActive = true;
 
@@ -114,9 +118,24 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return input + output == 1;
     }
 
+    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input) {
+        string[] startEnd = new[] { "START", "END" };
+        if (output.GetType() == input.GetType() ||
+            output.Action.Data.Id.Equals(input.Action.Data.Id) ||
+            (startEnd.Contains(output.Action.Data.Id) && startEnd.Contains(input.Action.Data.Id))) {
+            return false;
+        }
+        try {
+            await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, true);
+        } catch (RequestFailedException) {
+            return false;
+        }
+        return true;
+    }
+
     private void OnCloseProject(object sender, EventArgs e) {
         foreach (Connection c in Connections) {
-            if (c.gameObject != null) {
+            if (c != null && c.gameObject != null) {
                 Destroy(c.gameObject);
             }
         }
@@ -128,6 +147,16 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             connection.gameObject.SetActive(active);
         }
         ConnectionsActive = active;
+    }
+
+    public void DisableConnectionToMouse() {
+        if (virtualConnectionToMouse != null)
+            virtualConnectionToMouse.GetComponent<LineRenderer>().material = DisabledMaterial;
+    }
+
+    public void EnableConnectionToMouse() {
+        if (virtualConnectionToMouse != null)
+            virtualConnectionToMouse.GetComponent<LineRenderer>().material = EnabledMaterial;
     }
 
 }

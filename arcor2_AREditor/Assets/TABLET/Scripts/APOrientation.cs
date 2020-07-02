@@ -16,4 +16,12 @@ public class APOrientation : Base.Clickable
         }       
         
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

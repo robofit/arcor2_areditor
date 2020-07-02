@@ -1233,10 +1233,10 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task AddLogicItem(string startActionId, string endActionId) {
+        public async Task AddLogicItem(string startActionId, string endActionId, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddLogicItemArgs args = new IO.Swagger.Model.AddLogicItemArgs(start: startActionId, end: endActionId);
-            IO.Swagger.Model.AddLogicItemRequest request = new IO.Swagger.Model.AddLogicItemRequest(r_id, "AddLogicItem", args);
+            IO.Swagger.Model.AddLogicItemRequest request = new IO.Swagger.Model.AddLogicItemRequest(r_id, "AddLogicItem", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddLogicItemResponse response = await WaitForResult<IO.Swagger.Model.AddLogicItemResponse>(r_id);
 

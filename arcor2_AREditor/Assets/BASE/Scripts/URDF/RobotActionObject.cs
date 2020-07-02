@@ -396,5 +396,12 @@ namespace Base {
             if(SceneManager.Instance != null)
                 SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
         }
+        public override void OnHoverStart() {
+
+        }
+
+        public override void OnHoverEnd() {
+
+        }
     }
 }

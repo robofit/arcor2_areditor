@@ -71,4 +71,12 @@ public class ActionPoint2D : Base.ActionPoint {
     public override void HighlightAP(bool highlight) {
         throw new System.NotImplementedException();
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

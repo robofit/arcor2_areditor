@@ -9,6 +9,14 @@ public class Action2D : Base.Action {
         throw new System.NotImplementedException();
     }
 
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
+
 }
 
 
