@@ -53,10 +53,9 @@ namespace Base {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (string.IsNullOrEmpty(logicItemId)) {
                         InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
-                        if (GetType() == theOtherOne.GetType()) {
-                            Notifications.Instance.ShowNotification("Connection failed", "You cannot connect two arrows of same type");
+                        if (GetType() == theOtherOne.GetType() || theOtherOne.Action.Data.Id.Equals(Action.Data.Id)) {
                             return;
-                        }
+                        } 
                         try {
                             if (typeof(PuckInput) == GetType()) {
                                 await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id);
