@@ -50,4 +50,19 @@ public static class PlayerPrefsHelper {
         return PlayerPrefs.GetString(key, defaultValue);
     }
 
+    public static void SaveVector3(string key, Vector3 value) {
+        SaveFloat(key + "/x", value.x);
+        SaveFloat(key + "/y", value.y);
+        SaveFloat(key + "/z", value.z);
+    }
+
+    public static Vector3 LoadVector3(string key, Vector3 defaultValue) {
+        Vector3 vector = new Vector3 {
+            x = LoadFloat(key + "/x", defaultValue.x),
+            y = LoadFloat(key + "/y", defaultValue.y),
+            z = LoadFloat(key + "/z", defaultValue.z)
+        };
+        return vector;
+    }
+
 }

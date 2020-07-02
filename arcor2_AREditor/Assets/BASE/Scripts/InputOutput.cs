@@ -80,12 +80,16 @@ namespace Base {
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.TOUCH) {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (string.IsNullOrEmpty(logicItemId)) {
-                        Action theOtherOne = ConnectionManagerArcoro.Instance.GetActionConnectedToPointer();
+                        InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
+                        if (GetType() == theOtherOne.GetType()) {
+                            Notifications.Instance.ShowNotification("Connection failed", "You cannot connect two arrows of same type");
+                            return;
+                        }
                         try {
                             if (typeof(PuckInput) == GetType()) {
-                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Data.Id, Action.Data.Id);
+                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id);
                             } else {
-                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Data.Id);
+                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Action.Data.Id);
                             }
                             ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                         } catch (RequestFailedException ex) {
@@ -96,7 +100,6 @@ namespace Base {
                     }
 
                 } else {
-                    Debug.LogError(logicItemId);
                     if (string.IsNullOrEmpty(logicItemId)) {
                         ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
                     } else {

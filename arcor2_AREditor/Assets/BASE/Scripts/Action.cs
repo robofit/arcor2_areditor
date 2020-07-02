@@ -29,7 +29,7 @@ namespace Base {
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, bool isValueValid=true);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
-        public void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
+        public virtual void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
 
             ActionPoint = ap;
             this.metadata = metadata;
@@ -43,7 +43,8 @@ namespace Base {
 
 
             UpdateName(Data.Name);
-            UpdateType();
+            if (actionProvider != null)
+                UpdateType();
             foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
                 io.Init(null);
             }

@@ -64,6 +64,11 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return obj.GetComponent<InputOutput>().Action;
     }
 
+    public GameObject GetConnectedToPointer() {
+        Debug.Assert(virtualConnectionToMouse != null);
+        return GetConnectedTo(virtualConnectionToMouse, virtualPointer);
+    }
+
      public Base.Action GetActionConnectedTo(Connection c, GameObject o) {        
         return GetConnectedTo(c, o).GetComponent<InputOutput>().Action;
     }

@@ -16,8 +16,10 @@ namespace Base {
         public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
 
         public GameObject ActionPointsOrigin;
-        public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab;
+        public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab, StartPrefab, EndPrefab;
 
+        private StartAction startAction;
+        private EndAction endAction;
 
         private bool projectActive = true;
         public bool APOrientationsVisible;
@@ -66,6 +68,10 @@ namespace Base {
             SetProjectMeta(project);
             this.AllowEdit = allowEdit;
             LoadSettings();
+
+            startAction = Instantiate(StartPrefab, GameManager.Instance.Scene.transform).GetComponent<StartAction>();
+            endAction = Instantiate(EndPrefab, GameManager.Instance.Scene.transform).GetComponent<EndAction>();
+
             bool success = UpdateProject(project, true);
 
             if (success) {
@@ -99,6 +105,24 @@ namespace Base {
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             return true;
         }
+      public bool DestroyProject() {
+            ProjectLoaded = false;
+            ProjectMeta = null;
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                ap.DeleteAP(false);
+            }
+            if (startAction != null) {
+                Destroy(startAction.gameObject);
+                startAction = null;
+            }               
+            if (endAction != null) {
+                Destroy(endAction.gameObject);
+                endAction = null;
+            }
+            ActionPoints.Clear();
+            return true;
+        }
+
 
         private void UpdateLogicItems(List<IO.Swagger.Model.LogicItem> logic) {
             foreach (IO.Swagger.Model.LogicItem projectLogicItem in logic) {
@@ -109,16 +133,6 @@ namespace Base {
                 logicItem.UpdateConnection(projectLogicItem);
 
             }
-        }
-
-        public bool DestroyProject() {
-            ProjectLoaded = false;
-            ProjectMeta = null;
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.DeleteAP(false);
-            }
-            ActionPoints.Clear();
-            return true;
         }
 
         private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {
@@ -569,80 +583,6 @@ namespace Base {
         }
 
 
-
-        /// <summary>
-        /// Updates connections between actions in the scene.
-        /// </summary>
-        /// <param name="projectObjects"></param>
-        /// <param name="connections"></param>
-        public void UpdateActionConnections(List<IO.Swagger.Model.ProjectActionPoint> actionPoints, Dictionary<string, string> connections) {
-            Dictionary<string, Action> actionsToActualize = new Dictionary<string, Action>();
-
-            // traverse through all actions (even freshly created)
-            foreach (Action action in GetAllActions()) {
-                // get connection from dictionary [actionID,outputAction]
-                if (connections.TryGetValue(action.Data.Id, out string actionOutput)) {
-                    // Check if action's output action is NOT the same as actionOutput from newly received data from server,
-                    // then connection changed and we have to delete actual connection of current action and create new one
-                    Action refAction = null;
-                    // Find corresponding action defined by ID
-                    if (actionOutput != "start" && actionOutput != "end") {
-                        refAction = GetAction(actionOutput);
-                        if (refAction != null) {
-                            actionOutput = refAction.Data.Id;
-                        } else {
-                            actionOutput = "";
-                        }
-                    }
-                    /*if (action.Output.Data.Default != actionOutput) {
-                        // Destroy old connection if there was some
-                        if (action.Output.Connection != null) {
-                            ConnectionManagerArcoro.Instance.Connections.Remove(action.Output.Connection);
-                            Destroy(action.Output.Connection.gameObject);
-                        }
-
-                        // Create new connection only if connected action exists (it is not start nor end)
-                        if (refAction != null) {
-                            // Create new one
-                            //PuckInput input = GetAction(actionOutput).Input;
-                            PuckInput input = refAction.Input;
-                            PuckOutput output = action.Output;
-
-                            GameObject c = Instantiate(ConnectionPrefab);
-                            c.transform.SetParent(ConnectionManager.instance.transform);
-                            Connection newConnection = c.GetComponent<Connection>();
-                            // We are always connecting output to input.
-                            newConnection.target[0] = output.gameObject.GetComponent<RectTransform>();
-                            newConnection.target[1] = input.gameObject.GetComponent<RectTransform>();
-
-                            input.Connection = newConnection;
-                            output.Connection = newConnection;
-                            ConnectionManagerArcoro.Instance.Connections.Add(newConnection);
-                        }
-                    }*/
-                    actionsToActualize.Add(action.Data.Id, action);
-                }
-            }
-
-            // Set action inputs and outputs for updated connections
-            /*foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in actionPoints) {
-                foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                    if (actionsToActualize.TryGetValue(projectAction.Id, out Action action)) {
-                        // Sets action inputs (currently each action has only 1 input)
-                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Inputs) {
-                            action.Input.Data = actionIO;
-                        }
-
-                        // Sets action outputs (currently each action has only 1 output)
-                        foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                            action.Output.Data = actionIO;
-                        }
-                    }
-                }
-            }*/
-
-        }
-
         /// <summary>
         /// Destroys and removes references to action of given Id.
         /// </summary>
@@ -669,6 +609,10 @@ namespace Base {
         /// <param name="id"></param>
         /// <returns></returns>
         public Action GetAction(string id) {
+            if (id == "START")
+                return startAction;
+            else if (id == "END")
+                return endAction;
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 if (actionPoint.Actions.TryGetValue(id, out Action action)) {
                     return action;
