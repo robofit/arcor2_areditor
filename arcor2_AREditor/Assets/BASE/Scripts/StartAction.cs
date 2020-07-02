@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class StartAction : StartEndAction
 {
-
     private void Awake() {
         IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(
             flows: new List<IO.Swagger.Model.Flow> {
@@ -16,14 +15,6 @@ public class StartAction : StartEndAction
             name: "START",
             parameters: new List<IO.Swagger.Model.ActionParameter>(),
             type: "");
-
-        
-
         Init(projectAction, null, null, null, "START");
-        
-        
     }
-    
-
-
 }

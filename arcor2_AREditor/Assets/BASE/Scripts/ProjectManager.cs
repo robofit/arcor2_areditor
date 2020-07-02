@@ -69,8 +69,11 @@ namespace Base {
             this.AllowEdit = allowEdit;
             LoadSettings();
 
-            startAction = Instantiate(StartPrefab, GameManager.Instance.Scene.transform).GetComponent<StartAction>();
-            endAction = Instantiate(EndPrefab, GameManager.Instance.Scene.transform).GetComponent<EndAction>();
+            startAction = Instantiate(StartPrefab).GetComponent<StartAction>();
+            endAction = Instantiate(EndPrefab).GetComponent<EndAction>();
+            //do it separately so the objects are created as active and awake method is runned instantly
+            startAction.transform.SetParent(GameManager.Instance.Scene.transform);
+            endAction.transform.SetParent(GameManager.Instance.Scene.transform);
 
             bool success = UpdateProject(project, true);
 
@@ -133,6 +136,7 @@ namespace Base {
                 logicItem.UpdateConnection(projectLogicItem);
 
             }
+
         }
 
         private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {

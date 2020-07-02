@@ -14,6 +14,7 @@ public abstract class StartEndAction : Action3D {
 
         if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
             Destroy(gameObject);
+            return;
         }
         playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + keySuffix;
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, Vector3.zero);

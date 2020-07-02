@@ -37,35 +37,7 @@ namespace Base {
                 throw new ItemNotFoundException("Logic item with ID " + logicItemId + " does not exists");
             }
         }
-        /*
-        private void AddConnections(GameObject connectedGameObject) {
-            Debug.Assert(connectedGameObject != null);
-            UpdateConnection(connectedGameObject, connectedGameObject.transform.GetComponentInParent<Base.Action>().Data.Id, Action.Data.Id);
-        }
-
-        private void RemoveConnection(GameObject connectedGameObject) {
-            Debug.Assert(connectedGameObject != null);
-            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
-            UpdateConnection(connectedGameObject, GetDefaultValue(), connectedIO.GetDefaultValue());
-        }
-
-        private async void UpdateConnection(GameObject connectedGameObject, string localValue, string remoteValue) {
-            InputOutput connectedIO = connectedGameObject.GetComponent<Base.InputOutput>();
-
-            string originalLocalValue = Data.Default, originalRemoveValue = connectedIO.Data.Default;
-            Data.Default = localValue;
-            connectedIO.Data.Default = remoteValue;
-
-            bool success1 = await GameManager.Instance.UpdateActionLogic(Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { Action.Output.Data });
-            bool success2 = await GameManager.Instance.UpdateActionLogic(connectedIO.Action.Data.Id, new List<IO.Swagger.Model.ActionIO>() { connectedIO.Action.Input.Data }, new List<IO.Swagger.Model.ActionIO>() { connectedIO.Action.Output.Data });
-
-            if (!success1 || !success2) {
-                Data.Default = originalLocalValue;
-                connectedIO.Data.Default = originalRemoveValue;
-            }
-
-        }*/
-
+        
         public override async void OnClick(Click type) {
             if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
                 return;
