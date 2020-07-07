@@ -19,7 +19,7 @@ namespace Base {
     }
     public class ProjectManager : Base.Singleton<ProjectManager> {
         public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
-        public IO.Swagger.Model.Project Project = null;
+        public IO.Swagger.Model.Project ProjectMeta = null;
 
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
 
@@ -63,10 +63,10 @@ namespace Base {
         /// <param name="project"></param>
         public async Task<bool> CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
-            if (Project != null)
+            if (ProjectMeta != null)
                 return false;
 
-            Project = project;
+            SetProjectMeta(project);
             this.AllowEdit = allowEdit;
             LoadSettings();
             bool success = UpdateProject(project, true);
@@ -86,29 +86,67 @@ namespace Base {
         /// </summary>
         /// <param name="project"></param>
         public bool UpdateProject(IO.Swagger.Model.Project project, bool forceEdit = false) {
-            if (project.Id != Project.Id) {
+            if (project.Id != ProjectMeta.Id) {
                 return false;
             }
             if (!AllowEdit && !forceEdit) {
                 Debug.LogError("Editation of this project is not allowed!");
-                Notifications.Instance.SaveLogs(SceneManager.Instance.Scene, project, "Editation of this project is not allowed!");
+                Notifications.Instance.SaveLogs(SceneManager.Instance.GetScene(), project, "Editation of this project is not allowed!");
                 return false;
             }
-                
-            Project = project;
-            UpdateActionPoints();
+
+            SetProjectMeta(project);
+            UpdateActionPoints(project);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
         public bool DestroyProject() {
             ProjectLoaded = false;
-            Project = null;
+            ProjectMeta = null;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.DeleteAP(false);
             }
             ActionPoints.Clear();
             return true;
+        }
+
+        public void SetProjectMeta(Project project) {
+            if (ProjectMeta == null) {
+                ProjectMeta = new Project(sceneId: "", id: "", name: "");
+            }
+            ProjectMeta.Id = project.Id;
+            ProjectMeta.SceneId = project.SceneId;
+            ProjectMeta.HasLogic = project.HasLogic;
+            ProjectMeta.Desc = project.Desc;
+            ProjectMeta.IntModified = project.IntModified;
+            ProjectMeta.Modified = project.Modified;
+            ProjectMeta.Name = project.Name;
+            
+        }
+        public Project GetProject() {
+            if (ProjectMeta == null)
+                return null;
+            Project project = ProjectMeta;
+            project.ActionPoints = new List<ProjectActionPoint>();
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                ProjectActionPoint projectActionPoint = ap.Data;
+                foreach (Action action in ap.Actions.Values) {
+                    IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(id: action.Data.Id,
+                        name: action.Data.Name, type: action.Data.Type) {
+                        Parameters = new List<IO.Swagger.Model.ActionParameter>(),
+                        Inputs = new List<ActionIO>(),
+                        Outputs = new List<ActionIO>()
+                    };
+                    foreach (ActionParameter param in action.Parameters.Values) {
+                        projectAction.Parameters.Add(param);
+                    }
+                    projectAction.Inputs.Add(action.Input.Data);
+                    projectAction.Outputs.Add(action.Output.Data);
+                }
+                project.ActionPoints.Add(projectActionPoint);
+            }
+            return project;
         }
 
         private void Update() {
@@ -150,7 +188,7 @@ namespace Base {
         }
 
         public void LoadSettings() {
-            APOrientationsVisible = PlayerPrefsHelper.LoadBool("project/" + Project.Id + "/APOrientationsVisibility", true);
+            APOrientationsVisible = PlayerPrefsHelper.LoadBool("project/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
         }
 
 
@@ -200,7 +238,7 @@ namespace Base {
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.UpdateOrientationsVisuals();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Project.Id + "/APOrientationsVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", false);
         }
 
         internal void ShowAPOrientations() {
@@ -208,7 +246,7 @@ namespace Base {
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.UpdateOrientationsVisuals();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Project.Id + "/APOrientationsVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
         }
 
 
@@ -216,12 +254,12 @@ namespace Base {
         /// Updates action point GameObject in ActionObjects.ActionPoints dict based on the data present in IO.Swagger.Model.ActionPoint Data.
         /// </summary>
         /// <param name="project"></param>
-        public void UpdateActionPoints() {
+        public void UpdateActionPoints(Project project) {
             List<string> currentAP = new List<string>();
             List<string> currentActions = new List<string>();
             Dictionary<string, string> connections = new Dictionary<string, string>();
 
-            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in Project.ActionPoints) {
+            foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
                 // if action point exist, just update it
                 if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
                     actionPoint.ActionPointBaseUpdate(projectActionPoint);
@@ -248,9 +286,7 @@ namespace Base {
                 currentAP.Add(actionPoint.Data.Id);
             }
 
-
-
-            UpdateActionConnections(Project.ActionPoints, connections);
+            UpdateActionConnections(project.ActionPoints, connections);
 
             // Remove deleted actions
             foreach (string actionId in GetAllActionsDict().Keys.ToList<string>()) {
@@ -425,8 +461,8 @@ namespace Base {
         /// </summary>
         /// <param name="size"><0; 1> From barely visible to quite big</param>
         public void SetAPSize(float size) {
-            if (Project != null)
-                PlayerPrefsHelper.SaveFloat("project/" + Project.Id + "/APSize", size);
+            if (ProjectMeta != null)
+                PlayerPrefsHelper.SaveFloat("project/" + ProjectMeta.Id + "/APSize", size);
             APSize = size;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
                 actionPoint.SetSize(size);
@@ -846,15 +882,13 @@ namespace Base {
 
         internal void ProjectSaved() {
             ProjectChanged = false;
+            Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 
         public async void ProjectBaseUpdated(Project data) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
-                Project.Desc = data.Desc;
-                Project.HasLogic = data.HasLogic;
-                Project.Modified = data.Modified;
-                Project.Name = data.Name;
+                SetProjectMeta(data);
                 ProjectChanged = true;
             } else if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen) {
                 await GameManager.Instance.LoadProjects();

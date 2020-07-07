@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System.Collections;
 
 public class Tile : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class Tile : MonoBehaviour
     private TMPro.TMP_Text Label;
     [SerializeField]
     private Button MainButton, OptionButton;
+    [SerializeField]
+    private Image Background;
     [SerializeField]
     private GameObject star;
     public Image TopImage;
@@ -52,5 +55,23 @@ public class Tile : MonoBehaviour
         }
         OptionAddListener(optionCallback);
         SetStar(starVisible);
+    }
+
+    /// <summary>
+    /// Start blinking with tile 
+    /// </summary>
+    public void Highlight() {
+        StartCoroutine(Blink());
+    }
+
+    private IEnumerator Blink() {
+        float timePassed = 0;
+        while (timePassed < 1) {
+            // Code to go left here
+            timePassed += Time.deltaTime;
+            Background.color = Color.Lerp(Color.white, new Color(0.3f, 0.3f, 0.3f), Mathf.PingPong(timePassed, 0.5f)*2);
+            yield return null;
+        }
+        Background.color = Color.white;
     }
 }

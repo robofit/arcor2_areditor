@@ -125,7 +125,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         ProjectControlButtons.SetActive(true);
         ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
-        if (ProjectManager.Instance.Project.HasLogic) {
+        if (ProjectManager.Instance.ProjectMeta.HasLogic) {
             BuildAndRunBtn.SetInteractivity(true);
         } else {
             BuildAndRunBtn.SetInteractivity(false, "Project without defined logic could not be run from editor");
@@ -408,8 +408,6 @@ public class MainMenu : MonoBehaviour, IMenu {
             Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
         }
-        UpdateMenu();
-        Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
     }
 
 
@@ -418,7 +416,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         inputDialog.Open("Build package",
                          "",
                          "Package name",
-                         Base.ProjectManager.Instance.Project.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
+                         Base.ProjectManager.Instance.ProjectMeta.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
                          () => BuildPackage(inputDialog.GetValue()),
                          () => inputDialog.Close());
     }
@@ -435,10 +433,10 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     
     public async void RunProject() {
-        inputDialog.Close();
+        GameManager.Instance.ShowLoadingScreen("Running project", true);
         try  {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-            GameManager.Instance.ShowLoadingScreen("Running project", true);
+           
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);
@@ -506,7 +504,7 @@ public class MainMenu : MonoBehaviour, IMenu {
                 if (!ProjectManager.Instance.ProjectChanged) {
                     BuildBtn.SetInteractivity(true);
                     SaveProjectBtn.SetInteractivity(false, "There are no unsaved changes");
-                    if (ProjectManager.Instance.Project.HasLogic)
+                    if (ProjectManager.Instance.ProjectMeta.HasLogic)
                         BuildAndRunBtn.SetInteractivity(true);
                 } else {
                     BuildBtn.SetInteractivity(false, "There are unsaved changes on project");
@@ -554,7 +552,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public void SaveLogs() {
-        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project);
+        Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.GetScene(), Base.ProjectManager.Instance.GetProject());
     }
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR

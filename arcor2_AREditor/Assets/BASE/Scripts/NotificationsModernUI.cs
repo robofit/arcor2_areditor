@@ -49,15 +49,15 @@ namespace Base {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
             if (type == LogType.Exception) {
                 //automatially create logs in case of exception
-                SaveLogs(SceneManager.Instance.Scene, Base.ProjectManager.Instance.Project, "Exception occured");
+                SaveLogs(SceneManager.Instance.GetScene(), Base.ProjectManager.Instance.GetProject(), "Exception occured");
             }
         }
 
         public override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
             string sceneString = "", projectString = "";
-            if (SceneManager.Instance.Scene != null)
+            if (SceneManager.Instance.SceneMeta != null)
                 sceneString = scene.ToJson();
-            if (Base.ProjectManager.Instance.Project != null)
+            if (Base.ProjectManager.Instance.ProjectMeta != null)
                 projectString = project.ToJson();
             string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
             Directory.CreateDirectory(dirname);
