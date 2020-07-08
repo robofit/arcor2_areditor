@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using RosSharp;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
@@ -14,11 +15,12 @@ namespace Base {
         public GameObject RobotPlaceholderPrefab;
 
         public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
+        public Dictionary<string, string> Joints = new Dictionary<string, string>();
 
         private bool robotLoaded = false;
 
         public List<string> EndEffectors = new List<string>();
-
+        
         private GameObject RobotPlaceholder;
         private GameObject RobotModel;
         private UrdfRobot UrdfRobot;
@@ -33,11 +35,11 @@ namespace Base {
 
         protected override void Start() {
             base.Start();
-            SceneManager.Instance.OnUrdfReady += OnUrdfDownloaded;
         }
 
         public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
+            SceneManager.Instance.OnUrdfReady += OnUrdfDownloaded;
             Data.Id = id;
             Data.Type = type;
             SetScenePosition(position);
@@ -87,6 +89,7 @@ namespace Base {
             UrdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
             UrdfRobot.transform.parent = transform;
             UrdfRobot.transform.localPosition = Vector3.zero;
+            UrdfRobot.transform.localEulerAngles = Vector3.zero;
 
             UrdfRobot.SetRigidbodiesIsKinematic(true);
 
@@ -108,7 +111,7 @@ namespace Base {
 
                     // get rid of the placeholder object (New Game Object)
                     Transform placeholderGameObject = importedModel.parent;
-                    importedModel.SetParent(placeholderGameObject.parent, false);
+                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays:false);
 
                     //TODO: Temporarily, colliders are added directly to Visuals
                     AddColliders(importedModel.gameObject, setConvex: true);
@@ -157,14 +160,17 @@ namespace Base {
                     // hide visual if it is mesh.. mesh will be displayed when fully loaded
                     visual.gameObject.SetActive(visual.GeometryType == GeometryTypes.Mesh ? false : true);
                 }
-
-                // Distinguish between base links (do not have joints, so no JointStateWriter will be included) and normal links (do have joints, so JointStateWriter will be inculed)
-                if (link.IsBaseLink || link.gameObject.name.ToLower().Contains("base_link") || link.gameObject.name.ToLower().Contains("baselink")) {  
-                    Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, null, visuals, is_base_link: true));
-                } else {
-                    JointStateWriter jointWriter = link.gameObject.AddComponent<JointStateWriter>();
-                    Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, jointWriter, visuals));
+                
+                UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
+                JointStateWriter jointWriter = null;
+                if(urdfJoint != null) {
+                    if (urdfJoint.JointType != UrdfJoint.JointTypes.Fixed) {
+                        jointWriter = urdfJoint.transform.AddComponentIfNotExists<JointStateWriter>();
+                        Joints.Add(urdfJoint.JointName, link.gameObject.name);
+                    }
                 }
+                Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, visuals, is_base_link:link.IsBaseLink));
+
             }
         }
 
@@ -177,11 +183,16 @@ namespace Base {
         /// <summary>
         /// Sets angle of joint in given linkName.
         /// </summary>
-        /// <param name="linkName"></param>
+        /// <param name="jointName"></param>
         /// <param name="angle"></param>
-        public void SetJointAngle(string linkName, float angle) {
-            Links.TryGetValue(linkName, out RobotLink link);
-            link?.SetJointAngle(angle);
+        public void SetJointAngle(string jointName, float angle) {
+            if (robotLoaded) {
+                Joints.TryGetValue(jointName, out string linkName);
+                Links.TryGetValue(linkName, out RobotLink link);
+                //Debug.Log(linkName + " ..angle in deg: " + angle + " ..angle in rad: " + angle * Mathf.Deg2Rad);
+                angle *= Mathf.Deg2Rad;
+                link?.SetJointAngle(angle);
+            }
         }
 
         /// <summary>
@@ -372,6 +383,18 @@ namespace Base {
             //TODO: will not work for robot with URDF! need to solve better
             position.y += 0.2f;
             return position;
+        }
+
+        public bool HasUrdf() {
+            if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
+                return !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename);
+            }
+            return false;
+        }
+
+        private void OnDestroy() {
+            if(SceneManager.Instance != null)
+                SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
         }
     }
 }

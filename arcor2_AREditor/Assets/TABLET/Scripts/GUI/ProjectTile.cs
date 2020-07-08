@@ -9,7 +9,11 @@ public class ProjectTile : Tile
     public string ProjectId;
     public string SceneId;
 
-    public void InitTile(string userId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string projectId, string sceneId) {
+    [SerializeField]
+    private TMPro.TMP_Text sceneName, timestamp;
+
+    public void InitTile(string userId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string projectId, string sceneId,
+        string sceneName, string timestamp) {
         base.InitTile(userId, mainCallback, optionCallback, starVisible);
         ProjectId = projectId;
         SceneId = sceneId;
@@ -18,5 +22,7 @@ public class ProjectTile : Tile
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
+        this.sceneName.text = "Scene: " + sceneName;
+        this.timestamp.text = "Last modified: " + timestamp;
     }
 }

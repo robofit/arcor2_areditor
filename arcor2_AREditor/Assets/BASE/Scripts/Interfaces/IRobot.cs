@@ -8,4 +8,6 @@ public interface IRobot
     string GetId();
 
     List<string> GetEndEffectors();
+
+    bool HasUrdf();
 }

@@ -17,7 +17,8 @@ namespace Base {
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
         
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab;
+        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab,
+            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab;
 
         public GameObject InteractiveObjects;
 
@@ -46,11 +47,13 @@ namespace Base {
             Debug.Assert(ParameterDropdownPrefab != null);
             Debug.Assert(ParameterDropdownPosesPrefab != null);
             Debug.Assert(ParameterDropdownJointsPrefab != null);
+            Debug.Assert(ParameterRelPosePrefab != null);
             Debug.Assert(InteractiveObjects != null);
-            GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
+            Init();
+            WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
         }
         
-        private void OnOpenDisconnectedScreen(object sender, EventArgs args) {
+        private void OnDisconnected(object sender, EventArgs args) {
             Init();
         }
 
@@ -104,11 +107,22 @@ namespace Base {
             }
         }
 
-        
 
-       
 
-        
+        public void ObjectTypeRemoved(ObjectTypeMeta objectType) {
+            if (actionObjectsMetadata.ContainsKey(objectType.Type)) {
+                actionObjectsMetadata.Remove(objectType.Type);
+                OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(null));
+            }            
+        }
+
+        public async void ObjectTypeAdded(ObjectTypeMeta objectType) {
+            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectType);
+            await UpdateActionsOfActionObject(m);
+            m.Robot = IsDescendantOfType("Robot", m);               
+            actionObjectsMetadata.Add(objectType.Type, m);
+            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(objectType.Type));
+        }
         
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {

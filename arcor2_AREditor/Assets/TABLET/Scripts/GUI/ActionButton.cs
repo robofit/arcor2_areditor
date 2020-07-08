@@ -18,6 +18,10 @@ public class ActionButton : MonoBehaviour
     public void SetLabel(string label) {
         text.text = label;
     }
+
+    public string GetLabel() {
+        return text.text;
+    }
     // Update is called once per frame
     private void Update()
     {

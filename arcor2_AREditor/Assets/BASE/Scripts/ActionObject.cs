@@ -25,7 +25,7 @@ namespace Base {
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
-            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + id + "/visibility", 1);
+            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -139,7 +139,7 @@ namespace Base {
         public virtual void SetVisibility(float value) {
             Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.Scene.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {

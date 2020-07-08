@@ -143,7 +143,8 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
         actionPoint.ShowMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
-        actionPoint.SendMessage("Select");
+        // Select(force = true) to force selection and not losing AP highlight upon EditorSettingsMenu closing 
+        actionPoint.SendMessage("Select", true);
     }
 
     private void ShowActionObject(Base.ActionObject actionObject) {

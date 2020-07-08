@@ -41,7 +41,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), CurrentActionPoint);
-        AddNewActionDialog.WindowManager.OpenWindow();
+        AddNewActionDialog.Open();
     }
 
     public void SaveID(string new_id) {

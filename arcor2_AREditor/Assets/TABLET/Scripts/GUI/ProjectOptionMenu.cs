@@ -35,13 +35,11 @@ public class ProjectOptionMenu : TileOptionMenu
                          projectTile.GetLabel(),
                          () => RenameProject(inputDialog.GetValue()),
                          () => inputDialog.Close(),
-                         validateInput: ValidateProjectName);
+                         validateInput: ValidateProjectNameAsync);
     }
 
-    public RequestResult ValidateProjectName(string newName) {
-        Task<RequestResult> result = Task.Run(async () => await GameManager.Instance.RenameProject(projectTile.ProjectId, newName, true));
-       
-        return result.Result;        
+    public async Task<RequestResult> ValidateProjectNameAsync(string newName) {
+        return await GameManager.Instance.RenameProject(projectTile.ProjectId, newName, true);        
     }
 
     public async void RenameProject(string newUserId) {

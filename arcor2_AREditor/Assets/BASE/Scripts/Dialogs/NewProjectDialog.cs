@@ -5,20 +5,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using System.Threading.Tasks;
+using Base;
 
 public class NewProjectDialog : Dialog
 {
     public GameObject ToggleGroup, GenerateLogicToggle;
     public GameObject TogglePrefab;
     public TMPro.TMP_InputField NewProjectName;
-    public Button OKBtn;
-    public TooltipContent TooltipContent;
+    public ButtonWithTooltip OKBtn;
     public override void Start()
     {
         base.Start();
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
-        TooltipContent.descriptionText = TooltipRef.Instance.Text;
-        TooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
     }
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
@@ -35,7 +33,7 @@ public class NewProjectDialog : Dialog
             string sceneId = Base.GameManager.Instance.GetSceneId(sceneName);
             generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
             await Base.GameManager.Instance.NewProject(name, sceneId, generateLogic);
-            WindowManager.CloseWindow();
+            Close();
         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) { 
             Base.Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
         }
@@ -45,35 +43,40 @@ public class NewProjectDialog : Dialog
     }
 
     public async void FieldChanged() {
-        OKBtn.interactable = await ValidateFields();
+        Base.RequestResult result = await ValidateFields();
+        OKBtn.SetInteractivity(result.Success, result.Message);
 
     }
 
-    public async Task<bool> ValidateFields() {
+    public async Task<Base.RequestResult> ValidateFields() {
         string name = NewProjectName.text;
         string sceneName;
         string sceneId;
         bool generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
         if (string.IsNullOrEmpty(name)) {
-            TooltipContent.description = "Name cannot be empty";
-            return false;
+            return (false, "Name cannot be empty");
         }
         try {
             sceneName = GetSelectedValue(ToggleGroup);
             sceneId = Base.GameManager.Instance.GetSceneId(sceneName);
             
         } catch (Base.ItemNotFoundException ex) {
-            TooltipContent.description = "No scene selected";
-            return false;
+            return (false, "No scene selected");
         }
         try {
             await Base.WebsocketManager.Instance.CreateProject(name, sceneId, "", generateLogic, true);
         } catch (Base.RequestFailedException ex) {
-            TooltipContent.description = ex.Message;
-            return false;
+            return (false, ex.Message);
         }
-        TooltipContent.description = "";
-        return true;
+        return (true, "");
     }
 
+    public async override void Confirm() {
+        Base.RequestResult result = await ValidateFields();
+        if (result.Success)
+            NewProject();
+        else {
+            Notifications.Instance.ShowNotification("Failed to create new project", result.Message);
+        }
+    }
 }

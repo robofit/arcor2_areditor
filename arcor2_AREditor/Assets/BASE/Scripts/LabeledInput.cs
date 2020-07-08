@@ -24,6 +24,10 @@ public class LabeledInput : MonoBehaviour, IActionParameter
         Debug.Assert(Label != null);
         Debug.Assert(Input != null);
         tooltipContent = Label.GetComponent<TooltipContent>();
+        if (!string.IsNullOrEmpty(ParameterType)) {
+            SetType(ParameterType);
+        }
+        SetLabel(Label.text, null);
     }
 
     private void Start() {
@@ -73,8 +77,6 @@ public class LabeledInput : MonoBehaviour, IActionParameter
                 return int.Parse(Input.text);
             case "double":
                 return Base.Action.ParseDouble(Input.text);
-            case "relative_pose":
-                return JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(Input.text);
             default:
                 return Input.text;
         }
@@ -85,6 +87,6 @@ public class LabeledInput : MonoBehaviour, IActionParameter
     }
 
     public void SetValue(object value) {
-        Input.text = (string) value;
+        Input.text = value.ToString();
     }
 }

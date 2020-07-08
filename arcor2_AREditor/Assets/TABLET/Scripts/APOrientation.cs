@@ -11,7 +11,7 @@ public class APOrientation : Base.Clickable
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;
         }
-        if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
+        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             ActionPoint.ShowAimingMenu(OrientationId);
         }       
         

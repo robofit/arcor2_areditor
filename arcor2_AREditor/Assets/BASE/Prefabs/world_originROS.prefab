@@ -58,6 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
+  HoverMaterial: {fileID: 0}
   Renderers:
   - {fileID: 5516978471614239620}
   - {fileID: 5516978471614239626}
@@ -144,6 +145,21 @@ PrefabInstance:
     - target: {fileID: 400000, guid: 200d5937f487cba428dc60d2d50a3387, type: 3}
       propertyPath: m_LocalScale.z
       value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 312624556007251804, guid: 200d5937f487cba428dc60d2d50a3387,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5408046955793443906, guid: 200d5937f487cba428dc60d2d50a3387,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6671886426934243821, guid: 200d5937f487cba428dc60d2d50a3387,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 200d5937f487cba428dc60d2d50a3387, type: 3}
