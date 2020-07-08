@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1542303086}
   - component: {fileID: 1542303088}
   - component: {fileID: 1542303087}
+  - component: {fileID: 4216866555721590601}
   m_Layer: 0
   m_Name: CameraAddons
   m_TagString: Untagged
@@ -74,6 +75,20 @@ MonoBehaviour:
   startZ: -3
   mainColor: {r: 0.10980392, g: 0.50980395, b: 0.69803923, a: 1}
   subColor: {r: 0.08627451, g: 0.31764707, b: 0.32156864, a: 1}
+--- !u!114 &4216866555721590601
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1542303085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f8785f381fc6a54d8dae25eae6f4dd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  InitialPosition: {x: 0, y: 1.5, z: -2}
+  InitialRotation: {x: 45, y: 0, z: 0}
 --- !u!1 &7694872491458505929
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,6 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa17d122634046b4a8e23048891fafc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_RaycastPrefab: {fileID: 0}
 --- !u!114 &7694872492407101040
 MonoBehaviour:
   m_ObjectHideFlags: 0
