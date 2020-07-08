@@ -1079,10 +1079,14 @@ namespace Base {
         public void OpenSceneEditor() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = true;
+            if (CalibrationManager.Instance.Calibrated) {
+                Scene.SetActive(true);
+            }
+#else
+            Scene.SetActive(true);
 #endif
             EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;
             SetGameState(GameStateEnum.SceneEditor);
-            Scene.SetActive(true);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen(true);
@@ -1091,10 +1095,14 @@ namespace Base {
         public void OpenProjectEditor() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = true;
+            if (CalibrationManager.Instance.Calibrated) {
+                Scene.SetActive(true);
+            }
+#else
+            Scene.SetActive(true);
 #endif
             EditorInfo.text = "Project: " + Base.ProjectManager.Instance.ProjectMeta.Name;
             SetGameState(GameStateEnum.ProjectEditor);
-            Scene.SetActive(true);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
             HideLoadingScreen(true);
@@ -1111,8 +1119,13 @@ namespace Base {
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
                 EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+                if (CalibrationManager.Instance.Calibrated) {
+                    Scene.SetActive(true);
+                }
+#else
                 Scene.SetActive(true);
-                
+#endif
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
