@@ -100,6 +100,9 @@ public class TrackingManager : Singleton<TrackingManager> {
                         case NotTrackingReason.InsufficientLight:
                             trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient light!", "Enlight your environment.", 9f));
                             break;
+                        case NotTrackingReason.None:
+                            // ingnore notification when tracking was lost for no reason
+                            break;
                         default:
                             Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + trackingFailureReason.ToString());
                             // notify user ever 9 seconds about tracking failure
