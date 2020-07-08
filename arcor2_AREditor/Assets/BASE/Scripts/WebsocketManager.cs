@@ -180,7 +180,8 @@ namespace Base {
                     case "JointsChanged":
                         HandleJointsChanged(data);
                         break;
-                    case "ObjectTypesChanged":
+                    //case "ObjectTypesChanged":
+                    case "ChangedObjectTypes":
                         HandleChangedObjectTypesEvent(data);
                         break;
                     case "CurrentAction":
