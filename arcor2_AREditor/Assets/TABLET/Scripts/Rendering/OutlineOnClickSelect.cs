@@ -12,6 +12,7 @@ using System;
 public class OutlineOnClickSelect : OutlineOnClick {
 
     private bool selected = false;
+    private bool forceSelected = false;
 
     private void OnEnable() {
         GameManager.Instance.OnSceneInteractable += OnDeselect;
@@ -35,7 +36,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
     }    
 
     private void OnDeselect(object sender, EventArgs e) {
-        if (selected) {
+        if (selected && !forceSelected) {
             selected = false;
             SceneManager.Instance.SetSelectedObject(null);
             RemoveMaterial(ClickMaterial);
@@ -43,9 +44,11 @@ public class OutlineOnClickSelect : OutlineOnClick {
                 renderer.materials = materials[renderer].ToArray();
             }
         }
+        forceSelected = false;
     }
 
-    protected override void Select() {
+    protected override void Select(bool force = false) {
+        forceSelected = force;
         selected = true;
         SceneManager.Instance.SetSelectedObject(gameObject);
         base.Select();
