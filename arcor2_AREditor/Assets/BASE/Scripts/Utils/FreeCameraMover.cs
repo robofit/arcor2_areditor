@@ -20,6 +20,12 @@ public class FreeCameraMover : MonoBehaviour
     private float yaw = 0f;
     private float pitch = 0f;
 
+    private void Start() {
+        Vector3 defaultCameraRotation = GetComponent<DefaultCameraPosition>().InitialRotation;
+        yaw = defaultCameraRotation.y;
+        pitch = defaultCameraRotation.x;
+    }
+
     // Update is called once per frame
     void Update() {
         if (Base.GameManager.Instance.SceneInteractable) {
