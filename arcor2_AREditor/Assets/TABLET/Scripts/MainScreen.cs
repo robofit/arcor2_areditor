@@ -208,7 +208,7 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void ShowNewSceneDialog() {
         InputDialog.Open("Create new scene",
-                         "Type new scene name",
+                         null,
                          "Name",
                          "",
                          () => NewScene(InputDialog.GetValue()),
