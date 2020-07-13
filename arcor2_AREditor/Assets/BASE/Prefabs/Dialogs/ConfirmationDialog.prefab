@@ -368,9 +368,9 @@ RectTransform:
   m_Father: {fileID: 7295890123037729373}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 750, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 750, y: -120}
   m_SizeDelta: {x: 1460, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7295890121935956543
@@ -1044,7 +1044,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d2c7e726fec45c458a7609fcdb2985d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WindowManager: {fileID: 0}
   OKButtonLabelNormal: {fileID: 7295890122489338947}
   OKButtonLabelHighlighted: {fileID: 7295890123560103878}
   CancelButtonLabelNormal: {fileID: 7295890122666546612}
@@ -2287,7 +2286,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 1280, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1500, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7295890123037729346
