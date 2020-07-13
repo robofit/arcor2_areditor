@@ -8,7 +8,7 @@ using Base;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
-    public TMPro.TMP_Text ScenesBtn, ProjectsBtn, PackagesBtn;
+    public TMPro.TMP_Text[] ScenesBtns, ProjectsBtns, PackagesBtns;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewProjectDialog NewProjectDialog;
     public InputDialog InputDialog;
@@ -28,6 +28,9 @@ public class MainScreen : Base.Singleton<MainScreen>
     [SerializeField]
     private CanvasGroup CanvasGroup;
 
+    [SerializeField]
+    private GameObject ButtonsPortrait, ButtonsLandscape;
+
     private List<SceneTile> sceneTiles = new List<SceneTile>();
     private List<ProjectTile> projectTiles = new List<ProjectTile>();
     private List<PackageTile> packageTiles = new List<PackageTile>();
@@ -45,6 +48,16 @@ public class MainScreen : Base.Singleton<MainScreen>
         CanvasGroup.blocksRaycasts = false;
     }
 
+    private void Update() {
+        if (Input.deviceOrientation == DeviceOrientation.Portrait) {
+            ButtonsPortrait.SetActive(true);
+            ButtonsLandscape.SetActive(false);
+        } else {
+            ButtonsPortrait.SetActive(false);
+            ButtonsLandscape.SetActive(true);
+        }
+    }
+
     private void Start() {
         Base.GameManager.Instance.OnOpenMainScreen += ShowSceneProjectManagerScreen;
         Base.GameManager.Instance.OnOpenProjectEditor += HideSceneProjectManagerScreen;
@@ -58,9 +71,15 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToProjects() {
-        ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        PackagesBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        ProjectsBtn.color = new Color(0, 0, 0);
+        foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
+        foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
+        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            btn.color = new Color(0, 0, 0);
+        }
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(false);
@@ -69,9 +88,16 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToScenes() {
-        ScenesBtn.color = new Color(0, 0, 0);
-        ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        PackagesBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            btn.color = new Color(0, 0, 0);
+        }
+        foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
+        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
+        
         projectsList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
@@ -80,9 +106,15 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToPackages() {
-        PackagesBtn.color = new Color(0, 0, 0);
-        ScenesBtn.color = new Color(0.687f, 0.687f, 0.687f);
-        ProjectsBtn.color = new Color(0.687f, 0.687f, 0.687f);
+        foreach (TMPro.TMP_Text btn in ScenesBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
+        foreach (TMPro.TMP_Text btn in PackagesBtns) {
+            btn.color = new Color(0, 0, 0);
+        }
+        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        }
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(true);
