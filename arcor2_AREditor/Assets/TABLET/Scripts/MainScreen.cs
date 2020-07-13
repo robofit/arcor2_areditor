@@ -255,11 +255,11 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
-            string projectName = "unknown";
+            string projectName;
             try {
                 projectName = GameManager.Instance.GetProjectName(package.ProjectId);
-            } catch (ItemNotFoundException ex) {
-                Debug.Log(ex);
+            } catch (ItemNotFoundException _) {
+                projectName = "unknown";
             }            
             tile.InitTile(package.PackageMeta.Name,
                           async () => await Base.GameManager.Instance.RunPackage(package.Id),
