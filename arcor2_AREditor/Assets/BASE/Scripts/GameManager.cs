@@ -397,22 +397,6 @@ namespace Base {
         public async void ConnectToSever(string domain, int port) {
             ShowLoadingScreen("Connecting to server");
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            /*if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
-                try {
-                    await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
-                    ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-                } catch (TimeoutException e) {
-                    Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
-                    WebsocketManager.Instance.DisconnectFromSever();
-                }
-            
-            } else {
-                ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-                
-                Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
-                WebsocketManager.Instance.DisconnectFromSever();
-            }*/
-
             WebsocketManager.Instance.ConnectToServer(domain, port);
         }
 
@@ -620,22 +604,23 @@ namespace Base {
                         }
                         OpenPackageRunningScreen();
                         if (state.State == PackageState.StateEnum.Paused) {
-                            OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                            OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                         }
                     } catch (TimeoutException ex) {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
                     }
                 } else if (state.State == PackageState.StateEnum.Paused) {
-                    OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                    OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
                 } else if (state.State == PackageState.StateEnum.Running) {
-                    OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, GetPackageName(PackageInfo.PackageId)));
+                    OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
                 }
                 
                 
             } else if (state.State == PackageState.StateEnum.Stopped) {
+                PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
                 SceneManager.Instance.DestroyScene();

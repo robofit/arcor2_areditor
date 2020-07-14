@@ -60,17 +60,28 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
-        if (args.Data == GameManager.GameStateEnum.ProjectEditor) {
-            CreateGlobalActionPointBtn.SetActive(true);
-            // never use rotate toggle in project editor
-            RotateToggle.gameObject.SetActive(false);
-            // but use move only if the gizmo was previously active (for tablet version)
-            if(UseGizmoMove || UseGizmoRotate)
-                UseGizmoMove = true;
-        } else {
-            CreateGlobalActionPointBtn.SetActive(false);
-            RotateToggle.gameObject.SetActive(true);
+        CreateGlobalActionPointBtn.SetActive(false);
+        MoveToggle.gameObject.SetActive(false);
+        RotateToggle.gameObject.SetActive(false);
+        ConnectionsToggle.gameObject.SetActive(false);
+        switch (args.Data) {
+            case GameManager.GameStateEnum.ProjectEditor:
+                CreateGlobalActionPointBtn.SetActive(true);
+                MoveToggle.gameObject.SetActive(true);
+                // use move only if the gizmo was previously active (for tablet version)
+                if (UseGizmoMove || UseGizmoRotate)
+                    UseGizmoMove = true;
+                ConnectionsToggle.gameObject.SetActive(true);
+                break;
+            case GameManager.GameStateEnum.SceneEditor:
+                RotateToggle.gameObject.SetActive(true);
+                MoveToggle.gameObject.SetActive(true);
+                break;
+            case GameManager.GameStateEnum.PackageRunning:
+                ConnectionsToggle.gameObject.SetActive(true);
+                break;
         }
+
     }
 
     public void DisplayTrackables(bool active) {
@@ -98,8 +109,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(ProjectManager.Instance.ActionPointsOrigin.transform.position);
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(ProjectManager.Instance.ActionPointsOrigin.transform.InverseTransformPoint(abovePoint)));
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(ProjectManager.Instance.ActionPointsOrigin.transform.position));
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
 
         bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
         if (result)
