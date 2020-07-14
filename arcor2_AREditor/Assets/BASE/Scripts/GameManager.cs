@@ -345,22 +345,6 @@ namespace Base {
         public async void ConnectToSever(string domain, int port) {
             ShowLoadingScreen("Connecting to server");
             OnConnectingToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.GetWSURI(domain, port)));
-            /*if (await WebsocketManager.Instance.ConnectToServer(domain, port)) {
-                try {
-                    await Task.Run(() => WebsocketManager.Instance.WaitForInitData(5000));
-                    ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-                } catch (TimeoutException e) {
-                    Notifications.Instance.ShowNotification("Connection failed", "Connected but failed to fetch required data (scene, project, projectstate)");
-                    WebsocketManager.Instance.DisconnectFromSever();
-                }
-            
-            } else {
-                ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
-                
-                Notifications.Instance.ShowNotification("Connection failed", "Failed to connect to remote server. Is it running?");
-                WebsocketManager.Instance.DisconnectFromSever();
-            }*/
-
             WebsocketManager.Instance.ConnectToServer(domain, port);
         }
 
