@@ -42,13 +42,23 @@ namespace Base {
 
     public class SceneManager : Singleton<SceneManager> {
 
-        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
+        //Events and event handlers
 
+        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
         public delegate void RobotUrdfEventHandler(object sender, RobotUrdfArgs args);
 
-        public IO.Swagger.Model.Scene Scene = null;
+        public event EventHandler OnLoadScene;
+        public event EventHandler OnSceneChanged;
+        public event EventHandler OnSceneSavedStatusChanged;
+        public event EventHandler OnSceneSaved;
+        public event RobotUrdfEventHandler OnUrdfReady;
+        public event ServiceEventHandler OnServicesUpdated;
 
-       // string == IO.Swagger.Model.Scene Data.Id
+        /// <summary>
+        /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
+        /// </summary>
+        public Scene SceneMeta = null;
+
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
         private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
@@ -62,6 +72,7 @@ namespace Base {
 
         public LineConnectionsManager AOToAPConnectionsManager;
         public GameObject LineConnectionPrefab, RobotEEPrefab;
+        private bool sceneChanged = false;
 
         private bool sceneActive = true;
 
@@ -78,11 +89,6 @@ namespace Base {
         private List<IRobot> robotsWithEndEffector = new List<IRobot>();
 
 
-        public event EventHandler OnLoadScene;
-        public event EventHandler OnSceneChanged;
-        public event EventHandler OnSceneSaved;
-        public event RobotUrdfEventHandler OnUrdfReady;
-        public event ServiceEventHandler OnServicesUpdated;
 
 
         private bool loadResources = false;
@@ -91,7 +97,18 @@ namespace Base {
             get => servicesData;
             set => servicesData = value;
         }
-        
+        public bool SceneChanged {
+            get => sceneChanged;
+            set {
+                bool origVal = SceneChanged;
+                sceneChanged = value;
+                OnSceneChanged?.Invoke(this, EventArgs.Empty);
+                if (origVal != value) {
+                    OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
 
 
         /// <summary>
@@ -100,21 +117,18 @@ namespace Base {
         /// <param name="project"></param>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, GameManager.GameStateEnum requestedGameState, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
-            if (Scene != null)
+            if (SceneMeta != null)
                 return false;
             robotsWithEndEffector.Clear();
+            SetSceneMeta(scene);
             
-            Scene = scene;
             this.loadResources = loadResources;
             LoadSettings();
-            
 
             bool success = await UpdateScene(scene, customCollisionModels);
-            
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
             }
-
             // TODO - do this when robot is added to scene
             //foreach (KeyValuePair<string, RobotMeta> robotMeta in ActionsManager.Instance.RobotsMeta) {
             //    if (!string.IsNullOrEmpty(robotMeta.Value.UrdfPackageFilename)) {
@@ -131,20 +145,46 @@ namespace Base {
         /// </summary>
         /// <param name="project"></param>
         public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene, CollisionModels customCollisionModels = null) {
-            if (scene.Id != Scene.Id)
+            if (scene.Id != SceneMeta.Id)
                 return false;
-            Scene = scene;
-            await UpdateActionObjects(customCollisionModels);
-            await UpdateServices();
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SetSceneMeta(scene);
+            await UpdateActionObjects(scene, customCollisionModels);
+            await UpdateServices(scene);
+            SceneChanged = true;
             return true;
         }
 
         public bool DestroyScene() {
             RemoveActionObjects();
             servicesData.Clear();
-            Scene = null;
+            SceneMeta = null;            
             return true;
+        }
+
+        public void SetSceneMeta(Scene scene) {
+            if (SceneMeta == null) {
+                SceneMeta = new Scene(id: "", name: "");
+            }
+            SceneMeta.Id = scene.Id;
+            SceneMeta.Desc = scene.Desc;
+            SceneMeta.IntModified = scene.IntModified;
+            SceneMeta.Modified = scene.Modified;
+            SceneMeta.Name = scene.Name;
+        }
+
+        public IO.Swagger.Model.Scene GetScene() {
+            if (SceneMeta == null)
+                return null;
+            Scene scene = SceneMeta;
+            scene.Objects = new List<SceneObject>();
+            scene.Services = new List<SceneService>();
+            foreach (ActionObject o in ActionObjects.Values) {
+                scene.Objects.Add(o.Data);
+            }
+            foreach (Service s in servicesData.Values) {
+                scene.Services.Add(s.Data);
+            }
+            return scene;
         }
 
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
@@ -201,8 +241,9 @@ namespace Base {
             Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
             ServicesData.TryGetValue(sceneService.Type, out Service service);
             service.Data = sceneService;
+            
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
@@ -219,7 +260,7 @@ namespace Base {
                 ServicesData.Add(sceneService.Type, service);
                 OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public void RemoveService(string serviceType) {
@@ -227,7 +268,7 @@ namespace Base {
             ServicesData.TryGetValue(serviceType, out Service service);
             ServicesData.Remove(serviceType);
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
 
@@ -352,7 +393,7 @@ namespace Base {
                     await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
                     
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
             
         }
 
@@ -364,7 +405,7 @@ namespace Base {
             }
             robotsWithEndEffector.Clear();
             CleanRobotEE();
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/RobotsEEVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);
         }
 
         public RobotEE GetRobotEE(string robotId, string eeId) {
@@ -377,9 +418,9 @@ namespace Base {
 
         
         internal void LoadSettings() {
-            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/AOVisibility", true);
-            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/AOInteractivity", true);
-            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + Scene.Id + "/RobotsEEVisibility", true);
+            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
+            ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
+            RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
 
 
@@ -414,21 +455,18 @@ namespace Base {
         }
 
         public void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
-
-            Scene.Desc = scene.Desc;
-            Scene.Modified = scene.Modified;
-            Scene.Name = scene.Name;
+            SetSceneMeta(scene);
         }
 
         public Vector3 GetCollisionFreePointAbove(Vector3 originalPosition) {
             Vector3 aboveModel = Vector3.zero;
-            Collider[] colliders = Physics.OverlapSphere(originalPosition + aboveModel, 0.025f);
+            Collider[] colliders = Physics.OverlapSphere(SceneOrigin.transform.TransformPoint(originalPosition), 0.025f);
             // to avoid infinite loop
             int i = 0;
-            while (colliders.Length > 0 && i < 20) {
+            while (colliders.Length > 0 && i < 40) {
                 Collider collider = colliders[0];
-                aboveModel.y = collider.gameObject.transform.position.y + collider.bounds.extents.y + 0.05f;
-                colliders = Physics.OverlapSphere(originalPosition + aboveModel, 0.025f);
+                aboveModel.y = SceneOrigin.transform.InverseTransformPoint(collider.gameObject.transform.position).y + collider.bounds.extents.y + 0.05f;
+                colliders = Physics.OverlapSphere(SceneOrigin.transform.TransformPoint(originalPosition) + aboveModel, 0.025f);
                 ++i;
             }
             return originalPosition + aboveModel;
@@ -543,24 +581,6 @@ namespace Base {
         }
 
 
-        /*public List<string> GetRobotsNames() {
-            HashSet<string> robots = new HashSet<string>();
-            foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
-                if (actionObject.ActionObjectMetadata.Robot) {
-                    robots.Add(actionObject.Data.Name);
-                }
-            }
-            foreach (Service service in servicesData.Values) {
-                if (service.Metadata.Robot) {
-                    foreach (string s in service.GetRobotsNames()) {
-                        robots.Add(s);
-                    }
-                }
-            }
-            return robots.ToList<string>();
-        }*/
-
-
 
         public string RobotNameToId(string robotName) {
             return GetRobotByName(robotName).GetId();
@@ -574,7 +594,7 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public void SceneObjectBaseUpdated(SceneObject sceneObject) {
@@ -584,13 +604,13 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         public async Task SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = await SpawnActionObject(sceneObject.Id, sceneObject.Type);
             actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisible, ActionObjectsInteractive);
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
 
@@ -602,15 +622,15 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            OnSceneChanged?.Invoke(this, EventArgs.Empty);
+            SceneChanged = true;
         }
 
         /// <summary>
         /// Updates action GameObjects in ActionObjects dict based on the data present in IO.Swagger.Model.Scene Data.
         /// </summary>
-        public async Task UpdateActionObjects(CollisionModels customCollisionModels = null) {
+        public async Task UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
             List<string> currentAO = new List<string>();
-            foreach (IO.Swagger.Model.SceneObject aoSwagger in Scene.Objects) {
+            foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
                 ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
@@ -622,9 +642,9 @@ namespace Base {
         /// Updates all services from scene data.  
         /// Only called when whole scene arrived, i.e. when client is connected or scene is opened, so all service needs to be added.
         /// </summary>
-        public async Task UpdateServices() {
+        public async Task UpdateServices(Scene scene) {
             ClearServices(); //just to be sure
-            foreach (IO.Swagger.Model.SceneService service in Scene.Services) {
+            foreach (IO.Swagger.Model.SceneService service in scene.Services) {
                 await AddService(service, loadResources);
             }
         }
@@ -645,7 +665,9 @@ namespace Base {
         }
 
         internal void SceneSaved() {
+            Base.Notifications.Instance.ShowNotification("Scene saved successfully", "");
             OnSceneSaved?.Invoke(this, EventArgs.Empty);
+            SceneChanged = false;
         }
 
         public ActionObject GetPreviousActionObject(string aoId) {
@@ -677,7 +699,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Show();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", true);
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
             ActionObjectsVisible = true;
         }
 
@@ -688,7 +710,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.Hide();
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOVisibility", false);
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", false);
             ActionObjectsVisible = false;
         }
 
@@ -699,7 +721,7 @@ namespace Base {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.SetInteractivity(interactivity);
             }
-            PlayerPrefsHelper.SaveBool("scene/" + Scene.Id + "/AOInteractivity", interactivity);
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOInteractivity", interactivity);
             ActionObjectsInteractive = interactivity;
         }
 

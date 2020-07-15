@@ -30,6 +30,16 @@ namespace Base {
         }
     }
 
+    public class ShowMainScreenEventArgs {
+        public IO.Swagger.Model.ShowMainScreenData Data {
+            get; set;
+        }
+
+        public ShowMainScreenEventArgs(IO.Swagger.Model.ShowMainScreenData data) {
+            Data = data;
+        }
+    }
+
 
     public class WebsocketManager : Singleton<WebsocketManager> {
         public string APIDomainWS = "";
@@ -37,21 +47,21 @@ namespace Base {
         private WebSocket websocket;
 
 
-        private bool ignoreProjectChanged, connecting;
+        private bool ignoreProjectChanged;
 
         private Dictionary<int, string> responses = new Dictionary<int, string>();
 
         private int requestID = 1;
-        
-        private bool packageStateArrived = false;
 
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
         public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
+        public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
 
         public event RobotEefUpdatedEventHandler OnRobotEefUpdated;
         public event RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
         public event EventHandler OnConnectedEvent;
         public event EventHandler OnDisconnectEvent;
+        public event ShowMainScreenEventHandler OnShowMainScreen;
 
         
 
@@ -59,8 +69,7 @@ namespace Base {
 
 
         private void Awake() {
-            ignoreProjectChanged = false;
-            connecting = false;             
+            ignoreProjectChanged = false;       
         }
 
        
@@ -73,11 +82,9 @@ namespace Base {
 
         private void OnError(string errorMsg) {
             Debug.LogError(errorMsg);
-            connecting = false;
         }
 
         private void OnConnected() {
-            connecting = false;
             Debug.Log("On connected");
             OnConnectedEvent?.Invoke(this, EventArgs.Empty);
         }
@@ -85,8 +92,7 @@ namespace Base {
         public async void ConnectToServer(string domain, int port) {
            
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
-            packageStateArrived = false;
-            connecting = true;
+            try {
             APIDomainWS = GetWSURI(domain, port);
             websocket = new WebSocket(APIDomainWS);
             serverDomain = domain;
@@ -97,6 +103,12 @@ namespace Base {
             websocket.OnMessage += HandleReceivedData;
 
             await websocket.Connect();
+            } catch (UriFormatException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to parse domain", ex.Message);
+                GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
+                GameManager.Instance.HideLoadingScreen(true);
+            }
         }
         
         async public void DisconnectFromSever() {
@@ -114,8 +126,6 @@ namespace Base {
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Disconnected;
             websocket = null;
             serverDomain = null;
-            packageStateArrived = false;
-            connecting = false;
             GameManager.Instance.HideLoadingScreen();
         }
         
@@ -126,32 +136,14 @@ namespace Base {
             return serverDomain;
         }
 
-        /// <summary>
-        /// Waits until all post-connection data arrived from server or until timeout exprires
-        /// </summary>
-        /// <param name="timeout">Timeout in ms</param>
-        public async Task WaitForInitData(int timeout) {
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            while (!CheckInitData()) {
-                if (sw.ElapsedMilliseconds > timeout)
-                    throw new TimeoutException();
-                Thread.Sleep(100);
-            }
-            return;
-        }
-
-        public bool CheckInitData() {
-            return packageStateArrived;
-        }
-
-     
+       
 
         public string GetWSURI(string domain, int port) {
             return "ws://" + domain + ":" + port.ToString();
         }
         
         private void OnApplicationQuit() {
+            Debug.LogError("Stopping app");
             DisconnectFromSever();
         }
         
@@ -175,7 +167,7 @@ namespace Base {
             }
         }
 
-        private void HandleReceivedData(byte[] message) {
+        private async void HandleReceivedData(byte[] message) {
             string data = Encoding.Default.GetString(message);
             var dispatchType = new {
                 id = 0,
@@ -188,7 +180,6 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            //if (dispatch?.@event != null && dispatch.@event != "ActionState" && dispatch.@event != "CurrentAction")
             if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
@@ -222,8 +213,9 @@ namespace Base {
                     case "JointsChanged":
                         HandleJointsChanged(data);
                         break;
-                    case "ObjectTypesChanged":
-                        HandleObjectTypesChanged(data);
+                    //case "ObjectTypesChanged":
+                    case "ChangedObjectTypes":
+                        HandleChangedObjectTypesEvent(data);
                         break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
@@ -259,7 +251,7 @@ namespace Base {
                         HandleRobotJoints(data);
                         break;
                     case "OpenScene":
-                        HandleOpenScene(data);
+                        await HandleOpenScene(data);
                         break;
                     case "OpenProject":
                         HandleOpenProject(data);
@@ -279,12 +271,14 @@ namespace Base {
                         else
                             HandleProjectChanged(data);
                         break;
+                    case "ShowMainScreen":
+                        HandleShowMainScreen(data);
+                        break;
                 }
             }
 
         }
 
-        
         private Task<T> WaitForResult<T>(int key, int timeout = 15000) {
             return Task.Run(() => {
                 if (responses.TryGetValue(key, out string value)) {
@@ -353,6 +347,12 @@ namespace Base {
             IO.Swagger.Model.RobotJointsEvent robotJoints = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotJointsEvent>(data);
             OnRobotJointsUpdated?.Invoke(this, new RobotJointsUpdatedEventArgs(robotJoints.Data));
         }
+        private void HandleShowMainScreen(string data) {
+            IO.Swagger.Model.ShowMainScreenEvent showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreenEvent>(data);
+            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
+        }
+
+
 
         private void HandleCurrentAction(string obj) {
             string puck_id;
@@ -408,7 +408,6 @@ namespace Base {
         private void HandlePackageState(string obj) {
             IO.Swagger.Model.PackageStateEvent projectState = JsonConvert.DeserializeObject<IO.Swagger.Model.PackageStateEvent>(obj);
             GameManager.Instance.PackageStateUpdated(projectState.Data);
-            packageStateArrived = true;
         }
 
         private void HandlePackageInfo(string obj) {
@@ -437,15 +436,15 @@ namespace Base {
             }
         }
 
-        private void HandleObjectTypesChanged(string data) {
-            IO.Swagger.Model.ObjectTypesChangedEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ObjectTypesChangedEvent>(data);
+        private void HandleChangedObjectTypesEvent(string data) {
+            IO.Swagger.Model.ChangedObjectTypesEvent objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypesEvent>(data);
             switch (objectTypesChangedEvent.ChangeType) {
-                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Add:
-                    foreach (string type in objectTypesChangedEvent.Data)
+                case IO.Swagger.Model.ChangedObjectTypesEvent.ChangeTypeEnum.Add:
+                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
                         ActionsManager.Instance.ObjectTypeAdded(type);
                     break;
-                case IO.Swagger.Model.ObjectTypesChangedEvent.ChangeTypeEnum.Remove:
-                    foreach (string type in objectTypesChangedEvent.Data)
+                case IO.Swagger.Model.ChangedObjectTypesEvent.ChangeTypeEnum.Remove:
+                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
                         ActionsManager.Instance.ObjectTypeRemoved(type);
                     break;
                 
@@ -588,9 +587,9 @@ namespace Base {
             GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
         }
 
-        private async void HandleOpenScene(string data) {
+        private async Task HandleOpenScene(string data) {
             IO.Swagger.Model.OpenScene openSceneEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenScene>(data);
-            GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
+            await GameManager.Instance.SceneOpened(openSceneEvent.Data.Scene);
         }
 
         private void HandleCloseProject(string data) {
@@ -660,12 +659,21 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        public async Task RunPackage(string packageId) {
+        public async Task RunPackage(string packageId, bool cleanupAfterRun=true) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: packageId);
+            IO.Swagger.Model.RunPackageArgs args = new IO.Swagger.Model.RunPackageArgs(id: packageId, cleanupAfterRun: cleanupAfterRun);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public async Task TemporaryPackage() {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.TemporaryPackageResponse response = await WaitForResult<IO.Swagger.Model.TemporaryPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }

@@ -109,30 +109,19 @@ namespace Base {
 
 
 
-        public void ObjectTypeRemoved(string type) {
-            if (actionObjectsMetadata.ContainsKey(type)) {
-                actionObjectsMetadata.Remove(type);
+        public void ObjectTypeRemoved(ObjectTypeMeta objectType) {
+            if (actionObjectsMetadata.ContainsKey(objectType.Type)) {
+                actionObjectsMetadata.Remove(objectType.Type);
                 OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(null));
             }            
         }
 
-        public async void ObjectTypeAdded(string type) {
-            List<ObjectTypeMeta> objects = await WebsocketManager.Instance.GetObjectTypes();
-            ObjectTypeMeta objectTypeMeta = null;
-            foreach (ObjectTypeMeta obj in objects) {
-                if (obj.Type == type) {
-                    objectTypeMeta = obj;
-                    break;
-                }
-            }
-            if (objectTypeMeta == null)
-                return;
-
-            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectTypeMeta);
+        public async void ObjectTypeAdded(ObjectTypeMeta objectType) {
+            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectType);
             await UpdateActionsOfActionObject(m);
             m.Robot = IsDescendantOfType("Robot", m);               
-            actionObjectsMetadata.Add(type, m);
-            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(type));
+            actionObjectsMetadata.Add(objectType.Type, m);
+            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(objectType.Type));
         }
         
 

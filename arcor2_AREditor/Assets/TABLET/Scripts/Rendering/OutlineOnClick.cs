@@ -59,7 +59,7 @@ public class OutlineOnClick : Clickable {
         }
     }
 
-    protected virtual void Select() {
+    protected virtual void Select(bool force = false) {
         AddMaterial(ClickMaterial);
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();

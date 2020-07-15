@@ -33,6 +33,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private bool activateTrackableMarkers = false;
 
+#if UNITY_STANDALONE || UNITY_EDITOR
+    private void Start() {
+        Calibrated = true;
+    }
+#endif
+
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
     private void OnEnable() {
         GameManager.Instance.OnConnectedToServer += ConnectedToServer;
@@ -76,7 +82,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 WorldAnchorCloud = ARAnchorManager.HostCloudAnchor(WorldAnchorLocal);
 
                 StartCoroutine(HostCloudAnchor());
+            } else {
+                Calibrated = true;
             }
+
+            GameManager.Instance.Scene.SetActive(true);
 
             ActivateTrackableMarkers(false);
         }
@@ -91,8 +101,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public void Recalibrate() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        HideCurrentWorldAnchor();
         ActivateTrackableMarkers(true);
         Calibrated = false;
+        GameManager.Instance.Scene.SetActive(false);
 #endif
     }
 
@@ -118,6 +130,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Cloud anchor created", WorldAnchorCloud.cloudAnchorState.ToString() + " ID: " + WorldAnchorCloud.cloudAnchorId);
 
             Calibrated = true;
+            GameManager.Instance.Scene.SetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
             Debug.LogError("Cloud anchor error: " + WorldAnchorCloud.cloudAnchorState);
@@ -138,11 +151,22 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    private void AttachScene(GameObject worldAnchor, bool initLocalAnchor = false) {
-        if (initLocalAnchor) {
-            WorldAnchorLocal = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
-            GameManager.Instance.Scene.transform.parent = WorldAnchorLocal.gameObject.transform;
-        } else if(worldAnchor != null) {
+    private void HideCurrentWorldAnchor() {
+        if (WorldAnchorLocal != null) {
+            WorldAnchorLocal.gameObject.SetActive(false);
+        }
+        if (WorldAnchorCloud != null) {
+            WorldAnchorCloud.gameObject.SetActive(false);
+        }
+    }
+
+    private void AttachScene(GameObject worldAnchor) {
+    //private void AttachScene(GameObject worldAnchor, bool initLocalAnchor = false) {
+        //if (initLocalAnchor) {
+        //    WorldAnchorLocal = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
+        //    GameManager.Instance.Scene.transform.parent = WorldAnchorLocal.gameObject.transform;
+        //} else
+        if(worldAnchor != null) {
             GameManager.Instance.Scene.transform.parent = worldAnchor.transform;
         }
 
@@ -200,13 +224,14 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 Notifications.Instance.ShowNotification("Cloud anchor loaded", "Cloud anchor loaded sucessfully");
 
                 Calibrated = true;
+                GameManager.Instance.Scene.SetActive(true);
             }
             //TODO If anchor is not present in the system, play animation to manually calibrate by clicking on marker
             else {
                 Calibrated = false;
                 Notifications.Instance.ShowNotification("Cloud anchor does not exist", "Please calibrate manually by clicking on the cube displayed on your marker");
 
-                AttachScene(null, initLocalAnchor: true);
+                //AttachScene(null, initLocalAnchor: true);
 
                 ActivateTrackableMarkers(true);
             }
@@ -214,7 +239,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Calibrated = false;
             Notifications.Instance.ShowNotification("Cloud anchors are disabled", "Please calibrate manually by clicking on the cube displayed on your marker");
 
-            AttachScene(null, initLocalAnchor: true);
+            //AttachScene(null, initLocalAnchor: true);
 
             ActivateTrackableMarkers(true);
         }
