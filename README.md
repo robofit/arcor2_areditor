@@ -34,6 +34,7 @@ ARCOR2 AR Editor
    - [Native Camera for Android & iOS](https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802) (only if you want to build Android version)
    - [Simple Collada](https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579)
      - requires to apply patch (<b>/scripts/ColladaImporter.patch</b> and <b>/scripts/StringExtensions.patch</b>) on script ColladaImporter.cs and OrbCreationExtensions/StringExtensions.cs
+     - SimpleCollada asset must be moved to Assets/Submodule folder in order to patch script works
      - on Windows, you can download [UnxUtils](http://unxutils.sourceforge.net/) and use batch file in /scripts/patch_simple_collada_asset.bat (if UnxUtils extracted to "C:\Program Files\") or use this command:
      ```bash       
      path_to_UnxUtils\UnxUtils\usr\local\wbin\patch.exe ..\arcor2_AREditor\Assets\Submodules\SimpleCollada\ColladaImporter.cs -i ColladaImporter.patch
