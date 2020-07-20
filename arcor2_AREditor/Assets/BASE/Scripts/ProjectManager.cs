@@ -136,19 +136,8 @@ namespace Base {
                 logicItem.UpdateConnection(projectLogicItem);
 
             }
-
-==== BASE ====
-        public bool DestroyProject() {
-            ProjectLoaded = false;
-            ProjectMeta = null;
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.DeleteAP(false);
-            }
-            ActionPoints.Clear();
-            return true;
         }
 
-==== BASE ====
         private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {
             if (LogicItems.TryGetValue(args.Data.Id, out LogicItem logicItem)) {
                 logicItem.Data = args.Data;

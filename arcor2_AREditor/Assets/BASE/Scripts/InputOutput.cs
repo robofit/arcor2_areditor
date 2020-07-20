@@ -35,7 +35,6 @@ namespace Base {
                 if (ConnectionManagerArcoro.Instance.IsConnecting()) {
                     if (string.IsNullOrEmpty(logicItemId)) {
                         InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
-<<<<<<< HEAD
                         // check if this connection is valid
                         bool result;
                         if (GetType() == typeof(PuckInput)) {
@@ -50,17 +49,7 @@ namespace Base {
                                 await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id, false);
                             } else {
                                 await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Action.Data.Id, false);
-=======
-                        if (GetType() == theOtherOne.GetType()) {
-                            Notifications.Instance.ShowNotification("Connection failed", "You cannot connect two arrows of same type");
-                            return;
-                        }
-                        try {
-                            if (typeof(PuckInput) == GetType()) {
-                                await WebsocketManager.Instance.AddLogicItem(theOtherOne.Action.Data.Id, Action.Data.Id);
-                            } else {
-                                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, theOtherOne.Action.Data.Id);
->>>>>>> * Added start and end puck
+
                             }
                             ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                         } catch (RequestFailedException ex) {
