@@ -184,10 +184,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
-                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue());
         } else {
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
-                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue());
         }
 
         return objectTypeMeta;

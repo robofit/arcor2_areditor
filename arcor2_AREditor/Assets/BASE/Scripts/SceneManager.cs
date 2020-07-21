@@ -28,7 +28,7 @@ namespace Base {
         }
     }
 
-
+    /*
     public class ServiceEventArgs : EventArgs {
         public Service Data {
             get; set;
@@ -38,13 +38,13 @@ namespace Base {
             Data = data;
         }
     }
-
+    */
 
     public class SceneManager : Singleton<SceneManager> {
 
         //Events and event handlers
 
-        public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
+        //public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
         public delegate void RobotUrdfEventHandler(object sender, RobotUrdfArgs args);
 
         public event EventHandler OnLoadScene;
@@ -52,7 +52,7 @@ namespace Base {
         public event EventHandler OnSceneSavedStatusChanged;
         public event EventHandler OnSceneSaved;
         public event RobotUrdfEventHandler OnUrdfReady;
-        public event ServiceEventHandler OnServicesUpdated;
+        //public event ServiceEventHandler OnServicesUpdated;
 
         /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
@@ -60,7 +60,7 @@ namespace Base {
         public Scene SceneMeta = null;
 
         public Dictionary<string, ActionObject> ActionObjects = new Dictionary<string, ActionObject>();
-        private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
+       // private Dictionary<string, Service> servicesData = new Dictionary<string, Service>();
 
 
         public GameObject ActionObjectsSpawn, SceneOrigin, EEOrigin;
@@ -93,10 +93,10 @@ namespace Base {
 
         private bool loadResources = false;
 
-        public Dictionary<string, Service> ServicesData {
+      /*  public Dictionary<string, Service> ServicesData {
             get => servicesData;
             set => servicesData = value;
-        }
+        }*/
         public bool SceneChanged {
             get => sceneChanged;
             set {
@@ -149,14 +149,14 @@ namespace Base {
                 return false;
             SetSceneMeta(scene);
             await UpdateActionObjects(scene, customCollisionModels);
-            await UpdateServices(scene);
+            //await UpdateServices(scene);
             SceneChanged = true;
             return true;
         }
 
         public bool DestroyScene() {
             RemoveActionObjects();
-            servicesData.Clear();
+           // servicesData.Clear();
             SceneMeta = null;            
             return true;
         }
@@ -177,13 +177,13 @@ namespace Base {
                 return null;
             Scene scene = SceneMeta;
             scene.Objects = new List<SceneObject>();
-            scene.Services = new List<SceneService>();
+           // scene.Services = new List<SceneService>();
             foreach (ActionObject o in ActionObjects.Values) {
                 scene.Objects.Add(o.Data);
             }
-            foreach (Service s in servicesData.Values) {
+            /*foreach (Service s in servicesData.Values) {
                 scene.Services.Add(s.Data);
-            }
+            }*/
             return scene;
         }
 
@@ -228,7 +228,7 @@ namespace Base {
             }
             
         }
-
+        /*
         public void ClearServices() {
             List<string> servicesKeys = servicesData.Keys.ToList();
             foreach (string service in servicesKeys) {
@@ -270,7 +270,7 @@ namespace Base {
             OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
             SceneChanged = true;
         }
-
+        */
 
         // Update is called once per frame
         private void Update() {
@@ -292,7 +292,7 @@ namespace Base {
                 }
             }
         }
-
+/*
         public bool ServiceInScene(string type) {
             return ServicesData.ContainsKey(type);
         }
@@ -304,7 +304,7 @@ namespace Base {
                 throw new KeyNotFoundException("Service not in scene!");
             }
         }
-
+*/
         private void Start() {
             OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
@@ -551,7 +551,7 @@ namespace Base {
                     robotIds.Add(actionObject.Data.Id);
                 }                    
             }
-            foreach (Service service in servicesData.Values) {
+          /*  foreach (Service service in servicesData.Values) {
                 if (service.IsRobot()) {
                     List<Robot> serviceRobots = ((RobotService) service).GetRobots();
                     foreach (Robot robot in serviceRobots) {
@@ -561,7 +561,7 @@ namespace Base {
                         }
                     }
                 }
-            }
+            }*/
             return robots;
         }
 
@@ -637,7 +637,7 @@ namespace Base {
             }
 
         }
-
+        /*
         /// <summary>
         /// Updates all services from scene data.  
         /// Only called when whole scene arrived, i.e. when client is connected or scene is opened, so all service needs to be added.
@@ -647,7 +647,7 @@ namespace Base {
             foreach (IO.Swagger.Model.SceneService service in scene.Services) {
                 await AddService(service, loadResources);
             }
-        }
+        }*/
 
         public ActionObject GetNextActionObject(string aoId) {
             List<string> keys = ActionObjects.Keys.ToList();

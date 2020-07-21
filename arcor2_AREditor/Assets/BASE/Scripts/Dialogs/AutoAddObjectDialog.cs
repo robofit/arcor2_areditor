@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
-
+/*
 public class AutoAddObjectDialog : Dialog
 {
     public string ObjectToBeAdded;
@@ -20,3 +20,4 @@ public class AutoAddObjectDialog : Dialog
         AutoAddObjectToScene();
     }
 }
+*/

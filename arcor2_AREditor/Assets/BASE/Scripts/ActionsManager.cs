@@ -10,7 +10,7 @@ namespace Base {
     public class ActionsManager : Singleton<ActionsManager> {
 
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
-        private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
+       // private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         
         public Action CurrentlyRunningAction = null;
         
@@ -24,21 +24,20 @@ namespace Base {
 
         public event AREditorEventArgs.StringEventHandler OnActionObjectsUpdated;
 
-        public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
+        public bool ActionsReady, ActionObjectsLoaded;
 
         public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
 
         public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
-        public Dictionary<string, ServiceMetadata> ServicesMetadata {
+       /* public Dictionary<string, ServiceMetadata> ServicesMetadata {
             get => servicesMetadata;
             set => servicesMetadata = value;
         }
-        
+        */
         private void Awake() {
             ActionsReady = false;
-            ServicesLoaded = false;
             ActionObjectsLoaded = false;
         }
 
@@ -58,7 +57,7 @@ namespace Base {
         }
 
         private void Update() {
-            if (!ActionsReady && ActionObjectsLoaded && ServicesLoaded) {
+            if (!ActionsReady && ActionObjectsLoaded) {
                 
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
                     
@@ -67,11 +66,11 @@ namespace Base {
                         return;
                     }
                 }
-                foreach (ServiceMetadata sm in ServicesMetadata.Values) {
+              /*  foreach (ServiceMetadata sm in ServicesMetadata.Values) {
                     if (!sm.ActionsLoaded) {
                         return;
                     }
-                }
+                }*/
                 ActionsReady = true;
                 OnActionsLoaded?.Invoke(this, EventArgs.Empty);
                 enabled = false;
@@ -79,16 +78,15 @@ namespace Base {
         }
 
         public void Init() {
-            servicesMetadata.Clear();
+           // servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
             ActionsReady = false;
-            ServicesLoaded = false;
             ActionObjectsLoaded = false;
         }        
 
        
 
-        
+      /*  
         public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
             foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
                 ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
@@ -97,7 +95,7 @@ namespace Base {
             }
             ServicesLoaded = true;
             OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
-        }
+        }*/
 
         // TODO - solve somehow better.. perhaps own class for robot objects and services?
         internal void UpdateRobotsMetadata(List<RobotMeta> list) {
@@ -134,7 +132,7 @@ namespace Base {
             }
             actionObject.ActionsLoaded = true;
         }
-
+        /*
         private async Task UpdateActionsOfService(ServiceMetadata serviceMetadata) {
             if (!serviceMetadata.Disabled) {
                 serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
@@ -144,7 +142,7 @@ namespace Base {
                 serviceMetadata.Problem = "Failed to load actions";
             }
             serviceMetadata.ActionsLoaded = true;
-        }
+        }*/
 
         private Dictionary<string, ActionMetadata> ParseActions(List<IO.Swagger.Model.ObjectAction> actions) {
             if (actions == null) {
@@ -234,9 +232,9 @@ namespace Base {
                 }
                 
             }
-            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
+            /*foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }
+            }*/
 
             return actionsMetadata;
         }
@@ -263,9 +261,9 @@ namespace Base {
                     }
                 }
             }
-            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
+           /* foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
                 actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }
+            }*/
 
             return actionsMetadata;
         }

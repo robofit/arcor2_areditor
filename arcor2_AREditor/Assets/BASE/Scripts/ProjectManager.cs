@@ -361,11 +361,11 @@ namespace Base {
         }
 
         public IActionProvider GetActionProvider(string id) {
-            try {
+           /* try {
                 return SceneManager.Instance.GetService(id);
             } catch (KeyNotFoundException ex) {
 
-            }
+            }*/
 
             if (SceneManager.Instance.ActionObjects.TryGetValue(id, out ActionObject actionObject)) {
                 return actionObject;
@@ -532,12 +532,7 @@ namespace Base {
             try {
                 actionProvider = SceneManager.Instance.GetActionObject(providerName);
             } catch (KeyNotFoundException ex) {
-                if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
-                    actionProvider = originalService;
-                } else {
-                    Debug.LogError(ex);
-                    throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
-                }
+                throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);                
             }
 
             try {

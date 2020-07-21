@@ -164,9 +164,9 @@ namespace Base {
                     case "SceneObjectChanged":
                         HandleSceneObjectChanged(data);
                         break;
-                    case "SceneServiceChanged":
+                    /*case "SceneServiceChanged":
                         HandleSceneServiceChanged(data);
-                        break;
+                        break;*/
                     case "ActionPointChanged":
                         HandleActionPointChanged(data);
                         break;
@@ -546,7 +546,7 @@ namespace Base {
                     throw new NotImplementedException();
             }
         }
-
+        /*
 
         private async Task HandleSceneServiceChanged(string data) {
             IO.Swagger.Model.SceneServiceChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneServiceChanged>(data);
@@ -567,7 +567,7 @@ namespace Base {
                 default:
                     throw new NotImplementedException();
             }
-        }
+        }*/
 
 
 
@@ -817,7 +817,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
-
+        /*
         public async Task AddServiceToScene(IO.Swagger.Model.SceneService sceneService) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddServiceToSceneRequest request = new IO.Swagger.Model.AddServiceToSceneRequest(id: r_id, request: "AddServiceToScene", args: sceneService);
@@ -835,7 +835,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             return await WaitForResult<IO.Swagger.Model.AutoAddObjectToSceneResponse>(r_id);
             
-        }
+        }*/
 
        
         public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force) {
@@ -856,7 +856,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
-
+        /*
         public async Task<List<IO.Swagger.Model.ServiceTypeMeta>> GetServices() {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.GetServicesRequest request = new IO.Swagger.Model.GetServicesRequest(id: r_id, request: "GetServices");
@@ -866,7 +866,7 @@ namespace Base {
                 return response.Data;
             else
                 return new List<IO.Swagger.Model.ServiceTypeMeta>();
-        }
+        }*/
 
         public async Task OpenScene(string scene_id) {
             int r_id = Interlocked.Increment(ref requestID);

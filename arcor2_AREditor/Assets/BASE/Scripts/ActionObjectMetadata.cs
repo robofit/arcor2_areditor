@@ -14,11 +14,13 @@ namespace Base {
                                                                 _base: meta.Base,
                                                                 builtIn: meta.BuiltIn,
                                                                 description: meta.Description,
-                                                                needsServices: meta.NeedsServices,
-                                                                objectModel: meta.ObjectModel,
-                                                                type: meta.Type,
                                                                 disabled: meta.Disabled,
-                                                                problem: meta.Problem) {
+                                                                hasPose: meta.HasPose,
+                                                                needsParentType: meta.NeedsParentType,
+                                                                objectModel: meta.ObjectModel,
+                                                                problem: meta.Problem,
+                                                                settings: meta.Settings,
+                                                                type: meta.Type) {
            
         }
 

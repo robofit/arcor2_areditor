@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
-
+/*
 public class ServiceButton : MonoBehaviour
 {
-    //public string Type;
-    public IO.Swagger.Model.ServiceTypeMeta ServiceMetadata;
+   
     public GameObject Yes, No;
     private bool state;
     [SerializeField]
@@ -45,3 +44,4 @@ public class ServiceButton : MonoBehaviour
     }
 
 }
+*/

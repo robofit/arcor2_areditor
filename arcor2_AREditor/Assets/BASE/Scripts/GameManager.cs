@@ -291,7 +291,7 @@ namespace Base {
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
 
                     await UpdateActionObjects();
-                    await UpdateServices();
+                   // await UpdateServices();
                     await UpdateRobotsMeta();
 
                     try {
@@ -368,10 +368,10 @@ namespace Base {
             }
             
         }
-
+        /*
         public async Task UpdateServices() {
             await ActionsManager.Instance.UpdateServicesMetadata(await WebsocketManager.Instance.GetServices());
-        }
+        }*/
 
 
         private async Task UpdateRobotsMeta() {
@@ -395,7 +395,7 @@ namespace Base {
             }
             return true;
         }
-
+        /*
         public async Task<IO.Swagger.Model.AutoAddObjectToSceneResponse> AutoAddObjectToScene(string type) {
             return await WebsocketManager.Instance.AutoAddObjectToScene(type);
         }
@@ -409,7 +409,7 @@ namespace Base {
             } finally {
             }            
             
-        }
+        }*/
 
 
         public void SceneAdded(IO.Swagger.Model.Scene scene) {
