@@ -60,7 +60,10 @@ public class ActionObject3D : ActionObject
     }
 
     public override Vector3 GetScenePosition() {
-        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
+        if (ActionObjectMetadata.HasPose)
+            return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
+        else
+            return Vector3.zero;
     }
 
     public override void SetScenePosition(Vector3 position) {
@@ -68,7 +71,10 @@ public class ActionObject3D : ActionObject
     }
 
     public override Quaternion GetSceneOrientation() {
-        return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+        if (ActionObjectMetadata.HasPose)
+            return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+        else
+            return Quaternion.identity;
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
@@ -76,8 +82,11 @@ public class ActionObject3D : ActionObject
     }
 
     public IO.Swagger.Model.Pose GetPose() {
-        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
-            orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+        if (ActionObjectMetadata.HasPose)
+            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
+                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+        else
+            return new IO.Swagger.Model.Pose(new Orientation(), new Position());
     }
 
     public override void OnClick(Click type) {

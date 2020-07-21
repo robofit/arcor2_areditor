@@ -69,8 +69,6 @@ namespace Base {
 
         public TMPro.TMP_Text VersionInfo, MessageBox, EditorInfo, ConnectionInfo, ServerVersion;
 
-        public Image GizmoOverlay;
-
         public GameObject objectWithGizmo, Scene;
 
         [SerializeField]
@@ -386,8 +384,15 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddObjectToScene(string type, string name) {
             try {
-                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-                await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+                IO.Swagger.Model.Pose pose = null;
+                if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
+                    if (actionObjectMetadata.HasPose) {
+                        pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+                    }
+                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+                } else {
+                    throw new RequestFailedException("Object type " + type + " does not exists");
+                }                
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add object to scene", ex.Message);

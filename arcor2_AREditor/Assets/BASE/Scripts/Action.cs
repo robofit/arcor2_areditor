@@ -589,7 +589,6 @@ namespace Base {
         }
 
         private static void ValidateIntegerParameter(LabeledInput input, ActionParameterMetadata actionMetadata, int newValue) {
-            Debug.LogError(actionMetadata.ParameterExtra);
             if (actionMetadata.ParameterExtra == null)
                 return;
             ARServer.Models.IntParameterExtra intParameterExtra = (ARServer.Models.IntParameterExtra) actionMetadata.ParameterExtra;
