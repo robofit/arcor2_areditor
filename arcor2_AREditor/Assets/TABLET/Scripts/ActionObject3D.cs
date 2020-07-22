@@ -9,7 +9,7 @@ using IO.Swagger.Model;
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
-    public GameObject Visual, Model;
+    public GameObject Visual, Model, TextLabel;
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
@@ -283,10 +283,10 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnHoverStart() {
-
+        TextLabel.SetActive(true);
     }
 
     public override void OnHoverEnd() {
-
+        TextLabel.SetActive(false);
     }
 }

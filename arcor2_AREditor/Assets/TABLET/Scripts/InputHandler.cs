@@ -67,7 +67,7 @@ public class InputHandler : Singleton<InputHandler> {
 
     private void HandleTouch() {
         RaycastHit hit = new RaycastHit();
-        foreach (Touch touch in Input.touches) {
+        /*foreach (Touch touch in Input.touches) {
             // Do not raycast through UI element
             if (!EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
 
@@ -114,6 +114,9 @@ public class InputHandler : Singleton<InputHandler> {
                     }
                 }
             }
+        }*/
+        foreach (Touch touch in Input.touches) {
+            Sight.Instance.Click();
         }
     }
 

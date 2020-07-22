@@ -15,11 +15,15 @@ public class OnClickCollider : Clickable {
     }
 
     public override void OnHoverStart() {
-
+        foreach (Clickable clickable in Target.GetComponents<Clickable>()) {
+            clickable.OnHoverStart();
+        }
     }
 
     public override void OnHoverEnd() {
-
+        foreach (Clickable clickable in Target.GetComponents<Clickable>()) {
+            clickable.OnHoverEnd();
+        }
     }
 
     //public void OnMouseOver() {
