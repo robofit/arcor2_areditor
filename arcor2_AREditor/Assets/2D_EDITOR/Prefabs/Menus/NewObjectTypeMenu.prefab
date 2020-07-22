@@ -237,6 +237,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316347605141600}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &5083213640187107860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1391,6 +1397,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316346390695431}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &8442092285139142087
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1618,6 +1630,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316347670959365}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &665005651770385257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1845,6 +1863,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316346286993248}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &506032211775679476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2516,6 +2540,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 2661484816243316542}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &2042102814803820455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6805,6 +6835,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316346475883930}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &7281316347714063003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7802,6 +7838,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316346073682695}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &2363276990545816631
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8103,6 +8145,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 7281316346556342981}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &4225882289227748815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8419,6 +8467,12 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -8659,10 +8713,20 @@ PrefabInstance:
       propertyPath: dropdownItems.Array.data[4].OnItemSelection.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 1268072456547827254, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: enableIcon
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1268134369922896154, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1268171995269104322, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1373695492280390740, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -9001,6 +9065,12 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -9036,10 +9106,20 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 1268072456547827254, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: enableIcon
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1268134369922896154, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1268171995269104322, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1373695492280390740, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}

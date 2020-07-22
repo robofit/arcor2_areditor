@@ -42,8 +42,14 @@ public class ActionObject3D : ActionObject
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
-                    if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
-                        ResetPosition();
+
+                    if (ActionObjectMetadata.HasPose) {
+                        if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
+                            ResetPosition();
+                        }
+                    } else {
+                        PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
+                            transform.localPosition, transform.localRotation);
                     }
                 }
 
@@ -63,18 +69,20 @@ public class ActionObject3D : ActionObject
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
         else
-            return Vector3.zero;
+            return PlayerPrefsHelper.LoadVector3("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/position",
+                            Vector3.one);
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));        
     }
 
     public override Quaternion GetSceneOrientation() {
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
         else
-            return Quaternion.identity;
+            return PlayerPrefsHelper.LoadQuaternion("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/rotation",
+                            Quaternion.identity);
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {

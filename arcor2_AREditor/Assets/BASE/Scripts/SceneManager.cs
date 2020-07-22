@@ -181,9 +181,6 @@ namespace Base {
             foreach (ActionObject o in ActionObjects.Values) {
                 scene.Objects.Add(o.Data);
             }
-            /*foreach (Service s in servicesData.Values) {
-                scene.Services.Add(s.Data);
-            }*/
             return scene;
         }
 
