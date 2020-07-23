@@ -66,9 +66,9 @@ public class InputHandler : Singleton<InputHandler> {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             RaycastHit hit = new RaycastHit();
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
-                try {
+               // try {
                     if (clickType == Clickable.Click.MOUSE_HOVER) {
-                        try {
+                        //try {
                         
                             if (hoveredObject == null) {
                                 hit.collider.transform.gameObject.SendMessage("OnHoverStart");
@@ -80,17 +80,17 @@ public class InputHandler : Singleton<InputHandler> {
                                     hoveredObject = hit.collider.transform.gameObject;
                                 }
                             }
-                        } catch (Exception e) {
-                            Debug.LogError(e);
-                        }
+                        //} catch (Exception e) {
+                          //  Debug.LogError(e);
+                        //}
                     } else {
                         hit.collider.transform.gameObject.SendMessage("OnClick", clickType);
                         hoveredObject.SendMessage("OnHoverEnd");
                         hoveredObject = null;
                     }
-                } catch (Exception e) {
-                    Debug.LogError(e);
-                }
+              //  } catch (Exception e) {
+              //      Debug.LogError(e);
+              //  }
             } else {
                 OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
                 if (hoveredObject != null) {

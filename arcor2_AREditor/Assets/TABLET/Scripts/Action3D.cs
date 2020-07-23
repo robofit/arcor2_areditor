@@ -73,7 +73,7 @@ public class Action3D : Base.Action {
     }
 
     public override void OnClick(Click type) {
-        if (CheckClick())
+        if (!CheckClick())
             return;
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             ActionMenu.Instance.CurrentAction = this;
