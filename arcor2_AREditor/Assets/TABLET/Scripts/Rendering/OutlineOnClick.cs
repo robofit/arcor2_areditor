@@ -11,6 +11,7 @@ public class OutlineOnClick : Clickable {
 
     public List<Renderer> Renderers = new List<Renderer>();
     protected Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
+    public bool HoverOnly = false;
     
     private void Start() {
         materials.Clear();
@@ -60,6 +61,8 @@ public class OutlineOnClick : Clickable {
     }
 
     protected virtual void Select(bool force = false) {
+        if (HoverOnly)
+            return;
         AddMaterial(ClickMaterial);
         foreach (Renderer renderer in Renderers) {
             renderer.materials = materials[renderer].ToArray();

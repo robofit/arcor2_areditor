@@ -32,13 +32,22 @@ namespace Base {
             }
         }
 
-        public void Click() {
+        public void Touch() {
             if (CurrentObject == null)
                 return;
             Clickable clickable = CurrentObject.GetComponent<Clickable>();
             if (clickable == null)
                 return;
             clickable.OnClick(Clickable.Click.TOUCH);
+        }
+
+        public void LongTouch() {
+            if (CurrentObject == null)
+                return;
+            Clickable clickable = CurrentObject.GetComponent<Clickable>();
+            if (clickable == null)
+                return;
+            clickable.OnClick(Clickable.Click.LONG_TOUCH);
         }
     }
 }

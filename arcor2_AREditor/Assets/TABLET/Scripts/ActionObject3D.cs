@@ -6,10 +6,11 @@ using Base;
 using RuntimeGizmos;
 using IO.Swagger.Model;
 
+[RequireComponent(typeof(OutlineOnClick))]
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
-    public GameObject Visual, Model, TextLabel;
+    public GameObject Visual, Model;
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
@@ -34,6 +35,7 @@ public class ActionObject3D : ActionObject
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        outlineOnClick = GetComponent<OutlineOnClick>();
     }
 
 
@@ -111,25 +113,18 @@ public class ActionObject3D : ActionObject
             return;
         }
         // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON) {
+        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
-            manipulationStarted = true;
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                manipulationStarted = true;
+                TransformGizmo.Instance.AddTarget(Model.transform);
+            }           
         }
-        else if (type == Click.MOUSE_RIGHT_BUTTON) {
+        else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();
             tfGizmo.ClearTargets();
         }
-
-        // HANDLE TOUCH
-        else if (type == Click.TOUCH) {
-            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                // We have clicked with left mouse and started manipulation with object
-                manipulationStarted = true;
-            }
-            else {
-                ShowMenu();
-            }
-        }
+                
     }
 
     public override void UpdateUserId(string newUserId) {
@@ -291,10 +286,12 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnHoverStart() {
-        TextLabel.SetActive(true);
+        ActionObjectName.gameObject.SetActive(true);
+        outlineOnClick.Highlight();
     }
 
     public override void OnHoverEnd() {
-        TextLabel.SetActive(false);
+        ActionObjectName.gameObject.SetActive(false);
+        outlineOnClick.UnHighlight();
     }
 }

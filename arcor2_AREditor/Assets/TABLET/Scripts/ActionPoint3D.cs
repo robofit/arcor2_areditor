@@ -3,11 +3,14 @@ using RuntimeGizmos;
 using UnityEngine;
 using System.Collections.Generic;
 using IO.Swagger.Model;
+using TMPro;
 
+[RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual;
-    
+    public TextMeshPro ActionPointName;
+
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
 
@@ -67,21 +70,14 @@ public class ActionPoint3D : Base.ActionPoint {
             return;
         }
         // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON) {
+        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             StartManipulation();
-        } else if (type == Click.MOUSE_RIGHT_BUTTON) {
+            TransformGizmo.Instance.AddTarget(Sphere.transform);
+        } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu(false);
             tfGizmo.ClearTargets();
         }
 
-        // HANDLE TOUCH
-        else if (type == Click.TOUCH) {
-            if (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate) {
-                StartManipulation();
-            } else {
-                ShowMenu(false);
-            }
-        }
     }
 
     public void StartManipulation() {
@@ -152,6 +148,7 @@ public class ActionPoint3D : Base.ActionPoint {
     public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
         UpdateOrientationsVisuals();
+        ActionPointName.text = projectActionPoint.Name;
         return result;
     }
 
@@ -174,11 +171,13 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnHoverStart() {
-
+        HighlightAP(true);
+        ActionPointName.gameObject.SetActive(true);
     }
 
     public override void OnHoverEnd() {
-
+        HighlightAP(false);
+        ActionPointName.gameObject.SetActive(false);
     }
 
 }

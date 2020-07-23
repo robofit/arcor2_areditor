@@ -83,7 +83,7 @@ MonoBehaviour:
   ActionObjectName: {fileID: 826771530686706174}
   Visual: {fileID: 1446646014438923905}
   Model: {fileID: 0}
-  TextLabel: {fileID: 4641731116499978897}
+  TextLabel: {fileID: 6802618089977537743}
   CubePrefab: {fileID: 4648989740229487369, guid: eaf2d11af5d22ad4ab541babe0c35235,
     type: 3}
   CylinderPrefab: {fileID: 6167678633110614832, guid: 4e8c689fdd91a6c46b4b75cac9a152b8,
@@ -122,6 +122,7 @@ MonoBehaviour:
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
   HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
   Renderers: []
+  HoverOnly: 0
 --- !u!1 &4641731116499978897
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,7 +139,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6325563058646389887
 Transform:
   m_ObjectHideFlags: 0
@@ -185,7 +186,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5523031856794269955
 RectTransform:
   m_ObjectHideFlags: 0

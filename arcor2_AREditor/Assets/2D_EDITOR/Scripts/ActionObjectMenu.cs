@@ -167,9 +167,9 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             return;
         }
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
-
+        IRobot robot = SceneManager.Instance.GetRobotByName((string) RobotsList.GetValue());
         Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-            (string) RobotsList.GetValue(), (string) EndEffectorList.GetValue(), pivot);
+            robot.GetId(), (string) EndEffectorList.GetValue(), pivot);
     }
          
 
