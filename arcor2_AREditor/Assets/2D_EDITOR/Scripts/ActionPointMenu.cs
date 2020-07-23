@@ -65,7 +65,6 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         bool result = await Base.GameManager.Instance.RenameActionPoint(CurrentActionPoint, newUserId);
         if (result) {
             inputDialog.Close();
-            actionPointName.text = newUserId;
         }
     }
 

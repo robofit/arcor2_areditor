@@ -180,4 +180,14 @@ public class ActionPoint3D : Base.ActionPoint {
         ActionPointName.gameObject.SetActive(false);
     }
 
+    public override void ActionPointBaseUpdate(ProjectActionPoint apData) {
+        base.ActionPointBaseUpdate(apData);
+        ActionPointName.text = apData.Name;
+    }
+
+    public override void InitAP(ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+        base.InitAP(apData, size, parent);
+        ActionPointName.text = apData.Name;
+    }
+
 }

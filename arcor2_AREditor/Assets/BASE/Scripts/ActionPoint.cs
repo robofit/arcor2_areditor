@@ -57,9 +57,10 @@ namespace Base {
             }
         }
 
-        public void ActionPointBaseUpdate(IO.Swagger.Model.ProjectActionPoint apData) {
+        public virtual void ActionPointBaseUpdate(IO.Swagger.Model.ProjectActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
+            
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
@@ -74,7 +75,7 @@ namespace Base {
 
         }
 
-        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+        public virtual void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
