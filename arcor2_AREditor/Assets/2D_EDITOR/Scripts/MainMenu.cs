@@ -297,6 +297,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public async void CloseScene() {
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
         if (success) {
+            
             confirmationDialog.Close();
             MenuManager.Instance.MainMenu.Close();
         }
@@ -436,7 +437,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try  {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-           
+            MenuManager.Instance.MainMenu.Close();
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);
@@ -450,6 +451,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void StopProject() {
         Base.GameManager.Instance.StopProject();
+        MenuManager.Instance.MainMenu.Close();
     }
 
 

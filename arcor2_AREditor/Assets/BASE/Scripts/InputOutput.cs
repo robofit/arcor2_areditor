@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Base {
+    [RequireComponent(typeof(OutlineOnClick))]
     public class InputOutput : Clickable {
         public Action Action;
         private string logicItemId;
+        private OutlineOnClick outlineOnClick;
+
+        private void Awake() {
+            outlineOnClick = GetComponent<OutlineOnClick>();
+        }
 
         public void Init(string logicItemId) {
             this.logicItemId = logicItemId;
@@ -80,6 +86,7 @@ namespace Base {
         }
 
         public async override void OnHoverStart() {
+            outlineOnClick.Highlight();
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
@@ -95,6 +102,7 @@ namespace Base {
         }
 
         public override void OnHoverEnd() {
+            outlineOnClick.UnHighlight();
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();

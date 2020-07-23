@@ -1039,6 +1039,7 @@ namespace Base {
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
+            MenuManager.Instance.MainMenu.Close();
             if (updateResources) {
                 await LoadScenes();
                 await LoadProjects();
@@ -1075,6 +1076,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            MenuManager.Instance.MainMenu.Close();
             EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
@@ -1091,6 +1093,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            MenuManager.Instance.MainMenu.Close();
             EditorInfo.text = "Project: " + Base.ProjectManager.Instance.ProjectMeta.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
@@ -1103,7 +1106,7 @@ namespace Base {
             ARSession.enabled = true;
 #endif
             try {
-                
+                MenuManager.Instance.MainMenu.Close();
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
@@ -1140,6 +1143,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif
+            MenuManager.Instance.MainMenu.Close();
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             EditorInfo.text = "";
