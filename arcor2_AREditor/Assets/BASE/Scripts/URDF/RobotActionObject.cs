@@ -7,12 +7,16 @@ using RosSharp;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
+using TMPro;
 using UnityEngine;
 
 namespace Base {
     public class RobotActionObject : ActionObject, IRobot {
-
+        
+        public TextMeshPro ActionObjectName;
         public GameObject RobotPlaceholderPrefab;
+
+        private OutlineOnClick outlineOnClick;
 
         public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
         public Dictionary<string, string> Joints = new Dictionary<string, string>();
@@ -27,7 +31,6 @@ namespace Base {
         private Renderer[] robotRenderers;
         private Collider[] robotColliders;
 
-        private OutlineOnClick outlineOnClick;
         private bool transparent = false;
 
         private Shader standardShader;
@@ -396,12 +399,26 @@ namespace Base {
             if(SceneManager.Instance != null)
                 SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
         }
-        public override void OnHoverStart() {
 
+        public override void OnHoverStart() {
+            ActionObjectName.gameObject.SetActive(true);
+            outlineOnClick.Highlight();
         }
 
         public override void OnHoverEnd() {
-
+            ActionObjectName.gameObject.SetActive(false);
+            outlineOnClick.UnHighlight();
         }
+
+        public override void UpdateUserId(string newUserId) {
+            base.UpdateUserId(newUserId);
+            ActionObjectName.text = newUserId;
+        }
+
+        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+            base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
+            ActionObjectName.text = actionObjectSwagger.Name;
+        }
+
     }
 }

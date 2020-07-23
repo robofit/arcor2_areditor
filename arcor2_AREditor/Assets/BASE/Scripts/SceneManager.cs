@@ -313,10 +313,7 @@ namespace Base {
                 CleanRobotEE();
                 return;
             }
-            Debug.LogError(args.Data.RobotId);
-            foreach (var obj in ActionObjects) {
-                Debug.LogError(obj.Key);
-            }
+            
             // check if robotId is really a robot
             if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
                if (actionObject.IsRobot()) {

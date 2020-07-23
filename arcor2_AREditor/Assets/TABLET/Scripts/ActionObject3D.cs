@@ -72,7 +72,7 @@ public class ActionObject3D : ActionObject
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
         else
             return PlayerPrefsHelper.LoadVector3("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/position",
-                            Vector3.one);
+                            Vector3.zero);
     }
 
     public override void SetScenePosition(Vector3 position) {
