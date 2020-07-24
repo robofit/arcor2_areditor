@@ -18,6 +18,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public Toggle RotateToggle;
     public Toggle TrackablesToggle;
     public Toggle ConnectionsToggle;
+    public Toggle VRModeToggle;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -90,6 +91,14 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 #endif
     }
 
+    public void ToggleVRMode(Toggle active) {
+        Debug.Log("VR mode enable: " + active.isOn);
+        if (active.isOn) {
+            VRModeManager.Instance.EnableVRMode();
+        } else {
+            VRModeManager.Instance.DisableVRMode();
+        }
+    }
 
     public void ShowActionObjectSettingsMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
@@ -116,7 +125,6 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         if (result)
             InputDialog.Close();
     }
-
     
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
