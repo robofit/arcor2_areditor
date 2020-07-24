@@ -92,13 +92,10 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
         Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata;
         if (actionPoint.Parent == null) {
-            actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+            actionsMetadata = Base.ActionsManager.Instance.GetAllActions();
         } else {
             Base.ActionObject parentActionObject = actionPoint.Parent.GetActionObject();
-            if (parentActionObject == null)
-                actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
-            else
-                actionsMetadata = Base.ActionsManager.Instance.GetAllActionsOfObject(parentActionObject);
+            actionsMetadata = Base.ActionsManager.Instance.GetAllActions();
         }
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {

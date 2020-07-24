@@ -216,57 +216,19 @@ namespace Base {
             }
         }
 
-        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
+        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
             foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
-                List<ActionMetadata> freeActions = new List<ActionMetadata>();
                 if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
                 }
-                foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
-                    if (am.Meta.Free)
-                        freeActions.Add(am);
-                }
-                if (freeActions.Count > 0) {
-                    actionsMetadata[ao] = freeActions;
-                }
-                
+                if (aom.ActionsMetadata.Count > 0) {
+                    actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();                    
+                }                
             }
-            /*foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
-                actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }*/
-
             return actionsMetadata;
         }
 
-        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
-            Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {
-                if (ao == actionObject) {
-                    if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
-                        continue;
-                    }
-                    actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();
-                } else {
-                    List<ActionMetadata> freeActions = new List<ActionMetadata>();
-                    if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
-                        continue;
-                    }
-                    foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
-                        if (am.Meta.Free)
-                            freeActions.Add(am);
-                    }
-                    if (freeActions.Count > 0) {
-                        actionsMetadata[ao] = freeActions;
-                    }
-                }
-            }
-           /* foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
-                actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }*/
-
-            return actionsMetadata;
-        }
 
         
     }
