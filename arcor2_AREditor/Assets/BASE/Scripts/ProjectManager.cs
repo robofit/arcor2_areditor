@@ -69,11 +69,8 @@ namespace Base {
             this.AllowEdit = allowEdit;
             LoadSettings();
 
-            startAction = Instantiate(StartPrefab).GetComponent<StartAction>();
-            endAction = Instantiate(EndPrefab).GetComponent<EndAction>();
-            //do it separately so the objects are created as active and awake method is runned instantly
-            startAction.transform.SetParent(GameManager.Instance.Scene.transform);
-            endAction.transform.SetParent(GameManager.Instance.Scene.transform);
+            startAction = Instantiate(StartPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            endAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
 
             bool success = UpdateProject(project, true);
 
@@ -184,15 +181,11 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values) {
                     IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(id: action.Data.Id,
                         name: action.Data.Name, type: action.Data.Type) {
-                        Parameters = new List<IO.Swagger.Model.ActionParameter>(),
-                        //Inputs = new List<ActionIO>(),
-                        //Outputs = new List<ActionIO>()
+                        Parameters = new List<IO.Swagger.Model.ActionParameter>()                        
                     };
                     foreach (ActionParameter param in action.Parameters.Values) {
                         projectAction.Parameters.Add(param);
                     }
-                    //projectAction.Inputs.Add(action.Input.Data);
-                   // projectAction.Outputs.Add(action.Output.Data);
                 }
                 project.ActionPoints.Add(projectActionPoint);
             }
