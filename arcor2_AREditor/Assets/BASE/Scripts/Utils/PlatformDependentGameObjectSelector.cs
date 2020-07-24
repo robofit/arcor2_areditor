@@ -36,8 +36,12 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
             obj.SetActive(false);
         }
 #elif UNITY_EDITOR || UNITY_STANDALONE
+        int i = 1;
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
             obj.SetActive(false);
+            if (i++ == 8) {
+                break;
+            }
         }
         foreach (GameObject obj in GameObjectsForIOSOnly) {
             obj.SetActive(false);

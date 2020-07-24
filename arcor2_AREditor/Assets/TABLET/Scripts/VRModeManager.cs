@@ -9,6 +9,7 @@ public class VRModeManager : Singleton<VRModeManager> {
 
     public Camera VRCamera;
     public Camera ARCamera;
+    public GameObject VRCameraBase;
     public TransformGizmo TFGizmo;
     public GameObject ARCameraVis;
     public Joystick CameraMoveJoystick;
@@ -40,12 +41,22 @@ public class VRModeManager : Singleton<VRModeManager> {
 
     private void Update() {
         if (VRModeON) {
-            VRCamera.transform.Translate(new Vector3(CameraMoveJoystick.Horizontal, 0f, CameraMoveJoystick.Vertical) * Time.deltaTime * WalkingSpeed);
-            //VRCamera.transform.position += VRCamera.transform.rotation * (ARCamera.transform.position - arCameraPosition);
-
+            float moveHorizontal = 0, moveVertical = 0,
+                rotateHorizontal = 0, rotateVertical = 0;
+            // Move with joysticks only when no menu is opened
+            if (GameManager.Instance.SceneInteractable) {
+                moveHorizontal = CameraMoveJoystick.Horizontal;
+                moveVertical = CameraMoveJoystick.Vertical;
+                rotateHorizontal = CameraRotateJoystick.Horizontal;
+                rotateVertical = CameraRotateJoystick.Vertical;
+            }
+            // Translate camera based on left joystick and movement of tablet
+            VRCamera.transform.Translate(ARCamera.transform.InverseTransformDirection(ARCamera.transform.position - arCameraPosition), Space.Self);
+            VRCamera.transform.Translate(new Vector3(moveHorizontal, 0f, moveVertical) * Time.deltaTime * WalkingSpeed);
+            
             // Add joystick
-            rotationY = VRCamera.transform.eulerAngles.y + CameraRotateJoystick.Horizontal * RotatingSpeed;
-            rotationX = VRCamera.transform.eulerAngles.x - CameraRotateJoystick.Vertical * RotatingSpeed;
+            rotationY = VRCamera.transform.eulerAngles.y + rotateHorizontal * RotatingSpeed;
+            rotationX = VRCamera.transform.eulerAngles.x - rotateVertical * RotatingSpeed;
             // Correct the rotation around X (when the rotation goes to negative values, euler angles becomes 360, we want it to stay negative)
             rotationX = (rotationX > 180) ? rotationX - 360 : rotationX;
 
@@ -58,6 +69,7 @@ public class VRModeManager : Singleton<VRModeManager> {
             // Actualize new values of the AR camera
             arCameraRotation = ARCamera.transform.eulerAngles;
             arCameraPosition = ARCamera.transform.position;
+
         }
     }
 
@@ -68,7 +80,7 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.enabled = true;
 
         // Init position/rotation variables
-        VRCamera.transform.position = ARCamera.transform.position;
+        VRCamera.transform.position = ARCamera.transform.localPosition;
         VRCamera.transform.rotation = ARCamera.transform.rotation;
         arCameraRotation = ARCamera.transform.eulerAngles;
         arCameraPosition = ARCamera.transform.position;
