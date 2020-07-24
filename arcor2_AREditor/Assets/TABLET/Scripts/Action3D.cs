@@ -16,11 +16,12 @@ public class Action3D : Base.Action {
     private Color32 colorRunnning = new Color32(255, 0, 255, 255);
 
     private bool selected = false;
+    [SerializeField]
     private OutlineOnClick outlineOnClick;
 
     private void Start() {
         GameManager.Instance.OnStopPackage += OnProjectStop;
-        outlineOnClick = GetComponent<OutlineOnClick>();
+        
     }
 
     private void OnEnable() {

@@ -19,6 +19,7 @@ MonoBehaviour:
   ActionPoint: {fileID: 0}
   NameText: {fileID: 5451630378588609808}
   Visual: {fileID: 2605560298224851498}
+  outlineOnClick: {fileID: 6975415401428609950}
 --- !u!114 &6997291219196793752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,6 +115,11 @@ PrefabInstance:
       propertyPath: Action
       value: 
       objectReference: {fileID: 5441125932825294029}
+    - target: {fileID: 4512397415820150178, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
+      propertyPath: outlineOnClick
+      value: 
+      objectReference: {fileID: 6975415401428609950}
     - target: {fileID: 4760982012042395671, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -139,6 +145,11 @@ PrefabInstance:
       propertyPath: Action
       value: 
       objectReference: {fileID: 5441125932825294029}
+    - target: {fileID: 6585983383530919065, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
+      propertyPath: outlineOnClick
+      value: 
+      objectReference: {fileID: 6975415401428609950}
     m_RemovedComponents:
     - {fileID: -4901143462678197493, guid: 95ac9ebcf9bac6045bc0198ac650dd9c, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 95ac9ebcf9bac6045bc0198ac650dd9c, type: 3}
@@ -148,6 +159,18 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 9017898060511943743}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6975415401428609950 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2155999195898541985, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+    type: 3}
+  m_PrefabInstance: {fileID: 9017898060511943743}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2605560297951238810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5053e62e365046e4a830ee9ca06df9a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5451630378588609808 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3931104211541885231, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,

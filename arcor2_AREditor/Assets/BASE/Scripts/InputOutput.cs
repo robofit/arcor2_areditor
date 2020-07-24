@@ -7,11 +7,9 @@ namespace Base {
     public class InputOutput : Clickable {
         public Action Action;
         private string logicItemId;
+        [SerializeField]
         private OutlineOnClick outlineOnClick;
 
-        private void Awake() {
-            outlineOnClick = GetComponent<OutlineOnClick>();
-        }
 
         public void Init(string logicItemId) {
             this.logicItemId = logicItemId;

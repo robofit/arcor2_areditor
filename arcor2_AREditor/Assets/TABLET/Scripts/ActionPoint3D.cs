@@ -18,13 +18,14 @@ public class ActionPoint3D : Base.ActionPoint {
     private float nextUpdate = 0;
 
     private bool updatePosition = false;
-
+    [SerializeField]
     private OutlineOnClick outlineOnClick;
+
 
     protected override void Start() {
         base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        outlineOnClick = GetComponent<OutlineOnClick>();
+        
     }
 
     protected override async void Update() {

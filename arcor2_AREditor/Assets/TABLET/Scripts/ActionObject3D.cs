@@ -26,6 +26,7 @@ public class ActionObject3D : ActionObject
 
     private bool updatePose = false;
     private Renderer modelRenderer;
+    [SerializeField]
     private OutlineOnClick outlineOnClick;
 
     private Shader standardShader;
@@ -35,7 +36,7 @@ public class ActionObject3D : ActionObject
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        outlineOnClick = GetComponent<OutlineOnClick>();
+        
     }
 
 
