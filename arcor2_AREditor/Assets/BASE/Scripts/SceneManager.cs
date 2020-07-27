@@ -429,11 +429,11 @@ namespace Base {
             int i = 0;
             while (colliders.Length > 0 && i < 40) {
                 Collider collider = colliders[0];
-                aboveModel.y = SceneOrigin.transform.InverseTransformPoint(collider.gameObject.transform.position).y + collider.bounds.extents.y + 0.05f;
+                aboveModel.y = SceneOrigin.transform.InverseTransformPoint(collider.gameObject.transform.position).y - originalPosition.y + collider.bounds.extents.y + 0.05f;
                 colliders = Physics.OverlapSphere(SceneOrigin.transform.TransformPoint(originalPosition) + aboveModel, 0.025f);
                 ++i;
             }
-            return originalPosition + aboveModel;
+            return aboveModel;
         }
 
 
