@@ -97,6 +97,22 @@ namespace Base {
         }
     }
 
+    public class RobotUrdfArgs : EventArgs {
+        public string RobotType {
+            get; set;
+        }
+
+        public string Path {
+            get; set;
+        }
+
+        public RobotUrdfArgs(string path, string robotType) {
+            RobotType = robotType;
+            Path = path;
+        }
+    }
+
+
 
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
@@ -108,6 +124,6 @@ namespace Base {
         public delegate void LogicItemChangedEventHandler(object sender, LogicItemChangedEventArgs args);
         public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
         public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
-
+        public delegate void RobotUrdfEventHandler(object sender, RobotUrdfArgs args);
     }
 }

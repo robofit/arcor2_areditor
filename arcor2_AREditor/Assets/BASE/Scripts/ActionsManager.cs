@@ -82,20 +82,27 @@ namespace Base {
             actionObjectsMetadata.Clear();
             ActionsReady = false;
             ActionObjectsLoaded = false;
-        }        
+        }
 
-       
-
-      /*  
-        public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
-            foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
-                ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
-                ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
-                await UpdateActionsOfService(serviceMetadata);
+        public bool HasObjectTypePose(string type) {
+            if (!ActionObjectMetadata.TryGetValue(type,
+            out Base.ActionObjectMetadata actionObjectMetadata)) {
+                throw new ItemNotFoundException("No object type " + type);
             }
-            ServicesLoaded = true;
-            OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
-        }*/
+            return actionObjectMetadata.HasPose;
+        }
+
+
+        /*  
+          public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
+              foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
+                  ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
+                  ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
+                  await UpdateActionsOfService(serviceMetadata);
+              }
+              ServicesLoaded = true;
+              OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
+          }*/
 
         // TODO - solve somehow better.. perhaps own class for robot objects and services?
         internal void UpdateRobotsMetadata(List<RobotMeta> list) {

@@ -13,46 +13,15 @@ using UnityEngine.Networking;
 
 namespace Base {
 
-    public class RobotUrdfArgs : EventArgs {
-        public string RobotType {
-            get; set;
-        }
-
-        public string Path {
-            get; set;
-        }
-
-        public RobotUrdfArgs(string path, string robotType) {
-            RobotType = robotType;
-            Path = path;
-        }
-    }
-
-    /*
-    public class ServiceEventArgs : EventArgs {
-        public Service Data {
-            get; set;
-        }
-
-        public ServiceEventArgs(Service data) {
-            Data = data;
-        }
-    }
-    */
 
     public class SceneManager : Singleton<SceneManager> {
-
+        
         //Events and event handlers
-
-        //public delegate void ServiceEventHandler(object sender, ServiceEventArgs args);
-        public delegate void RobotUrdfEventHandler(object sender, RobotUrdfArgs args);
-
         public event EventHandler OnLoadScene;
         public event EventHandler OnSceneChanged;
         public event EventHandler OnSceneSavedStatusChanged;
         public event EventHandler OnSceneSaved;
-        public event RobotUrdfEventHandler OnUrdfReady;
-        //public event ServiceEventHandler OnServicesUpdated;
+        public event AREditorEventArgs.RobotUrdfEventHandler OnUrdfReady;
 
         /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
@@ -171,6 +140,7 @@ namespace Base {
             SceneMeta.Modified = scene.Modified;
             SceneMeta.Name = scene.Name;
         }
+
 
         public IO.Swagger.Model.Scene GetScene() {
             if (SceneMeta == null)
