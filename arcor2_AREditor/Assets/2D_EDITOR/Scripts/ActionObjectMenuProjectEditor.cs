@@ -23,7 +23,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         */
         
         Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(CurrentObject.transform.position));
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentObject.transform.InverseTransformPoint(SceneManager.Instance.SceneOrigin.transform.TransformPoint(abovePoint))));
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
 
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
         //Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
