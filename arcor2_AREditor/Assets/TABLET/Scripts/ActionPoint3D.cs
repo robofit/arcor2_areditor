@@ -8,7 +8,7 @@ using TMPro;
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
 
-    public GameObject Sphere, Visual, CollapsedPucksVisual;
+    public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
 
     private bool manipulationStarted = false;
@@ -71,8 +71,7 @@ public class ActionPoint3D : Base.ActionPoint {
         }
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-            StartManipulation();
-            TransformGizmo.Instance.AddTarget(Sphere.transform);
+            StartManipulation();            
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu(false);
             tfGizmo.ClearTargets();
@@ -88,6 +87,7 @@ public class ActionPoint3D : Base.ActionPoint {
             Debug.LogWarning("Turning on gizmo overlay");
             manipulationStarted = true;
             updatePosition = false;
+            TransformGizmo.Instance.AddTarget(Sphere.transform);
         }
     }
 
@@ -173,11 +173,14 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void OnHoverStart() {
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
+        if (Locked)
+            Lock.SetActive(true);
     }
 
     public override void OnHoverEnd() {
         HighlightAP(false);
         ActionPointName.gameObject.SetActive(false);
+        Lock.SetActive(false);
     }
 
     public override void ActionPointBaseUpdate(ProjectActionPoint apData) {
