@@ -17,8 +17,6 @@ public class VirtualConnectionOnTouch : Base.VirtualConnection {
         
         if (Input.GetMouseButtonUp(1)) {            
             if (DrawVirtualConnection) {
-                DrawVirtualConnection = false;
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 Base.GameManager.Instance.CancelSelection();
                 //TODO - implement using RPC
             }

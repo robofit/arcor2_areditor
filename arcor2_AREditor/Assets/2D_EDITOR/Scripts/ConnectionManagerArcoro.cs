@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject ConnectionPrefab, CameraManager;
+    public GameObject ConnectionPrefab;
     public List<Connection> Connections = new List<Connection>();
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
@@ -17,7 +17,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ConnectionsActive = true;
 
     private void Start() {
-        virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
+        virtualPointer = VirtualConnectionOnTouch.Instance.VirtualPointer;
 
         Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
@@ -46,7 +46,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return;
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
+        VirtualConnectionOnTouch.Instance.DrawVirtualConnection = true;
         virtualConnectionToMouse = CreateConnection(o, virtualPointer);
     }
 
@@ -55,7 +55,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return;
         Destroy(virtualConnectionToMouse.gameObject);
         Connections.Remove(virtualConnectionToMouse);
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
+        VirtualConnectionOnTouch.Instance.DrawVirtualConnection = false;
     }
 
     public bool IsConnecting() {

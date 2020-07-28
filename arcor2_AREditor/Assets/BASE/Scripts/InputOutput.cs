@@ -96,8 +96,10 @@ namespace Base {
 
         private async void GetInput(object selectedInput) {
             PuckInput input = (PuckInput) selectedInput;
-            if (input == null)
+            if (selectedInput == null || input == null) {
+                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 return;
+            }
             try {
                 await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, false);
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
@@ -110,8 +112,10 @@ namespace Base {
 
         private async void GetOutput(object selectedOutput) {
             PuckOutput output = (PuckOutput) selectedOutput;
-            if (output == null)
+            if (selectedOutput == null || output == null) {
+                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 return;
+            }
             try {
                 await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, false);
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();                
