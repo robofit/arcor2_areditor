@@ -20,8 +20,10 @@ public class VirtualConnectionOnClick : Base.VirtualConnection {
 
         if (Input.GetMouseButtonUp(1)) {
             if (DrawVirtualConnection) {
+
                 DrawVirtualConnection = false;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+                Base.GameManager.Instance.CancelSelection();
                 //TODO - update connections via RPC
             }
         }

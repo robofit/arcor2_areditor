@@ -195,49 +195,7 @@ namespace Base {
             }
             
         }
-        /*
-        public void ClearServices() {
-            List<string> servicesKeys = servicesData.Keys.ToList();
-            foreach (string service in servicesKeys) {
-                RemoveService(service);
-            }
-        }
-
-
-        public void UpdateService(IO.Swagger.Model.SceneService sceneService) {
-            Debug.Assert(ServicesData.ContainsKey(sceneService.Type));
-            ServicesData.TryGetValue(sceneService.Type, out Service service);
-            service.Data = sceneService;
-            
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            SceneChanged = true;
-        }
-
-        public async Task AddService(IO.Swagger.Model.SceneService sceneService, bool loadResources) {
-            Debug.Assert(!ServicesData.ContainsKey(sceneService.Type));
-            if (ActionsManager.Instance.ServicesMetadata.TryGetValue(sceneService.Type, out ServiceMetadata serviceMetadata)) {
-                Service service;
-                if (serviceMetadata.Robot)
-                    service = new RobotService(sceneService, serviceMetadata);
-                else 
-                    service = new Service(sceneService, serviceMetadata);
-                if (loadResources && service.IsRobot()) {
-                    await ((RobotService) service).LoadRobots();
-                }
-                ServicesData.Add(sceneService.Type, service);
-                OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            }
-            SceneChanged = true;
-        }
-
-        public void RemoveService(string serviceType) {
-            Debug.Assert(ServicesData.ContainsKey(serviceType));
-            ServicesData.TryGetValue(serviceType, out Service service);
-            ServicesData.Remove(serviceType);
-            OnServicesUpdated?.Invoke(this, new ServiceEventArgs(service));
-            SceneChanged = true;
-        }
-        */
+        
 
         // Update is called once per frame
         private void Update() {
@@ -259,19 +217,7 @@ namespace Base {
                 }
             }
         }
-/*
-        public bool ServiceInScene(string type) {
-            return ServicesData.ContainsKey(type);
-        }
 
-        public Service GetService(string type) {
-            if (ServicesData.TryGetValue(type, out Service sceneService)) {
-                return sceneService;
-            } else {
-                throw new KeyNotFoundException("Service not in scene!");
-            }
-        }
-*/
         private void Start() {
             OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
@@ -601,17 +547,6 @@ namespace Base {
             }
 
         }
-        /*
-        /// <summary>
-        /// Updates all services from scene data.  
-        /// Only called when whole scene arrived, i.e. when client is connected or scene is opened, so all service needs to be added.
-        /// </summary>
-        public async Task UpdateServices(Scene scene) {
-            ClearServices(); //just to be sure
-            foreach (IO.Swagger.Model.SceneService service in scene.Services) {
-                await AddService(service, loadResources);
-            }
-        }*/
 
         public ActionObject GetNextActionObject(string aoId) {
             List<string> keys = ActionObjects.Keys.ToList();
@@ -742,6 +677,18 @@ namespace Base {
                 }
             }
             return false;
+        }
+
+        public void DisableAllActionObjects() {
+            foreach (ActionObject ao in ActionObjects.Values) {
+                ao.Disable();
+            }
+        }
+
+        public void EnableAllActionObjects() {
+            foreach (ActionObject ao in ActionObjects.Values) {
+                ao.Enable();
+            }
         }
 
         

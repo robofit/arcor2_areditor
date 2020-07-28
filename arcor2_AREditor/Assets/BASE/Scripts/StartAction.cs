@@ -17,4 +17,10 @@ public class StartAction : StartEndAction
             type: "");
         Init(projectAction, null, null, null, "START");
     }
+
+    public override void Enable() {
+        base.Enable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = Color.green;
+    }
 }

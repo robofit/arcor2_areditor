@@ -14,7 +14,7 @@ namespace Base {
 
 
         public event EventHandler OnSaveProject;
-        
+
         public event AREditorEventArgs.ProjectMetaEventHandler OnRunPackage;
         public event EventHandler OnStopPackage;
         public event AREditorEventArgs.ProjectMetaEventHandler OnPausePackage;
@@ -86,11 +86,12 @@ namespace Base {
 
         private string reopenProjectId = null;
 
-        
+
         [SerializeField]
         private ARSession ARSession;
 
         private Action<object> ObjectCallback;
+        private Func<object, Task<bool>> ObjectValidationCallback;
         // sets to true when OpenProjec, OpenScene or PackageStatus == Running upon startup
         bool openSceneProjectPackage = false;
 
@@ -124,6 +125,8 @@ namespace Base {
             SelectingActionObject,
             SelectingActionPoint,
             SelectingAction,
+            SelectingActionInput,
+            SelectingActionOutput,
             InteractionDisabled
         }
 
@@ -156,13 +159,13 @@ namespace Base {
             if (openMainScreenRequest && ActionsManager.Instance.ActionsReady) {
                 openMainScreenRequest = false;
                 await OpenMainScreen(openMainScreenData.What, openMainScreenData.Highlight);
-            }               
+            }
 
         }
 
         public ConnectionStatusEnum ConnectionStatus {
             get => connectionStatus; set {
-                if (connectionStatus != value) {                    
+                if (connectionStatus != value) {
                     OnConnectionStatusChanged(value);
                 }
             }
@@ -203,10 +206,27 @@ namespace Base {
             return editorState;
         }
 
-        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message) {
+        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<bool>> validationCallback) {
             Debug.Assert(requestType != EditorStateEnum.Closed && requestType != EditorStateEnum.Normal);
             SetEditorState(requestType);
+            switch (requestType) {
+                case EditorStateEnum.SelectingActionObject:
+                    ProjectManager.Instance.DisableAllActionPoints();
+                    ProjectManager.Instance.DisableAllActions();
+                    break;
+                case EditorStateEnum.SelectingActionOutput:
+                    ProjectManager.Instance.DisableAllActionPoints();
+                    ProjectManager.Instance.DisableAllActionInputs();
+                    SceneManager.Instance.DisableAllActionObjects();
+                    break;
+                case EditorStateEnum.SelectingActionInput:
+                    ProjectManager.Instance.DisableAllActionPoints();
+                    ProjectManager.Instance.DisableAllActionOutputs();
+                    SceneManager.Instance.DisableAllActionObjects();
+                    break;
+            }
             ObjectCallback = callback;
+            ObjectValidationCallback = validationCallback;
             SelectObjectInfo.Show(message, () => CancelSelection());
         }
 
@@ -216,14 +236,27 @@ namespace Base {
                 ObjectCallback = null;
             }
             SetEditorState(EditorStateEnum.Normal);
+            SelectObjectInfo.gameObject.SetActive(false);
+            EnableEverything();
         }
 
-        public void ObjectSelected(object selectedObject) {
+        public async void ObjectSelected(object selectedObject) {
+            if (ObjectValidationCallback != null && !await ObjectValidationCallback.Invoke(selectedObject)) {
+                Notifications.Instance.ShowNotification("Not this one", "");
+                return;
+            }            
+            SetEditorState(EditorStateEnum.Normal);
+            SelectObjectInfo.gameObject.SetActive(false);
+            EnableEverything();
             if (ObjectCallback != null)
                 ObjectCallback.Invoke(selectedObject);
             ObjectCallback = null;
-            SetEditorState(EditorStateEnum.Normal);
-            SelectObjectInfo.gameObject.SetActive(false);
+        }
+
+        private void EnableEverything() {
+            ProjectManager.Instance.EnableAllActionPoints();
+            ProjectManager.Instance.EnableAllActions();
+            SceneManager.Instance.EnableAllActionObjects();            
         }
 
         private void Awake() {

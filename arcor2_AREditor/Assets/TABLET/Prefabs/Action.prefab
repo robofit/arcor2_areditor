@@ -56,6 +56,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Target: {fileID: 1030236983171118047}
 --- !u!1 &1030236983171118047
 GameObject:
@@ -106,7 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9a5f7246b592244092f30d9aa142523, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Action: {fileID: -4901143462678197493}
+  outlineOnClick: {fileID: 533091770654837736}
 --- !u!114 &533091770654837736
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,10 +122,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
   HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
   Renderers:
   - {fileID: 4760982012042395671}
+  - {fileID: 6417292780173919765}
   HoverOnly: 1
 --- !u!1 &2734113720859168244
 GameObject:
@@ -340,6 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Target: {fileID: 4605352205466647572}
 --- !u!1 &3195986266518558799
 GameObject:
@@ -422,7 +428,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30e69174061f77240b101ac2e7e6dd0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Action: {fileID: -4901143462678197493}
+  outlineOnClick: {fileID: 6413523117402831350}
 --- !u!114 &6413523117402831350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,10 +443,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
   HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
   Renderers:
   - {fileID: 7000520279556138385}
+  - {fileID: 6417292780173919765}
   HoverOnly: 1
 --- !u!1 &6417292780173919761
 GameObject:
@@ -534,6 +544,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Target: {fileID: 6417292780430755493}
 --- !u!114 &8409126376922550219
 MonoBehaviour:
@@ -608,6 +619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cae1a288b8693ac4e8b83c590e19cef7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Input: {fileID: 4512397415820150178}
   Output: {fileID: 6585983383530919065}
   InputArrow: {fileID: 415263692387985219}
@@ -628,6 +640,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5053e62e365046e4a830ee9ca06df9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
   HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
   Renderers:

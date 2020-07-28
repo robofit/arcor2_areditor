@@ -17,7 +17,7 @@ public class Action3D : Base.Action {
 
     private bool selected = false;
     [SerializeField]
-    private OutlineOnClick outlineOnClick;
+    protected OutlineOnClick outlineOnClick;
 
     private void Start() {
         GameManager.Instance.OnStopPackage += OnProjectStop;
@@ -92,6 +92,14 @@ public class Action3D : Base.Action {
     }
 
     public override void OnHoverStart() {
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
+            return;
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
     }
@@ -99,6 +107,17 @@ public class Action3D : Base.Action {
     public override void OnHoverEnd() {
         outlineOnClick.UnHighlight();
         NameText.gameObject.SetActive(false);
+    }
+
+    public override void Enable() {
+        base.Enable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+    }
+    public override void Disable() {
+        base.Disable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = Color.gray;
     }
 
 }

@@ -512,6 +512,67 @@ namespace Base {
             }
         }
 
+        public void DisableAllActionPoints() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                ap.Disable();
+            }
+        }
+
+        public void EnableAllActionPoints() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                ap.Enable();
+            }
+        }
+
+        public void DisableAllActions() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Disable();
+            }
+            startAction.Disable();
+            endAction.Disable();
+        }
+
+        public void EnableAllActions() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Enable();
+            }
+            startAction.Enable();
+            endAction.Enable();
+        }
+
+        public void DisableAllActionInputs() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Input.Disable();
+            }
+            endAction.Input.Disable();
+        }
+
+        public void EnableAllActionsInputs() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Input.Enable();
+            }
+            endAction.Input.Enable();
+        }
+
+        public void DisableAllActionOutputs() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Output.Disable();
+            }
+            startAction.Output.Disable();
+        }
+
+        public void EnableAllActionsOutputs() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                foreach (Action action in ap.Actions.Values)
+                    action.Output.Enable();
+            }
+            startAction.Output.Enable();
+        }
 
         #region ACTIONS
 

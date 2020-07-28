@@ -152,7 +152,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     private void AssignToParent() {
         Action<object> action = AssignToParent;
-        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)");
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)", null);
     }
 
     private async void AssignToParent(object selectedObject) {

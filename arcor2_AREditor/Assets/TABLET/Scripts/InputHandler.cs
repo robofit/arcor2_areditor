@@ -85,8 +85,11 @@ public class InputHandler : Singleton<InputHandler> {
                         //}
                     } else {
                         hit.collider.transform.gameObject.SendMessage("OnClick", clickType);
-                        hoveredObject.SendMessage("OnHoverEnd");
-                        hoveredObject = null;
+                        if (hoveredObject != null) {
+                            hoveredObject.SendMessage("OnHoverEnd");
+                            hoveredObject = null;
+                        }
+                        
                     }
               //  } catch (Exception e) {
               //      Debug.LogError(e);

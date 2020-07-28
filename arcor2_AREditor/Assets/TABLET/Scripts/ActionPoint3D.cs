@@ -10,6 +10,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
+    private Material sphereMaterial;
 
     private bool manipulationStarted = false;
     private TransformGizmo tfGizmo;
@@ -25,7 +26,7 @@ public class ActionPoint3D : Base.ActionPoint {
     protected override void Start() {
         base.Start();
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        
+        sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 
     protected override async void Update() {
@@ -59,6 +60,8 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        if (!enabled)
+            return;
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint) {
             GameManager.Instance.ObjectSelected(this);
             return;
@@ -172,6 +175,17 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnHoverStart() {
+        if (!enabled)
+            return;
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint) {
+            return;
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
+        
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
         if (Locked)
@@ -192,6 +206,16 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void InitAP(ProjectActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
         ActionPointName.text = apData.Name;
+    }
+
+    public override void Disable() {
+        base.Disable();
+        sphereMaterial.color = Color.gray;
+    }
+
+    public override void Enable() {
+        base.Enable();
+        sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
     }
 
 }

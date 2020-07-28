@@ -100,7 +100,7 @@ public class ActionObject3D : ActionObject
             return new IO.Swagger.Model.Pose(new Orientation(), new Position());
     }
 
-    public override void OnClick(Click type) {
+    public override void OnClick(Click type) {        
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
             GameManager.Instance.ObjectSelected(this);
             return;
@@ -113,6 +113,7 @@ public class ActionObject3D : ActionObject
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
             return;
         }
+
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
@@ -287,6 +288,15 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnHoverStart() {
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
+            return;
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
         ActionObjectName.gameObject.SetActive(true);
         outlineOnClick.Highlight();
     }
@@ -295,4 +305,15 @@ public class ActionObject3D : ActionObject
         ActionObjectName.gameObject.SetActive(false);
         outlineOnClick.UnHighlight();
     }
+
+    public override void Disable() {
+        base.Disable();
+        modelRenderer.material.color = Color.gray;
+    }
+
+    public override void Enable() {
+        base.Enable();
+        modelRenderer.material.color = new Color(0.89f, 0.83f, 0.44f);
+    }
+
 }

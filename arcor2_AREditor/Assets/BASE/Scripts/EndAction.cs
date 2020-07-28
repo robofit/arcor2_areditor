@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class EndAction : StartEndAction
 {
@@ -12,5 +13,11 @@ public class EndAction : StartEndAction
             type: "");
 
         Init(projectAction, null, null, null, "END");
+    }
+
+    public override void Enable() {
+        base.Enable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = Color.red;
     }
 }
