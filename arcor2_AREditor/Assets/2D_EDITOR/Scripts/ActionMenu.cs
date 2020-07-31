@@ -75,13 +75,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
         UpdateExecuteAndStopBtns();
-        Tuple<bool, string> actionRemovable = await GameManager.Instance.RemoveAction(CurrentAction.Data.Id, true);
-        if (actionRemovable.Item1) {
+        try {
+            await WebsocketManager.Instance.RemoveAction(CurrentAction.Data.Id, true);
             RemoveActionBtn.SetInteractivity(true);
-        } else {
-            RemoveActionBtn.SetInteractivity(false, actionRemovable.Item2);
-        }
-        
+        } catch (RequestFailedException e) {
+            RemoveActionBtn.SetInteractivity(false, e.Message);
+        }        
     }
 
     private void UpdateExecuteAndStopBtns() {
@@ -110,8 +109,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         ConfirmationDialog.Close();
         if (CurrentAction == null)
             return;
-        if ((await Base.GameManager.Instance.RemoveAction(CurrentAction.Data.Id, false)).Item1) {
+        try {
+            await WebsocketManager.Instance.RemoveAction(CurrentAction.Data.Id, false);
             MenuManager.Instance.PuckMenu.Close();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
         }
     }
 
@@ -125,10 +127,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public async void RenameAction(string newName) {
-        bool result = await Base.GameManager.Instance.RenameAction(CurrentAction.Data.Id, newName);
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RenameAction(CurrentAction.Data.Id, newName);
             inputDialog.Close();
             ActionName.text = newName;
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
         }
     }
 
@@ -161,7 +165,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
     public async void ExecuteAction() {
         ExecuteActionBtn.SetInteractivity(false, "Action already runs");
-        if (!await Base.GameManager.Instance.ExecuteAction(CurrentAction.Data.Id) && string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
+        try {
+            await WebsocketManager.Instance.ExecuteAction(CurrentAction.Data.Id);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
+            return;
         }
         ExecuteActionBtn.SetInteractivity(true);
     }
@@ -189,15 +197,17 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
                 parameters.Add(ap);
             }
-            
-            bool success = await Base.GameManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters, CurrentAction.GetFlows());
-            if (success) {
+            Debug.Assert(ProjectManager.Instance.AllowEdit);
+            try {
+                await WebsocketManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters, CurrentAction.GetFlows());
                 Base.Notifications.Instance.ShowNotification("Parameters saved", "");
                 SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
                 parametersChanged = false;
                 if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
                     ExecuteActionBtn.SetInteractivity(true);
-            }                
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action ", e.Message);
+            }            
         }
     }
 

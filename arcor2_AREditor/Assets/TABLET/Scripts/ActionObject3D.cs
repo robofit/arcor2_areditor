@@ -47,7 +47,10 @@ public class ActionObject3D : ActionObject
                     updatePose = false;
 
                     if (ActionObjectMetadata.HasPose) {
-                        if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
+                        try {
+                            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+                        } catch (RequestFailedException e) {
+                            Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
                             ResetPosition();
                         }
                     } else {

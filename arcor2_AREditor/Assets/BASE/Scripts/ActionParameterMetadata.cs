@@ -34,7 +34,7 @@ namespace Base {
             if (!DynamicValue) {
                 return new List<string>();
             }
-            return await GameManager.Instance.GetActionParamValues(actionProviderId, Name, parentParams);
+            return await WebsocketManager.Instance.GetActionParamValues(actionProviderId, Name, parentParams);
         }
 
         public T GetDefaultValue<T>() {

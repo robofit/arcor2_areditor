@@ -132,24 +132,19 @@ namespace Base {
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
-                actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
-            if (actionObject.ActionsMetadata == null) {
-                actionObject.Disabled = true;
-                actionObject.Problem = "Failed to load actions";
-            }
-            actionObject.ActionsLoaded = true;
+                try {
+                    actionObject.ActionsMetadata = ParseActions(await WebsocketManager.Instance.GetActions(actionObject.Type));
+                    if (actionObject.ActionsMetadata == null) {
+                        actionObject.Disabled = true;
+                        actionObject.Problem = "Failed to load actions";
+                    }
+                    actionObject.ActionsLoaded = true;
+                } catch (RequestFailedException e) {
+                    Debug.LogError("Failed to load action for object " + name);
+                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + name);                    
+                }            
         }
-        /*
-        private async Task UpdateActionsOfService(ServiceMetadata serviceMetadata) {
-            if (!serviceMetadata.Disabled) {
-                serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
-            }
-            if (serviceMetadata.ActionsMetadata == null) {
-                serviceMetadata.Disabled = true;
-                serviceMetadata.Problem = "Failed to load actions";
-            }
-            serviceMetadata.ActionsLoaded = true;
-        }*/
+        
 
         private Dictionary<string, ActionMetadata> ParseActions(List<IO.Swagger.Model.ObjectAction> actions) {
             if (actions == null) {

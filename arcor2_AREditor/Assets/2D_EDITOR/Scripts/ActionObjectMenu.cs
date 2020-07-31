@@ -56,7 +56,8 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
 
     public async void DeleteActionObject() {
-        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
+        IO.Swagger.Model.RemoveFromSceneResponse response =
+            await WebsocketManager.Instance.RemoveFromScene(CurrentObject.Data.Id, false);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Name, response.Messages[0]);
             return;
@@ -83,10 +84,12 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
     public async void RenameObject(string newName) {
-        bool result = await GameManager.Instance.RenameActionObject(CurrentObject.Data.Id, newName);
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RenameObject(CurrentObject.Data.Id, newName);
             InputDialog.Close();
             objectName.text = newName;
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
         }
     }
 
@@ -161,15 +164,16 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
        
 
-    public void UpdateObjectPosition() {
+    public async void UpdateObjectPosition() {
         if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
         IRobot robot = SceneManager.Instance.GetRobotByName((string) RobotsList.GetValue());
-        Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-            robot.GetId(), (string) EndEffectorList.GetValue(), pivot);
+        await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
+                robot.GetId(), (string) EndEffectorList.GetValue(), pivot);
+        
     }
          
 
@@ -195,8 +199,9 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             return;
         }
         try {
-            await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
-                RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
+            await WebsocketManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
+                (string) RobotsList.GetValue(),
+                (string) EndEffectorList.GetValue());
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
@@ -220,7 +225,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         if (currentFocusPoint < 0)
             return;
         try {
-            await Base.GameManager.Instance.SavePosition(CurrentObject.Data.Id, currentFocusPoint);
+            await WebsocketManager.Instance.SavePosition(CurrentObject.Data.Id, currentFocusPoint);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
@@ -230,7 +235,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public async void FocusObjectDone() {
         try {
-            await Base.GameManager.Instance.FocusObjectDone(CurrentObject.Data.Id);
+            await WebsocketManager.Instance.FocusObjectDone(CurrentObject.Data.Id);
             CurrentPointLabel.text = "";
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
             GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;

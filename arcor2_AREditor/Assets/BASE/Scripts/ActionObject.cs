@@ -32,10 +32,6 @@ namespace Base {
             Data.Name = newUserId;
         }
 
-        public async virtual void RenameActionObject(string newUserId) {
-            bool result = await GameManager.Instance.RenameActionObject(Data.Id, newUserId);
-        }
-
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 //SetScenePosition(transform.localPosition);

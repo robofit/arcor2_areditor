@@ -30,13 +30,13 @@ public class FocusConfirmationDialog : MonoBehaviour
         return true;
     }
 
-    public void UpdatePositionOrientation() {
-
+    public async void UpdatePositionOrientation() {
         try {
            if (UpdatePosition)
                 Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
-            Base.GameManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
-            Base.GameManager.Instance.UpdateActionPointJoints(RobotId, JointsId);
+
+            await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(ActionPointId, RobotId, EndEffectorId, OrientationId);
+            await WebsocketManager.Instance.UpdateActionPointJoints(RobotId, JointsId);
             
             GetComponent<ModalWindowManager>().CloseWindow();
         } catch (Base.RequestFailedException ex) {

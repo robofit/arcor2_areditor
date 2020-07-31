@@ -172,14 +172,14 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
         }
         preselectedOrientation = name;
-        bool successOrientation = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
-        bool successJoints = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.GetId());
-        if (successOrientation && successJoints) {
+        try {
+            await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
+            await WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
             inputDialog.Close();
-        } else {            
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to add action point orientation", e.Message);
             preselectedOrientation = null;
         }
-        
     }
 
     public void ShowAddJointsDialog() {
@@ -194,17 +194,17 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     public async void AddJoints(string name) {
         Debug.Assert(CurrentActionPoint != null);
         preselectedJoints = name;
-        bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, (string) RobotsList.GetValue());
-        if (success) {
+        try {
+            await WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, (string) RobotsList.GetValue(), name);
             inputDialog.Close();
-        } else {
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to add action point joints", e.Message);
             preselectedJoints = null;
         }
-        
     }
 
 
-    public void FocusJoints() {
+    public async void FocusJoints() {
         CustomDropdown jointsDropdown = JointsList.Dropdown;
         if (jointsDropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update joints", "");
@@ -213,7 +213,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         try {
             preselectedJoints = name;
             string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-            Base.GameManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
+            await WebsocketManager.Instance.UpdateActionPointJoints(robotId, (string) JointsList.GetValue());
+            
             Base.NotificationsModernUI.Instance.ShowNotification("Joints updated sucessfully", "");
 
             

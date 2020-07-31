@@ -445,9 +445,6 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void TestRun() {
-        _ = Base.GameManager.Instance.TestRunProject();
-    }
 
     public void StopProject() {
         Base.GameManager.Instance.StopProject();

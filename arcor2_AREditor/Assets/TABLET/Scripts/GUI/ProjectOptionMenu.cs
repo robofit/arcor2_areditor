@@ -39,19 +39,27 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
     public async Task<RequestResult> ValidateProjectNameAsync(string newName) {
-        return await GameManager.Instance.RenameProject(projectTile.ProjectId, newName, true);        
+        try {
+            await WebsocketManager.Instance.RenameProject(projectTile.ProjectId, newName, true);
+            return (true, "");
+        } catch (RequestFailedException e) {
+            return (false, e.Message);
+        }
     }
 
     public async void RenameProject(string newUserId) {
         Base.GameManager.Instance.ShowLoadingScreen();
-        Base.RequestResult result = await Base.GameManager.Instance.RenameProject(projectTile.ProjectId, newUserId, false);
-        if (result.Success) {
+        try {
+            await WebsocketManager.Instance.RenameProject(projectTile.ProjectId, newUserId, false);
             inputDialog.Close();
             projectTile.SetLabel(newUserId);
             SetLabel(newUserId);
             Close();
-        }
-        Base.GameManager.Instance.HideLoadingScreen();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename project", e.Message);
+        } finally {
+            Base.GameManager.Instance.HideLoadingScreen();
+        }        
     }
 
     public void ShowRemoveDialog() {
@@ -63,12 +71,15 @@ public class ProjectOptionMenu : TileOptionMenu
 
     public async void RemoveProject() {
         Base.GameManager.Instance.ShowLoadingScreen();
-        bool result = await Base.GameManager.Instance.RemoveProject(projectTile.ProjectId);
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RemoveProject(projectTile.ProjectId);
             confirmationDialog.Close();
             Close();
-        }
-        Base.GameManager.Instance.HideLoadingScreen();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove project", e.Message);
+        } finally {
+            Base.GameManager.Instance.HideLoadingScreen();
+        }        
     }
 
     public void ShowRelatedScene() {
