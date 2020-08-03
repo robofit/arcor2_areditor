@@ -33,6 +33,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     [SerializeField]
     private InputDialog inputDialog;
 
+    [SerializeField]
+    private AddOrientationMenu AddOrientationMenu;
+
     private SimpleSideMenu SideMenu;
 
     [SerializeField]
@@ -353,8 +356,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             Notifications.Instance.ShowNotification("Failed to get robot's ID", "");
             return;
         }
-
-        
     }
     /*
     public void UpdateJoints(string robot_id, string selectedJoints = null) {
@@ -374,4 +375,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             UpdateJointsBtn.interactable = false;
         }
     }*/
+
+
+    public void OpenAddOrientationMenu(string preselectedOrientation = null) {
+        AddOrientationMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
+    }
 }
