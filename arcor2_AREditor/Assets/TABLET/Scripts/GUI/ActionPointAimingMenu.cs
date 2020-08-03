@@ -7,6 +7,9 @@ using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
 using Base;
 using System;
+using Packages.Rider.Editor.UnitTesting;
+using OrbCreationExtensions;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionPointAimingMenu : MonoBehaviour, IMenu
@@ -22,8 +25,10 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public FocusConfirmationDialog FocusConfirmationDialog;
 
-    public DropdownParameter RobotsList, EndEffectorList, OrientationsList;
+    public DropdownParameter RobotsList, PositionRobotsList, JointsRobotsList, EndEffectorList, OrientationsList;
     public DropdownParameterJoints JointsList;
+
+    public GameObject OrientationsDynamicList, JointsDynamicList; //todo [SerializeField] ?? - je to tak v ActionPointMenu.cs
 
     [SerializeField]
     private InputDialog inputDialog;
@@ -51,8 +56,29 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public void UpdateMenu(string preselectedOrientation = null) {
         ActionPointName.text = CurrentActionPoint.Data.Name;
+        DropdownParameter[] robotsLists = { /*RobotsList,*/ PositionRobotsList, JointsRobotsList};
+        UnityAction<string>[] onChangeMethods = { OnRobotChanged, UpdateJointsDynamicList };
+
+        for (int i = 0; i < robotsLists.Length; i++) {
+            DropdownParameter robotsList = robotsLists[i];
+            robotsList.Dropdown.dropdownItems.Clear();
+
+            robotsList.gameObject.GetComponent<DropdownRobots>().Init(onChangeMethods[i], false);
+            if (robotsList.Dropdown.dropdownItems.Count == 0) {
+                UpdatePositionBlock.SetActive(false);
+            }
+            else {
+                onChangeMethods[i]((string) robotsList.GetValue());
+                UpdatePositionBlock.SetActive(true);
+            }
+            
+        }
+
+        /*
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
+        CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
+        positionRobotsListDropdown.dropdownItems.Clear();
 
         RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
         if (robotsListDropdown.dropdownItems.Count == 0) {
@@ -62,9 +88,19 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             UpdatePositionBlock.SetActive(true);
 
         }
+        PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
+        if (positionRobotsListDropdown.dropdownItems.Count == 0) {
+            UpdatePositionBlock.SetActive(false);
+        } else {
+            OnRobotChanged((string) PositionRobotsList.GetValue());
+            UpdatePositionBlock.SetActive(true);
 
-        UpdateOrientations(preselectedOrientation);
+        }
+        */
 
+        //UpdateOrientations(preselectedOrientation);
+
+        UpdateOrientationsDynamicList();
     }
 
     public void UpdateOrientations(string preselectedOrientation = null) {
@@ -97,7 +133,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     }
 
-
+    
     public void UpdateJoints(string robot_id, string selectedJoints = null) {
         if (robot_id == null)
             return;
@@ -115,7 +151,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             UpdateJointsBtn.interactable = false;
         }
     }
-
+    
     private void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
         
@@ -137,6 +173,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
         
+    }
+
+    private void OnJointsRobotChanged(string robot_name) {
+        UpdateJoints(robot_name);
+
     }
 
 
@@ -224,6 +265,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         
     }
 
+    public void ShowUpdatePositionConfirmationDialog() {
+        CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
+        Base.Notifications.Instance.ShowNotification("klik na update position", "selcted: " + positionRobotsListDropdown.selectedText.text);
+    }
+
     public void ShowFocusConfirmationDialog() {
         if (RobotsList.Dropdown.dropdownItems.Count == 0 ||
             EndEffectorList.Dropdown.dropdownItems.Count == 0 ||
@@ -264,4 +310,68 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
     public void UpdateMenu() {
         UpdateMenu(null);
     }
+
+    public void UpdateOrientationsDynamicList() {
+        foreach (RectTransform o in OrientationsDynamicList.GetComponentsInChildren<RectTransform>()) {
+            if (o.gameObject.tag != "Persistent") {
+                Destroy(o.gameObject);
+            }
+        }
+
+        foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {  
+                ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, OrientationsDynamicList.transform).GetComponent<ActionButton>();
+                btn.transform.localScale = new Vector3(1, 1, 1);
+                btn.SetLabel(orientation.Name);
+
+                //btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
+            }
+        }
+
+    public void UpdateJointsDynamicList(string robotName) {
+        if (robotName == null)
+            return;
+
+        try {
+            string robotId = SceneManager.Instance.RobotNameToId(robotName);
+
+            foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
+                if (o.gameObject.tag != "Persistent") {
+                    Destroy(o.gameObject);
+                }
+            }
+
+            foreach (IO.Swagger.Model.ProjectRobotJoints joint in CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList()) {
+                ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
+                btn.transform.localScale = new Vector3(1, 1, 1);
+                btn.SetLabel(joint.Name);
+
+                //btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
+            }
+        }
+        catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to get robot's ID", "");
+            return;
+        }
+
+        
+    }
+    /*
+    public void UpdateJoints(string robot_id, string selectedJoints = null) {
+        if (robot_id == null)
+            return;
+        CustomDropdown jointsDropdown = JointsList.Dropdown;
+
+        JointsList.PutData(CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList(), selectedJoints, null, CurrentActionPoint.Data.Name);
+
+        if (jointsDropdown.dropdownItems.Count > 0) {
+            NoJoints.gameObject.SetActive(false);
+            JointsList.gameObject.SetActive(true);
+            UpdateJointsBtn.interactable = true;
+        } else {
+            JointsList.gameObject.SetActive(false);
+            NoJoints.gameObject.SetActive(true);
+            UpdateJointsBtn.interactable = false;
+        }
+    }*/
 }
