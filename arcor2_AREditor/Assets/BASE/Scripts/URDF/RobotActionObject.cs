@@ -358,7 +358,7 @@ namespace Base {
 
         public async Task LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            EndEffectors = await GameManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+            EndEffectors = await WebsocketManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {

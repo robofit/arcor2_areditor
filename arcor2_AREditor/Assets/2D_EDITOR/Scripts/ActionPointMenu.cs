@@ -62,9 +62,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public async void RenameActionPoint(string newUserId) {
-        bool result = await Base.GameManager.Instance.RenameActionPoint(CurrentActionPoint, newUserId);
-        if (result) {
+       try {
+            await WebsocketManager.Instance.RenameActionPoint(CurrentActionPoint.Data.Id, newUserId);
             inputDialog.Close();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
         }
     }
 
@@ -130,7 +132,12 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             UntieBtnTooltip.ShowDefaultDescription();
         }
 
-        RemoveBtn.SetInteractivity(await GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true));
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true);
+            RemoveBtn.SetInteractivity(true);
+        } catch (RequestFailedException e) {
+            RemoveBtn.SetInteractivity(false);
+        }
         ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
         CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
     }
@@ -168,11 +175,13 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public async void DeleteAP() {
         Debug.Assert(CurrentActionPoint != null);
-        bool success = await Base.GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
-        if (success) {
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
             ConfirmationDialog.Close();
             MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
-        }    
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
+        }
     }
 
    

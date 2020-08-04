@@ -41,24 +41,38 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async Task<RequestResult> ValidateSceneNameAsync(string newName) {
-        return await GameManager.Instance.RenameScene(sceneTile.SceneId, newName, true);
+        try {
+            await WebsocketManager.Instance.RenameScene(sceneTile.SceneId, newName, true);
+            return (true, "");
+        } catch (RequestFailedException e) {
+            return (false, e.Message);
+        }
     }
 
     public async void RenameScene(string newUserId) {
         Base.GameManager.Instance.ShowLoadingScreen();
-        bool result = (await Base.GameManager.Instance.RenameScene(sceneTile.SceneId, newUserId, false)).Success;
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RenameScene(sceneTile.SceneId, newUserId, false);
             inputDialog.Close();
             sceneTile.SetLabel(newUserId);
             SetLabel(newUserId);
             Close();
-        }
-        Base.GameManager.Instance.HideLoadingScreen();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
+        } finally {
+            Base.GameManager.Instance.HideLoadingScreen();
+        }        
     }
 
 
     public async void ShowRemoveDialog() {
-        int projects = (await Base.GameManager.Instance.GetProjectsWithScene(sceneTile.SceneId)).Count;
+        int projects;
+        try {
+            projects = (await WebsocketManager.Instance.GetProjectsWithScene(sceneTile.SceneId)).Count;
+        } catch (RequestFailedException e) {
+            Debug.LogError(e);
+            return;
+        }
         if (projects == 1) {
             Base.Notifications.Instance.ShowNotification("Failed to remove scene", "There is one project associated with this scene. Remove it first.");
             return;
@@ -74,12 +88,15 @@ public class SceneOptionMenu : TileOptionMenu {
 
     public async void RemoveScene() {
         Base.GameManager.Instance.ShowLoadingScreen();
-        bool result = await Base.GameManager.Instance.RemoveScene(sceneTile.SceneId);
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RemoveScene(sceneTile.SceneId);
             confirmationDialog.Close();
             Close();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove scene", e.Message);
+        } finally {
+            Base.GameManager.Instance.HideLoadingScreen();
         }
-        Base.GameManager.Instance.HideLoadingScreen();
     }
 
     public void ShowRelatedProjects() {

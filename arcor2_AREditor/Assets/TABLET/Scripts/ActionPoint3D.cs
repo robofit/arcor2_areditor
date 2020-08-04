@@ -34,7 +34,11 @@ public class ActionPoint3D : Base.ActionPoint {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
                 if (!tfGizmo.isTransforming && updatePosition) {
                     updatePosition = false;
-                    await GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
+                    try {
+                        await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
+                    } catch (RequestFailedException e) {
+                        Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
+                    }
                 }
 
                 if (tfGizmo.isTransforming)
