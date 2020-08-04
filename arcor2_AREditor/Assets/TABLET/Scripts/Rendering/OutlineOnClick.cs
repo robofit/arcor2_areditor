@@ -11,19 +11,28 @@ public class OutlineOnClick : Clickable {
         TwoPassShader
     }
 
+    /// <summary>
+    /// Controlled from OutlineOnClickEditor.cs script.
+    /// For complex meshes and cubes with spheres it is better to use TwoPassShader, for simple objects use OnePassShader.
+    /// </summary>
     [HideInInspector]
     public OutlineType OutlineShaderType;
 
+    /// <summary>
+    /// If TwoPassShader is selected, then following four variables are displayed in Inspector.
+    /// </summary>
     [HideInInspector]
     public Material OutlineClickFirstPass;
     [HideInInspector]
     public Material OutlineClickSecondPass;
-
     [HideInInspector]
     public Material OutlineHoverFirstPass;
     [HideInInspector]
     public Material OutlineHoverSecondPass;
 
+    /// <summary>
+    /// If OnePassShader is selected, then following two variables are displayed in Inspector.
+    /// </summary>
     [HideInInspector]
     public Material OutlineClickMaterial;
     [HideInInspector]
@@ -36,11 +45,12 @@ public class OutlineOnClick : Clickable {
     private bool selected = false;
     private bool highlighted = false;
 
-
+    /// <summary>
+    /// Loads all renderers on attached gameobject.
+    /// </summary>
     public void InitRenderers() {
         ClearRenderers();
         Renderers.AddRange(gameObject.GetComponentsInChildren<Renderer>());
-        SetOutline(OutlineHoverFirstPass, OutlineHoverSecondPass);
     }
 
     public void InitRenderers(List<Renderer> renderers) {
@@ -51,10 +61,6 @@ public class OutlineOnClick : Clickable {
         Renderers.Clear();
     }
 
-    public override void OnClick(Click type) {
-
-    }
-
     protected void Deselect() {
         if (selected) {
             selected = false;
@@ -62,16 +68,18 @@ public class OutlineOnClick : Clickable {
         }
     }
 
+    /// <summary>
+    /// Called when OnClick event is triggered on attached gameobject.
+    /// </summary>
+    /// <param name="force"></param>
     protected virtual void Select(bool force = false) {
         if (HoverOnly)
             return;
 
         if (highlighted) {
             highlighted = false;
-            Debug.Log("Object highlighted.. must unhighlight first.");
             UnsetOutline();
         }
-        Debug.Log("Selecting object");
         selected = true;
         if (OutlineShaderType == OutlineType.OnePassShader) {
             SetOutline(OutlineClickMaterial);
@@ -80,6 +88,11 @@ public class OutlineOnClick : Clickable {
         }
     }
 
+    /// <summary>
+    /// Sets outline for gameobjects using TwoPassShader option. Better for meshes.
+    /// </summary>
+    /// <param name="outlineFirstPass"></param>
+    /// <param name="outlineSecondPass"></param>
     private void SetOutline(Material outlineFirstPass, Material outlineSecondPass) {
         foreach (Renderer renderer in Renderers) {
             List<Material> materials = new List<Material>(renderer.sharedMaterials);
@@ -93,6 +106,10 @@ public class OutlineOnClick : Clickable {
         }
     }
 
+    /// <summary>
+    /// Sets outline for gameobjects using OnePassShader option. Better for simple objects.
+    /// </summary>
+    /// <param name="outline"></param>
     private void SetOutline(Material outline) {
         foreach (Renderer renderer in Renderers) {
             List<Material> materials = new List<Material>(renderer.sharedMaterials);
@@ -103,6 +120,9 @@ public class OutlineOnClick : Clickable {
         }
     }
 
+    /// <summary>
+    /// Removes outline of attached gameobject.
+    /// </summary>
     private void UnsetOutline() {
         foreach (Renderer renderer in Renderers) {
             List<Material> materials = new List<Material>(renderer.sharedMaterials);
@@ -114,7 +134,9 @@ public class OutlineOnClick : Clickable {
         }
     }
 
-
+    /// <summary>
+    /// Called when OnHoverStart/OnHoverEnd event is triggered from attached gameobject.
+    /// </summary>
     public void Highlight() {
         if (!selected) {
             highlighted = true;
@@ -131,6 +153,10 @@ public class OutlineOnClick : Clickable {
             highlighted = false;
             UnsetOutline();
         }
+    }
+
+    public override void OnClick(Click type) {
+
     }
 
     public override void OnHoverStart() {
