@@ -39,10 +39,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
         if (selected && !forceSelected) {
             selected = false;
             SceneManager.Instance.SetSelectedObject(null);
-            RemoveMaterial(ClickMaterial);
-            foreach (Renderer renderer in Renderers) {
-                renderer.materials = materials[renderer].ToArray();
-            }
+            Deselect();
         }
         forceSelected = false;
     }
