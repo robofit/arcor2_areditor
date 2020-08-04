@@ -60,6 +60,8 @@ namespace Base {
 
     public class GameManager : Singleton<GameManager> {
 
+        public bool ExpertMode = true;
+
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
         public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
@@ -103,6 +105,7 @@ namespace Base {
         public CanvasGroup MainMenuBtnCG, StatusPanelCG;
         public GameObject ButtonPrefab;
         public GameObject Tooltip;
+        public GameObject LabeledFloatInput;
         public TMPro.TextMeshProUGUI Text;
         private IO.Swagger.Model.Project newProject;
         private IO.Swagger.Model.Scene newScene;

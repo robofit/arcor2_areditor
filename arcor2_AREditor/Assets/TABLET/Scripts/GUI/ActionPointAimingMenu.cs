@@ -35,6 +35,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     [SerializeField]
     private AddOrientationMenu AddOrientationMenu;
+    [SerializeField]
+    private AddJointsMenu AddJointsMenu;
 
     private SimpleSideMenu SideMenu;
 
@@ -223,7 +225,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         } else {            
             preselectedOrientation = null;
         }
-        
     }
 
     public void ShowAddJointsDialog() {
@@ -244,7 +245,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
         } else {
             preselectedJoints = null;
         }
-        
     }
 
 
@@ -379,5 +379,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu
 
     public void OpenAddOrientationMenu(string preselectedOrientation = null) {
         AddOrientationMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
+    }
+
+    public void OpenAddJointsMenu(bool manual) {
+        AddJointsMenu.ShowMenu(CurrentActionPoint, manual);
     }
 }
