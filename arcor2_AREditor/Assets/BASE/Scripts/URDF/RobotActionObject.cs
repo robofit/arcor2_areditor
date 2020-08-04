@@ -28,8 +28,8 @@ namespace Base {
         private GameObject RobotPlaceholder;
         private GameObject RobotModel;
         private UrdfRobot UrdfRobot;
-        private Renderer[] robotRenderers;
-        private Collider[] robotColliders;
+        private List<Renderer> robotRenderers = new List<Renderer>();
+        private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;
 
@@ -243,11 +243,11 @@ namespace Base {
             RobotPlaceholder.SetActive(false);
             Destroy(RobotPlaceholder);
 
-            robotColliders = gameObject.GetComponentsInChildren<Collider>();
-            robotRenderers = gameObject.GetComponentsInChildren<Renderer>();
-            List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(robotRenderers);
-            outlineOnClick.InitRenderers(ren);
+            robotColliders.Clear();
+            robotRenderers.Clear();
+            robotRenderers.AddRange(RobotModel.GetComponentsInChildren<Renderer>());
+            robotColliders.AddRange(RobotModel.GetComponentsInChildren<Collider>());
+            outlineOnClick.InitRenderers(robotRenderers);
         }
 
         /// <summary>
@@ -369,12 +369,13 @@ namespace Base {
             //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
 
             RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
-            robotColliders = RobotPlaceholder.GetComponentsInChildren<Collider>();
-            robotRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
-            List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(robotRenderers);
+
+            robotColliders.Clear();
+            robotRenderers.Clear();
+            robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
+            robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-            outlineOnClick.InitRenderers(ren);
+            outlineOnClick.InitRenderers(robotRenderers);
         }
 
         public override GameObject GetModelCopy() {

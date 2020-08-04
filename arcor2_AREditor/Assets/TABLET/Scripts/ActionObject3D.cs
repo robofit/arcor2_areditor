@@ -122,8 +122,8 @@ public class ActionObject3D : ActionObject
             // We have clicked with left mouse and started manipulation with object
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 manipulationStarted = true;
-                TransformGizmo.Instance.AddTarget(Model.transform);
-            }           
+                tfGizmo.AddTarget(Model.transform);
+            }
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();

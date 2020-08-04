@@ -95,7 +95,7 @@ public class ActionPoint3D : Base.ActionPoint {
             Debug.LogWarning("Turning on gizmo overlay");
             manipulationStarted = true;
             updatePosition = false;
-            TransformGizmo.Instance.AddTarget(Sphere.transform);
+            tfGizmo.AddTarget(Sphere.transform);
         }
     }
 
