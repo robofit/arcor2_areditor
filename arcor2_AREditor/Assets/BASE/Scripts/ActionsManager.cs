@@ -60,8 +60,8 @@ namespace Base {
             if (!ActionsReady && ActionObjectsLoaded) {
                 
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
-                    
-                    if (!ao.ActionsLoaded) {
+                    Debug.LogError(ao.Type + " " + ao.ActionsLoaded.ToString());
+                    if (!ao.Disabled && !ao.ActionsLoaded) {
                        
                         return;
                     }
