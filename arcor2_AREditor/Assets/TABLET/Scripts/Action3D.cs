@@ -94,7 +94,9 @@ public class Action3D : Base.Action {
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
-            return;
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                return;
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {

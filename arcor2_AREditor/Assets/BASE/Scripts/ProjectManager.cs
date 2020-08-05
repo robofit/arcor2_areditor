@@ -69,7 +69,7 @@ namespace Base {
             this.AllowEdit = allowEdit;
             LoadSettings();
 
-            startAction = Instantiate(StartPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            startAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
             endAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
 
             bool success = UpdateProject(project, true);

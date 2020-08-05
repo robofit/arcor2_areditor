@@ -401,6 +401,17 @@ namespace Base {
         }
 
         public override void OnHoverStart() {
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
+                if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                    GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            }
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+                return;
+            }
             ActionObjectName.gameObject.SetActive(true);
             outlineOnClick.Highlight();
         }

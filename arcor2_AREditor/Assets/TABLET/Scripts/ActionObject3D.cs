@@ -293,7 +293,9 @@ public class ActionObject3D : ActionObject
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
-            return;
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                return;
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&

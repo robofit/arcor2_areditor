@@ -183,7 +183,9 @@ public class ActionPoint3D : Base.ActionPoint {
             return;
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint) {
-            return;
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                return;
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
