@@ -210,7 +210,6 @@ namespace Base {
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
         public abstract GameObject GetModelCopy();
 
-        public abstract Vector3 GetTopPoint();
     }
 
 }

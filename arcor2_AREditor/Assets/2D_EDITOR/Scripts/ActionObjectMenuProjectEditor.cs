@@ -16,17 +16,10 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
-        /*IO.Swagger.Model.Position offset = new IO.Swagger.Model.Position();
-        Vector3 aboveModel = CurrentObject.GetTopPoint();
-        aboveModel.y += 0.1f;
-        offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentObject.transform.InverseTransformPoint(aboveModel)));
-        */
         
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(CurrentObject.transform.position));
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentObject.transform);        
         IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
-
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
-        //Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
         if (result)
             inputDialog.Close();
         UpdateMenu();

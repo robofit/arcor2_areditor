@@ -118,7 +118,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(ProjectManager.Instance.ActionPointsOrigin.transform.position));
+       Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform);
         IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
 
         bool result = await GameManager.Instance.AddActionPoint(name, "", offset);

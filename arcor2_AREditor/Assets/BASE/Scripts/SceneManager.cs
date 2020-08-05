@@ -368,18 +368,24 @@ namespace Base {
             SetSceneMeta(scene);
         }
 
-        public Vector3 GetCollisionFreePointAbove(Vector3 originalPosition) {
-            Vector3 aboveModel = Vector3.zero;
-            Collider[] colliders = Physics.OverlapSphere(SceneOrigin.transform.TransformPoint(originalPosition), 0.025f);
+        public Vector3 GetCollisionFreePointAbove(Transform transform) {
+            GameObject tmpGo = new GameObject();
+            tmpGo.transform.parent = transform;
+            tmpGo.transform.localPosition = Vector3.zero;
+            tmpGo.transform.localRotation = Quaternion.identity;
+
+            Collider[] colliders = Physics.OverlapSphere(tmpGo.transform.position, 0.025f);
             // to avoid infinite loop
             int i = 0;
             while (colliders.Length > 0 && i < 40) {
                 Collider collider = colliders[0];
-                aboveModel.y = SceneOrigin.transform.InverseTransformPoint(collider.gameObject.transform.position).y - originalPosition.y + collider.bounds.extents.y + 0.05f;
-                colliders = Physics.OverlapSphere(SceneOrigin.transform.TransformPoint(originalPosition) + aboveModel, 0.025f);
+                // TODO - depends on the rotation between detected marker and original position of camera, height of collision free point above will be slightly different
+                // How to solve this?
+                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y + 0.05f, 0), SceneOrigin.transform);
+                colliders = Physics.OverlapSphere(tmpGo.transform.position, 0.025f);
                 ++i;
             }
-            return aboveModel;
+            return tmpGo.transform.localPosition;
         }
 
 
