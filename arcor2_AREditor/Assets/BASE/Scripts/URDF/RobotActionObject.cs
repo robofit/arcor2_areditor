@@ -248,6 +248,7 @@ namespace Base {
             robotRenderers.AddRange(RobotModel.GetComponentsInChildren<Renderer>());
             robotColliders.AddRange(RobotModel.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
+            outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
         }
 
         /// <summary>
@@ -376,6 +377,7 @@ namespace Base {
             robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
+            outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
         }
 
         public override GameObject GetModelCopy() {
