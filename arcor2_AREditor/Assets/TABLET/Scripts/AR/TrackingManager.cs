@@ -14,6 +14,9 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     public VideoPlayerImage TrackingLostAnimation;
 
+    public Material PlaneTransparentMaterial;
+    public Material PlaneOpaqueMaterial;
+
     private bool planesAndFeaturesActive = true;
 
     private Coroutine trackingFailureNotify;
@@ -164,6 +167,19 @@ public class TrackingManager : Singleton<TrackingManager> {
 
         foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
             pointCloud.gameObject.SetActive(active);
+        }
+#endif
+    }
+
+    public void ChangePlaneTransparency(bool transparent) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        foreach (ARPlane plane in ARPlaneManager.trackables) {
+            Renderer ren = plane.GetComponent<Renderer>();
+            if (transparent) {
+                ren.sharedMaterials = new Material[1] { PlaneTransparentMaterial };
+            } else {
+                ren.sharedMaterials = new Material[1] { PlaneOpaqueMaterial };
+            }
         }
 #endif
     }
