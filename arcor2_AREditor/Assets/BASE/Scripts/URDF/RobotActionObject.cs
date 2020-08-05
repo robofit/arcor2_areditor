@@ -105,16 +105,19 @@ namespace Base {
         }
 
         private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
+            Debug.Log("URDF: Collada model imported");
             Transform importedModel = args.Data.transform;
 
-            Base.RobotActionObject robot = importedModel.GetComponentInParent<Base.RobotActionObject>();
-            if (robot != null) {
+            RobotActionObject[] robots = importedModel.GetComponentsInParent<Base.RobotActionObject>(true);
+            if (robots != null) {
+                RobotActionObject robot = robots[0];
+
                 // check if imported model corresponds to this robot
                 if (ReferenceEquals(robot, this)) {
 
                     // get rid of the placeholder object (New Game Object)
                     Transform placeholderGameObject = importedModel.parent;
-                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays:false);
+                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays: false);
 
                     //TODO: Temporarily, colliders are added directly to Visuals
                     AddColliders(importedModel.gameObject, setConvex: true);
@@ -126,7 +129,7 @@ namespace Base {
                     Debug.Log("URDF: dae model of the link: " + importedModel.parent.parent.parent.name + " imported");
 
                 }
-            }
+            }            
         }
 
         private void AddColliders(GameObject gameObject, bool setConvex = false) {
