@@ -45,6 +45,33 @@ public class OutlineOnClick : Clickable {
     private bool selected = false;
     private bool highlighted = false;
 
+    private Material[] gizmoMaterial;
+    private bool gizmoHighlighted = false;
+
+
+    private void Start() {
+        InitGizmoMaterials();
+    }
+
+    private void InitGizmoMaterials() {
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            gizmoMaterial = new Material[1];
+            gizmoMaterial[0] = new Material(OutlineHoverMaterial) {
+                name = "OutlineGizmoMaterial"
+            };
+            gizmoMaterial[0].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
+        } else {
+            gizmoMaterial = new Material[2];
+            gizmoMaterial[0] = new Material(OutlineHoverFirstPass) {
+                name = "OutlineGizmoFirstPass"
+            };
+            gizmoMaterial[1] = new Material(OutlineHoverSecondPass) {
+                name = "OutlineGizmoSecondPass",
+            };
+            gizmoMaterial[1].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
+        }
+    }
+
     /// <summary>
     /// Loads all renderers on attached gameobject.
     /// </summary>
@@ -138,7 +165,7 @@ public class OutlineOnClick : Clickable {
     /// Called when OnHoverStart/OnHoverEnd event is triggered from attached gameobject.
     /// </summary>
     public void Highlight() {
-        if (!selected) {
+        if (!selected && !gizmoHighlighted) {
             highlighted = true;
             if (OutlineShaderType == OutlineType.OnePassShader) {
                 SetOutline(OutlineHoverMaterial);
@@ -149,9 +176,29 @@ public class OutlineOnClick : Clickable {
     }
 
     public void UnHighlight() {
-        if (highlighted && !selected) {
+        if (highlighted && !selected && !gizmoHighlighted) {
             highlighted = false;
             UnsetOutline();
+        }
+    }
+
+    public void GizmoHighlight() {
+        if (highlighted) {
+            UnHighlight();
+        }
+
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            SetOutline(gizmoMaterial[0]);
+        } else {
+            SetOutline(gizmoMaterial[0], gizmoMaterial[1]);
+        }
+        gizmoHighlighted = true;
+    }
+
+    public void GizmoUnHighlight() {
+        if (gizmoHighlighted) {
+            UnsetOutline();
+            gizmoHighlighted = false;
         }
     }
 

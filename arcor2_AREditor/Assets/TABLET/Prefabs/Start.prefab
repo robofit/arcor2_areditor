@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc17bbd512c0a6f42b052f565d89c2d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Input: {fileID: 5516121032883629286}
   Output: {fileID: 2987135247976725981}
   InputArrow: {fileID: 8633720928761024007}
@@ -33,6 +34,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ChildToBind: {fileID: 3106567406072180565}
+--- !u!114 &5074893086150608335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3106567406072180565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56dd716813c47194695f505324fcf244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OutlineOnClick: {fileID: 8068716088352857829}
 --- !u!1001 &8219759058149648708
 PrefabInstance:
   m_ObjectHideFlags: 0

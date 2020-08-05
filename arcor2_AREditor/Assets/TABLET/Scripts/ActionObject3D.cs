@@ -123,11 +123,13 @@ public class ActionObject3D : ActionObject
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 manipulationStarted = true;
                 tfGizmo.AddTarget(Model.transform);
+                outlineOnClick.GizmoHighlight();
             }
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();
             tfGizmo.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
         }
                 
     }
@@ -276,6 +278,7 @@ public class ActionObject3D : ActionObject
         modelRenderer = Model.GetComponent<Renderer>();
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
+        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
     }
 
     public override GameObject GetModelCopy() {

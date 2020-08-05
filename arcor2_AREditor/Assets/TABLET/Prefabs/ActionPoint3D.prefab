@@ -744,6 +744,7 @@ GameObject:
   - component: {fileID: 4618120162863866931}
   - component: {fileID: 2135223395522982168}
   - component: {fileID: 1162351292833498496}
+  - component: {fileID: 2592820939571358080}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: ActionPoint
@@ -839,6 +840,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   Target: {fileID: 2740470206176205867}
+--- !u!114 &2592820939571358080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7822383090967264636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56dd716813c47194695f505324fcf244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OutlineOnClick: {fileID: 8058654341286488384}
 --- !u!1 &7934289815226500860
 GameObject:
   m_ObjectHideFlags: 0

@@ -83,6 +83,7 @@ public class ActionPoint3D : Base.ActionPoint {
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu(false);
             tfGizmo.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
         }
 
     }
@@ -96,6 +97,7 @@ public class ActionPoint3D : Base.ActionPoint {
             manipulationStarted = true;
             updatePosition = false;
             tfGizmo.AddTarget(Sphere.transform);
+            outlineOnClick.GizmoHighlight();
         }
     }
 
