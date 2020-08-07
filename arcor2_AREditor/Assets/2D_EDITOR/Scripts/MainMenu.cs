@@ -548,8 +548,10 @@ public class MainMenu : MonoBehaviour, IMenu {
                 button = CloseSceneBtn;
                 if (!SceneManager.Instance.SceneChanged) {
                     SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
+                    CreateProjectBtn.SetInteractivity(true);
                 } else {
                     SaveSceneBtn.SetInteractivity(true);
+                    CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
                 }
                 break;
         }
