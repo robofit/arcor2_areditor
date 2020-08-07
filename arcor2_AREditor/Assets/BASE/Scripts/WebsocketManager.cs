@@ -11,32 +11,59 @@ using IO.Swagger.Model;
 namespace Base {
 
     public class WebsocketManager : Singleton<WebsocketManager> {
+        /// <summary>
+        /// ARServer URI
+        /// </summary>
         public string APIDomainWS = "";
+        /// <summary>
+        /// Websocket context
+        /// </summary>
         private WebSocket websocket;
-
-        private bool ignoreProjectChanged;
-
+        /// <summary>
+        /// Dictionary of unprocessed responses
+        /// </summary>
         private Dictionary<int, string> responses = new Dictionary<int, string>();
-
+        /// <summary>
+        /// Requset id pool
+        /// </summary>
         private int requestID = 1;
-        
+        /// <summary>
+        /// Invoked when new end effector pose recieved from server. Contains eef pose.
+        /// </summary>
         public event AREditorEventArgs.RobotEefUpdatedEventHandler OnRobotEefUpdated;
+        /// <summary>
+        /// Invoked when new joints values recieved from server. Contains joints values.
+        /// </summary>
         public event AREditorEventArgs.RobotJointsUpdatedEventHandler OnRobotJointsUpdated;
+        /// <summary>
+        /// Invoked when connected to server
+        /// </summary>
         public event EventHandler OnConnectedEvent;
+        /// <summary>
+        /// Invoked when disconnected from server.
+        /// </summary>
         public event EventHandler OnDisconnectEvent;
+        /// <summary>
+        /// Invoked when main screen should be opened. Contains info of which list (scenes, projects, packages)
+        /// should be opened and which tile should be highlighted.
+        /// </summary>
         public event AREditorEventArgs.ShowMainScreenEventHandler OnShowMainScreen;
+        /// <summary>
+        /// Invoked when action item added. Contains info about the logic item.
+        /// </summary>
         public event AREditorEventArgs.LogicItemChangedEventHandler OnLogicItemAdded;
+        /// <summary>
+        /// Invoked when logic item removed. Contains UUID of removed item.
+        /// </summary>
         public event AREditorEventArgs.StringEventHandler OnLogicItemRemoved;
+        /// <summary>
+        /// Invoked when logic item updated. Contains info of updated logic item. 
+        /// </summary>
         public event AREditorEventArgs.LogicItemChangedEventHandler OnLogicItemUpdated;
-
-        
-
+        /// <summary>
+        /// ARServer domain or IP address
+        /// </summary>
         private string serverDomain;
-
-
-        private void Awake() {
-            ignoreProjectChanged = false;       
-        }
 
        
         /// <summary>
@@ -282,10 +309,7 @@ namespace Base {
                         HandleOpenPackage(data);
                         break;
                     case "ProjectChanged":
-                        if (ignoreProjectChanged)
-                            ignoreProjectChanged = false;
-                        else
-                            HandleProjectChanged(data);
+                        HandleProjectChanged(data);
                         break;
                     case "ShowMainScreen":
                         HandleShowMainScreen(data);
