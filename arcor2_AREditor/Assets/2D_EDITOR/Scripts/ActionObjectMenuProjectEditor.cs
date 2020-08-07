@@ -13,6 +13,8 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     [SerializeField]
     private InputDialog inputDialog;
 
+    [SerializeField]
+    private ButtonWithTooltip createAPBtn;
     
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
@@ -40,6 +42,8 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         foreach (Transform t in DynamicContent.transform) {
             Destroy(t.gameObject);
         }
+        createAPBtn.SetInteractivity(CurrentObject.ActionObjectMetadata.HasPose);
+
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
             Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Name);
             button.onClick.AddListener(() => ShowActionPoint(actionPoint));
