@@ -17,7 +17,7 @@ Shader "Outline/ModelFirstPass" {
         Tags {
             "Queue" = "Geometry-1"
         }
-
+        
         // Render outer mask
         Pass {
             // Set stencil mask

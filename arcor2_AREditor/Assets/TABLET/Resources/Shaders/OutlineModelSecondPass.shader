@@ -27,6 +27,8 @@ Shader "Outline/ModelSecondPass" {
                 Ref 2
                 Comp Equal
             }
+            Blend SrcAlpha OneMinusSrcAlpha
+
             //Cull Front
 
             CGPROGRAM

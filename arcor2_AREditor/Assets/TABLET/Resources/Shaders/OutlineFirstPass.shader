@@ -25,6 +25,7 @@ Shader "Outline/FirstPass" {
                 Comp Always
                 Pass Replace
             }
+            Blend SrcAlpha OneMinusSrcAlpha
 
             CGPROGRAM
             #pragma vertex vert
@@ -54,6 +55,7 @@ Shader "Outline/FirstPass" {
                 Comp Always
                 Pass Replace
             }
+            Blend SrcAlpha OneMinusSrcAlpha
 
             CGPROGRAM
             #pragma vertex vert

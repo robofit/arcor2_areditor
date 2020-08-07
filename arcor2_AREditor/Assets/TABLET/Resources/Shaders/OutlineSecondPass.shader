@@ -26,6 +26,7 @@ Shader "Outline/SecondPass" {
                 Ref 2
                 Comp Equal
             }
+            Blend SrcAlpha OneMinusSrcAlpha
 
             CGPROGRAM
             #pragma vertex vert
