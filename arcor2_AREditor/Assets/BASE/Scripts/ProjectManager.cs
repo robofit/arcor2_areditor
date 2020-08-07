@@ -183,8 +183,8 @@ namespace Base {
                         name: action.Data.Name, type: action.Data.Type) {
                         Parameters = new List<IO.Swagger.Model.ActionParameter>()                        
                     };
-                    foreach (ActionParameter param in action.Parameters.Values) {
-                        projectAction.Parameters.Add(param);
+                    foreach (Parameter param in action.Parameters.Values) {
+                        projectAction.Parameters.Add(DataHelper.ParameterToActionParameter(param));
                     }
                 }
                 project.ActionPoints.Add(projectActionPoint);

@@ -17,7 +17,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
         
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentObject.transform);        
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentObject.transform, Vector3.one * 0.025f, Quaternion.identity);        
         IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
         if (result)

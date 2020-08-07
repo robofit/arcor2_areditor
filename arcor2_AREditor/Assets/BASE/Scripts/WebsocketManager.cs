@@ -546,31 +546,7 @@ namespace Base {
                     throw new NotImplementedException();
             }
         }
-        /*
-
-        private async Task HandleSceneServiceChanged(string data) {
-            IO.Swagger.Model.SceneServiceChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneServiceChanged>(data);
-
-            switch (sceneObjectChanged.ChangeType) {
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Add:
-                    await SceneManager.Instance.AddService(sceneObjectChanged.Data, true);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Remove:
-                    SceneManager.Instance.RemoveService(sceneObjectChanged.Data.Type);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Update:
-                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
-                    break;
-                case IO.Swagger.Model.SceneServiceChanged.ChangeTypeEnum.Updatebase:
-                    SceneManager.Instance.UpdateService(sceneObjectChanged.Data);
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-        }*/
-
-
-
+        
         private async void HandleOpenProject(string data) {
             IO.Swagger.Model.OpenProject openProjectEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.OpenProject>(data);
             GameManager.Instance.ProjectOpened(openProjectEvent.Data.Scene, openProjectEvent.Data.Project);
@@ -807,9 +783,9 @@ namespace Base {
             return response.Data;
         }
 
-        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose) {
+        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose, List<IO.Swagger.Model.Parameter> settings) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name);
+            IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name, settings: settings);
             IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddObjectToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);

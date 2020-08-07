@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
-public class SwitchComponent : MonoBehaviour, IActionParameter
+public class SwitchComponent : MonoBehaviour, IParameter
 {
     public SwitchManager Switch;
     public TMPro.TMP_Text Label;

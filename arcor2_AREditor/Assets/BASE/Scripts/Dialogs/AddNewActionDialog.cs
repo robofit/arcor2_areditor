@@ -11,8 +11,8 @@ public class AddNewActionDialog : Dialog
     public VerticalLayoutGroup DynamicContentLayout;
 
     private Base.ActionMetadata actionMetadata;
-    private Dictionary<string, Base.ActionParameterMetadata> actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
-    private List<IActionParameter> actionParameters = new List<IActionParameter>();
+    private Dictionary<string, Base.ParameterMetadata> actionParametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
+    private List<IParameter> actionParameters = new List<IParameter>();
     public Base.ActionPoint CurrentActionPoint;
     private IActionProvider actionProvider;
     [SerializeField]
@@ -26,14 +26,14 @@ public class AddNewActionDialog : Dialog
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
+        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
         nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(actionMetadata.Name));
     }
 
 
     public async void InitFromAction(Base.Action action) {
         InitDialog(action.ActionProvider, action.Metadata, action.ActionPoint);
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
         nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(action.Data.Name));
     }
 
@@ -41,9 +41,9 @@ public class AddNewActionDialog : Dialog
         this.actionMetadata = actionMetadata;
         CurrentActionPoint = actionPoint;
         this.actionProvider = actionProvider;
-        actionParametersMetadata = new Dictionary<string, Base.ActionParameterMetadata>();
-        foreach (IO.Swagger.Model.ActionParameterMeta meta in actionMetadata.Parameters) {
-            actionParametersMetadata.Add(meta.Name, new Base.ActionParameterMetadata(meta));
+        actionParametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
+        foreach (IO.Swagger.Model.ParameterMeta meta in actionMetadata.Parameters) {
+            actionParametersMetadata.Add(meta.Name, new Base.ParameterMetadata(meta));
         }
 
         foreach (Transform t in DynamicContent.transform) {
@@ -61,14 +61,14 @@ public class AddNewActionDialog : Dialog
     public async void CreateAction() {
         string newActionName = (string) nameInput.GetValue();
         
-        if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
+        if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
-            foreach (IActionParameter actionParameter in actionParameters) {
-                if (!actionParametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ActionParameterMetadata actionParameterMetadata)) {
+            foreach (IParameter actionParameter in actionParameters) {
+                if (!actionParametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
                     Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
                     return;
                 }
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
                 parameters.Add(ap);
             }
             try {

@@ -6,7 +6,7 @@ using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Newtonsoft.Json;
 
-public class LabeledInput : MonoBehaviour, IActionParameter
+public class LabeledInput : MonoBehaviour, IParameter
 {
     public string ParameterType;
 
@@ -76,7 +76,7 @@ public class LabeledInput : MonoBehaviour, IActionParameter
             case "integer":
                 return int.Parse(Input.text);
             case "double":
-                return Base.Action.ParseDouble(Input.text);
+                return Base.Parameter.ParseDouble(Input.text);
             default:
                 return Input.text;
         }

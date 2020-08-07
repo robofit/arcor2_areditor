@@ -6,7 +6,7 @@ public class PoseEvent : UnityEvent<IO.Swagger.Model.Pose> {
 
 }
 
-public class RelPoseParam : MonoBehaviour, IActionParameter {
+public class RelPoseParam : MonoBehaviour, IParameter {
 
     [SerializeField]
     private TMPro.TMP_Text label;

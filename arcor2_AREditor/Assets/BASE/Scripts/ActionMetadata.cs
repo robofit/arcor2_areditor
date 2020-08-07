@@ -14,8 +14,8 @@ namespace Base {
         /// </summary>
         /// <param name="name">Name of the action parameter.</param>
         /// <returns>Returns metadata of action parameter - ActionParameterMeta</returns>
-        public IO.Swagger.Model.ActionParameterMeta GetParamMetadata(string name) {
-            foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMeta in Parameters) {
+        public IO.Swagger.Model.ParameterMeta GetParamMetadata(string name) {
+            foreach (IO.Swagger.Model.ParameterMeta actionParameterMeta in Parameters) {
                 if (actionParameterMeta.Name == name)
                     return actionParameterMeta;
             }

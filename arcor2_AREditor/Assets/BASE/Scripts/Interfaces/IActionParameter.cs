@@ -1,5 +1,5 @@
 
-public interface IActionParameter
+public interface IParameter
 {
     void SetLabel(string label, string description);
 

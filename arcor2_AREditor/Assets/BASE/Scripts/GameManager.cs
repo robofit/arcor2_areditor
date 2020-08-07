@@ -767,9 +767,11 @@ namespace Base {
                 IO.Swagger.Model.Pose pose = null;
                 if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
                     if (actionObjectMetadata.HasPose) {
-                        pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+                        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, actionObjectMetadata.GetModelBB(), SceneManager.Instance.SceneOrigin.transform.localRotation);
+                        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
+                        pose = new IO.Swagger.Model.Pose(position: offset, orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
                     }
-                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose, null);
                 } else {
                     throw new RequestFailedException("Object type " + type + " does not exists");
                 }                
@@ -906,6 +908,9 @@ namespace Base {
                 newScene = scene;
                 openProject = true;
                 return;
+            }
+            if (GetGameState() == GameStateEnum.SceneEditor) {
+                SceneManager.Instance.DestroyScene();
             }
             try {
                 if (!await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.ProjectEditor)) {
