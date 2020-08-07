@@ -8,29 +8,67 @@ using IO.Swagger.Model;
 using System.Linq;
 
 namespace Base {
-    
+    /// <summary>
+    /// Takes care of currently opened project. Provides methods for manipuation with project.
+    /// </summary>
     public class ProjectManager : Base.Singleton<ProjectManager> {
+        /// <summary>
+        /// Opened project metadata
+        /// </summary>
         public IO.Swagger.Model.Project ProjectMeta = null;
-
+        /// <summary>
+        /// All action points in scene
+        /// </summary>
         public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
+        /// <summary>
+        /// All logic items (i.e. connections of actions) in project
+        /// </summary>
         public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
-
+        /// <summary>
+        /// Spawn point for global action points
+        /// </summary>
         public GameObject ActionPointsOrigin;
+        /// <summary>
+        /// Prefab for project elements
+        /// </summary>
         public GameObject ConnectionPrefab, ActionPointPrefab, PuckPrefab, StartPrefab, EndPrefab;
-
+        /// <summary>
+        /// Action representing start of program
+        /// </summary>
         private StartAction startAction;
+        /// <summary>
+        /// Action representing end of program
+        /// </summary>
         private EndAction endAction;
-
+        /// <summary>
+        /// ??? Dan?
+        /// </summary>
         private bool projectActive = true;
+        /// <summary>
+        /// Indicates if action point orientations should be visible for given project
+        /// </summary>
         public bool APOrientationsVisible;
-
+        /// <summary>
+        /// Holds current diameter of action points
+        /// </summary>
         public float APSize = 0.5f;
-
+        /// <summary>
+        /// Indicates if project is loaded
+        /// </summary>
         public bool ProjectLoaded = false;
-
+        /// <summary>
+        /// Indicates if editation of project is allowed.
+        /// </summary>
         public bool AllowEdit = false;
+        /// <summary>
+        /// Indicates if project was changed since last save
+        /// </summary>
         private bool projectChanged;
-
+        /// <summary>
+        /// Public setter for project changed property. Invokes OnProjectChanged event with each change and
+        /// OnProjectSavedSatusChanged when projectChanged value differs from original value (i.e. when project
+        /// was not changed and now it is and vice versa) 
+        /// </summary>
         public bool ProjectChanged {
             get => projectChanged;
             set {
@@ -42,14 +80,35 @@ namespace Base {
                 }
             } 
         }
-
-        public event EventHandler OnActionPointsChanged;
-        public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated;
+        /// <summary>
+        /// Invoked when some of the action points was changed
+        /// </summary>
+        public event EventHandler OnActionPointsChanged; // TODO how it differs from action point updated?
+        /// <summary>
+        /// Invoked when some of the action point weas updated. Contains action point description
+        /// </summary>
+        public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated; 
+        /// <summary>
+        /// Invoked when project loaded
+        /// </summary>
         public event EventHandler OnLoadProject;
+        /// <summary>
+        /// Invoked when project changed
+        /// </summary>
         public event EventHandler OnProjectChanged;
+        /// <summary>
+        /// Invoked when project saved
+        /// </summary>
         public event EventHandler OnProjectSaved;
+        /// <summary>
+        /// Invoked when projectChanged value differs from original value (i.e. when project
+        /// was not changed and now it is and vice versa) 
+        /// </summary>
         public event EventHandler OnProjectSavedSatusChanged;
 
+        /// <summary>
+        /// Initialization of projet manager
+        /// </summary>
         private void Start() {
             WebsocketManager.Instance.OnLogicItemAdded += OnLogicItemAdded;
             WebsocketManager.Instance.OnLogicItemRemoved += OnLogicItemRemoved;
@@ -59,7 +118,9 @@ namespace Base {
         /// <summary>
         /// Creates project from given json
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="project">Project descriptoin in json</param>
+        /// <param name="allowEdit">Sets if project is editable</param>
+        /// <returns>True if project sucessfully created</returns>
         public async Task<bool> CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (ProjectMeta != null)
@@ -85,9 +146,11 @@ namespace Base {
         }
 
         /// <summary>
-        /// Updates project from given json
+        ///  Updates project from given json
         /// </summary>
-        /// <param name="project"></param>
+        /// <param name="project">Project description in json</param>
+        /// <param name="forceEdit">Allows to update non-editable project for the first time (when project is created)</param>
+        /// <returns>True if project successfully updated</returns>
         public bool UpdateProject(IO.Swagger.Model.Project project, bool forceEdit = false) {
             if (project.Id != ProjectMeta.Id) {
                 return false;
@@ -105,7 +168,12 @@ namespace Base {
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             return true;
         }
-      public bool DestroyProject() {
+
+        /// <summary>
+        /// Destroys current project
+        /// </summary>
+        /// <returns>True if project successfully destroyed</returns>
+        public bool DestroyProject() {
             ProjectLoaded = false;
             ProjectMeta = null;
             foreach (ActionPoint ap in ActionPoints.Values) {
@@ -123,7 +191,10 @@ namespace Base {
             return true;
         }
 
-
+        /// <summary>
+        /// Updates logic items
+        /// </summary>
+        /// <param name="logic">List of logic items</param>
         private void UpdateLogicItems(List<IO.Swagger.Model.LogicItem> logic) {
             foreach (IO.Swagger.Model.LogicItem projectLogicItem in logic) {
                 if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
@@ -135,6 +206,11 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates logic item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnLogicItemUpdated(object sender, LogicItemChangedEventArgs args) {
             if (LogicItems.TryGetValue(args.Data.Id, out LogicItem logicItem)) {
                 logicItem.Data = args.Data;
@@ -144,6 +220,11 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Removes logic item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnLogicItemRemoved(object sender, StringEventArgs args) {
             if (LogicItems.TryGetValue(args.Data, out LogicItem logicItem)) {
                 logicItem.Remove();
@@ -153,11 +234,20 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Adds logic item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnLogicItemAdded(object sender, LogicItemChangedEventArgs args) {
             LogicItem logicItem = new LogicItem(args.Data);
             LogicItems.Add(args.Data.Id, logicItem);
         }
 
+        /// <summary>
+        /// Sets project metadata
+        /// </summary>
+        /// <param name="project"></param>
         public void SetProjectMeta(Project project) {
             if (ProjectMeta == null) {
                 ProjectMeta = new Project(sceneId: "", id: "", name: "");
@@ -171,6 +261,11 @@ namespace Base {
             ProjectMeta.Name = project.Name;
             
         }
+
+        /// <summary>
+        /// Gets json describing project
+        /// </summary>
+        /// <returns></returns>
         public Project GetProject() {
             if (ProjectMeta == null)
                 return null;
@@ -191,6 +286,7 @@ namespace Base {
             }
             return project;
         }
+
 
         private void Update() {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
@@ -230,11 +326,19 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Loads project settings from persistant storage
+        /// </summary>
         public void LoadSettings() {
             APOrientationsVisible = PlayerPrefsHelper.LoadBool("project/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
         }
 
-
+        /// <summary>
+        /// Spawn action point into the project
+        /// </summary>
+        /// <param name="apData">Json describing action point</param>
+        /// <param name="actionPointParent">Parent of action point. If null, AP is spawned as global.</param>
+        /// <returns></returns>
         public ActionPoint SpawnActionPoint(IO.Swagger.Model.ProjectActionPoint apData, IActionPointParent actionPointParent) {
             Debug.Assert(apData != null);
             GameObject AP;
@@ -252,22 +356,32 @@ namespace Base {
             return actionPoint;
         }
 
-        public string GetFreeAPName(string apParentName) {
+        /// <summary>
+        /// Finds free AP name, based on given name (e.g. globalAP, globalAP_1, globalAP_2 etc.)
+        /// </summary>
+        /// <param name="apDefaultName">Name of parent or "globalAP"</param>
+        /// <returns></returns>
+        public string GetFreeAPName(string apDefaultName) {
             int i = 2;
             bool hasFreeName;
-            string freeName = apParentName + "_ap";
+            string freeName = apDefaultName + "_ap";
             do {
                 hasFreeName = true;
                 if (ActionPointsContainsName(freeName)) {
                     hasFreeName = false;
                 }
                 if (!hasFreeName)
-                    freeName = apParentName + "_ap_" + i++.ToString();
+                    freeName = apDefaultName + "_ap_" + i++.ToString();
             } while (!hasFreeName);
 
             return freeName;
         }
 
+        /// <summary>
+        /// Checks if action point with given name exists
+        /// </summary>
+        /// <param name="name">Human readable action point name</param>
+        /// <returns></returns>
         public bool ActionPointsContainsName(string name) {
             foreach (ActionPoint ap in GetAllActionPoints()) {
                 if (ap.Data.Name == name)
@@ -276,6 +390,9 @@ namespace Base {
             return false;
         }
 
+        /// <summary>
+        /// Hides all arrows representing action point orientations
+        /// </summary>
         internal void HideAPOrientations() {
             APOrientationsVisible = false;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
@@ -284,6 +401,9 @@ namespace Base {
             PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", false);
         }
 
+        /// <summary>
+        /// Shows all arrows representing action point orientations
+        /// </summary>
         internal void ShowAPOrientations() {
             APOrientationsVisible = true;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
@@ -346,6 +466,9 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Removes all action points in project
+        /// </summary>
         public void RemoveActionPoints() {
             List<ActionPoint> actionPoints = ActionPoints.Values.ToList();
             foreach (ActionPoint actionPoint in actionPoints) {
@@ -353,19 +476,11 @@ namespace Base {
             }
         }
 
-        public IActionProvider GetActionProvider(string id) {
-           /* try {
-                return SceneManager.Instance.GetService(id);
-            } catch (KeyNotFoundException ex) {
-
-            }*/
-
-            if (SceneManager.Instance.ActionObjects.TryGetValue(id, out ActionObject actionObject)) {
-                return actionObject;
-            }
-            throw new KeyNotFoundException("No action provider with id: " + id);
-        }
-
+        /// <summary>
+        /// Finds parent of action point based on its ID
+        /// </summary>
+        /// <param name="parentId">ID of parent object</param>
+        /// <returns></returns>
         public IActionPointParent GetActionPointParent(string parentId) {
             if (parentId == null || parentId == "")
                 throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
@@ -376,6 +491,11 @@ namespace Base {
             throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
         }
 
+        /// <summary>
+        /// Gets action points based on its human readable name
+        /// </summary>
+        /// <param name="name">Human readable name of action point</param>
+        /// <returns></returns>
         public ActionPoint GetactionpointByName(string name) {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 if (ap.Data.Name == name)
@@ -409,9 +529,6 @@ namespace Base {
             throw new KeyNotFoundException("ActionPoint \"" + id + "\" not found!");
         }
 
-        private void tmpPrint(string v) {
-            Debug.LogError("\"" + v + "\"");
-        }
 
         /// <summary>
         /// Returns all action points in the scene in a list [ActionPoint_object]
@@ -512,18 +629,27 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Disables all action points
+        /// </summary>
         public void DisableAllActionPoints() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.Disable();
             }
         }
 
+        /// <summary>
+        /// Enables all action points
+        /// </summary>
         public void EnableAllActionPoints() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.Enable();
             }
         }
 
+        /// <summary>
+        /// Disables all actions
+        /// </summary>
         public void DisableAllActions() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -533,6 +659,9 @@ namespace Base {
             endAction.Disable();
         }
 
+        /// <summary>
+        /// Enables all actions
+        /// </summary>
         public void EnableAllActions() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -542,6 +671,9 @@ namespace Base {
             endAction.Enable();
         }
 
+        /// <summary>
+        /// Disables all action inputs
+        /// </summary>
         public void DisableAllActionInputs() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -550,6 +682,9 @@ namespace Base {
             endAction.Input.Disable();
         }
 
+        /// <summary>
+        /// Enables all action inputs
+        /// </summary>
         public void EnableAllActionsInputs() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -558,6 +693,9 @@ namespace Base {
             endAction.Input.Enable();
         }
 
+        /// <summary>
+        /// Disable all action outputs
+        /// </summary>
         public void DisableAllActionOutputs() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -566,6 +704,9 @@ namespace Base {
             startAction.Output.Disable();
         }
 
+        /// <summary>
+        /// Enables all action outputs
+        /// </summary>
         public void EnableAllActionsOutputs() {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
@@ -725,7 +866,10 @@ namespace Base {
 
         #endregion
 
-
+        /// <summary>
+        /// Updates action 
+        /// </summary>
+        /// <param name="projectAction">Action description</param>
         public void ActionUpdated(IO.Swagger.Model.Action projectAction) {
             Base.Action action = GetAction(projectAction.Id);
             if (action == null) {
@@ -736,6 +880,10 @@ namespace Base {
             ProjectChanged = true;
         }
 
+        /// <summary>
+        /// Updates metadata of action
+        /// </summary>
+        /// <param name="projectAction">Action description</param>
         public void ActionBaseUpdated(IO.Swagger.Model.Action projectAction) {
             Base.Action action = GetAction(projectAction.Id);
             if (action == null) {
@@ -746,6 +894,11 @@ namespace Base {
             ProjectChanged = true;
         }
 
+        /// <summary>
+        /// Adds action to the project
+        /// </summary>
+        /// <param name="projectAction">Action description</param>
+        /// <param name="parentId">UUID of action point to which the action should be added</param>
         public void ActionAdded(IO.Swagger.Model.Action projectAction, string parentId) {
             ActionPoint actionPoint = GetActionPoint(parentId);
             try {
@@ -760,13 +913,19 @@ namespace Base {
             }            
         }
 
-
+        /// <summary>
+        /// Removes actino from project
+        /// </summary>
+        /// <param name="action"></param>
         public void ActionRemoved(IO.Swagger.Model.Action action) {
             ProjectManager.Instance.RemoveAction(action.Id);
             ProjectChanged = true;
         }
 
-
+        /// <summary>
+        /// Updates action point in project
+        /// </summary>
+        /// <param name="projectActionPoint">Description of action point</param>
         public void ActionPointUpdated(ProjectActionPoint projectActionPoint) {
             try {
                 ActionPoint actionPoint = GetActionPoint(projectActionPoint.Id);
@@ -781,6 +940,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates action point metadata
+        /// </summary>
+        /// <param name="projectActionPoint">Description of action point</param>
         public void ActionPointBaseUpdated(ProjectActionPoint projectActionPoint) {
             try {
                 ActionPoint actionPoint = GetActionPoint(projectActionPoint.Id);
@@ -796,6 +959,10 @@ namespace Base {
 
         }
 
+        /// <summary>
+        /// Adds action point to the project
+        /// </summary>
+        /// <param name="projectActionPoint">Description of action point</param>
         public void ActionPointAdded(ProjectActionPoint projectActionPoint) {
             if (projectActionPoint.Parent == null || projectActionPoint.Parent == "") {
                 SpawnActionPoint(projectActionPoint, null);
@@ -814,14 +981,21 @@ namespace Base {
 
         }
 
-
+        /// <summary>
+        /// Removes action point from project
+        /// </summary>
+        /// <param name="projectActionPoint">Description of action point</param>
         public void ActionPointRemoved(ProjectActionPoint projectActionPoint) {
             RemoveActionPoint(projectActionPoint.Id);
             OnActionPointsChanged?.Invoke(this, EventArgs.Empty);
             ProjectChanged = true;
         }
 
-
+        /// <summary>
+        /// Adds action point orientation to the project
+        /// </summary>
+        /// <param name="orientation">Orientation value</param>
+        /// <param name="actionPointIt">UUID of action point</param>
         public void ActionPointOrientationAdded(NamedOrientation orientation, string actionPointIt) {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
@@ -834,6 +1008,11 @@ namespace Base {
                 return;
             }
         }
+
+        /// <summary>
+        /// Removes action point orientation from the project
+        /// </summary>
+        /// <param name="orientation">Orientation value</param>
         public void ActionPointOrientationRemoved(NamedOrientation orientation) {
             try {
                 ActionPoint actionPoint = GetActionPointWithOrientation(orientation.Id);
@@ -847,6 +1026,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates action point joints in the project
+        /// </summary>
+        /// <param name="joints">Joints description</param>
         public void ActionPointJointsUpdated(ProjectRobotJoints joints) {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
@@ -860,6 +1043,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates metadata of action point joints
+        /// </summary>
+        /// <param name="joints">Joints description</param>
         public void ActionPointJointsBaseUpdated(ProjectRobotJoints joints) {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
@@ -873,9 +1060,14 @@ namespace Base {
             }
         }
 
-        public void ActionPointJointsAdded(ProjectRobotJoints joints, string actionPointIt) {
+        /// <summary>
+        /// Adds action point joints
+        /// </summary>
+        /// <param name="joints">Joints descriptions</param>
+        /// <param name="actionPointId">UUID of action point</param>
+        public void ActionPointJointsAdded(ProjectRobotJoints joints, string actionPointId) {
             try {
-                ActionPoint actionPoint = GetActionPoint(actionPointIt);
+                ActionPoint actionPoint = GetActionPoint(actionPointId);
                 actionPoint.AddJoints(joints);
                 OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
                 ProjectChanged = true;
@@ -886,7 +1078,10 @@ namespace Base {
             }
         }
 
-
+        /// <summary>
+        /// Removes action point joints
+        /// </summary>
+        /// <param name="joints">Joints description</param>
         public void ActionPointJointsRemoved(ProjectRobotJoints joints) {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(joints.Id);
@@ -900,6 +1095,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates action point orientation
+        /// </summary>
+        /// <param name="orientation">Orientation value</param>
         public void ActionPointOrientationUpdated(NamedOrientation orientation) {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
@@ -913,6 +1112,10 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Updates metadata of action point orientation
+        /// </summary>
+        /// <param name="orientation">Orientation value</param>
         public void ActionPointOrientationBaseUpdated(NamedOrientation orientation) {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(orientation.Id);
@@ -926,12 +1129,19 @@ namespace Base {
             }
         }
 
+        /// <summary>
+        /// Called when project saved. Invokes OnProjectSaved event
+        /// </summary>
         internal void ProjectSaved() {
             ProjectChanged = false;
             Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Called when project metadata updated. Reloads projects lost when on main screen
+        /// </summary>
+        /// <param name="data"></param>
         public async void ProjectBaseUpdated(Project data) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
                 SetProjectMeta(data);
