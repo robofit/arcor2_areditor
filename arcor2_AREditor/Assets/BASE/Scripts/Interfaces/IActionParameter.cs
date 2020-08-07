@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 public interface IParameter
 {
     void SetLabel(string label, string description);
@@ -7,4 +9,6 @@ public interface IParameter
     object GetValue();
 
     void SetValue(object value);
+
+    void SetDarkMode(bool dark);
 }

@@ -26,14 +26,14 @@ public class AddNewActionDialog : Dialog
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
-        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint);
+        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), actionParametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, CurrentActionPoint, false);
         nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(actionMetadata.Name));
     }
 
 
     public async void InitFromAction(Base.Action action) {
         InitDialog(action.ActionProvider, action.Metadata, action.ActionPoint);
-        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Parameter.InitActionParameters(actionProvider.GetProviderId(), action.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
         nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(action.Data.Name));
     }
 

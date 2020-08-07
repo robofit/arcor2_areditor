@@ -78,6 +78,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 3571931215434342658}
   Input: {fileID: 5411480652665983780}
+  Text: {fileID: 8812222967406201305}
 --- !u!1001 &5097303096699629968
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -98,22 +99,22 @@ PrefabInstance:
     - target: {fileID: 4392711892792948809, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4392711892792948809, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4392711892792948809, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.lineCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4392711892792948809, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.pageCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5675853641346518446, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
@@ -233,27 +234,27 @@ PrefabInstance:
     - target: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.lineCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
         type: 3}
       propertyPath: m_textInfo.pageCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1879868317091155479, guid: 3e55beb35891d674093b427fd9fc59ab, type: 3}
@@ -280,6 +281,18 @@ MonoBehaviour:
 --- !u!114 &3571931215434342658 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8588169511257002130, guid: 3e55beb35891d674093b427fd9fc59ab,
+    type: 3}
+  m_PrefabInstance: {fileID: 5097303096699629968}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8812222967406201305 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4392711892792948809, guid: 3e55beb35891d674093b427fd9fc59ab,
     type: 3}
   m_PrefabInstance: {fileID: 5097303096699629968}
   m_PrefabAsset: {fileID: 0}

@@ -71,7 +71,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         SetHeader(CurrentAction.Data.Name);
         ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
 
-        actionParameters = await Base.Parameter.InitActionParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Parameter.InitActionParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
         UpdateExecuteAndStopBtns();

@@ -143,4 +143,14 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     public void SetValue(object value) {
         throw new NotImplementedException();
     }
+
+    public void SetDarkMode(bool dark) {
+        if (dark) {
+            Label.color = Color.black;
+            NoOption.color = Color.black;
+        } else {
+            Label.color = Color.white;
+            NoOption.color = Color.white;
+        }
+    }
 }

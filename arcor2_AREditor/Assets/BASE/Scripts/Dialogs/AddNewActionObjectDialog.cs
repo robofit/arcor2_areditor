@@ -26,7 +26,7 @@ public class AddNewActionObjectDialog : Dialog {
 
     public void InitFromMetadata(Base.ActionObjectMetadata metadata) {
         InitDialog(metadata);
-        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
         nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
     }
 

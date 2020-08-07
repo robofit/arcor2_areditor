@@ -39,22 +39,37 @@ namespace Base {
         }
 
        
-
+        /// <summary>
+        /// Callbeck when connection to the server is closed
+        /// </summary>
+        /// <param name="closeCode"></param>
         private void OnClose(WebSocketCloseCode closeCode) {
             Debug.Log("Connection closed!");
             CleanupAfterDisconnect();
             OnDisconnectEvent?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Callback when some connection error occures
+        /// </summary>
+        /// <param name="errorMsg"></param>
         private void OnError(string errorMsg) {
             Debug.LogError(errorMsg);
         }
 
+        /// <summary>
+        /// Callback when connected to the server
+        /// </summary>
         private void OnConnected() {
             Debug.Log("On connected");
             OnConnectedEvent?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Tries to connect to server
+        /// </summary>
+        /// <param name="domain">Domain name or IP address of server</param>
+        /// <param name="port">Server port</param>
         public async void ConnectToServer(string domain, int port) {
            
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;

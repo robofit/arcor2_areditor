@@ -103,4 +103,13 @@ public class RelPoseParam : MonoBehaviour, IParameter {
         OnValueChangedEvent.Invoke(pose);
     }
 
+    public void SetDarkMode(bool dark) {
+        posX.SetDarkMode(dark);
+        posY.SetDarkMode(dark);
+        posZ.SetDarkMode(dark);
+        orX.SetDarkMode(dark);
+        orY.SetDarkMode(dark);
+        orZ.SetDarkMode(dark);
+        orW.SetDarkMode(dark);
+    }
 }

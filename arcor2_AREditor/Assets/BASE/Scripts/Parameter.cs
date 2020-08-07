@@ -246,6 +246,20 @@ namespace Base {
             return input.gameObject;
         }
 
+        public static GameObject InitializeBooleanParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool? value) {
+            SwitchComponent parameter = GameObject.Instantiate(ActionsManager.Instance.ParameterBooleanPrefab).GetComponent<SwitchComponent>();
+            bool? selectedValue = null;
+            if (value != null) {
+                selectedValue = value;
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = actionParameterMetadata.GetDefaultValue<bool>();
+            }
+            parameter.SetValue(selectedValue != null ? selectedValue : false);
+            parameter.AddOnValueChangedListener((bool newValue)
+                => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
+            return parameter.gameObject;
+        }
+
         public static GameObject InitializeDoubleParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, double? value) {
             LabeledInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
             input.SetType(actionParameterMetadata.Type);
@@ -322,7 +336,7 @@ namespace Base {
             }
         }
 
-        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot) {
+        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
                 GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null);
@@ -337,7 +351,7 @@ namespace Base {
             return parameters;
         }
 
-        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint) {
+        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint, bool darkMode) {
             List<Tuple<DropdownParameter, ParameterMetadata>> dynamicDropdowns = new List<Tuple<DropdownParameter, ParameterMetadata>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
@@ -361,7 +375,7 @@ namespace Base {
                 if (value != null) {
                     value = JsonConvert.SerializeObject(value);
                 }
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, darkMode);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -398,11 +412,11 @@ namespace Base {
             return actionParameters;
         }
 
-        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<Parameter> parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot) {
+        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<Parameter> parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
             List<Tuple<DropdownParameter, Parameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Parameter>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (Parameter parameter in parameters) {
-                GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value);
+                GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode);
 
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ActionParameterMetadata.Name);
@@ -449,7 +463,7 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value) {
+        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false) {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {
@@ -477,12 +491,16 @@ namespace Base {
                 case "double":
                     parameter = InitializeDoubleParameter(actionParameterMetadata, handler, Parameter.GetValue<double?>(value));
                     break;
+                case "boolean":
+                    parameter = InitializeBooleanParameter(actionParameterMetadata, handler, Parameter.GetValue<bool?>(value));
+                    break;
 
             }
             if (parameter == null) {
                 return null;
             } else {
                 parameter.GetComponent<IParameter>().SetLabel(actionParameterMetadata.Name, actionParameterMetadata.Description);
+                parameter.GetComponent<IParameter>().SetDarkMode(darkMode);
                 return parameter;
             }
 
