@@ -104,7 +104,8 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {        
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
             return;
         }
@@ -287,7 +288,8 @@ public class ActionObject3D : ActionObject
 
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
                 GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                 return;

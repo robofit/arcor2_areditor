@@ -89,10 +89,10 @@ namespace Base {
         public void SetParent(IActionPointParent parent) {
             Parent = parent;
             if(parent != null)
-                SetConnectionToActionObject(parent);
+                SetConnectionToParent(parent);
         }
 
-        private void SetConnectionToActionObject(IActionPointParent parent) {
+        private void SetConnectionToParent(IActionPointParent parent) {
             // Create new Line Connection between parent AO and child AP
             GameObject c = Instantiate(SceneManager.Instance.LineConnectionPrefab);
             c.transform.parent = transform;
@@ -354,7 +354,7 @@ namespace Base {
                 if (ConnectionToParent != null)
                     ConnectionToParent.UpdateLine();
                 else
-                    SetConnectionToActionObject(Parent);
+                    SetConnectionToParent(Parent);
             }
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {

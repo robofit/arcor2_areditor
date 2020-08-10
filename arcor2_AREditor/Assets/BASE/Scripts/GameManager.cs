@@ -360,6 +360,10 @@ namespace Base {
             /// </summary>
             SelectingActionOutput,
             /// <summary>
+            /// Indicates that user should select action object or another action point
+            /// </summary>
+            SelectingActionPointParent,
+            /// <summary>
             /// Indicates that all interaction is disabled
             /// </summary>
             InteractionDisabled
@@ -505,6 +509,10 @@ namespace Base {
                     ProjectManager.Instance.DisableAllActionOutputs();
                     SceneManager.Instance.DisableAllActionObjects();
                     break;
+                case EditorStateEnum.SelectingActionPointParent:
+                    ProjectManager.Instance.DisableAllActions();
+                    break;
+
             }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;

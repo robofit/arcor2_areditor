@@ -429,12 +429,12 @@ namespace Base {
                 }
                 // if action point doesn't exist, create new one
                 else {
-                    ActionObject actionObject = null;
-                    if (projectActionPoint.Parent != null) {
-                        SceneManager.Instance.ActionObjects.TryGetValue(projectActionPoint.Parent, out actionObject);
+                    IActionPointParent parent = null;
+                    if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
+                        parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
                     }
                     //TODO: update spawn action point to not need action object
-                    actionPoint = SpawnActionPoint(projectActionPoint, actionObject);
+                    actionPoint = SpawnActionPoint(projectActionPoint, parent);
                     
                 }
 
@@ -483,9 +483,12 @@ namespace Base {
         /// <returns></returns>
         public IActionPointParent GetActionPointParent(string parentId) {
             if (parentId == null || parentId == "")
-                throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
+                throw new KeyNotFoundException("Action point parent " + parentId + " not found");
             if (SceneManager.Instance.ActionObjects.TryGetValue(parentId, out ActionObject actionObject)) {
                 return actionObject;
+            }
+            if (ProjectManager.Instance.ActionPoints.TryGetValue(parentId, out ActionPoint actionPoint)) {
+                return actionPoint;
             }
 
             throw new KeyNotFoundException("Action point parrent " + parentId + " not found");

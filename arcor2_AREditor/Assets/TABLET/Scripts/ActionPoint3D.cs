@@ -66,7 +66,8 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void OnClick(Click type) {
         if (!enabled)
             return;
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
             return;
         }
@@ -182,7 +183,8 @@ public class ActionPoint3D : Base.ActionPoint {
         if (!enabled)
             return;
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint) {
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
                 GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                 return;
