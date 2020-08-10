@@ -565,9 +565,9 @@ namespace Base {
         /// </summary>
         private void EnableEverything() {
             ProjectManager.Instance.EnableAllActionPoints();
-            ProjectManager.Instance.EnableAllActions();
             ProjectManager.Instance.EnableAllActionsInputs();
             ProjectManager.Instance.EnableAllActionsOutputs();
+            ProjectManager.Instance.EnableAllActions();
             SceneManager.Instance.EnableAllActionObjects();            
         }
 

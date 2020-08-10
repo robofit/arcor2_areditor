@@ -35,11 +35,11 @@ namespace Base {
         /// <summary>
         /// Action representing start of program
         /// </summary>
-        private StartAction startAction;
+        public StartAction StartAction;
         /// <summary>
         /// Action representing end of program
         /// </summary>
-        private EndAction endAction;
+        public EndAction EndAction;
         /// <summary>
         /// ??? Dan?
         /// </summary>
@@ -130,8 +130,8 @@ namespace Base {
             this.AllowEdit = allowEdit;
             LoadSettings();
 
-            startAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
-            endAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
+            StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            EndAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
 
             bool success = UpdateProject(project, true);
 
@@ -179,13 +179,13 @@ namespace Base {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.DeleteAP(false);
             }
-            if (startAction != null) {
-                Destroy(startAction.gameObject);
-                startAction = null;
+            if (StartAction != null) {
+                Destroy(StartAction.gameObject);
+                StartAction = null;
             }               
-            if (endAction != null) {
-                Destroy(endAction.gameObject);
-                endAction = null;
+            if (EndAction != null) {
+                Destroy(EndAction.gameObject);
+                EndAction = null;
             }
             ActionPoints.Clear();
             return true;
@@ -658,8 +658,8 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Disable();
             }
-            startAction.Disable();
-            endAction.Disable();
+            StartAction.Disable();
+            EndAction.Disable();
         }
 
         /// <summary>
@@ -670,8 +670,8 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Enable();
             }
-            startAction.Enable();
-            endAction.Enable();
+            StartAction.Enable();
+            EndAction.Enable();
         }
 
         /// <summary>
@@ -682,7 +682,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Input.Disable();
             }
-            endAction.Input.Disable();
+            EndAction.Input.Disable();
         }
 
         /// <summary>
@@ -693,7 +693,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Input.Enable();
             }
-            endAction.Input.Enable();
+            EndAction.Input.Enable();
         }
 
         /// <summary>
@@ -704,7 +704,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Output.Disable();
             }
-            startAction.Output.Disable();
+            StartAction.Output.Disable();
         }
 
         /// <summary>
@@ -715,7 +715,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Output.Enable();
             }
-            startAction.Output.Enable();
+            StartAction.Output.Enable();
         }
 
         #region ACTIONS
@@ -806,9 +806,9 @@ namespace Base {
         /// <returns></returns>
         public Action GetAction(string id) {
             if (id == "START")
-                return startAction;
+                return StartAction;
             else if (id == "END")
-                return endAction;
+                return EndAction;
             foreach (ActionPoint actionPoint in ActionPoints.Values) {
                 if (actionPoint.Actions.TryGetValue(id, out Action action)) {
                     return action;

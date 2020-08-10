@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
@@ -72,18 +73,38 @@ namespace Base {
         }
 
 
-        public void GetInput() {
-            Action<object> action = GetInput;
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, action, "Select input of other action", ValidateInput);
+        public async void GetInput() {
+            List<Action> actionList = ProjectManager.Instance.GetAllActions();
+            actionList.Add(ProjectManager.Instance.StartAction);
+            actionList.Add(ProjectManager.Instance.EndAction);
+            foreach (Action a in actionList) {
+                if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, a.Input)) {
+                    a.Input.Disable();
+                }
+            }
+            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
         }
 
-        public void GetOutput() {
-            Action<object> action = GetOutput;
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, action, "Select output of other action", ValidateOutput);
+        public async void GetOutput() {
+            List<Action> actionList = ProjectManager.Instance.GetAllActions();
+            actionList.Add(ProjectManager.Instance.StartAction);
+            actionList.Add(ProjectManager.Instance.EndAction);
+            foreach (Action a in actionList) {
+                if (!await ConnectionManagerArcoro.Instance.ValidateConnection(a.Output, this)) {
+                    a.Output.Disable();
+                }
+            }
+            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
         }
 
         private async Task<RequestResult> ValidateInput(object selectedInput) {
-            PuckInput input = (PuckInput) selectedInput;
+            PuckInput input;
+            try {
+                input = (PuckInput) selectedInput;
+            } catch (InvalidCastException) {
+                return new RequestResult(false, "Wrong object type selected");
+            } 
+            
             RequestResult result = new RequestResult(true, "");
             if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input)) {
                 result.Success = false;
@@ -93,7 +114,12 @@ namespace Base {
         }
 
         private async Task<RequestResult> ValidateOutput(object selectedOutput) {
-            PuckOutput output = (PuckOutput) selectedOutput;
+            PuckOutput output;
+            try {
+                output = (PuckOutput) selectedOutput;
+            } catch (InvalidCastException) {
+                return new RequestResult(false, "Wrong object type selected");
+            }
             RequestResult result = new RequestResult(true, "");
             if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this)) {
                 result.Success = false;
@@ -136,15 +162,11 @@ namespace Base {
 
         public async override void OnHoverStart() {
             if (!Enabled)
-                return;            
-            /*if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
                 return;
-            }*/
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
                 Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");
                 return;
             }
-
             outlineOnClick.Highlight();
             Action.NameText.gameObject.SetActive(true);
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
@@ -175,7 +197,7 @@ namespace Base {
                 renderer.material.color = Color.gray;
         }
         public override void Enable() {
-            base.Disable();
+            base.Enable();
             foreach (Renderer renderer in outlineOnClick.Renderers) {
                 if (logicItemId == "START")
                     renderer.material.color = Color.green;
