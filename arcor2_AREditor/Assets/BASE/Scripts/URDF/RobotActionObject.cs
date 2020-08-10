@@ -314,22 +314,38 @@ namespace Base {
             if (value >= 1) {
                 transparent = false;
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.shader = standardShader;
+                    // Robot has its outline active, we need to select second material,
+                    // (first is mask, second is object material, third is outline)
+                    if (renderer.materials.Length == 3) {
+                        renderer.materials[1].shader = standardShader;
+                    } else {
+                        renderer.material.shader = standardShader;
+                    }
                 }
             }
             // Set transparent shader
             else {
                 if (!transparent) {
                     foreach (Renderer renderer in robotRenderers) {
-                        renderer.material.shader = transparentShader;
+                        if (renderer.materials.Length == 3) {
+                            renderer.materials[1].shader = transparentShader;
+                        } else {
+                            renderer.material.shader = transparentShader;
+                        }
                     }
                     transparent = true;
                 }
                 // set alpha of the material
                 foreach (Renderer renderer in robotRenderers) {
-                    Color color = renderer.material.color;
+                    Material mat;
+                    if (renderer.materials.Length == 3) {
+                        mat = renderer.materials[1];
+                    } else {
+                        mat = renderer.material;
+                    }
+                    Color color = mat.color;
                     color.a = value;
-                    renderer.material.color = color;
+                    mat.color = color;
                 }
             }
         }
