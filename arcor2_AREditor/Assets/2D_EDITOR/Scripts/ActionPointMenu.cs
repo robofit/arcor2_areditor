@@ -70,6 +70,26 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
     }
 
+    public void ShowAddActionPointDialog() {
+        inputDialog.Open("Create action point",
+                         "Type action point name",
+                         "Name",
+                         ProjectManager.Instance.GetFreeAPName(CurrentActionPoint.Data.Name),
+                         () => AddAP(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddAP(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentActionPoint.transform, Vector3.one * 0.025f, Quaternion.identity);
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
+        bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id, offset);
+        if (result)
+            inputDialog.Close();
+        UpdateMenu();
+    }
+
 
     public async void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
@@ -159,14 +179,14 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     private void AssignToParent() {
         Action<object> action = AssignToParent;
-        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)", null);
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action, "Select new parent (action object)", null);
     }
 
     private async void AssignToParent(object selectedObject) {
-        ActionObject actionObject = (ActionObject) selectedObject;
-        if (actionObject == null)
+        IActionPointParent parent = (IActionPointParent) selectedObject;
+        if (parent == null)
             return;
-        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, actionObject.Data.Id);
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, parent.GetId());
         if (result) {
             //
         }

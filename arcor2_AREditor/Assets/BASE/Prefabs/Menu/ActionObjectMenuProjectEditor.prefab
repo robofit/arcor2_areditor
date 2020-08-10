@@ -270,6 +270,52 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &51359100795225800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622966251851423652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 144116015973390911}
+  Description: Add new action point
+  DescriptionAlternative: Action point could not be created for object without pose
+--- !u!114 &144116015973390911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622966251851423652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  tooltipAnimator: {fileID: 0}
+--- !u!114 &3390297222422687446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622966251851423652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltip: {fileID: 51359100795225800}
+  Button: {fileID: 8295852173959664313}
+  TooltipContent: {fileID: 144116015973390911}
 --- !u!1 &1825114334500995156
 GameObject:
   m_ObjectHideFlags: 0
@@ -415,6 +461,7 @@ MonoBehaviour:
   VisibilitySlider: {fileID: 7729277793992049522}
   DynamicContent: {fileID: 3071567960018087229}
   inputDialog: {fileID: 0}
+  createAPBtn: {fileID: 3390297222422687446}
 --- !u!1 &1826031351266711520
 GameObject:
   m_ObjectHideFlags: 0
@@ -1228,6 +1275,11 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3600868873314903394, guid: 4b966960aa22a804c958128bc96ded53,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4787599563304118979, guid: 4b966960aa22a804c958128bc96ded53,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -1408,6 +1460,11 @@ PrefabInstance:
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1825114334500995159}
+    - target: {fileID: 9079339784522643941, guid: 4b966960aa22a804c958128bc96ded53,
+        type: 3}
+      propertyPath: m_firstOverflowCharacterIndex
+      value: -1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4b966960aa22a804c958128bc96ded53, type: 3}
 --- !u!224 &5140509559203835281 stripped
@@ -1852,9 +1909,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c77917a7826c62e419cc9a2867495b1f, type: 3}
+--- !u!1 &1622966251851423652 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8389814341572876305, guid: c77917a7826c62e419cc9a2867495b1f,
+    type: 3}
+  m_PrefabInstance: {fileID: 7127918946684028853}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &8860987048814138837 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1735003242729280096, guid: c77917a7826c62e419cc9a2867495b1f,
     type: 3}
   m_PrefabInstance: {fileID: 7127918946684028853}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8295852173959664313 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1282326451552802060, guid: c77917a7826c62e419cc9a2867495b1f,
+    type: 3}
+  m_PrefabInstance: {fileID: 7127918946684028853}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622966251851423652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

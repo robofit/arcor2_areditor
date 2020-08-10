@@ -360,6 +360,10 @@ namespace Base {
             /// </summary>
             SelectingActionOutput,
             /// <summary>
+            /// Indicates that user should select action object or another action point
+            /// </summary>
+            SelectingActionPointParent,
+            /// <summary>
             /// Indicates that all interaction is disabled
             /// </summary>
             InteractionDisabled
@@ -505,6 +509,10 @@ namespace Base {
                     ProjectManager.Instance.DisableAllActionOutputs();
                     SceneManager.Instance.DisableAllActionObjects();
                     break;
+                case EditorStateEnum.SelectingActionPointParent:
+                    ProjectManager.Instance.DisableAllActions();
+                    break;
+
             }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
@@ -767,9 +775,11 @@ namespace Base {
                 IO.Swagger.Model.Pose pose = null;
                 if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
                     if (actionObjectMetadata.HasPose) {
-                        pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(new Vector3(0, 0, 0)), orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
+                        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, actionObjectMetadata.GetModelBB(), SceneManager.Instance.SceneOrigin.transform.localRotation);
+                        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
+                        pose = new IO.Swagger.Model.Pose(position: offset, orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
                     }
-                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose);
+                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose, null);
                 } else {
                     throw new RequestFailedException("Object type " + type + " does not exists");
                 }                
@@ -878,7 +888,7 @@ namespace Base {
                 return;
             }
             try {
-                if (await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.SceneEditor)) {                    
+                if (await SceneManager.Instance.CreateScene(scene, true)) {                    
                     OpenSceneEditor();                    
                 } else {
                     Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
@@ -907,8 +917,11 @@ namespace Base {
                 openProject = true;
                 return;
             }
+            if (GetGameState() == GameStateEnum.SceneEditor) {
+                SceneManager.Instance.DestroyScene();
+            }
             try {
-                if (!await SceneManager.Instance.CreateScene(scene, true, GameStateEnum.ProjectEditor)) {
+                if (!await SceneManager.Instance.CreateScene(scene, true)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
                     HideLoadingScreen();
                     return;
@@ -945,7 +958,7 @@ namespace Base {
                     try {
                         WaitUntilPackageReady(5000);
                         
-                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, GameStateEnum.PackageRunning, PackageInfo.CollisionModels)) {
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }

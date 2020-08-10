@@ -79,4 +79,10 @@ public class NewProjectDialog : Dialog
             Notifications.Instance.ShowNotification("Failed to create new project", result.Message);
         }
     }
+
+    public override void Open() {
+        base.Open();
+        NewProjectName.text = "";
+        FieldChanged();
+    }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
@@ -387,12 +388,6 @@ namespace Base {
             throw new System.NotImplementedException();
         }
 
-        public override Vector3 GetTopPoint() {
-            Vector3 position = transform.position;
-            //TODO: will not work for robot with URDF! need to solve better
-            position.y += 0.2f;
-            return position;
-        }
 
         public bool HasUrdf() {
             if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
@@ -407,6 +402,19 @@ namespace Base {
         }
 
         public override void OnHoverStart() {
+            if (!enabled)
+                return;
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
+                if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                    GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            }
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+                return;
+            }
             ActionObjectName.gameObject.SetActive(true);
             outlineOnClick.Highlight();
         }

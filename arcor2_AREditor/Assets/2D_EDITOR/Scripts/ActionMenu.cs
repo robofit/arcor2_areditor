@@ -16,7 +16,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public GameObject DynamicContent;
     public TMPro.TMP_Text ActionName;
     public TMPro.TMP_Text ActionType;
-    List<IActionParameter> actionParameters = new List<IActionParameter>();
+    List<IParameter> actionParameters = new List<IParameter>();
     public AddNewActionDialog AddNewActionDialog;
     public ConfirmationDialog ConfirmationDialog;
     [SerializeField]
@@ -71,7 +71,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         SetHeader(CurrentAction.Data.Name);
         ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
 
-        actionParameters = await Base.Action.InitParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
+        actionParameters = await Base.Parameter.InitActionParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
         UpdateExecuteAndStopBtns();
@@ -147,7 +147,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
             ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
-        } else  if (CurrentAction.Parameters.TryGetValue(parameterId, out Base.ActionParameter actionParameter)) {
+        } else  if (CurrentAction.Parameters.TryGetValue(parameterId, out Base.Parameter actionParameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
                     parametersChanged = true;
@@ -190,11 +190,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     }
 
     public async void SaveParameters() {
-        if (Base.Action.CheckIfAllValuesValid(actionParameters)) {
+        if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
-            foreach (IActionParameter actionParameter in actionParameters) {
-                IO.Swagger.Model.ActionParameterMeta metadata = CurrentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(id: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
+            foreach (IParameter actionParameter in actionParameters) {
+                IO.Swagger.Model.ParameterMeta metadata = CurrentAction.Metadata.GetParamMetadata(actionParameter.GetName());
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
                 parameters.Add(ap);
             }
             Debug.Assert(ProjectManager.Instance.AllowEdit);

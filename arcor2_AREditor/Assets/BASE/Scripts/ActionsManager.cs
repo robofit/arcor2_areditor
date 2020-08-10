@@ -18,7 +18,8 @@ namespace Base {
 
         
         public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab,
-            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab;
+            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
+            ParameterBooleanPrefab;
 
         public GameObject InteractiveObjects;
 
@@ -60,8 +61,7 @@ namespace Base {
             if (!ActionsReady && ActionObjectsLoaded) {
                 
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
-                    
-                    if (!ao.ActionsLoaded) {
+                    if (!ao.Disabled && !ao.ActionsLoaded) {
                        
                         return;
                     }

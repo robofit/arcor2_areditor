@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Base {
-    public class ActionParameterMetadata : IO.Swagger.Model.ActionParameterMeta {
+    public class ParameterMetadata : IO.Swagger.Model.ParameterMeta {
 
         public ARServer.Models.BaseParameterExtra ParameterExtra = null;
 
-        public ActionParameterMetadata(IO.Swagger.Model.ActionParameterMeta actionParameterMeta): base(defaultValue: actionParameterMeta.DefaultValue, description: actionParameterMeta.Description, dynamicValue: actionParameterMeta.DynamicValue,
+        public ParameterMetadata(IO.Swagger.Model.ParameterMeta actionParameterMeta): base(defaultValue: actionParameterMeta.DefaultValue, description: actionParameterMeta.Description, dynamicValue: actionParameterMeta.DynamicValue,
             dynamicValueParents: actionParameterMeta.DynamicValueParents, extra: actionParameterMeta.Extra, name: actionParameterMeta.Name, type: actionParameterMeta.Type) {
             if (Extra != null && Extra != "{}") {// TODO solve better than with test of brackets
 

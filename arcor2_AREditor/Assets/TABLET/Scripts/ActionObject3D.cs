@@ -104,7 +104,8 @@ public class ActionObject3D : ActionObject
     }
 
     public override void OnClick(Click type) {        
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
             return;
         }
@@ -287,16 +288,14 @@ public class ActionObject3D : ActionObject
         return model;
     }
 
-    public override Vector3 GetTopPoint() {
-        Vector3 position = transform.position;
-        position.y += Collider.bounds.extents.y + 0.1f;
-        return position;
-    }
 
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject) {
-            return;
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
+                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                return;
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&

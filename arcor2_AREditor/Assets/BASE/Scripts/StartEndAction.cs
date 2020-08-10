@@ -5,7 +5,7 @@ using RuntimeGizmos;
 
 public abstract class StartEndAction : Action3D {
 
-    private string playerPrefsKey;
+    protected string playerPrefsKey;
 
     public override void OnClick(Click type) {
         if (!CheckClick())
@@ -17,7 +17,7 @@ public abstract class StartEndAction : Action3D {
         }
     }
 
-    public void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
+    public virtual void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
         base.Init(projectAction, metadata, ap, actionProvider);
 
         if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
@@ -25,7 +25,7 @@ public abstract class StartEndAction : Action3D {
             return;
         }
         playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + keySuffix;
-        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, Vector3.zero);
+        
     }
 
     private void Update() {

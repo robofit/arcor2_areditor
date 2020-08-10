@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
@@ -15,7 +16,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
-    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn;
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn, CreateProjectBtn;
 
    // public ServiceSettingsDialog ServiceSettingsDialog;
     //public AutoAddObjectDialog AutoAddObjectDialog;
@@ -29,7 +30,13 @@ public class MainMenu : MonoBehaviour, IMenu {
     private InputDialog inputDialog;
 
     [SerializeField]
+    private InputDialogWithToggle inputDialogWithToggle;
+
+    [SerializeField]
     private ConfirmationDialog confirmationDialog;
+
+    [SerializeField]
+    private AddNewActionObjectDialog addNewActionObjectDialog;
 
     private SimpleSideMenu menu;
 
@@ -319,43 +326,68 @@ public class MainMenu : MonoBehaviour, IMenu {
     public async void CloseProject() {
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
-        inputDialog.Close();
+        confirmationDialog.Close();
         MenuManager.Instance.MainMenu.Close();
         GameManager.Instance.HideLoadingScreen();
     }
 
 
     public void ShowAddObjectDialog(string type) {
-        inputDialog.Open("Add object of type " + type,
-                         "",
-                         "Object name",
-                         SceneManager.Instance.GetFreeAOName(type),
-                         () => AddObject(type, inputDialog.GetValue()),
-                         () => inputDialog.Close());
-    }
-
-    public async void AddObject(string type, string name) {
-        if (await Base.GameManager.Instance.AddObjectToScene(type: type, name: name)) {
-            inputDialog.Close();
+        
+        if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
+            addNewActionObjectDialog.InitFromMetadata(actionObjectMetadata);
+            addNewActionObjectDialog.Open();
+        } else {
+            Notifications.Instance.SaveLogs("Failed to load metadata for object type" + type);
         }
 
+        
     }
 
-    /*
-    public void ShowAutoAddObjectDialog(string type) {
-        AutoAddObjectDialog.ObjectToBeAdded = type;
-        AutoAddObjectDialog.Open();
+    public void ShowNewProjectDialog() {
+        inputDialogWithToggle.Open("New project",
+            "",
+            "Name",
+            "",
+            () => CreateProject(),
+            () => inputDialogWithToggle.Close(),
+            validateInput: ValidateProjectName);
     }
 
-    public void ShowAddServiceDialog(string type) {
-        AddNewServiceDialog.UpdateMenu(type);
-        AddNewServiceDialog.Open();
-    }*/
-/*
-    public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
-        bool sceneEditor = Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor;
-        ServiceSettingsDialog.Show(serviceButton.ServiceMetadata.Type, sceneEditor);
-    }*/
+    private async void CreateProject() {
+        GameManager.Instance.ShowLoadingScreen("Creating new project", true);
+        string nameOfNewProject = inputDialogWithToggle.GetValue();
+        if (string.IsNullOrEmpty(nameOfNewProject)) {
+            Notifications.Instance.ShowNotification("Failed to create new project", "Name of project must not be empty");
+            GameManager.Instance.HideLoadingScreen(true);
+            return;
+        }
+        try {
+            await WebsocketManager.Instance.CreateProject(nameOfNewProject,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            inputDialogWithToggle.GetToggleValue(),
+            false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
+            GameManager.Instance.HideLoadingScreen(true);
+        }
+        inputDialogWithToggle.Close();
+    }
+
+    private async Task<Base.RequestResult> ValidateProjectName(string name) {
+        try {
+            await WebsocketManager.Instance.CreateProject(name,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            inputDialogWithToggle.GetToggleValue(),
+            true);
+        } catch (RequestFailedException ex) {
+            return new RequestResult(false, ex.Message);
+        }
+        return new RequestResult(true, "");
+    }
+
 
     public void ShowProjectControlButtons() {
         ProjectControlButtons.SetActive(true);
@@ -516,8 +548,10 @@ public class MainMenu : MonoBehaviour, IMenu {
                 button = CloseSceneBtn;
                 if (!SceneManager.Instance.SceneChanged) {
                     SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
+                    CreateProjectBtn.SetInteractivity(true);
                 } else {
                     SaveSceneBtn.SetInteractivity(true);
+                    CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
                 }
                 break;
         }
