@@ -5,6 +5,7 @@ using Michsky.UI.ModernUIPack;
 using System.Linq;
 using Base;
 using System;
+using System.Threading.Tasks;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -179,7 +180,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     private void AssignToParent() {
         Action<object> action = AssignToParent;
-        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action, "Select new parent (action object)", null);
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action, "Select new parent (action object)", ValidateParent);
     }
 
     private async void AssignToParent(object selectedObject) {
@@ -190,6 +191,17 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (result) {
             //
         }
+    }
+
+    private async Task<RequestResult> ValidateParent(object selectedParent) {
+        IActionPointParent parent = (IActionPointParent) selectedParent;
+        RequestResult result = new RequestResult(true, "");
+        if (parent.GetId() == CurrentActionPoint.GetId()) {
+            result.Success = false;
+            result.Message = "Action point cannot be its own parent!";
+        }
+        
+        return result;
     }
 
 

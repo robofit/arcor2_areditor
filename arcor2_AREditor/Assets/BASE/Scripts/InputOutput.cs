@@ -74,24 +74,32 @@ namespace Base {
 
         public void GetInput() {
             Action<object> action = GetInput;
-            Func<object, Task<bool>> validateAction = ValidateInput;
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, action, "Select input of other action", validateAction);
+            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, action, "Select input of other action", ValidateInput);
         }
 
         public void GetOutput() {
             Action<object> action = GetOutput;
-            Func<object, Task<bool>> validateAction = ValidateOutput;
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, action, "Select output of other action", validateAction);
+            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, action, "Select output of other action", ValidateOutput);
         }
 
-        private async Task<bool> ValidateInput(object selectedInput) {
+        private async Task<RequestResult> ValidateInput(object selectedInput) {
             PuckInput input = (PuckInput) selectedInput;
-            return await ConnectionManagerArcoro.Instance.ValidateConnection(this, input);
+            RequestResult result = new RequestResult(true, "");
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input)) {
+                result.Success = false;
+                result.Message = "Invalid connection";
+            }
+            return result;
         }
 
-        private async Task<bool> ValidateOutput(object selectedOutput) {
+        private async Task<RequestResult> ValidateOutput(object selectedOutput) {
             PuckOutput output = (PuckOutput) selectedOutput;
-            return await ConnectionManagerArcoro.Instance.ValidateConnection(output, this);
+            RequestResult result = new RequestResult(true, "");
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this)) {
+                result.Success = false;
+                result.Message = "Invalid connection";
+            }
+            return result;
         }
 
         private async void GetInput(object selectedInput) {

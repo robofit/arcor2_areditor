@@ -270,7 +270,7 @@ namespace Base {
         /// <summary>
         /// Callback to be invoked when requested object is selected
         /// </summary>
-        private Func<object, Task<bool>> ObjectValidationCallback;
+        private Func<object, Task<RequestResult>> ObjectValidationCallback;
 
         /// <summary>
         /// Checks whether scene is interactable
@@ -487,7 +487,7 @@ namespace Base {
         /// <param name="message">Message displayed to the user</param>
         /// <param name="validationCallback">Action to be called when user selects object. If returns true, callback is called,
         /// otherwise waits for selection of another object</param>
-        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<bool>> validationCallback = null) {
+        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null) {
             // only for "selection" requests
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
@@ -542,9 +542,13 @@ namespace Base {
         /// <param name="selectedObject"></param>
         public async void ObjectSelected(object selectedObject) {
             // if validation callbeck is specified, check if this object is valid
-            if (ObjectValidationCallback != null && !await ObjectValidationCallback.Invoke(selectedObject)) {
-                Notifications.Instance.ShowNotification("Not this one", "");
-                return;
+            if (ObjectValidationCallback != null) {
+                RequestResult result = await ObjectValidationCallback.Invoke(selectedObject);
+                if (!result.Success) {
+                    Notifications.Instance.ShowNotification(result.Message, "");
+                    return;
+                }
+                
             }            
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
