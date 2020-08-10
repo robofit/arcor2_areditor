@@ -4258,7 +4258,7 @@ GameObject:
   - component: {fileID: 23742502168316455}
   - component: {fileID: 7519767855814531172}
   m_Layer: 5
-  m_Name: AddOrientation
+  m_Name: AddOrientationMenu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4406,10 +4406,11 @@ MonoBehaviour:
   RobotsList: {fileID: 1523852270632310138}
   EndEffectorList: {fileID: 584076561733863468}
   LiteModeBlock: {fileID: 835397996130186239}
-  ExpertModeBlock: {fileID: 5739784214731108884}
-  ExpertModeBool: 1
+  ManualModeBlock: {fileID: 5739784214731108884}
+  ManualMode: 0
   CreateNewOrientation: {fileID: 7955093464306176934}
   buttonTooltip: {fileID: 6062355686441412488}
+  ActionPointAimingMenu: {fileID: 0}
 --- !u!1 &7436771955654227175
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
@@ -11,8 +12,8 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
     public TMPro.TMP_InputField NameInput, QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
     public DropdownParameter RobotsList, EndEffectorList;
-    public GameObject LiteModeBlock, ExpertModeBlock;
-    public bool ExpertModeBool;
+    public GameObject LiteModeBlock, ManualModeBlock;
+    public bool ManualMode;
 
 
     [SerializeField]
@@ -33,8 +34,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
   
 
     public void UpdateMenu() {
-        //ActionPointName.text = CurrentActionPoint.Data.Name;
-
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
@@ -80,7 +79,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
             interactable = false;
         }
 
-        if (ExpertModeBool) {
+        if (ManualMode) {
             if (interactable) {
                 if (string.IsNullOrEmpty(QuaternionX.text) || string.IsNullOrEmpty(QuaternionY.text) || string.IsNullOrEmpty(QuaternionZ.text) || string.IsNullOrEmpty(QuaternionW.text)) {
                     interactable = false;
@@ -107,8 +106,12 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         string name = NameInput.text;
         IO.Swagger.Model.Orientation orientation = null;
 
-        if (ExpertModeBool) {
-                orientation = new IO.Swagger.Model.Orientation(Convert.ToDecimal(QuaternionW.text), Convert.ToDecimal(QuaternionX.text), Convert.ToDecimal(QuaternionY.text), Convert.ToDecimal(QuaternionZ.text));
+        if (ManualMode) {
+            decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+            orientation = new IO.Swagger.Model.Orientation(w, x, y, z);
         }
         else {
             if (CurrentActionPoint.Parent != null) {
@@ -126,10 +129,12 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation = null) {
+    public void ShowMenu(Base.ActionPoint actionPoint, bool manualMode) {
+        ManualMode = manualMode;
         CurrentActionPoint = actionPoint;
-        ExpertModeBlock.SetActive(ExpertModeBool);
-        LiteModeBlock.SetActive(!ExpertModeBool);
+
+        ManualModeBlock.SetActive(ManualMode);
+        LiteModeBlock.SetActive(!ManualMode);
         UpdateMenu();
         SideMenu.Open();
     }
