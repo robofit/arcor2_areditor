@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 using IO.Swagger.Model;
+using TMPro;
 
 namespace Base {
     public abstract class Action : Clickable {
@@ -25,6 +26,8 @@ namespace Base {
         public ActionPoint ActionPoint;
 
         public IO.Swagger.Model.Action Data = null;
+
+        public TextMeshPro NameText;
 
         
         public virtual void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {

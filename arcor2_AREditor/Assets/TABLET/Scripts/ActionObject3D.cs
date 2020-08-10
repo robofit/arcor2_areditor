@@ -287,12 +287,17 @@ public class ActionObject3D : ActionObject
 
 
     public override void OnHoverStart() {
+        if (!enabled)
+            return;
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject ||
-            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
-                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            } else {
                 return;
+            }
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&

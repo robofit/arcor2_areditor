@@ -138,6 +138,7 @@ namespace Base {
             }
 
             outlineOnClick.Highlight();
+            Action.NameText.gameObject.SetActive(true);
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
@@ -154,6 +155,7 @@ namespace Base {
 
         public override void OnHoverEnd() {
             outlineOnClick.UnHighlight();
+            Action.NameText.gameObject.SetActive(false);
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();

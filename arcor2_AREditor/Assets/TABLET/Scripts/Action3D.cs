@@ -8,8 +8,6 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class Action3D : Base.Action {
-
-    public TextMeshPro NameText;
     public Renderer Visual;
 
     private Color32 colorDefault = new Color32(229, 215, 68, 255);
@@ -94,9 +92,12 @@ public class Action3D : Base.Action {
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed &&
-                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            } else {
                 return;
+            }
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
