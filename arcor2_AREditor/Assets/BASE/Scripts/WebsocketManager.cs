@@ -1121,7 +1121,7 @@ namespace Base {
         public async Task RemoveActionPointOrientation(string actionPointId, string orientationId) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(actionPointId: actionPointId, orientationId: orientationId);
-            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "AddActionPointOrientation", args);
+            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
 
