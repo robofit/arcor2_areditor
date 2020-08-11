@@ -572,6 +572,20 @@ namespace Base {
         }
 
         /// <summary>
+        /// Sets framerate to default value (30fps)
+        /// </summary>
+        public void SetDefaultFramerate() {
+            Application.targetFrameRate = 30;
+        }
+
+        /// <summary>
+        /// Sets framerate to higher value (120fps) for demanding operations
+        /// </summary>
+        public void SetTurboFramerate() {
+            Application.targetFrameRate = 120;
+        }
+
+        /// <summary>
         /// Sets initial state of app
         /// </summary>
         private void Awake() {
@@ -583,7 +597,7 @@ namespace Base {
         /// Binds events and sets initial state of app
         /// </summary>
         private void Start() {
-
+            SetTurboFramerate();
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif

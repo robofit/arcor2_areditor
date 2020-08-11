@@ -225,6 +225,7 @@ namespace Base {
         /// <param name="robotType">Type of robot</param>
         /// <returns></returns>
         private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
+            Application.targetFrameRate = 120;
             Debug.Log("URDF: download started");
             
             string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
@@ -234,6 +235,7 @@ namespace Base {
                 if (www.isNetworkError || www.isHttpError) {
                     Debug.LogError(www.error + " (" + uri + ")");
                     Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
+                    GameManager.Instance.SetDefaultFramerate();
                 } else {
                     string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
                     Directory.CreateDirectory(robotDictionary);
@@ -260,6 +262,7 @@ namespace Base {
                                                  ex is UnauthorizedAccessException) {
                         Debug.LogError(ex);
                         Notifications.Instance.ShowNotification("Failed to extract URDF", "");
+                        GameManager.Instance.SetDefaultFramerate();
                     }
                 }
             }

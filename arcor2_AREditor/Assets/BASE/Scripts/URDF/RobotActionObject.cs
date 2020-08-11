@@ -47,7 +47,7 @@ namespace Base {
             Data.Id = id;
             Data.Type = type;
             SetScenePosition(position);
-            SetSceneOrientation(orientation);
+            SetSceneOrientation(orientation);Application.targetFrameRate = 30;
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
@@ -82,6 +82,8 @@ namespace Base {
                     // subscribe for ColladaImporter event in order to load robot links
                     ColladaImporter.Instance.OnModelImported += OnColladaModelImported;
                 }
+            } else {
+                GameManager.Instance.SetDefaultFramerate();
             }
         }
 
@@ -129,6 +131,8 @@ namespace Base {
 
                     Debug.Log("URDF: dae model of the link: " + importedModel.parent.parent.parent.name + " imported");
 
+                } else {
+                    GameManager.Instance.SetDefaultFramerate();
                 }
             }            
         }
@@ -253,6 +257,7 @@ namespace Base {
             robotColliders.AddRange(RobotModel.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            GameManager.Instance.SetDefaultFramerate();
         }
 
         /// <summary>
