@@ -102,10 +102,14 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         }
 
         Debug.Assert(CurrentActionPoint != null);
-        bool success = await Base.GameManager.Instance.AddActionPointJoints(CurrentActionPoint, name, robot.GetId());
-        if (success) {
-            Close();
+        try {
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to add action point", ex.Message);
+            return;
         }
+        Close();
+        
     }
 
     public void ShowMenu(Base.ActionPoint actionPoint, bool manual) {
