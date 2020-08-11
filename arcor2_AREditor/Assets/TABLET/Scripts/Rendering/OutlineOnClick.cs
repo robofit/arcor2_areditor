@@ -6,91 +6,204 @@ using UnityEngine.EventSystems;
 
 public class OutlineOnClick : Clickable {
 
-    public Material ClickMaterial;
-    public Material HoverMaterial;
+    public enum OutlineType {
+        OnePassShader,
+        TwoPassShader
+    }
+
+    /// <summary>
+    /// Controlled from OutlineOnClickEditor.cs script.
+    /// For complex meshes and cubes with spheres it is better to use TwoPassShader, for simple objects use OnePassShader.
+    /// </summary>
+    [HideInInspector]
+    public OutlineType OutlineShaderType;
+
+    /// <summary>
+    /// If TwoPassShader is selected, then following four variables are displayed in Inspector.
+    /// </summary>
+    [HideInInspector]
+    public Material OutlineClickFirstPass;
+    [HideInInspector]
+    public Material OutlineClickSecondPass;
+    [HideInInspector]
+    public Material OutlineHoverFirstPass;
+    [HideInInspector]
+    public Material OutlineHoverSecondPass;
+
+    /// <summary>
+    /// If OnePassShader is selected, then following two variables are displayed in Inspector.
+    /// </summary>
+    [HideInInspector]
+    public Material OutlineClickMaterial;
+    [HideInInspector]
+    public Material OutlineHoverMaterial;
 
     public List<Renderer> Renderers = new List<Renderer>();
-    protected Dictionary<Renderer, List<Material>> materials = new Dictionary<Renderer, List<Material>>();
+
     public bool HoverOnly = false;
-    
+
+    private bool selected = false;
+    private bool highlighted = false;
+
+    private Material[] gizmoMaterial;
+    private bool gizmoHighlighted = false;
+
+
     private void Start() {
-        materials.Clear();
-        foreach (Renderer renderer in Renderers) {
-            materials.Add(renderer, new List<Material>(renderer.materials));
-        }
+        InitGizmoMaterials();
     }
 
-    public void InitRenderers(List<Renderer> renderers) {
-        Renderers = renderers;
-        materials.Clear();
-        foreach (Renderer renderer in Renderers) {
-            materials.Add(renderer, new List<Material>(renderer.materials));
-        }
-    }
-
-    public void ClearRenderers() {
-        Renderers.Clear();
-        materials.Clear();
-    }
-
-    public override void OnClick(Click type) {
-
-    }
-
-    protected void AddMaterial(Material material) {
-        foreach (Renderer renderer in Renderers) {
-            if (!materials[renderer].Contains(material)) {
-                materials[renderer].Add(material);
-            }
-        }
-    }
-
-    protected void RemoveMaterial(Material material) {
-        foreach (Renderer renderer in Renderers) {
-            if (materials[renderer].Contains(material)) {
-                materials[renderer].Remove(material);
-            }
-        }
-    }
-
-    protected void Deselect() {
-        RemoveMaterial(ClickMaterial);
-        foreach (Renderer renderer in Renderers) {
-            renderer.materials = materials[renderer].ToArray();
-        }
-    }
-
-    protected virtual void Select(bool force = false) {
-        if (HoverOnly)
-            return;
-        AddMaterial(ClickMaterial);
-        foreach (Renderer renderer in Renderers) {
-            renderer.materials = materials[renderer].ToArray();
+    private void InitGizmoMaterials() {
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            gizmoMaterial = new Material[1];
+            gizmoMaterial[0] = new Material(OutlineHoverMaterial) {
+                name = "OutlineGizmoMaterial"
+            };
+            gizmoMaterial[0].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
+        } else {
+            gizmoMaterial = new Material[2];
+            gizmoMaterial[0] = new Material(OutlineHoverFirstPass) {
+                name = "OutlineGizmoFirstPass"
+            };
+            gizmoMaterial[1] = new Material(OutlineHoverSecondPass) {
+                name = "OutlineGizmoSecondPass",
+            };
+            gizmoMaterial[1].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
         }
     }
 
     /// <summary>
-    /// Removes mat1 (=old material) and Adds mat2 (=new material) to the materials array.
+    /// Loads all renderers on attached gameobject.
     /// </summary>
-    /// <param name="mat1"></param>
-    /// <param name="mat2"></param>
-    public void SwapMaterials(Material mat1, Material mat2) {
-        RemoveMaterial(mat1);
-        AddMaterial(mat2);
+    public void InitRenderers() {
+        ClearRenderers();
+        Renderers.AddRange(gameObject.GetComponentsInChildren<Renderer>());
     }
 
-    public void Highlight() {
-        AddMaterial(HoverMaterial);
+    public void InitRenderers(List<Renderer> renderers) {
+        Renderers = renderers;
+    }
+
+    public void ClearRenderers() {
+        Renderers.Clear();
+    }
+
+    protected void Deselect() {
+        if (selected) {
+            selected = false;
+            UnsetOutline();
+        }
+    }
+
+    /// <summary>
+    /// Called when OnClick event is triggered on attached gameobject.
+    /// </summary>
+    /// <param name="force"></param>
+    protected virtual void Select(bool force = false) {
+        if (HoverOnly)
+            return;
+
+        if (highlighted) {
+            highlighted = false;
+            UnsetOutline();
+        }
+        selected = true;
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            SetOutline(OutlineClickMaterial);
+        } else {
+            SetOutline(OutlineClickFirstPass, OutlineClickSecondPass);
+        }
+    }
+
+    /// <summary>
+    /// Sets outline for gameobjects using TwoPassShader option. Better for meshes.
+    /// </summary>
+    /// <param name="outlineFirstPass"></param>
+    /// <param name="outlineSecondPass"></param>
+    private void SetOutline(Material outlineFirstPass, Material outlineSecondPass) {
         foreach (Renderer renderer in Renderers) {
-            renderer.materials = materials[renderer].ToArray();
+            List<Material> materials = new List<Material>(renderer.sharedMaterials);
+            if (!materials.Contains(outlineFirstPass)) {
+                materials.Insert(0, outlineFirstPass);
+            }
+            if (!materials.Contains(outlineSecondPass)) {
+                materials.Insert(materials.Count, outlineSecondPass);
+            }
+            renderer.sharedMaterials = materials.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Sets outline for gameobjects using OnePassShader option. Better for simple objects.
+    /// </summary>
+    /// <param name="outline"></param>
+    private void SetOutline(Material outline) {
+        foreach (Renderer renderer in Renderers) {
+            List<Material> materials = new List<Material>(renderer.sharedMaterials);
+            if (!materials.Contains(outline)) {
+                materials.Insert(materials.Count, outline);
+            }
+            renderer.sharedMaterials = materials.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Removes outline of attached gameobject.
+    /// </summary>
+    private void UnsetOutline() {
+        foreach (Renderer renderer in Renderers) {
+            List<Material> materials = new List<Material>(renderer.sharedMaterials);
+            if (OutlineShaderType == OutlineType.TwoPassShader) {
+                materials.RemoveAt(0);
+            }
+            materials.RemoveAt(materials.Count - 1);
+            renderer.sharedMaterials = materials.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Called when OnHoverStart/OnHoverEnd event is triggered from attached gameobject.
+    /// </summary>
+    public void Highlight() {
+        if (!selected && !gizmoHighlighted) {
+            highlighted = true;
+            if (OutlineShaderType == OutlineType.OnePassShader) {
+                SetOutline(OutlineHoverMaterial);
+            } else {
+                SetOutline(OutlineHoverFirstPass, OutlineHoverSecondPass);
+            }
         }
     }
 
     public void UnHighlight() {
-        RemoveMaterial(HoverMaterial);
-        foreach (Renderer renderer in Renderers) {
-            renderer.materials = materials[renderer].ToArray();
+        if (highlighted && !selected && !gizmoHighlighted) {
+            highlighted = false;
+            UnsetOutline();
         }
+    }
+
+    public void GizmoHighlight() {
+        if (highlighted) {
+            UnHighlight();
+        }
+
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            SetOutline(gizmoMaterial[0]);
+        } else {
+            SetOutline(gizmoMaterial[0], gizmoMaterial[1]);
+        }
+        gizmoHighlighted = true;
+    }
+
+    public void GizmoUnHighlight() {
+        if (gizmoHighlighted) {
+            UnsetOutline();
+            gizmoHighlighted = false;
+        }
+    }
+
+    public override void OnClick(Click type) {
+
     }
 
     public override void OnHoverStart() {

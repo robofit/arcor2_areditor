@@ -19,6 +19,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public Toggle TrackablesToggle;
     public Toggle ConnectionsToggle;
     public Toggle VRModeToggle;
+    public Toggle CalibrationElementsToggle;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -91,9 +92,14 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 #endif
     }
 
-    public void ToggleVRMode(Toggle active) {
-        Debug.Log("VR mode enable: " + active.isOn);
-        if (active.isOn) {
+    public void DisplayCalibrationElements(bool active) {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        CalibrationManager.Instance.ActivateCalibrationElements(active);
+#endif
+    }
+
+    public void ToggleVRMode(bool active) {
+        if (active) {
             VRModeManager.Instance.EnableVRMode();
         } else {
             VRModeManager.Instance.DisableVRMode();

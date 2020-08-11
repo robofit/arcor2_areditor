@@ -214,7 +214,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4117692875275004883}
   - component: {fileID: -3082953001628312356}
-  - component: {fileID: 7058153593035528763}
+  - component: {fileID: -6384501486800412016}
   m_Layer: 0
   m_Name: ActionObjectRobot
   m_TagString: Robot
@@ -249,13 +249,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 011e392733cc84c489dca07788748232, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   ActionPointsSpawn: {fileID: 0}
   Collider: {fileID: 0}
   ActionObjectName: {fileID: 6496377581957049943}
   RobotPlaceholderPrefab: {fileID: 4648989740229487369, guid: 70e38dd085c598d45bb379c4e4e3b63f,
     type: 3}
   EndEffectors: []
---- !u!114 &7058153593035528763
+--- !u!114 &-6384501486800412016
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -267,8 +268,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5053e62e365046e4a830ee9ca06df9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad, type: 2}
-  HoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c, type: 2}
+  Enabled: 1
+  OutlineShaderType: 1
+  OutlineClickFirstPass: {fileID: 2100000, guid: 5a34724aa4ed6d942bea3c530bc7477e,
+    type: 2}
+  OutlineClickSecondPass: {fileID: 2100000, guid: 70d480e8ad3b0114995e1ef19f3e76b6,
+    type: 2}
+  OutlineHoverFirstPass: {fileID: 2100000, guid: e228e0abdac53964f92bf2e43a91291e,
+    type: 2}
+  OutlineHoverSecondPass: {fileID: 2100000, guid: 4f80697ede457564bab8264fcd20b029,
+    type: 2}
+  OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
+    type: 2}
+  OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
+    type: 2}
   Renderers: []
   HoverOnly: 0
 --- !u!1 &8894525767301105025

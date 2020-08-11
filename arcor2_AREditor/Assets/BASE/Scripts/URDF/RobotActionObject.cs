@@ -29,8 +29,8 @@ namespace Base {
         private GameObject RobotPlaceholder;
         private GameObject RobotModel;
         private UrdfRobot UrdfRobot;
-        private Renderer[] robotRenderers;
-        private Collider[] robotColliders;
+        private List<Renderer> robotRenderers = new List<Renderer>();
+        private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;
 
@@ -106,16 +106,19 @@ namespace Base {
         }
 
         private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
+            Debug.Log("URDF: Collada model imported");
             Transform importedModel = args.Data.transform;
 
-            Base.RobotActionObject robot = importedModel.GetComponentInParent<Base.RobotActionObject>();
-            if (robot != null) {
+            RobotActionObject[] robots = importedModel.GetComponentsInParent<Base.RobotActionObject>(true);
+            if (robots != null) {
+                RobotActionObject robot = robots[0];
+
                 // check if imported model corresponds to this robot
                 if (ReferenceEquals(robot, this)) {
 
                     // get rid of the placeholder object (New Game Object)
                     Transform placeholderGameObject = importedModel.parent;
-                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays:false);
+                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays: false);
 
                     //TODO: Temporarily, colliders are added directly to Visuals
                     AddColliders(importedModel.gameObject, setConvex: true);
@@ -127,7 +130,7 @@ namespace Base {
                     Debug.Log("URDF: dae model of the link: " + importedModel.parent.parent.parent.name + " imported");
 
                 }
-            }
+            }            
         }
 
         private void AddColliders(GameObject gameObject, bool setConvex = false) {
@@ -244,11 +247,12 @@ namespace Base {
             RobotPlaceholder.SetActive(false);
             Destroy(RobotPlaceholder);
 
-            robotColliders = gameObject.GetComponentsInChildren<Collider>();
-            robotRenderers = gameObject.GetComponentsInChildren<Renderer>();
-            List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(robotRenderers);
-            outlineOnClick.InitRenderers(ren);
+            robotColliders.Clear();
+            robotRenderers.Clear();
+            robotRenderers.AddRange(RobotModel.GetComponentsInChildren<Renderer>());
+            robotColliders.AddRange(RobotModel.GetComponentsInChildren<Collider>());
+            outlineOnClick.InitRenderers(robotRenderers);
+            outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
         }
 
         /// <summary>
@@ -310,22 +314,38 @@ namespace Base {
             if (value >= 1) {
                 transparent = false;
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.shader = standardShader;
+                    // Robot has its outline active, we need to select second material,
+                    // (first is mask, second is object material, third is outline)
+                    if (renderer.materials.Length == 3) {
+                        renderer.materials[1].shader = standardShader;
+                    } else {
+                        renderer.material.shader = standardShader;
+                    }
                 }
             }
             // Set transparent shader
             else {
                 if (!transparent) {
                     foreach (Renderer renderer in robotRenderers) {
-                        renderer.material.shader = transparentShader;
+                        if (renderer.materials.Length == 3) {
+                            renderer.materials[1].shader = transparentShader;
+                        } else {
+                            renderer.material.shader = transparentShader;
+                        }
                     }
                     transparent = true;
                 }
                 // set alpha of the material
                 foreach (Renderer renderer in robotRenderers) {
-                    Color color = renderer.material.color;
+                    Material mat;
+                    if (renderer.materials.Length == 3) {
+                        mat = renderer.materials[1];
+                    } else {
+                        mat = renderer.material;
+                    }
+                    Color color = mat.color;
                     color.a = value;
-                    renderer.material.color = color;
+                    mat.color = color;
                 }
             }
         }
@@ -371,12 +391,14 @@ namespace Base {
             //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
 
             RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
-            robotColliders = RobotPlaceholder.GetComponentsInChildren<Collider>();
-            robotRenderers = RobotPlaceholder.GetComponentsInChildren<Renderer>();
-            List<Renderer> ren = new List<Renderer>();
-            ren.AddRange(robotRenderers);
+
+            robotColliders.Clear();
+            robotRenderers.Clear();
+            robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
+            robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-            outlineOnClick.InitRenderers(ren);
+            outlineOnClick.InitRenderers(robotRenderers);
+            outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
         }
 
         public override GameObject GetModelCopy() {

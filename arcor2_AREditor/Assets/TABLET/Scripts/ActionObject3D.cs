@@ -14,8 +14,6 @@ public class ActionObject3D : ActionObject
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
-    public Material ActionObjectMaterialTransparent;
-    public Material ActionObjectMaterialOpaque;
     private bool transparent = false;
 
     private bool manipulationStarted = false;
@@ -26,6 +24,7 @@ public class ActionObject3D : ActionObject
 
     private bool updatePose = false;
     private Renderer modelRenderer;
+    private Material modelMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
@@ -123,12 +122,14 @@ public class ActionObject3D : ActionObject
             // We have clicked with left mouse and started manipulation with object
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 manipulationStarted = true;
-                TransformGizmo.Instance.AddTarget(Model.transform);
-            }           
+                tfGizmo.AddTarget(Model.transform);
+                outlineOnClick.GizmoHighlight();
+            }
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();
             tfGizmo.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
         }
                 
     }
@@ -177,18 +178,18 @@ public class ActionObject3D : ActionObject
         // Set opaque shader
         if (value >= 1) {
             transparent = false;
-            modelRenderer.material.shader = standardShader;
+            modelMaterial.shader = standardShader;
         }
         // Set transparent shader
         else {
             if (!transparent) {
-                modelRenderer.material.shader = transparentShader;
+                modelMaterial.shader = transparentShader;
                 transparent = true;
             }
             // set alpha of the material
-            Color color = modelRenderer.material.color;
+            Color color = modelMaterial.color;
             color.a = value;
-            modelRenderer.material.color = color;
+            modelMaterial.color = color;
         }
     }
 
@@ -275,8 +276,10 @@ public class ActionObject3D : ActionObject
         Collider = Model.GetComponent<Collider>();
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         modelRenderer = Model.GetComponent<Renderer>();
+        modelMaterial = modelRenderer.material;
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
+        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
     }
 
     public override GameObject GetModelCopy() {
@@ -315,12 +318,12 @@ public class ActionObject3D : ActionObject
 
     public override void Disable() {
         base.Disable();
-        modelRenderer.material.color = Color.gray;
+        modelMaterial.color = Color.gray;
     }
 
     public override void Enable() {
         base.Enable();
-        modelRenderer.material.color = new Color(0.89f, 0.83f, 0.44f);
+        modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
     }
 
 }
