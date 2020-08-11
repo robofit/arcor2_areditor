@@ -55,9 +55,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
             EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
-            if (EndEffectorList.Dropdown.dropdownItems.Count == 0) {
-                //todo nedovolit create?
-            }
         }
         catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
@@ -99,33 +96,34 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         CreateNewOrientation.interactable = interactable;
     }
 
-    public async void AddOrientation()
-    {
+    public async void AddOrientation() {
         Debug.Assert(CurrentActionPoint != null);
 
         string name = NameInput.text;
-        IO.Swagger.Model.Orientation orientation = null;
+        try {
 
-        if (ManualMode) {
-            decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            orientation = new IO.Swagger.Model.Orientation(w, x, y, z);
-        }
-        else {
-            if (CurrentActionPoint.Parent != null) {
-                orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(CurrentActionPoint.Parent.GetTransform().rotation)));
+            if (ManualMode) {
+                decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation(w, x, y, z);
+                await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
+            } else { //using robot
+
+                string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name);
             }
-        }
-        
-        bool success = await Base.GameManager.Instance.AddActionPointOrientation(CurrentActionPoint, orientation, name);
 
-        if (success) {
             //TODO: after adding this menu to menuManager uncomment line below - should delete old values after creating new orientation
             //MenuManager.Instance.AddOrientationMenu.Close();
             Close();
             //todo open detail of the new orientation
+
+        } catch (ItemNotFoundException ex) {
+            Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }
     }
 
