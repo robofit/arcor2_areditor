@@ -34,7 +34,8 @@ public class UrdfManager : Singleton<UrdfManager> {
 
         // We will download and build the urdf only if it has not been already downloaded and built
         if (!RobotModels.ContainsKey(robotType)) {
-            
+            GameManager.Instance.SetTurboFramerate();
+
             Debug.Log("URDF: download started");
 
             string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
@@ -277,6 +278,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// </summary>
     /// <param name="robotType">Type of the robot that was imported.</param>
     public void RobotModelLoaded(string robotType) {
+        GameManager.Instance.SetDefaultFramerate();
         OnRobotUrdfModelLoaded?.Invoke(this, new RobotUrdfModelArgs(robotType));
     }
 

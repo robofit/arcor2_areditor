@@ -19,19 +19,14 @@ namespace Base {
 
         private OutlineOnClick outlineOnClick;
 
-        //public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
-        //public Dictionary<string, string> Joints = new Dictionary<string, string>();
         public RobotModel RobotModel {
             get; private set;
         }
 
-        private bool robotLoaded = false;
-
         public List<string> EndEffectors = new List<string>();
         
         private GameObject RobotPlaceholder;
-        //private GameObject RobotModel;
-        private UrdfRobot UrdfRobot;
+
         private List<Renderer> robotRenderers = new List<Renderer>();
         private List<Collider> robotColliders = new List<Collider>();
 
@@ -50,7 +45,7 @@ namespace Base {
             Data.Id = id;
             Data.Type = type;
             SetScenePosition(position);
-            SetSceneOrientation(orientation);Application.targetFrameRate = 30;
+            SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
@@ -105,7 +100,6 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
-            GameManager.Instance.SetDefaultFramerate();
         }
 
 
