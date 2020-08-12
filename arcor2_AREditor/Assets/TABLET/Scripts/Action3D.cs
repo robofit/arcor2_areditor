@@ -6,18 +6,20 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(OutlineOnClick))]
 public class Action3D : Base.Action {
-
-    public TextMeshPro NameText;
     public Renderer Visual;
 
     private Color32 colorDefault = new Color32(229, 215, 68, 255);
     private Color32 colorRunnning = new Color32(255, 0, 255, 255);
 
     private bool selected = false;
+    [SerializeField]
+    protected OutlineOnClick outlineOnClick;
 
     private void Start() {
         GameManager.Instance.OnStopPackage += OnProjectStop;
+        
     }
 
     private void OnEnable() {
@@ -54,18 +56,24 @@ public class Action3D : Base.Action {
         NameText.text = aData.Name;
     }
 
-    public override void OnClick(Click type) {
+    public bool CheckClick() {
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingAction) {
             GameManager.Instance.ObjectSelected(this);
-            return;
+            return false;
         }
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
+            return false;
         }
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action only allowed in project editor");
-            return;
+            return false;
         }
+        return true;
+    }
+
+    public override void OnClick(Click type) {
+        if (!CheckClick())
+            return;
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             ActionMenu.Instance.CurrentAction = this;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
@@ -79,6 +87,40 @@ public class Action3D : Base.Action {
             ActionPoint.HighlightAP(false);
             selected = false;
         }
+    }
+
+    public override void OnHoverStart() {
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            } else {
+                return;
+            }
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
+        outlineOnClick.Highlight();
+        NameText.gameObject.SetActive(true);
+    }
+
+    public override void OnHoverEnd() {
+        outlineOnClick.UnHighlight();
+        NameText.gameObject.SetActive(false);
+    }
+
+    public override void Enable() {
+        base.Enable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+    }
+    public override void Disable() {
+        base.Disable();
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = Color.gray;
     }
 
 }

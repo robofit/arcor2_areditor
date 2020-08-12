@@ -20,4 +20,12 @@ public class SideMenuControll : Base.Clickable {
     public override void OnClick(Click type) {
         throw new System.NotImplementedException();
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

@@ -18,4 +18,12 @@ public class Recalibrate : Clickable {
     public void Calibrate() {
         CalibrationManager.Instance.Recalibrate();
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

@@ -272,6 +272,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346928887592}
   Input: {fileID: 1983181564574642034}
+  Text: {fileID: 0}
 --- !u!1 &2065898864188371128
 GameObject:
   m_ObjectHideFlags: 0
@@ -1426,6 +1427,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346772505457}
   Input: {fileID: 2893220585064509601}
+  Text: {fileID: 0}
 --- !u!1 &4882938507575464322
 GameObject:
   m_ObjectHideFlags: 0
@@ -1653,6 +1655,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346658441938}
   Input: {fileID: 6067489864070223375}
+  Text: {fileID: 0}
 --- !u!1 &5619634938567547167
 GameObject:
   m_ObjectHideFlags: 0
@@ -1880,6 +1883,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346566111221}
   Input: {fileID: 6488375766955171474}
+  Text: {fileID: 0}
 --- !u!1 &5637452235516280867
 GameObject:
   m_ObjectHideFlags: 0
@@ -2551,6 +2555,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346871221499}
   Input: {fileID: 4708970048157518529}
+  Text: {fileID: 0}
 --- !u!1 &7281316346069858423
 GameObject:
   m_ObjectHideFlags: 0
@@ -6840,6 +6845,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316346487903910}
   Input: {fileID: 7281316347714063001}
+  Text: {fileID: 0}
 --- !u!1 &7281316347717952423
 GameObject:
   m_ObjectHideFlags: 0
@@ -7837,6 +7843,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316347709411938}
   Input: {fileID: 9061969336205351249}
+  Text: {fileID: 0}
 --- !u!1 &7728991896879941202
 GameObject:
   m_ObjectHideFlags: 0
@@ -8138,6 +8145,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 7281316348119269796}
   Input: {fileID: 7470283703346667689}
+  Text: {fileID: 0}
 --- !u!1 &8151505855054938473
 GameObject:
   m_ObjectHideFlags: 0
@@ -8392,17 +8400,17 @@ PrefabInstance:
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 8
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -8419,10 +8427,26 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_text
+      value: Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 856571001313592189, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_PreferredWidth
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -8659,10 +8683,20 @@ PrefabInstance:
       propertyPath: dropdownItems.Array.data[4].OnItemSelection.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
+    - target: {fileID: 1268072456547827254, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: enableIcon
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1268134369922896154, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1268171995269104322, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1373695492280390740, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -8914,6 +8948,11 @@ PrefabInstance:
       propertyPath: LayoutGroupToBeDisabled
       value: 
       objectReference: {fileID: 2281191654922681801}
+    - target: {fileID: 3411131406489837117, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: description
+      value: Model type
+      objectReference: {fileID: 0}
     - target: {fileID: 4262211557337494196, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -8974,17 +9013,17 @@ PrefabInstance:
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 8
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -9001,10 +9040,26 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_text
+      value: Parent
+      objectReference: {fileID: 0}
+    - target: {fileID: 856571001313592189, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_PreferredWidth
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 1267903261082869946, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -9036,10 +9091,20 @@ PrefabInstance:
       propertyPath: m_firstOverflowCharacterIndex
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 1268072456547827254, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: enableIcon
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1268134369922896154, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_Value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1268171995269104322, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1373695492280390740, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -9276,6 +9341,11 @@ PrefabInstance:
       propertyPath: LayoutGroupToBeDisabled
       value: 
       objectReference: {fileID: 2281191654922681801}
+    - target: {fileID: 3411131406489837117, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: description
+      value: Parent object type
+      objectReference: {fileID: 0}
     - target: {fileID: 4262211557337494196, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_AnchorMin.y

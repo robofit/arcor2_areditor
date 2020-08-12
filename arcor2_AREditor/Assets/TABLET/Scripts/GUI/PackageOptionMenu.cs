@@ -32,12 +32,17 @@ public class PackageOptionMenu : TileOptionMenu {
 
     public async void RemovePackage() {
         GameManager.Instance.ShowLoadingScreen();
-        if (await GameManager.Instance.RemovePackage(packageTile.PackageId)) {
+        try {
+            await WebsocketManager.Instance.RemovePackage(packageTile.PackageId);
             await GameManager.Instance.LoadPackages();
             confirmationDialog.Close();
             Close();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove package", e.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen();
         }
-        GameManager.Instance.HideLoadingScreen();
+
     }
 
     public async void ChangeImage() {
@@ -63,19 +68,27 @@ public class PackageOptionMenu : TileOptionMenu {
     }
 
     public async Task<RequestResult> ValidateProjectName(string newName) {
-        return await GameManager.Instance.RenamePackage(packageTile.PackageId, newName, true);
+        try {
+            await WebsocketManager.Instance.RenamePackage(packageTile.PackageId, newName, true);
+            return (true, "");
+        } catch (RequestFailedException e) {
+            return (false, e.Message);
+        }
     }
 
     public async void RenamePackage(string newUserId) {
         Base.GameManager.Instance.ShowLoadingScreen();
-        Base.RequestResult result = await Base.GameManager.Instance.RenamePackage(packageTile.PackageId, newUserId, false);
-        if (result.Success) {
+        try {
+            await WebsocketManager.Instance.RenamePackage(packageTile.PackageId, newUserId, false);
             inputDialog.Close();
             packageTile.SetLabel(newUserId);
             SetLabel(newUserId);
             Close();
-        }
-        Base.GameManager.Instance.HideLoadingScreen();
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename package", e.Message);
+        } finally {
+            Base.GameManager.Instance.HideLoadingScreen();
+        }        
     }
 
 

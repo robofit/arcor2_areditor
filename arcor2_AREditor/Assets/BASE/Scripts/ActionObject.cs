@@ -32,10 +32,6 @@ namespace Base {
             Data.Name = newUserId;
         }
 
-        public async virtual void RenameActionObject(string newUserId) {
-            bool result = await GameManager.Instance.RenameActionObject(Data.Id, newUserId);
-        }
-
         protected virtual void Update() {
             if (gameObject.transform.hasChanged) {
                 //SetScenePosition(transform.localPosition);
@@ -214,7 +210,6 @@ namespace Base {
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
         public abstract GameObject GetModelCopy();
 
-        public abstract Vector3 GetTopPoint();
     }
 
 }

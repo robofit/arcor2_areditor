@@ -1,14 +1,12 @@
 
 namespace Base {
-    public class PuckOutput : InputOutput {
-        // Start is called before the first frame update
-        protected override void Start() {
-            base.Start();
-        }
+    public class PuckOutput : InputOutput
+        {
 
-        // Update is called once per frame
-        protected override void Update() {
-            base.Update();
+        public override void OnHoverStart() {
+            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionOutput)
+                return;
+            base.OnHoverStart();
         }
     }
 

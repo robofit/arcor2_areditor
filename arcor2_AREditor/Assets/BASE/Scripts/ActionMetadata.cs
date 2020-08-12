@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IO.Swagger.Model;
 using UnityEngine;
 
 namespace Base {
@@ -13,12 +14,22 @@ namespace Base {
         /// </summary>
         /// <param name="name">Name of the action parameter.</param>
         /// <returns>Returns metadata of action parameter - ActionParameterMeta</returns>
-        public IO.Swagger.Model.ActionParameterMeta GetParamMetadata(string name) {
-            foreach (IO.Swagger.Model.ActionParameterMeta actionParameterMeta in Parameters) {
+        public IO.Swagger.Model.ParameterMeta GetParamMetadata(string name) {
+            foreach (IO.Swagger.Model.ParameterMeta actionParameterMeta in Parameters) {
                 if (actionParameterMeta.Name == name)
                     return actionParameterMeta;
             }
             throw new ItemNotFoundException("Action does not exist");
+        }
+
+        public List<Flow> GetFlows(string actionName) {
+            List<string> outputs = new List<string>();
+            foreach (string output in Returns) {
+                outputs.Add(actionName + "_" + output);
+            }
+            return new List<Flow> {
+                new Flow(type: Flow.TypeEnum.Default, outputs: outputs)
+            };
         }
 
 

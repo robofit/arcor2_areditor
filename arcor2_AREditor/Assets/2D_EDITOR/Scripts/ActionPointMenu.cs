@@ -5,6 +5,7 @@ using Michsky.UI.ModernUIPack;
 using System.Linq;
 using Base;
 using System;
+using System.Threading.Tasks;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -62,11 +63,32 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public async void RenameActionPoint(string newUserId) {
-        bool result = await Base.GameManager.Instance.RenameActionPoint(CurrentActionPoint, newUserId);
-        if (result) {
+       try {
+            await WebsocketManager.Instance.RenameActionPoint(CurrentActionPoint.Data.Id, newUserId);
             inputDialog.Close();
-            actionPointName.text = newUserId;
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
         }
+    }
+
+    public void ShowAddActionPointDialog() {
+        inputDialog.Open("Create action point",
+                         "Type action point name",
+                         "Name",
+                         ProjectManager.Instance.GetFreeAPName(CurrentActionPoint.Data.Name),
+                         () => AddAP(inputDialog.GetValue()),
+                         () => inputDialog.Close());
+    }
+
+    public async void AddAP(string name) {
+        Debug.Assert(CurrentActionPoint != null);
+
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentActionPoint.transform, Vector3.one * 0.025f, Quaternion.identity);
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
+        bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id, offset);
+        if (result)
+            inputDialog.Close();
+        UpdateMenu();
     }
 
 
@@ -93,13 +115,10 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
         Dictionary<IActionProvider, List<Base.ActionMetadata>> actionsMetadata;
         if (actionPoint.Parent == null) {
-            actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
+            actionsMetadata = Base.ActionsManager.Instance.GetAllActions();
         } else {
             Base.ActionObject parentActionObject = actionPoint.Parent.GetActionObject();
-            if (parentActionObject == null)
-                actionsMetadata = Base.ActionsManager.Instance.GetAllFreeActions();
-            else
-                actionsMetadata = Base.ActionsManager.Instance.GetAllActionsOfObject(parentActionObject);
+            actionsMetadata = Base.ActionsManager.Instance.GetAllActions();
         }
 
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
@@ -134,7 +153,12 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             UntieBtnTooltip.ShowDefaultDescription();
         }
 
-        RemoveBtn.SetInteractivity(await GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true));
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id, true);
+            RemoveBtn.SetInteractivity(true);
+        } catch (RequestFailedException e) {
+            RemoveBtn.SetInteractivity(false);
+        }
         ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
         CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
     }
@@ -156,27 +180,40 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     private void AssignToParent() {
         Action<object> action = AssignToParent;
-        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionObject, action, "Select new parent (action object)");
+        GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action, "Select new parent (action object)", ValidateParent);
     }
 
     private async void AssignToParent(object selectedObject) {
-        ActionObject actionObject = (ActionObject) selectedObject;
-        if (actionObject == null)
+        IActionPointParent parent = (IActionPointParent) selectedObject;
+        if (parent == null)
             return;
-        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, actionObject.Data.Id);
+        bool result = await Base.GameManager.Instance.UpdateActionPointParent(CurrentActionPoint, parent.GetId());
         if (result) {
             //
         }
     }
 
+    private async Task<RequestResult> ValidateParent(object selectedParent) {
+        IActionPointParent parent = (IActionPointParent) selectedParent;
+        RequestResult result = new RequestResult(true, "");
+        if (parent.GetId() == CurrentActionPoint.GetId()) {
+            result.Success = false;
+            result.Message = "Action point cannot be its own parent!";
+        }
+        
+        return result;
+    }
+
 
     public async void DeleteAP() {
         Debug.Assert(CurrentActionPoint != null);
-        bool success = await Base.GameManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
-        if (success) {
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
             ConfirmationDialog.Close();
             MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
-        }    
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
+        }
     }
 
    

@@ -57,9 +57,10 @@ namespace Base {
             }
         }
 
-        public void ActionPointBaseUpdate(IO.Swagger.Model.ProjectActionPoint apData) {
+        public virtual void ActionPointBaseUpdate(IO.Swagger.Model.ProjectActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
+            
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
@@ -74,7 +75,7 @@ namespace Base {
 
         }
 
-        public void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+        public virtual void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
@@ -88,10 +89,10 @@ namespace Base {
         public void SetParent(IActionPointParent parent) {
             Parent = parent;
             if(parent != null)
-                SetConnectionToActionObject(parent);
+                SetConnectionToParent(parent);
         }
 
-        private void SetConnectionToActionObject(IActionPointParent parent) {
+        private void SetConnectionToParent(IActionPointParent parent) {
             // Create new Line Connection between parent AO and child AP
             GameObject c = Instantiate(SceneManager.Instance.LineConnectionPrefab);
             c.transform.parent = transform;
@@ -322,24 +323,15 @@ namespace Base {
 
             //update actions
             foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                string providerName = projectAction.Type.Split('/').First();
-                string actionType = projectAction.Type.Split('/').Last();
-                IActionProvider actionProvider;
-                try {
-                    actionProvider = SceneManager.Instance.GetActionObject(providerName);
-                } catch (KeyNotFoundException ex) {
-                    if (SceneManager.Instance.ServicesData.TryGetValue(providerName, out Service originalService)) {
-                        actionProvider = originalService;
-                    } else {
-                        Debug.LogError("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
-                        continue; //TODO: throw exception
-                    }
-                }
                 
-
                 // if action exist, just update it, otherwise create new
                 if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    action = ProjectManager.Instance.SpawnAction(projectAction.Id, projectAction.Name, actionType, this, actionProvider);
+                    try {
+                        action = ProjectManager.Instance.SpawnAction(projectAction, this);
+                    } catch (RequestFailedException ex) {
+                        Debug.LogError(ex);
+                        continue;
+                    }                    
                 }
                 // updates name of the action
                 action.ActionUpdateBaseData(projectAction);
@@ -347,10 +339,10 @@ namespace Base {
                 action.ActionUpdate(projectAction);
 
                 // Add current connection from the server, we will only map the outputs
-                foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                /*foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
                     //if(!connections.ContainsKey(projectAction.Id))
                     connections.Add(projectAction.Id, actionIO.Default);
-                }
+                }*/
 
                 // local list of all actions for current action point
                 currentA.Add(projectAction.Id);
@@ -362,7 +354,7 @@ namespace Base {
                 if (ConnectionToParent != null)
                     ConnectionToParent.UpdateLine();
                 else
-                    SetConnectionToActionObject(Parent);
+                    SetConnectionToParent(Parent);
             }
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {

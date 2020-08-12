@@ -6,7 +6,7 @@ public class PoseEvent : UnityEvent<IO.Swagger.Model.Pose> {
 
 }
 
-public class RelPoseParam : MonoBehaviour, IActionParameter {
+public class RelPoseParam : MonoBehaviour, IParameter {
 
     [SerializeField]
     private TMPro.TMP_Text label;
@@ -103,4 +103,13 @@ public class RelPoseParam : MonoBehaviour, IActionParameter {
         OnValueChangedEvent.Invoke(pose);
     }
 
+    public void SetDarkMode(bool dark) {
+        posX.SetDarkMode(dark);
+        posY.SetDarkMode(dark);
+        posZ.SetDarkMode(dark);
+        orX.SetDarkMode(dark);
+        orY.SetDarkMode(dark);
+        orZ.SetDarkMode(dark);
+        orW.SetDarkMode(dark);
+    }
 }

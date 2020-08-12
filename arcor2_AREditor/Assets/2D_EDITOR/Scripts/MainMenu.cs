@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
@@ -15,21 +16,27 @@ public class MainMenu : MonoBehaviour, IMenu {
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
-    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn;
+    private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn, CreateProjectBtn;
 
-    public ServiceSettingsDialog ServiceSettingsDialog;
-    public AutoAddObjectDialog AutoAddObjectDialog;
-    public AddSerivceDialog AddNewServiceDialog;
+   // public ServiceSettingsDialog ServiceSettingsDialog;
+    //public AutoAddObjectDialog AutoAddObjectDialog;
+    //public AddSerivceDialog AddNewServiceDialog;
 
     private GameObject debugTools;
 
-    private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
+    //private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
     [SerializeField]
     private InputDialog inputDialog;
 
     [SerializeField]
+    private InputDialogWithToggle inputDialogWithToggle;
+
+    [SerializeField]
     private ConfirmationDialog confirmationDialog;
+
+    [SerializeField]
+    private AddNewActionObjectDialog addNewActionObjectDialog;
 
     private SimpleSideMenu menu;
 
@@ -41,18 +48,18 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void Start() {
         menu = GetComponent<SimpleSideMenu>();
         Debug.Assert(ActionObjectButtonPrefab != null);
-        Debug.Assert(ServiceButtonPrefab != null);
+      //  Debug.Assert(ServiceButtonPrefab != null);
         Debug.Assert(ProjectControlButtons != null);
         Debug.Assert(ActionObjectsContent != null);
         Debug.Assert(ActionObjects != null);
         Debug.Assert(SceneControlButtons != null);
         Debug.Assert(MainControlButtons != null);
-        Debug.Assert(Services != null);
-        Debug.Assert(ServicesContent != null);
+       // Debug.Assert(Services != null);
+       // Debug.Assert(ServicesContent != null);
         Debug.Assert(RunningProjectControls != null);
-        Debug.Assert(ServiceSettingsDialog != null);
-        Debug.Assert(AutoAddObjectDialog != null);
-        Debug.Assert(AddNewServiceDialog != null);
+       // Debug.Assert(ServiceSettingsDialog != null);
+      //  Debug.Assert(AutoAddObjectDialog != null);
+      //  Debug.Assert(AddNewServiceDialog != null);
         Debug.Assert(inputDialog != null);
         Debug.Assert(confirmationDialog != null);
         Debug.Assert(ResumeBtn != null);
@@ -61,9 +68,9 @@ public class MainMenu : MonoBehaviour, IMenu {
 
 
         Base.GameManager.Instance.OnConnectedToServer += ConnectedToServer;
-        Base.SceneManager.Instance.OnServicesUpdated += ServicesUpdated;
+       // Base.SceneManager.Instance.OnServicesUpdated += ServicesUpdated;
         Base.ActionsManager.Instance.OnActionObjectsUpdated += ActionObjectsUpdated;
-        Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
+      //  Base.ActionsManager.Instance.OnServiceMetadataUpdated += ServiceMetadataUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         //Base.GameManager.Instance.OnProjectStateChanged += ProjectStateChanged;
         Base.GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
@@ -117,13 +124,13 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
         SceneControlButtons.SetActive(true);
         ActionObjects.SetActive(true);
-        ServicesUpdated(null, new Base.ServiceEventArgs(null));
+       // ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
         ProjectControlButtons.SetActive(true);
-        ServicesUpdated(null, new Base.ServiceEventArgs(null));
+      //  ServicesUpdated(null, new Base.ServiceEventArgs(null));
         Services.SetActive(true);
         if (ProjectManager.Instance.ProjectMeta.HasLogic) {
             BuildAndRunBtn.SetInteractivity(true);
@@ -185,7 +192,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         UpdateRemoveBtns();
 
     }
-
+    /*
     public void ServicesUpdated(object sender, Base.ServiceEventArgs eventArgs) {
         if (eventArgs.Data != null) {
             if (serviceButtons.TryGetValue(eventArgs.Data.Data.Type, out ServiceButton btn)) {
@@ -199,7 +206,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         _ = UpdateBuildAndSaveBtns();
 
     }
-
+    */
     public void ShowRemoveActionObjectDialog(string type) {
         confirmationDialog.Open("Delete object",
                          "Are you sure you want to delete action object " + type + "?",
@@ -217,7 +224,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             confirmationDialog.Close();
         }
     }
-
+    /*
     private static void UpdateServiceButton(ServiceButton serviceButton) {
         serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
 
@@ -267,15 +274,15 @@ public class MainMenu : MonoBehaviour, IMenu {
         } else {
             ShowServiceSettingsDialog(serviceButton);
         }
-    }
+    }*/
 
     private void AddObjectToScene(string type) {
         if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
-            if (actionObjectMetadata.NeedsServices.Count > 0) {
+           /* if (actionObjectMetadata.NeedsServices.Count > 0) {
                 ShowAutoAddObjectDialog(type);
-            } else {
+            } else {*/
                 ShowAddObjectDialog(type);
-            }
+            //}
         } else {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
         }
@@ -297,6 +304,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public async void CloseScene() {
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
         if (success) {
+            
             confirmationDialog.Close();
             MenuManager.Instance.MainMenu.Close();
         }
@@ -318,43 +326,68 @@ public class MainMenu : MonoBehaviour, IMenu {
     public async void CloseProject() {
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
-        inputDialog.Close();
+        confirmationDialog.Close();
         MenuManager.Instance.MainMenu.Close();
         GameManager.Instance.HideLoadingScreen();
     }
 
 
     public void ShowAddObjectDialog(string type) {
-        inputDialog.Open("Add object of type " + type,
-                         "",
-                         "Object name",
-                         SceneManager.Instance.GetFreeAOName(type),
-                         () => AddObject(type, inputDialog.GetValue()),
-                         () => inputDialog.Close());
-    }
-
-    public async void AddObject(string type, string name) {
-        if (await Base.GameManager.Instance.AddObjectToScene(type: type, name: name)) {
-            inputDialog.Close();
+        
+        if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
+            addNewActionObjectDialog.InitFromMetadata(actionObjectMetadata);
+            addNewActionObjectDialog.Open();
+        } else {
+            Notifications.Instance.SaveLogs("Failed to load metadata for object type" + type);
         }
 
+        
     }
 
-
-    public void ShowAutoAddObjectDialog(string type) {
-        AutoAddObjectDialog.ObjectToBeAdded = type;
-        AutoAddObjectDialog.Open();
+    public void ShowNewProjectDialog() {
+        inputDialogWithToggle.Open("New project",
+            "",
+            "Name",
+            "",
+            () => CreateProject(),
+            () => inputDialogWithToggle.Close(),
+            validateInput: ValidateProjectName);
     }
 
-    public void ShowAddServiceDialog(string type) {
-        AddNewServiceDialog.UpdateMenu(type);
-        AddNewServiceDialog.Open();
+    private async void CreateProject() {
+        GameManager.Instance.ShowLoadingScreen("Creating new project", true);
+        string nameOfNewProject = inputDialogWithToggle.GetValue();
+        if (string.IsNullOrEmpty(nameOfNewProject)) {
+            Notifications.Instance.ShowNotification("Failed to create new project", "Name of project must not be empty");
+            GameManager.Instance.HideLoadingScreen(true);
+            return;
+        }
+        try {
+            await WebsocketManager.Instance.CreateProject(nameOfNewProject,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            inputDialogWithToggle.GetToggleValue(),
+            false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
+            GameManager.Instance.HideLoadingScreen(true);
+        }
+        inputDialogWithToggle.Close();
     }
 
-    public void ShowServiceSettingsDialog(ServiceButton serviceButton) {
-        bool sceneEditor = Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor;
-        ServiceSettingsDialog.Show(serviceButton.ServiceMetadata.Type, sceneEditor);
+    private async Task<Base.RequestResult> ValidateProjectName(string name) {
+        try {
+            await WebsocketManager.Instance.CreateProject(name,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            inputDialogWithToggle.GetToggleValue(),
+            true);
+        } catch (RequestFailedException ex) {
+            return new RequestResult(false, ex.Message);
+        }
+        return new RequestResult(true, "");
     }
+
 
     public void ShowProjectControlButtons() {
         ProjectControlButtons.SetActive(true);
@@ -436,7 +469,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try  {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-           
+            MenuManager.Instance.MainMenu.Close();
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);
@@ -444,12 +477,10 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void TestRun() {
-        _ = Base.GameManager.Instance.TestRunProject();
-    }
 
     public void StopProject() {
         Base.GameManager.Instance.StopProject();
+        MenuManager.Instance.MainMenu.Close();
     }
 
 
@@ -517,8 +548,10 @@ public class MainMenu : MonoBehaviour, IMenu {
                 button = CloseSceneBtn;
                 if (!SceneManager.Instance.SceneChanged) {
                     SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
+                    CreateProjectBtn.SetInteractivity(true);
                 } else {
                     SaveSceneBtn.SetInteractivity(true);
+                    CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
                 }
                 break;
         }

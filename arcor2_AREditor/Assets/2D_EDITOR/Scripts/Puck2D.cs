@@ -13,4 +13,12 @@ public class Puck2D : Base.Action {
         ActionMenu.Instance.CurrentAction = this;
         MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
     }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
 }

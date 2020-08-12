@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
-
+/*
 public class ServiceSettingsDialog : Dialog
 {
     private string type;
@@ -49,3 +49,4 @@ public class ServiceSettingsDialog : Dialog
         }
     }
 }
+*/

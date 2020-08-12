@@ -1,5 +1,7 @@
 
-public interface IActionParameter
+using UnityEngine;
+
+public interface IParameter
 {
     void SetLabel(string label, string description);
 
@@ -7,4 +9,6 @@ public interface IActionParameter
     object GetValue();
 
     void SetValue(object value);
+
+    void SetDarkMode(bool dark);
 }

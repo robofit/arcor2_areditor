@@ -6,6 +6,7 @@ using Base;
 using RuntimeGizmos;
 using IO.Swagger.Model;
 
+[RequireComponent(typeof(OutlineOnClick))]
 public class ActionObject3D : ActionObject
 {
     public TextMeshPro ActionObjectName;
@@ -13,8 +14,6 @@ public class ActionObject3D : ActionObject
 
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
-    public Material ActionObjectMaterialTransparent;
-    public Material ActionObjectMaterialOpaque;
     private bool transparent = false;
 
     private bool manipulationStarted = false;
@@ -25,6 +24,8 @@ public class ActionObject3D : ActionObject
 
     private bool updatePose = false;
     private Renderer modelRenderer;
+    private Material modelMaterial;
+    [SerializeField]
     private OutlineOnClick outlineOnClick;
 
     private Shader standardShader;
@@ -34,6 +35,7 @@ public class ActionObject3D : ActionObject
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
         tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        
     }
 
 
@@ -42,8 +44,17 @@ public class ActionObject3D : ActionObject
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
-                    if (!await GameManager.Instance.UpdateActionObjectPose(Data.Id, GetPose())) {
-                        ResetPosition();
+
+                    if (ActionObjectMetadata.HasPose) {
+                        try {
+                            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+                        } catch (RequestFailedException e) {
+                            Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                            ResetPosition();
+                        }
+                    } else {
+                        PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
+                            transform.localPosition, transform.localRotation);
                     }
                 }
 
@@ -60,15 +71,23 @@ public class ActionObject3D : ActionObject
     }
 
     public override Vector3 GetScenePosition() {
-        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
+        if (ActionObjectMetadata.HasPose)
+            return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
+        else
+            return PlayerPrefsHelper.LoadVector3("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/position",
+                            Vector3.zero);
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));        
     }
 
     public override Quaternion GetSceneOrientation() {
-        return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+        if (ActionObjectMetadata.HasPose)
+            return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
+        else
+            return PlayerPrefsHelper.LoadQuaternion("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/rotation",
+                            Quaternion.identity);
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
@@ -76,12 +95,16 @@ public class ActionObject3D : ActionObject
     }
 
     public IO.Swagger.Model.Pose GetPose() {
-        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
-            orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+        if (ActionObjectMetadata.HasPose)
+            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
+                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+        else
+            return new IO.Swagger.Model.Pose(new Orientation(), new Position());
     }
 
-    public override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject) {
+    public override void OnClick(Click type) {        
+        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
+            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
             return;
         }
@@ -93,26 +116,22 @@ public class ActionObject3D : ActionObject
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
             return;
         }
+
         // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON) {
+        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
-            manipulationStarted = true;
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                manipulationStarted = true;
+                tfGizmo.AddTarget(Model.transform);
+                outlineOnClick.GizmoHighlight();
+            }
         }
-        else if (type == Click.MOUSE_RIGHT_BUTTON) {
+        else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();
             tfGizmo.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
         }
-
-        // HANDLE TOUCH
-        else if (type == Click.TOUCH) {
-            if ((ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                // We have clicked with left mouse and started manipulation with object
-                manipulationStarted = true;
-            }
-            else {
-                ShowMenu();
-            }
-        }
+                
     }
 
     public override void UpdateUserId(string newUserId) {
@@ -159,18 +178,18 @@ public class ActionObject3D : ActionObject
         // Set opaque shader
         if (value >= 1) {
             transparent = false;
-            modelRenderer.material.shader = standardShader;
+            modelMaterial.shader = standardShader;
         }
         // Set transparent shader
         else {
             if (!transparent) {
-                modelRenderer.material.shader = transparentShader;
+                modelMaterial.shader = transparentShader;
                 transparent = true;
             }
             // set alpha of the material
-            Color color = modelRenderer.material.color;
+            Color color = modelMaterial.color;
             color.a = value;
-            modelRenderer.material.color = color;
+            modelMaterial.color = color;
         }
     }
 
@@ -257,8 +276,10 @@ public class ActionObject3D : ActionObject
         Collider = Model.GetComponent<Collider>();
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         modelRenderer = Model.GetComponent<Renderer>();
+        modelMaterial = modelRenderer.material;
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
+        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
     }
 
     public override GameObject GetModelCopy() {
@@ -267,9 +288,42 @@ public class ActionObject3D : ActionObject
         return model;
     }
 
-    public override Vector3 GetTopPoint() {
-        Vector3 position = transform.position;
-        position.y += Collider.bounds.extents.y + 0.1f;
-        return position;
+
+    public override void OnHoverStart() {
+        if (!enabled)
+            return;
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            } else {
+                return;
+            }
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
+        ActionObjectName.gameObject.SetActive(true);
+        outlineOnClick.Highlight();
     }
+
+    public override void OnHoverEnd() {
+        ActionObjectName.gameObject.SetActive(false);
+        outlineOnClick.UnHighlight();
+    }
+
+    public override void Disable() {
+        base.Disable();
+        modelMaterial.color = Color.gray;
+    }
+
+    public override void Enable() {
+        base.Enable();
+        modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+    }
+
 }

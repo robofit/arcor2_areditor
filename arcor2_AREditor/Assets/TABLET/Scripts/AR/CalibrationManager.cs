@@ -32,6 +32,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public bool Calibrated = false;
 
     private bool activateTrackableMarkers = false;
+    private GameObject worldAnchorVis;
 
 #if UNITY_STANDALONE || UNITY_EDITOR
     private void Start() {
@@ -84,6 +85,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 StartCoroutine(HostCloudAnchor());
             } else {
                 Calibrated = true;
+                worldAnchorVis = null;
+                ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
             }
 
             GameManager.Instance.Scene.SetActive(true);
@@ -120,7 +123,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             PlayerPrefs.Save();
 
             // create new calibration cube representing cloud anchor and attach scene to it
-            GameObject worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
+            worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
             worldAnchorVis.transform.SetParent(WorldAnchorCloud.transform, false);
             AttachScene(WorldAnchorCloud.gameObject);
 
@@ -130,6 +133,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Cloud anchor created", WorldAnchorCloud.cloudAnchorState.ToString() + " ID: " + WorldAnchorCloud.cloudAnchorId);
 
             Calibrated = true;
+            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
             GameManager.Instance.Scene.SetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
@@ -214,7 +218,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 // if anchor exist in the cloud, wait for it to be fully loaded
                 yield return new WaitUntil(() => WorldAnchorCloud.cloudAnchorState == CloudAnchorState.Success);
 
-                GameObject worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
+                worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
                 worldAnchorVis.transform.SetParent(WorldAnchorCloud.transform, false);
                 AttachScene(WorldAnchorCloud.gameObject);
 
@@ -260,5 +264,16 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
     
+    public void ActivateCalibrationElements(bool active) {
+        if (worldAnchorVis == null) {
+            foreach (Transform child in WorldAnchorLocal.transform) {
+                if (child.tag == "world_anchor") {
+                    worldAnchorVis = child.gameObject;
+                    break;
+                }
+            }
+        }
+        worldAnchorVis.SetActive(active);
+    }
 #endif
 }

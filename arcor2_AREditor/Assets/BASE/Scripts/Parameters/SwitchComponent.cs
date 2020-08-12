@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
-public class SwitchComponent : MonoBehaviour, IActionParameter
+using UnityEngine.Events;
+
+public class SwitchComponent : MonoBehaviour, IParameter
 {
     public SwitchManager Switch;
     public TMPro.TMP_Text Label;
@@ -11,6 +13,8 @@ public class SwitchComponent : MonoBehaviour, IActionParameter
     private Button switchButton;
 
     private bool interactable;
+
+    private UnityAction<bool> onChangeCallback;
 
     private void Start() {
         switchButton = Switch.gameObject.GetComponent<Button>();
@@ -44,9 +48,24 @@ public class SwitchComponent : MonoBehaviour, IActionParameter
         bool newValue = (bool) value;
         Switch.isOn = newValue;
         // switch gets updated upon onEnable event
-        Switch.enabled = false;
-        Switch.enabled = true;
+        Switch.gameObject.SetActive(false);
+        Switch.gameObject.SetActive(true);
     }
 
+    public void SetDarkMode(bool dark) {
+        if (dark) {
+            Label.color = Color.black;
+        } else {
+            Label.color = Color.white;
+        }
+    }
 
+    public void AddOnValueChangedListener(UnityAction<bool> callback) {
+        Switch.OnEvents.AddListener(OnChange);
+        onChangeCallback = callback;
+    }
+
+    private void OnChange() {
+        onChangeCallback.Invoke(Switch.isOn);
+    } 
 }

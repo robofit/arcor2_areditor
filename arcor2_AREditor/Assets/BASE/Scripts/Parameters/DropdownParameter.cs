@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.Events;
 
-public class DropdownParameter : MonoBehaviour, IActionParameter {
+public class DropdownParameter : MonoBehaviour, IParameter {
 
     public TMPro.TMP_Text Label, NoOption;
     public CustomDropdown Dropdown;
@@ -142,5 +142,15 @@ public class DropdownParameter : MonoBehaviour, IActionParameter {
 
     public void SetValue(object value) {
         throw new NotImplementedException();
+    }
+
+    public void SetDarkMode(bool dark) {
+        if (dark) {
+            Label.color = Color.black;
+            NoOption.color = Color.black;
+        } else {
+            Label.color = Color.white;
+            NoOption.color = Color.white;
+        }
     }
 }

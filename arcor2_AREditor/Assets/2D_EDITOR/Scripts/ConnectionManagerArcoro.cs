@@ -1,27 +1,27 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Base;
 using UnityEngine;
 
 public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
-    public GameObject ConnectionPrefab, CameraManager;
+    public GameObject ConnectionPrefab;
     public List<Connection> Connections = new List<Connection>();
     private Connection virtualConnectionToMouse;
     private GameObject virtualPointer;
+    [SerializeField]
+    private Material EnabledMaterial, DisabledMaterial;
 
     public bool ConnectionsActive = true;
 
-    // Start is called before the first frame update
     private void Start() {
-        virtualPointer = CameraManager.GetComponent<Base.VirtualConnection>().VirtualPointer;
+        virtualPointer = VirtualConnectionOnTouch.Instance.VirtualPointer;
 
         Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
 
-    // Update is called once per frame
-    private void Update() {
-
-    }
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
         if (!ConnectionsActive)
@@ -41,72 +41,40 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return c.GetComponent<Connection>();
     }
 
-    public Connection CreateConnectionToPointer(GameObject o) {
+    public void CreateConnectionToPointer(GameObject o) {
         if (!ConnectionsActive)
-            return null;
+            return;
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
+        VirtualConnectionOnTouch.Instance.DrawVirtualConnection = true;
         virtualConnectionToMouse = CreateConnection(o, virtualPointer);
-
-        return virtualConnectionToMouse;
     }
 
     public void DestroyConnectionToMouse() {
         if (!ConnectionsActive)
             return;
-        int i = GetIndexByType(virtualConnectionToMouse, typeof(Base.InputOutput));
-        if (i >= 0) {
-            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().Connection = null;
-            virtualConnectionToMouse.target[i].GetComponent<Base.InputOutput>().InitData();
-        }
         Destroy(virtualConnectionToMouse.gameObject);
         Connections.Remove(virtualConnectionToMouse);
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
-    }
-
-    public Connection ConnectVirtualConnectionToObject(GameObject o) {
-        if (!ConnectionsActive)
-            return null;
-        if (virtualConnectionToMouse == null)
-            return null;
-
-
-        int i = GetIndexOf(virtualConnectionToMouse, virtualPointer);
-        if (i < 0) {
-            return null;
-        }
-        if (virtualConnectionToMouse.target[1 - i].gameObject.GetComponent<Base.InputOutput>().GetType() != o.GetComponent<Base.InputOutput>().GetType()) {
-            virtualConnectionToMouse.target[i] = o.GetComponent<RectTransform>();
-        } else {
-            return null;
-        }
-        Connection c = virtualConnectionToMouse;
-        virtualConnectionToMouse = null;
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = false;
-        return c;
-    }
-
-    public Connection AttachConnectionToPointer(Connection c, GameObject o) {
-        if (!ConnectionsActive)
-            return null;
-        int i = GetIndexOf(c, o);
-        if (i < 0)
-            return null;
-        c.target[i] = virtualPointer.GetComponent<RectTransform>();
-        o.GetComponent<Base.InputOutput>().Connection = null;
-        o.GetComponent<Base.InputOutput>().InitData();
-        virtualConnectionToMouse = c;
-        CameraManager.GetComponent<Base.VirtualConnection>().DrawVirtualConnection = true;
-        return virtualConnectionToMouse;
+        VirtualConnectionOnTouch.Instance.DrawVirtualConnection = false;
     }
 
     public bool IsConnecting() {
         return virtualConnectionToMouse != null;
     }
 
-    public Connection GetVirtualConnectionToMouse() {
-        return virtualConnectionToMouse;
+    public Base.Action GetActionConnectedToPointer() {
+        Debug.Assert(virtualConnectionToMouse != null);
+        GameObject obj = GetConnectedTo(virtualConnectionToMouse, virtualPointer);
+        return obj.GetComponent<InputOutput>().Action;
+    }
+
+    public GameObject GetConnectedToPointer() {
+        Debug.Assert(virtualConnectionToMouse != null);
+        return GetConnectedTo(virtualConnectionToMouse, virtualPointer);
+    }
+
+     public Base.Action GetActionConnectedTo(Connection c, GameObject o) {        
+        return GetConnectedTo(c, o).GetComponent<InputOutput>().Action;
     }
 
     private int GetIndexOf(Connection c, GameObject o) {
@@ -150,9 +118,24 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return input + output == 1;
     }
 
+    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input) {
+        string[] startEnd = new[] { "START", "END" };
+        if (output.GetType() == input.GetType() ||
+            output.Action.Data.Id.Equals(input.Action.Data.Id) ||
+            (startEnd.Contains(output.Action.Data.Id) && startEnd.Contains(input.Action.Data.Id))) {
+            return false;
+        }
+        try {
+            await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, true);
+        } catch (RequestFailedException) {
+            return false;
+        }
+        return true;
+    }
+
     private void OnCloseProject(object sender, EventArgs e) {
         foreach (Connection c in Connections) {
-            if (c.gameObject != null) {
+            if (c != null && c.gameObject != null) {
                 Destroy(c.gameObject);
             }
         }
@@ -164,6 +147,16 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             connection.gameObject.SetActive(active);
         }
         ConnectionsActive = active;
+    }
+
+    public void DisableConnectionToMouse() {
+        if (virtualConnectionToMouse != null)
+            virtualConnectionToMouse.GetComponent<LineRenderer>().material = DisabledMaterial;
+    }
+
+    public void EnableConnectionToMouse() {
+        if (virtualConnectionToMouse != null)
+            virtualConnectionToMouse.GetComponent<LineRenderer>().material = EnabledMaterial;
     }
 
 }

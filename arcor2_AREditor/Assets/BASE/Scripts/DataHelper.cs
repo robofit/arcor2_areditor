@@ -36,4 +36,12 @@ public static class DataHelper {
         return new IO.Swagger.Model.ActionPoint(id: projectActionPoint.Id, robotJoints: projectActionPoint.RobotJoints,
             orientations: projectActionPoint.Orientations, position: projectActionPoint.Position);
     }
+
+    public static IO.Swagger.Model.ActionParameter ParameterToActionParameter(IO.Swagger.Model.Parameter parameter) {
+        return new IO.Swagger.Model.ActionParameter(name: parameter.Name, type: parameter.Type, parameter.Value);
+    }
+
+    public static IO.Swagger.Model.Parameter ActionParameterToParameter(IO.Swagger.Model.ActionParameter actionParameter) {
+        return new IO.Swagger.Model.Parameter(name: actionParameter.Name, type: actionParameter.Type, value: actionParameter.Value);
+    }
 }

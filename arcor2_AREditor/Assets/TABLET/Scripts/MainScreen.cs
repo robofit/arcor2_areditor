@@ -12,6 +12,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewProjectDialog NewProjectDialog;
     public InputDialog InputDialog;
+    public ButtonWithTooltip AddNewBtn;
 
     [SerializeField]
     private SceneOptionMenu SceneOptionMenu;
@@ -83,6 +84,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         projectsList.gameObject.SetActive(true);
         scenesList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(false);
+        AddNewBtn.gameObject.SetActive(true);
+        AddNewBtn.SetDescription("Add project");
         FilterProjectsBySceneId(null);
         FilterLists();
     }
@@ -101,6 +104,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         projectsList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(true);
+        AddNewBtn.gameObject.SetActive(true);
+        AddNewBtn.SetDescription("Add scene");
         FilterScenesById(null);
         FilterLists();
     }
@@ -118,6 +123,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         projectsList.gameObject.SetActive(false);
         scenesList.gameObject.SetActive(false);
         packageList.gameObject.SetActive(true);
+        AddNewBtn.gameObject.SetActive(false);
         FilterLists();
     }
 
@@ -211,6 +217,14 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
     }
 
+    public void AddNew() {
+        if (scenesList.gameObject.activeSelf) {
+            ShowNewSceneDialog();
+        } else if (projectsList.gameObject.activeSelf) {
+            NewProjectDialog.Open();
+        }
+    }
+
     public void UpdateScenes(object sender, EventArgs eventArgs) {
         sceneTiles.Clear();
         foreach (Transform t in ScenesDynamicContent.transform) {
@@ -227,9 +241,9 @@ public class MainScreen : Base.Singleton<MainScreen>
                           scene.Modified.ToString());
             sceneTiles.Add(tile);
         }
-        Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
+        //Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(ShowNewSceneDialog);
+        //button.onClick.AddListener(ShowNewSceneDialog);
     }
 
     public async void NewScene(string name) {
@@ -297,9 +311,9 @@ public class MainScreen : Base.Singleton<MainScreen>
                 Notifications.Instance.SaveLogs("Failed to load scene name.");
             }            
         }
-        Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
+       // Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-        button.onClick.AddListener(() => NewProjectDialog.Open());
+       // button.onClick.AddListener(() => NewProjectDialog.Open());
     }
 
     public void NotImplemented() {

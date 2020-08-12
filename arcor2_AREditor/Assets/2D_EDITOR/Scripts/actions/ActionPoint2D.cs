@@ -24,9 +24,6 @@ public class ActionPoint2D : Base.ActionPoint {
         transform.position = transformedPosition;
     }
 
-    private async void OnMouseUp() {
-        await Base.GameManager.Instance.UpdateActionPointPosition(this, Data.Position);
-    }
 
 
     public override void OnClick(Click type) {
@@ -70,5 +67,13 @@ public class ActionPoint2D : Base.ActionPoint {
 
     public override void HighlightAP(bool highlight) {
         throw new System.NotImplementedException();
+    }
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
     }
 }
