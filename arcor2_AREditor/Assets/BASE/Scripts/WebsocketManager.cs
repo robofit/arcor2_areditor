@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using NativeWebSocket;
 using IO.Swagger.Model;
+using UnityEditor;
 
 namespace Base {
 
@@ -1504,6 +1505,8 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
+
+
         /// <summary>
         /// Asks server to update action point orientation.
         /// Throws RequestFailedException when request failed
@@ -1587,11 +1590,11 @@ namespace Base {
         /// Throws RequestFailedException when request failed
         /// </summary>
         /// <param name="robotId">ID of robot</param>
-        /// <param name="name">Human readable name of action point joints</param>
+        /// <param name="jointsId">Human readable name of action point joints</param>
         /// <returns></returns>
-        public async Task UpdateActionPointJoints(string robotId, string name) {
+        public async Task UpdateActionPointJoints(string robotId, string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(robotId: robotId, jointsId: name);
+            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(robotId: robotId, jointsId: jointsId);
             IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(r_id, "UpdateActionPointJoints", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);
@@ -1599,6 +1602,85 @@ namespace Base {
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
+
+        /// <summary>
+        /// Asks server to rename action point joints
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="jointsId">Id of joints</param>
+        /// <param name="newName">New human-readable name</param>
+        /// <returns></returns>
+        public async Task RenameActionPointJoints(string jointsId, string newName) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameActionPointJointsRequestArgs args = new IO.Swagger.Model.RenameActionPointJointsRequestArgs(newName: newName, jointsId: jointsId);
+            IO.Swagger.Model.RenameActionPointJointsRequest request = new IO.Swagger.Model.RenameActionPointJointsRequest(r_id, "RenameActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        /// <summary>
+        /// Asks server to rename action point orientation
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="orientationId">Id of orientation</param>
+        /// <param name="newName">New human-readable name</param>
+        /// <returns></returns>
+        public async Task RenameActionPointOrientation(string orientationId, string newName) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RenameActionPointOrientationRequestArgs args = new IO.Swagger.Model.RenameActionPointOrientationRequestArgs(newName: newName, orientationId: orientationId);
+            IO.Swagger.Model.RenameActionPointOrientationRequest request = new IO.Swagger.Model.RenameActionPointOrientationRequest(r_id, "RenameActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        //TODO: generate new models where endeffectorID, orientationId and jointsID are optional
+
+        /// <summary>
+        /// Asks server to move selected robot to action point, using joints
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="robotId">Id of robot</param>
+        /// <param name="speed">Speed of movement in interval 0..1</param>
+        /// <param name="jointsId">ID of joints on selected action point</param>
+        /// <returns></returns>
+       /* public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.MoveToActionPointArgs args = new IO.Swagger.Model.MoveToActionPointArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId);
+            IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "RenameActionPointOrientation", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }*/
+
+        /// <summary>
+        /// Asks server to move selected robot to action point, using orientation
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="robotId">Id of robot</param>
+        /// <param name="endEffectorId">Id of end effector<param>
+        /// <param name="speed">Speed of movement in interval 0..1</param>
+        /// <param name="orientationId">ID of orientation on selected action point</param>
+        /// <returns></returns>
+        /*public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.MoveToActionPointArgs args = new IO.Swagger.Model.MoveToActionPointArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null);
+            IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.MoveToActionPointResponse response = await WaitForResult<IO.Swagger.Model.MoveToActionPointResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }*/
+
+
 
         /// <summary>
         /// Asks server to remove action point joints.
