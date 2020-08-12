@@ -1533,7 +1533,7 @@ namespace Base {
         /// <returns></returns>
         public async Task AddActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string name) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId, endEffector);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector, robotId);
             IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs(actionPointId: id, robot: robotArg, name: name);
             IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest(r_id, "AddActionPointOrientationUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
