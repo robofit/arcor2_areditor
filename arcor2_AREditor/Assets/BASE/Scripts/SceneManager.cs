@@ -12,12 +12,11 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace Base {
-
+   
     /// <summary>
     /// Takes care of currently opened scene
     /// </summary>
     public class SceneManager : Singleton<SceneManager> {
-        
         /// <summary>
         /// Invoked when new scene loaded
         /// </summary>
@@ -168,8 +167,6 @@ namespace Base {
                 return false;
             SetSceneMeta(scene);
             await UpdateActionObjects(scene, customCollisionModels);
-            //await UpdateServices(scene);
-            SceneChanged = true;
             return true;
         }
 

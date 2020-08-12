@@ -50,7 +50,7 @@ namespace Base {
             Data.Id = id;
             Data.Type = type;
             SetScenePosition(position);
-            SetSceneOrientation(orientation);
+            SetSceneOrientation(orientation);Application.targetFrameRate = 30;
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
@@ -105,6 +105,7 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            GameManager.Instance.SetDefaultFramerate();
         }
 
 
