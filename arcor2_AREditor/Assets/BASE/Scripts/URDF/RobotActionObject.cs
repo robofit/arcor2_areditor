@@ -19,16 +19,14 @@ namespace Base {
 
         private OutlineOnClick outlineOnClick;
 
-        public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
-        public Dictionary<string, string> Joints = new Dictionary<string, string>();
-
-        private bool robotLoaded = false;
+        public RobotModel RobotModel {
+            get; private set;
+        }
 
         public List<string> EndEffectors = new List<string>();
         
         private GameObject RobotPlaceholder;
-        private GameObject RobotModel;
-        private UrdfRobot UrdfRobot;
+
         private List<Renderer> robotRenderers = new List<Renderer>();
         private List<Collider> robotColliders = new List<Collider>();
 
@@ -43,209 +41,54 @@ namespace Base {
 
         public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-            SceneManager.Instance.OnUrdfReady += OnUrdfDownloaded;
+            //UrdfManager.Instance.OnUrdfReady += OnUrdfDownloaded;
             Data.Id = id;
             Data.Type = type;
             SetScenePosition(position);
-            SetSceneOrientation(orientation);Application.targetFrameRate = 30;
+            SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
-        }
-        
-        private void OnUrdfDownloaded(object sender, RobotUrdfArgs args) {
-            Debug.Log("URDF: urdf is downloaded and extracted");
-            // check if downloaded urdf contains this robot
-            if (ActionObjectMetadata.Type == args.RobotType) {
-                DirectoryInfo dir = new DirectoryInfo(args.Path);
-
-                Debug.Log("URDF: searching directory for urdf file");
-
-                FileInfo[] files = dir.GetFiles("*.urdf", SearchOption.TopDirectoryOnly);
-
-                // if .urdf is missing, try to find .xml file
-                if (files.Length == 0) {
-                    Debug.Log("URDF: searching directory for xml file");
-
-                    files = dir.GetFiles("*.xml", SearchOption.TopDirectoryOnly);
-                }
-
-                // import only first found file
-                if (files.Length > 0) {
-                    Debug.Log("URDF: found file " + files[0].FullName);
-                    Debug.Log("URDF: starting collada import");
-
-                    ImportUrdfObject(files[0].FullName);
-
-                    // subscribe for ColladaImporter event in order to load robot links
-                    ColladaImporter.Instance.OnModelImported += OnColladaModelImported;
-                }
-            } else {
-                GameManager.Instance.SetDefaultFramerate();
-            }
-        }
-
-        /// <summary>
-        /// Imports URDF based on a given filename. Filename has to contain a full path.
-        /// </summary>
-        /// <param name="filename"></param>
-        private void ImportUrdfObject(string filename) {
-            UrdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useUrdfMaterials: false);
-            UrdfRobot.transform.parent = transform;
-            UrdfRobot.transform.localPosition = Vector3.zero;
-            UrdfRobot.transform.localEulerAngles = Vector3.zero;
-
-            UrdfRobot.SetRigidbodiesIsKinematic(true);
-
-            RobotModel = UrdfRobot.gameObject;
-
-            LoadLinks();
-
-            Debug.Log("URDF: robot created (without models yet)");
-
-        }
-
-        private void OnColladaModelImported(object sender, ImportedColladaEventArgs args) {
-            Debug.Log("URDF: Collada model imported");
-            Transform importedModel = args.Data.transform;
-
-            RobotActionObject[] robots = importedModel.GetComponentsInParent<Base.RobotActionObject>(true);
-            if (robots != null) {
-                RobotActionObject robot = robots[0];
-
-                // check if imported model corresponds to this robot
-                if (ReferenceEquals(robot, this)) {
-
-                    // get rid of the placeholder object (New Game Object)
-                    Transform placeholderGameObject = importedModel.parent;
-                    importedModel.SetParent(placeholderGameObject.parent, worldPositionStays: false);
-
-                    //TODO: Temporarily, colliders are added directly to Visuals
-                    AddColliders(importedModel.gameObject, setConvex: true);
-
-                    Destroy(placeholderGameObject.gameObject);
-
-                    SetLinkVisualLoaded(importedModel.parent.parent.parent.name, importedModel.parent.gameObject.GetComponent<UrdfVisual>());
-
-                    Debug.Log("URDF: dae model of the link: " + importedModel.parent.parent.parent.name + " imported");
-
+            if (HasUrdf()) {
+                RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
+                if (RobotModel != null) {
+                    RobotModelLoaded();
                 } else {
-                    GameManager.Instance.SetDefaultFramerate();
-                }
-            }            
-        }
-
-        private void AddColliders(GameObject gameObject, bool setConvex = false) {
-            MeshFilter[] meshFilters = gameObject.GetComponentsInChildren<MeshFilter>();
-            foreach (MeshFilter meshFilter in meshFilters) {
-                GameObject child = meshFilter.gameObject;
-                MeshCollider meshCollider = child.AddComponent<MeshCollider>();
-                meshCollider.sharedMesh = meshFilter.sharedMesh;
-
-                meshCollider.convex = setConvex;
-                
-                // Add OnClick functionality aswell
-                OnClickCollider click = child.AddComponent<OnClickCollider>();
-                click.Target = this.gameObject;
-            }
-        }
-
-        /// <summary>
-        /// Initializes RobotLinks and sets a boolean to its Visuals dictionary,
-        /// telling whether the model of individual visual was already imported (is type of box, cylinder, capsule)
-        /// or not yet (is mesh - is going to be continually imported from ColladaImporter).
-        /// </summary>
-        private void LoadLinks() {
-            // Get all UrdfLink components in builded Robot
-            foreach (UrdfLink link in GetComponentsInChildren<UrdfLink>()) {
-
-                // Get all UrdfVisuals of each UrdfLink
-                GameObject visualsGameObject = link.gameObject.GetComponentInChildren<UrdfVisuals>().gameObject;
-                Dictionary<UrdfVisual, bool> visuals = new Dictionary<UrdfVisual, bool>();
-                // Traverse each UrdfVisual and set a boolean indicating whether its visual is already loaded (is of some basic type - box, cylinder, capsule)
-                // or is going to be loaded by ColladaImporter (in case its type of mesh)
-                foreach (UrdfVisual visual in visualsGameObject.GetComponentsInChildren<UrdfVisual>()) {
-                    visuals.Add(visual, visual.GeometryType == GeometryTypes.Mesh ? false : true);
-                    // hide visual if it is mesh.. mesh will be displayed when fully loaded
-                    visual.gameObject.SetActive(visual.GeometryType == GeometryTypes.Mesh ? false : true);
-                }
-                
-                UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
-                JointStateWriter jointWriter = null;
-                if(urdfJoint != null) {
-                    if (urdfJoint.JointType != UrdfJoint.JointTypes.Fixed) {
-                        jointWriter = urdfJoint.transform.AddComponentIfNotExists<JointStateWriter>();
-                        Joints.Add(urdfJoint.JointName, link.gameObject.name);
-                    }
-                }
-                Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, visuals, is_base_link:link.IsBaseLink));
-
-            }
-        }
-
-        public void SetRandomJointAngles() {
-            foreach (RobotLink link in Links.Values) {
-                link.SetJointAngle(Random.Range(-6.28f, 6.28f));
-            }
-        }
-
-        /// <summary>
-        /// Sets angle of joint in given linkName.
-        /// </summary>
-        /// <param name="jointName"></param>
-        /// <param name="angle"></param>
-        public void SetJointAngle(string jointName, float angle) {
-            if (robotLoaded) {
-                Joints.TryGetValue(jointName, out string linkName);
-                Links.TryGetValue(linkName, out RobotLink link);
-                //Debug.Log(linkName + " ..angle in deg: " + angle + " ..angle in rad: " + angle * Mathf.Deg2Rad);
-                angle *= Mathf.Deg2Rad;
-                link?.SetJointAngle(angle);
-            }
-        }
-
-        /// <summary>
-        /// Sets that visual of a given link is loaded (ColladaImporter imported mesh).
-        /// </summary>
-        /// <param name="linkName"></param>
-        /// <param name="urdfVisual"></param>
-        public void SetLinkVisualLoaded(string linkName, UrdfVisual urdfVisual) {
-            Links.TryGetValue(linkName, out RobotLink link);
-            link?.SetVisualLoaded(urdfVisual);
-
-            IsRobotLoaded();
-
-            // if robot is loaded, show its visuals, otherwise hide them
-            link?.SetActiveVisuals(robotLoaded);
-        }
-
-        /// <summary>
-        /// Checks that all visuals (meshes, primitive types - box, cylinder..) of the robot are imported and created.
-        /// </summary>
-        /// <returns></returns>
-        private bool IsRobotLoaded() {
-            if (!robotLoaded) {
-                foreach (RobotLink link in Links.Values) {
-                    if (!link.HasVisualsLoaded()) {
-                        return false;
-                    }
+                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
                 }
             }
-            robotLoaded = true;
-            OnRobotLoaded();
-
-            return true;
         }
 
-        private void OnRobotLoaded() {
+        private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
             Debug.Log("URDF: robot is fully loaded");
 
-            SetActiveAllVisuals(true);
+            // check if the robot of the type we need was loaded
+            if (args.RobotType == Data.Type) {
+                // if so, lets ask UrdfManager for the robot model
+                RobotModel = UrdfManager.Instance.GetRobotModelInstance(Data.Type);
+               
+                RobotModelLoaded();
+                
+                // if robot is loaded, unsubscribe from UrdfManager event
+                UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+            }
+        }
 
-            // if robot is loaded, unsubscribe from ColladaImporter event, for performance efficiency
-            ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
+        private void RobotModelLoaded() {
+            Debug.Log("URDF: robot is fully loaded");
+
+            RobotModel.RobotModelGameObject.transform.parent = transform;
+            RobotModel.RobotModelGameObject.transform.localPosition = Vector3.zero;
+            RobotModel.RobotModelGameObject.transform.localEulerAngles = Vector3.zero;
+
+            // retarget OnClickCollider target to receive OnClick events
+            foreach (OnClickCollider onCLick in RobotModel.RobotModelGameObject.GetComponentsInChildren<OnClickCollider>(true)) {
+                onCLick.Target = gameObject;
+            }
+
+            RobotModel.SetActiveAllVisuals(true);
 
             outlineOnClick.ClearRenderers();
             RobotPlaceholder.SetActive(false);
@@ -253,22 +96,12 @@ namespace Base {
 
             robotColliders.Clear();
             robotRenderers.Clear();
-            robotRenderers.AddRange(RobotModel.GetComponentsInChildren<Renderer>());
-            robotColliders.AddRange(RobotModel.GetComponentsInChildren<Collider>());
+            robotRenderers.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Renderer>());
+            robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
-            GameManager.Instance.SetDefaultFramerate();
         }
 
-        /// <summary>
-        /// Displays or hides all visuals of the robot.
-        /// </summary>
-        /// <param name="active"></param>
-        private void SetActiveAllVisuals(bool active) {
-            foreach (RobotLink link in Links.Values) {
-                link.SetActiveVisuals(active);
-            }
-        }
 
         public override Vector3 GetScenePosition() {
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
@@ -419,8 +252,10 @@ namespace Base {
         }
 
         private void OnDestroy() {
-            if(SceneManager.Instance != null)
-                SceneManager.Instance.OnUrdfReady -= OnUrdfDownloaded;
+            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
+            if (RobotModel != null) {
+                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+            }
         }
 
         public override void OnHoverStart() {

@@ -598,7 +598,7 @@ namespace Base {
         /// Binds events and sets initial state of app
         /// </summary>
         private void Start() {
-            SetTurboFramerate();
+            SetDefaultFramerate();
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif
