@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using TMPro;
-using UnityEditor.UI;
 using UnityEngine;
 
 namespace Base {

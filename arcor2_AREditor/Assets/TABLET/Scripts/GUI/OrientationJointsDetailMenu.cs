@@ -1,17 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Michsky.UI.ModernUIPack;
-using System.Linq;
-using UnityEngine.UI;
 using DanielLochner.Assets.SimpleSideMenu;
 using Base;
-using System;
-using Packages.Rider.Editor.UnitTesting;
-using OrbCreationExtensions;
-using UnityEngine.Events;
 using IO.Swagger.Model;
-using System.Security.Cryptography;
 using System.Globalization;
 
 [RequireComponent(typeof(SimpleSideMenu))]
