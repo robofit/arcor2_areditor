@@ -151,7 +151,7 @@ public class ActionObject3D : ActionObject
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
         base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;

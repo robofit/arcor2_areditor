@@ -34,6 +34,14 @@ namespace Base {
         /// </summary>
         public event EventHandler OnSceneSaved;
         /// <summary>
+        /// Invoked when robor should show their EE pose
+        /// </summary>
+        public event EventHandler OnShowRobotsEE;
+        /// <summary>
+        /// Invoked when robots should hide their EE pose
+        /// </summary>
+        public event EventHandler OnHideRobotsEE;
+        /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
         /// </summary>
         public Scene SceneMeta = null;
@@ -49,10 +57,6 @@ namespace Base {
         /// Origin (0,0,0) of scene.
         /// </summary>
         public GameObject SceneOrigin;
-        /// <summary>
-        /// Specific object in hierarchy where end effectors game object is stored.
-        /// </summary>
-        public GameObject EEOrigin;
         /// <summary>
         /// Prefab for robot action object
         /// </summary>        
@@ -101,14 +105,6 @@ namespace Base {
             private set;
         }
         /// <summary>
-        /// Holds all robots end effectors
-        /// </summary>
-        private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
-        /// <summary>
-        /// Holds all robot with at least one end effector
-        /// </summary>
-        private List<IRobot> robotsWithEndEffector = new List<IRobot>();
-        /// <summary>
         /// Indicates if resources (e.g. end effectors for robot) should be loaded when scene created.
         /// </summary>
         private bool loadResources = false;
@@ -141,12 +137,11 @@ namespace Base {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (SceneMeta != null)
                 return false;
-            robotsWithEndEffector.Clear();
             SetSceneMeta(scene);
             
             this.loadResources = loadResources;
             LoadSettings();
-
+            GameManager.Instance.Scene.SetActive(true);
             bool success = await UpdateScene(scene, customCollisionModels);
             if (success) {
                 OnLoadScene?.Invoke(this, EventArgs.Empty);
@@ -247,10 +242,7 @@ namespace Base {
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
         private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
-            if (!RobotsEEVisible) {
-                CleanRobotEE();
-                return;
-            }
+            
             
             // check if robotId is really a robot
             if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
@@ -278,17 +270,18 @@ namespace Base {
         /// <param name="args">Robot ee data</param>
         private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
-                CleanRobotEE();
                 return;
             }
             foreach (EefPose eefPose in args.Data.EndEffectors) {
-                if (!EndEffectors.TryGetValue(args.Data.RobotId + "/" + eefPose.EndEffectorId, out RobotEE robotEE)) {
-                    robotEE = Instantiate(RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                    robotEE.SetEEName(GetRobot(args.Data.RobotId).GetName(), eefPose.EndEffectorId);
-                    EndEffectors.Add(args.Data.RobotId + "/" + eefPose.EndEffectorId, robotEE);
+                try {
+                    IRobot robot = GetRobot(args.Data.RobotId);
+                    RobotEE ee = robot.GetEE(eefPose.EndEffectorId);
+                    ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
+                        TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
+                } catch (ItemNotFoundException) {
+                    continue;
                 }
-                robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position));
-                robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation));
+                
             }
         }
 
@@ -298,7 +291,6 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnSceneLoaded(object sender, EventArgs e) {
-            CleanRobotEE();
             if (RobotsEEVisible) {
                 ShowRobotsEE();
             }
@@ -313,62 +305,23 @@ namespace Base {
         }
 
         /// <summary>
-        /// Destroys all end effectors in scene
-        /// </summary>
-        private void CleanRobotEE() {
-            foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
-                Destroy(ee.Value.gameObject);
-            }
-            EndEffectors.Clear();
-        }
-
-        /// <summary>
         /// Registers for end effector poses (and if robot has URDF then for joints values as well) and displays EE positions in scene
         /// </summary>
-        public async void ShowRobotsEE() {
-            CleanRobotEE();
-            foreach (IRobot robot in GetRobots()) {
-                if (robot.GetEndEffectors().Count > 0) {
-                    robotsWithEndEffector.Add(robot);
-                }
-            }
+        /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
+        public void ShowRobotsEE() {
             RobotsEEVisible = true;
-            foreach (IRobot robot in robotsWithEndEffector) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                if (robot.HasUrdf())
-                    await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
-                    
-            }
-            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
+            OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
 
         /// <summary>
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
-        public async void HideRobotsEE() {
+        public void HideRobotsEE() {
             RobotsEEVisible = false;
-            foreach (IRobot robot in robotsWithEndEffector) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
-            }
-            robotsWithEndEffector.Clear();
-            CleanRobotEE();
+            OnHideRobotsEE?.Invoke(this, EventArgs.Empty);            
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);
-        }
-
-        /// <summary>
-        /// Gets robots end effector
-        /// </summary>
-        /// <param name="robotId">ID of robot</param>
-        /// <param name="eeId">Id of end effector</param>
-        /// <returns></returns>
-        public RobotEE GetRobotEE(string robotId, string eeId) {
-            if (EndEffectors.TryGetValue(robotId + "/" + eeId, out RobotEE robotEE)) {
-                return robotEE;
-            } else {
-                throw new ItemNotFoundException("No ee with id: " + robotId + "/" + eeId);
-            }
         }
 
         /// <summary>
@@ -457,7 +410,7 @@ namespace Base {
         /// <param name="id">UUID of action object</param>
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
-        /// <returns>Spawned actio object</returns>
+        /// <returns>Spawned action object</returns>
         public async Task<ActionObject> SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
@@ -475,17 +428,7 @@ namespace Base {
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
 
-            if (aom.Robot) {
-                if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
-                    if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-                    }
-                }
-
-                if (loadResources) {
-                    await ((RobotActionObject) actionObject).LoadEndEffectors();
-                }
-            }
+            
 
             return actionObject;
         }

@@ -297,7 +297,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
         try {
-            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            RobotEE ee = SceneManager.Instance.GetRobot(robotId).GetEE(eeId);
             model.transform.parent = ee.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {

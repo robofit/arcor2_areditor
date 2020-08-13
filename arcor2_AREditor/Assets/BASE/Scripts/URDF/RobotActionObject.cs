@@ -1,14 +1,9 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.IO;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
-using RosSharp;
-using RosSharp.RosBridgeClient;
-using RosSharp.Urdf;
-using RosSharp.Urdf.Runtime;
 using TMPro;
+using UnityEditor.UI;
 using UnityEngine;
 
 namespace Base {
@@ -19,11 +14,14 @@ namespace Base {
 
         private OutlineOnClick outlineOnClick;
 
+        [SerializeField]
+        private GameObject EEOrigin;
+
         public RobotModel RobotModel {
             get; private set;
         }
 
-        public List<string> EndEffectors = new List<string>();
+        private List<RobotEE> EndEffectors = new List<RobotEE>();
         
         private GameObject RobotPlaceholder;
 
@@ -37,9 +35,56 @@ namespace Base {
 
         protected override void Start() {
             base.Start();
+            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
         }
 
-        public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+        private async void OnDisable() {
+            if (RobotModel != null) {
+                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+            }
+            await HideRobotEE();
+            if (HasUrdf())
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
+            SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
+            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
+            
+        }
+        
+        private void OnShowRobotsEE(object sender, EventArgs e) {
+            _ = ShowRobotEE();            
+        }
+
+        private void OnHideRobotsEE(object sender, EventArgs e) {
+            _ = HideRobotEE();
+        }
+
+        public async Task ShowRobotEE() {
+            if (EndEffectors.Count > 0) {
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                foreach (RobotEE ee in EndEffectors) {
+                    ee.gameObject.SetActive(true);
+                }
+            }
+        }
+
+        public async Task HideRobotEE() {
+            if (EndEffectors.Count > 0) {
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                
+                foreach (RobotEE ee in EndEffectors) {
+                    try {
+                        ee.gameObject.SetActive(false);
+                    } catch (MissingReferenceException) {
+                        continue;
+                    }
+                    
+                }
+            }
+        }
+
+        public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
             //UrdfManager.Instance.OnUrdfReady += OnUrdfDownloaded;
             Data.Id = id;
@@ -51,13 +96,18 @@ namespace Base {
             CreateModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
-            if (HasUrdf()) {
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
                 if (RobotModel != null) {
                     RobotModelLoaded();
                 } else {
                     UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
                 }
+
+                StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+            }
+            if (loadResources) {
+                await LoadEndEffectors();
             }
         }
 
@@ -76,7 +126,7 @@ namespace Base {
             }
         }
 
-        private void RobotModelLoaded() {
+        private async void RobotModelLoaded() {
             Debug.Log("URDF: robot is fully loaded");
 
             RobotModel.RobotModelGameObject.transform.parent = transform;
@@ -100,6 +150,7 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
         }
 
 
@@ -212,13 +263,28 @@ namespace Base {
             }
         }
 
-        public List<string> GetEndEffectors() {
+        public List<string> GetEndEffectorIds() {
+            List<string> result = new List<string>();
+            foreach (RobotEE ee in EndEffectors)
+                result.Add(ee.EEId);
+            return result;
+        }
+
+        public List<RobotEE> GetEndEffectors() {
             return EndEffectors;
         }
 
         public async Task LoadEndEffectors() {
             List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            EndEffectors = await WebsocketManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+            List<string> endEffectors = await WebsocketManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+            foreach (string eeId in endEffectors) {
+                RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                ee.InitEE(this, eeId);
+                ee.gameObject.SetActive(false);
+                EndEffectors.Add(ee);
+            }
+            if (SceneManager.Instance.RobotsEEVisible)
+                ShowRobotEE();
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
@@ -249,13 +315,6 @@ namespace Base {
                 return !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename);
             }
             return false;
-        }
-
-        private void OnDestroy() {
-            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
-            if (RobotModel != null) {
-                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
-            }
         }
 
         public override void OnHoverStart() {
@@ -295,5 +354,11 @@ namespace Base {
             ActionObjectName.text = actionObjectSwagger.Name;
         }
 
+        public RobotEE GetEE(string ee_id) {
+            foreach (RobotEE ee in EndEffectors)
+                if (ee.EEId == ee_id)
+                    return ee;
+            throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
+        }
     }
 }
