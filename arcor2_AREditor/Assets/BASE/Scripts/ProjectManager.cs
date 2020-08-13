@@ -420,34 +420,63 @@ namespace Base {
         public void UpdateActionPoints(Project project) {
             List<string> currentAP = new List<string>();
             List<string> currentActions = new List<string>();
-            Dictionary<string, string> connections = new Dictionary<string, string>();
-
+            // key = parentId, value = list of APs with given parent
+            Dictionary<string, List<ProjectActionPoint>> actionPointsWithParents = new Dictionary<string, List<ProjectActionPoint>>();
+            // ordered list of already processed parents. This ensure that global APs are processed first,
+            // then APs with action objects as a parents and then APs with already processed AP parents
+            List<string> processedParents = new List<string> {
+                "global"
+            };
             foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
-                // if action point exist, just update it
-                if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
-                    actionPoint.ActionPointBaseUpdate(projectActionPoint);
+                string parent = projectActionPoint.Parent ?? "global";
+                if (actionPointsWithParents.TryGetValue(parent, out List<ProjectActionPoint> projectActionPoints)) {
+                    projectActionPoints.Add(projectActionPoint);
+                } else {
+                    List<ProjectActionPoint> aps = new List<ProjectActionPoint> {
+                        projectActionPoint
+                    };
+                    actionPointsWithParents[parent] = aps;
                 }
-                // if action point doesn't exist, create new one
-                else {
-                    IActionPointParent parent = null;
-                    if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
-                        parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
-                    }
-                    //TODO: update spawn action point to not need action object
-                    actionPoint = SpawnActionPoint(projectActionPoint, parent);
-                    
+                // if parent is action object, we dont need to process it
+                if (SceneManager.Instance.ActionObjects.ContainsKey(parent)) {
+                    processedParents.Add(parent);
                 }
-
-                // update actions in current action point 
-                (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
-                currentActions.AddRange(updateActionsResult.Item1);
-                // merge dictionaries
-                //connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
-
-                actionPoint.UpdatePositionsOfPucks();
-
-                currentAP.Add(actionPoint.Data.Id);
             }
+
+            for (int i = 0; i < processedParents.Count; ++i) {
+                if (actionPointsWithParents.TryGetValue(processedParents[i], out List<ProjectActionPoint> projectActionPoints)) {
+                    foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in projectActionPoints) {
+                        // if action point exist, just update it
+                        if (ActionPoints.TryGetValue(projectActionPoint.Id, out ActionPoint actionPoint)) {
+                            actionPoint.ActionPointBaseUpdate(projectActionPoint);
+                        }
+                        // if action point doesn't exist, create new one
+                        else {
+                            IActionPointParent parent = null;
+                            if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
+                                parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
+                            }
+                            //TODO: update spawn action point to not need action object
+                            actionPoint = SpawnActionPoint(projectActionPoint, parent);
+
+                        }
+
+                        // update actions in current action point 
+                        (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
+                        currentActions.AddRange(updateActionsResult.Item1);
+                        // merge dictionaries
+                        //connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
+
+                        actionPoint.UpdatePositionsOfPucks();
+
+                        currentAP.Add(actionPoint.Data.Id);
+
+                        processedParents.Add(projectActionPoint.Id);
+                    }
+                }
+                
+            }
+            
 
             //UpdateActionConnections(project.ActionPoints, connections);
 
