@@ -360,5 +360,9 @@ namespace Base {
                     return ee;
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
+
+        public void SetJointValue(string name, float angle) {
+            RobotModel?.SetJointAngle(name, angle);
+        }
     }
 }

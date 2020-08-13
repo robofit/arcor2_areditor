@@ -12,4 +12,6 @@ public interface IRobot
     RobotEE GetEE(string ee_id);
 
     bool HasUrdf();
+
+    void SetJointValue(string name, float angle);
 }

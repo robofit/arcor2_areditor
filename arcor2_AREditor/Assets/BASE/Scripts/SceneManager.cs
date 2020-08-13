@@ -242,25 +242,15 @@ namespace Base {
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
         private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
-            
-            
-            // check if robotId is really a robot
-            if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
-               if (actionObject.IsRobot()) {
-                    RobotActionObject robot = (RobotActionObject) actionObject;
-                    foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
-                        robot.RobotModel?.SetJointAngle(joint.Name, (float) joint.Value);                        
-                    }
-                } else {
-                    Debug.LogError("My robot is not a robot?");
-                    Notifications.Instance.SaveLogs();
+            try {
+                IRobot robot = GetRobot(args.Data.RobotId);
+                foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
+                    robot.SetJointValue(joint.Name, (float) joint.Value); 
                 }
-            } else {
-                Debug.LogError("Robot not found!");
-                await WebsocketManager.Instance.RegisterForRobotEvent(args.Data.RobotId,
-                    false, RegisterForRobotEventArgs.WhatEnum.Joints);
+            } catch (ItemNotFoundException) {
+                
             }
-            
+                        
         }
 
         /// <summary>
