@@ -27,8 +27,7 @@ public class InputHandler : Singleton<InputHandler> {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         HandleTouch();
 #else
-        //HandleInputStandalone();
-        HandleTouch();
+        HandleInputStandalone();
 #endif
     }
 
@@ -199,6 +198,7 @@ public class InputHandler : Singleton<InputHandler> {
     private IEnumerator LongTouch(Touch touch) {
         yield return new WaitForSeconds(1f);
         longTouch = true;
+        TransformGizmo.Instance.ClearTargets();
         Sight.Instance.LongTouch();
 
         /*
