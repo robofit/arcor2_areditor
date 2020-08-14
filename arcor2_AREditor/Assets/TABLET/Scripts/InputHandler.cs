@@ -18,6 +18,7 @@ public class InputHandler : Singleton<InputHandler> {
     public event EventHandler OnDeletePressed;
 
     private bool longTouch = false;
+    private bool pointerOverUI = false;
     private IEnumerator coroutine;
 
     private GameObject hoveredObject;
@@ -26,7 +27,8 @@ public class InputHandler : Singleton<InputHandler> {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         HandleTouch();
 #else
-        HandleInputStandalone();
+        //HandleInputStandalone();
+        HandleTouch();
 #endif
     }
 
@@ -160,16 +162,21 @@ public class InputHandler : Singleton<InputHandler> {
         if (!GameManager.Instance.SceneInteractable)
             return;
         foreach (Touch touch in Input.touches) {
-            if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
-                // skip if clicking on GUI object (e.g. controlbox)
-                continue;
-            }
             if (touch.phase == TouchPhase.Began) {
+                // This is only valid in Began phase. During end phase it always return false
+                if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
+                    // skip if clicking on GUI object (e.g. controlbox)
+                    pointerOverUI = true;
+                    continue;                    
+                }
+                pointerOverUI = false;
                 if (coroutine != null)
                     StopCoroutine(coroutine);
                 coroutine = LongTouch(touch);
                 StartCoroutine(coroutine);
             } else if (touch.phase == TouchPhase.Ended) {
+                if (pointerOverUI)
+                    return;
                 if (longTouch) {
                     longTouch = false;
                 } else {
