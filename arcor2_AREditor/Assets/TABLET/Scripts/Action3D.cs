@@ -74,7 +74,7 @@ public class Action3D : Base.Action {
     public override void OnClick(Click type) {
         if (!CheckClick())
             return;
-        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
+        if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ActionMenu.Instance.CurrentAction = this;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
             selected = true;
