@@ -94,14 +94,6 @@ public class ActionObject3D : ActionObject
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
-    public IO.Swagger.Model.Pose GetPose() {
-        if (ActionObjectMetadata.HasPose)
-            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
-                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
-        else
-            return new IO.Swagger.Model.Pose(new Orientation(), new Position());
-    }
-
     public override void OnClick(Click type) {        
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {

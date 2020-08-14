@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using RosSharp.Urdf;
+using RuntimeGizmos;
 using TMPro;
 using UnityEngine;
 
@@ -18,6 +20,14 @@ namespace Base {
 
         public RobotModel RobotModel {
             get; private set;
+        }
+        public bool manipulationStarted {
+            get;
+            private set;
+        }
+        public bool updatePose {
+            get;
+            private set;
         }
 
         private List<RobotEE> EndEffectors = new List<RobotEE>();
@@ -57,6 +67,37 @@ namespace Base {
 
         private void OnHideRobotsEE(object sender, EventArgs e) {
             _ = HideRobotEE();
+        }
+
+        protected async override void Update() {
+            if (manipulationStarted) {
+                if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
+                    if (!TransformGizmo.Instance.isTransforming && updatePose) {
+                        updatePose = false;
+
+                        if (ActionObjectMetadata.HasPose) {
+                            try {
+                                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+                            } catch (RequestFailedException e) {
+                                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                                ResetPosition();
+                            }
+                        } else {
+                            PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
+                                transform.localPosition, transform.localRotation);
+                        }
+                    }
+
+                    if (TransformGizmo.Instance.isTransforming)
+                        updatePose = true;
+
+                } else {
+                    manipulationStarted = false;
+                }
+
+            }
+
+            base.Update();
         }
 
         public async Task ShowRobotEE() {
@@ -259,6 +300,20 @@ namespace Base {
             // HANDLE TOUCH
             else if (type == Click.TOUCH) {
                 ShowMenu();
+            }
+
+            // HANDLE MOUSE
+            if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
+                // We have clicked with left mouse and started manipulation with object
+                if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                    manipulationStarted = true;
+                    TransformGizmo.Instance.AddTarget(transform);
+                    outlineOnClick.GizmoHighlight();
+                }
+            } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
+                ShowMenu();
+                TransformGizmo.Instance.ClearTargets();
+                outlineOnClick.GizmoUnHighlight();
             }
         }
 

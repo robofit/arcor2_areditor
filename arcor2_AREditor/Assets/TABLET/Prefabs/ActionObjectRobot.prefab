@@ -215,6 +215,7 @@ GameObject:
   - component: {fileID: 4117692875275004883}
   - component: {fileID: -3082953001628312356}
   - component: {fileID: -6384501486800412016}
+  - component: {fileID: 6226430248659389064}
   m_Layer: 0
   m_Name: ActionObjectRobot
   m_TagString: Robot
@@ -257,7 +258,6 @@ MonoBehaviour:
   RobotPlaceholderPrefab: {fileID: 4648989740229487369, guid: 70e38dd085c598d45bb379c4e4e3b63f,
     type: 3}
   EEOrigin: {fileID: 7548553722561557311}
-  EndEffectors: []
 --- !u!114 &-6384501486800412016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,6 +286,19 @@ MonoBehaviour:
     type: 2}
   Renderers: []
   HoverOnly: 0
+--- !u!114 &6226430248659389064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4117692875275004882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56dd716813c47194695f505324fcf244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OutlineOnClick: {fileID: -6384501486800412016}
 --- !u!1 &7548553722561557311
 GameObject:
   m_ObjectHideFlags: 0
