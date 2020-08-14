@@ -428,7 +428,10 @@ namespace Base {
                 "global"
             };
             foreach (IO.Swagger.Model.ProjectActionPoint projectActionPoint in project.ActionPoints) {
-                string parent = projectActionPoint.Parent ?? "global";
+                string parent = projectActionPoint.Parent;
+                if (string.IsNullOrEmpty(parent)) {
+                    parent = "global";
+                }
                 if (actionPointsWithParents.TryGetValue(parent, out List<ProjectActionPoint> projectActionPoints)) {
                     projectActionPoints.Add(projectActionPoint);
                 } else {

@@ -79,7 +79,6 @@ public class OutlineOnClick : Clickable {
             };
             gizmoMaterial[1].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
         }
-        Debug.LogError(gizmoMaterial.Length);
     }
 
     /// <summary>
