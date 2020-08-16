@@ -292,12 +292,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     private void UpdateModelOnEE() {
         if (model == null)
             return;
-        string robotId = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
-        if (string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+        string robotName = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
+        if (string.IsNullOrEmpty(robotName) || string.IsNullOrEmpty(eeId)) {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
+        
         try {
-            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            string robotId = SceneManager.Instance.RobotNameToId(robotName);
+            RobotEE ee = SceneManager.Instance.GetRobot(robotId).GetEE(eeId);
             model.transform.parent = ee.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {

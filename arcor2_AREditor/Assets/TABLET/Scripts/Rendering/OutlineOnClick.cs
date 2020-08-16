@@ -16,7 +16,7 @@ public class OutlineOnClick : Clickable {
     /// For complex meshes and cubes with spheres it is better to use TwoPassShader, for simple objects use OnePassShader.
     /// </summary>
     [HideInInspector]
-    public OutlineType OutlineShaderType;
+    private OutlineType outlineShaderType;
 
     /// <summary>
     /// If TwoPassShader is selected, then following four variables are displayed in Inspector.
@@ -48,6 +48,15 @@ public class OutlineOnClick : Clickable {
     private Material[] gizmoMaterial;
     private bool gizmoHighlighted = false;
 
+    public OutlineType OutlineShaderType {
+        get => outlineShaderType;
+        set {
+            OutlineType origValue = outlineShaderType;
+            outlineShaderType = value;
+            if (value != origValue)
+                InitGizmoMaterials();
+        }
+    }
 
     private void Start() {
         InitGizmoMaterials();
