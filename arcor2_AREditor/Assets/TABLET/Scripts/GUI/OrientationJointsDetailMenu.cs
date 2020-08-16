@@ -3,6 +3,9 @@ using DanielLochner.Assets.SimpleSideMenu;
 using Base;
 using IO.Swagger.Model;
 using System.Globalization;
+using Michsky.UI.ModernUIPack;
+using UnityEngine.UI;
+
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {

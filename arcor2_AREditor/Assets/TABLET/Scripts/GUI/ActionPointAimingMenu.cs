@@ -17,12 +17,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
 
     [SerializeField]
-    private TooltipContent buttonTooltip;
-
-    [SerializeField]
-    private UnityEngine.UI.Button UpdatePositionButton;
-
-    [SerializeField]
     private ActionButton OrientationManualDefaultButton;
 
     public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
@@ -65,17 +59,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (positionRobotsListDropdown.dropdownItems.Count == 0) {
             PositionBlock.SetActive(false);
-            /*
-            buttonTooltip.description = "There is no robot to update position with";
-            buttonTooltip.enabled = true;
-            UpdatePositionButton.interactable = false;
-            */
         } else {
             PositionBlock.SetActive(true);
-            /*
-            buttonTooltip.enabled = false;
-            UpdatePositionButton.interactable = true;
-            */
             OnRobotChanged((string) PositionRobotsList.GetValue());
         }
 
