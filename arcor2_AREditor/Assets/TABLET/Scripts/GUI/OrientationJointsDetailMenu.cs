@@ -18,9 +18,15 @@ using System.Globalization;
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock;
+    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
 
     public TMPro.TMP_InputField QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
+
+    [SerializeField]
+    private TooltipContent buttonTooltip;
+
+    [SerializeField]
+    private Button UpdateButton;
 
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
@@ -45,11 +51,27 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     public void UpdateMenu() {
-        RobotsList.Dropdown.dropdownItems.Clear();
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        OnRobotChanged((string) RobotsList.GetValue());
-
         if (isOrientationDetail) {  //orientation
+            RobotsList.Dropdown.dropdownItems.Clear();
+            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+            if (RobotsList.Dropdown.dropdownItems.Count > 0) {
+                OrientationBlock.SetActive(true);
+                MoveHereBlock.SetActive(true);
+
+                UpdateButton.interactable = true;
+                buttonTooltip.enabled = false;
+
+                OnRobotChanged((string) RobotsList.GetValue());
+            } else {
+                OrientationBlock.SetActive(false);
+                MoveHereBlock.SetActive(false);
+
+                buttonTooltip.description = "There is no robot to update orientation with";
+                buttonTooltip.enabled = true;
+                UpdateButton.interactable = false;
+            }
+
+
             NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             QuaternionX.text = orientation.Orientation.X.ToString(numberFormatInfo);
@@ -201,7 +223,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         this.joints = joints;
         isOrientationDetail = false;
         DetailName.text = joints.Name;
-        RobotName.text = joints.RobotId;
+        try {
+            RobotName.text = SceneManager.Instance.GetRobot(joints.RobotId).GetName();
+        } catch (ItemNotFoundException ex) {
+            Notifications.Instance.ShowNotification(ex.Message, "");
+        }
         ShowMenu(currentActionPoint);
     }
 

@@ -1,5 +1,6 @@
 using System.Linq;
 using Base;
+using Boo.Lang;
 using DanielLochner.Assets.SimpleSideMenu;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
@@ -10,16 +11,16 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject JointsExpertModeBlock, JointsLiteModeBlock;
+    public GameObject JointsExpertModeBlock, JointsLiteModeBlock, PositionBlock, JointsBlock;
 
     [SerializeField]
-    private TMPro.TMP_Text ActionPointName;
+    private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
 
     [SerializeField]
     private TooltipContent buttonTooltip;
 
     [SerializeField]
-    private Button UpdatePositionButton;
+    private UnityEngine.UI.Button UpdatePositionButton;
 
     [SerializeField]
     private ActionButton OrientationManualDefaultButton;
@@ -63,21 +64,28 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         positionRobotsListDropdown.dropdownItems.Clear();
         PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (positionRobotsListDropdown.dropdownItems.Count == 0) {
-
+            PositionBlock.SetActive(false);
+            /*
             buttonTooltip.description = "There is no robot to update position with";
             buttonTooltip.enabled = true;
             UpdatePositionButton.interactable = false;
-
+            */
         } else {
+            PositionBlock.SetActive(true);
+            /*
             buttonTooltip.enabled = false;
             UpdatePositionButton.interactable = true;
+            */
             OnRobotChanged((string) PositionRobotsList.GetValue());
         }
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
         JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
         if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
+            JointsBlock.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
+        } else {
+            JointsBlock.SetActive(false);
         }
 
         UpdateOrientationsDynamicList();
@@ -148,6 +156,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
             btn.Button.onClick.AddListener(() => OpenDetailMenu(orientation));
         }
+        if (CurrentActionPoint.GetNamedOrientations().Any()) {
+            OrientationsListLabel.text = "List of orientations:";
+        } else {
+            OrientationsListLabel.text = "There is no orientation yet.";
+        }
     }
 
 
@@ -164,7 +177,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 }
             }
 
-            foreach (IO.Swagger.Model.ProjectRobotJoints joint in CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList()) {
+            System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
+            foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
                 ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.SetLabel(joint.Name);
