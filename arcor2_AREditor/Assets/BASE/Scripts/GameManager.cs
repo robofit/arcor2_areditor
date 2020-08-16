@@ -14,7 +14,12 @@ namespace Base {
     /// (landing screen, main screen, editor screens) and for management of application states.
     /// </summary>
     public class GameManager : Singleton<GameManager> {
-	public bool ExpertMode = true;
+
+        /// <summary>
+        /// Advanced mode of editor
+        /// </summary>
+        public bool ExpertMode = true;
+
         /// <summary>
         /// Called when project was saved
         /// </summary>
@@ -145,7 +150,10 @@ namespace Base {
         /// Tooltip gameobject
         /// </summary>
         public GameObject Tooltip;
-	public GameObject LabeledFloatInput;
+        /// <summary>
+        /// Gameobject for floating point number input (with label)
+        /// </summary>
+        public GameObject LabeledFloatInput;
         /// <summary>
         /// Text component of tooltip
         /// </summary>

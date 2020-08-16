@@ -75,6 +75,14 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         SceneManager.Instance.HideRobotsEE();
     }
 
+    public void SwitchOnExpertMode() {
+        GameManager.Instance.ExpertMode = true;
+    }
+
+    public void SwitchOffExpertMode() {
+        GameManager.Instance.ExpertMode = false;
+    }
+
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
         
     }
