@@ -161,7 +161,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.RemoveActionPointJoints(joints.Id);
             }
             ConfirmationDialog.Close();
-            //TODO uncomment line below
+            Close();
             //MenuManager.Instance.HideMenu(MenuManager.Instance.OrientationJointsDetailMenu);
 
         } catch (RequestFailedException e) {

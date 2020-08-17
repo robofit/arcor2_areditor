@@ -121,6 +121,8 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         ManualMode = manual;
         CurrentActionPoint = actionPoint;
         ExpertModeBlock.SetActive(ManualMode);
+        NameInput.text = CurrentActionPoint.GetFreeOrientationName();
+
         UpdateMenu();
         SideMenu.Open();
     }

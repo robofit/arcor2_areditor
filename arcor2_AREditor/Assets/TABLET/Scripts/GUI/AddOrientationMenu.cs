@@ -133,6 +133,8 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
         ManualModeBlock.SetActive(ManualMode);
         LiteModeBlock.SetActive(!ManualMode);
+
+        NameInput.text = CurrentActionPoint.GetFreeOrientationName();
         UpdateMenu();
         SideMenu.Open();
     }
