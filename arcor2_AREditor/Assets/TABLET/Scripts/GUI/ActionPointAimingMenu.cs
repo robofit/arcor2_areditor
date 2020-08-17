@@ -19,6 +19,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private ActionButton OrientationManualDefaultButton;
 
+    [SerializeField]
+    private Button AddOrientationUsingRobotButton;
+
     public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
 
     public GameObject OrientationsDynamicList, JointsDynamicList;
@@ -59,9 +62,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (positionRobotsListDropdown.dropdownItems.Count == 0) {
             PositionBlock.SetActive(false);
+            AddOrientationUsingRobotButton.interactable = false;
         } else {
             PositionBlock.SetActive(true);
             OnRobotChanged((string) PositionRobotsList.GetValue());
+            AddOrientationUsingRobotButton.interactable = true;
         }
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
