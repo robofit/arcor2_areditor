@@ -45,6 +45,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         if (isOrientationDetail) {  //orientation
+            DetailName.text = orientation.Name;
+
             RobotsList.Dropdown.dropdownItems.Clear();
             RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             if (RobotsList.Dropdown.dropdownItems.Count > 0) {
@@ -72,6 +74,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             QuaternionZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
             QuaternionW.text = orientation.Orientation.W.ToString(numberFormatInfo);
         } else { //joints
+            DetailName.text = joints.Name;
             UpdateJointsList();
         }
     }
@@ -192,8 +195,52 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
-    public void Rename() {
-        //TODO
+    public async void Rename() {
+        try {
+            string name = DetailName.text;
+            if (isOrientationDetail) {
+                if (name == orientation.Name)
+                    return;
+            } else { //joints
+                if (name == joints.Name)
+                    return;
+            }
+                if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
+                Notifications.Instance.ShowNotification("Failed to rename orientation/joints", "There already exists orientation or joints with name " + name);
+                UpdateMenu();
+                return;
+            }
+            if (isOrientationDetail) {
+                await WebsocketManager.Instance.RenameActionPointOrientation(orientation.Id, name);
+                Notifications.Instance.ShowNotification("Orientation renamed successfully", "");
+            } else {
+                await WebsocketManager.Instance.RenameActionPointJoints(joints.Id, name);
+                Notifications.Instance.ShowNotification("Joints renamed successfully", "");
+            }
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to rename orientation/joints", ex.Message);
+            UpdateMenu();
+        }
+    }
+
+    public async void MoveHereRobot() { //TODO check what speed should be used
+        try {
+            string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+            if (isOrientationDetail) {
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), 1, orientation.Id);
+            } else {
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, 1, joints.Id);
+            }
+        } catch (ItemNotFoundException ex) {
+            Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
+        }
+    }
+
+    public async void MoveHereModel() {
+        //TODO 
+        Notifications.Instance.ShowNotification("Not implemented yet", "");
     }
 
 
@@ -205,7 +252,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
-        DetailName.text = orientation.Name;
 
         
 
@@ -215,7 +261,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
         this.joints = joints;
         isOrientationDetail = false;
-        DetailName.text = joints.Name;
         try {
             RobotName.text = SceneManager.Instance.GetRobot(joints.RobotId).GetName();
         } catch (ItemNotFoundException ex) {

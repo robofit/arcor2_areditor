@@ -51,7 +51,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
     }
     
-    public void UpdateMenu(string preselectedOrientation = null) {
+    public void UpdateMenu() {
         ActionPointName.text = CurrentActionPoint.Data.Name;
 
         CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
@@ -110,21 +110,17 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation = null) {
+    public void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
         JointsExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
         JointsLiteModeBlock.SetActive(!GameManager.Instance.ExpertMode);
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
-        UpdateMenu(preselectedOrientation);
+        UpdateMenu();
         SideMenu.Open();
     }
 
     public void Close() {
         SideMenu.Close();
-    }
-
-    public void UpdateMenu() {
-        UpdateMenu(null);
     }
 
     public void UpdateOrientationsDynamicList() {

@@ -739,7 +739,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 9010430017970503180}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.8116749
+  m_Size: 0.17386565
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2417,6 +2417,21 @@ PrefabInstance:
       propertyPath: m_textInfo.pageCount
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3614329852313435691, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 951428681340525634}
+    - target: {fileID: 3614329852313435691, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: MoveHereModel
+      objectReference: {fileID: 0}
+    - target: {fileID: 3874170003351677563, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_Name
+      value: MoveHereRobotButton
+      objectReference: {fileID: 0}
     - target: {fileID: 4319207701882648903, guid: 75978b77135a8694db3a6773d1fa6aab,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -2446,6 +2461,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5793590356935812966, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 951428681340525634}
+    - target: {fileID: 5793590356935812966, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: MoveHereRobot
+      objectReference: {fileID: 0}
+    - target: {fileID: 6308851990767268662, guid: 75978b77135a8694db3a6773d1fa6aab,
+        type: 3}
+      propertyPath: m_Name
+      value: MoveHereModelButton
       objectReference: {fileID: 0}
     - target: {fileID: 6466802822148677642, guid: 75978b77135a8694db3a6773d1fa6aab,
         type: 3}
@@ -4095,7 +4125,7 @@ PrefabInstance:
     - target: {fileID: 1268134369922896154, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_Value
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1268171995269104322, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
