@@ -87,6 +87,11 @@ public class TrackingManager : Singleton<TrackingManager> {
             case ARSessionState.Unsupported:
                 Notifications.Instance.ShowNotification("Tracking not supported", "This device does not support ARCore!");
                 break;
+            case ARSessionState.SessionInitializing:
+            case ARSessionState.Installing:
+            case ARSessionState.CheckingAvailability:
+            case ARSessionState.Ready:
+                break;
             default:
                 Notifications.Instance.ShowNotification("Tracking state", sessionState.state.ToString());
                 if (sessionState.state != ARSessionState.SessionTracking) {
