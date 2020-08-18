@@ -11,7 +11,7 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject JointsExpertModeBlock, JointsLiteModeBlock, PositionBlock, JointsBlock;
+    public GameObject PositionBlock, JointsBlock;
 
     [SerializeField]
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
@@ -116,8 +116,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     public void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
-        JointsExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-        JointsLiteModeBlock.SetActive(!GameManager.Instance.ExpertMode);
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
         UpdateMenu();
         SideMenu.Open();
