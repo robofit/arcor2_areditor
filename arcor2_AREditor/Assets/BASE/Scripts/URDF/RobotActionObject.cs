@@ -49,16 +49,11 @@ namespace Base {
         }
 
         private async void OnDisable() {
-            if (RobotModel != null) {
-                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
-            }
             await HideRobotEE();
             if (HasUrdf())
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
-            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
-            
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -421,6 +416,13 @@ namespace Base {
 
         public void SetJointValue(string name, float angle) {
             RobotModel?.SetJointAngle(name, angle);
+        }
+
+        private void OnDestroy() {
+            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
+            if (RobotModel != null) {
+                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+            }
         }
     }
 }
