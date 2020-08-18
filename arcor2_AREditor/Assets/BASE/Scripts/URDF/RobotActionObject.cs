@@ -421,7 +421,9 @@ namespace Base {
         private void OnDestroy() {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
-                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+                if (UrdfManager.Instance != null) {
+                    UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+                }
             }
         }
     }
