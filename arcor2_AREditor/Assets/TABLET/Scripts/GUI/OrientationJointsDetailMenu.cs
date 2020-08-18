@@ -120,6 +120,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public void OnJointsSaveClick() {
         //TODO
+        Notifications.Instance.ShowNotification("Not implemented yet", "");
     }
 
     public async void OnOrientationSaveClick() {
@@ -195,7 +196,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (isOrientationDetail) {
             description += "orientation using robot: " + (string) RobotsList.GetValue() + " and end effector: " + (string) EndEffectorList.GetValue() + "?";
         } else {
-            description += "joints using robot: " + joints.RobotId;
+            description += "joints using robot: " + RobotName.text + "?";
         }
         ConfirmationDialog.Open(title,
                                 description,
@@ -206,22 +207,17 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void Rename() {
         try {
             string name = DetailName.text;
+            
             if (isOrientationDetail) {
-                if (name == orientation.Name)
+                if (name == orientation.Name) {
                     return;
-            } else { //joints
-                if (name == joints.Name)
-                    return;
-            }
-                if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
-                Notifications.Instance.ShowNotification("Failed to rename orientation/joints", "There already exists orientation or joints with name " + name);
-                UpdateMenu();
-                return;
-            }
-            if (isOrientationDetail) {
+                }
                 await WebsocketManager.Instance.RenameActionPointOrientation(orientation.Id, name);
                 Notifications.Instance.ShowNotification("Orientation renamed successfully", "");
             } else {
+                if (name == joints.Name) {
+                    return;
+                }
                 await WebsocketManager.Instance.RenameActionPointJoints(joints.Id, name);
                 Notifications.Instance.ShowNotification("Joints renamed successfully", "");
             }

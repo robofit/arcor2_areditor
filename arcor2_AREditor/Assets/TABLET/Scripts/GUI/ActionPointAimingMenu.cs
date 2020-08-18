@@ -40,7 +40,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private SimpleSideMenu SideMenu;
 
-
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
         ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
@@ -209,8 +208,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         try {
             name = CurrentActionPoint.GetFreeOrientationName();
             await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, new Orientation(), name);
-            UpdateMenu();
-            //todo open detail of the new orientation?
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }

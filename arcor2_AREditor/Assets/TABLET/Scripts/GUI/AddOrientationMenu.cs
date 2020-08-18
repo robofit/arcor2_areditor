@@ -114,11 +114,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name);
             }
-
-            //TODO: after adding this menu to menuManager uncomment line below - should delete old values after creating new orientation
-            //MenuManager.Instance.AddOrientationMenu.Close();
-            Close();
-            //todo open detail of the new orientation
+            Close(); //close add menu
 
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
@@ -144,7 +140,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     }
 
     public void Close() {
-        ActionPointAimingMenu.UpdateMenu();
+        //ActionPointAimingMenu.UpdateMenu();
         SideMenu.Close();
     }
 }
