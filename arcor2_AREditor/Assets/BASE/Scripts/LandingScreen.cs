@@ -6,7 +6,7 @@ using System;
 using Base;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class LandingScreen : MonoBehaviour
+public class LandingScreen : Base.Singleton<LandingScreen>
 {
     public TMPro.TMP_InputField Domain, Port;
     public Toggle KeepConnected;
@@ -54,5 +54,17 @@ public class LandingScreen : MonoBehaviour
 
     public void SaveLogs() {
         Notifications.Instance.SaveLogs();
+    }
+
+    public bool IsActive() {
+        return CanvasGroup.alpha == 1 && CanvasGroup.blocksRaycasts == true;
+    }
+
+    public bool IsInactive() {
+        return CanvasGroup.alpha == 0 && CanvasGroup.blocksRaycasts == false;
+    }
+
+    public void SetKeepMeConnected(bool value) {
+        PlayerPrefsHelper.SaveBool("arserver_keep_connected", value);
     }
 }
