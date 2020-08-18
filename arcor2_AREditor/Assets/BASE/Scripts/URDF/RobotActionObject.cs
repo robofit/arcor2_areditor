@@ -189,6 +189,7 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            outlineOnClick.InitGizmoMaterials();
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
         }
 
@@ -356,6 +357,7 @@ namespace Base {
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
+            outlineOnClick.InitGizmoMaterials();
         }
 
         public override GameObject GetModelCopy() {
