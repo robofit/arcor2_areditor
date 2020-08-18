@@ -69,19 +69,14 @@ namespace Base {
             _ = HideRobotEE();
         }
 
-        protected async override void Update() {
+        protected override void Update() {
             if (manipulationStarted) {
                 if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
                     if (!TransformGizmo.Instance.isTransforming && updatePose) {
                         updatePose = false;
 
                         if (ActionObjectMetadata.HasPose) {
-                            try {
-                                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
-                            } catch (RequestFailedException e) {
-                                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
-                                ResetPosition();
-                            }
+                            UpdatePose();
                         } else {
                             PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
                                 transform.localPosition, transform.localRotation);
@@ -98,6 +93,15 @@ namespace Base {
             }
 
             base.Update();
+        }
+
+        private async void UpdatePose() {
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                ResetPosition();
+            }
         }
 
         public async Task ShowRobotEE() {

@@ -29,16 +29,12 @@ public class ActionPoint3D : Base.ActionPoint {
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 
-    protected override async void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
                 if (!tfGizmo.isTransforming && updatePosition) {
                     updatePosition = false;
-                    try {
-                        await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
-                    } catch (RequestFailedException e) {
-                        Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
-                    }
+                    UpdatePose();
                 }
 
                 if (tfGizmo.isTransforming)
@@ -52,6 +48,15 @@ public class ActionPoint3D : Base.ActionPoint {
             
         //TODO shouldn't this be called first?
         base.Update();
+    }
+
+    private async void UpdatePose() {
+        try {
+            await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
+            ResetPosition();
+        }
     }
 
     private void LateUpdate() {

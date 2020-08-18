@@ -60,7 +60,6 @@ namespace Base {
         public void ResetPosition() {
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
-
         }
 
         public virtual bool SceneInteractable() {

@@ -554,5 +554,12 @@ namespace Base {
         }
 
         public abstract void HighlightAP(bool highlight);
+
+
+        public void ResetPosition() {
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
+        }
+
     }
 }

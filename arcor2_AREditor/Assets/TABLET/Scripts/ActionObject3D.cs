@@ -39,19 +39,14 @@ public class ActionObject3D : ActionObject
     }
 
 
-    protected override async void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
 
                     if (ActionObjectMetadata.HasPose) {
-                        try {
-                            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
-                        } catch (RequestFailedException e) {
-                            Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
-                            ResetPosition();
-                        }
+                        UpdatePose();
                     } else {
                         PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
                             transform.localPosition, transform.localRotation);
@@ -68,6 +63,15 @@ public class ActionObject3D : ActionObject
         }
 
         base.Update();
+    }
+
+    private async void UpdatePose() {
+        try {
+            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+            ResetPosition();
+        }
     }
 
     public override Vector3 GetScenePosition() {
