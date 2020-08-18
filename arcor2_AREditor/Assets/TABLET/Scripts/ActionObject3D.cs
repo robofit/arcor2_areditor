@@ -94,14 +94,6 @@ public class ActionObject3D : ActionObject
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
-    public IO.Swagger.Model.Pose GetPose() {
-        if (ActionObjectMetadata.HasPose)
-            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
-                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
-        else
-            return new IO.Swagger.Model.Pose(new Orientation(), new Position());
-    }
-
     public override void OnClick(Click type) {        
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
@@ -151,7 +143,7 @@ public class ActionObject3D : ActionObject
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
         base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
         Data.Id = id;
         Data.Type = type;

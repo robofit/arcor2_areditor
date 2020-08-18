@@ -7,7 +7,11 @@ public interface IRobot
 
     string GetId();
 
-    List<string> GetEndEffectors();
+    List<string> GetEndEffectorIds();
+
+    RobotEE GetEE(string ee_id);
 
     bool HasUrdf();
+
+    void SetJointValue(string name, float angle);
 }

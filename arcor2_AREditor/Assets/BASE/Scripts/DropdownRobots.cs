@@ -17,7 +17,7 @@ public class DropdownRobots : MonoBehaviour
     public void Init(UnityAction<string> callback, bool withEEOnly) {
         List<string> robotNames = new List<string>();
         foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
-            List<string> endEffectors = robot.GetEndEffectors();
+            List<string> endEffectors = robot.GetEndEffectorIds();
             if (withEEOnly) {
                 if (endEffectors.Count > 0) {
                     robotNames.Add(robot.GetName());

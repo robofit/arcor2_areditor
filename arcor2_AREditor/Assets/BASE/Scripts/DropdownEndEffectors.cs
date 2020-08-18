@@ -18,7 +18,7 @@ public class DropdownEndEffectors : MonoBehaviour {
         try {
             IRobot robot = SceneManager.Instance.GetRobot(robotId);
             Dropdown.Dropdown.dropdownItems.Clear();
-            PutData(robot.GetEndEffectors(), onChangeCallback);
+            PutData(robot.GetEndEffectorIds(), onChangeCallback);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");

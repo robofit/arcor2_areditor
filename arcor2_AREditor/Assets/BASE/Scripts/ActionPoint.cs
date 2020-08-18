@@ -178,9 +178,19 @@ namespace Base {
         }
 
         public NamedOrientation GetFirstOrientation() {
-            if (Data.Orientations.Count == 0)
-                throw new ItemNotFoundException();
-            return Data.Orientations[0];
+            try {
+                if (Data.Orientations.Count == 0) {
+                    if (!string.IsNullOrEmpty(Data.Parent)) {
+                        ActionPoint parent = ProjectManager.Instance.GetActionPoint(Data.Parent);
+                        return parent.GetFirstOrientation();
+                    }
+                } else {
+                    return Data.Orientations[0];
+                }
+            } catch (KeyNotFoundException) {
+                
+            }
+            throw new ItemNotFoundException("No orientation");
         }
 
         public IO.Swagger.Model.Pose GetDefaultPose() {
@@ -191,6 +201,7 @@ namespace Base {
             throw new ItemNotFoundException();            
         }
 
+        //TODO: check if it works
         public IO.Swagger.Model.ProjectRobotJoints GetFirstJoints(string robot_id = null, bool valid_only = false) {
             foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if ((robot_id != null && robot_id != robotJoint.RobotId) ||
@@ -198,6 +209,11 @@ namespace Base {
                     continue;
                 return robotJoint;
             }
+            if (!string.IsNullOrEmpty(Data.Parent)) {
+                ActionPoint parent = ProjectManager.Instance.GetActionPoint(Data.Parent);
+                return parent.GetFirstJoints();
+            }
+
             throw new ItemNotFoundException();    
         }
 

@@ -24,7 +24,7 @@ namespace Base {
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
         }
 
-        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
             visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
         }
         
@@ -209,6 +209,14 @@ namespace Base {
 
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
         public abstract GameObject GetModelCopy();
+
+    public IO.Swagger.Model.Pose GetPose() {
+        if (ActionObjectMetadata.HasPose)
+            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(transform.localPosition)),
+                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(transform.localRotation)));
+        else
+            return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
+    }
 
     }
 
