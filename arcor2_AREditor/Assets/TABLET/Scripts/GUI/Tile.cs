@@ -74,4 +74,8 @@ public class Tile : MonoBehaviour
         }
         Background.color = Color.white;
     }
+    public Button GetOptionButton() {
+        return OptionButton;
+    }
+
 }

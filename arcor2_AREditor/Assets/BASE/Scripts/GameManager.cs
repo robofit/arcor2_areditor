@@ -604,6 +604,9 @@ namespace Base {
 #endif
             VersionInfo.text = Application.version;
             Scene.SetActive(false);
+            if (Application.isEditor || Debug.isDebugBuild) {
+                TrilleonAutomation.AutomationMaster.Initialize();
+            }
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
