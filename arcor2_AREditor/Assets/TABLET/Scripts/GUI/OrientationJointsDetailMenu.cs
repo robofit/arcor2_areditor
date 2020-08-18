@@ -15,6 +15,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public TMPro.TMP_InputField QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
 
+    public Slider SpeedSlider;
+
     [SerializeField]
     private TooltipContent buttonTooltip;
 
@@ -227,13 +229,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereRobot() { //TODO check what speed should be used
+    public async void MoveHereRobot() {
         try {
             string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
             if (isOrientationDetail) {
-                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), 1, orientation.Id);
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
             } else {
-                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, 1, joints.Id);
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
