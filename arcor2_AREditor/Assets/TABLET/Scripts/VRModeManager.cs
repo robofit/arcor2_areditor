@@ -94,9 +94,6 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         ARCameraVis.SetActive(true);
 
-        // Switch camera in Gizmo to VRCamera
-        TFGizmo.myCamera = VRCamera;
-
         ARCamera.enabled = false;
 
         TrackingManager.Instance.ChangePlaneTransparency(false);
@@ -118,9 +115,6 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.tag = "Untagged";
 
         ARCameraVis.SetActive(false);
-
-        // Switch camera in Gizmo back to ARCamera (tablet)
-        TFGizmo.myCamera = ARCamera;
 
         TrackingManager.Instance.ChangePlaneTransparency(true);
 
