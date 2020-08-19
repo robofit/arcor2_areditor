@@ -79,7 +79,53 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
+        WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
+        WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
+        WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
+        WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         SwitchToScenes();
+    }
+
+    private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+        foreach (SceneTile s in sceneTiles) {
+            if (s.SceneId == args.Scene.Id) {
+                s.SetLabel(args.Scene.Name);
+                s.SetTimestamp(args.Scene.Modified.ToString());
+                break;
+            }
+        }
+    }
+
+    private void OnSceneRemoved(object sender, StringEventArgs args) {
+        int i = 0;
+        foreach (SceneTile s in sceneTiles) {
+            if (s.SceneId == args.Data) {
+                sceneTiles.RemoveAt(i);
+                break;
+            }
+            i++;
+        }
+    }
+
+    private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
+        foreach (ProjectTile p in projectTiles) {
+            if (p.ProjectId == args.Project.Id) {
+                p.SetLabel(args.Project.Name);
+                p.SetTimestamp(args.Project.Modified.ToString());
+                break;
+            }
+        }
+    }
+
+    private void OnProjectRemoved(object sender, StringEventArgs args) {
+        int i = 0;
+        foreach (ProjectTile p in projectTiles) {
+            if (p.ProjectId == args.Data) {
+                projectTiles.RemoveAt(i);
+                break;
+            }
+            i++;
+        }
     }
 
     public void SwitchToProjects() {

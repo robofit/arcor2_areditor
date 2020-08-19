@@ -27,12 +27,12 @@ public static class DataHelper {
         orientation = OrientationToQuaternion(pose.Orientation);
     }
 
-    public static IO.Swagger.Model.ProjectActionPoint ActionPointToProjectActionPoint(IO.Swagger.Model.ActionPoint actionPoint) {
-        return new IO.Swagger.Model.ProjectActionPoint(id: actionPoint.Id, robotJoints: actionPoint.RobotJoints, orientations: actionPoint.Orientations,
+    public static IO.Swagger.Model.ActionPoint ActionPointToProjectActionPoint(IO.Swagger.Model.ActionPoint actionPoint) {
+        return new IO.Swagger.Model.ActionPoint(id: actionPoint.Id, robotJoints: actionPoint.RobotJoints, orientations: actionPoint.Orientations,
             position: actionPoint.Position, actions: new List<IO.Swagger.Model.Action>());
     }
 
-    public static IO.Swagger.Model.ActionPoint ProjectActionPointToActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+    public static IO.Swagger.Model.ActionPoint ProjectActionPointToActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
         return new IO.Swagger.Model.ActionPoint(id: projectActionPoint.Id, robotJoints: projectActionPoint.RobotJoints,
             orientations: projectActionPoint.Orientations, position: projectActionPoint.Position);
     }
@@ -43,5 +43,24 @@ public static class DataHelper {
 
     public static IO.Swagger.Model.Parameter ActionParameterToParameter(IO.Swagger.Model.ActionParameter actionParameter) {
         return new IO.Swagger.Model.Parameter(name: actionParameter.Name, type: actionParameter.Type, value: actionParameter.Value);
+    }
+
+    public static IO.Swagger.Model.BareProject ProjectToBareProject(IO.Swagger.Model.Project project) {
+        return new IO.Swagger.Model.BareProject(desc: project.Desc, hasLogic: project.HasLogic, id: project.Id,
+            intModified: project.IntModified, modified: project.Modified, name: project.Name, sceneId: project.SceneId);
+    }
+
+    public static IO.Swagger.Model.BareScene SceneToBareScene(IO.Swagger.Model.Scene scene) {
+        return new IO.Swagger.Model.BareScene(desc: scene.Desc, id: scene.Id, intModified: scene.IntModified,
+            modified: scene.Modified, name: scene.Name);
+    }
+
+    public static IO.Swagger.Model.BareAction ActionToBareAction(IO.Swagger.Model.Action action) {
+        return new IO.Swagger.Model.BareAction(id: action.Id, name: action.Name, type: action.Type);
+    }
+
+    public static IO.Swagger.Model.BareActionPoint ActionPointToBareActionPoint(IO.Swagger.Model.ActionPoint actionPoint) {
+        return new IO.Swagger.Model.BareActionPoint(id: actionPoint.Id, name: actionPoint.Name,
+            parent: actionPoint.Parent, position: actionPoint.Position);
     }
 }

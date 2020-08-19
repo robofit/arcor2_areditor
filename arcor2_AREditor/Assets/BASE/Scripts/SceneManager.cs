@@ -137,31 +137,12 @@ namespace Base {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (SceneMeta != null)
                 return false;
-            SetSceneMeta(scene);
-            
+            SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
             GameManager.Instance.Scene.SetActive(true);
-            bool success = await UpdateScene(scene, customCollisionModels);
-            if (success) {
-                OnLoadScene?.Invoke(this, EventArgs.Empty);
-            }
-           
-            return success;
-        }
-
-        /// <summary>
-        /// Updates scene based on provided json 
-        /// </summary>
-        /// <param name="scene">Description of scene</param>
-        /// <param name="customCollisionModels">Allows to override collision models with different ones. Usable e.g. for
-        /// project running screen.</param>
-        /// <returns>True if scene successfully updated, false otherwise</returns>
-        public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene, CollisionModels customCollisionModels = null) {
-            if (scene.Id != SceneMeta.Id)
-                return false;
-            SetSceneMeta(scene);
             await UpdateActionObjects(scene, customCollisionModels);
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -179,7 +160,7 @@ namespace Base {
         /// Sets scene metadata
         /// </summary>
         /// <param name="scene">Scene metadata</param>
-        public void SetSceneMeta(Scene scene) {
+        public void SetSceneMeta(BareScene scene) {
             if (SceneMeta == null) {
                 SceneMeta = new Scene(id: "", name: "");
             }
@@ -234,6 +215,14 @@ namespace Base {
             OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
+            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+        }
+
+        private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                SetSceneMeta(args.Scene);
+                sceneChanged = true;
+            }
         }
 
         /// <summary>
@@ -356,14 +345,7 @@ namespace Base {
             CurrentlySelectedObject = obj;
         }
 
-        /// <summary>
-        /// Updates scene metadata
-        /// </summary>
-        /// <param name="scene"></param>
-        public void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
-            SetSceneMeta(scene);
-        }
-
+      
         /// <summary>
         /// Computes point above selected transform which is collision free
         /// </summary>

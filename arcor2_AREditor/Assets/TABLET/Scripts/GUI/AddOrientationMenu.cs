@@ -144,7 +144,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     }
 
     public void Close() {
-        ActionPointAimingMenu.UpdateMenu();
         SideMenu.Close();
     }
 }

@@ -24,9 +24,11 @@ public class SceneTile : Tile
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
-        this.timestamp.text = "Last modified: " + timestamp;
+        SetTimestamp(timestamp);
     }
 
-
+    public void SetTimestamp(string timestamp) {
+        this.timestamp.text = "Last modified: " + timestamp;
+    }
 
 }

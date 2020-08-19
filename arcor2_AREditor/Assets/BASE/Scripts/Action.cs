@@ -54,7 +54,7 @@ namespace Base {
 
         }
 
-        public virtual void ActionUpdateBaseData(IO.Swagger.Model.Action action) {
+        public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {
             Data.Name = action.Name;
         }
 

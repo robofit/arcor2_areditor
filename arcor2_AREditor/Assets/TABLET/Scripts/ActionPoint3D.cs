@@ -156,7 +156,7 @@ public class ActionPoint3D : Base.ActionPoint {
         Visual.transform.localScale = new Vector3(size / 10, size / 10, size / 10);
     }
 
-    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
         UpdateOrientationsVisuals();
         ActionPointName.text = projectActionPoint.Name;
@@ -211,12 +211,12 @@ public class ActionPoint3D : Base.ActionPoint {
         Lock.SetActive(false);
     }
 
-    public override void ActionPointBaseUpdate(ProjectActionPoint apData) {
+    public override void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
         base.ActionPointBaseUpdate(apData);
         ActionPointName.text = apData.Name;
     }
 
-    public override void InitAP(ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+    public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
         ActionPointName.text = apData.Name;
     }

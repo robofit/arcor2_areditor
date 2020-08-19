@@ -619,6 +619,60 @@ namespace Base {
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
             WebsocketManager.Instance.OnShowMainScreen += OnShowMainScreen;
+            WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
+            WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
+            WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
+            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+        }
+
+
+        private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+            foreach (ListScenesResponseData s in Scenes) {
+                if (s.Id == args.Scene.Id) {
+                    s.Name = args.Scene.Name;
+                    s.Modified = args.Scene.Modified;
+                    break;
+                }
+            }
+        }
+
+
+        private void OnSceneRemoved(object sender, StringEventArgs args) {
+            int i = 0;
+            foreach (ListScenesResponseData s in Scenes) {
+                if (s.Id == args.Data) {
+                    Scenes.RemoveAt(i);
+                    break;
+                }
+                i++;
+            }
+        }
+
+
+        private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
+            foreach (ListProjectsResponseData p in Projects) {
+                if (p.Id == args.Project.Id) {
+                    p.Name = args.Project.Name;
+                    p.Modified = args.Project.Modified;
+                    break;
+                }
+            }            
+        }
+
+        /// <summary>
+        /// Invoked when project removed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args">ID of removed object</param>
+        private void OnProjectRemoved(object sender, StringEventArgs args) {
+            int i = 0;
+            foreach (ListProjectsResponseData p in Projects) {
+                if (p.Id == args.Data) {
+                    Projects.RemoveAt(i);
+                    break;
+                }
+                i++;
+            }
         }
 
         /// <summary>
@@ -820,26 +874,7 @@ namespace Base {
             }
             return true;
         }
-        
-        /// <summary>
-        /// Callback called when new scene were added to server
-        /// </summary>
-        /// <param name="scene"></param>
-        public void SceneAdded(IO.Swagger.Model.Scene scene) {
-            newScene = scene;
-        }
-
-        /// <summary>
-        /// Callback called when base parameters of scene (e.g. name) were updated
-        /// </summary>
-        /// <param name="scene"></param>
-        public async void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
-            if (GetGameState() == GameStateEnum.SceneEditor)
-                SceneManager.Instance.SceneBaseUpdated(scene);
-            else if (GetGameState() == GameStateEnum.MainScreen) {
-                await LoadScenes();
-            }
-        }
+     
 
         /// <summary>
         /// When package runs failed with exception, show notification to the user
