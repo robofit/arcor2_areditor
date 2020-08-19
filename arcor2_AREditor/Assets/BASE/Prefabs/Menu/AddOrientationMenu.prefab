@@ -4116,7 +4116,6 @@ MonoBehaviour:
   ManualMode: 0
   CreateNewOrientation: {fileID: 7955093464306176934}
   buttonTooltip: {fileID: 6062355686441412488}
-  ActionPointAimingMenu: {fileID: 0}
 --- !u!1 &7436771955654227175
 GameObject:
   m_ObjectHideFlags: 0
@@ -5501,7 +5500,7 @@ PrefabInstance:
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_text
-      value: EE
+      value: 'End effector:'
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -5865,6 +5864,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2808082789373740745, guid: 1c82e97bdfcacad4f9f0d9b0b08551fc,
         type: 3}
+    - target: {fileID: 3411131406489837117, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4262211557337494196, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -5956,7 +5960,7 @@ PrefabInstance:
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
       propertyPath: m_text
-      value: Robot
+      value: 'Robot:'
       objectReference: {fileID: 0}
     - target: {fileID: 489656689204621717, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
@@ -6313,6 +6317,11 @@ PrefabInstance:
         type: 3}
       propertyPath: CanvasRoot
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3411131406489837117, guid: 19da6447a37ef7f429a554a2fd22d345,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4262211557337494196, guid: 19da6447a37ef7f429a554a2fd22d345,
         type: 3}
