@@ -22,9 +22,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
-    [SerializeField]
-    private ActionPointAimingMenu ActionPointAimingMenu;
-
     private SimpleSideMenu SideMenu;
 
     private void Start() {
@@ -140,7 +137,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     }
 
     public void Close() {
-        //ActionPointAimingMenu.UpdateMenu();
         SideMenu.Close();
     }
 }

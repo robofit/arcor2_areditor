@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Base;
 using Boo.Lang;
@@ -43,9 +44,22 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
         ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
+        ProjectManager.Instance.OnActionPointOrientationAdded += OnOrientationAdded;
+        ProjectManager.Instance.OnActionPointJointsAdded += OnJointsAdded;
     }
 
-    
+    private void OnJointsAdded(object sender, ActionPointJointsAddedEventArgs args) {
+        if (CurrentActionPoint != null && CurrentActionPoint.GetId() == args.ActionPointID) {
+            AddToJointsDynamicList(args.Joints);
+        }
+    }
+
+    private void OnOrientationAdded(object sender, ActionPointOrientationAddedEventArgs args) {
+        if (CurrentActionPoint != null && CurrentActionPoint.GetId() == args.ActionPointID) {
+            AddToOrientationsDynamicList(args.Orientation);
+        }
+    }
+
     private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
         if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.Data)) {
             UpdateMenu();
@@ -133,11 +147,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
 
         foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
-            ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, OrientationsDynamicList.transform).GetComponent<ActionButton>();
-            btn.transform.localScale = new Vector3(1, 1, 1);
-            btn.SetLabel(orientation.Name);
-
-            btn.Button.onClick.AddListener(() => OpenDetailMenu(orientation));
+            InstantiateActionButton(orientation);
         }
         if (CurrentActionPoint.GetNamedOrientations().Any()) {
             OrientationsListLabel.text = "List of orientations:";
@@ -145,7 +155,43 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             OrientationsListLabel.text = "There is no orientation yet.";
         }
     }
+    /// <summary>
+    /// Adds and highlights new orientation button in dynamic list of orientations
+    /// </summary>
+    /// <param name="orientation">New orientation to add</param>
+    private void AddToOrientationsDynamicList(NamedOrientation orientation) {
+        ActionButton button = InstantiateActionButton(orientation);
+        button.GetComponent<ActionButton>().Highlight(2f);
+        OrientationsListLabel.text = "List of orientations:";
+    }
 
+    /// <summary>
+    /// Instantiates button representing orientation in OrientationDynamicList
+    /// </summary>
+    /// <param name="orientation">Orientation to be represented by the button</param>
+    /// <returns></returns>
+    private ActionButton InstantiateActionButton(NamedOrientation orientation) {
+        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, OrientationsDynamicList.transform).GetComponent<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(orientation.Name);
+
+        btn.Button.onClick.AddListener(() => OpenDetailMenu(orientation));
+        return btn;
+    }
+
+    /// <summary>
+    /// Instantiates button representing joints in JointsDynamicList
+    /// </summary>
+    /// <param name="joints">Joints to be represented by the button</param>
+    /// <returns></returns>
+    private ActionButton InstantiateActionButton(ProjectRobotJoints joints) {
+        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(joints.Name);
+
+        btn.Button.onClick.AddListener(() => OpenDetailMenu(joints));
+        return btn;
+    }
 
     public void UpdateJointsDynamicList(string robotName) {
         if (robotName == null)
@@ -162,11 +208,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
             System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
-                ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
-                btn.transform.localScale = new Vector3(1, 1, 1);
-                btn.SetLabel(joint.Name);
-
-                btn.Button.onClick.AddListener(() => OpenDetailMenu(joint));
+                InstantiateActionButton(joint);
             }
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
@@ -174,6 +216,17 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             return;
         }
     }
+
+    /// <summary>
+    /// Adds and highlights new joints button in dynamic list of joints
+    /// </summary>
+    /// <param name="joints">New joints to add</param>
+    private void AddToJointsDynamicList(ProjectRobotJoints joints) {
+        ActionButton button = InstantiateActionButton(joints);
+        button.GetComponent<ActionButton>().Highlight(2f);
+        Notifications.Instance.ShowNotification("method addtojountsdynamiclist called", "");
+    }
+
 
     private void OpenDetailMenu(ProjectRobotJoints joint) {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, joint);

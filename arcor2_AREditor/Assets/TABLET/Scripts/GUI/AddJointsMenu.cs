@@ -21,9 +21,6 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
-    [SerializeField]
-    private ActionPointAimingMenu ActionPointAimingMenu;
-
     private SimpleSideMenu SideMenu;
 
     private bool ManualMode; //true for manual, false for using robot
@@ -128,7 +125,6 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     }
 
     public void Close() {
-        ActionPointAimingMenu.UpdateMenu();
         SideMenu.Close();
     }
 }

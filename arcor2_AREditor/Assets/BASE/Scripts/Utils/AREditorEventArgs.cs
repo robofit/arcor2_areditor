@@ -1,4 +1,5 @@
 using System;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -97,6 +98,35 @@ namespace Base {
         }
     }
 
+    public class ActionPointOrientationAddedEventArgs : EventArgs {
+        public string ActionPointID {
+            get; set;
+        }
+
+        public NamedOrientation Orientation {
+            get; set;
+        }
+
+        public ActionPointOrientationAddedEventArgs(string actionPointID, NamedOrientation orientation) {
+            ActionPointID = actionPointID;
+            Orientation = orientation;
+        }
+    }
+
+    public class ActionPointJointsAddedEventArgs : EventArgs {
+        public string ActionPointID {
+            get; set;
+        }
+
+        public ProjectRobotJoints Joints {
+            get; set;
+        }
+        public ActionPointJointsAddedEventArgs(string actionPointID, ProjectRobotJoints joints) {
+            ActionPointID = actionPointID;
+            Joints = joints;
+        }
+    }
+
     public class RobotUrdfModelArgs : EventArgs {
 
         public string RobotType {
@@ -120,6 +150,8 @@ namespace Base {
         public delegate void LogicItemChangedEventHandler(object sender, LogicItemChangedEventArgs args);
         public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
         public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
+        public delegate void ActionPointOrientationAddedEventHandler(object sender, ActionPointOrientationAddedEventArgs args);
+        public delegate void ActionPointJointsAddedEventHandler(object sender, ActionPointJointsAddedEventArgs args);
         public delegate void RobotUrdfModelEventHandler(object sender, RobotUrdfModelArgs args);
     }
 }

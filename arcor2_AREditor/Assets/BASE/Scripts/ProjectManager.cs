@@ -87,7 +87,15 @@ namespace Base {
         /// <summary>
         /// Invoked when some of the action point weas updated. Contains action point description
         /// </summary>
-        public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated; 
+        public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated;
+        /// <summary>
+        /// Invoked when a new action point orientation is added. Contains action point ID and NamedOrientation description.
+        /// </summary>
+        public event AREditorEventArgs.ActionPointOrientationAddedEventHandler OnActionPointOrientationAdded;
+        /// <summary>
+        /// Invoked when a new action point joints are added. Contains action point ID and ProjectRobotJoints description.
+        /// </summary>
+        public event AREditorEventArgs.ActionPointJointsAddedEventHandler OnActionPointJointsAdded;
         /// <summary>
         /// Invoked when project loaded
         /// </summary>
@@ -1035,7 +1043,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointIt);
                 actionPoint.AddOrientation(orientation);
-                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
+                OnActionPointOrientationAdded?.Invoke(this, new ActionPointOrientationAddedEventArgs(actionPointIt, orientation));
                 ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -1104,7 +1112,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(actionPointId);
                 actionPoint.AddJoints(joints);
-                OnActionPointUpdated?.Invoke(this, new ActionPointUpdatedEventArgs(actionPoint));
+                OnActionPointJointsAdded?.Invoke(this, new ActionPointJointsAddedEventArgs(actionPointId, joints));
                 ProjectChanged = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
