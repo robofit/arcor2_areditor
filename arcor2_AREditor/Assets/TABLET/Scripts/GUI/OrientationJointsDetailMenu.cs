@@ -13,7 +13,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
 
-    public TMPro.TMP_InputField QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
+    //public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input (editing orientation)
+    public OrientationManualEdit OrientationManualEdit;
 
     public Slider SpeedSlider;
 
@@ -76,13 +77,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 UpdateButton.interactable = false;
             }
 
-
+            OrientationManualEdit.SetOrientation(orientation.Orientation);
+            /*
             NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
-            QuaternionX.text = orientation.Orientation.X.ToString(numberFormatInfo);
-            QuaternionY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
-            QuaternionZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
-            QuaternionW.text = orientation.Orientation.W.ToString(numberFormatInfo);
+            InputX.text = orientation.Orientation.X.ToString(numberFormatInfo);
+            InputY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
+            InputZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
+            InputW.text = orientation.Orientation.W.ToString(numberFormatInfo);
+            */
         } else { //joints
             DetailName.text = joints.Name;
             UpdateJointsList();
@@ -127,11 +130,14 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public async void OnOrientationSaveClick() {
         try {
-            decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            /*
+            decimal x = decimal.Parse(InputX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal y = decimal.Parse(InputY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal z = decimal.Parse(InputZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal w = decimal.Parse(InputW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
             await WebsocketManager.Instance.UpdateActionPointOrientation(new Orientation(w, x, y, z), orientation.Id);
+            */
+            await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
             Notifications.Instance.ShowNotification("Orientation updated", "");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to update orientation", ex.Message);
@@ -173,7 +179,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
             ConfirmationDialog.Close();
             Close();
-            //MenuManager.Instance.HideMenu(MenuManager.Instance.OrientationJointsDetailMenu);
 
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed delete orientation/joints", e.Message);

@@ -2,7 +2,9 @@ using System;
 using System.Globalization;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
+using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,11 +12,12 @@ using UnityEngine.UI;
 public class AddOrientationMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public TMPro.TMP_InputField NameInput, QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
+    public TMPro.TMP_InputField NameInput;// QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
     public DropdownParameter RobotsList, EndEffectorList;
     public GameObject LiteModeBlock, ManualModeBlock;
     public bool ManualMode;
 
+    public OrientationManualEdit OrientationManualEdit;
 
     [SerializeField]
     private Button CreateNewOrientation;
@@ -75,10 +78,14 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
         if (ManualMode) {
             if (interactable) {
-                if (string.IsNullOrEmpty(QuaternionX.text) || string.IsNullOrEmpty(QuaternionY.text) || string.IsNullOrEmpty(QuaternionZ.text) || string.IsNullOrEmpty(QuaternionW.text)) {
+                buttonTooltip.description = OrientationManualEdit.ValidateFields();
+                if (!string.IsNullOrEmpty(buttonTooltip.description)) {
+                    interactable = false;
+                }
+                /*if (string.IsNullOrEmpty(QuaternionX.text) || string.IsNullOrEmpty(QuaternionY.text) || string.IsNullOrEmpty(QuaternionZ.text) || string.IsNullOrEmpty(QuaternionW.text)) {
                     interactable = false;
                     buttonTooltip.description = "All quaternion values are required";
-                }
+                }*/
             }
         }
         else {
@@ -96,15 +103,19 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     public async void AddOrientation() {
         Debug.Assert(CurrentActionPoint != null);
 
+
         string name = NameInput.text;
         try {
 
             if (ManualMode) {
+                /*
                 decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
                 decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
                 decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
                 decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
                 IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation(w, x, y, z);
+                */
+                Orientation orientation = OrientationManualEdit.GetOrientation();
                 await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
             } else { //using robot
 
@@ -128,10 +139,13 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         LiteModeBlock.SetActive(!ManualMode);
 
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
+        /*
         QuaternionX.text = "0";
         QuaternionY.text = "0";
         QuaternionZ.text = "0";
         QuaternionW.text = "1";
+        */
+        OrientationManualEdit.SetOrientation(new Orientation());
         UpdateMenu();
         SideMenu.Open();
     }
