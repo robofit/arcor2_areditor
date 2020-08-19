@@ -129,16 +129,18 @@ public class RobotModel {
     }
 
     /// <summary>
-    /// Sets angle of joint in given linkName.
+    /// Sets angle of the joint. Uses radians by default, if degrees are passed in, angle_in_degrees needs to be set to true.
     /// </summary>
-    /// <param name="jointName"></param>
-    /// <param name="angle"></param>
-    public void SetJointAngle(string jointName, float angle) {
+    /// <param name="jointName">Name of the joint.</param>
+    /// <param name="angle">Angle in radians (by default) or degrees.</param>
+    /// <param name="angle_in_degrees">Needs to be true, if angle is set in degrees.</param>
+    public void SetJointAngle(string jointName, float angle, bool angle_in_degrees = false) {
         if (robotLoaded) {
             Joints.TryGetValue(jointName, out string linkName);
             Links.TryGetValue(linkName, out RobotLink link);
-            //Debug.Log(jointName + " ..angle in deg: " + angle + " ..angle in rad: " + angle * Mathf.Deg2Rad);
-            angle *= Mathf.Deg2Rad;
+            if (angle_in_degrees) {
+                angle *= Mathf.Deg2Rad;
+            }
             link?.SetJointAngle(angle);
         }
     }
