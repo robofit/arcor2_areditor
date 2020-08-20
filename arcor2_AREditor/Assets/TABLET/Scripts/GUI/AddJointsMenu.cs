@@ -26,7 +26,7 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
     private SimpleSideMenu SideMenu;
 
-    private bool ManualMode;
+    private bool ManualMode; //true for manual, false for using robot
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
@@ -112,10 +112,17 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         
     }
 
+    /// <summary>
+    /// Opens menu for adding joints
+    /// </summary>
+    /// <param name="actionPoint"></param>
+    /// <param name="manual">true for manual mode, false for using robot</param>
     public void ShowMenu(Base.ActionPoint actionPoint, bool manual) {
         ManualMode = manual;
         CurrentActionPoint = actionPoint;
         ExpertModeBlock.SetActive(ManualMode);
+        NameInput.text = CurrentActionPoint.GetFreeOrientationName();
+
         UpdateMenu();
         SideMenu.Open();
     }

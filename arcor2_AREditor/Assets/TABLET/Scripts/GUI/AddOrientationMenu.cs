@@ -133,12 +133,17 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
         ManualModeBlock.SetActive(ManualMode);
         LiteModeBlock.SetActive(!ManualMode);
+
+        NameInput.text = CurrentActionPoint.GetFreeOrientationName();
+        QuaternionX.text = "0";
+        QuaternionY.text = "0";
+        QuaternionZ.text = "0";
+        QuaternionW.text = "1";
         UpdateMenu();
         SideMenu.Open();
     }
 
     public void Close() {
-        ActionPointAimingMenu.UpdateMenu();
         SideMenu.Close();
     }
 }

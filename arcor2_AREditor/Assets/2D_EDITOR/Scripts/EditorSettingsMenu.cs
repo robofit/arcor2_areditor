@@ -26,13 +26,50 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
-        Base.ProjectManager.Instance.OnActionPointsChanged += OnActionPointsChanged;
+        Base.ProjectManager.Instance.OnActionPointAddedToScene += OnActionPointAdded;
+        Base.WebsocketManager.Instance.OnActionPointRemoved += OnActionPointRemoved;
+        Base.WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
         Interactibility.SetValue(false);
     }
 
+    private void OnActionPointRemoved(object sender, StringEventArgs args) {
+        try {
+            ActionButton btn = GetActionPointBtn(args.Data);
+            Destroy(btn.gameObject);
+        } catch (ItemNotFoundException) {
+
+        }
+    }
+
+    private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
+        try {
+            ActionButton btn = GetActionPointBtn(args.ActionPoint.Id);
+            btn.SetLabel(args.ActionPoint.Name);
+        } catch (ItemNotFoundException) {
+            Debug.LogError("Action point button " + args.ActionPoint.Name + " does not exists");
+        }
+    }
+
+
+    private void OnActionPointAdded(object sender, ActionPointEventArgs args) {
+        AddActionPointButton(args.ActionPoint);
+    }
+
     private void GameStateChanged(object sender, GameStateEventArgs args) {
         ActionPointsScrollable.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor);
+        if (args.Data == GameManager.GameStateEnum.MainScreen || args.Data == GameManager.GameStateEnum.Disconnected ||
+            args.Data == GameManager.GameStateEnum.PackageRunning)
+            ClearMenu();
+    }
+
+    private ActionButton GetActionPointBtn(string id) {
+        foreach (Transform t in ActionPointsList.transform) {
+            ActionButton apBtn = t.GetComponent<ActionButton>();
+            if (apBtn.ObjectId == id)
+                return apBtn;
+        }
+        throw new ItemNotFoundException("Button with id " + id + " does not exists");
     }
 
     public void UpdateMenu() {
@@ -75,8 +112,15 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         SceneManager.Instance.HideRobotsEE();
     }
 
+    public void SwitchOnExpertMode() {
+        GameManager.Instance.ExpertMode = true;
+    }
+
+    public void SwitchOffExpertMode() {
+        GameManager.Instance.ExpertMode = false;
+    }
+
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
-        
     }
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
@@ -109,34 +153,34 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void OnActionPointsChanged(object sender, EventArgs eventArgs) {
+    public void ClearMenu() {
         foreach (Transform t in ActionPointsList.transform) {
             Destroy(t.gameObject);
         }
-        foreach (Base.ActionPoint actionPoint in Base.ProjectManager.Instance.GetAllGlobalActionPoints()) {
-            GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform);
-            btnGO.transform.localScale = new Vector3(1, 1, 1);
-            Button btn = btnGO.GetComponent<Button>();
-            btn.GetComponentInChildren<TMPro.TMP_Text>().text = actionPoint.Data.Name;
-            btn.onClick.AddListener(() => ShowActionPoint(actionPoint));
+    }
 
-            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AP when hovering over button
-            OutlineOnClick APoutline = actionPoint.GetComponent<OutlineOnClick>();
-            EventTrigger eventTrigger = btnGO.AddComponent<EventTrigger>();
-            // Create OnPointerEnter entry
-            EventTrigger.Entry OnPointerEnter = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerEnter
-            };
-            OnPointerEnter.callback.AddListener((eventData) => APoutline.Highlight());
-            eventTrigger.triggers.Add(OnPointerEnter);
+    private void AddActionPointButton(Base.ActionPoint actionPoint) {
+        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform).GetComponent<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(actionPoint.Data.Name);
+        btn.Button.onClick.AddListener(() => ShowActionPoint(actionPoint));
+        btn.ObjectId = actionPoint.Data.Id;
+        // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AP when hovering over button
+        OutlineOnClick APoutline = actionPoint.GetComponent<OutlineOnClick>();
+        EventTrigger eventTrigger = btn.gameObject.AddComponent<EventTrigger>();
+        // Create OnPointerEnter entry
+        EventTrigger.Entry OnPointerEnter = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerEnter
+        };
+        OnPointerEnter.callback.AddListener((eventData) => APoutline.Highlight());
+        eventTrigger.triggers.Add(OnPointerEnter);
 
-            // Create OnPointerExit entry
-            EventTrigger.Entry OnPointerExit = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerExit
-            };
-            OnPointerExit.callback.AddListener((eventData) => APoutline.UnHighlight());
-            eventTrigger.triggers.Add(OnPointerExit);
-        }
+        // Create OnPointerExit entry
+        EventTrigger.Entry OnPointerExit = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerExit
+        };
+        OnPointerExit.callback.AddListener((eventData) => APoutline.UnHighlight());
+        eventTrigger.triggers.Add(OnPointerExit);
     }
 
     private void ShowActionPoint(ActionPoint actionPoint) {

@@ -51,7 +51,7 @@ public class Action3D : Base.Action {
         NameText.text = newName;
     }
 
-    public override void ActionUpdateBaseData(IO.Swagger.Model.Action aData = null) {
+    public override void ActionUpdateBaseData(IO.Swagger.Model.BareAction aData = null) {
         base.ActionUpdateBaseData(aData);
         NameText.text = aData.Name;
     }

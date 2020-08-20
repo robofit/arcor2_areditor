@@ -47,6 +47,83 @@ namespace Base {
         }
     }
 
+    public class BareProjectEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.BareProject Project {
+            get; set;
+        }
+
+        public BareProjectEventArgs(IO.Swagger.Model.BareProject project) {
+            Project = project;
+        }
+    }
+
+     public class BareSceneEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.BareScene Scene {
+            get; set;
+        }
+
+        public BareSceneEventArgs(IO.Swagger.Model.BareScene scene) {
+            Scene = scene;
+        }
+    }
+
+    public class BareActionEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.BareAction Action {
+            get; set;
+        }
+
+        public BareActionEventArgs(IO.Swagger.Model.BareAction action) {
+            Action = action;
+        }
+    }
+
+    public class ActionEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.Action Action {
+            get; set;
+        }
+
+        public ActionEventArgs(IO.Swagger.Model.Action action) {
+            Action = action;
+        }
+    }
+
+    public class BareActionPointEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.BareActionPoint ActionPoint {
+            get; set;
+        }
+
+        public BareActionPointEventArgs(IO.Swagger.Model.BareActionPoint actionPoint) {
+            ActionPoint = actionPoint;
+        }
+    }
+
+    public class ProjectActionPointEventArgs : EventArgs {
+        
+        public IO.Swagger.Model.ActionPoint ActionPoint {
+            get; set;
+        }
+
+        public ProjectActionPointEventArgs(IO.Swagger.Model.ActionPoint actionPoint) {
+            ActionPoint = actionPoint;
+        }
+    }
+
+    public class ActionPointEventArgs : EventArgs {
+        
+        public ActionPoint ActionPoint {
+            get; set;
+        }
+
+        public ActionPointEventArgs(ActionPoint actionPoint) {
+            ActionPoint = actionPoint;
+        }
+    }
+
     public class RobotEefUpdatedEventArgs : EventArgs {
         public IO.Swagger.Model.RobotEefData Data {
             get; set;
@@ -87,13 +164,33 @@ namespace Base {
         }
     }
 
-    public class ActionPointUpdatedEventArgs : EventArgs {
-        public ActionPoint Data {
+
+    public class ActionPointOrientationEventArgs : EventArgs {
+        public IO.Swagger.Model.NamedOrientation Data {
             get; set;
         }
 
-        public ActionPointUpdatedEventArgs(ActionPoint data) {
+        public string ActionPointId {
+            get; set;
+        }
+
+        public ActionPointOrientationEventArgs(IO.Swagger.Model.NamedOrientation data, string actionPointId) {
             Data = data;
+            ActionPointId = actionPointId;
+        }
+    }
+
+    public class RobotJointsEventArgs : EventArgs {
+        public IO.Swagger.Model.ProjectRobotJoints Data {
+            get; set;
+        }
+        public string ActionPointId {
+            get; set;
+        }
+
+        public RobotJointsEventArgs(IO.Swagger.Model.ProjectRobotJoints data, string actionPointId) {
+            Data = data;
+            ActionPointId = actionPointId;
         }
     }
 
@@ -115,11 +212,19 @@ namespace Base {
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
         public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
         public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
+        public delegate void BareProjectEventHandler(object sender, BareProjectEventArgs args);
+        public delegate void BareSceneEventHandler(object sender, BareSceneEventArgs args);
+        public delegate void BareActionEventHandler(object sender, BareActionEventArgs args);
+        public delegate void BareActionPointEventHandler(object sender, BareActionPointEventArgs args);
+        public delegate void ActionEventHandler(object sender, ActionEventArgs args);
+        public delegate void ProjectActionPointEventHandler(object sender, ProjectActionPointEventArgs args);
+        public delegate void ActionPointEventHandler(object sender, ActionPointEventArgs args);
+        public delegate void ActionPointOrientationEventHandler(object sender, ActionPointOrientationEventArgs args);
+        public delegate void RobotJointsEventHandler(object sender, RobotJointsEventArgs args);
         public delegate void RobotEefUpdatedEventHandler(object sender, RobotEefUpdatedEventArgs args);
         public delegate void RobotJointsUpdatedEventHandler(object sender, RobotJointsUpdatedEventArgs args);
         public delegate void LogicItemChangedEventHandler(object sender, LogicItemChangedEventArgs args);
         public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
-        public delegate void ActionPointUpdatedEventHandler(object sender, ActionPointUpdatedEventArgs args);
         public delegate void RobotUrdfModelEventHandler(object sender, RobotUrdfModelArgs args);
     }
 }

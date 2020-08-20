@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
     public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu,
-        ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu;
+        ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu,
+        AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
     
@@ -25,7 +26,10 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open;
+            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
+            AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open ||
+            AddJointsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open;
     }
 
     public void ShowMenu(SimpleSideMenu menu) {
@@ -52,6 +56,15 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointAimingMenu.Close();
         }
+        if (AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open) {
+            AddOrientationMenu.Close();
+        }
+        if (AddJointsMenu.CurrentState == SimpleSideMenu.State.Open) {
+            AddJointsMenu.Close();
+        }
+        if (OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open) {
+            OrientationJointsDetailMenu.Close();
+        }
     }
 
     public void DisableAllMenus() {
@@ -61,6 +74,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         PuckMenu.gameObject.SetActive(false);
         ActionObjectMenuProjectEditor.gameObject.SetActive(false);
         ActionPointAimingMenu.gameObject.SetActive(false);
+        AddOrientationMenu.gameObject.SetActive(false);
+        AddJointsMenu.gameObject.SetActive(false);
+        OrientationJointsDetailMenu.gameObject.SetActive(false);
     }
 
     public void EnableAllWindows() {
@@ -70,6 +86,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         PuckMenu.gameObject.SetActive(true);
         ActionObjectMenuProjectEditor.gameObject.SetActive(true);
         ActionPointAimingMenu.gameObject.SetActive(true);
+        AddOrientationMenu.gameObject.SetActive(true);
+        AddJointsMenu.gameObject.SetActive(true);
+        OrientationJointsDetailMenu.gameObject.SetActive(true);
     }
 
     public void HideMenu(SimpleSideMenu menu) {
