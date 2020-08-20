@@ -17,12 +17,11 @@ public class TrackingManager : Singleton<TrackingManager> {
     public Material PlaneTransparentMaterial;
     public Material PlaneOpaqueMaterial;
 
-    private bool planesAndFeaturesActive = true;
+    private bool planesAndPointCloudsActive = true;
+    private bool planesTransparent = true;
 
     private Coroutine trackingFailureNotify;
-
-    //private float counter = 5f;
-
+    
     public enum TrackingQuality {
         NOT_TRACKING = 0,
         POOR_QUALITY = 1,
@@ -46,23 +45,13 @@ public class TrackingManager : Singleton<TrackingManager> {
     }
 
     private void OnPointCloudChanged(ARPointCloudChangedEventArgs obj) {
-        DisplayPlanesAndFeatures(planesAndFeaturesActive);
+        DisplayPointClouds(planesAndPointCloudsActive, obj.added);
     }
 
     private void OnPlanesChanged(ARPlanesChangedEventArgs obj) {
-        DisplayPlanesAndFeatures(planesAndFeaturesActive);
+        DisplayPlanes(planesAndPointCloudsActive, obj.added);
     }
-
-    //private void Update() {
-
-    //    counter -= Time.deltaTime;
-
-    //    if (counter <= 0f) {
-    //        GetTrackingQuality();
-    //        counter = 5f;
-    //    }
-    //}
-
+    
     private void StartTrackingNotifications(object sender, EventArgs e) {
         ARSession.stateChanged += ARSessionStateChanged;
         //Notifications.Instance.ShowNotification("Tracking state", ARSession.state.ToString());
@@ -86,6 +75,11 @@ public class TrackingManager : Singleton<TrackingManager> {
         switch (sessionState.state) {
             case ARSessionState.Unsupported:
                 Notifications.Instance.ShowNotification("Tracking not supported", "This device does not support ARCore!");
+                break;
+            case ARSessionState.SessionInitializing:
+            case ARSessionState.Installing:
+            case ARSessionState.CheckingAvailability:
+            case ARSessionState.Ready:
                 break;
             default:
                 Notifications.Instance.ShowNotification("Tracking state", sessionState.state.ToString());
@@ -157,31 +151,55 @@ public class TrackingManager : Singleton<TrackingManager> {
         return TrackingQuality.POOR_QUALITY;
     }
 
-    public void DisplayPlanesAndFeatures(bool active) {
+    public void DisplayPlanesAndPointClouds(bool active) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        planesAndFeaturesActive = active;
+        planesAndPointCloudsActive = active;
+        DisplayPlanes(active);
+        DisplayPointClouds(active);
+#endif
+    }
 
+    public void DisplayPlanes(bool active) {
         foreach (ARPlane plane in ARPlaneManager.trackables) {
             plane.gameObject.SetActive(active);
         }
+    }
 
+    public void DisplayPlanes(bool active, List<ARPlane> addedPlanes) {
+        foreach (ARPlane plane in addedPlanes) {
+            plane.gameObject.SetActive(active);
+            // for newly added planes, we have to set their transparency based on if in VR or AR
+            ChangePlaneTransparency(planesTransparent, plane.GetComponent<Renderer>());
+        }
+    }
+
+    public void DisplayPointClouds(bool active) {
         foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
             pointCloud.gameObject.SetActive(active);
         }
-#endif
+    }
+
+    public void DisplayPointClouds(bool active, List<ARPointCloud> addedPointClouds) {
+        foreach (ARPointCloud pointCloud in addedPointClouds) {
+            pointCloud.gameObject.SetActive(active);
+        }
     }
 
     public void ChangePlaneTransparency(bool transparent) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        planesTransparent = transparent;
         foreach (ARPlane plane in ARPlaneManager.trackables) {
-            Renderer ren = plane.GetComponent<Renderer>();
-            if (transparent) {
-                ren.sharedMaterials = new Material[1] { PlaneTransparentMaterial };
-            } else {
-                ren.sharedMaterials = new Material[1] { PlaneOpaqueMaterial };
-            }
+            ChangePlaneTransparency(transparent, plane.GetComponent<Renderer>());
         }
 #endif
+    }
+
+    private void ChangePlaneTransparency(bool transparent, Renderer planeRenderer) {
+        if (transparent) {
+            planeRenderer.sharedMaterials = new Material[1] { PlaneTransparentMaterial };
+        } else {
+            planeRenderer.sharedMaterials = new Material[1] { PlaneOpaqueMaterial };
+        }
     }
 
 }

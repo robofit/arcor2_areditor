@@ -49,16 +49,11 @@ namespace Base {
         }
 
         private async void OnDisable() {
-            if (RobotModel != null) {
-                UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
-            }
             await HideRobotEE();
             if (HasUrdf())
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
-            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
-            
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -69,19 +64,14 @@ namespace Base {
             _ = HideRobotEE();
         }
 
-        protected async override void Update() {
+        protected override void Update() {
             if (manipulationStarted) {
                 if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
                     if (!TransformGizmo.Instance.isTransforming && updatePose) {
                         updatePose = false;
 
                         if (ActionObjectMetadata.HasPose) {
-                            try {
-                                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
-                            } catch (RequestFailedException e) {
-                                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
-                                ResetPosition();
-                            }
+                            UpdatePose();
                         } else {
                             PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
                                 transform.localPosition, transform.localRotation);
@@ -98,6 +88,15 @@ namespace Base {
             }
 
             base.Update();
+        }
+
+        private async void UpdatePose() {
+            try {
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
+                ResetPosition();
+            }
         }
 
         public async Task ShowRobotEE() {
@@ -190,6 +189,7 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            outlineOnClick.InitGizmoMaterials();
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
         }
 
@@ -357,6 +357,7 @@ namespace Base {
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
+            outlineOnClick.InitGizmoMaterials();
         }
 
         public override GameObject GetModelCopy() {
@@ -417,6 +418,15 @@ namespace Base {
 
         public void SetJointValue(string name, float angle) {
             RobotModel?.SetJointAngle(name, angle);
+        }
+
+        private void OnDestroy() {
+            // if RobotModel was present, lets return it to the UrdfManager robotModel pool
+            if (RobotModel != null) {
+                if (UrdfManager.Instance != null) {
+                    UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+                }
+            }
         }
     }
 }
