@@ -44,10 +44,9 @@ namespace Base {
            
             
         }
-
         protected virtual void Start() {
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
-            
+
         }
 
         protected virtual void Update() {
@@ -504,10 +503,12 @@ namespace Base {
             foreach (NamedOrientation o in Data.Orientations) {
                 if (o.Id == id) {
                     Data.Orientations.RemoveAt(i);
-                    return;
+                    break;
+                    ;
                 }
                 ++i;
             }
+            UpdateOrientationsVisuals();
         }
 
         public void UpdateJoints(ProjectRobotJoints joints) {
