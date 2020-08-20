@@ -18,6 +18,8 @@ namespace Base {
         [SerializeField]
         private GameObject EEOrigin;
 
+        private bool eeVisible = false;
+
         public RobotModel RobotModel {
             get; private set;
         }
@@ -49,7 +51,7 @@ namespace Base {
         }
 
         private async void OnDisable() {
-            await HideRobotEE();
+            await DisableVisualisationOfEE();
             if (HasUrdf())
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
@@ -57,11 +59,11 @@ namespace Base {
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
-            _ = ShowRobotEE();            
+            _ = EnableVisualisationOfEE();            
         }
 
         private void OnHideRobotsEE(object sender, EventArgs e) {
-            _ = HideRobotEE();
+            _ = DisableVisualisationOfEE();
         }
 
         protected override void Update() {
@@ -82,6 +84,8 @@ namespace Base {
                         updatePose = true;
 
                 } else {
+                    if (eeVisible)
+                        ShowRobotEE();
                     manipulationStarted = false;
                 }
 
@@ -99,29 +103,39 @@ namespace Base {
             }
         }
 
-        public async Task ShowRobotEE() {
-            if (EndEffectors.Count > 0) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                foreach (RobotEE ee in EndEffectors) {
-                    ee.gameObject.SetActive(true);
-                }
-            }
+        public void ShowRobotEE() {
+            foreach (RobotEE ee in EndEffectors) {
+                ee.gameObject.SetActive(true);
+            }            
         }
 
-        public async Task HideRobotEE() {
+        public void HideRobotEE() {
+            foreach (RobotEE ee in EndEffectors) {
+                try {
+                    ee.gameObject.SetActive(false);
+                } catch (MissingReferenceException) {
+                    continue;
+                }                    
+            }            
+        }
+
+        public async Task DisableVisualisationOfEE() {
+            eeVisible = false;
             if (EndEffectors.Count > 0) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                
-                foreach (RobotEE ee in EndEffectors) {
-                    try {
-                        ee.gameObject.SetActive(false);
-                    } catch (MissingReferenceException) {
-                        continue;
-                    }
-                    
-                }
+                HideRobotEE();
             }
         }
+        
+
+        public async Task EnableVisualisationOfEE() {
+            eeVisible = true;
+            if (EndEffectors.Count > 0) {
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                ShowRobotEE();
+            }
+        }
+        
 
         public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
@@ -307,6 +321,7 @@ namespace Base {
                 // We have clicked with left mouse and started manipulation with object
                 if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                     manipulationStarted = true;
+                    HideRobotEE();
                     TransformGizmo.Instance.AddTarget(transform);
                     outlineOnClick.GizmoHighlight();
                 }
@@ -338,7 +353,7 @@ namespace Base {
                 EndEffectors.Add(ee);
             }
             if (SceneManager.Instance.RobotsEEVisible)
-                ShowRobotEE();
+                await EnableVisualisationOfEE();
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
