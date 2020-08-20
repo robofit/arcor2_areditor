@@ -87,8 +87,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f8785f381fc6a54d8dae25eae6f4dd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InitialPosition: {x: 0, y: 1.5, z: -2}
-  InitialRotation: {x: 45, y: 0, z: 0}
+  InitialPosition: {x: 0, y: 1.5, z: 2}
+  InitialRotation: {x: 45, y: -180, z: 0}
 --- !u!1 &4944955270593107803
 GameObject:
   m_ObjectHideFlags: 0
@@ -350,6 +350,8 @@ MonoBehaviour:
   selectionMask:
     serializedVersion: 2
     m_Bits: 256
+  myCamera: {fileID: 0}
+  movement: {x: 0, y: 0, z: 0}
 --- !u!1 &7694872492407101039
 GameObject:
   m_ObjectHideFlags: 0
