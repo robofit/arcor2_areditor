@@ -1,4 +1,5 @@
 using System;
+using IO.Swagger.Model;
 
 namespace Base {
 
@@ -191,6 +192,35 @@ namespace Base {
         public RobotJointsEventArgs(IO.Swagger.Model.ProjectRobotJoints data, string actionPointId) {
             Data = data;
             ActionPointId = actionPointId;
+        }
+    }
+
+    public class ActionPointOrientationAddedEventArgs : EventArgs {
+        public string ActionPointID {
+            get; set;
+        }
+
+        public NamedOrientation Orientation {
+            get; set;
+        }
+
+        public ActionPointOrientationAddedEventArgs(string actionPointID, NamedOrientation orientation) {
+            ActionPointID = actionPointID;
+            Orientation = orientation;
+        }
+    }
+
+    public class ActionPointJointsAddedEventArgs : EventArgs {
+        public string ActionPointID {
+            get; set;
+        }
+
+        public ProjectRobotJoints Joints {
+            get; set;
+        }
+        public ActionPointJointsAddedEventArgs(string actionPointID, ProjectRobotJoints joints) {
+            ActionPointID = actionPointID;
+            Joints = joints;
         }
     }
 

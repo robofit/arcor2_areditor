@@ -13,7 +13,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
 
-    public TMPro.TMP_InputField QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
+    //public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input (editing orientation)
+    public OrientationManualEdit OrientationManualEdit;
+
+    public Slider SpeedSlider;
 
     [SerializeField]
     private TooltipContent buttonTooltip;
@@ -40,7 +43,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
+        ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
     }
+
+    private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
+        if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.Data)) {
+            UpdateMenu();
+        }
+    }
+
 
     public void UpdateMenu() {
         if (isOrientationDetail) {  //orientation
@@ -66,14 +77,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 UpdateButton.interactable = false;
             }
 
-
-            NumberFormatInfo numberFormatInfo = new NumberFormatInfo {
-                NumberDecimalSeparator = "."
-            };
-            QuaternionX.text = orientation.Orientation.X.ToString(numberFormatInfo);
-            QuaternionY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
-            QuaternionZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
-            QuaternionW.text = orientation.Orientation.W.ToString(numberFormatInfo);
+            OrientationManualEdit.SetOrientation(orientation.Orientation);
+            /*
+            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            InputX.text = orientation.Orientation.X.ToString(numberFormatInfo);
+            InputY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
+            InputZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
+            InputW.text = orientation.Orientation.W.ToString(numberFormatInfo);
+            */
         } else { //joints
             DetailName.text = joints.Name;
             UpdateJointsList();
@@ -113,15 +125,19 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public void OnJointsSaveClick() {
         //TODO
+        Notifications.Instance.ShowNotification("Not implemented yet", "");
     }
 
     public async void OnOrientationSaveClick() {
         try {
-            decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            /*
+            decimal x = decimal.Parse(InputX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal y = decimal.Parse(InputY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal z = decimal.Parse(InputZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+            decimal w = decimal.Parse(InputW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
             await WebsocketManager.Instance.UpdateActionPointOrientation(new Orientation(w, x, y, z), orientation.Id);
+            */
+            await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
             Notifications.Instance.ShowNotification("Orientation updated", "");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to update orientation", ex.Message);
@@ -163,7 +179,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
             ConfirmationDialog.Close();
             Close();
-            //MenuManager.Instance.HideMenu(MenuManager.Instance.OrientationJointsDetailMenu);
 
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed delete orientation/joints", e.Message);
@@ -188,7 +203,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (isOrientationDetail) {
             description += "orientation using robot: " + (string) RobotsList.GetValue() + " and end effector: " + (string) EndEffectorList.GetValue() + "?";
         } else {
-            description += "joints using robot: " + joints.RobotId;
+            description += "joints using robot: " + RobotName.text + "?";
         }
         ConfirmationDialog.Open(title,
                                 description,
@@ -199,22 +214,17 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void Rename() {
         try {
             string name = DetailName.text;
+            
             if (isOrientationDetail) {
-                if (name == orientation.Name)
+                if (name == orientation.Name) {
                     return;
-            } else { //joints
-                if (name == joints.Name)
-                    return;
-            }
-                if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
-                Notifications.Instance.ShowNotification("Failed to rename orientation/joints", "There already exists orientation or joints with name " + name);
-                UpdateMenu();
-                return;
-            }
-            if (isOrientationDetail) {
+                }
                 await WebsocketManager.Instance.RenameActionPointOrientation(orientation.Id, name);
                 Notifications.Instance.ShowNotification("Orientation renamed successfully", "");
             } else {
+                if (name == joints.Name) {
+                    return;
+                }
                 await WebsocketManager.Instance.RenameActionPointJoints(joints.Id, name);
                 Notifications.Instance.ShowNotification("Joints renamed successfully", "");
             }
@@ -224,13 +234,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereRobot() { //TODO check what speed should be used
+    public async void MoveHereRobot() {
         try {
             string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
             if (isOrientationDetail) {
-                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), 1, orientation.Id);
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
             } else {
-                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, 1, joints.Id);
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);

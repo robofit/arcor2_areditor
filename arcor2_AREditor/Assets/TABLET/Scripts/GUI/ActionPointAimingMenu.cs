@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject JointsExpertModeBlock, JointsLiteModeBlock, PositionBlock, JointsBlock;
+    public GameObject PositionBlock, JointsBlock;
 
     [SerializeField]
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
@@ -42,7 +42,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private OrientationJointsDetailMenu OrientationJointsDetailMenu;
 
     private SimpleSideMenu SideMenu;
-
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
@@ -179,8 +178,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     public void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
-        JointsExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-        JointsLiteModeBlock.SetActive(!GameManager.Instance.ExpertMode);
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
         UpdateMenu();
         SideMenu.Open();
@@ -241,7 +238,43 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             OrientationsListLabel.text = "There is no orientation yet.";
         }
     }
+    /// <summary>
+    /// Adds and highlights new orientation button in dynamic list of orientations
+    /// </summary>
+    /// <param name="orientation">New orientation to add</param>
+    private void AddToOrientationsDynamicList(NamedOrientation orientation) {
+        ActionButton button = InstantiateActionButton(orientation);
+        button.GetComponent<ActionButton>().Highlight(2f);
+        OrientationsListLabel.text = "List of orientations:";
+    }
 
+    /// <summary>
+    /// Instantiates button representing orientation in OrientationDynamicList
+    /// </summary>
+    /// <param name="orientation">Orientation to be represented by the button</param>
+    /// <returns></returns>
+    private ActionButton InstantiateActionButton(NamedOrientation orientation) {
+        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, OrientationsDynamicList.transform).GetComponent<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(orientation.Name);
+
+        btn.Button.onClick.AddListener(() => OpenDetailMenu(orientation));
+        return btn;
+    }
+
+    /// <summary>
+    /// Instantiates button representing joints in JointsDynamicList
+    /// </summary>
+    /// <param name="joints">Joints to be represented by the button</param>
+    /// <returns></returns>
+    private ActionButton InstantiateActionButton(ProjectRobotJoints joints) {
+        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(joints.Name);
+
+        btn.Button.onClick.AddListener(() => OpenDetailMenu(joints));
+        return btn;
+    }
 
     public void UpdateJointsDynamicList(string robotName) {
         if (robotName == null)
@@ -266,6 +299,17 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             return;
         }
     }
+
+    /// <summary>
+    /// Adds and highlights new joints button in dynamic list of joints
+    /// </summary>
+    /// <param name="joints">New joints to add</param>
+    private void AddToJointsDynamicList(ProjectRobotJoints joints) {
+        ActionButton button = InstantiateActionButton(joints);
+        button.GetComponent<ActionButton>().Highlight(2f);
+        Notifications.Instance.ShowNotification("method addtojountsdynamiclist called", "");
+    }
+
 
     private void OpenDetailMenu(ProjectRobotJoints joint) {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, joint);
@@ -298,8 +342,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         try {
             name = CurrentActionPoint.GetFreeOrientationName();
             await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, new Orientation(), name);
-            UpdateMenu();
-            //todo open detail of the new orientation?
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }
