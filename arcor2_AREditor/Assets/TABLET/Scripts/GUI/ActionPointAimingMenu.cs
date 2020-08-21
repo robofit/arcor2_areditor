@@ -53,7 +53,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
 
         WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
-        WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPoinJointsBaseUpdated;
+        WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
         WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
     }
 
@@ -68,7 +68,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
     }
 
-    private void OnActionPoinJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
+    private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
             btn.SetLabel(args.Data.Name);
@@ -78,7 +78,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
+        if (args.ActionPointId != CurrentActionPoint.GetId())
+            return;
+        if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
+            CreateBtn(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
+        }
     }
 
     private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
@@ -104,7 +108,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
         if (CurrentActionPoint.Data.Id == args.ActionPointId) {
-            CreateBtn(OrientationsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data));
+            CreateBtn(OrientationsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
             UpdateOrientationsListLabel();
         }
     }
