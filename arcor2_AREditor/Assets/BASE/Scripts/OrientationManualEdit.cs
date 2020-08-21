@@ -23,9 +23,9 @@ public class OrientationManualEdit : MonoBehaviour
 
         if (eulerMode) {
             Vector3 euler = new Quaternion((float) orientation.X, (float) orientation.Y, (float) orientation.Z, (float) orientation.W).eulerAngles;
-            InputX.text = euler.x.ToString(numberFormatInfo);
-            InputY.text = euler.y.ToString(numberFormatInfo);
-            InputZ.text = euler.z.ToString(numberFormatInfo);
+            InputX.text = euler.x.ToString("F10", numberFormatInfo);
+            InputY.text = euler.y.ToString("F10", numberFormatInfo);
+            InputZ.text = euler.z.ToString("F10", numberFormatInfo);
 
         } else {
             InputX.text = orientation.X.ToString(numberFormatInfo);
