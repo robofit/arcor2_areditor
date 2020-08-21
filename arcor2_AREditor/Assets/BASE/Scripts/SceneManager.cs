@@ -120,6 +120,8 @@ namespace Base {
             set {
                 bool origVal = SceneChanged;
                 sceneChanged = value;
+                if (!Valid)
+                    return;
                 OnSceneChanged?.Invoke(this, EventArgs.Empty);
                 if (origVal != value) {
                     OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
@@ -145,6 +147,7 @@ namespace Base {
             LoadSettings();
             GameManager.Instance.Scene.SetActive(true);
             await UpdateActionObjects(scene, customCollisionModels);
+            sceneChanged = scene.Modified == DateTime.MinValue;
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             Valid = true;
             return true;

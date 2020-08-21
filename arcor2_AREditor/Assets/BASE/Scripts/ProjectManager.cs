@@ -55,7 +55,7 @@ namespace Base {
         /// <summary>
         /// Indicates if project is loaded
         /// </summary>
-        public bool ProjectLoaded = false;
+        public bool Valid = false;
         /// <summary>
         /// Indicates if editation of project is allowed.
         /// </summary>
@@ -74,12 +74,15 @@ namespace Base {
             set {
                 bool origVal = projectChanged;
                 projectChanged = value;
+                if (!Valid)
+                    return;
                 OnProjectChanged?.Invoke(this, EventArgs.Empty);
                 if (origVal != value) {
                     OnProjectSavedSatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             } 
         }
+
         /// <summary>
         /// Invoked when some of the action point weas updated. Contains action point description
         /// </summary>
@@ -301,11 +304,11 @@ namespace Base {
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
-                        
-            ProjectChanged = false;
+
+            projectChanged = project.Modified == DateTime.MinValue;
             OnLoadProject?.Invoke(this, EventArgs.Empty);
             
-            ProjectLoaded = true;
+            Valid = true;
             (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
             ProjectChanged = !successClose;
             return true;
@@ -317,7 +320,7 @@ namespace Base {
         /// </summary>
         /// <returns>True if project successfully destroyed</returns>
         public bool DestroyProject() {
-            ProjectLoaded = false;
+            Valid = false;
             ProjectMeta = null;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 ap.DeleteAP(false);

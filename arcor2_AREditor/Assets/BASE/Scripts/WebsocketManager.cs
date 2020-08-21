@@ -452,7 +452,7 @@ namespace Base {
         /// <param name="obj">Message from server</param>
         private void HandleCurrentAction(string obj) {
             string puck_id;
-            if (!ProjectManager.Instance.ProjectLoaded) {
+            if (!ProjectManager.Instance.Valid) {
                 Debug.LogWarning("Project not yet loaded, ignoring current action");
                 return;
             }
