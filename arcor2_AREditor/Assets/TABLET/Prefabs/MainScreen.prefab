@@ -1913,8 +1913,8 @@ MonoBehaviour:
   NewProjectDialog: {fileID: 2778343470111920663}
   InputDialog: {fileID: 3681445049205516334}
   AddNewBtn: {fileID: 8569159207352884773}
-  SceneOptionMenu: {fileID: 5097601852682664557}
-  ProjectOptionMenu: {fileID: 1708373867908624679}
+  sceneOptionMenu: {fileID: 5097601852682664557}
+  projectOptionMenu: {fileID: 1708373867908624679}
   PackageOptionMenu: {fileID: 762384723458382470}
   projectsList: {fileID: 6056005091216568738}
   scenesList: {fileID: 1778068252747266948}
@@ -5452,6 +5452,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa5100cea443dc7448b10a5f20698420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  toggleObject: {fileID: 0}
+  toggleAnimator: {fileID: 0}
 --- !u!114 &20741949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12749,7 +12751,7 @@ PrefabInstance:
     - target: {fileID: 5997905291046728368, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_Name
-      value: Remove
+      value: Delete
       objectReference: {fileID: 0}
     - target: {fileID: 7842369872882218467, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
@@ -18984,7 +18986,7 @@ PrefabInstance:
     - target: {fileID: 5997905291046728368, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_Name
-      value: Remove
+      value: Delete
       objectReference: {fileID: 0}
     - target: {fileID: 7842369872882218467, guid: 981634e233417404a87ce17bc0447271,
         type: 3}

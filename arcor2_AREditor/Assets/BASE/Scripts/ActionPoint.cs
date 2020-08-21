@@ -20,7 +20,7 @@ namespace Base {
         public LineConnection ConnectionToParent;
 
         [System.NonSerialized]
-        public IO.Swagger.Model.ProjectActionPoint Data = new IO.Swagger.Model.ProjectActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
+        public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
         protected ActionPointMenu actionPointMenu;
 
         [SerializeField]
@@ -44,10 +44,9 @@ namespace Base {
            
             
         }
-
         protected virtual void Start() {
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
-            
+
         }
 
         protected virtual void Update() {
@@ -57,7 +56,7 @@ namespace Base {
             }
         }
 
-        public virtual void ActionPointBaseUpdate(IO.Swagger.Model.ProjectActionPoint apData) {
+        public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
             
@@ -75,7 +74,7 @@ namespace Base {
 
         }
 
-        public virtual void InitAP(IO.Swagger.Model.ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+        public virtual void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
@@ -84,6 +83,12 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             SetSize(size);
             ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove && ProjectManager.Instance.AllowEdit && !MenuManager.Instance.IsAnyMenuOpened) ? "GizmoRuntime" : "Default");
+            if (Data.Actions == null)
+                Data.Actions = new List<IO.Swagger.Model.Action>();
+            if (Data.Orientations == null)
+                Data.Orientations = new List<NamedOrientation>();
+            if (Data.RobotJoints == null)
+                Data.RobotJoints = new List<ProjectRobotJoints>();
         }
 
         public void SetParent(IActionPointParent parent) {
@@ -326,7 +331,7 @@ namespace Base {
         /// </summary>
         /// <param name="projectActionPoint"></param>
         /// <returns></returns>
-        public virtual (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+        public virtual (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
             if (Data.Parent != projectActionPoint.Parent) {
                 ChangeParent(projectActionPoint.Parent);
             }
@@ -350,7 +355,7 @@ namespace Base {
                     }                    
                 }
                 // updates name of the action
-                action.ActionUpdateBaseData(projectAction);
+                action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
 
@@ -493,8 +498,17 @@ namespace Base {
         }
 
         
-        public void RemoveOrientation(NamedOrientation orientation) {
-            Data.Orientations.Remove(orientation);
+        public void RemoveOrientation(string id) {
+            int i = 0;
+            foreach (NamedOrientation o in Data.Orientations) {
+                if (o.Id == id) {
+                    Data.Orientations.RemoveAt(i);
+                    break;
+                    ;
+                }
+                ++i;
+            }
+            UpdateOrientationsVisuals();
         }
 
         public void UpdateJoints(ProjectRobotJoints joints) {
@@ -518,8 +532,15 @@ namespace Base {
             Data.RobotJoints.Add(joints);
         }
 
-        public void RemoveJoints(ProjectRobotJoints joints) {
-            Data.RobotJoints.Remove(joints);
+        public void RemoveJoints(string id) {
+            int i = 0;
+            foreach (ProjectRobotJoints joints in Data.RobotJoints) {
+                if (joints.Id == id) {
+                    Data.RobotJoints.RemoveAt(i);
+                    return;
+                }
+                ++i;
+            }
         }
 
         public void ShowMenu() {
@@ -554,5 +575,12 @@ namespace Base {
         }
 
         public abstract void HighlightAP(bool highlight);
+
+
+        public void ResetPosition() {
+            transform.localPosition = GetScenePosition();
+            transform.localRotation = GetSceneOrientation();
+        }
+
     }
 }

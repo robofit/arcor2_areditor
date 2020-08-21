@@ -29,16 +29,12 @@ public class ActionPoint3D : Base.ActionPoint {
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 
-    protected override async void Update() {
+    protected override void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
                 if (!tfGizmo.isTransforming && updatePosition) {
                     updatePosition = false;
-                    try {
-                        await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
-                    } catch (RequestFailedException e) {
-                        Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
-                    }
+                    UpdatePose();
                 }
 
                 if (tfGizmo.isTransforming)
@@ -52,6 +48,15 @@ public class ActionPoint3D : Base.ActionPoint {
             
         //TODO shouldn't this be called first?
         base.Update();
+    }
+
+    private async void UpdatePose() {
+        try {
+            await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
+            ResetPosition();
+        }
     }
 
     private void LateUpdate() {
@@ -156,7 +161,7 @@ public class ActionPoint3D : Base.ActionPoint {
         Visual.transform.localScale = new Vector3(size / 10, size / 10, size / 10);
     }
 
-    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ProjectActionPoint projectActionPoint) {
+    public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
         UpdateOrientationsVisuals();
         ActionPointName.text = projectActionPoint.Name;
@@ -211,12 +216,12 @@ public class ActionPoint3D : Base.ActionPoint {
         Lock.SetActive(false);
     }
 
-    public override void ActionPointBaseUpdate(ProjectActionPoint apData) {
+    public override void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
         base.ActionPointBaseUpdate(apData);
         ActionPointName.text = apData.Name;
     }
 
-    public override void InitAP(ProjectActionPoint apData, float size, IActionPointParent parent = null) {
+    public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
         ActionPointName.text = apData.Name;
     }

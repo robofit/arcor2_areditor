@@ -15,10 +15,20 @@ public class MainScreen : Base.Singleton<MainScreen>
     public ButtonWithTooltip AddNewBtn;
 
     [SerializeField]
-    private SceneOptionMenu SceneOptionMenu;
+    private SceneOptionMenu sceneOptionMenu;
+    public SceneOptionMenu SceneOptionMenu => sceneOptionMenu;
+
+    public List<SceneTile> SceneTiles => sceneTiles;
+    public List<ProjectTile> ProjectTiles => projectTiles;
+    public List<PackageTile> PackageTiles => packageTiles;
+
+    public CanvasGroup ProjectsList => projectsList;
+    public CanvasGroup ScenesList => scenesList;
+    public CanvasGroup PackageList => packageList;
 
     [SerializeField]
-    private ProjectOptionMenu ProjectOptionMenu;
+    private ProjectOptionMenu projectOptionMenu;
+    public ProjectOptionMenu ProjectOptionMenu => projectOptionMenu;
 
     [SerializeField]
     private PackageOptionMenu PackageOptionMenu;
@@ -38,6 +48,7 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     //filters
     private bool starredOnly = false;
+
 
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
@@ -68,7 +79,53 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
+        WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
+        WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
+        WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
+        WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         SwitchToScenes();
+    }
+
+    private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+        foreach (SceneTile s in sceneTiles) {
+            if (s.SceneId == args.Scene.Id) {
+                s.SetLabel(args.Scene.Name);
+                s.SetTimestamp(args.Scene.Modified.ToString());
+                break;
+            }
+        }
+    }
+
+    private void OnSceneRemoved(object sender, StringEventArgs args) {
+        int i = 0;
+        foreach (SceneTile s in sceneTiles) {
+            if (s.SceneId == args.Data) {
+                sceneTiles.RemoveAt(i);
+                break;
+            }
+            i++;
+        }
+    }
+
+    private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
+        foreach (ProjectTile p in projectTiles) {
+            if (p.ProjectId == args.Project.Id) {
+                p.SetLabel(args.Project.Name);
+                p.SetTimestamp(args.Project.Modified.ToString());
+                break;
+            }
+        }
+    }
+
+    private void OnProjectRemoved(object sender, StringEventArgs args) {
+        int i = 0;
+        foreach (ProjectTile p in projectTiles) {
+            if (p.ProjectId == args.Data) {
+                projectTiles.RemoveAt(i);
+                break;
+            }
+            i++;
+        }
     }
 
     public void SwitchToProjects() {
@@ -81,9 +138,9 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (TMPro.TMP_Text btn in ProjectsBtns) {
             btn.color = new Color(0, 0, 0);
         }
-        projectsList.gameObject.SetActive(true);
-        scenesList.gameObject.SetActive(false);
-        packageList.gameObject.SetActive(false);
+        ProjectsList.gameObject.SetActive(true);
+        ScenesList.gameObject.SetActive(false);
+        PackageList.gameObject.SetActive(false);
         AddNewBtn.gameObject.SetActive(true);
         AddNewBtn.SetDescription("Add project");
         FilterProjectsBySceneId(null);
@@ -101,9 +158,9 @@ public class MainScreen : Base.Singleton<MainScreen>
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
         
-        projectsList.gameObject.SetActive(false);
-        packageList.gameObject.SetActive(false);
-        scenesList.gameObject.SetActive(true);
+        ProjectsList.gameObject.SetActive(false);
+        PackageList.gameObject.SetActive(false);
+        ScenesList.gameObject.SetActive(true);
         AddNewBtn.gameObject.SetActive(true);
         AddNewBtn.SetDescription("Add scene");
         FilterScenesById(null);
@@ -120,27 +177,27 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (TMPro.TMP_Text btn in ProjectsBtns) {
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
-        projectsList.gameObject.SetActive(false);
-        scenesList.gameObject.SetActive(false);
-        packageList.gameObject.SetActive(true);
+        ProjectsList.gameObject.SetActive(false);
+        ScenesList.gameObject.SetActive(false);
+        PackageList.gameObject.SetActive(true);
         AddNewBtn.gameObject.SetActive(false);
         FilterLists();
     }
 
     public void HighlightTile(string tileId) {
-        foreach (SceneTile s in sceneTiles) {
+        foreach (SceneTile s in SceneTiles) {
             if (s.SceneId == tileId) {
                 s.Highlight();
                 return;
             }            
         }
-        foreach (ProjectTile p in projectTiles) {
+        foreach (ProjectTile p in ProjectTiles) {
             if (p.ProjectId == tileId) {
                 p.Highlight();
                 return;
             }            
         }
-        foreach (PackageTile p in packageTiles) {
+        foreach (PackageTile p in PackageTiles) {
             if (p.PackageId == tileId) {
                 p.Highlight();
                 return;
@@ -149,13 +206,13 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void FilterLists() {
-        foreach (SceneTile tile in sceneTiles) {
+        foreach (SceneTile tile in SceneTiles) {
             FilterTile(tile);
         }
-        foreach (ProjectTile tile in projectTiles) {
+        foreach (ProjectTile tile in ProjectTiles) {
             FilterTile(tile);
         }
-        foreach (PackageTile tile in packageTiles) {
+        foreach (PackageTile tile in PackageTiles) {
             FilterTile(tile);
         }
     }
@@ -168,7 +225,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void FilterProjectsBySceneId(string sceneId) {
-        foreach (ProjectTile tile in projectTiles) {
+        foreach (ProjectTile tile in ProjectTiles) {
             if (sceneId == null) {
                 tile.gameObject.SetActive(true);
                 return;
@@ -181,7 +238,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void FilterScenesById(string sceneId) {
-        foreach (SceneTile tile in sceneTiles) {
+        foreach (SceneTile tile in SceneTiles) {
             if (sceneId == null) {
                 tile.gameObject.SetActive(true);
                 return;
@@ -218,15 +275,15 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void AddNew() {
-        if (scenesList.gameObject.activeSelf) {
+        if (ScenesList.gameObject.activeSelf) {
             ShowNewSceneDialog();
-        } else if (projectsList.gameObject.activeSelf) {
+        } else if (ProjectsList.gameObject.activeSelf) {
             NewProjectDialog.Open();
         }
     }
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
-        sceneTiles.Clear();
+        SceneTiles.Clear();
         foreach (Transform t in ScenesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -239,7 +296,7 @@ public class MainScreen : Base.Singleton<MainScreen>
                           starred,
                           scene.Id,
                           scene.Modified.ToString());
-            sceneTiles.Add(tile);
+            SceneTiles.Add(tile);
         }
         //Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
@@ -262,7 +319,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void UpdatePackages(object sender, EventArgs eventArgs) {
-        packageTiles.Clear();
+        PackageTiles.Clear();
         foreach (Transform t in PackagesDynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -282,13 +339,13 @@ public class MainScreen : Base.Singleton<MainScreen>
                           package.Id,
                           projectName,
                           package.PackageMeta.Built.ToString());
-            packageTiles.Add(tile);
+            PackageTiles.Add(tile);
         }
         
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {
-        projectTiles.Clear();
+        ProjectTiles.Clear();
         foreach (Transform t in ProjectsDynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -305,7 +362,7 @@ public class MainScreen : Base.Singleton<MainScreen>
                               project.SceneId,
                               sceneName,
                               project.Modified.ToString());
-                projectTiles.Add(tile);
+                ProjectTiles.Add(tile);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to load scene name.");
@@ -322,5 +379,30 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void SaveLogs() {
         Base.Notifications.Instance.SaveLogs();
+    }
+
+    public bool IsActive() {
+        return CanvasGroup.alpha == 1 && CanvasGroup.blocksRaycasts == true;
+    }
+    public bool IsInactive() {
+        return CanvasGroup.alpha == 0 && CanvasGroup.blocksRaycasts == false;
+    }
+
+    public SceneTile GetSceneTile(string sceneName) {
+        foreach (SceneTile sceneTile in MainScreen.Instance.SceneTiles) {
+            if (sceneTile.GetLabel() == sceneName) {
+                return sceneTile;
+            }
+        }
+        throw new ItemNotFoundException("Scene tile not found");
+    }
+
+    public ProjectTile GetProjectTile(string projectName) {
+        foreach (ProjectTile projectTile in projectTiles) {
+            if (projectTile.GetLabel() == projectName) {
+                return projectTile;
+            }
+        }
+        throw new ItemNotFoundException("Project tile not found");
     }
 }

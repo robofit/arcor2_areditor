@@ -61,6 +61,32 @@ namespace Base {
         /// Invoked when logic item updated. Contains info of updated logic item. 
         /// </summary>
         public event AREditorEventArgs.LogicItemChangedEventHandler OnLogicItemUpdated;
+        public event AREditorEventArgs.StringEventHandler OnProjectRemoved;
+        public event AREditorEventArgs.BareProjectEventHandler OnProjectBaseUpdated;
+
+        public event AREditorEventArgs.StringEventHandler OnSceneRemoved;
+        public event AREditorEventArgs.BareSceneEventHandler OnSceneBaseUpdated;
+
+        public event AREditorEventArgs.ActionEventHandler OnActionAdded;
+        public event AREditorEventArgs.ActionEventHandler OnActionUpdated;
+        public event AREditorEventArgs.BareActionEventHandler OnActionBaseUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionRemoved;
+
+        public event AREditorEventArgs.ProjectActionPointEventHandler OnActionPointAdded;
+        public event AREditorEventArgs.ProjectActionPointEventHandler OnActionPointUpdated;
+        public event AREditorEventArgs.BareActionPointEventHandler OnActionPointBaseUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionPointRemoved;
+
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationAdded;
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationUpdated;
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationBaseUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionPointOrientationRemoved;
+
+        public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsAdded;
+        public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsUpdated;
+        public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsBaseUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionPointJointsRemoved;
+
         /// <summary>
         /// ARServer domain or IP address
         /// </summary>
@@ -374,21 +400,19 @@ namespace Base {
         /// Handles changes on project
         /// </summary>
         /// <param name="obj">Message from server</param>
-        private async void HandleProjectChanged(string obj) {            
+        private void HandleProjectChanged(string obj) {            
             ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
             switch (eventProjectChanged.ChangeType) {
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Add:
-                    throw new NotImplementedException();
-                    break;
+                    throw new NotImplementedException("Project changed update should never occured!");
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Remove:
-                    await GameManager.Instance.LoadProjects();
+                    OnProjectRemoved?.Invoke(this, new StringEventArgs(eventProjectChanged.Data.Id));
                     break;
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Update:
-                    ProjectManager.Instance.UpdateProject(eventProjectChanged.Data);
-                    break;
+                    throw new NotImplementedException("Project changed update should never occured!");
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
-                    ProjectManager.Instance.ProjectBaseUpdated(eventProjectChanged.Data);
+                    OnProjectBaseUpdated?.Invoke(this, new BareProjectEventArgs(eventProjectChanged.Data));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -515,21 +539,18 @@ namespace Base {
         /// Decodes changes on scene and invoke proper callback
         /// </summary>
         /// <param name="obj">Message from server</param>
-        private async void HandleSceneChanged(string obj) {
+        private void HandleSceneChanged(string obj) {
             IO.Swagger.Model.SceneChanged sceneChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneChanged>(obj);
             switch (sceneChangedEvent.ChangeType) {
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Add:
-                    GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
-                    break;
+                    throw new NotImplementedException("Scene add should never occure");
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Remove:
-                    await GameManager.Instance.LoadScenes();
+                    OnSceneRemoved?.Invoke(this, new StringEventArgs(sceneChangedEvent.Data.Id));
                     break;
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Update:
-                    GameManager.Instance.SceneAdded(sceneChangedEvent.Data);
-                    //GameManager.Instance.SceneUpdated(sceneChangedEvent.Data);
-                    break;
+                    throw new NotImplementedException("Scene update should never occure");
                 case IO.Swagger.Model.SceneChanged.ChangeTypeEnum.Updatebase:
-                    GameManager.Instance.SceneBaseUpdated(sceneChangedEvent.Data);
+                    OnSceneBaseUpdated?.Invoke(this, new BareSceneEventArgs(sceneChangedEvent.Data));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -563,16 +584,21 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleActionChanged(string data) {
             IO.Swagger.Model.ActionChanged actionChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionChanged>(data);
+            var actionChangedFields = new {
+                data = new IO.Swagger.Model.Action(id: "", name: "", type: "", flows: new List<Flow>(), parameters: new List<ActionParameter>())
+            };
             ProjectManager.Instance.ProjectChanged = true;
             switch (actionChanged.ChangeType) {
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Add:
-                    ProjectManager.Instance.ActionAdded(actionChanged.Data, actionChanged.ParentId);
+                    var action = JsonConvert.DeserializeAnonymousType(data, actionChangedFields);
+                    ProjectManager.Instance.ActionAdded(action.data, actionChanged.ParentId);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Remove:
                     ProjectManager.Instance.ActionRemoved(actionChanged.Data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Update:
-                    ProjectManager.Instance.ActionUpdated(actionChanged.Data);
+                    var actionUpdate = JsonConvert.DeserializeAnonymousType(data, actionChangedFields);
+                    ProjectManager.Instance.ActionUpdated(actionUpdate.data);
                     break;
                 case IO.Swagger.Model.ActionChanged.ChangeTypeEnum.Updatebase:
                     ProjectManager.Instance.ActionBaseUpdated(actionChanged.Data);
@@ -611,18 +637,26 @@ namespace Base {
         private void HandleActionPointChanged(string data) {
             ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ActionPointChanged actionPointChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionPointChanged>(data);
+            var actionPointChangedFields = new {
+                data = new IO.Swagger.Model.ActionPoint(id: "", name: "string", parent: "", position: new Position(),
+                    actions: new List<IO.Swagger.Model.Action>(), orientations: new List<NamedOrientation>(),
+                    robotJoints: new List<ProjectRobotJoints>())
+            };
+
             switch (actionPointChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Add:
-                    ProjectManager.Instance.ActionPointAdded(actionPointChangedEvent.Data);
+                    var actionPoint = JsonConvert.DeserializeAnonymousType(data, actionPointChangedFields);
+                    OnActionPointAdded?.Invoke(this, new ProjectActionPointEventArgs(actionPoint.data));
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Remove:
-                    ProjectManager.Instance.ActionPointRemoved(actionPointChangedEvent.Data);
+                    OnActionPointRemoved?.Invoke(this, new StringEventArgs(actionPointChangedEvent.Data.Id));
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Update:
-                    ProjectManager.Instance.ActionPointUpdated(actionPointChangedEvent.Data);
+                    var actionPointUpdate = JsonConvert.DeserializeAnonymousType(data, actionPointChangedFields);
+                    OnActionPointUpdated?.Invoke(this, new ProjectActionPointEventArgs(actionPointUpdate.data));
                     break;
                 case IO.Swagger.Model.ActionPointChanged.ChangeTypeEnum.Updatebase:
-                    ProjectManager.Instance.ActionPointBaseUpdated(actionPointChangedEvent.Data);
+                    OnActionPointBaseUpdated?.Invoke(this, new BareActionPointEventArgs(actionPointChangedEvent.Data));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -638,16 +672,17 @@ namespace Base {
             IO.Swagger.Model.OrientationChanged orientationChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.OrientationChanged>(data);
             switch (orientationChanged.ChangeType) {
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Add:
-                    ProjectManager.Instance.ActionPointOrientationAdded(orientationChanged.Data, orientationChanged.ParentId);
+                    OnActionPointOrientationAdded?.Invoke(this, new ActionPointOrientationEventArgs(orientationChanged.Data, orientationChanged.ParentId));
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Remove:
-                    ProjectManager.Instance.ActionPointOrientationRemoved(orientationChanged.Data);
+                    OnActionPointOrientationRemoved?.Invoke(this, new StringEventArgs(orientationChanged.Data.Id));
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Update:
-                    ProjectManager.Instance.ActionPointOrientationUpdated(orientationChanged.Data);
+                    OnActionPointOrientationUpdated?.Invoke(this, new ActionPointOrientationEventArgs(orientationChanged.Data, null));
                     break;
                 case IO.Swagger.Model.OrientationChanged.ChangeTypeEnum.Updatebase:
-                    ProjectManager.Instance.ActionPointOrientationBaseUpdated(orientationChanged.Data);
+                    OnActionPointOrientationBaseUpdated?.Invoke(this, new ActionPointOrientationEventArgs(orientationChanged.Data, null));
+
                     break;
                 default:
                     throw new NotImplementedException();
@@ -663,16 +698,16 @@ namespace Base {
             IO.Swagger.Model.JointsChanged jointsChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.JointsChanged>(data);
             switch (jointsChanged.ChangeType) {
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Add:
-                    ProjectManager.Instance.ActionPointJointsAdded(jointsChanged.Data, jointsChanged.ParentId);
+                    OnActionPointJointsAdded?.Invoke(this, new RobotJointsEventArgs(jointsChanged.Data, jointsChanged.ParentId));
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Remove:
-                    ProjectManager.Instance.ActionPointJointsRemoved(jointsChanged.Data);
+                    OnActionPointJointsRemoved?.Invoke(this, new StringEventArgs(jointsChanged.Data.Id));
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Update:
-                    ProjectManager.Instance.ActionPointJointsUpdated(jointsChanged.Data);
+                    OnActionPointJointsUpdated?.Invoke(this, new RobotJointsEventArgs(jointsChanged.Data, ""));
                     break;
                 case IO.Swagger.Model.JointsChanged.ChangeTypeEnum.Updatebase:
-                    ProjectManager.Instance.ActionPointJointsBaseUpdated(jointsChanged.Data);
+                    OnActionPointJointsBaseUpdated?.Invoke(this, new RobotJointsEventArgs(jointsChanged.Data, ""));
                     break;
                 default:
                     throw new NotImplementedException();

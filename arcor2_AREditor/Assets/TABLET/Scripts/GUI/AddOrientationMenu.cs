@@ -1,10 +1,7 @@
-using System;
-using System.Globalization;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.UI;
 

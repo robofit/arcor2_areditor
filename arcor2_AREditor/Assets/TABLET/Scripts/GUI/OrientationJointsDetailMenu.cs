@@ -43,14 +43,14 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
-        ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
+        //ProjectManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
     }
 
-    private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
+   /* private void OnActionPointUpdated(object sender, ActionPointUpdatedEventArgs args) {
         if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.Data)) {
             UpdateMenu();
         }
-    }
+    }*/
 
 
     public void UpdateMenu() {
