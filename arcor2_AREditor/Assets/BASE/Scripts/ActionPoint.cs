@@ -571,7 +571,7 @@ namespace Base {
 
         internal void ShowAimingMenu(string orientationId) {
             ShowMenu(false);
-            actionPointMenu.OpenActoinPointAimingMenu(orientationId);
+            actionPointMenu.OpenActionPointAimingMenu(orientationId);
         }
 
         public abstract void HighlightAP(bool highlight);

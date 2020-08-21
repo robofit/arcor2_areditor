@@ -183,10 +183,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         SideMenu.Open();
     }
 
-    public void ShowMenu(Base.ActionPoint currentActionPoint, string preselectedOrientation) {
-        ShowMenu(currentActionPoint);
+    public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation) {
+        ShowMenu(actionPoint);
+
         try {
-            OpenDetailMenu(currentActionPoint.GetOrientation(preselectedOrientation));
+            OpenDetailMenu(actionPoint.GetOrientation(preselectedOrientation));
         } catch (KeyNotFoundException ex) {
             Notifications.Instance.ShowNotification("Unable to open detail menu", ex.Message);
         }
