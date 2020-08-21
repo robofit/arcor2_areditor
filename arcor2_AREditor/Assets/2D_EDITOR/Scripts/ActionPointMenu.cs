@@ -50,7 +50,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public void OpenActoinPointAimingMenu(string preselectedOrientation = null) {
-        ActionPointAimingMenu.ShowMenu(CurrentActionPoint);
+        ActionPointAimingMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
     }
 
     public void ShowRenameDialog() {
