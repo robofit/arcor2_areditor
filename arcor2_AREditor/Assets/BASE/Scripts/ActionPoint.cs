@@ -179,7 +179,7 @@ namespace Base {
             foreach (NamedOrientation orientation in Data.Orientations)
                 if (orientation.Id == id)
                     return orientation;
-            throw new KeyNotFoundException("Orientation with name " + name + " not found.");
+            throw new KeyNotFoundException("Orientation with id " + id + " not found.");
         }
 
         public NamedOrientation GetFirstOrientation() {
@@ -196,6 +196,21 @@ namespace Base {
                 
             }
             throw new ItemNotFoundException("No orientation");
+        }
+
+        /// <summary>
+        /// Returns visual representation of orientation
+        /// </summary>
+        /// <param name="id">UUID of orientation</param>
+        /// <returns></returns>
+        public APOrientation GetOrientationVisual(string id) {
+            foreach (Transform transform in orientations.transform) {
+                APOrientation orientation = transform.GetComponent<APOrientation>();
+                if (orientation.OrientationId == id) {
+                    return orientation;
+                }
+            }
+            throw new KeyNotFoundException("Orientation with id " + id + " not found.");
         }
 
         public IO.Swagger.Model.Pose GetDefaultPose() {

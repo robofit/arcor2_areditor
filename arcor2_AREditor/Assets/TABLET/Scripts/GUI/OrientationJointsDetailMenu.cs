@@ -258,6 +258,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     public void Close() {
+        try {
+        CurrentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(false);
+        } catch (KeyNotFoundException ex) {
+        }
         SideMenu.Close();
     }
 
@@ -266,7 +270,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         this.orientation = orientation;
         this.isOrientationDetail = true;
 
-        
+        try {
+            currentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(true);
+        } catch (KeyNotFoundException ex) {
+            Notifications.Instance.ShowNotification("", ex.Message);
+        }
 
         ShowMenu(currentActionPoint);
     }
@@ -289,6 +297,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         OrientationExpertModeBlock.SetActive(isOrientationDetail && GameManager.Instance.ExpertMode);
         JointsBlock.SetActive(!isOrientationDetail);
         JointsExpertModeBlock.SetActive(!isOrientationDetail && GameManager.Instance.ExpertMode);
+
 
         UpdateMenu();
         SideMenu.Open();
