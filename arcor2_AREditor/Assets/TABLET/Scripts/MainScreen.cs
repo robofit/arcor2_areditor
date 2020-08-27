@@ -100,6 +100,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         int i = 0;
         foreach (SceneTile s in sceneTiles) {
             if (s.SceneId == args.Data) {
+                Destroy(s.gameObject);
                 sceneTiles.RemoveAt(i);
                 break;
             }
@@ -121,6 +122,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         int i = 0;
         foreach (ProjectTile p in projectTiles) {
             if (p.ProjectId == args.Data) {
+                Destroy(p.gameObject);
                 projectTiles.RemoveAt(i);
                 break;
             }

@@ -108,6 +108,8 @@ namespace Base {
         /// Indicates if resources (e.g. end effectors for robot) should be loaded when scene created.
         /// </summary>
         private bool loadResources = false;
+
+        public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
         /// OnSceneSavedStatusChanged when sceneChanged value differs from original value (i.e. when scene
@@ -118,6 +120,8 @@ namespace Base {
             set {
                 bool origVal = SceneChanged;
                 sceneChanged = value;
+                if (!Valid)
+                    return;
                 OnSceneChanged?.Invoke(this, EventArgs.Empty);
                 if (origVal != value) {
                     OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
@@ -135,6 +139,7 @@ namespace Base {
         /// <returns>True if scene successfully created, false otherwise</returns>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
+            
             if (SceneMeta != null)
                 return false;
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
@@ -142,7 +147,9 @@ namespace Base {
             LoadSettings();
             GameManager.Instance.Scene.SetActive(true);
             await UpdateActionObjects(scene, customCollisionModels);
+            sceneChanged = scene.Modified == DateTime.MinValue;
             OnLoadScene?.Invoke(this, EventArgs.Empty);
+            Valid = true;
             return true;
         }
 
@@ -151,8 +158,9 @@ namespace Base {
         /// </summary>
         /// <returns>True if scene successfully destroyed, false otherwise</returns>
         public bool DestroyScene() {
+            Valid = false;
             RemoveActionObjects();
-            SceneMeta = null;            
+            SceneMeta = null;
             return true;
         }
 
@@ -231,6 +239,9 @@ namespace Base {
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
         private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
+            // if initializing or deinitializing scene, dont update robot joints
+            if (!Valid)
+                return;
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
                 foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
