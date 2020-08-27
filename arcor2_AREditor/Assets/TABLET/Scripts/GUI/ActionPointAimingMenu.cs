@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject PositionBlock, JointsBlock;
+    public GameObject JointsBlock, PositionBlock, PositionExpertModeBlock, PositionLiteModeBlock, PositionRobotPickBlock;
 
     [SerializeField]
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
@@ -41,11 +41,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private OrientationJointsDetailMenu OrientationJointsDetailMenu;
 
+    [SerializeField]
+    private PositionManualEdit PositionManualEdit;
+
     private SimpleSideMenu SideMenu;
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
         WebsocketManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
+        WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
 
         // TODO: subscribe only when menu is opened
         WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
@@ -55,6 +59,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
         WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
         WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+    }
+
+    private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
+        if (args.ActionPoint.Id != CurrentActionPoint.GetId())
+            return;
+        PositionManualEdit.SetPosition(args.ActionPoint.Position);
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -114,9 +124,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
-        if (CurrentActionPoint != null && CurrentActionPoint.Equals(args.ActionPoint)) {
-            ActionPointName.text = args.ActionPoint.Name;
-        }
+        if (args.ActionPoint.Id != CurrentActionPoint.GetId())
+            return;
+        ActionPointName.text = args.ActionPoint.Name;
     }
     
     public void UpdateMenu() {
@@ -126,13 +136,20 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         positionRobotsListDropdown.dropdownItems.Clear();
         PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (positionRobotsListDropdown.dropdownItems.Count == 0) {
-            PositionBlock.SetActive(false);
+            PositionBlock.SetActive(GameManager.Instance.ExpertMode);
+            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
+            PositionLiteModeBlock.SetActive(false);
             AddOrientationUsingRobotButton.interactable = false;
         } else {
             PositionBlock.SetActive(true);
+            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
+            PositionLiteModeBlock.SetActive(true);
             OnRobotChanged((string) PositionRobotsList.GetValue());
             AddOrientationUsingRobotButton.interactable = true;
         }
+
+        PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
+
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
         JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
@@ -167,17 +184,30 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
-    private async void UpdateActionPointPosition() {
+    /// <summary>
+    /// Sets new action point position - using robot if no position is passed
+    /// </summary>
+    /// <param name="position">New position to set</param>
+    private async void UpdateActionPointPosition(Position position = null) {
         try {
-            string robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.Dropdown.selectedText.text);
-            string endEffectorId = PositionEndEffectorList.Dropdown.selectedText.text;
+            if (position != null) {
+                await WebsocketManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetId(), position);
+            } else {
+                string robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.Dropdown.selectedText.text);
+                string endEffectorId = PositionEndEffectorList.Dropdown.selectedText.text;
 
-            await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.Data.Id, robotId, endEffectorId);
-            ConfirmationDialog.Close();
-        } catch (ItemNotFoundException ex) {
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
+                ConfirmationDialog.Close();
+            }
+            
+        } catch (RequestFailedException ex) {
             Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Update position failed", "");
+            Notifications.Instance.ShowNotification("Update position failed", ex.Message);
         }
+    }
+
+    public void OnPositionManualUpdateClick() {
+        UpdateActionPointPosition(PositionManualEdit.GetPosition());
     }
 
     public void ShowMenu(Base.ActionPoint actionPoint) {
@@ -321,7 +351,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private void AddToJointsDynamicList(ProjectRobotJoints joints) {
         ActionButton button = InstantiateActionButton(joints);
         button.GetComponent<ActionButton>().Highlight(2f);
-        Notifications.Instance.ShowNotification("method addtojountsdynamiclist called", "");
     }
 
 
