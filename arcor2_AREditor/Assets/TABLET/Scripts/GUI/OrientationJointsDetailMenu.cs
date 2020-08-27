@@ -13,16 +13,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
 
-    //public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input (editing orientation)
     public OrientationManualEdit OrientationManualEdit;
 
     public Slider SpeedSlider;
 
     [SerializeField]
-    private TooltipContent buttonTooltip;
+    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip;
 
     [SerializeField]
-    private Button UpdateButton;
+    private Button UpdateButton, ManualOrientationEditButton, ManualJointsEditButton;
 
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
@@ -67,27 +66,20 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 MoveHereBlock.SetActive(true);
 
                 UpdateButton.interactable = true;
-                buttonTooltip.enabled = false;
+                updateButtonTooltip.enabled = false;
 
                 OnRobotChanged((string) RobotsList.GetValue());
             } else {
                 OrientationBlock.SetActive(false);
                 MoveHereBlock.SetActive(false);
 
-                buttonTooltip.description = "There is no robot to update orientation with";
-                buttonTooltip.enabled = true;
+                updateButtonTooltip.description = "There is no robot to update orientation with";
+                updateButtonTooltip.enabled = true;
                 UpdateButton.interactable = false;
             }
 
             OrientationManualEdit.SetOrientation(orientation.Orientation);
-            /*
-            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
-            numberFormatInfo.NumberDecimalSeparator = ".";
-            InputX.text = orientation.Orientation.X.ToString(numberFormatInfo);
-            InputY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
-            InputZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
-            InputW.text = orientation.Orientation.W.ToString(numberFormatInfo);
-            */
+            ValidateFieldsOrientation();
         } else { //joints
             DetailName.text = joints.Name;
             UpdateJointsList();
@@ -132,13 +124,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public async void OnOrientationSaveClick() {
         try {
-            /*
-            decimal x = decimal.Parse(InputX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal y = decimal.Parse(InputY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal z = decimal.Parse(InputZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal w = decimal.Parse(InputW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            await WebsocketManager.Instance.UpdateActionPointOrientation(new Orientation(w, x, y, z), orientation.Id);
-            */
             await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
             Notifications.Instance.ShowNotification("Orientation updated", "");
         } catch (RequestFailedException ex) {
@@ -256,10 +241,22 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         Notifications.Instance.ShowNotification("Not implemented yet", "");
     }
 
+    public async void ValidateFieldsOrientation() {
+        bool interactable = true;
+
+        manualOrientationEditTooltip.description = OrientationManualEdit.ValidateFields();
+        if (!string.IsNullOrEmpty(manualOrientationEditTooltip.description)) {
+            interactable = false;
+        }
+
+        manualOrientationEditTooltip.enabled = !interactable;
+        ManualOrientationEditButton.interactable = interactable;
+    }
+
 
     public void Close() {
         try {
-        CurrentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(false);
+            CurrentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(false);
         } catch (KeyNotFoundException ex) {
         }
         SideMenu.Close();

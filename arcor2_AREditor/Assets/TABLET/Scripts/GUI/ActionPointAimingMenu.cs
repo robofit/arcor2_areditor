@@ -282,43 +282,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             OrientationsListLabel.text = "There is no orientation yet.";
         }
     }
-    /// <summary>
-    /// Adds and highlights new orientation button in dynamic list of orientations
-    /// </summary>
-    /// <param name="orientation">New orientation to add</param>
-    private void AddToOrientationsDynamicList(NamedOrientation orientation) {
-        ActionButton button = InstantiateActionButton(orientation);
-        button.GetComponent<ActionButton>().Highlight(2f);
-        OrientationsListLabel.text = "List of orientations:";
-    }
 
-    /// <summary>
-    /// Instantiates button representing orientation in OrientationDynamicList
-    /// </summary>
-    /// <param name="orientation">Orientation to be represented by the button</param>
-    /// <returns></returns>
-    private ActionButton InstantiateActionButton(NamedOrientation orientation) {
-        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, OrientationsDynamicList.transform).GetComponent<ActionButton>();
-        btn.transform.localScale = new Vector3(1, 1, 1);
-        btn.SetLabel(orientation.Name);
-
-        btn.Button.onClick.AddListener(() => OpenDetailMenu(orientation));
-        return btn;
-    }
-
-    /// <summary>
-    /// Instantiates button representing joints in JointsDynamicList
-    /// </summary>
-    /// <param name="joints">Joints to be represented by the button</param>
-    /// <returns></returns>
-    private ActionButton InstantiateActionButton(ProjectRobotJoints joints) {
-        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, JointsDynamicList.transform).GetComponent<ActionButton>();
-        btn.transform.localScale = new Vector3(1, 1, 1);
-        btn.SetLabel(joints.Name);
-
-        btn.Button.onClick.AddListener(() => OpenDetailMenu(joints));
-        return btn;
-    }
 
     public void UpdateJointsDynamicList(string robotName) {
         if (robotName == null)
@@ -342,15 +306,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             Notifications.Instance.ShowNotification("Failed to get robot's ID", "");
             return;
         }
-    }
-
-    /// <summary>
-    /// Adds and highlights new joints button in dynamic list of joints
-    /// </summary>
-    /// <param name="joints">New joints to add</param>
-    private void AddToJointsDynamicList(ProjectRobotJoints joints) {
-        ActionButton button = InstantiateActionButton(joints);
-        button.GetComponent<ActionButton>().Highlight(2f);
     }
 
 

@@ -79,10 +79,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
                 if (!string.IsNullOrEmpty(buttonTooltip.description)) {
                     interactable = false;
                 }
-                /*if (string.IsNullOrEmpty(QuaternionX.text) || string.IsNullOrEmpty(QuaternionY.text) || string.IsNullOrEmpty(QuaternionZ.text) || string.IsNullOrEmpty(QuaternionW.text)) {
-                    interactable = false;
-                    buttonTooltip.description = "All quaternion values are required";
-                }*/
             }
         }
         else {
@@ -105,13 +101,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         try {
 
             if (ManualMode) {
-                /*
-                decimal x = decimal.Parse(QuaternionX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-                decimal y = decimal.Parse(QuaternionY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-                decimal z = decimal.Parse(QuaternionZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-                decimal w = decimal.Parse(QuaternionW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-                IO.Swagger.Model.Orientation orientation = new IO.Swagger.Model.Orientation(w, x, y, z);
-                */
                 Orientation orientation = OrientationManualEdit.GetOrientation();
                 await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
             } else { //using robot
