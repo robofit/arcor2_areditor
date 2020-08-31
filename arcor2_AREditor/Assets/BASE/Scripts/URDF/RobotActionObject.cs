@@ -149,15 +149,40 @@ namespace Base {
             CreateModel(customCollisionModels);
             enabled = true;
             SetVisibility(visibility);
+            // if there should be an urdf robot model
             if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
-                if (RobotModel != null) {
-                    RobotModelLoaded();
-                } else {
-                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                }
+                // check if robot model exists
+                if (UrdfManager.Instance.CheckIfRobotModelExists(type)) {
+                    // check if newer robot model exists on the server
+                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
+                        // TODO destroy the old robot version
+                        UrdfManager.Instance.RemoveOldModels(type);
 
-                StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+                        // download newer version of the urdf
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+
+                    } else {
+                        // get the robot model
+                        RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
+                        if (RobotModel != null) {
+                            RobotModelLoaded();
+                        } else {
+                            Debug.LogError("Fatal error, robot model should be present and loaded, but it is not. Report bug.");
+                        }
+                    }
+                }
+                // robot model is not loaded at all, check if urdf is downloaded locally and import it, otherwise download it
+                else {
+                    // check if newer robot model exists on the server.. if it is not downloaded at all, it will return true
+                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
+                    } else { // the robot zip is downloaded, thus start direct build
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        UrdfManager.Instance.BuildRobotModelFromUrdf(type);
+                    }
+                }
             }
             if (loadResources) {
                 await LoadEndEffectors();

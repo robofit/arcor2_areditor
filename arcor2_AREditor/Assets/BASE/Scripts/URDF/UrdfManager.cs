@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using Base;
 using RosSharp.Urdf;
 using RosSharp.Urdf.Runtime;
@@ -30,52 +31,55 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of robot.</param>
     /// <returns></returns>
     public IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
-        // TODO: Check, if urdf has a new timestamp and needs to be downloaded and rebuilded
+        GameManager.Instance.SetTurboFramerate();
 
-        // We will download and build the urdf only if it has not been already downloaded and built
-        if (!RobotModels.ContainsKey(robotType)) {
-            GameManager.Instance.SetTurboFramerate();
+        Debug.Log("URDF: download started");
 
-            Debug.Log("URDF: download started");
-
-            string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
-            using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
-                // Request and wait for the desired page.
-                yield return www.Send();
-                if (www.isNetworkError || www.isHttpError) {
-                    Debug.LogError(www.error + " (" + uri + ")");
-                    Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
-                } else {
-                    string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
-                    Directory.CreateDirectory(robotDictionary);
-                    string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
-                    System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-                    string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
-                    try {
-                        Directory.Delete(urdfDictionary, true);
-                    } catch (DirectoryNotFoundException) {
-                        // ok, nothing to delete..
-                    }
-
-                    try {
-                        ZipFile.ExtractToDirectory(savePath, urdfDictionary);
-                        Debug.Log("URDF: zip extracted");
-                        //OnUrdfReady?.Invoke(this, new RobotUrdfArgs(urdfDictionary, robotType));
-                        OnUrdfDownloaded(urdfDictionary, robotType);
-                    } catch (Exception ex) when (ex is ArgumentException ||
-                                                    ex is ArgumentNullException ||
-                                                    ex is DirectoryNotFoundException ||
-                                                    ex is PathTooLongException ||
-                                                    ex is IOException ||
-                                                    ex is FileNotFoundException ||
-                                                    ex is InvalidDataException ||
-                                                    ex is UnauthorizedAccessException) {
-                        Debug.LogError(ex);
-                        Notifications.Instance.ShowNotification("Failed to extract URDF", "");
-                    }
+        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
+            // Request and wait for the desired page.
+            yield return www.Send();
+            if (www.isNetworkError || www.isHttpError) {
+                Debug.LogError(www.error + " (" + uri + ")");
+                Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
+            } else {
+                string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
+                Directory.CreateDirectory(robotDictionary);
+                string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
+                System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+                string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
+                try {
+                    Directory.Delete(urdfDictionary, true);
+                } catch (DirectoryNotFoundException) {
+                    // ok, nothing to delete..
+                }
+                try {
+                    ZipFile.ExtractToDirectory(savePath, urdfDictionary);
+                    Debug.Log("URDF: zip extracted");
+                    //OnUrdfReady?.Invoke(this, new RobotUrdfArgs(urdfDictionary, robotType));
+                    OnUrdfDownloaded(urdfDictionary, robotType);
+                } catch (Exception ex) when (ex is ArgumentException ||
+                                                ex is ArgumentNullException ||
+                                                ex is DirectoryNotFoundException ||
+                                                ex is PathTooLongException ||
+                                                ex is IOException ||
+                                                ex is FileNotFoundException ||
+                                                ex is InvalidDataException ||
+                                                ex is UnauthorizedAccessException) {
+                    Debug.LogError(ex);
+                    Notifications.Instance.ShowNotification("Failed to extract URDF", "");
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Builds specified robotType directly from downloaded urdf.
+    /// </summary>
+    /// <param name="robotType"></param>
+    public void BuildRobotModelFromUrdf(string robotType) {
+        string pathToUrdf = Application.persistentDataPath + "/urdf/" + robotType + "/urdf/";
+        OnUrdfDownloaded(pathToUrdf, robotType);
     }
 
     /// <summary>
@@ -104,10 +108,17 @@ public class UrdfManager : Singleton<UrdfManager> {
             Debug.Log("URDF: starting collada import");
 
             ImportUrdfObject(files[0].FullName, robotType);
-
-            // subscribe for ColladaImporter event in order to load robot links
-            ColladaImporter.Instance.OnModelImported += OnColladaModelImported;
         }
+    }
+
+    private void OnEnable() {
+        // subscribe for ColladaImporter event in order to load robot links
+        ColladaImporter.Instance.OnModelImported += OnColladaModelImported;
+    }
+
+    private void OnDisable() {
+        // unsubscribe for ColladaImporter event
+        ColladaImporter.Instance.OnModelImported -= OnColladaModelImported;
     }
 
 
@@ -145,6 +156,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         if (urdfRobots != null) {
             UrdfRobot urdfRobot = urdfRobots[0];
 
+            // TODO: make sure that this robotModel check really works
             // check if imported model corresponds to this robot
             RobotModel robotModel = GetRobotModel(urdfRobot.gameObject);
             if (robotModel != null) {
@@ -155,7 +167,6 @@ public class UrdfManager : Singleton<UrdfManager> {
 
                 //TODO: Temporarily, colliders are added directly to Visuals
                 AddColliders(importedModel.gameObject, setConvex: true);
-
                 Destroy(placeholderGameObject.gameObject);
 
                 robotModel.SetLinkVisualLoaded(importedModel.parent.parent.parent.name, importedModel.parent.gameObject.GetComponent<UrdfVisual>());
@@ -190,11 +201,71 @@ public class UrdfManager : Singleton<UrdfManager> {
     }
 
     /// <summary>
+    /// Removes all instanciated robot models of specified robotType.
+    /// </summary>
+    /// <param name="robotType">Type of the robot that will be removed.</param>
+    public void RemoveOldModels(string robotType) {
+        if (RobotModels.TryGetValue(robotType, out List<RobotModel> robotModels)) {
+            foreach (RobotModel robotModel in robotModels) {
+                Destroy(robotModel.RobotModelGameObject);
+            }
+        }
+        RobotModels.Remove(robotType);
+    }
+
+
+    /// <summary>
+    /// Checks that newer version of robot model exists on the server.
+    /// Returns true if so or if there is no downloaded zip file with the robot model at all,
+    /// false if downloaded zip file is already at its newest version. 
+    /// </summary>
+    /// <param name="fileName">Full path with the urdf zip file containing the robot model.</param>
+    /// <param name="robotType">Type of the robot.</param>
+    /// <returns></returns>
+    public bool CheckIfNewerRobotModelExists(string fileName, string robotType) {
+        Debug.Log("Checking if newer robot model exists.");
+
+        FileInfo urdfFileInfo = new FileInfo(Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
+        DateTime downloadedZipLastModified = urdfFileInfo.LastWriteTime;
+        if (!urdfFileInfo.Exists) {
+            Debug.Log("URDF zip file of the robot " + robotType + " has to be downloaded.");
+            return true;
+        }
+
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+
+        HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+        HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+
+        // t1 is earlier than t2 --> newer version of urdf is present on the server
+        if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
+            Debug.Log("Newer version is present on the server.");
+            httpWebResponse.Close();
+            return true;
+        } else {
+            Debug.Log("Downloaded version is already the latest one.");
+            httpWebResponse.Close();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the robot of specified type exists. Returns true if so, false if not.
+    /// </summary>
+    /// <param name="robotType">Type of the robot.</param>
+    /// <returns></returns>
+    public bool CheckIfRobotModelExists(string robotType) {
+        return RobotModels.ContainsKey(robotType);
+    }
+
+    /// <summary>
     /// Returns RobotModel of specified robotType. If there is no free RobotModel, it will create and return a new instance.
     /// </summary>
     /// <param name="robotType">Type of the robot that will be imported.</param>
     /// <returns></returns>
     public RobotModel GetRobotModelInstance(string robotType) {
+        // Check if newer model exists
+
         if (RobotModels.TryGetValue(robotType, out List<RobotModel> robotModels)) {
             if (robotModels.Count > 0) {
                 foreach (RobotModel robotModel in robotModels) {
