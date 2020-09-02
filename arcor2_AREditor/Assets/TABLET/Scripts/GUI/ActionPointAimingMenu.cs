@@ -61,7 +61,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
-        if (args.ActionPoint.Id != CurrentActionPoint.GetId())
+        if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
     }

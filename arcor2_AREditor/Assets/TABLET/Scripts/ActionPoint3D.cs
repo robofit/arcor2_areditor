@@ -135,7 +135,7 @@ public class ActionPoint3D : Base.ActionPoint {
         } else {
             int i = 1;
             foreach (Action3D action in Actions.Values) {
-                action.transform.localPosition = new Vector3(0, i * 0.1f, 0);
+                action.transform.localPosition = new Vector3(0, i * 0.03f, 0);
                 ++i;
                 action.transform.localScale = new Vector3(1, 1, 1);
             }
