@@ -123,7 +123,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
-        if (args.ActionPoint.Id != CurrentActionPoint.GetId())
+        if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         ActionPointName.text = args.ActionPoint.Name;
     }
