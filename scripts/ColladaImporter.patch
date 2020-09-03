@@ -1,5 +1,5 @@
 --- ColladaImporter.cs	Sat Dec 22 16:02:59 2018
-+++ ColladaImporter.cs	Wed Jun 17 20:54:45 2020
++++ ColladaImporter.cs	Tue Sep  1 14:35:40 2020
 @@ -13,0 +14 @@ using OrbCreationExtensions;
 +using System.Globalization;
 @@ -23 +24,4 @@ public class ColladaException: ApplicationExceptio
@@ -8,7 +8,7 @@
 +    public GameObject Data {
 +        get; set;
 +    }
-@@ -25 +29,157 @@ public class ColladaException: ApplicationExceptio
+@@ -25 +29,159 @@ public class ColladaException: ApplicationExceptio
 -	public static GameObject Import(string colladaString, bool includeEmptyNodes = false, string colliderName = "") {
 +    public ImportedColladaEventArgs(GameObject data) {
 +        Data = data;
@@ -82,9 +82,11 @@
 +                switch (asset.GetString("up_axis")) {
 +                    case "X_UP":
 +                        up_axis = 0;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
 +                        break;
 +                    case "Y_UP":
 +                        up_axis = 1;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
 +                        break;
 +                    case "Z_UP":
 +                        up_axis = 2;
@@ -167,7 +169,7 @@
 +    }
 +
 +    public static GameObject Import(string colladaString, bool includeEmptyNodes = false, string colliderName = "") {
-@@ -35,4 +195,15 @@ public class ColladaException: ApplicationExceptio
+@@ -35,4 +197,17 @@ public class ColladaException: ApplicationExceptio
 -			if(asset != null && asset.GetString("up_axis") == "Z_UP") {
 -				rotate = rotate * Quaternion.Euler(new Vector3(-90,0,0));
 -			}
@@ -176,9 +178,11 @@
 +                switch (asset.GetString("up_axis")) {
 +                    case "X_UP":
 +                        up_axis = 0;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
 +                        break;
 +                    case "Y_UP":
 +                        up_axis = 1;
++                        rotate = rotate * Quaternion.Euler(new Vector3(-90, 0, 90));
 +                        break;
 +                    case "Z_UP":
 +                        up_axis = 2;
@@ -187,13 +191,13 @@
 +                }
 +            }
 +            if (asset != null && asset.ContainsKey("unit")) {
-@@ -79 +250 @@ public class ColladaException: ApplicationExceptio
+@@ -79 +254 @@ public class ColladaException: ApplicationExceptio
 -		importedGameObject = new GameObject("ImportedColladaScene");
 +		importedGameObject = new GameObject("ImportedColladaObject");
-@@ -91 +262 @@ public class ColladaException: ApplicationExceptio
+@@ -91 +266 @@ public class ColladaException: ApplicationExceptio
 -						AppendGameObjectsFromNodes(importedGameObject, visual_scene.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
 +						//AppendGameObjectsFromNodes(importedGameObject, visual_scene.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
-@@ -97,12 +268,3 @@ public class ColladaException: ApplicationExceptio
+@@ -97,12 +272,3 @@ public class ColladaException: ApplicationExceptio
 -		MeshFilter[] meshFilters = importedGameObject.GetComponentsInChildren<MeshFilter>();
 -		if(meshFilters.Length == 1) {
 -			GameObject emptyObject = importedGameObject;
@@ -209,37 +213,37 @@
 +		importedGameObject.transform.position = translate;
 +		importedGameObject.transform.localScale = scale;
 +		importedGameObject.transform.rotation = rotate;
-@@ -124,2 +286,2 @@ public class ColladaException: ApplicationExceptio
+@@ -124,2 +290,2 @@ public class ColladaException: ApplicationExceptio
 -	private static void AppendGameObjectsFromNodes(GameObject parentGo, ArrayList nodes, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, ArrayList library_geometries, ArrayList library_nodes, bool includeEmptyNodes, string colliderName) {
 -		if(nodes == null) return;
 +	private IEnumerator AppendGameObjectsFromNodes(GameObject parentGo, ArrayList nodes, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, ArrayList library_geometries, ArrayList library_nodes, bool includeEmptyNodes, string colliderName) {
 +		if(nodes == null) yield break;
-@@ -150,3 +312,3 @@ public class ColladaException: ApplicationExceptio
+@@ -150,3 +316,3 @@ public class ColladaException: ApplicationExceptio
 -							GameObject go = ReadGeometry(url, instance_geometry, library_geometries, library_effects, library_materials, library_images);
 -							if(go != null) {
 -//								Debug.Log("new gameObject:"+go.name);
 +                            GameObject go = null;
 +                            yield return StartCoroutine(ReadGeometry(url, instance_geometry, library_geometries, library_effects, library_materials, library_images, callback: returnValue => { go = returnValue; }));
 +							if(go != null) {								
-@@ -155 +317,2 @@ public class ColladaException: ApplicationExceptio
+@@ -155 +321,2 @@ public class ColladaException: ApplicationExceptio
 -							}
 +                                //Debug.Log("new gameObject:" + go.name);
 +                            }
-@@ -159 +322 @@ public class ColladaException: ApplicationExceptio
+@@ -159 +326 @@ public class ColladaException: ApplicationExceptio
 -						AppendGameObjectsFromNodes(firstGo, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
 +						yield return StartCoroutine(AppendGameObjectsFromNodes(firstGo, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName));
-@@ -165 +328 @@ public class ColladaException: ApplicationExceptio
+@@ -165 +332 @@ public class ColladaException: ApplicationExceptio
 -					AppendGameObjectsFromNodes(go, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName);
 +                    yield return StartCoroutine(AppendGameObjectsFromNodes(go, node.GetArrayList("node", true), library_effects, library_materials, library_images, library_geometries, library_nodes, includeEmptyNodes, colliderName));
-@@ -171 +334 @@ public class ColladaException: ApplicationExceptio
+@@ -171 +338 @@ public class ColladaException: ApplicationExceptio
 -	private static void AppendGameObjectToNode(GameObject parentGo, GameObject go, Hashtable node, string colliderName) {
 +	private void AppendGameObjectToNode(GameObject parentGo, GameObject go, Hashtable node, string colliderName) {
-@@ -205 +368,3 @@ public class ColladaException: ApplicationExceptio
+@@ -205 +372,3 @@ public class ColladaException: ApplicationExceptio
 -		float rotX=0f;
 +        //Quaternion tr = Quaternion.identity;
 +
 +        float rotX=0f;
-@@ -209,27 +374,84 @@ public class ColladaException: ApplicationExceptio
+@@ -209,27 +378,84 @@ public class ColladaException: ApplicationExceptio
 -		for(int r=0;rotates!=null && r<rotates.Count;r++) {
 -			Hashtable rotate = rotates.GetHashtable(r);
 -			if(rotate!=null) {
@@ -351,7 +355,7 @@
 +            }
 +        }
 +		
-@@ -239,8 +461,2 @@ public class ColladaException: ApplicationExceptio
+@@ -239,8 +465,2 @@ public class ColladaException: ApplicationExceptio
 -		if(matrixString != null && matrixString.Length > 0) {
 -			float[] values = matrixString.ToFloatArray(' ');
 -			if(values != null && values.Length == 16) {
@@ -362,7 +366,7 @@
 -				nodeScale = new Vector3(Vector3.Magnitude((Vector3)matrix.GetRow(0)), Vector3.Magnitude((Vector3)matrix.GetRow(1)), Vector3.Magnitude((Vector3)matrix.GetRow(2)));
 +        if (matrixString != null && matrixString.Length > 0) {
 +            nodeRotation = Quaternion.Euler(new Vector3(rotX, rotY, rotZ));
-@@ -248,13 +464,25 @@ public class ColladaException: ApplicationExceptio
+@@ -248,13 +468,25 @@ public class ColladaException: ApplicationExceptio
 -				// This is playing dirty. You can not determin a negative scale from a matrix
 -				// see http://hub.jmonkeyengine.org/t/problem-with-fetching-the-scale-from-transformation-matrix/28048
 -				// Yet, unity somehow imports some objects with rotation 0,180,0 and scale -1,-1,-1
@@ -401,7 +405,7 @@
 +            } else {
 +                go.transform.localRotation = Quaternion.Euler(UpRotDirConv(nodeRotation.eulerAngles));
 +            }
-@@ -262,2 +490,10 @@ public class ColladaException: ApplicationExceptio
+@@ -262,2 +494,10 @@ public class ColladaException: ApplicationExceptio
 -            go.transform.localRotation = ConvertRotation(nodeRotation);
 -        }
 +            go.transform.localPosition = UpPosConv(nodeTranslation);
@@ -414,7 +418,7 @@
 +                go.transform.localRotation = nodeRotation;
 +            }
 +        }        
-@@ -265,0 +502,17 @@ public class ColladaException: ApplicationExceptio
+@@ -265,0 +506,17 @@ public class ColladaException: ApplicationExceptio
 +    private static Vector3 UpPosConv(Vector3 v) {
 +        Vector3 r = new Vector3();
 +        //All x,y,z Up right handed to convert to Y_up left handed Position
@@ -432,7 +436,7 @@
 +        }
 +        return r;
 +    }
-@@ -267 +520,37 @@ public class ColladaException: ApplicationExceptio
+@@ -267 +524,37 @@ public class ColladaException: ApplicationExceptio
 -	private static Vector3 ConvertPosition(Vector3 pos)
 +    private static Vector3 UpScaleConv(Vector3 v) {
 +        Vector3 r = new Vector3();
@@ -471,7 +475,7 @@
 +
 +
 +    private static Vector3 ConvertPosition(Vector3 pos)
-@@ -278,7 +567,14 @@ public class ColladaException: ApplicationExceptio
+@@ -278,7 +571,14 @@ public class ColladaException: ApplicationExceptio
 -		if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 180f) rotEuler = new Vector3(0,180,0);
 -		else if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 90f) rotEuler = new Vector3(0,180,270);
 -		else if(rotEuler.x==0f && rotEuler.y==0f && rotEuler.z == 270f) rotEuler = new Vector3(0,0,90);
@@ -493,28 +497,28 @@
 +            rotEuler = new Vector3(rotEuler.x, rotEuler.y * -1f, rotEuler.z * -1f);
 +        
 +        return rotEuler;
-@@ -286,0 +583,3 @@ public class ColladaException: ApplicationExceptio
+@@ -286,0 +587,3 @@ public class ColladaException: ApplicationExceptio
 +    private static bool IsApproximately(float a, float b) {
 +        return Mathf.Abs(a - b) < 0.002;
 +    }
-@@ -288 +586,0 @@ public class ColladaException: ApplicationExceptio
+@@ -288 +590,0 @@ public class ColladaException: ApplicationExceptio
 -	private static GameObject ReadGeometry(string url, Hashtable instance_geometry, ArrayList library_geometries, ArrayList library_effects, ArrayList library_materials, ArrayList library_images) {
-@@ -289,0 +588,3 @@ public class ColladaException: ApplicationExceptio
+@@ -289,0 +592,3 @@ public class ColladaException: ApplicationExceptio
 +
 +    private IEnumerator ReadGeometry(string url, Hashtable instance_geometry, ArrayList library_geometries, ArrayList library_effects, ArrayList library_materials, ArrayList library_images, Action<GameObject> callback) {
 +
-@@ -319,0 +621 @@ public class ColladaException: ApplicationExceptio
+@@ -319,0 +625 @@ public class ColladaException: ApplicationExceptio
 +                        yield return null;
-@@ -329,2 +631,3 @@ public class ColladaException: ApplicationExceptio
+@@ -329,2 +635,3 @@ public class ColladaException: ApplicationExceptio
 -						
 -						ArrayList triangleDefs = meshDef.GetArrayList("triangles", true);
 +                        yield return null;
 +
 +                        ArrayList triangleDefs = meshDef.GetArrayList("triangles", true);
-@@ -337,0 +641,2 @@ public class ColladaException: ApplicationExceptio
+@@ -337,0 +645,2 @@ public class ColladaException: ApplicationExceptio
 +                        yield return null;
 +
-@@ -403,6 +708,12 @@ public class ColladaException: ApplicationExceptio
+@@ -403,6 +712,12 @@ public class ColladaException: ApplicationExceptio
 -								float opacity = GetFirstTransparencyFromTechniques(effectTechniques);
 -								if(opacity < 1f) diffuseColor.a = opacity;
 -								if(diffuseColor.a < 1f) {
@@ -533,23 +537,23 @@
 +                                    if (sh != null)
 +                                        mats[k].shader = sh;
 +                                }
-@@ -411 +722 @@ public class ColladaException: ApplicationExceptio
+@@ -411 +726 @@ public class ColladaException: ApplicationExceptio
 -								// Debug.Log("GetNewParamForTextureUrl:"+textureUrl);
 +								//Debug.Log("GetNewParamForTextureUrl:"+textureUrl);
-@@ -413 +724 @@ public class ColladaException: ApplicationExceptio
+@@ -413 +728 @@ public class ColladaException: ApplicationExceptio
 -								//Debug.Log("GetFileUrlForTexture:"+textureUrl);
 +                                //Debug.Log("GetFileUrlForTexture:"+textureUrl);
-@@ -414,0 +726 @@ public class ColladaException: ApplicationExceptio
+@@ -414,0 +730 @@ public class ColladaException: ApplicationExceptio
 +                                mats[k].SetFloat("_Glossiness", 0f);
-@@ -423,0 +736,2 @@ public class ColladaException: ApplicationExceptio
+@@ -423,0 +740,2 @@ public class ColladaException: ApplicationExceptio
 +
 +                        yield return null;
-@@ -426,0 +741 @@ public class ColladaException: ApplicationExceptio
+@@ -426,0 +745 @@ public class ColladaException: ApplicationExceptio
 +            yield return null;
-@@ -428 +743 @@ public class ColladaException: ApplicationExceptio
+@@ -428 +747 @@ public class ColladaException: ApplicationExceptio
 -		return go;
 +        callback(go);
-@@ -544,3 +859,5 @@ public class ColladaException: ApplicationExceptio
+@@ -544,3 +863,5 @@ public class ColladaException: ApplicationExceptio
 -							string[] diffuseArray = diffuseString.Split(new char[' '], StringSplitOptions.RemoveEmptyEntries);
 -							if(diffuseArray.Length == 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0]), float.Parse(diffuseArray[1]), float.Parse(diffuseArray[2]), 1f);
 -							else if(diffuseArray.Length > 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0]), float.Parse(diffuseArray[1]), float.Parse(diffuseArray[2]), float.Parse(diffuseArray[3]));
@@ -558,15 +562,15 @@
 +
 +                            if (diffuseArray.Length == 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[1], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[2], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), 1f);
 +							else if(diffuseArray.Length > 3) material_diffuse_color = new Color(float.Parse(diffuseArray[0], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[1], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[2], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[3], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")));
-@@ -576 +893 @@ public class ColladaException: ApplicationExceptio
+@@ -576 +897 @@ public class ColladaException: ApplicationExceptio
 -							return float.Parse(transpString);
 +							return float.Parse(transpString, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"));
-@@ -582 +899 @@ public class ColladaException: ApplicationExceptio
+@@ -582 +903 @@ public class ColladaException: ApplicationExceptio
 -		return 1f;
 +		return 0;
-@@ -685 +1002 @@ public class ColladaException: ApplicationExceptio
+@@ -685 +1006 @@ public class ColladaException: ApplicationExceptio
 -											material_diffuse_color = new Color(float.Parse(diffuseArray[0]), float.Parse(diffuseArray[1]), float.Parse(diffuseArray[2]));
 +											material_diffuse_color = new Color(float.Parse(diffuseArray[0], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[1], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")), float.Parse(diffuseArray[2], NumberStyles.Any, CultureInfo.GetCultureInfo("en-US")));
-@@ -1077 +1394 @@ public class ColladaException: ApplicationExceptio
+@@ -1077 +1398 @@ public class ColladaException: ApplicationExceptio
 -		Vector3[] vs = null; 
 +        Vector3[] vs = null; 
