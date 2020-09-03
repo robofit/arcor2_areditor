@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,11 +39,23 @@ public class Action3D : Base.Action {
 
     public override void RunAction() {
         Visual.material.color = colorRunnning;
+        foreach (IO.Swagger.Model.ActionParameter p in Data.Parameters) {
+            if (p.Type == "pose") {
+                string orientationId = JsonConvert.DeserializeObject<string>(p.Value);
+                ProjectManager.Instance.HighlightOrientation(orientationId, true);
+            }
+        }
     }
 
     public override void StopAction() {
         if (Visual != null) {
             Visual.material.color = colorDefault;
+        }
+        foreach (IO.Swagger.Model.ActionParameter p in Data.Parameters) {
+            if (p.Type == "pose") {
+                string orientationId = JsonConvert.DeserializeObject<string>(p.Value);
+                ProjectManager.Instance.HighlightOrientation(orientationId, false);
+            }
         }
     }
 

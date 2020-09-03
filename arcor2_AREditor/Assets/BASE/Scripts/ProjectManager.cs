@@ -1113,7 +1113,14 @@ namespace Base {
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 
+        public void HighlightOrientation(string orientationId, bool highlight) {
+            ActionPoint ap = GetActionPointWithOrientation(orientationId);
+            APOrientation orientation = ap.GetOrientationVisual(orientationId);
+            orientation.HighlightOrientation(highlight);
+        }
 
+
+        
 
     }
 
