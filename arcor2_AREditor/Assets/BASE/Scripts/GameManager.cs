@@ -705,6 +705,8 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnConnected(object sender, EventArgs args) {
+            // initialize when connected to the server
+            ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
         }
 
