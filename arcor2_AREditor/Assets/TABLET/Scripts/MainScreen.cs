@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.Playables;
 using Base;
+using System.Linq;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
@@ -12,7 +13,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewProjectDialog NewProjectDialog;
     public InputDialog InputDialog;
-    public ButtonWithTooltip AddNewBtn;
+    public ButtonWithTooltip AddNewBtn, AscendingBtn, DescendingBtn;
 
     [SerializeField]
     private SceneOptionMenu sceneOptionMenu;
@@ -49,10 +50,16 @@ public class MainScreen : Base.Singleton<MainScreen>
     //filters
     private bool starredOnly = false;
 
+    private string orderBy = "modified";
+
+    private bool ascendingOrder = false;
+
 
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;
         CanvasGroup.blocksRaycasts = true;
+
+        SortCurrentList();
     }
 
     private void HideSceneProjectManagerScreen(object sender, EventArgs args) {
@@ -67,6 +74,55 @@ public class MainScreen : Base.Singleton<MainScreen>
         } else {
             ButtonsPortrait.SetActive(false);
             ButtonsLandscape.SetActive(true);
+        }
+    }
+
+    public void SetOrderBy(string orderBy) {
+        this.orderBy = orderBy;
+        SortCurrentList();
+    }
+
+    public void SetAscending(bool ascending) {
+        ascendingOrder = ascending;
+        AscendingBtn.gameObject.SetActive(ascending);
+        DescendingBtn.gameObject.SetActive(!ascending);
+        SortCurrentList();
+    }
+
+    private void SortCurrentList() {
+        List<Tile> tiles = null;
+        if (ScenesList.gameObject.activeSelf) {
+            tiles = SceneTiles.Select<SceneTile, Tile>(x => x).ToList();   
+        } else if (ProjectsList.gameObject.activeSelf) {
+            tiles = ProjectTiles.Select<ProjectTile, Tile>(x => x).ToList();
+        } else if (PackageList.gameObject.activeSelf) {
+            tiles = PackageTiles.Select<PackageTile, Tile>(x => x).ToList();
+        }
+        if (tiles == null)
+            return;
+        Debug.LogError(ascendingOrder);
+        switch (orderBy) {
+            case "name":
+                if (ascendingOrder)
+                    tiles.Sort((x, y) => x.GetLabel().CompareTo(y.GetLabel()));
+                else
+                    tiles.Sort((x, y) => y.GetLabel().CompareTo(x.GetLabel()));
+                break;
+            case "modified":
+                if (ascendingOrder)
+                    tiles.Sort((x, y) => x.Modified.CompareTo(y.Modified));
+                else
+                    tiles.Sort((x, y) => y.Modified.CompareTo(x.Modified));
+                break;
+            case "created":
+                if (ascendingOrder)
+                    tiles.Sort((x, y) => x.Created.CompareTo(y.Created));
+                else
+                    tiles.Sort((x, y) => y.Created.CompareTo(x.Created));
+                break;
+        }
+        for (int i = 0; i < tiles.Count; ++i) {
+            tiles[i].transform.SetSiblingIndex(i);
         }
     }
 
@@ -85,6 +141,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         SwitchToScenes();
     }
+
 
     private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
         foreach (SceneTile s in sceneTiles) {
@@ -147,6 +204,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         AddNewBtn.SetDescription("Add project");
         FilterProjectsBySceneId(null);
         FilterLists();
+        SortCurrentList();
     }
 
     public void SwitchToScenes() {
@@ -167,6 +225,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         AddNewBtn.SetDescription("Add scene");
         FilterScenesById(null);
         FilterLists();
+        SortCurrentList();
     }
 
     public void SwitchToPackages() {
@@ -184,6 +243,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         PackageList.gameObject.SetActive(true);
         AddNewBtn.gameObject.SetActive(false);
         FilterLists();
+        SortCurrentList();
     }
 
     public void HighlightTile(string tileId) {
@@ -296,10 +356,12 @@ public class MainScreen : Base.Singleton<MainScreen>
                           () => Base.GameManager.Instance.OpenScene(scene.Id),
                           () => SceneOptionMenu.Open(tile),
                           starred,
-                          scene.Id,
-                          scene.Modified.ToString());
+                          scene.Modified,
+                          scene.Modified,
+                          scene.Id);
             SceneTiles.Add(tile);
         }
+        SortCurrentList();
         //Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         //button.onClick.AddListener(ShowNewSceneDialog);
@@ -338,12 +400,14 @@ public class MainScreen : Base.Singleton<MainScreen>
                           async () => await Base.GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
                           starred,
+                          package.Modified,
+                          package.Modified,
                           package.Id,
                           projectName,
                           package.PackageMeta.Built.ToString());
             PackageTiles.Add(tile);
         }
-        
+        SortCurrentList();
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {
@@ -360,19 +424,21 @@ public class MainScreen : Base.Singleton<MainScreen>
                               () => GameManager.Instance.OpenProject(project.Id),
                               () => ProjectOptionMenu.Open(tile),
                               starred,
+                              project.Modified,
+                              project.Modified,
                               project.Id,
                               project.SceneId,
-                              sceneName,
-                              project.Modified.ToString());
+                              sceneName); 
                 ProjectTiles.Add(tile);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to load scene name.");
-            }            
+            }
         }
-       // Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
+        SortCurrentList();
+        // Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
-       // button.onClick.AddListener(() => NewProjectDialog.Open());
+        // button.onClick.AddListener(() => NewProjectDialog.Open());
     }
 
     public void NotImplemented() {
