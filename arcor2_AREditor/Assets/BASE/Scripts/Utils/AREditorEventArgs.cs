@@ -235,6 +235,50 @@ namespace Base {
         }
     }
 
+    public class RobotMoveToPoseEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToPoseEvent Event {
+            get; set;
+        }
+
+        public RobotMoveToPoseEventArgs(RobotMoveToPoseEvent @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToJointsEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToJointsEvent Event {
+            get; set;
+        }
+
+        public RobotMoveToJointsEventArgs(RobotMoveToJointsEvent @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToActionPointJointsEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToActionPointJointsEvent Event {
+            get; set;
+        }
+
+        public RobotMoveToActionPointJointsEventArgs(RobotMoveToActionPointJointsEvent @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToActionPointOrientationEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToActionPointOrientationEvent Event {
+            get; set;
+        }
+
+        public RobotMoveToActionPointOrientationEventArgs(RobotMoveToActionPointOrientationEvent @event) {
+            Event = @event;
+        }
+    }
+
 
 
     public class AREditorEventArgs {
@@ -256,5 +300,9 @@ namespace Base {
         public delegate void LogicItemChangedEventHandler(object sender, LogicItemChangedEventArgs args);
         public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
         public delegate void RobotUrdfModelEventHandler(object sender, RobotUrdfModelArgs args);
+        public delegate void RobotMoveToPoseEventHandler(object sender, RobotMoveToPoseEventArgs args);
+        public delegate void RobotMoveToJointsEventHandler(object sender, RobotMoveToJointsEventArgs args);
+        public delegate void RobotMoveToActionPointJointsEventHandler(object sender, RobotMoveToActionPointJointsEventArgs args);
+        public delegate void RobotMoveToActionPointOrientationHandler(object sender, RobotMoveToActionPointOrientationEventArgs args);
     }
 }

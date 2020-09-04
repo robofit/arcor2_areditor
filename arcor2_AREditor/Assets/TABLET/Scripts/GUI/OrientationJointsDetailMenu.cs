@@ -148,7 +148,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         else //joints
         {
             try {
-                await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, null);
+                await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(joints.Id);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update joints", ex.Message);
             }

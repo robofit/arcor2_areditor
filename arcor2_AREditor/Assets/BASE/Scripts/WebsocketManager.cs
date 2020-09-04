@@ -87,6 +87,10 @@ namespace Base {
         public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsBaseUpdated;
         public event AREditorEventArgs.StringEventHandler OnActionPointJointsRemoved;
 
+        public event AREditorEventArgs.RobotMoveToPoseEventHandler OnRobotMoveToPoseEvent;
+        public event AREditorEventArgs.RobotMoveToJointsEventHandler OnRobotMoveToJointsEvent;
+        public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
+        public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         /// <summary>
         /// ARServer domain or IP address
         /// </summary>
@@ -284,7 +288,16 @@ namespace Base {
                         HandleChangedObjectTypesEvent(data);
                         break;
                     case "RobotMoveToActionPointOrientation":
-                        HandleChangedObjectTypesEvent(data);
+                        HandleRobotMoveToActionPointOrientation(data);
+                        break;
+                    case "RobotMoveToPose":
+                        HandleRobotMoveToPoseEvent(data);
+                        break;
+                    case "RobotMoveToJoints":
+                        HandleRobotMoveToJointsEvent(data);
+                        break;
+                    case "RobotMoveToActionPointJoints":
+                        HandleRobotMoveToActionPointJointsEvent(data);
                         break;
                     case "CurrentAction":
                         HandleCurrentAction(data);
@@ -344,6 +357,8 @@ namespace Base {
             }
 
         }
+
+        
 
         /// <summary>
         /// Waits until response with selected ID is recieved.
@@ -442,10 +457,46 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleShowMainScreen(string data) {
             IO.Swagger.Model.ShowMainScreenEvent showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreenEvent>(data);
-            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
+            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));            
         }
 
-        /// <summary>
+        private void HandleRobotMoveToActionPointOrientation(string data) {
+            RobotMoveToActionPointOrientationEvent robotMoveToActionPointOrientationEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotMoveToActionPointOrientationEvent>(data);
+            OnRobotMoveToActionPointOrientationEvent?.Invoke(this, new RobotMoveToActionPointOrientationEventArgs(robotMoveToActionPointOrientationEvent));
+            if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.Failed)
+                Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointOrientationEvent.Data.Message);
+            else if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
+        }
+
+        private void HandleRobotMoveToPoseEvent(string data) {
+            RobotMoveToPoseEvent robotMoveToPoseEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotMoveToPoseEvent>(data);
+            OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
+            if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
+                Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
+            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
+        }
+
+        private void HandleRobotMoveToJointsEvent(string data) {
+            RobotMoveToJointsEvent robotMoveToJointsEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotMoveToJointsEvent>(data);
+            OnRobotMoveToJointsEvent?.Invoke(this, new RobotMoveToJointsEventArgs(robotMoveToJointsEvent));
+            if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.Failed)
+                Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToJointsEvent.Data.Message);
+            else if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
+        }
+
+        private void HandleRobotMoveToActionPointJointsEvent(string data) {
+            RobotMoveToActionPointJointsEvent robotMoveToActionPointJointsEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.RobotMoveToActionPointJointsEvent>(data);
+            OnRobotMoveToActionPointJointsEvent?.Invoke(this, new RobotMoveToActionPointJointsEventArgs(robotMoveToActionPointJointsEvent));
+            if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.Failed)
+                Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointJointsEvent.Data.Message);
+            else if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
+        }
+
+                /// <summary>
         /// Handles info about currently running action
         /// </summary>
         /// <param name="obj">Message from server</param>
@@ -1620,7 +1671,7 @@ namespace Base {
         }
 
         /// <summary>
-        /// Asks server to update action point joints using robot.
+        /// Asks server to update action point joints.
         /// Throws RequestFailedException when request failed
         /// </summary>
         /// <param name="robotId">ID of robot</param>
@@ -1636,6 +1687,27 @@ namespace Base {
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
+
+
+        /// <summary>
+        /// Asks server to update action point joints using robot.
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="robotId">ID of robot</param>
+        /// <param name="jointsId">Human readable name of action point joints</param>
+        /// <returns></returns>
+        public async Task UpdateActionPointJointsUsingRobot(string jointsId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs(jointsId: jointsId);
+            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest(r_id, "UpdateActionPointJoints", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse>(r_id);
+
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+
 
         /// <summary>
         /// Asks server to rename action point joints

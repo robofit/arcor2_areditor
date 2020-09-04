@@ -36,7 +36,7 @@ public class FocusConfirmationDialog : MonoBehaviour
                 Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
 
             await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(RobotId, EndEffectorId, OrientationId);
-            await WebsocketManager.Instance.UpdateActionPointJoints(JointsId, null);
+            await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(JointsId);
             
             GetComponent<ModalWindowManager>().CloseWindow();
         } catch (Base.RequestFailedException ex) {
