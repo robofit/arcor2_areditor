@@ -265,9 +265,6 @@ namespace Base {
                     case "SceneObjectChanged":
                         HandleSceneObjectChanged(data);
                         break;
-                    /*case "SceneServiceChanged":
-                        HandleSceneServiceChanged(data);
-                        break;*/
                     case "ActionPointChanged":
                         HandleActionPointChanged(data);
                         break;
@@ -283,8 +280,10 @@ namespace Base {
                     case "JointsChanged":
                         HandleJointsChanged(data);
                         break;
-                    //case "ObjectTypesChanged":
                     case "ChangedObjectTypes":
+                        HandleChangedObjectTypesEvent(data);
+                        break;
+                    case "RobotMoveToActionPointOrientation":
                         HandleChangedObjectTypesEvent(data);
                         break;
                     case "CurrentAction":
