@@ -102,7 +102,7 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         try {
             await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
         } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to add action point", ex.Message);
+            Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);
             return;
         }
         Close();
