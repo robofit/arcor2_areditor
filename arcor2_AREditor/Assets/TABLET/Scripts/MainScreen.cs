@@ -100,7 +100,6 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         if (tiles == null)
             return;
-        Debug.LogError(ascendingOrder);
         switch (orderBy) {
             case "name":
                 if (ascendingOrder)

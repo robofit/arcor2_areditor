@@ -1590,10 +1590,10 @@ namespace Base {
         /// <param name="endEffector">ID of end effector</param>
         /// <param name="orientationId">UUID of orientation</param>
         /// <returns></returns>
-        public async Task UpdateActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string orientationId) {
+        public async Task UpdateActionPointOrientationUsingRobot(string robotId, string endEffector, string orientationId) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffector);
-            IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs(actionPointId: id, robot: robotArg, orientationId: orientationId);
+            IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs(robot: robotArg, orientationId: orientationId);
             IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest(r_id, "UpdateActionPointOrientationUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse>(r_id);
@@ -1611,10 +1611,10 @@ namespace Base {
         /// <returns></returns>
         public async Task AddActionPointJoints(string id, string robotId, string name) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddActionPointJointsRequestArgs args = new IO.Swagger.Model.AddActionPointJointsRequestArgs(actionPointId: id, robotId: robotId, name: name);
-            IO.Swagger.Model.AddActionPointJointsRequest request = new IO.Swagger.Model.AddActionPointJointsRequest(r_id, "AddActionPointJoints", args);
+            IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs(actionPointId: id, robotId: robotId, name: name);
+            IO.Swagger.Model.AddActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.AddActionPointJointsUsingRobotRequest(r_id, "AddActionPointJointsUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.AddActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointJointsResponse>(r_id);
+            IO.Swagger.Model.AddActionPointJointsUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointJointsUsingRobotResponse>(r_id);
 
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
@@ -1627,9 +1627,9 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="jointsId">Human readable name of action point joints</param>
         /// <returns></returns>
-        public async Task UpdateActionPointJoints(string robotId, string jointsId) {
+        public async Task UpdateActionPointJoints(string jointsId, List<IO.Swagger.Model.Joint> joints) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(robotId: robotId, jointsId: jointsId);
+            IO.Swagger.Model.UpdateActionPointJointsRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsRequestArgs(jointsId: jointsId, joints: joints);
             IO.Swagger.Model.UpdateActionPointJointsRequest request = new IO.Swagger.Model.UpdateActionPointJointsRequest(r_id, "UpdateActionPointJoints", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsResponse>(r_id);

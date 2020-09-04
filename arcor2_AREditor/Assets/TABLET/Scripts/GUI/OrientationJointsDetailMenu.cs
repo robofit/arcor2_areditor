@@ -137,7 +137,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         {
             try {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), orientation.Id);
+                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed update orientation", ex.Message);
@@ -148,7 +148,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         else //joints
         {
             try {
-                await WebsocketManager.Instance.UpdateActionPointJoints(joints.RobotId, joints.Id);
+                await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, null);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update joints", ex.Message);
             }
