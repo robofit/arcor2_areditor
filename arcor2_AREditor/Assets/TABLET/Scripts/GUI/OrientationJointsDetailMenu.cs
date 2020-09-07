@@ -255,10 +255,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     public void Close() {
-        try {
-            CurrentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(false);
-        } catch (KeyNotFoundException ex) {
-        }
+        CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         SideMenu.Close();
     }
 
@@ -266,12 +263,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
-
-        try {
-            currentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(true);
-        } catch (KeyNotFoundException ex) {
-            Notifications.Instance.ShowNotification("", ex.Message);
-        }
 
         ShowMenu(currentActionPoint);
     }

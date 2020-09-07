@@ -84,7 +84,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.ShowMenu();
         SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
-        actionObject.SendMessage("Select");
+        actionObject.SendMessage("Select", true);
     }
 
     private static void ShowActionPoint(ActionPoint actionPoint) {

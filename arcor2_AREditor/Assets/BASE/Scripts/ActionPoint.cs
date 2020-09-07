@@ -446,8 +446,6 @@ namespace Base {
         /// <returns></returns>
         public IO.Swagger.Model.NamedOrientation GetOrientation(string id) {
             foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
-                Debug.LogError(orientation.Id);
-                Debug.LogError(id);
                 if (orientation.Id == id)
                     return orientation;
             }

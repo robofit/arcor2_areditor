@@ -7,6 +7,7 @@ using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(SimpleSideMenu))]
@@ -238,8 +239,26 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             }
         }
         foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
-            CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
+            ActionButton orientationButton = CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
+
+            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding orientation when hovering over button
+            OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
+            EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
+            // Create OnPointerEnter entry
+            EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerEnter
+            };
+            onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
+            eventTrigger.triggers.Add(onPointerEnter);
+
+            // Create OnPointerExit entry
+            EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
+                eventID = EventTriggerType.PointerExit
+            };
+            onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
+            eventTrigger.triggers.Add(onPointerExit);
         }
+
         UpdateOrientationsListLabel();
     }
 
@@ -315,6 +334,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OpenDetailMenu(NamedOrientation orientation) {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, orientation);
+        APOrientation orientationArrow = CurrentActionPoint.GetOrientationVisual(orientation.Id);
+        SceneManager.Instance.SetSelectedObject(orientationArrow.gameObject);
+        orientationArrow.SendMessage("Select", false);
     }
 
     /// <summary>
