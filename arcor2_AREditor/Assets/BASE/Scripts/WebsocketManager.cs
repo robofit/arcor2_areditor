@@ -1674,8 +1674,8 @@ namespace Base {
         /// Asks server to update action point joints.
         /// Throws RequestFailedException when request failed
         /// </summary>
-        /// <param name="robotId">ID of robot</param>
-        /// <param name="jointsId">Human readable name of action point joints</param>
+        /// <param name="jointsId">ID of joints</param>
+        /// <param name="joints">List of joints (with names and values) to update</param>
         /// <returns></returns>
         public async Task UpdateActionPointJoints(string jointsId, List<IO.Swagger.Model.Joint> joints) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -1693,8 +1693,7 @@ namespace Base {
         /// Asks server to update action point joints using robot.
         /// Throws RequestFailedException when request failed
         /// </summary>
-        /// <param name="robotId">ID of robot</param>
-        /// <param name="jointsId">Human readable name of action point joints</param>
+        /// <param name="jointsId">ID of joints</param>
         /// <returns></returns>
         public async Task UpdateActionPointJointsUsingRobot(string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);
