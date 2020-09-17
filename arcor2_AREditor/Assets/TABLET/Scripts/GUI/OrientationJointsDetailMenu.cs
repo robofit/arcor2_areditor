@@ -6,6 +6,7 @@ using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
@@ -43,10 +44,17 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
         WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdated;
-
+        WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
     }
 
-     private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
+    private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        if (joints != null && joints.Id == args.Data.Id) {
+            joints = args.Data;
+            UpdateMenu();
+        }
+    }
+
+    private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
          if (orientation != null && orientation.Id == args.Data.Id) {
             orientation = args.Data;
             UpdateMenu();
@@ -117,9 +125,23 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void OnJointsSaveClick() {
-        //TODO
-        Notifications.Instance.ShowNotification("Not implemented yet", "");
+    public async void OnJointsSaveClick() {
+        List<IO.Swagger.Model.Joint> updatedJoints = new List<IO.Swagger.Model.Joint>();
+        try {
+            foreach (LabeledInput input in JointsDynamicList.GetComponentsInChildren<LabeledInput>()) {
+                decimal value = decimal.Parse(input.Input.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                updatedJoints.Add(new IO.Swagger.Model.Joint(input.GetName(), value));
+            }
+
+            await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, updatedJoints);
+
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Joints update failed", ex.Message);
+            return;
+        } catch (Exception ex) { //decimal parsing exceptions
+            Notifications.Instance.ShowNotification("Incorrect joint value", ex.Message);
+            return;
+        }
     }
 
     public async void OnOrientationSaveClick() {
@@ -255,10 +277,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     public void Close() {
-        try {
-            CurrentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(false);
-        } catch (KeyNotFoundException ex) {
-        }
+        CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         SideMenu.Close();
     }
 
@@ -266,12 +285,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
-
-        try {
-            currentActionPoint.GetOrientationVisual(orientation.Id).HighlightOrientation(true);
-        } catch (KeyNotFoundException ex) {
-            Notifications.Instance.ShowNotification("", ex.Message);
-        }
 
         ShowMenu(currentActionPoint);
     }

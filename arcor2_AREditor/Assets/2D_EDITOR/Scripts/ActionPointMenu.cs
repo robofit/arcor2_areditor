@@ -270,7 +270,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void BackToParentMenu() {
         CurrentActionPoint.Parent.ShowMenu();
         Base.SceneManager.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
-        CurrentActionPoint.Parent.GetGameObject().SendMessage("Select");
+        CurrentActionPoint.Parent.GetGameObject().SendMessage("Select", true);
     }
 
     public void CollapseActions() {
