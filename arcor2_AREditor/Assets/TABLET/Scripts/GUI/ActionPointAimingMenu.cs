@@ -30,7 +30,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public GameObject OrientationsDynamicList, JointsDynamicList;
 
     [SerializeField]
-    private ConfirmationDialog ConfirmationDialog;
+    private ConfirmationDialog confirmationDialog;
+    public ConfirmationDialog ConfirmationDialog => confirmationDialog;
+
 
     [SerializeField]
     private AddOrientationMenu AddOrientationMenu;
@@ -179,10 +181,10 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     public void ShowUpdatePositionConfirmationDialog() {
-        ConfirmationDialog.Open("Update position",
+        confirmationDialog.Open("Update position",
                                 "Do you want to update position of action point " + CurrentActionPoint.Data.Name,
                                 () => UpdateActionPointPosition(),
-                                () => ConfirmationDialog.Close());
+                                () => confirmationDialog.Close());
     }
 
     /// <summary>
@@ -198,7 +200,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 string endEffectorId = PositionEndEffectorList.Dropdown.selectedText.text;
 
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
-                ConfirmationDialog.Close();
+                confirmationDialog.Close();
             }
             
         } catch (RequestFailedException ex) {
@@ -355,7 +357,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     public void OpenAddJointsMenu(bool manual) {
-        AddJointsMenu.ShowMenu(CurrentActionPoint, manual);
+        AddJointsMenu.ShowMenu(CurrentActionPoint);
     }
 
     public async void AddDefaultOrientation() {
