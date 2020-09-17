@@ -74,14 +74,15 @@ namespace Base {
 
 
         public async void GetInput() {
+            Debug.LogError("asdf");
             List<Action> actionList = ProjectManager.Instance.GetAllActions();
             actionList.Add(ProjectManager.Instance.StartAction);
             actionList.Add(ProjectManager.Instance.EndAction);
-            foreach (Action a in actionList) {
+            /*foreach (Action a in actionList) {
                 if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, a.Input)) {
                     a.Input.Disable();
                 }
-            }
+            }*/
             GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
         }
 
@@ -89,11 +90,11 @@ namespace Base {
             List<Action> actionList = ProjectManager.Instance.GetAllActions();
             actionList.Add(ProjectManager.Instance.StartAction);
             actionList.Add(ProjectManager.Instance.EndAction);
-            foreach (Action a in actionList) {
+            /*foreach (Action a in actionList) {
                 if (!await ConnectionManagerArcoro.Instance.ValidateConnection(a.Output, this)) {
                     a.Output.Disable();
                 }
-            }
+            }*/
             GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
         }
 
