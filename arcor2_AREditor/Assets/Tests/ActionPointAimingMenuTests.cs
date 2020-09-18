@@ -19,7 +19,8 @@ namespace TrilleonAutomation
         private int currentNumberOfOrientations = 1;
         private int currentNumberOfJoints = 1;
 
-        IO.Swagger.Model.ListProjectsResponseData testProject;
+        private string NameOfProjectWithRobot = "testProject1";
+        private string NameOfProjectWithoutRobot = "testProject2";
 
         Base.ActionPoint actionPoint;
         GameObject actionPointAimingMenu;
@@ -81,14 +82,6 @@ namespace TrilleonAutomation
         [SetUpClass]
         public IEnumerator SetUpClass()
         {
-            foreach (IO.Swagger.Model.ListProjectsResponseData project in GameManager.Instance.Projects) {
-                if (project.Name == "testProject1") {
-                    GameManager.Instance.OpenProject(project.Id);
-                    testProject = project;
-                    break;
-                }
-            }
-
             focusButton = Q.driver.Find(By.Name, "Focus");
             actionPointAimingMenu = Q.driver.Find(By.Name, "ActionPointAimingMenu", false);
             addOrientationMenu = Q.driver.Find(By.Name, "AddOrientationMenu", false);
@@ -171,6 +164,13 @@ namespace TrilleonAutomation
         [Automation("Action point aiming menu tests")]
         public IEnumerator AimingMenuExpertModeTest()
         {
+            foreach (IO.Swagger.Model.ListProjectsResponseData project in GameManager.Instance.Projects) {
+                if (project.Name == NameOfProjectWithRobot) {
+                    GameManager.Instance.OpenProject(project.Id);
+                    break;
+                }
+            }
+
             GameManager.Instance.ExpertMode = true;
             yield return new WaitForSeconds(4); //wait for project to load
 
@@ -217,6 +217,7 @@ namespace TrilleonAutomation
 
             //orientation collapsable menu tests
             yield return StartCoroutine(Q.assert.IsTrue(orientationAddUsingRobotBtn.gameObject.activeSelf, "Add orientation using robot button should be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationAddUsingRobotBtn.GetComponent<Button>().interactable, "Add orientation using robot button should be interactable"));
             yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.gameObject.activeSelf, "Add orientation manually button should be active"));
             yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.GetComponent<ActionButton>().GetLabel() == "Manual", "Label of right button in orientation add section should be 'Manual'"));
             yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == currentNumberOfOrientations, "There should be one orientation in orientations list"));
@@ -230,8 +231,6 @@ namespace TrilleonAutomation
             //close aiming menu
             yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
-
-
         }
 
         [DependencyTest(2)]
@@ -263,13 +262,12 @@ namespace TrilleonAutomation
 
             //joints collapsable menu tests
             yield return StartCoroutine(Q.assert.IsTrue(jointsAddUsingRobotBtn.gameObject.activeSelf, "Add joints using robot button should be active"));
-            yield return StartCoroutine(Q.assert.IsTrue(jointsDynamicList.transform.childCount == currentNumberOfJoints, "There should be " +currentNumberOfJoints + " joints in joints list"));
+            yield return StartCoroutine(Q.assert.IsTrue(jointsDynamicList.transform.childCount == currentNumberOfJoints, "There should be " + currentNumberOfJoints + " joints in joints list"));
 
 
             //close aiming menu
             yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
-
         }
 
         [DependencyTest(3)]
@@ -285,7 +283,7 @@ namespace TrilleonAutomation
             //add default
             yield return StartCoroutine(Q.driver.Click(orientationAddManualDefaultBtn, "Click on add default orientation."));
             yield return new WaitForSeconds(apiWaitingTime);
-            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be "+currentNumberOfOrientations+" orientations in list now"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list now"));
 
             //add using robot
             yield return StartCoroutine(Q.driver.Click(orientationAddUsingRobotBtn, "Click on add orientation using robot."));
@@ -297,7 +295,7 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.driver.Click(addOrientationMenuCreateBtn, "Click on ok button (create orientation using robot)."));
             yield return new WaitForSeconds(apiWaitingTime);
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddOrientationMenu.CurrentState == SimpleSideMenu.State.Closed, "Add orientation menu should be closed"));
-            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be "+currentNumberOfOrientations+" orientations in list now"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list now"));
             NamedOrientation usingRobotOrientation = null;
             try {
                 usingRobotOrientation = actionPoint.GetOrientationByName(orientationUsingRobotName);
@@ -314,13 +312,12 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.assert.IsTrue(!addOrientationMenuCreateBtn.GetComponent<Button>().interactable, "Ok button should not be interactable (existing name)"));
             yield return StartCoroutine(Q.driver.Click(addOrientationMenuBackBtn, "Click on back button (close add orientation menu)."));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddOrientationMenu.CurrentState == SimpleSideMenu.State.Closed, "Add orientation menu should be closed"));
-            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == currentNumberOfOrientations, "There should be "+currentNumberOfOrientations+" orientations in list"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list"));
 
 
             //close aiming menu
             yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
-
         }
 
 
@@ -352,7 +349,7 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.driver.Click(addOrientationMenuCreateBtn, "Click on ok button (create orientation using robot)."));
             yield return new WaitForSeconds(apiWaitingTime);
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddOrientationMenu.CurrentState == SimpleSideMenu.State.Closed, "Add orientation menu should be closed"));
-            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be "+currentNumberOfOrientations+" orientations in list now"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list now"));
             NamedOrientation orientation;
             try {
                 orientation = actionPoint.GetOrientationByName(orientationName);
@@ -367,7 +364,6 @@ namespace TrilleonAutomation
             //close aiming menu
             yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
-
         }
 
 
@@ -394,7 +390,7 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.driver.Click(addJointsMenuCreateBtn, "Click on ok button (create orientation using robot)."));
             yield return new WaitForSeconds(apiWaitingTime);
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddJointsMenu.CurrentState == SimpleSideMenu.State.Closed, "Add joints menu should be closed"));
-            yield return StartCoroutine(Q.assert.IsTrue(jointsDynamicList.transform.childCount == ++currentNumberOfJoints, "There should be "+currentNumberOfJoints+" joints in list now"));
+            yield return StartCoroutine(Q.assert.IsTrue(jointsDynamicList.transform.childCount == ++currentNumberOfJoints, "There should be " + currentNumberOfJoints + " joints in list now"));
             ProjectRobotJoints joints;
             try {
                 joints = actionPoint.GetJointsByName(jointsName);
@@ -451,11 +447,6 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.assert.IsTrue(detailMenuUpdateBtn.GetComponent<Button>().interactable, "Update button should be interactable"));
             yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().Equals(new Orientation()), "Orientation should be 0,0,0,1"));
 
-            //yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().X - 0m < 0.001m, "Orientation's X should be 0"));
-            //yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().Y - 0m < 0.001m, "Orientation's Y should be 0"));
-            //yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().Z - 0m < 0.001m, "Orientation's Z should be 0"));
-            //yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().W - 1m < 0.001m, "Orientation's W should be 1"));
-
 
             //edit orientation manually (euler angles)
             yield return StartCoroutine(Q.driver.Click(detailMenuEditOrientationCollapsable, "Click on edit orientation collapsable."));
@@ -475,12 +466,11 @@ namespace TrilleonAutomation
             //close aiming menu
             yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
-
         }
 
         [DependencyTest(7)]
         [Automation("Action point aiming menu tests")]
-        public IEnumerator OrientationDetailMenuTest() {
+        public IEnumerator OrientationDetailMenuLiteModeTest() {
             GameManager.Instance.ExpertMode = false;
 
             //open aiming menu
@@ -546,7 +536,7 @@ namespace TrilleonAutomation
 
         [DependencyTest(8)]
         [Automation("Action point aiming menu tests")]
-        public IEnumerator JointsDetailMenuTest() {
+        public IEnumerator JointsDetailMenuLiteModeTest() {
             GameManager.Instance.ExpertMode = false;
 
             //open aiming menu
@@ -656,6 +646,278 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
         }
 
+
+        // ---------------------------------------------------------------------
+        //Following tests with project without a robot
+        // ---------------------------------------------------------------------
+
+
+        [DependencyTest(10)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator AimingMenuNoRobotExpertModeTest() {
+            GameManager.Instance.CloseProject(true);
+            yield return new WaitForSeconds(4); //wait for project to close
+
+
+            foreach (IO.Swagger.Model.ListProjectsResponseData project in GameManager.Instance.Projects) {
+                if (project.Name == NameOfProjectWithoutRobot) {
+                    GameManager.Instance.OpenProject(project.Id);
+                    break;
+                }
+            }
+
+            yield return new WaitForSeconds(4); //wait for project to load
+            GameManager.Instance.ExpertMode = true;
+            currentNumberOfOrientations = 1; //reset counter for the new project
+
+            //open action point menu
+            actionPoint = ProjectManager.Instance.GetactionpointByName("sph_ap");
+            actionPoint.OnClick(Clickable.Click.MOUSE_RIGHT_BUTTON);
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+            yield return StartCoroutine(Q.assert.IsTrue(positionCollapsable.gameObject.activeSelf, "Position collapsable menu should be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationCollapsable.gameObject.activeSelf, "Orientations collapsable menu should be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(!jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should not be active."));
+
+
+            //position collapsable menu tests
+            yield return StartCoroutine(Q.assert.IsTrue(!positionRobotPickBlock.gameObject.activeSelf, "Update robot pick block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(positionExpertBlock.gameObject.activeSelf, "Update position manually block should be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(positionManualEdit.gameObject.activeSelf, "Position manual editing should be active"));
+
+            Position apPosition = positionManualEdit.GetComponent<PositionManualEdit>().GetPosition();
+            yield return StartCoroutine(Q.assert.IsTrue(apPosition.X == 0m && apPosition.Y == 0m && apPosition.Z == 0.2m, "Position values should be 0;0;0.2"));
+            //edit position manually
+            positionX.GetComponent<TMP_InputField>().text = "0.3";
+            positionY.GetComponent<TMP_InputField>().text = "-0.2";
+            positionZ.GetComponent<TMP_InputField>().text = "0.15";
+            yield return StartCoroutine(Q.driver.Click(positionUpdateManualBtn, "Click on update position manually."));
+            yield return new WaitForSeconds(apiWaitingTime);
+            var newPosition = actionPoint.Data.Position;
+            yield return StartCoroutine(Q.assert.IsTrue(newPosition.X == 0.3m && newPosition.Y == -0.2m && newPosition.Z == 0.15m, "Position of action point is not set right"));
+
+
+            //orientation collapsable menu tests
+            yield return StartCoroutine(Q.assert.IsTrue(!orientationAddUsingRobotBtn.GetComponent<Button>().interactable, "Add orientation using robot button should not be interactable"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.gameObject.activeSelf, "Add orientation manually button should be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.GetComponent<ActionButton>().GetLabel() == "Manual", "Label of right button in orientation add section should be 'Manual'"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == currentNumberOfOrientations, "There should be one orientation in orientations list"));
+
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
+
+
+        [DependencyTest(11)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator AimingMenuNoRobotLiteModeTest() {
+            GameManager.Instance.ExpertMode = false;
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+            yield return StartCoroutine(Q.assert.IsTrue(!positionCollapsable.gameObject.activeSelf, "Position collapsable menu should not be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationCollapsable.gameObject.activeSelf, "Orientations collapsable menu should be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(!jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should not be active."));
+
+
+            //orientation collapsable menu tests
+            yield return StartCoroutine(Q.assert.IsTrue(!orientationAddUsingRobotBtn.GetComponent<Button>().interactable, "Add orientation using robot button should not be interactable"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.gameObject.activeSelf, "Add default orientation button should be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationAddManualDefaultBtn.GetComponent<ActionButton>().GetLabel() == "Default", "Label of right button in orientation add section should be 'Default'"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == currentNumberOfOrientations, "There should be one orientation in orientations list"));
+
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
+
+
+        [DependencyTest(4)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator AddOrientationNoRobotLiteModeTest() {
+            GameManager.Instance.ExpertMode = false;
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+
+            //add default
+            yield return StartCoroutine(Q.driver.Click(orientationAddManualDefaultBtn, "Click on add default orientation."));
+            yield return new WaitForSeconds(apiWaitingTime);
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list now"));
+
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
+
+
+        [DependencyTest(12)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator AddOrientationNoRobotExpertModeTest() {
+            GameManager.Instance.ExpertMode = true;
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+
+            //add manual
+            yield return StartCoroutine(Q.driver.Click(orientationAddManualDefaultBtn, "Click on add manual orientation."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open, "Add orientation menu should be opened"));
+            yield return StartCoroutine(Q.assert.IsTrue(addOrientationMenuExpertBlock.gameObject.activeSelf, "Expert mode block should  be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!addOrientationMenuRobotPickBlock.gameObject.activeSelf, "Robot selection block should not be active"));
+            string orientationName = "ori_manual";
+            addOrientationMenuNameInput.GetComponent<TMP_InputField>().text = orientationName;
+
+            yield return StartCoroutine(Q.driver.Click(addOrientationMenuQuaternionEulerSwitch, "Click on switch between quaternion and euler angles."));
+            yield return StartCoroutine(Q.assert.IsTrue(!addOrientationMenuWInput.gameObject.activeSelf, "W input should not be active"));
+            yield return StartCoroutine(Q.driver.Click(addOrientationMenuQuaternionEulerSwitch, "Click on switch between quaternion and euler angles."));
+            yield return StartCoroutine(Q.assert.IsTrue(addOrientationMenuWInput.gameObject.activeSelf, "W input should be active"));
+
+            addOrientationMenuXInput.GetComponent<TMP_InputField>().text = "0.5";
+            addOrientationMenuWInput.GetComponent<TMP_InputField>().text = "1";
+            yield return StartCoroutine(Q.driver.Click(addOrientationMenuCreateBtn, "Click on ok button (create orientation using robot)."));
+            yield return new WaitForSeconds(apiWaitingTime);
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.AddOrientationMenu.CurrentState == SimpleSideMenu.State.Closed, "Add orientation menu should be closed"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == ++currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientations in list now"));
+            NamedOrientation orientation;
+            try {
+                orientation = actionPoint.GetOrientationByName(orientationName);
+            } catch (KeyNotFoundException ex) {
+                orientation = null;
+            }
+            yield return StartCoroutine(Q.assert.IsTrue(!orientation.IsNull(), "Orientation not found by name!"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientation.Orientation.X - 0.4472m < 0.001m, "Orientation saved with wrong value"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientation.Orientation.W - 0.8944m < 0.001m, "Orientation saved with wrong value"));
+
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
+
+
+        [DependencyTest(13)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator OrientationDetailNoRobotMenuExpertModeTest() {
+            GameManager.Instance.ExpertMode = true;
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+
+            //open "default" orientation
+            ActionButton orientationBtn = null;
+            ActionButton[] orientationsBtns = orientationsDynamicList.GetComponentsInChildren<ActionButton>();
+            foreach (ActionButton btn in orientationsBtns) {
+                if (btn.GetLabel() == "default") {
+                    orientationBtn = btn;
+                    break;
+                }
+            }
+            yield return StartCoroutine(Q.driver.Click(orientationBtn, "Click on default orientation."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open, "Orientation detail menu should be opened"));
+
+
+            yield return StartCoroutine(Q.assert.IsTrue(detailMenuNameInput.GetComponent<TMP_InputField>().text == "default", "Orientation name should be \"default\""));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuOrientationBlock.gameObject.activeSelf, "Orientation block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationExpertBlock.gameObject.activeSelf, "Orientation expert block should be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuJointsBlock.gameObject.activeSelf, "Joints block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuJointsExpertBlock.gameObject.activeSelf, "Joints expert block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuMoveHereBlock.gameObject.activeSelf, "Move here block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuUpdateBtn.GetComponent<Button>().interactable, "Update button should be not interactable"));
+            yield return StartCoroutine(Q.assert.IsTrue(detailMenuOrientationManualEdit.GetComponent<OrientationManualEdit>().GetOrientation().Equals(new Orientation()), "Orientation should be 0,0,0,1"));
+
+
+            //edit orientation manually (euler angles)
+            yield return StartCoroutine(Q.driver.Click(detailMenuEditOrientationCollapsable, "Click on edit orientation collapsable."));
+            yield return StartCoroutine(Q.driver.Click(detailMenuOrientationQuaternionEulerSwitch, "Click on switch to euler angles."));
+            detailMenuOrientationXInput.GetComponent<TMP_InputField>().text = "50";
+            yield return StartCoroutine(Q.driver.Click(detailMenuOrientationManualSaveBtn, "Click on save euler angles."));
+            yield return new WaitForSeconds(apiWaitingTime);
+            NamedOrientation orientation = actionPoint.GetNamedOrientationByName("default");
+            yield return StartCoroutine(Q.assert.IsTrue(orientation.Orientation.X - 0.4226m < 0.001m, "Orientation saved with wrong value"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientation.Orientation.W - 0.9063m < 0.001m, "Orientation saved with wrong value"));
+
+
+            //close
+            yield return StartCoroutine(Q.driver.Click(detailMenuBackBtn, "Click on back button (close detail menu)"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Closed, "Orientation detail menu should be closed"));
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
+
+        [DependencyTest(14)]
+        [Automation("Action point aiming menu tests")]
+        public IEnumerator OrientationDetailMenuNoRobotLiteModeTest() {
+            GameManager.Instance.ExpertMode = false;
+
+            //open aiming menu
+            yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
+
+
+            //open "default" orientation
+            ActionButton orientationBtn = null;
+            ActionButton[] orientationsBtns = orientationsDynamicList.GetComponentsInChildren<ActionButton>();
+            foreach (ActionButton btn in orientationsBtns) {
+                if (btn.GetLabel() == "default") {
+                    orientationBtn = btn;
+                    break;
+                }
+            }
+            yield return StartCoroutine(Q.driver.Click(orientationBtn, "Click on default orientation."));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open, "Orientation detail menu should be opened"));
+
+
+            yield return StartCoroutine(Q.assert.IsTrue(detailMenuNameInput.GetComponent<TMP_InputField>().text == "default", "Orientation name should be \"default\""));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuOrientationBlock.gameObject.activeSelf, "Orientation block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuOrientationExpertBlock.gameObject.activeSelf, "Orientation expert block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuJointsBlock.gameObject.activeSelf, "Joints block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuJointsExpertBlock.gameObject.activeSelf, "Joints expert block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuMoveHereBlock.gameObject.activeSelf, "Move here block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!detailMenuUpdateBtn.GetComponent<Button>().interactable, "Update button should not be interactable"));
+
+
+            //rename test
+            detailMenuNameInput.GetComponent<TMP_InputField>().text = "new_name";
+            detailMenuNameInput.GetComponent<TMP_InputField>().SendMessage("SendOnEndEdit");
+            yield return new WaitForSeconds(apiWaitingTime);
+            NamedOrientation orientation;
+            try {
+                orientation = actionPoint.GetOrientationByName("new_name");
+            } catch (KeyNotFoundException ex) {
+                orientation = null;
+            }
+            yield return StartCoroutine(Q.assert.IsTrue(!orientation.IsNull(), "Orientation name should be changed to \"new_name\"."));
+
+
+            //delete
+            yield return StartCoroutine(Q.driver.Click(detailMenuDeleteBtn, "Click on delete button"));
+            yield return StartCoroutine(Q.driver.Click(confirmationDialogOKButton, "Click on ok button."));
+            yield return new WaitForSeconds(apiWaitingTime);
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Closed, "Orientation detail menu should be closed"));
+            yield return StartCoroutine(Q.assert.IsTrue(orientationsDynamicList.transform.childCount == --currentNumberOfOrientations, "There should be " + currentNumberOfOrientations + " orientation in orientations list"));
+
+
+            //close aiming menu
+            yield return StartCoroutine(Q.driver.Click(backButton, "Click on back button"));
+            yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
+        }
 
         [TearDown]
         public IEnumerator TearDown()
