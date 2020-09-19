@@ -169,7 +169,7 @@ namespace Base {
         /// <summary>
         /// Temp storage for delayed package
         /// </summary>
-        private PackageState newPackageState;
+        private PackageStateData newPackageState;
 
         /// <summary>
         /// Indicates that project should be opened with delay (waiting for scene or action objects)
@@ -191,7 +191,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>
-        public const string ApiVersion = "0.8.0";
+        public const string ApiVersion = "0.8.0rc2";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -250,11 +250,11 @@ namespace Base {
         /// <summary>
         /// Holds info about server (version, supported RPCs, supported parameters etc.)
         /// </summary>
-        public IO.Swagger.Model.SystemInfoData SystemInfo;
+        public IO.Swagger.Model.SystemInfoResponseData SystemInfo;
         /// <summary>
         /// Holds info about currently running package
         /// </summary>
-        public PackageInfo PackageInfo;
+        public PackageInfoData PackageInfo;
 
         /// <summary>
         /// Holds whether delayed openning of main screen is requested
@@ -718,7 +718,7 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    IO.Swagger.Model.SystemInfoData systemInfo;
+                    IO.Swagger.Model.SystemInfoResponseData systemInfo;
                     try {
                         systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
                     } catch (RequestFailedException ex) {
@@ -882,7 +882,7 @@ namespace Base {
         /// When package runs failed with exception, show notification to the user
         /// </summary>
         /// <param name="data"></param>
-        internal void HandleProjectException(ProjectExceptionEventData data) {
+        internal void HandleProjectException(ProjectExceptionData data) {
             Notifications.Instance.ShowNotification("Project exception", data.Message);
         }
 
@@ -890,7 +890,7 @@ namespace Base {
         /// Display result of called action to the user
         /// </summary>
         /// <param name="data"></param>
-        internal void HandleActionResult(ActionResult data) {
+        internal void HandleActionResult(ActionResultData data) {
             if (data.Error != null)
                 Notifications.Instance.ShowNotification("Action execution failed", data.Error);
             else {
@@ -1013,9 +1013,9 @@ namespace Base {
         /// - running - the package is runnnig
         /// - paused - the package was paused
         /// - stopped - the package was stopped</param>
-        public async void PackageStateUpdated(IO.Swagger.Model.PackageState state) {
-            if (state.State == PackageState.StateEnum.Running ||
-                state.State == PackageState.StateEnum.Paused) {
+        public async void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+            if (state.State == PackageStateData.StateEnum.Running ||
+                state.State == PackageStateData.StateEnum.Paused) {
                 if (!ActionsManager.Instance.ActionsReady || PackageInfo == null) {
                     newPackageState = state;
                     openPackage = true;
@@ -1033,23 +1033,23 @@ namespace Base {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
                         OpenPackageRunningScreen();
-                        if (state.State == PackageState.StateEnum.Paused) {
+                        if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                         }
                     } catch (TimeoutException ex) {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
                     }
-                } else if (state.State == PackageState.StateEnum.Paused) {
+                } else if (state.State == PackageStateData.StateEnum.Paused) {
                     OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
-                } else if (state.State == PackageState.StateEnum.Running) {
+                } else if (state.State == PackageStateData.StateEnum.Running) {
                     OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
                 }
                 
                 
-            } else if (state.State == PackageState.StateEnum.Stopped) {
+            } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
@@ -1471,7 +1471,7 @@ namespace Base {
         /// </summary>
         /// <param name="systemInfo">Version string in format 0.0.0 (major.minor.patch)</param>
         /// <returns>True if versions are compatibile</returns>
-        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoData systemInfo) {
+        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoResponseData systemInfo) {
             
             if (systemInfo.ApiVersion == ApiVersion)
                 return true;

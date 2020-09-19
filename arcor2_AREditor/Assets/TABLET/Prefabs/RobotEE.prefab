@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Target: {fileID: 5107269571740474112}
 --- !u!1 &5107269571740474112
 GameObject:
@@ -58,7 +59,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 458eb9e6f5fde0b4780be0ad7d0a533d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   eeName: {fileID: 2613969908525368025}
+  RobotId: 
+  EEId: 
 --- !u!1 &7707804388805756647
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,14 +352,20 @@ PrefabInstance:
     - target: {fileID: 6082493595087969636, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 2e7ee0c64b3021a46be96a51517a1d94, type: 2}
-    m_RemovedComponents: []
+      objectReference: {fileID: 2100000, guid: d7f70b875c67eae4fa0a686355e98dd0, type: 2}
+    - target: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 6082493595087969636, guid: b4e538696a8355b4f95165a806cc9e1b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: b4e538696a8355b4f95165a806cc9e1b, type: 3}
 --- !u!1 &1138050967350426250 stripped
 GameObject:
