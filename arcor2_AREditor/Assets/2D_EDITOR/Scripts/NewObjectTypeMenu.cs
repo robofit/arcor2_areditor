@@ -135,6 +135,15 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             } catch (Base.RequestFailedException ex) {
                 buttonTooltip.description = ex.Message;
                 interactable = false;
+            } catch (FormatException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
+                interactable = false;
+            } catch (OverflowException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
+                interactable = false;
+            } catch (ArgumentNullException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
+                interactable = false;
             }
         }
 
