@@ -235,6 +235,50 @@ namespace Base {
         }
     }
 
+    public class RobotMoveToPoseEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToPose Event {
+            get; set;
+        }
+
+        public RobotMoveToPoseEventArgs(RobotMoveToPose @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToJointsEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToJoints Event {
+            get; set;
+        }
+
+        public RobotMoveToJointsEventArgs(RobotMoveToJoints @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToActionPointJointsEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToActionPointJoints Event {
+            get; set;
+        }
+
+        public RobotMoveToActionPointJointsEventArgs(RobotMoveToActionPointJoints @event) {
+            Event = @event;
+        }
+    }
+
+    public class RobotMoveToActionPointOrientationEventArgs : EventArgs {
+
+        public IO.Swagger.Model.RobotMoveToActionPointOrientation Event {
+            get; set;
+        }
+
+        public RobotMoveToActionPointOrientationEventArgs(RobotMoveToActionPointOrientation @event) {
+            Event = @event;
+        }
+    }
+
 
 
     public class AREditorEventArgs {
@@ -256,5 +300,9 @@ namespace Base {
         public delegate void LogicItemChangedEventHandler(object sender, LogicItemChangedEventArgs args);
         public delegate void ShowMainScreenEventHandler(object sender, ShowMainScreenEventArgs args);
         public delegate void RobotUrdfModelEventHandler(object sender, RobotUrdfModelArgs args);
+        public delegate void RobotMoveToPoseEventHandler(object sender, RobotMoveToPoseEventArgs args);
+        public delegate void RobotMoveToJointsEventHandler(object sender, RobotMoveToJointsEventArgs args);
+        public delegate void RobotMoveToActionPointJointsEventHandler(object sender, RobotMoveToActionPointJointsEventArgs args);
+        public delegate void RobotMoveToActionPointOrientationHandler(object sender, RobotMoveToActionPointOrientationEventArgs args);
     }
 }

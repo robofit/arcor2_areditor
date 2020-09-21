@@ -109,7 +109,7 @@ namespace Base {
             SceneManager.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
 
             ConnectionToParent = newConnection;
-
+            /*
             // Add connection renderer into ChangeMaterialOnSelected script attached on parent AO 
             ChangeMaterialOnSelected changeMaterial;            
             changeMaterial = parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
@@ -119,7 +119,7 @@ namespace Base {
                 changeMaterial = parent.GetGameObject().AddComponent<ChangeMaterialOnSelected>();
                 changeMaterial.ClickMaterial = ConnectionToParent.ClickMaterial;
             }
-            changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());
+            changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());*/
         }
 
         internal string GetFreeOrientationName() {
@@ -179,7 +179,7 @@ namespace Base {
             foreach (NamedOrientation orientation in Data.Orientations)
                 if (orientation.Id == id)
                     return orientation;
-            throw new KeyNotFoundException("Orientation with name " + name + " not found.");
+            throw new KeyNotFoundException("Orientation with id " + id + " not found.");
         }
 
         public NamedOrientation GetFirstOrientation() {
@@ -196,6 +196,21 @@ namespace Base {
                 
             }
             throw new ItemNotFoundException("No orientation");
+        }
+
+        /// <summary>
+        /// Returns visual representation of orientation
+        /// </summary>
+        /// <param name="id">UUID of orientation</param>
+        /// <returns></returns>
+        public APOrientation GetOrientationVisual(string id) {
+            foreach (Transform transform in orientations.transform) {
+                APOrientation orientation = transform.GetComponent<APOrientation>();
+                if (orientation.OrientationId == id) {
+                    return orientation;
+                }
+            }
+            throw new KeyNotFoundException("Orientation with id " + id + " not found.");
         }
 
         public IO.Swagger.Model.Pose GetDefaultPose() {
@@ -258,8 +273,8 @@ namespace Base {
             // Remove connections to parent
             if (ConnectionToParent != null && ConnectionToParent.gameObject != null) {
                 // remove renderer from ChangeMaterialOnSelected script attached on the AO
-                ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
-                changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());
+                /*ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
+                changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());*/
                 // remove connection from connectinos manager
                 SceneManager.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
                 // destroy connection gameobject
@@ -341,33 +356,34 @@ namespace Base {
             List<string> currentA = new List<string>();
             // Connections between actions (action -> output --- input <- action2)
             Dictionary<string, string> connections = new Dictionary<string, string>();
+            if (projectActionPoint.Actions != null) {
+                //update actions
+                foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
 
-            //update actions
-            foreach (IO.Swagger.Model.Action projectAction in projectActionPoint.Actions) {
-                
-                // if action exist, just update it, otherwise create new
-                if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
-                    try {
-                        action = ProjectManager.Instance.SpawnAction(projectAction, this);
-                    } catch (RequestFailedException ex) {
-                        Debug.LogError(ex);
-                        continue;
-                    }                    
+                    // if action exist, just update it, otherwise create new
+                    if (!Actions.TryGetValue(projectAction.Id, out Action action)) {
+                        try {
+                            action = ProjectManager.Instance.SpawnAction(projectAction, this);
+                        } catch (RequestFailedException ex) {
+                            Debug.LogError(ex);
+                            continue;
+                        }
+                    }
+                    // updates name of the action
+                    action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
+                    // updates parameters of the action
+                    action.ActionUpdate(projectAction);
+
+                    // Add current connection from the server, we will only map the outputs
+                    /*foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
+                        //if(!connections.ContainsKey(projectAction.Id))
+                        connections.Add(projectAction.Id, actionIO.Default);
+                    }*/
+
+                    // local list of all actions for current action point
+                    currentA.Add(projectAction.Id);
                 }
-                // updates name of the action
-                action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
-                // updates parameters of the action
-                action.ActionUpdate(projectAction);
-
-                // Add current connection from the server, we will only map the outputs
-                /*foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                    //if(!connections.ContainsKey(projectAction.Id))
-                    connections.Add(projectAction.Id, actionIO.Default);
-                }*/
-
-                // local list of all actions for current action point
-                currentA.Add(projectAction.Id);
-            }
+            }        
 
 
             if (Parent != null) {
@@ -559,7 +575,7 @@ namespace Base {
             }
             if (!ProjectManager.Instance.APOrientationsVisible)
                 return;
-            if (!OrientationsVisible)
+            if (!OrientationsVisible || Data.Orientations == null)
                 return;
             foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
                 APOrientation apOrientation = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orientations.transform).GetComponent<APOrientation>();

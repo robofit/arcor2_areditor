@@ -15,7 +15,7 @@ public class Tile : MonoBehaviour
     [SerializeField]
     private GameObject star;
     public Image TopImage;
-
+    public DateTime Created, Modified;
 
 
     public void SetLabel(string label) {
@@ -48,11 +48,13 @@ public class Tile : MonoBehaviour
         return star.activeSelf;
     }
 
-    public virtual void InitTile(string tileLabel, UnityAction mainCallback, UnityAction optionCallback, bool starVisible) {
+    public virtual void InitTile(string tileLabel, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, DateTime created, DateTime modified) {
         SetLabel(tileLabel);
         if (mainCallback != null) {
             AddListener(mainCallback);
         }
+        Created = created;
+        Modified = modified;
         OptionAddListener(optionCallback);
         SetStar(starVisible);
     }

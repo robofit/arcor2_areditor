@@ -4,8 +4,8 @@ using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 using Base;
-using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
 using System.Collections.Generic;
+using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionObjectMenu : MonoBehaviour, IMenu {

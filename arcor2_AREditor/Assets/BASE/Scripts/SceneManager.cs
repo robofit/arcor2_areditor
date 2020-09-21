@@ -262,7 +262,7 @@ namespace Base {
             if (!RobotsEEVisible) {
                 return;
             }
-            foreach (EefPose eefPose in args.Data.EndEffectors) {
+            foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
                 try {
                     IRobot robot = GetRobot(args.Data.RobotId);
                     RobotEE ee = robot.GetEE(eefPose.EndEffectorId);

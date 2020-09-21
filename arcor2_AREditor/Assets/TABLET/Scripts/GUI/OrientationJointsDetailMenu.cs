@@ -6,6 +6,7 @@ using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
@@ -13,16 +14,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
 
-    //public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input (editing orientation)
     public OrientationManualEdit OrientationManualEdit;
 
     public Slider SpeedSlider;
 
     [SerializeField]
-    private TooltipContent buttonTooltip;
+    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip;
 
     [SerializeField]
-    private Button UpdateButton;
+    private Button UpdateButton, ManualOrientationEditButton, ManualJointsEditButton;
 
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
@@ -44,10 +44,17 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
         WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdated;
-
+        WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
     }
 
-     private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
+    private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        if (joints != null && joints.Id == args.Data.Id) {
+            joints = args.Data;
+            UpdateMenu();
+        }
+    }
+
+    private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
          if (orientation != null && orientation.Id == args.Data.Id) {
             orientation = args.Data;
             UpdateMenu();
@@ -67,27 +74,20 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 MoveHereBlock.SetActive(true);
 
                 UpdateButton.interactable = true;
-                buttonTooltip.enabled = false;
+                updateButtonTooltip.enabled = false;
 
                 OnRobotChanged((string) RobotsList.GetValue());
             } else {
                 OrientationBlock.SetActive(false);
                 MoveHereBlock.SetActive(false);
 
-                buttonTooltip.description = "There is no robot to update orientation with";
-                buttonTooltip.enabled = true;
+                updateButtonTooltip.description = "There is no robot to update orientation with";
+                updateButtonTooltip.enabled = true;
                 UpdateButton.interactable = false;
             }
 
             OrientationManualEdit.SetOrientation(orientation.Orientation);
-            /*
-            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
-            numberFormatInfo.NumberDecimalSeparator = ".";
-            InputX.text = orientation.Orientation.X.ToString(numberFormatInfo);
-            InputY.text = orientation.Orientation.Y.ToString(numberFormatInfo);
-            InputZ.text = orientation.Orientation.Z.ToString(numberFormatInfo);
-            InputW.text = orientation.Orientation.W.ToString(numberFormatInfo);
-            */
+            ValidateFieldsOrientation();
         } else { //joints
             DetailName.text = joints.Name;
             UpdateJointsList();
@@ -125,20 +125,27 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public void OnJointsSaveClick() {
-        //TODO
-        Notifications.Instance.ShowNotification("Not implemented yet", "");
+    public async void OnJointsSaveClick() {
+        List<IO.Swagger.Model.Joint> updatedJoints = new List<IO.Swagger.Model.Joint>();
+        try {
+            foreach (LabeledInput input in JointsDynamicList.GetComponentsInChildren<LabeledInput>()) {
+                decimal value = decimal.Parse(input.Input.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                updatedJoints.Add(new IO.Swagger.Model.Joint(input.GetName(), value));
+            }
+
+            await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, updatedJoints);
+
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Joints update failed", ex.Message);
+            return;
+        } catch (Exception ex) { //decimal parsing exceptions
+            Notifications.Instance.ShowNotification("Incorrect joint value", ex.Message);
+            return;
+        }
     }
 
     public async void OnOrientationSaveClick() {
         try {
-            /*
-            decimal x = decimal.Parse(InputX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal y = decimal.Parse(InputY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal z = decimal.Parse(InputZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            decimal w = decimal.Parse(InputW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
-            await WebsocketManager.Instance.UpdateActionPointOrientation(new Orientation(w, x, y, z), orientation.Id);
-            */
             await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
             Notifications.Instance.ShowNotification("Orientation updated", "");
         } catch (RequestFailedException ex) {
@@ -152,7 +159,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         {
             try {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), orientation.Id);
+                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id);
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed update orientation", ex.Message);
@@ -163,7 +170,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         else //joints
         {
             try {
-                await WebsocketManager.Instance.UpdateActionPointJoints(joints.RobotId, joints.Id);
+                await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(joints.Id);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update joints", ex.Message);
             }
@@ -256,8 +263,21 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         Notifications.Instance.ShowNotification("Not implemented yet", "");
     }
 
+    public async void ValidateFieldsOrientation() {
+        bool interactable = true;
+
+        manualOrientationEditTooltip.description = OrientationManualEdit.ValidateFields();
+        if (!string.IsNullOrEmpty(manualOrientationEditTooltip.description)) {
+            interactable = false;
+        }
+
+        manualOrientationEditTooltip.enabled = !interactable;
+        ManualOrientationEditButton.interactable = interactable;
+    }
+
 
     public void Close() {
+        CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         SideMenu.Close();
     }
 
@@ -265,8 +285,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
-
-        
 
         ShowMenu(currentActionPoint);
     }
@@ -289,6 +307,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         OrientationExpertModeBlock.SetActive(isOrientationDetail && GameManager.Instance.ExpertMode);
         JointsBlock.SetActive(!isOrientationDetail);
         JointsExpertModeBlock.SetActive(!isOrientationDetail && GameManager.Instance.ExpertMode);
+
 
         UpdateMenu();
         SideMenu.Open();

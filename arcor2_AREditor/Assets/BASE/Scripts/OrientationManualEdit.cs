@@ -68,12 +68,25 @@ public class OrientationManualEdit : MonoBehaviour
         string tooltipDescription = "";
 
         if (string.IsNullOrEmpty(InputX.text) || string.IsNullOrEmpty(InputY.text) || string.IsNullOrEmpty(InputZ.text)) {
-            tooltipDescription = "All euler angles values are required";
+            tooltipDescription = "All values are required";
         }
 
         if (!eulerMode) {
             if (string.IsNullOrEmpty(InputW.text)) {
-                tooltipDescription = "All quaternion values are required";
+                tooltipDescription = "All values are required";
+            }
+        }
+
+        if (string.IsNullOrEmpty(tooltipDescription)) {
+            try {
+                decimal.Parse(InputX.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                decimal.Parse(InputY.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                decimal.Parse(InputZ.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                if (!eulerMode) {
+                    decimal.Parse(InputW.text, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+                }
+            } catch (Exception ex) {
+                tooltipDescription = ex.Message;
             }
         }
         return tooltipDescription;

@@ -51,7 +51,7 @@ namespace Base {
         /// <summary>
         /// Holds current diameter of action points
         /// </summary>
-        public float APSize = 0.5f;
+        public float APSize = 0.2f;
         /// <summary>
         /// Indicates if project is loaded
         /// </summary>
@@ -477,6 +477,7 @@ namespace Base {
         /// </summary>
         public void LoadSettings() {
             APOrientationsVisible = PlayerPrefsHelper.LoadBool("project/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
+            APSize = PlayerPrefsHelper.LoadFloat("project/" + ProjectMeta.Id + "/APSize", 0.2f);
         }
 
         /// <summary>
@@ -1112,7 +1113,14 @@ namespace Base {
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 
+        public void HighlightOrientation(string orientationId, bool highlight) {
+            ActionPoint ap = GetActionPointWithOrientation(orientationId);
+            APOrientation orientation = ap.GetOrientationVisual(orientationId);
+            orientation.HighlightOrientation(highlight);
+        }
 
+
+        
 
     }
 

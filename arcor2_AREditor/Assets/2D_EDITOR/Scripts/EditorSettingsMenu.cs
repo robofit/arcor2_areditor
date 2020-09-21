@@ -195,7 +195,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
         actionObject.ShowMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
-        actionObject.SendMessage("Select");
+        actionObject.SendMessage("Select", true);
     }
 
     public void OnAPSizeChange(float value) {

@@ -119,6 +119,10 @@ public class SceneOptionMenu : TileOptionMenu {
 
     }
 
+    public void NewProject() {
+        MainScreen.Instance.NewProjectDialog.Open(sceneTile.GetLabel());
+    }
+
    
 
 

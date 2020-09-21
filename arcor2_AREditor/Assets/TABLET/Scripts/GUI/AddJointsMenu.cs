@@ -12,7 +12,6 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
     public TMPro.TMP_InputField NameInput;
     public DropdownParameter RobotsList;
-    public GameObject ExpertModeBlock;
 
 
     [SerializeField]
@@ -23,7 +22,6 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
     private SimpleSideMenu SideMenu;
 
-    private bool ManualMode; //true for manual, false for using robot
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
@@ -34,28 +32,9 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
-        if (robotsListDropdown.dropdownItems.Count > 0) {
-            OnRobotChanged((string) RobotsList.GetValue());
-        }
+        RobotsList.gameObject.GetComponent<DropdownRobots>().Init((string x) =>{ }, false);
 
         ValidateFields();
-    }
-
-    private void OnRobotChanged(string robot_name) {
-        //TODO: v expertmodu měnit seznam jointu
-        if (!ManualMode)
-            return;
-        foreach (RectTransform o in ExpertModeBlock.GetComponentsInChildren<RectTransform>()) {
-            if (!o.gameObject.CompareTag("Persistent")) {
-                Destroy(o.gameObject);
-            }
-        }
-        
-        LabeledInput joint = Instantiate(GameManager.Instance.LabeledFloatInput, ExpertModeBlock.transform).GetComponent<LabeledInput>();
-        joint.transform.localScale = new Vector3(1, 1, 1);
-        joint.SetLabel("joint1", "jnt nr 1");
-        joint.SetValue("55.66");
     }
 
     public async void ValidateFields() {
@@ -70,18 +49,13 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
             interactable = false;
         }
 
-        if (ManualMode) {
-            if (interactable) {
-                //TODO: check if all joints angles are filled - actually prolly needed to do this after when clicked create button
-            }
-        } else {
-            if (interactable) {
-                if (RobotsList.Dropdown.dropdownItems.Count == 0) {
-                    interactable = false;
-                    buttonTooltip.description = "There is no robot to be used";
-                }
+        if (interactable) {
+            if (RobotsList.Dropdown.dropdownItems.Count == 0) {
+                interactable = false;
+                buttonTooltip.description = "There is no robot to be used";
             }
         }
+        
         buttonTooltip.enabled = !interactable;
         CreateNewJoints.interactable = interactable;
     }
@@ -102,7 +76,7 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         try {
             await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
         } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to add action point", ex.Message);
+            Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);
             return;
         }
         Close();
@@ -113,11 +87,8 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     /// Opens menu for adding joints
     /// </summary>
     /// <param name="actionPoint"></param>
-    /// <param name="manual">true for manual mode, false for using robot</param>
-    public void ShowMenu(Base.ActionPoint actionPoint, bool manual) {
-        ManualMode = manual;
+    public void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
-        ExpertModeBlock.SetActive(ManualMode);
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
 
         UpdateMenu();

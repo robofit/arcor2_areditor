@@ -53,7 +53,7 @@ namespace Base {
         private async void OnDisable() {
             await DisableVisualisationOfEE();
             if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
@@ -122,7 +122,7 @@ namespace Base {
         public async Task DisableVisualisationOfEE() {
             eeVisible = false;
             if (EndEffectors.Count > 0) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
                 HideRobotEE();
             }
         }
@@ -131,7 +131,7 @@ namespace Base {
         public async Task EnableVisualisationOfEE() {
             eeVisible = true;
             if (EndEffectors.Count > 0) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
                 ShowRobotEE();
             }
         }
@@ -229,7 +229,7 @@ namespace Base {
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
-            await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
+            await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
 

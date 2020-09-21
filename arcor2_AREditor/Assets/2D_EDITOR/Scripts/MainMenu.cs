@@ -12,19 +12,13 @@ using IO.Swagger.Model;
 public class MainMenu : MonoBehaviour, IMenu {
     public GameObject ActionObjectButtonPrefab, ServiceButtonPrefab;
     public GameObject ProjectControlButtons, ActionObjectsContent, ActionObjects,
-        SceneControlButtons, MainControlButtons, Services, ServicesContent, RunningProjectControls;
+        SceneControlButtons, MainControlButtons, RunningProjectControls;
     public GameObject PauseBtn, ResumeBtn;
 
     [SerializeField]
     private ButtonWithTooltip CloseProjectBtn, CloseSceneBtn, BuildAndRunBtn, BuildBtn, SaveProjectBtn, SaveSceneBtn, CreateProjectBtn;
 
-   // public ServiceSettingsDialog ServiceSettingsDialog;
-    //public AutoAddObjectDialog AutoAddObjectDialog;
-    //public AddSerivceDialog AddNewServiceDialog;
-
     private GameObject debugTools;
-
-    //private Dictionary<string, ServiceButton> serviceButtons = new Dictionary<string, ServiceButton>();
 
     [SerializeField]
     private InputDialog inputDialog;
@@ -124,14 +118,10 @@ public class MainMenu : MonoBehaviour, IMenu {
     private void OnOpenSceneEditor(object sender, EventArgs eventArgs) {
         SceneControlButtons.SetActive(true);
         ActionObjects.SetActive(true);
-       // ServicesUpdated(null, new Base.ServiceEventArgs(null));
-        Services.SetActive(true);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
         ProjectControlButtons.SetActive(true);
-      //  ServicesUpdated(null, new Base.ServiceEventArgs(null));
-        Services.SetActive(true);
         if (ProjectManager.Instance.ProjectMeta.HasLogic) {
             BuildAndRunBtn.SetInteractivity(true);
         } else {
@@ -151,7 +141,6 @@ public class MainMenu : MonoBehaviour, IMenu {
         ActionObjects.SetActive(false);
         SceneControlButtons.SetActive(false);
         MainControlButtons.SetActive(false);
-        Services.SetActive(false);
         RunningProjectControls.SetActive(false);
     }
 
