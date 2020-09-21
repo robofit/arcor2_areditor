@@ -1170,11 +1170,11 @@ namespace Base {
         /// <param name="name">Human readable name of action object</param>
         /// <param name="type">Action object type</param>
         /// <param name="pose">Pose of new object</param>
-        /// <param name="settings">List of settings of object</param>
+        /// <param name="parameters">List of settings of object</param>
         /// <returns></returns>
-        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose, List<IO.Swagger.Model.Parameter> settings) {
+        public async Task AddObjectToScene(string name, string type, IO.Swagger.Model.Pose pose, List<IO.Swagger.Model.Parameter> parameters) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name, settings: settings);
+            IO.Swagger.Model.AddObjectToSceneRequestArgs args = new IO.Swagger.Model.AddObjectToSceneRequestArgs(pose: pose, type: type, name: name, parameters: parameters);
             IO.Swagger.Model.AddObjectToSceneRequest request = new IO.Swagger.Model.AddObjectToSceneRequest(id: r_id, request: "AddObjectToScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddObjectToSceneResponse response = await WaitForResult<IO.Swagger.Model.AddObjectToSceneResponse>(r_id, 30000);
