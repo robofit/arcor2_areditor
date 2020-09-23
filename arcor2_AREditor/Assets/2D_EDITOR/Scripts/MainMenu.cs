@@ -7,6 +7,7 @@ using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using System.Linq;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
@@ -170,7 +171,14 @@ public class MainMenu : MonoBehaviour, IMenu {
             }
 
         }
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
+        List<ActionObjectMetadata> orderedList = Base.ActionsManager.Instance.ActionObjectMetadata.Values.ToList();
+        orderedList.Sort(
+            delegate (ActionObjectMetadata obj1,
+            ActionObjectMetadata obj2) {
+                return obj2.Type.CompareTo(obj1.Type);
+            }
+        );
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in orderedList) {
             if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(actionObjectMetadata.Type, out Base.ActionObjectMetadata actionObject)) {
                 if (actionObject.Abstract) {
                     continue;
