@@ -94,12 +94,20 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
+        objectName.text = CurrentObject.Data.Name;
+
+        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        if (!SceneManager.Instance.SceneStarted) {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+            return;
+        }
         if (currentFocusPoint >= 0)
             return;
-
         if (SceneManager.Instance.RobotInScene()) {
-            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+            await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             string robotId = null;
             try {
                 robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
@@ -142,16 +150,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-        objectName.text = CurrentObject.Data.Name;
-
-        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        
 
         
     }
 
-    private void OnRobotChanged(string robot_id) {
+    private async void OnRobotChanged(string robot_id) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
         UpdateModelOnEE();
     }
 

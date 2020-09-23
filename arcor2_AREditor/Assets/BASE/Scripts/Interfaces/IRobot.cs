@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface IRobot
 {
@@ -7,7 +8,7 @@ public interface IRobot
 
     string GetId();
 
-    List<string> GetEndEffectorIds();
+    Task<List<string>> GetEndEffectorIds();
 
     RobotEE GetEE(string ee_id);
 

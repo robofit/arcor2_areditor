@@ -132,13 +132,13 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         ActionPointName.text = args.ActionPoint.Name;
     }
     
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         ActionPointName.text = CurrentActionPoint.Data.Name;
 
         CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
         positionRobotsListDropdown.dropdownItems.Clear();
-        PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        if (positionRobotsListDropdown.dropdownItems.Count == 0) {
+        await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+        if (!SceneManager.Instance.SceneStarted || positionRobotsListDropdown.dropdownItems.Count == 0) {
             PositionBlock.SetActive(GameManager.Instance.ExpertMode);
             PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
             PositionLiteModeBlock.SetActive(false);
@@ -155,8 +155,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
-        JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
-        if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
+        await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
+        if (SceneManager.Instance.SceneStarted && JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
             JointsBlock.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
         } else {
@@ -166,12 +166,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         UpdateOrientationsDynamicList();
     }
 
-    private void OnRobotChanged(string robot_name) {
+    private async void OnRobotChanged(string robot_name) {
         PositionEndEffectorList.Dropdown.dropdownItems.Clear();
 
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
 
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);

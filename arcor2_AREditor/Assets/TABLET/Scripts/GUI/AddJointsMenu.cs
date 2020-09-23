@@ -28,11 +28,11 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init((string x) =>{ }, false);
+        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init((string x) =>{ }, false);
 
         ValidateFields();
     }

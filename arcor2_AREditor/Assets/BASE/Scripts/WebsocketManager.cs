@@ -91,6 +91,7 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToJointsEventHandler OnRobotMoveToJointsEvent;
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
+        public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
         /// <summary>
         /// ARServer domain or IP address
         /// </summary>
@@ -265,6 +266,9 @@ namespace Base {
                 switch (dispatch.@event) {
                     case "SceneChanged":
                         HandleSceneChanged(data);
+                        break;
+                    case "SceneState":
+                        HandleSceneState(data);
                         break;
                     case "SceneObjectChanged":
                         HandleSceneObjectChanged(data);
@@ -605,6 +609,19 @@ namespace Base {
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private void HandleSceneState(string obj) {
+            SceneState sceneState = JsonConvert.DeserializeObject<SceneState>(obj);
+            OnSceneStateEvent?.Invoke(this, new SceneStateEventArgs(sceneState.Data));
+        }
+
+        /// <summary>
+        /// Enables invoking of scene state event from other classes - temporary HACK to enable
+        /// invokation upon scene openning
+        /// </summary>
+        public void InvokeSceneStateEvent(SceneStateData sceneStateData) {
+            OnSceneStateEvent?.Invoke(this, new SceneStateEventArgs(sceneStateData));
         }
 
         /// <summary>
@@ -2080,6 +2097,42 @@ namespace Base {
                 return response.Data;
             }
         }
+
+
+        public async Task<List<string>> GetEndEffectors(string robotId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            GetEndEffectorsRequestArgs args = new GetEndEffectorsRequestArgs(robotId: robotId);
+            IO.Swagger.Model.GetEndEffectorsRequest request = new IO.Swagger.Model.GetEndEffectorsRequest(r_id, "GetEndEffectors", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetEndEffectorsResponse response = await WaitForResult<IO.Swagger.Model.GetEndEffectorsResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get robot end effectors" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task StartScene(bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.StartSceneRequest request = new IO.Swagger.Model.StartSceneRequest(r_id, "StartScene", dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StartSceneResponse response = await WaitForResult<IO.Swagger.Model.StartSceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to start scene" } : response.Messages);
+            }
+        }
+
+        public async Task StopScene(bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.StopSceneRequest request = new IO.Swagger.Model.StopSceneRequest(r_id, "StopScene", dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StopSceneResponse response = await WaitForResult<IO.Swagger.Model.StopSceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
+            }
+        }
+
+
     }
 
     

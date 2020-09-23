@@ -279,6 +279,17 @@ namespace Base {
         }
     }
 
+    public class SceneStateEventArgs : EventArgs {
+
+        public IO.Swagger.Model.SceneStateData Event {
+            get; set;
+        }
+
+        public SceneStateEventArgs(SceneStateData @event) {
+            Event = @event;
+        }
+    }
+
 
 
     public class AREditorEventArgs {
@@ -304,5 +315,6 @@ namespace Base {
         public delegate void RobotMoveToJointsEventHandler(object sender, RobotMoveToJointsEventArgs args);
         public delegate void RobotMoveToActionPointJointsEventHandler(object sender, RobotMoveToActionPointJointsEventArgs args);
         public delegate void RobotMoveToActionPointOrientationHandler(object sender, RobotMoveToActionPointOrientationEventArgs args);
+        public delegate void SceneStateHandler(object sender, SceneStateEventArgs args);
     }
 }

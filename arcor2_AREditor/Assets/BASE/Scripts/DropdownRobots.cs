@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
+using System.Threading.Tasks;
+using Base;
 
 public class DropdownRobots : MonoBehaviour
 {
@@ -14,17 +16,20 @@ public class DropdownRobots : MonoBehaviour
     /// </summary>
     /// <param name="callback">Function to call when item is selected. Will pass robot_id</param>
     /// <param name="withEEOnly">Only puts robots with at lease one end effector</param>
-    public void Init(UnityAction<string> callback, bool withEEOnly) {
+    public async Task Init(UnityAction<string> callback, bool withEEOnly) {
         List<string> robotNames = new List<string>();
-        foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
-            List<string> endEffectors = robot.GetEndEffectorIds();
-            if (withEEOnly) {
-                if (endEffectors.Count > 0) {
+        if (SceneManager.Instance.SceneStarted) {
+            foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
+                
+                List<string> endEffectors = await robot.GetEndEffectorIds();
+                if (withEEOnly) {
+                    if (endEffectors.Count > 0) {
+                        robotNames.Add(robot.GetName());
+                    }
+                } else {
                     robotNames.Add(robot.GetName());
                 }
-            } else {
-                robotNames.Add(robot.GetName());
-            }            
+            }
         }
         Init(robotNames, callback);
     }

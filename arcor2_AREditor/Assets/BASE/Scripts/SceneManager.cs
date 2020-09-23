@@ -109,6 +109,12 @@ namespace Base {
         /// </summary>
         private bool loadResources = false;
 
+        /// <summary>
+        /// Defines if scene was started on server - e.g. if all robots and other action objects
+        /// are instantioned and are ready
+        /// </summary>
+        public bool SceneStarted = false;
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -148,6 +154,12 @@ namespace Base {
             GameManager.Instance.Scene.SetActive(true);
             await UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
+            try {
+                await WebsocketManager.Instance.StartScene(true);
+                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
+            } catch (RequestFailedException) {
+                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Started));
+            }
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             Valid = true;
             return true;
@@ -158,6 +170,7 @@ namespace Base {
         /// </summary>
         /// <returns>True if scene successfully destroyed, false otherwise</returns>
         public bool DestroyScene() {
+            SceneStarted = false;
             Valid = false;
             RemoveActionObjects();
             SceneMeta = null;
@@ -224,6 +237,27 @@ namespace Base {
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+            WebsocketManager.Instance.OnSceneStateEvent += OnSceneStateEven;
+        }
+
+        private void OnSceneStateEven(object sender, SceneStateEventArgs args) {
+            switch (args.Event.State) {
+                case SceneStateData.StateEnum.Starting:
+                    GameManager.Instance.ShowLoadingScreen("Starting scene...");
+                    break;
+                case SceneStateData.StateEnum.Stopping:
+                    SceneStarted = false;
+                    GameManager.Instance.ShowLoadingScreen("Stopping scene...");
+                    break;
+                case SceneStateData.StateEnum.Started:
+                    SceneStarted = true;
+                    GameManager.Instance.HideLoadingScreen();
+                    break;
+                case SceneStateData.StateEnum.Stopped:
+                    SceneStarted = false;
+                    GameManager.Instance.HideLoadingScreen();
+                    break;
+            }
         }
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {

@@ -62,13 +62,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
      }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         if (isOrientationDetail) {  //orientation
 
             DetailName.text = orientation.Name;
 
             RobotsList.Dropdown.dropdownItems.Clear();
-            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+            await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             if (RobotsList.Dropdown.dropdownItems.Count > 0) {
                 OrientationBlock.SetActive(true);
                 MoveHereBlock.SetActive(true);
@@ -95,12 +95,12 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
 
-    private void OnRobotChanged(string robot_name) {
+    private async void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
 
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
 
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);

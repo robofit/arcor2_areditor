@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using RosSharp.Urdf;
@@ -14,6 +15,8 @@ namespace Base {
         public GameObject RobotPlaceholderPrefab;
 
         private OutlineOnClick outlineOnClick;
+
+        public bool ResourcesLoaded = false;
 
         [SerializeField]
         private GameObject EEOrigin;
@@ -184,9 +187,8 @@ namespace Base {
                     }
                 }
             }
-            if (loadResources) {
-                await LoadEndEffectors();
-            }
+            //LoadResources = loadResources;
+            ResourcesLoaded = false;
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
@@ -357,20 +359,33 @@ namespace Base {
             }
         }
 
-        public List<string> GetEndEffectorIds() {
+        public async Task<List<string>> GetEndEffectorIds() {
+            if (!ResourcesLoaded) {
+                await LoadResources();
+            }
             List<string> result = new List<string>();
             foreach (RobotEE ee in EndEffectors)
                 result.Add(ee.EEId);
             return result;
         }
 
-        public List<RobotEE> GetEndEffectors() {
-            return EndEffectors;
+        public async Task<List<RobotEE>> GetEndEffectors() {
+            if (!ResourcesLoaded) {
+                await LoadEndEffectors();
+            }
+            return EndEffectors;            
+        }
+
+        private async Task LoadResources() {
+            if (!ResourcesLoaded) {
+                await LoadEndEffectors();
+            }
+            ResourcesLoaded = true;
         }
 
         public async Task LoadEndEffectors() {
-            List<IO.Swagger.Model.IdValue> idValues = new List<IO.Swagger.Model.IdValue>();
-            List<string> endEffectors = await WebsocketManager.Instance.GetActionParamValues(Data.Id, "end_effector_id", idValues);
+            GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
+            List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
             foreach (string eeId in endEffectors) {
                 RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                 ee.InitEE(this, eeId);
@@ -379,6 +394,7 @@ namespace Base {
             }
             if (SceneManager.Instance.RobotsEEVisible)
                 await EnableVisualisationOfEE();
+            GameManager.Instance.HideLoadingScreen();
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {

@@ -4,13 +4,14 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using Base;
 using UnityEngine.Events;
+using System.Threading.Tasks;
 
 public class DropdownEndEffectors : MonoBehaviour {
     public DropdownParameter Dropdown;
 
 
-    public void Init(string robotId, UnityAction<string> onChangeCallback) {
-        if (robotId == "") {
+    public async Task Init(string robotId, UnityAction<string> onChangeCallback) {
+        if (!SceneManager.Instance.SceneStarted || robotId == "") {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;
@@ -18,7 +19,7 @@ public class DropdownEndEffectors : MonoBehaviour {
         try {
             IRobot robot = SceneManager.Instance.GetRobot(robotId);
             Dropdown.Dropdown.dropdownItems.Clear();
-            PutData(robot.GetEndEffectorIds(), onChangeCallback);
+            PutData(await robot.GetEndEffectorIds(), onChangeCallback);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");

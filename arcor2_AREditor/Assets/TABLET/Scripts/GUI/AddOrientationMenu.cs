@@ -30,11 +30,11 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
   
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (robotsListDropdown.dropdownItems.Count > 0) {
             OnRobotChanged((string) RobotsList.GetValue());
         }
@@ -46,12 +46,12 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     /// updates EndEffectorList on selected robot change
     /// </summary>
     /// <param name="robot_name">Newly selected robot's name</param>
-    private void OnRobotChanged(string robot_name) {
+    private async void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
 
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
         }
         catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
