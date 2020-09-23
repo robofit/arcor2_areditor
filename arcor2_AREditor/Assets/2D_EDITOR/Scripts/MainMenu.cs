@@ -181,6 +181,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
             GameObject btnGO = Instantiate(ActionObjectButtonPrefab, ActionObjectsContent.transform);
             ActionObjectButton btn = btnGO.GetComponent<ActionObjectButton>();
+            ButtonWithTooltip btnTooltip = btn.Button.GetComponent<ButtonWithTooltip>();
             btn.SetLabel(actionObjectMetadata.Type);
             btn.Button.onClick.AddListener(() => AddObjectToScene(actionObjectMetadata.Type));
             btn.RemoveBtn.Button.onClick.AddListener(() => ShowRemoveActionObjectDialog(actionObjectMetadata.Type));
@@ -190,28 +191,17 @@ public class MainMenu : MonoBehaviour, IMenu {
             if (eventArgs.Data == actionObjectMetadata.Type) {
                 btn.GetComponent<ActionButton>().Highlight(2f);
             }
-            btn.Button.interactable = !actionObjectMetadata.Disabled;
+            if (SceneManager.Instance.SceneStarted)
+                btnTooltip.SetInteractivity(false, "Objects could not be added when scene is started");
+            else
+                btnTooltip.SetInteractivity(!actionObjectMetadata.Disabled, actionObjectMetadata.Problem);
 
         }
 
         UpdateRemoveBtns();
 
     }
-    /*
-    public void ServicesUpdated(object sender, Base.ServiceEventArgs eventArgs) {
-        if (eventArgs.Data != null) {
-            if (serviceButtons.TryGetValue(eventArgs.Data.Data.Type, out ServiceButton btn)) {
-                UpdateServiceButton(btn);
-            }
-        } else {
-            foreach (ServiceButton serviceButton in serviceButtons.Values) {
-                UpdateServiceButton(serviceButton);
-            }
-        }
-        _ = UpdateBuildAndSaveBtns();
-
-    }
-    */
+    
     public void ShowRemoveActionObjectDialog(string type) {
         confirmationDialog.Open("Delete object",
                          "Are you sure you want to delete action object " + type + "?",
@@ -229,58 +219,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             confirmationDialog.Close();
         }
     }
-    /*
-    private static void UpdateServiceButton(ServiceButton serviceButton) {
-        serviceButton.SetInteractable(!serviceButton.ServiceMetadata.Disabled);
-
-        if (Base.SceneManager.Instance.ServiceInScene(serviceButton.ServiceMetadata.Type)) {
-            //checked
-            serviceButton.gameObject.SetActive(true);
-            serviceButton.State = true;
-        } else {
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                serviceButton.gameObject.SetActive(false);
-            } else {
-                serviceButton.gameObject.SetActive(true);
-            }
-            serviceButton.State = false;
-        }
-    }
-
-    public void ServiceMetadataUpdated(object sender, EventArgs e) {
-
-        foreach (ServiceButton b in serviceButtons.Values) {
-            Destroy(b.gameObject);
-        }
-
-        serviceButtons.Clear();
-
-        foreach (IO.Swagger.Model.ServiceTypeMeta service in Base.ActionsManager.Instance.ServicesMetadata.Values) {
-            ServiceButton serviceButton = Instantiate(ServiceButtonPrefab).GetComponent<ServiceButton>();
-            serviceButton.transform.SetParent(ServicesContent.transform);
-            serviceButton.transform.localScale = new Vector3(1, 1, 1);
-            serviceButton.gameObject.GetComponentInChildren<TMPro.TMP_Text>().text = service.Type;
-
-            serviceButton.ServiceMetadata = service;
-            serviceButton.gameObject.GetComponentInChildren<Button>().onClick.AddListener(() => ServiceStateChanged(serviceButton.GetComponent<ServiceButton>()));
-            serviceButton.transform.SetAsLastSibling();
-            serviceButtons.Add(service.Type, serviceButton);
-        }
-        ServicesUpdated(null, new Base.ServiceEventArgs(null));
-    }
-
-    public void ServiceStateChanged(ServiceButton serviceButton) {
-        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-            Base.Notifications.Instance.ShowNotification("Failed to update service", "Service state can only be changed in scene editor!");
-            return;
-        }
-        if (!serviceButton.State) {
-            ShowAddServiceDialog(serviceButton.ServiceMetadata.Type);
-        } else {
-            ShowServiceSettingsDialog(serviceButton);
-        }
-    }*/
-
+    
     private void AddObjectToScene(string type) {
         if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
            /* if (actionObjectMetadata.NeedsServices.Count > 0) {
@@ -530,10 +469,11 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     private void UpdateActionButtonState(bool sceneStarted) {
-        if (!sceneStarted) {
+        if (sceneStarted) {
             restoreButtons = true;
             foreach (ButtonWithTooltip b in ActionObjectsContent.GetComponentsInChildren<ButtonWithTooltip>()) {
-                b.SetInteractivity(false, "Scene not started");
+                if (b.gameObject.tag == "ActionObjectButton")
+                    b.SetInteractivity(false, "Objects could not be added when scene is started.");
             }
         } else if (restoreButtons) {
             restoreButtons = false;
