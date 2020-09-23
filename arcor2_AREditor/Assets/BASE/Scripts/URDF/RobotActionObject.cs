@@ -133,6 +133,8 @@ namespace Base {
 
         public async Task EnableVisualisationOfEE() {
             eeVisible = true;
+            if (!ResourcesLoaded)
+                await LoadResources();
             if (EndEffectors.Count > 0) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
                 ShowRobotEE();
@@ -392,8 +394,6 @@ namespace Base {
                 ee.gameObject.SetActive(false);
                 EndEffectors.Add(ee);
             }
-            if (SceneManager.Instance.RobotsEEVisible)
-                await EnableVisualisationOfEE();
             GameManager.Instance.HideLoadingScreen();
         }
 

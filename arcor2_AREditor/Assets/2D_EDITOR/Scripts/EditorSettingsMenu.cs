@@ -105,7 +105,9 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void ShowRobotsEE() {
-        SceneManager.Instance.ShowRobotsEE();
+        if (!SceneManager.Instance.ShowRobotsEE()) {
+            RobotsEEVisible.SetValue(false);
+        }
     }
 
     public void HideRobotsEE() {

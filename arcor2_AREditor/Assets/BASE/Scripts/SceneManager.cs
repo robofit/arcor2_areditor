@@ -10,6 +10,7 @@ using IO.Swagger.Model;
 using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
+using WebSocketSharp;
 
 namespace Base {
    
@@ -155,10 +156,10 @@ namespace Base {
             await UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
-                await WebsocketManager.Instance.StartScene(true);
-                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
-            } catch (RequestFailedException) {
+                await WebsocketManager.Instance.StopScene(true);
                 WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Started));
+            } catch (RequestFailedException) {
+                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
             }
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             Valid = true;
@@ -248,9 +249,15 @@ namespace Base {
                 case SceneStateData.StateEnum.Stopping:
                     SceneStarted = false;
                     GameManager.Instance.ShowLoadingScreen("Stopping scene...");
+                    if (!args.Event.Message.IsNullOrEmpty()) {
+                        Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
+                    }
+                    OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     break;
                 case SceneStateData.StateEnum.Started:
                     SceneStarted = true;
+                    if (RobotsEEVisible)
+                        OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
@@ -315,9 +322,9 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnSceneLoaded(object sender, EventArgs e) {
-            if (RobotsEEVisible) {
+            /*if (RobotsEEVisible) {
                 ShowRobotsEE();
-            }
+            }*/
         }
 
         /// <summary>
@@ -332,19 +339,25 @@ namespace Base {
         /// Registers for end effector poses (and if robot has URDF then for joints values as well) and displays EE positions in scene
         /// </summary>
         /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
-        public void ShowRobotsEE() {
+        public bool ShowRobotsEE() {
+            if (!SceneStarted) {
+                Notifications.Instance.ShowNotification("Failed to show robots EE", "This can only be done when scene is started");
+                return false;
+            }
             RobotsEEVisible = true;
             OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
+            return true;
         }
 
         /// <summary>
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
         public void HideRobotsEE() {
+            Debug.LogError("hide robots ee");
             RobotsEEVisible = false;
-            OnHideRobotsEE?.Invoke(this, EventArgs.Empty);            
+            OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);
         }
 
