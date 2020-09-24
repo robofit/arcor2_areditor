@@ -114,6 +114,7 @@ public class InputHandler : Singleton<InputHandler> {
         RaycastHit hit = new RaycastHit();
         if (!GameManager.Instance.SceneInteractable)
             return;
+        
         foreach (Touch touch in Input.touches) {
             if (touch.phase == TouchPhase.Began) {
                 // This is only valid in Began phase. During end phase it always return false
@@ -127,12 +128,15 @@ public class InputHandler : Singleton<InputHandler> {
                     StopCoroutine(coroutine);
                 coroutine = LongTouch(touch);
                 StartCoroutine(coroutine);
+                
+
             } else if (touch.phase == TouchPhase.Ended) {
                 if (pointerOverUI)
                     return;
+                
                 if (longTouch) {
                     longTouch = false;
-                } else {
+                } else {                    
                     if (coroutine != null)
                         StopCoroutine(coroutine);
                     longTouch = false;
@@ -143,7 +147,9 @@ public class InputHandler : Singleton<InputHandler> {
                         }
                     } else {
                         Sight.Instance.Touch();
-                    }                    
+                    }
+                    
+                            
                 }
             }
         }
@@ -152,7 +158,7 @@ public class InputHandler : Singleton<InputHandler> {
     private IEnumerator LongTouch(Touch touch) {
         yield return new WaitForSeconds(1f);
         longTouch = true;
-        TransformGizmo.Instance.ClearTargets();
+        //TransformGizmo.Instance.ClearTargets();
         Sight.Instance.LongTouch();
 
         /*

@@ -207,11 +207,18 @@ namespace Base {
             return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPosesPrefab);
         }
 
-        public static GameObject InitializeJointsParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
-            List<string> options = new List<string>();
+        public static GameObject InitializeJointsParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string actionProviderId = "") {
+            Dictionary<string, bool> options = new Dictionary<string, bool>();
             foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
-                foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, true).Values) {
-                    options.Add(ap.Data.Name + "." + joints.Name);
+                foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, false).Values) {
+                    string prefix = "";
+                    if (joints.RobotId != actionProviderId)
+                        prefix = "(another robot) ";
+                    else if (!joints.IsValid) {
+                        prefix = "(invalid) ";
+                    }
+                    options.Add(prefix + ap.Data.Name + "." + joints.Name, joints.IsValid);
+                    //options.Add(ap.Data.Name + "." + joints.Name);
                 }
             }
             string selectedValue = null;
@@ -225,8 +232,21 @@ namespace Base {
                 }
 
             }
+            DropdownParameterJoints dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.ParameterDropdownJointsPrefab).GetComponent<DropdownParameterJoints>();
+            dropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
+            dropdownParameter.PutData(options, selectedValue,
+                (_) => onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue()));
+            if (selectedValue == "" || selectedValue == null) {
+                string v;
+                if (dropdownParameter.Dropdown.dropdownItems.Count == 0)
+                    v = "";
+                else
+                    v = dropdownParameter.Dropdown.selectedText.text;
 
-            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
+                onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue());
+            }
+            return dropdownParameter.gameObject;
+            //return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
         }
 
         public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
@@ -375,7 +395,7 @@ namespace Base {
                 if (value != null) {
                     value = JsonConvert.SerializeObject(value);
                 }
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, darkMode);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, darkMode, actionProviderId);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -463,7 +483,7 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false) {
+        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {
@@ -477,7 +497,7 @@ namespace Base {
                     parameter = InitializePoseParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value));
                     break;
                 case "joints":
-                    parameter = InitializeJointsParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value));
+                    parameter = InitializeJointsParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value), actionProviderId);
                     break;
                 case "string_enum":
                     parameter = InitializeStringEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value));

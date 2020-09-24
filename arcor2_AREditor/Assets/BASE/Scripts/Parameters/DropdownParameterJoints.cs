@@ -4,40 +4,43 @@ using UnityEngine;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
 using System.Linq;
+using TMPro;
+using Base;
 
 public class DropdownParameterJoints : DropdownParameter
 {
 
     public Sprite ValidIcon, InvalidIcon;
-    private string apName;
 
-    public void PutData(List<IO.Swagger.Model.ProjectRobotJoints> robotJoints, string selectedItem, UnityAction<string> callback, string apName = null) {
-        this.apName = apName;
+    public void PutData(Dictionary<string, bool> data, string selectedItem, UnityAction<string> callback) {
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
-        foreach (IO.Swagger.Model.ProjectRobotJoints joints in robotJoints) {
+        foreach (KeyValuePair<string, bool> d in data) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = joints.Name
+                itemName = d.Key
             };
-            if (joints.IsValid) {
-                item.itemIcon = ValidIcon;
-                
-            } else {
-                item.itemIcon = InvalidIcon;
-            }
             items.Add(item);
-            
         }
         PutData(items, selectedItem, callback);
+
+
     }
 
     public override object GetValue() {
+        string apName;
         string value = (string) base.GetValue();
         if (value == null)
             return null;
 
-        if (string.IsNullOrEmpty(apName))
-            apName = value.Split('.').First();
-        Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(apName);
-        return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
+        apName = value.Split('.').First();
+        try {
+            Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(apName);
+            return actionPoint.GetJointsByName(value.Split('.').Last()).Id;
+        } catch (KeyNotFoundException ex) {
+            Debug.LogError(ex);
+            Debug.LogError(value);
+            return null;
+        }
+        
+        
     }
 }

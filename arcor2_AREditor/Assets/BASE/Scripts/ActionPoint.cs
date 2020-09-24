@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 using IO.Swagger.Model;
+using WebSocketSharp;
 
 namespace Base {
     public abstract class ActionPoint : Clickable, IActionPointParent {
@@ -245,7 +246,7 @@ namespace Base {
             }
             foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
                 if ((uniqueOnly && poses.ContainsKey(robotJoint.Id)) ||
-                    (robot_id != null && robot_id != robotJoint.RobotId) ||
+                    (!robot_id.IsNullOrEmpty() && robot_id != robotJoint.RobotId) ||
                     (valid_only && !robotJoint.IsValid)) {
                     continue;
                 }                
