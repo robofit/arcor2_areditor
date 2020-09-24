@@ -355,7 +355,6 @@ namespace Base {
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
         public void HideRobotsEE() {
-            Debug.LogError("hide robots ee");
             RobotsEEVisible = false;
             OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);

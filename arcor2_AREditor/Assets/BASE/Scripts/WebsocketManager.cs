@@ -1273,13 +1273,13 @@ namespace Base {
         /// </summary>
         /// <param name="actionId">ID of action</param>
         /// <returns></returns>
-        public async Task ExecuteAction(string actionId) {
+        public async Task ExecuteAction(string actionId, bool dryRun) {
             Debug.Assert(actionId != null);
             Debug.Assert(actionId != "");
 
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ExecuteActionRequestArgs args = new IO.Swagger.Model.ExecuteActionRequestArgs(actionId: actionId);
-            IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args);
+            IO.Swagger.Model.ExecuteActionRequest request = new IO.Swagger.Model.ExecuteActionRequest(id: r_id, request: "ExecuteAction", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.ExecuteActionResponse response = await WaitForResult<IO.Swagger.Model.ExecuteActionResponse>(r_id);
             if (response == null || !response.Result)
