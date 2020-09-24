@@ -236,7 +236,8 @@ public class ActionObject3D : ActionObject
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);
                     if (customCollisionModels == null) {
-                        Model.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
+                        
+                        Model.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height / 2, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
                     } else {
                         foreach (IO.Swagger.Model.Cylinder cylinder in customCollisionModels.Cylinders) {
                             if (cylinder.Id == ActionObjectMetadata.Type) {

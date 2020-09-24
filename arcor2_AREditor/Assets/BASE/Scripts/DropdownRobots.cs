@@ -42,10 +42,11 @@ public class DropdownRobots : MonoBehaviour
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = robotName
             };
+            string robot_id = SceneManager.Instance.RobotNameToId(robotName);
             if (callback != null) {
                 if (item.OnItemSelection == null)
                     item.OnItemSelection = new UnityEvent();
-                item.OnItemSelection.AddListener(() => callback(robotName));
+                item.OnItemSelection.AddListener(() => callback(robot_id));
             }
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
