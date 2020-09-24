@@ -245,8 +245,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public async void MoveHereRobot() {
         try {
-            string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
             if (isOrientationDetail) {
+                string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
             } else {
                 await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
