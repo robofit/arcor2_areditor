@@ -11,18 +11,21 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     public ARPlaneManager ARPlaneManager;
     public ARPointCloudManager ARPointCloudManager;
+    public ARTrackedImageManager ARTrackedImageManager;
 
     public VideoPlayerImage TrackingLostAnimation;
 
     public Material PlaneTransparentMaterial;
     public Material PlaneOpaqueMaterial;
 
-    private bool planesAndFeaturesActive = true;
+    private bool planesAndPointCloudsActive = true;
+    private bool planesTransparent = true;
 
     private Coroutine trackingFailureNotify;
+    private Transform mainCamera;
 
-    //private float counter = 5f;
-
+    private int i = 0;
+    
     public enum TrackingQuality {
         NOT_TRACKING = 0,
         POOR_QUALITY = 1,
@@ -42,27 +45,38 @@ public class TrackingManager : Singleton<TrackingManager> {
 
         ARPlaneManager.planesChanged += OnPlanesChanged;
         ARPointCloudManager.pointCloudsChanged += OnPointCloudChanged;
-#endif
+        
+        mainCamera = Camera.main.transform;
+        //ARTrackedImageManager.trackedImagesChanged += OnTrackedImagesChanged; 
+#endif       
     }
 
-    private void OnPointCloudChanged(ARPointCloudChangedEventArgs obj) {
-        DisplayPlanesAndFeatures(planesAndFeaturesActive);
-    }
-
-    private void OnPlanesChanged(ARPlanesChangedEventArgs obj) {
-        DisplayPlanesAndFeatures(planesAndFeaturesActive);
-    }
-
-    //private void Update() {
-
-    //    counter -= Time.deltaTime;
-
-    //    if (counter <= 0f) {
-    //        GetTrackingQuality();
-    //        counter = 5f;
+    //private void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs obj) {
+    //    if (i > 1000) {
+    //        foreach (ARTrackedImage image in obj.updated) {
+    //            Quaternion rot = Quaternion.Inverse(mainCamera.transform.rotation) * transform.rotation;
+    //            Debug.Log("Tracked image " + image.trackableId.ToString() +
+    //                " has world position: " + image.transform.position.ToString("F8") +
+    //                " , rotation in quaternions: " + image.transform.rotation.ToString("F8") +
+    //                " and rotation in euler: " + image.transform.rotation.eulerAngles.ToString("F8") + "\n" +
+    //                " Position relative to camera: " + mainCamera.InverseTransformPoint(image.transform.position).ToString("F8") +
+    //                " , rotation in quaternions relative to camera: " + rot.ToString("F8") +
+    //                " and rotation in euler relative to camera: " + rot.eulerAngles.ToString("F8"));
+    //        }
+    //        i = 0;
+    //    } else {
+    //        i += 1;
     //    }
     //}
 
+    private void OnPointCloudChanged(ARPointCloudChangedEventArgs obj) {
+        DisplayPointClouds(planesAndPointCloudsActive, obj.added);
+    }
+
+    private void OnPlanesChanged(ARPlanesChangedEventArgs obj) {
+        DisplayPlanes(planesAndPointCloudsActive, obj.added);
+    }
+    
     private void StartTrackingNotifications(object sender, EventArgs e) {
         ARSession.stateChanged += ARSessionStateChanged;
         //Notifications.Instance.ShowNotification("Tracking state", ARSession.state.ToString());
@@ -86,6 +100,11 @@ public class TrackingManager : Singleton<TrackingManager> {
         switch (sessionState.state) {
             case ARSessionState.Unsupported:
                 Notifications.Instance.ShowNotification("Tracking not supported", "This device does not support ARCore!");
+                break;
+            case ARSessionState.SessionInitializing:
+            case ARSessionState.Installing:
+            case ARSessionState.CheckingAvailability:
+            case ARSessionState.Ready:
                 break;
             default:
                 Notifications.Instance.ShowNotification("Tracking state", sessionState.state.ToString());
@@ -157,31 +176,55 @@ public class TrackingManager : Singleton<TrackingManager> {
         return TrackingQuality.POOR_QUALITY;
     }
 
-    public void DisplayPlanesAndFeatures(bool active) {
+    public void DisplayPlanesAndPointClouds(bool active) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        planesAndFeaturesActive = active;
+        planesAndPointCloudsActive = active;
+        DisplayPlanes(active);
+        DisplayPointClouds(active);
+#endif
+    }
 
+    public void DisplayPlanes(bool active) {
         foreach (ARPlane plane in ARPlaneManager.trackables) {
             plane.gameObject.SetActive(active);
         }
+    }
 
+    public void DisplayPlanes(bool active, List<ARPlane> addedPlanes) {
+        foreach (ARPlane plane in addedPlanes) {
+            plane.gameObject.SetActive(active);
+            // for newly added planes, we have to set their transparency based on if in VR or AR
+            ChangePlaneTransparency(planesTransparent, plane.GetComponent<Renderer>());
+        }
+    }
+
+    public void DisplayPointClouds(bool active) {
         foreach (ARPointCloud pointCloud in ARPointCloudManager.trackables) {
             pointCloud.gameObject.SetActive(active);
         }
-#endif
+    }
+
+    public void DisplayPointClouds(bool active, List<ARPointCloud> addedPointClouds) {
+        foreach (ARPointCloud pointCloud in addedPointClouds) {
+            pointCloud.gameObject.SetActive(active);
+        }
     }
 
     public void ChangePlaneTransparency(bool transparent) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        planesTransparent = transparent;
         foreach (ARPlane plane in ARPlaneManager.trackables) {
-            Renderer ren = plane.GetComponent<Renderer>();
-            if (transparent) {
-                ren.sharedMaterials = new Material[1] { PlaneTransparentMaterial };
-            } else {
-                ren.sharedMaterials = new Material[1] { PlaneOpaqueMaterial };
-            }
+            ChangePlaneTransparency(transparent, plane.GetComponent<Renderer>());
         }
 #endif
+    }
+
+    private void ChangePlaneTransparency(bool transparent, Renderer planeRenderer) {
+        if (transparent) {
+            planeRenderer.sharedMaterials = new Material[1] { PlaneTransparentMaterial };
+        } else {
+            planeRenderer.sharedMaterials = new Material[1] { PlaneOpaqueMaterial };
+        }
     }
 
 }

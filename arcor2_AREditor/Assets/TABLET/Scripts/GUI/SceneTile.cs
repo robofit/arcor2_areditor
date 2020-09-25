@@ -16,17 +16,19 @@ public class SceneTile : Tile
         Debug.LogError(msg);
     }
 
-    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string sceneId, string timestamp) {
-        base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible);
+    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, DateTime created, DateTime modified, string sceneId) {
+        base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible, created, modified);
         SceneId = sceneId;
         string filename = PlayerPrefsHelper.LoadString(SceneId + "/image", "");
         if (!string.IsNullOrEmpty(filename) && File.Exists(filename)) {
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
-        this.timestamp.text = "Last modified: " + timestamp;
+        SetTimestamp(modified.ToString());
     }
 
-
+    public void SetTimestamp(string timestamp) {
+        this.timestamp.text = "Last modified: " + timestamp;
+    }
 
 }

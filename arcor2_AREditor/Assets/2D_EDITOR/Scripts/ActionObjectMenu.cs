@@ -4,8 +4,8 @@ using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 using Base;
-using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
 using System.Collections.Generic;
+using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionObjectMenu : MonoBehaviour, IMenu {
@@ -94,12 +94,20 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
+        objectName.text = CurrentObject.Data.Name;
+
+        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        if (!SceneManager.Instance.SceneStarted) {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+            return;
+        }
         if (currentFocusPoint >= 0)
             return;
-
         if (SceneManager.Instance.RobotInScene()) {
-            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+            await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             string robotId = null;
             try {
                 robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
@@ -142,16 +150,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-        objectName.text = CurrentObject.Data.Name;
-
-        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        
 
         
     }
 
-    private void OnRobotChanged(string robot_id) {
+    private async void OnRobotChanged(string robot_id) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
         UpdateModelOnEE();
     }
 
@@ -292,12 +298,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     private void UpdateModelOnEE() {
         if (model == null)
             return;
-        string robotId = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
-        if (string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+        string robotName = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
+        if (string.IsNullOrEmpty(robotName) || string.IsNullOrEmpty(eeId)) {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
+        
         try {
-            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            string robotId = SceneManager.Instance.RobotNameToId(robotName);
+            RobotEE ee = SceneManager.Instance.GetRobot(robotId).GetEE(eeId);
             model.transform.parent = ee.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {

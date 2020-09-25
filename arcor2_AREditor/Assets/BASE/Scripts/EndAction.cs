@@ -17,7 +17,7 @@ public class EndAction : StartEndAction
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
         base.Init(projectAction, metadata, ap, actionProvider, keySuffix);
-        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0.5f, 0, 0));
+        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(-0.5f, 0, 0));
     }
 
 

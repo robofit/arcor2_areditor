@@ -14,7 +14,12 @@ namespace Base {
     /// (landing screen, main screen, editor screens) and for management of application states.
     /// </summary>
     public class GameManager : Singleton<GameManager> {
-	public bool ExpertMode = true;
+
+        /// <summary>
+        /// Advanced mode of editor
+        /// </summary>
+        public bool ExpertMode = true;
+
         /// <summary>
         /// Called when project was saved
         /// </summary>
@@ -145,7 +150,10 @@ namespace Base {
         /// Tooltip gameobject
         /// </summary>
         public GameObject Tooltip;
-	public GameObject LabeledFloatInput;
+        /// <summary>
+        /// Gameobject for floating point number input (with label)
+        /// </summary>
+        public GameObject LabeledFloatInput;
         /// <summary>
         /// Text component of tooltip
         /// </summary>
@@ -161,7 +169,7 @@ namespace Base {
         /// <summary>
         /// Temp storage for delayed package
         /// </summary>
-        private PackageState newPackageState;
+        private PackageStateData newPackageState;
 
         /// <summary>
         /// Indicates that project should be opened with delay (waiting for scene or action objects)
@@ -183,7 +191,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>
-        public const string ApiVersion = "0.8.0";
+        public const string ApiVersion = "0.8.0rc5";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -242,11 +250,11 @@ namespace Base {
         /// <summary>
         /// Holds info about server (version, supported RPCs, supported parameters etc.)
         /// </summary>
-        public IO.Swagger.Model.SystemInfoData SystemInfo;
+        public IO.Swagger.Model.SystemInfoResponseData SystemInfo;
         /// <summary>
         /// Holds info about currently running package
         /// </summary>
-        public PackageInfo PackageInfo;
+        public PackageInfoData PackageInfo;
 
         /// <summary>
         /// Holds whether delayed openning of main screen is requested
@@ -598,16 +606,73 @@ namespace Base {
         /// Binds events and sets initial state of app
         /// </summary>
         private void Start() {
-            SetTurboFramerate();
+            SetDefaultFramerate();
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
 #endif
             VersionInfo.text = Application.version;
             Scene.SetActive(false);
+            if (Application.isEditor || Debug.isDebugBuild) {
+                TrilleonAutomation.AutomationMaster.Initialize();
+            }
             ActionsManager.Instance.OnActionsLoaded += OnActionsLoaded;
             WebsocketManager.Instance.OnConnectedEvent += OnConnected;
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
             WebsocketManager.Instance.OnShowMainScreen += OnShowMainScreen;
+            WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
+            WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
+            WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
+            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+        }
+
+
+        private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+            foreach (ListScenesResponseData s in Scenes) {
+                if (s.Id == args.Scene.Id) {
+                    s.Name = args.Scene.Name;
+                    s.Modified = args.Scene.Modified;
+                    break;
+                }
+            }
+        }
+
+
+        private void OnSceneRemoved(object sender, StringEventArgs args) {
+            int i = 0;
+            foreach (ListScenesResponseData s in Scenes) {
+                if (s.Id == args.Data) {
+                    Scenes.RemoveAt(i);
+                    break;
+                }
+                i++;
+            }
+        }
+
+
+        private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
+            foreach (ListProjectsResponseData p in Projects) {
+                if (p.Id == args.Project.Id) {
+                    p.Name = args.Project.Name;
+                    p.Modified = args.Project.Modified;
+                    break;
+                }
+            }            
+        }
+
+        /// <summary>
+        /// Invoked when project removed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args">ID of removed object</param>
+        private void OnProjectRemoved(object sender, StringEventArgs args) {
+            int i = 0;
+            foreach (ListProjectsResponseData p in Projects) {
+                if (p.Id == args.Data) {
+                    Projects.RemoveAt(i);
+                    break;
+                }
+                i++;
+            }
         }
 
         /// <summary>
@@ -640,6 +705,8 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnConnected(object sender, EventArgs args) {
+            // initialize when connected to the server
+            ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
         }
 
@@ -651,7 +718,7 @@ namespace Base {
         private async void OnConnectionStatusChanged(ConnectionStatusEnum newState) {
             switch (newState) {
                 case ConnectionStatusEnum.Connected:
-                    IO.Swagger.Model.SystemInfoData systemInfo;
+                    IO.Swagger.Model.SystemInfoResponseData systemInfo;
                     try {
                         systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
                     } catch (RequestFailedException ex) {
@@ -809,32 +876,13 @@ namespace Base {
             }
             return true;
         }
-        
-        /// <summary>
-        /// Callback called when new scene were added to server
-        /// </summary>
-        /// <param name="scene"></param>
-        public void SceneAdded(IO.Swagger.Model.Scene scene) {
-            newScene = scene;
-        }
-
-        /// <summary>
-        /// Callback called when base parameters of scene (e.g. name) were updated
-        /// </summary>
-        /// <param name="scene"></param>
-        public async void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
-            if (GetGameState() == GameStateEnum.SceneEditor)
-                SceneManager.Instance.SceneBaseUpdated(scene);
-            else if (GetGameState() == GameStateEnum.MainScreen) {
-                await LoadScenes();
-            }
-        }
+     
 
         /// <summary>
         /// When package runs failed with exception, show notification to the user
         /// </summary>
         /// <param name="data"></param>
-        internal void HandleProjectException(ProjectExceptionEventData data) {
+        internal void HandleProjectException(ProjectExceptionData data) {
             Notifications.Instance.ShowNotification("Project exception", data.Message);
         }
 
@@ -842,7 +890,7 @@ namespace Base {
         /// Display result of called action to the user
         /// </summary>
         /// <param name="data"></param>
-        internal void HandleActionResult(ActionResult data) {
+        internal void HandleActionResult(ActionResultData data) {
             if (data.Error != null)
                 Notifications.Instance.ShowNotification("Action execution failed", data.Error);
             else {
@@ -965,9 +1013,9 @@ namespace Base {
         /// - running - the package is runnnig
         /// - paused - the package was paused
         /// - stopped - the package was stopped</param>
-        public async void PackageStateUpdated(IO.Swagger.Model.PackageState state) {
-            if (state.State == PackageState.StateEnum.Running ||
-                state.State == PackageState.StateEnum.Paused) {
+        public async void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+            if (state.State == PackageStateData.StateEnum.Running ||
+                state.State == PackageStateData.StateEnum.Paused) {
                 if (!ActionsManager.Instance.ActionsReady || PackageInfo == null) {
                     newPackageState = state;
                     openPackage = true;
@@ -985,23 +1033,23 @@ namespace Base {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
                         OpenPackageRunningScreen();
-                        if (state.State == PackageState.StateEnum.Paused) {
+                        if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                         }
                     } catch (TimeoutException ex) {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
                     }
-                } else if (state.State == PackageState.StateEnum.Paused) {
+                } else if (state.State == PackageStateData.StateEnum.Paused) {
                     OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
-                } else if (state.State == PackageState.StateEnum.Running) {
+                } else if (state.State == PackageStateData.StateEnum.Running) {
                     OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
                 }
                 
                 
-            } else if (state.State == PackageState.StateEnum.Stopped) {
+            } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
@@ -1423,7 +1471,7 @@ namespace Base {
         /// </summary>
         /// <param name="systemInfo">Version string in format 0.0.0 (major.minor.patch)</param>
         /// <returns>True if versions are compatibile</returns>
-        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoData systemInfo) {
+        public bool CheckApiVersion(IO.Swagger.Model.SystemInfoResponseData systemInfo) {
             
             if (systemInfo.ApiVersion == ApiVersion)
                 return true;
@@ -1519,7 +1567,7 @@ namespace Base {
                 Scene.SetActive(true);
             }
 #else
-            Scene.SetActive(true);
+            
 #endif
             MenuManager.Instance.MainMenu.Close();
             EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;

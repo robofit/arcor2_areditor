@@ -18,6 +18,7 @@ public class InputHandler : Singleton<InputHandler> {
     public event EventHandler OnDeletePressed;
 
     private bool longTouch = false;
+    private bool pointerOverUI = false;
     private IEnumerator coroutine;
 
     private GameObject hoveredObject;
@@ -68,9 +69,11 @@ public class InputHandler : Singleton<InputHandler> {
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
                // try {
                     if (clickType == Clickable.Click.MOUSE_HOVER) {
-                        //try {
-                        
-                            if (hoveredObject == null) {
+                        if (EventSystem.current.IsPointerOverGameObject()) {
+                            return;
+                        }
+
+                        if (hoveredObject == null) {
                                 hit.collider.transform.gameObject.SendMessage("OnHoverStart");
                                 hoveredObject = hit.collider.transform.gameObject;
                             } else {
@@ -109,70 +112,31 @@ public class InputHandler : Singleton<InputHandler> {
 
     private void HandleTouch() {
         RaycastHit hit = new RaycastHit();
-        /*foreach (Touch touch in Input.touches) {
-            // Do not raycast through UI element
-            if (!EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
-
-                if (touch.phase == TouchPhase.Began) {
-                    if (coroutine != null)
-                        StopCoroutine(coroutine);
-                    coroutine = LongTouch(touch);
-                    StartCoroutine(coroutine);
-
-                    if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
-                        try {
-                            hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH);
-                        } catch (Exception e) {
-                            Debug.LogError(e);
-                        }
-                    } else {
-                        OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH));
-                    }
-
-                    OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH));
-                }
-
-                // NOTE: TouchPhase.Ended always ignores UI clicking check (IsPointerOverGameObject)
-                if (touch.phase == TouchPhase.Ended) {
-                    if (longTouch) {
-                        longTouch = false;
-
-                    } else {
-                        if (coroutine != null)
-                            StopCoroutine(coroutine);
-                        longTouch = false;
-
-                        if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
-                            try {
-                                hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.TOUCH_ENDED);
-                            } catch (Exception e) {
-                                Debug.LogError(e);
-                            }
-                        } else {
-                            OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH_ENDED));
-                        }
-
-                        OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.TOUCH_ENDED));
-                    }
-                }
-            }
-        }*/
         if (!GameManager.Instance.SceneInteractable)
             return;
+        
         foreach (Touch touch in Input.touches) {
-            if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
-                // skip if clicking on GUI object (e.g. controlbox)
-                continue;
-            }
             if (touch.phase == TouchPhase.Began) {
+                // This is only valid in Began phase. During end phase it always return false
+                if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
+                    // skip if clicking on GUI object (e.g. controlbox)
+                    pointerOverUI = true;
+                    continue;                    
+                }
+                pointerOverUI = false;
                 if (coroutine != null)
                     StopCoroutine(coroutine);
                 coroutine = LongTouch(touch);
                 StartCoroutine(coroutine);
+                
+
             } else if (touch.phase == TouchPhase.Ended) {
+                if (pointerOverUI)
+                    return;
+                
                 if (longTouch) {
                     longTouch = false;
-                } else {
+                } else {                    
                     if (coroutine != null)
                         StopCoroutine(coroutine);
                     longTouch = false;
@@ -183,7 +147,9 @@ public class InputHandler : Singleton<InputHandler> {
                         }
                     } else {
                         Sight.Instance.Touch();
-                    }                    
+                    }
+                    
+                            
                 }
             }
         }
@@ -192,6 +158,7 @@ public class InputHandler : Singleton<InputHandler> {
     private IEnumerator LongTouch(Touch touch) {
         yield return new WaitForSeconds(1f);
         longTouch = true;
+        //TransformGizmo.Instance.ClearTargets();
         Sight.Instance.LongTouch();
 
         /*

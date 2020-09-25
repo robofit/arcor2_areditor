@@ -80,8 +80,11 @@ public class NewProjectDialog : Dialog
         }
     }
 
-    public override void Open() {
+    public void Open(string selectedScene = null) {
         base.Open();
+        if (selectedScene != null) {
+            SetSelectedValue(ToggleGroup, selectedScene);
+        }
         NewProjectName.text = "";
         FieldChanged();
     }

@@ -12,11 +12,13 @@ public class SceneOptionMenu : TileOptionMenu {
     private InputDialog inputDialog;
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
+    public ConfirmationDialog ConfirmationDialog => confirmationDialog;
+    
 
     protected override void Start() {
         base.Start();
         Debug.Assert(inputDialog != null);
-        Debug.Assert(confirmationDialog != null);
+        Debug.Assert(ConfirmationDialog != null);
     }
 
     public void Open(SceneTile sceneTile) {
@@ -80,7 +82,7 @@ public class SceneOptionMenu : TileOptionMenu {
             Base.Notifications.Instance.ShowNotification("Failed to remove scene", "There are " + projects + " projects associated with this scene. Remove them first.");
             return;
         }
-        confirmationDialog.Open("Remove scene",
+        ConfirmationDialog.Open("Remove scene",
                          "Are you sure you want to remove scene " + sceneTile.GetLabel() + "?",
                          () => RemoveScene(),
                          () => inputDialog.Close());
@@ -90,7 +92,7 @@ public class SceneOptionMenu : TileOptionMenu {
         Base.GameManager.Instance.ShowLoadingScreen();
         try {
             await WebsocketManager.Instance.RemoveScene(sceneTile.SceneId);
-            confirmationDialog.Close();
+            ConfirmationDialog.Close();
             Close();
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to remove scene", e.Message);
@@ -115,6 +117,10 @@ public class SceneOptionMenu : TileOptionMenu {
         Close();
         GameManager.Instance.HideLoadingScreen();
 
+    }
+
+    public void NewProject() {
+        MainScreen.Instance.NewProjectDialog.Open(sceneTile.GetLabel());
     }
 
    

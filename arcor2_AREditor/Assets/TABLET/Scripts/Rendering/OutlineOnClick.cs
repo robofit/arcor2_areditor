@@ -42,6 +42,10 @@ public class OutlineOnClick : Clickable {
 
     public bool HoverOnly = false;
 
+    //[Range(0.0f, 0.1f)]
+    //public float OutlineSize = 0.05f;
+    //private float CurrentOutlineSize;
+
     private bool selected = false;
     private bool highlighted = false;
 
@@ -51,9 +55,25 @@ public class OutlineOnClick : Clickable {
 
     private void Start() {
         InitGizmoMaterials();
+        //CurrentOutlineSize = OutlineSize;
     }
 
-    private void InitGizmoMaterials() {
+    //private void Update() {
+    //    if (!Mathf.Approximately(OutlineSize, CurrentOutlineSize)) {
+    //        CurrentOutlineSize = OutlineSize;
+    //        if (OutlineShaderType == OutlineType.OnePassShader) {
+    //            OutlineClickMaterial.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
+    //            OutlineHoverMaterial.SetFloat("_OutlineWidth", OutlineSize);
+    //        } else {
+    //            OutlineClickFirstPass.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
+    //            OutlineClickSecondPass.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
+    //            OutlineHoverFirstPass.SetFloat("_OutlineWidth", OutlineSize);
+    //            OutlineHoverSecondPass.SetFloat("_OutlineWidth", OutlineSize);
+    //        }
+    //    }
+    //}
+
+    public void InitGizmoMaterials() {
         if (OutlineShaderType == OutlineType.OnePassShader) {
             gizmoMaterial = new Material[1];
             gizmoMaterial[0] = new Material(OutlineHoverMaterial) {

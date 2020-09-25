@@ -10,6 +10,7 @@ using IO.Swagger.Model;
 using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
+using WebSocketSharp;
 
 namespace Base {
    
@@ -34,10 +35,13 @@ namespace Base {
         /// </summary>
         public event EventHandler OnSceneSaved;
         /// <summary>
-        /// Invoked when robot URDF ready. Contains type of robot and path to URDF.
+        /// Invoked when robor should show their EE pose
         /// </summary>
-        public event AREditorEventArgs.RobotUrdfEventHandler OnUrdfReady;
-
+        public event EventHandler OnShowRobotsEE;
+        /// <summary>
+        /// Invoked when robots should hide their EE pose
+        /// </summary>
+        public event EventHandler OnHideRobotsEE;
         /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
         /// </summary>
@@ -54,10 +58,6 @@ namespace Base {
         /// Origin (0,0,0) of scene.
         /// </summary>
         public GameObject SceneOrigin;
-        /// <summary>
-        /// Specific object in hierarchy where end effectors game object is stored.
-        /// </summary>
-        public GameObject EEOrigin;
         /// <summary>
         /// Prefab for robot action object
         /// </summary>        
@@ -106,17 +106,17 @@ namespace Base {
             private set;
         }
         /// <summary>
-        /// Holds all robots end effectors
-        /// </summary>
-        private Dictionary<string, RobotEE> EndEffectors = new Dictionary<string, RobotEE>();
-        /// <summary>
-        /// Holds all robot with at least one end effector
-        /// </summary>
-        private List<IRobot> robotsWithEndEffector = new List<IRobot>();
-        /// <summary>
         /// Indicates if resources (e.g. end effectors for robot) should be loaded when scene created.
         /// </summary>
         private bool loadResources = false;
+
+        /// <summary>
+        /// Defines if scene was started on server - e.g. if all robots and other action objects
+        /// are instantioned and are ready
+        /// </summary>
+        public bool SceneStarted = false;
+
+        public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
         /// OnSceneSavedStatusChanged when sceneChanged value differs from original value (i.e. when scene
@@ -127,6 +127,8 @@ namespace Base {
             set {
                 bool origVal = SceneChanged;
                 sceneChanged = value;
+                if (!Valid)
+                    return;
                 OnSceneChanged?.Invoke(this, EventArgs.Empty);
                 if (origVal != value) {
                     OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
@@ -144,34 +146,23 @@ namespace Base {
         /// <returns>True if scene successfully created, false otherwise</returns>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
+            
             if (SceneMeta != null)
                 return false;
-            robotsWithEndEffector.Clear();
-            SetSceneMeta(scene);
-            
+            SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-
-            bool success = await UpdateScene(scene, customCollisionModels);
-            if (success) {
-                OnLoadScene?.Invoke(this, EventArgs.Empty);
-            }
-           
-            return success;
-        }
-
-        /// <summary>
-        /// Updates scene based on provided json 
-        /// </summary>
-        /// <param name="scene">Description of scene</param>
-        /// <param name="customCollisionModels">Allows to override collision models with different ones. Usable e.g. for
-        /// project running screen.</param>
-        /// <returns>True if scene successfully updated, false otherwise</returns>
-        public async Task<bool> UpdateScene(IO.Swagger.Model.Scene scene, CollisionModels customCollisionModels = null) {
-            if (scene.Id != SceneMeta.Id)
-                return false;
-            SetSceneMeta(scene);
+            GameManager.Instance.Scene.SetActive(true);
             await UpdateActionObjects(scene, customCollisionModels);
+            sceneChanged = scene.Modified == DateTime.MinValue;
+            try {
+                await WebsocketManager.Instance.StopScene(true);
+                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Started));
+            } catch (RequestFailedException) {
+                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
+            }
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
+            Valid = true;
             return true;
         }
 
@@ -180,8 +171,10 @@ namespace Base {
         /// </summary>
         /// <returns>True if scene successfully destroyed, false otherwise</returns>
         public bool DestroyScene() {
+            SceneStarted = false;
+            Valid = false;
             RemoveActionObjects();
-            SceneMeta = null;            
+            SceneMeta = null;
             return true;
         }
 
@@ -189,7 +182,7 @@ namespace Base {
         /// Sets scene metadata
         /// </summary>
         /// <param name="scene">Scene metadata</param>
-        public void SetSceneMeta(Scene scene) {
+        public void SetSceneMeta(BareScene scene) {
             if (SceneMeta == null) {
                 SceneMeta = new Scene(id: "", name: "");
             }
@@ -213,57 +206,6 @@ namespace Base {
                 scene.Objects.Add(o.Data);
             }
             return scene;
-        }
-
-        /// <summary>
-        /// Downloads URDF package for selected robot and stores them to file
-        /// </summary>
-        /// <param name="fileName">Where URDF should be stored</param>
-        /// <param name="robotType">Type of robot</param>
-        /// <returns></returns>
-        private IEnumerator DownloadUrdfPackage(string fileName, string robotType) {
-            Application.targetFrameRate = 120;
-            Debug.Log("URDF: download started");
-            
-            string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
-            using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
-                // Request and wait for the desired page.
-                yield return www.Send();
-                if (www.isNetworkError || www.isHttpError) {
-                    Debug.LogError(www.error + " (" + uri + ")");
-                    Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
-                    GameManager.Instance.SetDefaultFramerate();
-                } else {
-                    string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
-                    Directory.CreateDirectory(robotDictionary);
-                    string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
-                    System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-                    string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
-                    try {
-                        Directory.Delete(urdfDictionary, true);
-                    } catch (DirectoryNotFoundException) {
-                        // ok, nothing to delete..
-                    }
-
-                    try {
-                        ZipFile.ExtractToDirectory(savePath, urdfDictionary);
-                        Debug.Log("URDF: zip extracted");
-                        OnUrdfReady?.Invoke(this, new RobotUrdfArgs(urdfDictionary, robotType));
-                    } catch (Exception ex) when (ex is ArgumentException ||
-                                                 ex is ArgumentNullException ||
-                                                 ex is DirectoryNotFoundException ||
-                                                 ex is PathTooLongException ||
-                                                 ex is IOException ||
-                                                 ex is FileNotFoundException ||
-                                                 ex is InvalidDataException ||
-                                                 ex is UnauthorizedAccessException) {
-                        Debug.LogError(ex);
-                        Notifications.Instance.ShowNotification("Failed to extract URDF", "");
-                        GameManager.Instance.SetDefaultFramerate();
-                    }
-                }
-            }
-            
         }
         
 
@@ -295,6 +237,41 @@ namespace Base {
             OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
+            WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
+            WebsocketManager.Instance.OnSceneStateEvent += OnSceneStateEven;
+        }
+
+        private void OnSceneStateEven(object sender, SceneStateEventArgs args) {
+            switch (args.Event.State) {
+                case SceneStateData.StateEnum.Starting:
+                    GameManager.Instance.ShowLoadingScreen("Starting scene...");
+                    break;
+                case SceneStateData.StateEnum.Stopping:
+                    SceneStarted = false;
+                    GameManager.Instance.ShowLoadingScreen("Stopping scene...");
+                    if (!args.Event.Message.IsNullOrEmpty()) {
+                        Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
+                    }
+                    OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
+                    break;
+                case SceneStateData.StateEnum.Started:
+                    SceneStarted = true;
+                    if (RobotsEEVisible)
+                        OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+                    GameManager.Instance.HideLoadingScreen();
+                    break;
+                case SceneStateData.StateEnum.Stopped:
+                    SceneStarted = false;
+                    GameManager.Instance.HideLoadingScreen();
+                    break;
+            }
+        }
+
+        private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                SetSceneMeta(args.Scene);
+                sceneChanged = true;
+            }
         }
 
         /// <summary>
@@ -303,28 +280,18 @@ namespace Base {
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
         private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
-            if (!RobotsEEVisible) {
-                CleanRobotEE();
+            // if initializing or deinitializing scene, dont update robot joints
+            if (!Valid)
                 return;
-            }
-            
-            // check if robotId is really a robot
-            if (ActionObjects.TryGetValue(args.Data.RobotId, out ActionObject actionObject)) {
-               if (actionObject.IsRobot()) {
-                    RobotActionObject robot = (RobotActionObject) actionObject;
-                    foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
-                        robot.SetJointAngle(joint.Name, (float) joint.Value);                        
-                    }
-                } else {
-                    Debug.LogError("My robot is not a robot?");
-                    Notifications.Instance.SaveLogs();
+            try {
+                IRobot robot = GetRobot(args.Data.RobotId);
+                foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
+                    robot.SetJointValue(joint.Name, (float) joint.Value); 
                 }
-            } else {
-                Debug.LogError("Robot not found!");
-                await WebsocketManager.Instance.RegisterForRobotEvent(args.Data.RobotId,
-                    false, RegisterForRobotEventArgs.WhatEnum.Joints);
+            } catch (ItemNotFoundException) {
+                
             }
-            
+                        
         }
 
         /// <summary>
@@ -334,17 +301,18 @@ namespace Base {
         /// <param name="args">Robot ee data</param>
         private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
-                CleanRobotEE();
                 return;
             }
-            foreach (EefPose eefPose in args.Data.EndEffectors) {
-                if (!EndEffectors.TryGetValue(args.Data.RobotId + "/" + eefPose.EndEffectorId, out RobotEE robotEE)) {
-                    robotEE = Instantiate(RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                    robotEE.SetEEName(GetRobot(args.Data.RobotId).GetName(), eefPose.EndEffectorId);
-                    EndEffectors.Add(args.Data.RobotId + "/" + eefPose.EndEffectorId, robotEE);
+            foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
+                try {
+                    IRobot robot = GetRobot(args.Data.RobotId);
+                    RobotEE ee = robot.GetEE(eefPose.EndEffectorId);
+                    ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
+                        TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
+                } catch (ItemNotFoundException) {
+                    continue;
                 }
-                robotEE.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position));
-                robotEE.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation));
+                
             }
         }
 
@@ -354,10 +322,9 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnSceneLoaded(object sender, EventArgs e) {
-            CleanRobotEE();
-            if (RobotsEEVisible) {
+            /*if (RobotsEEVisible) {
                 ShowRobotsEE();
-            }
+            }*/
         }
 
         /// <summary>
@@ -369,62 +336,28 @@ namespace Base {
         }
 
         /// <summary>
-        /// Destroys all end effectors in scene
-        /// </summary>
-        private void CleanRobotEE() {
-            foreach (KeyValuePair<string, RobotEE> ee in EndEffectors) {
-                Destroy(ee.Value.gameObject);
-            }
-            EndEffectors.Clear();
-        }
-
-        /// <summary>
         /// Registers for end effector poses (and if robot has URDF then for joints values as well) and displays EE positions in scene
         /// </summary>
-        public async void ShowRobotsEE() {
-            CleanRobotEE();
-            foreach (IRobot robot in GetRobots()) {
-                if (robot.GetEndEffectors().Count > 0) {
-                    robotsWithEndEffector.Add(robot);
-                }
+        /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
+        public bool ShowRobotsEE() {
+            if (!SceneStarted) {
+                Notifications.Instance.ShowNotification("Failed to show robots EE", "This can only be done when scene is started");
+                return false;
             }
             RobotsEEVisible = true;
-            foreach (IRobot robot in robotsWithEndEffector) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                if (robot.HasUrdf())
-                    await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), true, RegisterForRobotEventArgs.WhatEnum.Joints);
-                    
-            }
-            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
+            OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             
+            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
+            return true;
         }
 
         /// <summary>
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
-        public async void HideRobotsEE() {
+        public void HideRobotsEE() {
             RobotsEEVisible = false;
-            foreach (IRobot robot in robotsWithEndEffector) {
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Eefpose);
-                await WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), false, RegisterForRobotEventArgs.WhatEnum.Joints);
-            }
-            robotsWithEndEffector.Clear();
-            CleanRobotEE();
+            OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);
-        }
-
-        /// <summary>
-        /// Gets robots end effector
-        /// </summary>
-        /// <param name="robotId">ID of robot</param>
-        /// <param name="eeId">Id of end effector</param>
-        /// <returns></returns>
-        public RobotEE GetRobotEE(string robotId, string eeId) {
-            if (EndEffectors.TryGetValue(robotId + "/" + eeId, out RobotEE robotEE)) {
-                return robotEE;
-            } else {
-                throw new ItemNotFoundException("No ee with id: " + robotId + "/" + eeId);
-            }
         }
 
         /// <summary>
@@ -469,14 +402,7 @@ namespace Base {
             CurrentlySelectedObject = obj;
         }
 
-        /// <summary>
-        /// Updates scene metadata
-        /// </summary>
-        /// <param name="scene"></param>
-        public void SceneBaseUpdated(IO.Swagger.Model.Scene scene) {
-            SetSceneMeta(scene);
-        }
-
+      
         /// <summary>
         /// Computes point above selected transform which is collision free
         /// </summary>
@@ -513,7 +439,7 @@ namespace Base {
         /// <param name="id">UUID of action object</param>
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
-        /// <returns>Spawned actio object</returns>
+        /// <returns>Spawned action object</returns>
         public async Task<ActionObject> SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
@@ -531,17 +457,7 @@ namespace Base {
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
 
-            if (aom.Robot) {
-                if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta)) {
-                    if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                        StartCoroutine(DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-                    }
-                }
-
-                if (loadResources) {
-                    await ((RobotActionObject) actionObject).LoadEndEffectors();
-                }
-            }
+            
 
             return actionObject;
         }

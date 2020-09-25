@@ -21,13 +21,6 @@ public abstract class Dialog : MonoBehaviour
         UpdateToggleGroup(togglePrefab, toggleGroup, items);
     }
 
-    protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<IO.Swagger.Model.ListProjectsResponseData> projects) {
-        List<string> items = new List<string>();
-        foreach (IO.Swagger.Model.ListProjectsResponseData project in projects) {
-            items.Add(project.Id);
-        }
-        UpdateToggleGroup(togglePrefab, toggleGroup, items);
-    }
 
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<string> items) {
         foreach (Transform toggle in toggleGroup.transform) {
@@ -48,6 +41,17 @@ public abstract class Dialog : MonoBehaviour
         foreach (Toggle toggle in toggleGroup.GetComponentsInChildren<Toggle>()) {
             if (toggle.isOn) {
                 return toggle.GetComponentInChildren<TMPro.TextMeshProUGUI>().text;
+            }
+        }
+        throw new Base.ItemNotFoundException("Nothing selected");
+    }
+
+    protected virtual void SetSelectedValue(GameObject toggleGroup, string name) {
+        foreach (Toggle toggle in toggleGroup.GetComponentsInChildren<Toggle>()) {
+            TMPro.TextMeshProUGUI text = toggle.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (text.text == name) {
+                toggle.isOn = true;
+                return;
             }
         }
         throw new Base.ItemNotFoundException("Nothing selected");

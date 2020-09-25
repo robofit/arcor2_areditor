@@ -53,11 +53,11 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
 
 
     private void OnActionExecutionFinished(object sender, EventArgs e) {
-        UpdateExecuteAndStopBtns();
+        _ = UpdateExecuteAndStopBtns();
     }
 
     private void OnActionExecution(object sender, StringEventArgs args) {
-        UpdateExecuteAndStopBtns();
+        _ = UpdateExecuteAndStopBtns();
     }
 
     public async void UpdateMenu() {
@@ -74,7 +74,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         actionParameters = await Base.Parameter.InitActionParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
-        UpdateExecuteAndStopBtns();
+        _ = UpdateExecuteAndStopBtns();
         try {
             await WebsocketManager.Instance.RemoveAction(CurrentAction.Data.Id, true);
             RemoveActionBtn.SetInteractivity(true);
@@ -83,7 +83,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         }        
     }
 
-    private void UpdateExecuteAndStopBtns() {
+    private async Task UpdateExecuteAndStopBtns() {
+        try {
+            await WebsocketManager.Instance.ExecuteAction(CurrentAction.Data.Id, true);
+        } catch (RequestFailedException ex) {
+            ExecuteActionBtn.SetInteractivity(false, ex.Message);
+            return;
+        }
         if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction) && CurrentAction.Data.Id == GameManager.Instance.ExecutingAction) {
             StopActionBtn.gameObject.SetActive(true);
             ExecuteActionBtn.gameObject.SetActive(false);
@@ -166,7 +172,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     public async void ExecuteAction() {
         ExecuteActionBtn.SetInteractivity(false, "Action already runs");
         try {
-            await WebsocketManager.Instance.ExecuteAction(CurrentAction.Data.Id);
+            await WebsocketManager.Instance.ExecuteAction(CurrentAction.Data.Id, false);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
             return;
