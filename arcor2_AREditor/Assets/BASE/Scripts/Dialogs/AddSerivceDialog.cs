@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using System;
-
+/*
 public class AddSerivceDialog : Dialog
 {
     public string ServiceToBeAdded;
@@ -32,3 +32,4 @@ public class AddSerivceDialog : Dialog
         AddServiceToScene();
     }
 }
+*/

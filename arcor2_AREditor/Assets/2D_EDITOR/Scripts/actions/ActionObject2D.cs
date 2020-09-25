@@ -79,7 +79,7 @@ public class ActionObject2D : Base.ActionObject {
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null) {
+    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
         throw new System.NotImplementedException();
     }
 
@@ -107,8 +107,13 @@ public class ActionObject2D : Base.ActionObject {
         throw new System.NotImplementedException();
     }
 
-    public override Vector3 GetTopPoint() {
-        throw new System.NotImplementedException();
+
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
     }
 }
 

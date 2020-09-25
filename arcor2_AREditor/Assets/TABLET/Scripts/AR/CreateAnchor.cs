@@ -9,4 +9,12 @@ public class CreateAnchor : Base.Clickable {
         CalibrationManager.Instance.CreateAnchor(transform);
     }
 
+    public override void OnHoverStart() {
+
+    }
+
+    public override void OnHoverEnd() {
+
+    }
+
 }

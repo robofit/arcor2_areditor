@@ -578,6 +578,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 5657451142924210215}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &5657451142976303645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1825,7 +1831,18 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 5657451143301786155}
+        m_MethodName: SetKeepMeConnected
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 1
 --- !u!114 &5657451143868730098
 MonoBehaviour:
@@ -1886,6 +1903,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa5100cea443dc7448b10a5f20698420, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  toggleObject: {fileID: 0}
+  toggleAnimator: {fileID: 0}
 --- !u!114 &5657451143868730103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2443,6 +2462,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldTrigger: {fileID: 5657451144395915487}
+  inputText: {fileID: 0}
+  inputFieldAnimator: {fileID: 0}
+  isEmpty: 1
+  isClicked: 0
+  inAnim: In
+  outAnim: Out
 --- !u!114 &5657451144100307152
 MonoBehaviour:
   m_ObjectHideFlags: 0

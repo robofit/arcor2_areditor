@@ -31,6 +31,7 @@ ARCOR2 AR Editor
    - [Loading screen animation](https://assetstore.unity.com/packages/tools/loading-screen-animation-98505) 
    - [Modern UI Pack](https://assetstore.unity.com/packages/tools/gui/modern-ui-pack-150824)
    - [UI Graph](https://assetstore.unity.com/packages/tools/gui/ui-graph-51304)
+   - [Joystick Pack](https://assetstore.unity.com/packages/tools/input-management/joystick-pack-107631)
    - [Native Camera for Android & iOS](https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802) (only if you want to build Android version)
    - [Simple Collada](https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579)
      - requires to apply patch (<b>/scripts/ColladaImporter.patch</b> and <b>/scripts/StringExtensions.patch</b>) on script ColladaImporter.cs and OrbCreationExtensions/StringExtensions.cs

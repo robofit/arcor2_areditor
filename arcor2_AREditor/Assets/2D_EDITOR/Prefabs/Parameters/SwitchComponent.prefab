@@ -413,6 +413,8 @@ MonoBehaviour:
   switchTag: Switch
   isOn: 1
   invokeAtStart: 0
+  switchAnimator: {fileID: 0}
+  switchButton: {fileID: 0}
 --- !u!114 &7325740951115511514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -714,8 +716,8 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 35
+  m_fontSizeBase: 35
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

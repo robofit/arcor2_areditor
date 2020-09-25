@@ -6,13 +6,14 @@ using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Newtonsoft.Json;
 
-public class LabeledInput : MonoBehaviour, IActionParameter
+public class LabeledInput : MonoBehaviour, IParameter
 {
     public string ParameterType;
 
     [SerializeField]
     private TMPro.TMP_Text Label;
     public TMPro.TMP_InputField Input;
+    public TMPro.TMP_Text Text; 
 
     private TooltipContent tooltipContent;
 
@@ -76,7 +77,7 @@ public class LabeledInput : MonoBehaviour, IActionParameter
             case "integer":
                 return int.Parse(Input.text);
             case "double":
-                return Base.Action.ParseDouble(Input.text);
+                return Base.Parameter.ParseDouble(Input.text);
             default:
                 return Input.text;
         }
@@ -88,5 +89,16 @@ public class LabeledInput : MonoBehaviour, IActionParameter
 
     public void SetValue(object value) {
         Input.text = value.ToString();
+    }
+
+    public void SetDarkMode(bool dark) {
+        if (dark) {
+            Text.color = Color.black;
+            Label.color = Color.black;
+        } else {
+            Text.color = Color.white;
+            Label.color = Color.white;
+        }
+        
     }
 }

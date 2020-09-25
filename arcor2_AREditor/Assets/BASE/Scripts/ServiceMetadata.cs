@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/*
 namespace Base {
     public class ServiceMetadata : IO.Swagger.Model.ServiceTypeMeta {
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
@@ -27,5 +27,5 @@ namespace Base {
             set => actionsLoaded = value;
         }
     }
-}
+}*/
 

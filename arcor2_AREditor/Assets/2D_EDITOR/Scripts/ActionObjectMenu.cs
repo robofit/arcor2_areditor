@@ -4,8 +4,8 @@ using System;
 using DanielLochner.Assets.SimpleSideMenu;
 using Michsky.UI.ModernUIPack;
 using Base;
-using static IO.Swagger.Model.UpdateObjectPoseUsingRobotArgs;
 using System.Collections.Generic;
+using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class ActionObjectMenu : MonoBehaviour, IMenu {
@@ -56,7 +56,8 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
 
     public async void DeleteActionObject() {
-        IO.Swagger.Model.RemoveFromSceneResponse response = await Base.GameManager.Instance.RemoveFromScene(CurrentObject.Data.Id);
+        IO.Swagger.Model.RemoveFromSceneResponse response =
+            await WebsocketManager.Instance.RemoveFromScene(CurrentObject.Data.Id, false);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Name, response.Messages[0]);
             return;
@@ -83,20 +84,30 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
     public async void RenameObject(string newName) {
-        bool result = await GameManager.Instance.RenameActionObject(CurrentObject.Data.Id, newName);
-        if (result) {
+        try {
+            await WebsocketManager.Instance.RenameObject(CurrentObject.Data.Id, newName);
             InputDialog.Close();
             objectName.text = newName;
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
         }
     }
 
 
-    public void UpdateMenu() {
+    public async void UpdateMenu() {
+        objectName.text = CurrentObject.Data.Name;
+
+        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        if (!SceneManager.Instance.SceneStarted) {
+            UpdatePositionBlockVO.SetActive(false);
+            UpdatePositionBlockMesh.SetActive(false);
+            RobotsListsBlock.SetActive(false);
+            return;
+        }
         if (currentFocusPoint >= 0)
             return;
-
         if (SceneManager.Instance.RobotInScene()) {
-            RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
+            await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
             string robotId = null;
             try {
                 robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
@@ -139,16 +150,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
-        objectName.text = CurrentObject.Data.Name;
-
-        VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
+        
 
         
     }
 
-    private void OnRobotChanged(string robot_id) {
+    private async void OnRobotChanged(string robot_id) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
         UpdateModelOnEE();
     }
 
@@ -161,15 +170,16 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     }
        
 
-    public void UpdateObjectPosition() {
+    public async void UpdateObjectPosition() {
         if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
-
-        Base.GameManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-            (string) RobotsList.GetValue(), (string) EndEffectorList.GetValue(), pivot);
+        IRobot robot = SceneManager.Instance.GetRobotByName((string) RobotsList.GetValue());
+        await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
+                robot.GetId(), (string) EndEffectorList.GetValue(), pivot);
+        
     }
          
 
@@ -195,8 +205,9 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
             return;
         }
         try {
-            await Base.GameManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
-                RobotsList.Dropdown.selectedText.text, EndEffectorList.Dropdown.selectedText.text);
+            await WebsocketManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
+                (string) RobotsList.GetValue(),
+                (string) EndEffectorList.GetValue());
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
@@ -220,7 +231,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
         if (currentFocusPoint < 0)
             return;
         try {
-            await Base.GameManager.Instance.SavePosition(CurrentObject.Data.Id, currentFocusPoint);
+            await WebsocketManager.Instance.SavePosition(CurrentObject.Data.Id, currentFocusPoint);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
@@ -230,7 +241,7 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public async void FocusObjectDone() {
         try {
-            await Base.GameManager.Instance.FocusObjectDone(CurrentObject.Data.Id);
+            await WebsocketManager.Instance.FocusObjectDone(CurrentObject.Data.Id);
             CurrentPointLabel.text = "";
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
             GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
@@ -287,12 +298,14 @@ public class ActionObjectMenu : MonoBehaviour, IMenu {
     private void UpdateModelOnEE() {
         if (model == null)
             return;
-        string robotId = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
-        if (string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+        string robotName = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
+        if (string.IsNullOrEmpty(robotName) || string.IsNullOrEmpty(eeId)) {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
+        
         try {
-            RobotEE ee = SceneManager.Instance.GetRobotEE(robotId, eeId);
+            string robotId = SceneManager.Instance.RobotNameToId(robotName);
+            RobotEE ee = SceneManager.Instance.GetRobot(robotId).GetEE(eeId);
             model.transform.parent = ee.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {

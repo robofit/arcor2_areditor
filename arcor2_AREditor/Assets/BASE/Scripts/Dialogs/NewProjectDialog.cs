@@ -79,4 +79,13 @@ public class NewProjectDialog : Dialog
             Notifications.Instance.ShowNotification("Failed to create new project", result.Message);
         }
     }
+
+    public void Open(string selectedScene = null) {
+        base.Open();
+        if (selectedScene != null) {
+            SetSelectedValue(ToggleGroup, selectedScene);
+        }
+        NewProjectName.text = "";
+        FieldChanged();
+    }
 }

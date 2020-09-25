@@ -13,20 +13,15 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     [SerializeField]
     private InputDialog inputDialog;
 
+    [SerializeField]
+    private ButtonWithTooltip createAPBtn;
     
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
-        /*IO.Swagger.Model.Position offset = new IO.Swagger.Model.Position();
-        Vector3 aboveModel = CurrentObject.GetTopPoint();
-        aboveModel.y += 0.1f;
-        offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentObject.transform.InverseTransformPoint(aboveModel)));
-        */
         
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(CurrentObject.transform.position));
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentObject.transform.InverseTransformPoint(SceneManager.Instance.SceneOrigin.transform.TransformPoint(abovePoint))));
-
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentObject.transform, Vector3.one * 0.025f, Quaternion.identity);        
+        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id, offset);
-        //Base.Scene.Instance.SpawnActionPoint(CurrentObject.GetComponent<Base.ActionObject>(), null);
         if (result)
             inputDialog.Close();
         UpdateMenu();
@@ -47,6 +42,8 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         foreach (Transform t in DynamicContent.transform) {
             Destroy(t.gameObject);
         }
+        createAPBtn.SetInteractivity(CurrentObject.ActionObjectMetadata.HasPose);
+
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
             Button button = GameManager.Instance.CreateButton(DynamicContent.transform, actionPoint.Data.Name);
             button.onClick.AddListener(() => ShowActionPoint(actionPoint));
@@ -87,7 +84,7 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.ShowMenu();
         SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
-        actionObject.SendMessage("Select");
+        actionObject.SendMessage("Select", true);
     }
 
     private static void ShowActionPoint(ActionPoint actionPoint) {

@@ -10,7 +10,7 @@ namespace Base {
     public class ActionsManager : Singleton<ActionsManager> {
 
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
-        private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
+       // private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         
         public Action CurrentlyRunningAction = null;
         
@@ -18,27 +18,27 @@ namespace Base {
 
         
         public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab,
-            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab;
+            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
+            ParameterBooleanPrefab;
 
         public GameObject InteractiveObjects;
 
-        public event GameManager.StringEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionObjectsUpdated;
 
-        public bool ActionsReady, ServicesLoaded, ActionObjectsLoaded;
+        public bool ActionsReady, ActionObjectsLoaded;
 
         public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
 
         public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
-        public Dictionary<string, ServiceMetadata> ServicesMetadata {
+       /* public Dictionary<string, ServiceMetadata> ServicesMetadata {
             get => servicesMetadata;
             set => servicesMetadata = value;
         }
-        
+        */
         private void Awake() {
             ActionsReady = false;
-            ServicesLoaded = false;
             ActionObjectsLoaded = false;
         }
 
@@ -58,20 +58,19 @@ namespace Base {
         }
 
         private void Update() {
-            if (!ActionsReady && ActionObjectsLoaded && ServicesLoaded) {
+            if (!ActionsReady && ActionObjectsLoaded) {
                 
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
-                    
-                    if (!ao.ActionsLoaded) {
+                    if (!ao.Disabled && !ao.ActionsLoaded) {
                        
                         return;
                     }
                 }
-                foreach (ServiceMetadata sm in ServicesMetadata.Values) {
+              /*  foreach (ServiceMetadata sm in ServicesMetadata.Values) {
                     if (!sm.ActionsLoaded) {
                         return;
                     }
-                }
+                }*/
                 ActionsReady = true;
                 OnActionsLoaded?.Invoke(this, EventArgs.Empty);
                 enabled = false;
@@ -79,25 +78,31 @@ namespace Base {
         }
 
         public void Init() {
-            servicesMetadata.Clear();
+           // servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
             ActionsReady = false;
-            ServicesLoaded = false;
             ActionObjectsLoaded = false;
-        }        
-
-       
-
-        
-        public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
-            foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
-                ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
-                ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
-                await UpdateActionsOfService(serviceMetadata);
-            }
-            ServicesLoaded = true;
-            OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
         }
+
+        public bool HasObjectTypePose(string type) {
+            if (!ActionObjectMetadata.TryGetValue(type,
+            out Base.ActionObjectMetadata actionObjectMetadata)) {
+                throw new ItemNotFoundException("No object type " + type);
+            }
+            return actionObjectMetadata.HasPose;
+        }
+
+
+        /*  
+          public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
+              foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
+                  ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
+                  ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
+                  await UpdateActionsOfService(serviceMetadata);
+              }
+              ServicesLoaded = true;
+              OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
+          }*/
 
         // TODO - solve somehow better.. perhaps own class for robot objects and services?
         internal void UpdateRobotsMetadata(List<RobotMeta> list) {
@@ -127,24 +132,19 @@ namespace Base {
 
         private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
-                actionObject.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(actionObject.Type));
-            if (actionObject.ActionsMetadata == null) {
-                actionObject.Disabled = true;
-                actionObject.Problem = "Failed to load actions";
-            }
-            actionObject.ActionsLoaded = true;
+                try {
+                    actionObject.ActionsMetadata = ParseActions(await WebsocketManager.Instance.GetActions(actionObject.Type));
+                    if (actionObject.ActionsMetadata == null) {
+                        actionObject.Disabled = true;
+                        actionObject.Problem = "Failed to load actions";
+                    }
+                    actionObject.ActionsLoaded = true;
+                } catch (RequestFailedException e) {
+                    Debug.LogError("Failed to load action for object " + name);
+                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + name);                    
+                }            
         }
-
-        private async Task UpdateActionsOfService(ServiceMetadata serviceMetadata) {
-            if (!serviceMetadata.Disabled) {
-                serviceMetadata.ActionsMetadata = ParseActions(await GameManager.Instance.GetActions(serviceMetadata.Type));
-            }
-            if (serviceMetadata.ActionsMetadata == null) {
-                serviceMetadata.Disabled = true;
-                serviceMetadata.Problem = "Failed to load actions";
-            }
-            serviceMetadata.ActionsLoaded = true;
-        }
+        
 
         private Dictionary<string, ActionMetadata> ParseActions(List<IO.Swagger.Model.ObjectAction> actions) {
             if (actions == null) {
@@ -218,57 +218,19 @@ namespace Base {
             }
         }
 
-        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllFreeActions() {
+        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActions() {
             Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
             foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {               
-                List<ActionMetadata> freeActions = new List<ActionMetadata>();
                 if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
                     continue;
                 }
-                foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
-                    if (am.Meta.Free)
-                        freeActions.Add(am);
-                }
-                if (freeActions.Count > 0) {
-                    actionsMetadata[ao] = freeActions;
-                }
-                
+                if (aom.ActionsMetadata.Count > 0) {
+                    actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();                    
+                }                
             }
-            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
-                actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }
-
             return actionsMetadata;
         }
 
-        public Dictionary<IActionProvider, List<ActionMetadata>> GetAllActionsOfObject(ActionObject actionObject) {
-            Dictionary<IActionProvider, List<ActionMetadata>> actionsMetadata = new Dictionary<IActionProvider, List<ActionMetadata>>();
-            foreach (ActionObject ao in SceneManager.Instance.ActionObjects.Values) {
-                if (ao == actionObject) {
-                    if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
-                        continue;
-                    }
-                    actionsMetadata[ao] = aom.ActionsMetadata.Values.ToList();
-                } else {
-                    List<ActionMetadata> freeActions = new List<ActionMetadata>();
-                    if (!actionObjectsMetadata.TryGetValue(ao.Data.Type, out ActionObjectMetadata aom)) {
-                        continue;
-                    }
-                    foreach (ActionMetadata am in aom.ActionsMetadata.Values) {
-                        if (am.Meta.Free)
-                            freeActions.Add(am);
-                    }
-                    if (freeActions.Count > 0) {
-                        actionsMetadata[ao] = freeActions;
-                    }
-                }
-            }
-            foreach (Service sceneService in SceneManager.Instance.ServicesData.Values) {
-                actionsMetadata[sceneService] = sceneService.Metadata.ActionsMetadata.Values.ToList();
-            }
-
-            return actionsMetadata;
-        }
 
         
     }

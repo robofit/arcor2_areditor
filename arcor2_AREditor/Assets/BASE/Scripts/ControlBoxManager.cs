@@ -18,6 +18,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public Toggle RotateToggle;
     public Toggle TrackablesToggle;
     public Toggle ConnectionsToggle;
+    public Toggle VRModeToggle;
+    public Toggle CalibrationElementsToggle;
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -86,10 +88,23 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     public void DisplayTrackables(bool active) {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        TrackingManager.Instance.DisplayPlanesAndFeatures(active);
+        TrackingManager.Instance.DisplayPlanesAndPointClouds(active);
 #endif
     }
 
+    public void DisplayCalibrationElements(bool active) {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        CalibrationManager.Instance.ActivateCalibrationElements(active);
+#endif
+    }
+
+    public void ToggleVRMode(bool active) {
+        if (active) {
+            VRModeManager.Instance.EnableVRMode();
+        } else {
+            VRModeManager.Instance.DisableVRMode();
+        }
+    }
 
     public void ShowActionObjectSettingsMenu() {
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
@@ -109,14 +124,13 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform.InverseTransformPoint(ProjectManager.Instance.ActionPointsOrigin.transform.position));
+       Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, Vector3.one * 0.025f, Quaternion.identity);
         IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
 
         bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
         if (result)
             InputDialog.Close();
     }
-
     
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);

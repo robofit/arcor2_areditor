@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Michsky.UI.ModernUIPack;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,6 +32,11 @@ public class ButtonWithTooltip : MonoBehaviour {
         tooltip.DescriptionAlternative = alternativeDescription;
         SetInteractivity(interactable);
         
+    }
+
+    public void SetDescription(string description) {
+        tooltip.Description = description;
+        tooltip.ShowDefaultDescription();
     }
 
     public void HideTooltip() {

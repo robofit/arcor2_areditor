@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 45968673392637097}
   - component: {fileID: 5343520572128587360}
+  - component: {fileID: 3977943581295511037}
   m_Layer: 0
   m_Name: APOrientation
   m_TagString: Untagged
@@ -44,6 +45,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7993e311ac3a2b346ab7dcb1585fa8d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
+  ActionPoint: {fileID: 0}
+  OrientationId: 
+  outlineOnClick: {fileID: 3977943581295511037}
+--- !u!114 &3977943581295511037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3060205434768461906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5053e62e365046e4a830ee9ca06df9a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Enabled: 1
+  OutlineShaderType: 0
+  OutlineClickFirstPass: {fileID: 0}
+  OutlineClickSecondPass: {fileID: 0}
+  OutlineHoverFirstPass: {fileID: 0}
+  OutlineHoverSecondPass: {fileID: 0}
+  OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
+    type: 2}
+  OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
+    type: 2}
+  Renderers:
+  - {fileID: 2630874748632323724}
+  HoverOnly: 0
 --- !u!114 &2658370539785482506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56,6 +86,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b0ea4ca6bb8264ca3aabbcc53b2254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
   Target: {fileID: 3060205434768461906}
 --- !u!1001 &6005706906708998692
 PrefabInstance:
@@ -72,7 +103,7 @@ PrefabInstance:
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.03
+      value: -0.0075
       objectReference: {fileID: 0}
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
@@ -122,17 +153,17 @@ PrefabInstance:
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.02
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.06
+      value: 0.015
       objectReference: {fileID: 0}
     - target: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.02
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 3461869479738297340, guid: b4e538696a8355b4f95165a806cc9e1b,
         type: 3}
@@ -150,6 +181,12 @@ GameObject:
 --- !u!4 &6127376779422745547 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 454967104782186991, guid: b4e538696a8355b4f95165a806cc9e1b,
+    type: 3}
+  m_PrefabInstance: {fileID: 6005706906708998692}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &2630874748632323724 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
     type: 3}
   m_PrefabInstance: {fileID: 6005706906708998692}
   m_PrefabAsset: {fileID: 0}

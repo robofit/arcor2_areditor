@@ -10,6 +10,14 @@ public class ActionButton : MonoBehaviour
     public Button Button;
     [SerializeField]
     private TMPro.TMP_Text text;
+
+    private string objectId;
+
+    public string ObjectId {
+        get => objectId;
+        set => objectId = value;
+    }
+
     // Start is called before the first frame update
     private void Awake() {
         enabled = false;
@@ -37,4 +45,6 @@ public class ActionButton : MonoBehaviour
         enabled = false;
         Background.color = new Color(0.353f, 0.651f, 0.945f);
     }
+
+
 }

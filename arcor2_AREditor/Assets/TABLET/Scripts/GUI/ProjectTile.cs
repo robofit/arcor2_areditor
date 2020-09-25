@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,9 +13,9 @@ public class ProjectTile : Tile
     [SerializeField]
     private TMPro.TMP_Text sceneName, timestamp;
 
-    public void InitTile(string userId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string projectId, string sceneId,
-        string sceneName, string timestamp) {
-        base.InitTile(userId, mainCallback, optionCallback, starVisible);
+    public void InitTile(string name, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, DateTime created, DateTime modified, string projectId, string sceneId,
+        string sceneName) {
+        base.InitTile(name, mainCallback, optionCallback, starVisible, created, modified);
         ProjectId = projectId;
         SceneId = sceneId;
         string filename = PlayerPrefsHelper.LoadString(projectId + "/image", "");
@@ -23,6 +24,12 @@ public class ProjectTile : Tile
             TopImage.sprite = sprite;
         }
         this.sceneName.text = "Scene: " + sceneName;
-        this.timestamp.text = "Last modified: " + timestamp;
+        SetTimestamp(modified.ToString());
     }
+
+    public void SetTimestamp(string value) {
+        this.timestamp.text = "Last modified: " + value;
+    }
+
+    
 }

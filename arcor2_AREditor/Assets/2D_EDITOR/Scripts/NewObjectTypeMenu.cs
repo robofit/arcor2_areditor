@@ -6,6 +6,7 @@ using System;
 
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
+using Base;
 
 public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     [SerializeField]
@@ -48,17 +49,28 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     public void UpdateMenu() {
         CreateNewObjectBtn.interactable = false;
+        UpdateModelsMenu();
         ValidateFields();
     }
 
     public void UpdateModelsMenu() {
         ValidateFields();
-        string modelType = (string) ModelsList.GetValue();
-        if (ModelMenus.TryGetValue(modelType, out GameObject menu)) {
+        ModelsList.gameObject.SetActive(true);
+        string modelType = (string) ModelsList.GetValue();        
+        
+        if (!HasSelectedParentPose()) {
+            ShowModelMenu(null);
+            ModelsList.gameObject.SetActive(false);
+        } else if (ModelMenus.TryGetValue(modelType, out GameObject menu)) {
             ShowModelMenu(menu);
         }
     }
 
+    private bool HasSelectedParentPose() {
+        string parentType = (string) ParentsList.GetValue();
+        return ActionsManager.Instance.HasObjectTypePose(parentType);
+    }
+    
     private void ShowModelMenu(GameObject menu) {
         BoxMenu.SetActive(false);
         CylinderMenu.SetActive(false);
@@ -77,7 +89,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
             values.Add(actionObjectMetadata.Type);
         }
-        ParentsList.PutData(values, originalValue, null);
+        ParentsList.PutData(values, originalValue, (_) => UpdateModelsMenu());
         
     }
 
@@ -89,26 +101,29 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         }
         if (interactable) {
             string modelType = (string) ModelsList.GetValue();
-            switch (modelType) {
-                case "Box":
-                    if (string.IsNullOrEmpty(BoxX.text) ||
-                        string.IsNullOrEmpty(BoxY.text) ||
-                        string.IsNullOrEmpty(BoxZ.text))
-                        interactable = false;
-                    break;
-                case "Sphere":
-                    if (string.IsNullOrEmpty(SphereRadius.text))
-                        interactable = false;
-                    break;
-                case "Cylinder":
-                    if (string.IsNullOrEmpty(CylinderHeight.text) ||
-                        string.IsNullOrEmpty(CylinderRadius.text))
-                        interactable = false;
-                    break;
-                case "Mesh":
-                    if (string.IsNullOrEmpty(MeshId.text))
-                        interactable = false;
-                    break;
+
+            if (HasSelectedParentPose()) {
+                switch (modelType) {
+                    case "Box":
+                        if (string.IsNullOrEmpty(BoxX.text) ||
+                            string.IsNullOrEmpty(BoxY.text) ||
+                            string.IsNullOrEmpty(BoxZ.text))
+                            interactable = false;
+                        break;
+                    case "Sphere":
+                        if (string.IsNullOrEmpty(SphereRadius.text))
+                            interactable = false;
+                        break;
+                    case "Cylinder":
+                        if (string.IsNullOrEmpty(CylinderHeight.text) ||
+                            string.IsNullOrEmpty(CylinderRadius.text))
+                            interactable = false;
+                        break;
+                    case "Mesh":
+                        if (string.IsNullOrEmpty(MeshId.text))
+                            interactable = false;
+                        break;
+                }
             }
             if (!interactable) {
                 buttonTooltip.description = "Some parameters has invalid value";
@@ -119,6 +134,15 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                 await Base.WebsocketManager.Instance.CreateNewObjectType(CreateObjectTypeMeta(), true);
             } catch (Base.RequestFailedException ex) {
                 buttonTooltip.description = ex.Message;
+                interactable = false;
+            } catch (FormatException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
+                interactable = false;
+            } catch (OverflowException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
+                interactable = false;
+            } catch (ArgumentNullException ex) { //decimal parsing exceptions
+                buttonTooltip.description = "Some parameters has invalid value";
                 interactable = false;
             }
         }
@@ -146,7 +170,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
         string modelTypeString = (string) ModelsList.GetValue();
         IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
-        if (ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
+        if (HasSelectedParentPose() && ModelMenus.TryGetValue(modelTypeString, out GameObject type) && type != null) {
             IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
             switch (modelTypeString) {
                 case "Box":
@@ -184,10 +208,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
-                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue(), hasPose: true);
         } else {
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
-                _base: (string) ParentsList.GetValue(), needsServices: new List<string>());
+                _base: (string) ParentsList.GetValue(), hasPose: false);
         }
 
         return objectTypeMeta;

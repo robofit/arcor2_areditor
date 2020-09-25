@@ -12,9 +12,9 @@ public class PackageTile : Tile
     [SerializeField]
     private TMPro.TMP_Text projectName, timestamp;
 
-    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, string packageId,
+    public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, DateTime created, DateTime modified, string packageId,
         string projectName, string timestamp) {
-        base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible);
+        base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible, created, modified);
         PackageId = packageId;
         string filename = PlayerPrefsHelper.LoadString(packageId + "/image", "");
         if (!string.IsNullOrEmpty(filename)) {

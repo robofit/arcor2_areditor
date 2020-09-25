@@ -50,4 +50,46 @@ public static class PlayerPrefsHelper {
         return PlayerPrefs.GetString(key, defaultValue);
     }
 
+    public static void SaveVector3(string key, Vector3 value) {
+        SaveFloat(key + "/x", value.x);
+        SaveFloat(key + "/y", value.y);
+        SaveFloat(key + "/z", value.z);
+    }
+
+    public static Vector3 LoadVector3(string key, Vector3 defaultValue) {
+        Vector3 vector = new Vector3 {
+            x = LoadFloat(key + "/x", defaultValue.x),
+            y = LoadFloat(key + "/y", defaultValue.y),
+            z = LoadFloat(key + "/z", defaultValue.z)
+        };
+        return vector;
+    }
+
+    public static void SaveQuaternion(string key, Quaternion value) {
+        SaveFloat(key + "/x", value.x);
+        SaveFloat(key + "/y", value.y);
+        SaveFloat(key + "/z", value.z);
+        SaveFloat(key + "/w", value.w);
+    }
+
+    public static Quaternion LoadQuaternion(string key, Quaternion defaultValue) {
+        Quaternion quaternion = new Quaternion {
+            x = LoadFloat(key + "/x", defaultValue.x),
+            y = LoadFloat(key + "/y", defaultValue.y),
+            z = LoadFloat(key + "/z", defaultValue.z),
+            w = LoadFloat(key + "/w", defaultValue.w)
+        };
+        return quaternion;
+    }
+
+    public static void SavePose(string key, Vector3 position, Quaternion rotation) {
+        SaveVector3(key + "/position", position);
+        SaveQuaternion(key + "/rotation", rotation);
+    }
+
+    public static void LoadPose(string key, Vector3 defaultPosition, Quaternion defaultRotation) {
+        LoadVector3(key + "/position", defaultPosition);
+        LoadQuaternion(key + "/rotation", defaultRotation);
+    }
+
 }
