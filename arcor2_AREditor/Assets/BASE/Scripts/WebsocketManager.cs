@@ -1715,7 +1715,7 @@ namespace Base {
         public async Task UpdateActionPointJointsUsingRobot(string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs(jointsId: jointsId);
-            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest(r_id, "UpdateActionPointJoints", args);
+            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest(r_id, "UpdateActionPointJointsUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse>(r_id);
 
