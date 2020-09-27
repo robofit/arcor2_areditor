@@ -160,10 +160,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         if (SceneManager.Instance.SceneStarted && JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
             AddJointsButton.interactable = true;
             JointsRobotsList.gameObject.SetActive(true);
+            JointsDynamicList.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
         } else {
             AddJointsButton.interactable = false;
             JointsRobotsList.gameObject.SetActive(false);
+            JointsDynamicList.SetActive(false);
         }
 
         UpdateOrientationsDynamicList();
