@@ -116,6 +116,8 @@ namespace Base {
         /// </summary>
         public bool SceneStarted = false;
 
+        public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -238,10 +240,10 @@ namespace Base {
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
-            WebsocketManager.Instance.OnSceneStateEvent += OnSceneStateEven;
+            WebsocketManager.Instance.OnSceneStateEvent += OnSceneState;
         }
 
-        private void OnSceneStateEven(object sender, SceneStateEventArgs args) {
+        private void OnSceneState(object sender, SceneStateEventArgs args) {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Starting scene...");
@@ -265,6 +267,8 @@ namespace Base {
                     GameManager.Instance.HideLoadingScreen();
                     break;
             }
+            // needs to be rethrown to ensure all subscribers has updated data
+            OnSceneStateEvent?.Invoke(this, args);
         }
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {

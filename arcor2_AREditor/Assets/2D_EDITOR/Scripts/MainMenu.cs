@@ -81,7 +81,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
         Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneOrProjectSavedStatusChanged;
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnSceneOrProjectSavedStatusChanged;
-        Base.WebsocketManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+        Base.SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
 
         HideEverything();
@@ -175,7 +175,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         orderedList.Sort(
             delegate (ActionObjectMetadata obj1,
             ActionObjectMetadata obj2) {
-                return obj2.Type.CompareTo(obj1.Type);
+                return obj2.Type.CompareTo(obj1
+                    .Type);
             }
         );
         foreach (Base.ActionObjectMetadata actionObjectMetadata in orderedList) {
