@@ -163,19 +163,16 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
-        UpdateOrientationsVisuals();
         ActionPointName.text = projectActionPoint.Name;
         return result;
     }
 
     public override void UpdateOrientation(NamedOrientation orientation) {
         base.UpdateOrientation(orientation);
-        UpdateOrientationsVisuals();
     }
 
     public override void AddOrientation(NamedOrientation orientation) {
         base.AddOrientation(orientation);
-        UpdateOrientationsVisuals();
     }
 
     public override void HighlightAP(bool highlight) {

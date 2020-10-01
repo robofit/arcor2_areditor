@@ -60,4 +60,8 @@ public class APOrientation : Base.Clickable {
             outlineOnClick.UnHighlight();
         }
     }
+
+    public void SetOrientation(IO.Swagger.Model.Orientation orientation) {
+        transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation));
+    }
 }

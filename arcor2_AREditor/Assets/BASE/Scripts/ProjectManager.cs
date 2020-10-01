@@ -543,7 +543,7 @@ namespace Base {
         internal void HideAPOrientations() {
             APOrientationsVisible = false;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
+                actionPoint.UpdateOrientationsVisuals(false);
             }
             PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", false);
         }
@@ -554,7 +554,7 @@ namespace Base {
         internal void ShowAPOrientations() {
             APOrientationsVisible = true;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
+                actionPoint.UpdateOrientationsVisuals(true);
             }
             PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
         }
