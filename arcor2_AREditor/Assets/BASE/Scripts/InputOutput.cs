@@ -74,7 +74,6 @@ namespace Base {
 
 
         public async void GetInput() {
-            Debug.LogError("asdf");
             List<Action> actionList = ProjectManager.Instance.GetAllActions();
             actionList.Add(ProjectManager.Instance.StartAction);
             actionList.Add(ProjectManager.Instance.EndAction);

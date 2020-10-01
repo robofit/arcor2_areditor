@@ -640,7 +640,7 @@ namespace Base {
         /// Invoked when scene was saved
         /// </summary>
         internal void SceneSaved() {
-            Base.Notifications.Instance.ShowNotification("Scene saved successfully", "");
+            Base.Notifications.Instance.ShowToastMessage("Scene saved successfully.");
             OnSceneSaved?.Invoke(this, EventArgs.Empty);
             SceneChanged = false;
         }
