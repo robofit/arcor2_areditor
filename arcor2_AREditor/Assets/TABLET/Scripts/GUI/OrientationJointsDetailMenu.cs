@@ -121,7 +121,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
             LabeledInput labeledInput = Instantiate(GameManager.Instance.LabeledFloatInput, JointsDynamicList.transform).GetComponent<LabeledInput>();
             labeledInput.SetLabel(joint.Name, joint.Name);
-            labeledInput.SetValue(joint.Value);
+
+            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
         }
     }
 

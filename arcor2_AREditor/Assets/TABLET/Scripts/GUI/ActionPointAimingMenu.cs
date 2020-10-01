@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject JointsBlock, PositionBlock, PositionExpertModeBlock, PositionLiteModeBlock, PositionRobotPickBlock;
+    public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList;
 
     [SerializeField]
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
@@ -23,11 +23,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private ActionButton OrientationManualDefaultButton;
 
     [SerializeField]
-    private Button AddOrientationUsingRobotButton;
+    private Button AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
+
+    [SerializeField]
+    private TooltipContent UpdatePositionUsingRobotTooltip, AddOrientationUsingRobotTooltip, AddJointsTooltip;
 
     public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
-
-    public GameObject OrientationsDynamicList, JointsDynamicList;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -127,7 +128,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
-
             return;
         ActionPointName.text = args.ActionPoint.Name;
     }
@@ -139,31 +139,65 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         positionRobotsListDropdown.dropdownItems.Clear();
         await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (!SceneManager.Instance.SceneStarted || positionRobotsListDropdown.dropdownItems.Count == 0) {
-            PositionBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionLiteModeBlock.SetActive(false);
+            PositionRobotsList.gameObject.SetActive(false);
+            PositionEndEffectorList.gameObject.SetActive(false);
+            UpdatePositionUsingRobotBtn.interactable = false;
             AddOrientationUsingRobotButton.interactable = false;
         } else {
-            PositionBlock.SetActive(true);
-            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionLiteModeBlock.SetActive(true);
-            OnRobotChanged((string) PositionRobotsList.GetValue());
+            PositionRobotsList.gameObject.SetActive(true);
+            PositionEndEffectorList.gameObject.SetActive(true);
+            UpdatePositionUsingRobotBtn.interactable = true;
             AddOrientationUsingRobotButton.interactable = true;
+            OnRobotChanged((string) PositionRobotsList.GetValue());
         }
 
+        PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
         await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
         if (SceneManager.Instance.SceneStarted && JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
-            JointsBlock.SetActive(true);
+            AddJointsButton.interactable = true;
+            JointsRobotsList.gameObject.SetActive(true);
+            JointsDynamicList.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
         } else {
-            JointsBlock.SetActive(false);
+            AddJointsButton.interactable = false;
+            JointsRobotsList.gameObject.SetActive(false);
+            JointsDynamicList.SetActive(false);
         }
 
         UpdateOrientationsDynamicList();
+        UpdateTooltips();
+    }
+
+    private void UpdateTooltips() {
+        const string noRobot = "There is no robot in the scene";
+        const string sceneNotStarted = "To add using robot, start the scene";
+
+        if (!SceneManager.Instance.RobotInScene()) {
+            UpdatePositionUsingRobotTooltip.description = noRobot;
+            AddOrientationUsingRobotTooltip.description = noRobot;
+            AddJointsTooltip.description = noRobot;
+            UpdatePositionUsingRobotTooltip.enabled = true;
+            AddOrientationUsingRobotTooltip.enabled = true;
+            AddJointsTooltip.enabled = true;
+            JointsListLabel.text = "To show joints list, add a robot to the scene";
+        } else if (!SceneManager.Instance.SceneStarted) {
+            UpdatePositionUsingRobotTooltip.description = "To update using robot, start the scene";
+            AddOrientationUsingRobotTooltip.description = sceneNotStarted;
+            AddJointsTooltip.description = sceneNotStarted;
+            UpdatePositionUsingRobotTooltip.enabled = true;
+            AddOrientationUsingRobotTooltip.enabled = true;
+            AddJointsTooltip.enabled = true;
+            JointsListLabel.text = "To show joints list, start the scene";
+        } else {
+            UpdatePositionUsingRobotTooltip.enabled = false;
+            AddOrientationUsingRobotTooltip.enabled = false;
+            AddJointsTooltip.enabled = false;
+            JointsListLabel.text = "List of joints:";
+        }
     }
 
     private async void OnRobotChanged(string robot_name) {
