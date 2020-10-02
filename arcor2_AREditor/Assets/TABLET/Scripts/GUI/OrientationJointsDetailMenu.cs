@@ -12,17 +12,17 @@ using System;
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
+    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock;
 
     public OrientationManualEdit OrientationManualEdit;
 
     public Slider SpeedSlider;
 
     [SerializeField]
-    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip;
+    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip, moveRobotTooltip, moveModelTooltip;
 
     [SerializeField]
-    private Button UpdateButton, ManualOrientationEditButton, ManualJointsEditButton;
+    private Button UpdateButton, ManualOrientationEditButton, moveRobotButton, moveModelButton;
 
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
@@ -69,31 +69,55 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
             RobotsList.Dropdown.dropdownItems.Clear();
             await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-            if (RobotsList.Dropdown.dropdownItems.Count > 0) {
+
+            if (SceneManager.Instance.SceneStarted && SceneManager.Instance.RobotInScene()) {
                 OrientationBlock.SetActive(true);
-                MoveHereBlock.SetActive(true);
-
-                UpdateButton.interactable = true;
-                updateButtonTooltip.enabled = false;
-
+                EnableButtons(true);
                 OnRobotChanged((string) RobotsList.GetValue());
-            } else {
+            } else if (!SceneManager.Instance.RobotInScene()) {
                 OrientationBlock.SetActive(false);
-                MoveHereBlock.SetActive(false);
 
                 updateButtonTooltip.description = "There is no robot to update orientation with";
-                updateButtonTooltip.enabled = true;
-                UpdateButton.interactable = false;
+                moveRobotTooltip.description = "There is no robot";
+                moveModelTooltip.description = moveRobotTooltip.description;
+                EnableButtons(false);
+            } else { //scene not started
+                OrientationBlock.SetActive(false);
+
+                updateButtonTooltip.description = "Scene is not started";
+                moveRobotTooltip.description = updateButtonTooltip.description;
+                moveModelTooltip.description = updateButtonTooltip.description;
+                EnableButtons(false);
             }
 
             OrientationManualEdit.SetOrientation(orientation.Orientation);
             ValidateFieldsOrientation();
         } else { //joints
+            if (!SceneManager.Instance.SceneStarted) {
+                updateButtonTooltip.description = "Scene is not started";
+                moveRobotTooltip.description = updateButtonTooltip.description;
+                moveModelTooltip.description = updateButtonTooltip.description;
+                EnableButtons(false);
+            } else {
+                EnableButtons(true);
+            }
             DetailName.text = joints.Name;
             UpdateJointsList();
         }
     }
 
+    /// <summary>
+    /// Sets interactibility of buttons and enables/disables tooltips
+    /// </summary>
+    /// <param name="enable">True if buttons should be interactable</param>
+    private void EnableButtons(bool enable) {
+        updateButtonTooltip.enabled = !enable;
+        moveRobotTooltip.enabled = !enable;
+        moveModelTooltip.enabled = !enable;
+        UpdateButton.interactable = enable;
+        moveRobotButton.interactable = enable;
+        moveModelButton.interactable = enable;
+    }
 
     private async void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
