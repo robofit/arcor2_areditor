@@ -157,15 +157,18 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
         await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
-        if (SceneManager.Instance.SceneStarted && JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
-            AddJointsButton.interactable = true;
+        if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
             JointsRobotsList.gameObject.SetActive(true);
             JointsDynamicList.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
         } else {
-            AddJointsButton.interactable = false;
             JointsRobotsList.gameObject.SetActive(false);
             JointsDynamicList.SetActive(false);
+        }
+        if (SceneManager.Instance.SceneStarted) {
+            AddJointsButton.interactable = true;
+        } else {
+            AddJointsButton.interactable = false;
         }
 
         UpdateOrientationsDynamicList();
@@ -191,7 +194,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             UpdatePositionUsingRobotTooltip.enabled = true;
             AddOrientationUsingRobotTooltip.enabled = true;
             AddJointsTooltip.enabled = true;
-            JointsListLabel.text = "To show joints list, start the scene";
+            JointsListLabel.text = "List of joints:";
         } else {
             UpdatePositionUsingRobotTooltip.enabled = false;
             AddOrientationUsingRobotTooltip.enabled = false;
