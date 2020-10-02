@@ -15,22 +15,25 @@ public class DropdownRobots : MonoBehaviour
     /// Initialize dropdown with list of robots in scene
     /// </summary>
     /// <param name="callback">Function to call when item is selected. Will pass robot_id</param>
-    /// <param name="withEEOnly">Only puts robots with at lease one end effector</param>
+    /// <param name="withEEOnly">Only puts robots with at least one end effector</param>
     public async Task Init(UnityAction<string> callback, bool withEEOnly) {
         List<string> robotNames = new List<string>();
-        if (SceneManager.Instance.SceneStarted) {
+
+        if (!withEEOnly) {
             foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
-                
+                robotNames.Add(robot.GetName());
+            }
+        } else if (withEEOnly && SceneManager.Instance.SceneStarted) {
+            foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
                 List<string> endEffectors = await robot.GetEndEffectorIds();
-                if (withEEOnly) {
-                    if (endEffectors.Count > 0) {
-                        robotNames.Add(robot.GetName());
-                    }
-                } else {
+                if (endEffectors.Count > 0) {
                     robotNames.Add(robot.GetName());
                 }
             }
+        } else {
+            return;
         }
+
         Init(robotNames, callback);
     }
 
