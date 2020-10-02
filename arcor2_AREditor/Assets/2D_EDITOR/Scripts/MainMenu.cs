@@ -410,7 +410,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         try {
             await Base.GameManager.Instance.BuildPackage(name);
             inputDialog.Close();
-            Notifications.Instance.ShowToastMessage("Package builded sucessfully.");
+            Notifications.Instance.ShowToastMessage("Package was built sucessfully.");
         } catch (Base.RequestFailedException ex) {
 
         }
