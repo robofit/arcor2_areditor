@@ -55,9 +55,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
 
         // TODO: subscribe only when menu is opened
-        WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
-        WebsocketManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
-        WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
+        ProjectManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
+        ProjectManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
+        ProjectManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
 
         WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
         WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
