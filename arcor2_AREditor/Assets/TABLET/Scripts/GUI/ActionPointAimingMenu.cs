@@ -121,7 +121,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
         if (CurrentActionPoint.Data.Id == args.ActionPointId) {
-            CreateBtn(OrientationsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
+            CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
     }
@@ -275,27 +275,35 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             }
         }
         foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
-            ActionButton orientationButton = CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
-
-            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding orientation when hovering over button
-            OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
-            EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
-            // Create OnPointerEnter entry
-            EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerEnter
-            };
-            onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
-            eventTrigger.triggers.Add(onPointerEnter);
-
-            // Create OnPointerExit entry
-            EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerExit
-            };
-            onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
-            eventTrigger.triggers.Add(onPointerExit);
+            CreateOrientationBtn(orientation);
         }
 
         UpdateOrientationsListLabel();
+    }
+
+    /// <summary>
+    /// Creates button in orientations dynamic list with orientation's arrow highlight on hover
+    /// </summary>
+    /// <param name="orientation"></param>
+    private void CreateOrientationBtn(NamedOrientation orientation) {
+        ActionButton orientationButton = CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
+
+        // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding orientation when hovering over button
+        OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
+        EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
+        // Create OnPointerEnter entry
+        EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerEnter
+        };
+        onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
+        eventTrigger.triggers.Add(onPointerEnter);
+
+        // Create OnPointerExit entry
+        EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerExit
+        };
+        onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
+        eventTrigger.triggers.Add(onPointerExit);
     }
 
     private ActionButton GetButton(string id, GameObject parent) {
