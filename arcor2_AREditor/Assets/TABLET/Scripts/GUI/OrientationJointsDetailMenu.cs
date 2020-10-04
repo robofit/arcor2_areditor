@@ -12,7 +12,7 @@ using System;
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock;
+    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, InvalidJointsLabel;
 
     public OrientationManualEdit OrientationManualEdit;
 
@@ -102,6 +102,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 EnableButtons(true);
             }
             DetailName.text = joints.Name;
+            InvalidJointsLabel.SetActive(!joints.IsValid);
             UpdateJointsList();
         }
     }

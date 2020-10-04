@@ -61,13 +61,24 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
         WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
         WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
+        WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
         WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+    }
+
+    private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        try {
+            ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
+            btn.GetComponentInParent<ServiceButton>().State = args.Data.IsValid;
+        } catch (ItemNotFoundException) {
+            // not currently opened action point
+        }
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
+        UpdateJointsDynamicList((string) JointsRobotsList.GetValue());  //because of possible invalidation of joints
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -94,7 +105,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         if (args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
-            CreateBtn(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
+            var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data));
+            btn.State = args.Data.IsValid;
+            btn.GetComponentInChildren<ActionButton>().Highlight(2f);
         }
     }
 
@@ -116,7 +129,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             btn.SetLabel(args.Data.Name);
         } catch (KeyNotFoundException) {
             // not currently opened action point
-        }        
+        }
     }
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
@@ -131,7 +144,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             return;
         ActionPointName.text = args.ActionPoint.Name;
     }
-    
+
     public async void UpdateMenu() {
         ActionPointName.text = CurrentActionPoint.Data.Name;
 
@@ -239,7 +252,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
                 confirmationDialog.Close();
             }
-            
+
         } catch (RequestFailedException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
@@ -324,7 +337,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     /// <param name="parent"></param>
     /// <returns></returns>
     private bool ContainActiveButton(Transform parent) {
-        foreach (ActionButton ab in OrientationsDynamicList.GetComponentsInChildren<ActionButton>()) {
+        foreach (ActionButton ab in parent.GetComponentsInChildren<ActionButton>()) {
             if (ab.gameObject.activeSelf) {
                 return true;
             }
@@ -332,8 +345,19 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         return false;
     }
 
+    private ServiceButton CreateJointsButton(Transform parent, string objectId, string label, UnityAction callback) {
+        ServiceButton serviceBtn = Instantiate(Base.GameManager.Instance.ServiceButtonPrefab, parent).GetComponent<ServiceButton>();
+        var btn = serviceBtn.GetComponentInChildren<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(label);
+        btn.ObjectId = objectId;
+        btn.Button.onClick.AddListener(callback);
+        return serviceBtn;
+    }
+
     private ActionButton CreateBtn(Transform parent, string objectId, string label, UnityAction callback) {
-        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
+        ActionButton btn;
+        btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);
         btn.SetLabel(label);
         btn.ObjectId = objectId;
@@ -365,7 +389,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
             System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
-                CreateBtn(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint));
+                CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint)).State = joint.IsValid;
             }
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);

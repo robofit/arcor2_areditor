@@ -147,6 +147,10 @@ namespace Base {
         /// </summary>
         public GameObject ButtonPrefab;
         /// <summary>
+        /// Service button prefab - with green or red strip on the left side (joints buttons)
+        /// </summary>
+        public GameObject ServiceButtonPrefab;
+        /// <summary>
         /// Tooltip gameobject
         /// </summary>
         public GameObject Tooltip;
