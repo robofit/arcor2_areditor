@@ -162,7 +162,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
 
             await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, updatedJoints);
-
+            Notifications.Instance.ShowToastMessage("Joints updated successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Joints update failed", ex.Message);
             return;
@@ -175,7 +175,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void OnOrientationSaveClick() {
         try {
             await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
-            Notifications.Instance.ShowNotification("Orientation updated", "");
+            Notifications.Instance.ShowToastMessage("Orientation updated successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to update orientation", ex.Message);
         }
@@ -188,6 +188,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             try {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id);
+                Notifications.Instance.ShowToastMessage("Orientation updated successfully");
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed update orientation", ex.Message);
@@ -199,6 +200,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         {
             try {
                 await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(joints.Id);
+                Notifications.Instance.ShowToastMessage("Joints updated successfully");
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update joints", ex.Message);
             }
@@ -257,13 +259,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                     return;
                 }
                 await WebsocketManager.Instance.RenameActionPointOrientation(orientation.Id, name);
-                Notifications.Instance.ShowNotification("Orientation renamed successfully", "");
+                Notifications.Instance.ShowToastMessage("Orientation renamed successfully");
             } else {
                 if (name == joints.Name) {
                     return;
                 }
                 await WebsocketManager.Instance.RenameActionPointJoints(joints.Id, name);
-                Notifications.Instance.ShowNotification("Joints renamed successfully", "");
+                Notifications.Instance.ShowToastMessage("Joints renamed successfully");
             }
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to rename orientation/joints", ex.Message);

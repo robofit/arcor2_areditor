@@ -252,7 +252,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
                 confirmationDialog.Close();
             }
-
+            Notifications.Instance.ShowToastMessage("Position updated successfully");
         } catch (RequestFailedException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
@@ -433,6 +433,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         try {
             name = CurrentActionPoint.GetFreeOrientationName();
             await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, new Orientation(), name);
+            Notifications.Instance.ShowToastMessage("Orientation added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }
