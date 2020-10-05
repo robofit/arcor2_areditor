@@ -26,7 +26,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     private Button LockedBtn, UnlockedBtn, UntieBtn, BackBtn;
 
     [SerializeField]
-    private ButtonWithTooltip RemoveBtn, CollapseBtn, ExpandBtn;
+    private ButtonWithTooltip RemoveBtn, CollapseBtn, ExpandBtn, AimingBtn;
 
     [SerializeField]
     private InputDialog inputDialog;
@@ -166,6 +166,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         }
         ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
         CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
+        
     }
 
     private static void CreateTooltip(string text, ActionButton btn) {
@@ -240,6 +241,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void UpdateLockedBtns(bool locked) {
         LockedBtn.gameObject.SetActive(locked);
         UnlockedBtn.gameObject.SetActive(!locked);
+        AimingBtn.SetInteractivity(!locked);
     }
 
     public void SetLocked(bool locked) {

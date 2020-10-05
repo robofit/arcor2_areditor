@@ -107,6 +107,11 @@ namespace Base {
 
         public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
 
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationAdded;
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationUpdated;
+        public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationBaseUpdated;
+        public event AREditorEventArgs.StringEventHandler OnActionPointOrientationRemoved;
+
         /// <summary>
         /// Initialization of projet manager
         /// </summary>
@@ -121,10 +126,10 @@ namespace Base {
             WebsocketManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
             WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
 
-            WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
-            WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdated;
-            WebsocketManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
-            WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
+            WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAddedCallback;
+            WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdatedCallback;
+            WebsocketManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdatedCallback;
+            WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemovedCallback;
 
             WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
             WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
@@ -194,11 +199,12 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationBaseUpdated(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationBaseUpdatedCallback(object sender, ActionPointOrientationEventArgs args) {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.BaseUpdateOrientation(args.Data);
                 ProjectChanged = true;
+                OnActionPointOrientationBaseUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
@@ -206,11 +212,12 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
+        private void OnActionPointOrientationRemovedCallback(object sender, StringEventArgs args) {
             try {
                 ActionPoint actionPoint = GetActionPointWithOrientation(args.Data);
                 actionPoint.RemoveOrientation(args.Data);
                 ProjectChanged = true;
+                OnActionPointOrientationRemoved?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to remove action point orientation", ex.Message);
@@ -218,11 +225,12 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationUpdatedCallback(object sender, ActionPointOrientationEventArgs args) {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.UpdateOrientation(args.Data);
                 ProjectChanged = true;
+                OnActionPointOrientationUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point orientation", ex.Message);
@@ -230,11 +238,12 @@ namespace Base {
             }
         }
 
-        private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
+        private void OnActionPointOrientationAddedCallback(object sender, ActionPointOrientationEventArgs args) {
             try {
                 ActionPoint actionPoint = GetActionPoint(args.ActionPointId);
                 actionPoint.AddOrientation(args.Data);
                 ProjectChanged = true;
+                OnActionPointOrientationAdded?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point orientation", ex.Message);
@@ -543,7 +552,7 @@ namespace Base {
         internal void HideAPOrientations() {
             APOrientationsVisible = false;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
+                actionPoint.UpdateOrientationsVisuals(false);
             }
             PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", false);
         }
@@ -554,7 +563,7 @@ namespace Base {
         internal void ShowAPOrientations() {
             APOrientationsVisible = true;
             foreach (ActionPoint actionPoint in GetAllActionPoints()) {
-                actionPoint.UpdateOrientationsVisuals();
+                actionPoint.UpdateOrientationsVisuals(true);
             }
             PlayerPrefsHelper.SaveBool("scene/" + ProjectMeta.Id + "/APOrientationsVisibility", true);
         }
@@ -1109,7 +1118,7 @@ namespace Base {
         /// </summary>
         internal void ProjectSaved() {
             ProjectChanged = false;
-            Base.Notifications.Instance.ShowNotification("Project saved successfully", "");
+            Notifications.Instance.ShowToastMessage("Project saved successfully.");
             OnProjectSaved?.Invoke(this, EventArgs.Empty);
         }
 

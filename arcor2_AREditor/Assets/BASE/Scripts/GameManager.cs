@@ -147,6 +147,10 @@ namespace Base {
         /// </summary>
         public GameObject ButtonPrefab;
         /// <summary>
+        /// Service button prefab - with green or red strip on the left side (joints buttons)
+        /// </summary>
+        public GameObject ServiceButtonPrefab;
+        /// <summary>
         /// Tooltip gameobject
         /// </summary>
         public GameObject Tooltip;
@@ -191,7 +195,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>
-        public const string ApiVersion = "0.8.0rc5";
+        public const string ApiVersion = "0.8.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>

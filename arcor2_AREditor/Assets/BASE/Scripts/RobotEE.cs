@@ -29,11 +29,11 @@ public class RobotEE : Base.Clickable {
     }
 
     public override void OnHoverStart() {
-        
+        eeName.gameObject.SetActive(true);
     }
 
     public override void OnHoverEnd() {
-        
+        eeName.gameObject.SetActive(false);
     }
 
     /// <summary>

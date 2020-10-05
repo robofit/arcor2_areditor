@@ -1028,8 +1028,9 @@ namespace Base {
         /// <param name="actionObjectId">Id of action object</param>
         /// <param name="pose">Desired pose (position and orientation)</param>
         /// <returns></returns>
-        public async Task UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose) {
-
+        public async Task UpdateActionObjectPose(string actionObjectId, IO.Swagger.Model.Pose pose, bool dryRun = false) {
+            if (dryRun)
+                return;
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateObjectPoseRequestArgs args = new IO.Swagger.Model.UpdateObjectPoseRequestArgs
                 (objectId: actionObjectId, pose: pose);
@@ -1524,7 +1525,9 @@ namespace Base {
         /// <param name="id">UUID of action point</param>
         /// <param name="position">New position of action point.</param>
         /// <returns></returns>
-        public async Task UpdateActionPointPosition(string id, IO.Swagger.Model.Position position) {
+        public async Task UpdateActionPointPosition(string id, IO.Swagger.Model.Position position, bool dryRun = false) {
+            if (dryRun)
+                return;
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointPositionRequestArgs args = new IO.Swagger.Model.UpdateActionPointPositionRequestArgs(actionPointId: id, newPosition: position);
             IO.Swagger.Model.UpdateActionPointPositionRequest request = new IO.Swagger.Model.UpdateActionPointPositionRequest(r_id, "UpdateActionPointPosition", args);
@@ -1715,7 +1718,7 @@ namespace Base {
         public async Task UpdateActionPointJointsUsingRobot(string jointsId) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequestArgs(jointsId: jointsId);
-            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest(r_id, "UpdateActionPointJoints", args);
+            IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointJointsUsingRobotRequest(r_id, "UpdateActionPointJointsUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse>(r_id);
 

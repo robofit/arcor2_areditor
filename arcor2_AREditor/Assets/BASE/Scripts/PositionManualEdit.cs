@@ -25,6 +25,10 @@ public class PositionManualEdit : MonoBehaviour
         InputX.text = position.X.ToString(numberFormatInfo);
         InputY.text = position.Y.ToString(numberFormatInfo);
         InputZ.text = position.Z.ToString(numberFormatInfo);
+
+        buttonTooltip.description = "First, edit the position";
+        buttonTooltip.enabled = true;
+        ConfirmButton.interactable = false;
     }
 
     public Position GetPosition() {
