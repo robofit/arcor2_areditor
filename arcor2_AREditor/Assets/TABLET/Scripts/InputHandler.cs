@@ -23,6 +23,10 @@ public class InputHandler : Singleton<InputHandler> {
 
     private GameObject hoveredObject;
 
+    public System.DateTime HoverStartTime;
+
+    private bool endingHover = false;
+
     private void Update() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         HandleTouch();
@@ -67,46 +71,74 @@ public class InputHandler : Singleton<InputHandler> {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             RaycastHit hit = new RaycastHit();
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask)) {
-               // try {
-                    if (clickType == Clickable.Click.MOUSE_HOVER) {
-                        if (EventSystem.current.IsPointerOverGameObject()) {
-                            return;
-                        }
-
-                        if (hoveredObject == null) {
-                                hit.collider.transform.gameObject.SendMessage("OnHoverStart");
-                                hoveredObject = hit.collider.transform.gameObject;
-                            } else {
-                                if (!GameObject.ReferenceEquals(hit.collider.transform.gameObject, hoveredObject)) {
-                                    hoveredObject.SendMessage("OnHoverEnd");
-                                    hit.collider.transform.gameObject.SendMessage("OnHoverStart");
-                                    hoveredObject = hit.collider.transform.gameObject;
-                                }
-                            }
-                        //} catch (Exception e) {
-                          //  Debug.LogError(e);
-                        //}
-                    } else {
-                        hit.collider.transform.gameObject.SendMessage("OnClick", clickType);
-                        if (hoveredObject != null) {
-                            hoveredObject.SendMessage("OnHoverEnd");
-                            hoveredObject = null;
-                        }
-                        
+                // try {
+                if (clickType == Clickable.Click.MOUSE_HOVER) {
+                    if (EventSystem.current.IsPointerOverGameObject()) {
+                        return;
                     }
-              //  } catch (Exception e) {
-              //      Debug.LogError(e);
-              //  }
+
+                    if (hoveredObject == null) {
+                        hit.collider.transform.gameObject.SendMessage("OnHoverStart");
+                        HoverStartTime = System.DateTime.UtcNow;
+                        hoveredObject = hit.collider.transform.gameObject;
+                    } else {
+                        if (!GameObject.ReferenceEquals(hit.collider.transform.gameObject, hoveredObject)) {
+                            hoveredObject.SendMessage("OnHoverEnd");
+                            if (endingHover) {
+                                StopAllCoroutines();
+                                endingHover = false;
+                            }
+                            hit.collider.transform.gameObject.SendMessage("OnHoverStart");
+                            HoverStartTime = System.DateTime.UtcNow;
+                            hoveredObject = hit.collider.transform.gameObject;
+                        } else {
+
+                            if (endingHover) {
+                                StopAllCoroutines();
+                                endingHover = false;
+                                HoverStartTime = System.DateTime.UtcNow;
+                            }
+                        }
+                    }
+                    //} catch (Exception e) {
+                    //  Debug.LogError(e);
+                    //}
+                } else {
+                    //hit.collider.transform.gameObject.SendMessage("OnClick", clickType);
+                    if (hoveredObject != null) {
+                        hoveredObject.transform.gameObject.SendMessage("OnClick", clickType);
+                        if (!endingHover)
+                            StartCoroutine(HoverEnd());
+
+                    }
+
+                }
+                //  } catch (Exception e) {
+                //      Debug.LogError(e);
+                //  }
             } else {
-                OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
+
                 if (hoveredObject != null) {
-                    hoveredObject.SendMessage("OnHoverEnd");
-                    hoveredObject = null;
+                    hoveredObject.transform.gameObject.SendMessage("OnClick", clickType);
+                    if (!endingHover)
+                        StartCoroutine(HoverEnd());
+                } else {
+                    OnBlindClick?.Invoke(this, new EventClickArgs(clickType));
                 }
             }
 
             OnGeneralClick?.Invoke(this, new EventClickArgs(clickType));
         }
+    }
+
+    private IEnumerator HoverEnd() {
+        endingHover = true;
+        yield return new WaitForSeconds((float) (0.5d - (System.DateTime.UtcNow - HoverStartTime).TotalSeconds));
+        if (hoveredObject != null) {
+            hoveredObject.SendMessage("OnHoverEnd");
+            hoveredObject = null;
+        }
+        endingHover = false;
     }
 
 
