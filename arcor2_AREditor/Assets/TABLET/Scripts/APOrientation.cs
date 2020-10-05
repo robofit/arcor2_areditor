@@ -17,6 +17,10 @@ public class APOrientation : Base.Clickable {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;
         }
+        if (ActionPoint.Locked) {
+            Notifications.Instance.ShowNotification("Failed to open orientation detail", "AP is locked");
+            return;
+        }
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
             ActionPoint.ShowAimingMenu(OrientationId);
             HighlightOrientation(true);
@@ -55,5 +59,9 @@ public class APOrientation : Base.Clickable {
         } else {
             outlineOnClick.UnHighlight();
         }
+    }
+
+    public void SetOrientation(IO.Swagger.Model.Orientation orientation) {
+        transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation));
     }
 }

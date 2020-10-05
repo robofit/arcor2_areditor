@@ -109,7 +109,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name);
             }
             Close(); //close add menu
-
+            Notifications.Instance.ShowToastMessage("Orientation added successfully");
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         } catch (RequestFailedException ex) {

@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject JointsBlock, PositionBlock, PositionExpertModeBlock, PositionLiteModeBlock, PositionRobotPickBlock;
+    public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList;
 
     [SerializeField]
     private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
@@ -23,11 +23,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private ActionButton OrientationManualDefaultButton;
 
     [SerializeField]
-    private Button AddOrientationUsingRobotButton;
+    private Button AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
+
+    [SerializeField]
+    private TooltipContent UpdatePositionUsingRobotTooltip, AddOrientationUsingRobotTooltip, AddJointsTooltip;
 
     public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
-
-    public GameObject OrientationsDynamicList, JointsDynamicList;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -54,19 +55,30 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
 
         // TODO: subscribe only when menu is opened
-        WebsocketManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
-        WebsocketManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
-        WebsocketManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
+        ProjectManager.Instance.OnActionPointOrientationAdded += OnActionPointOrientationAdded;
+        ProjectManager.Instance.OnActionPointOrientationBaseUpdated += OnActionPointOrientationBaseUpdated;
+        ProjectManager.Instance.OnActionPointOrientationRemoved += OnActionPointOrientationRemoved;
 
         WebsocketManager.Instance.OnActionPointJointsAdded += OnActionPointJointsAdded;
         WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
+        WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
         WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+    }
+
+    private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        try {
+            ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
+            btn.GetComponentInParent<ServiceButton>().State = args.Data.IsValid;
+        } catch (ItemNotFoundException) {
+            // not currently opened action point
+        }
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
+        UpdateJointsDynamicList((string) JointsRobotsList.GetValue());  //because of possible invalidation of joints
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -93,7 +105,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         if (args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
-            CreateBtn(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
+            var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data));
+            btn.State = args.Data.IsValid;
+            btn.GetComponentInChildren<ActionButton>().Highlight(2f);
         }
     }
 
@@ -115,23 +129,22 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             btn.SetLabel(args.Data.Name);
         } catch (KeyNotFoundException) {
             // not currently opened action point
-        }        
+        }
     }
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
         if (CurrentActionPoint.Data.Id == args.ActionPointId) {
-            CreateBtn(OrientationsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data)).Highlight(2f);
+            CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
     }
 
     private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
-
             return;
         ActionPointName.text = args.ActionPoint.Name;
     }
-    
+
     public async void UpdateMenu() {
         ActionPointName.text = CurrentActionPoint.Data.Name;
 
@@ -139,31 +152,68 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         positionRobotsListDropdown.dropdownItems.Clear();
         await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (!SceneManager.Instance.SceneStarted || positionRobotsListDropdown.dropdownItems.Count == 0) {
-            PositionBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionLiteModeBlock.SetActive(false);
+            PositionRobotsList.gameObject.SetActive(false);
+            PositionEndEffectorList.gameObject.SetActive(false);
+            UpdatePositionUsingRobotBtn.interactable = false;
             AddOrientationUsingRobotButton.interactable = false;
         } else {
-            PositionBlock.SetActive(true);
-            PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
-            PositionLiteModeBlock.SetActive(true);
-            OnRobotChanged((string) PositionRobotsList.GetValue());
+            PositionRobotsList.gameObject.SetActive(true);
+            PositionEndEffectorList.gameObject.SetActive(true);
+            UpdatePositionUsingRobotBtn.interactable = true;
             AddOrientationUsingRobotButton.interactable = true;
+            OnRobotChanged((string) PositionRobotsList.GetValue());
         }
 
+        PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
 
         JointsRobotsList.Dropdown.dropdownItems.Clear();
         await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
-        if (SceneManager.Instance.SceneStarted && JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
-            JointsBlock.SetActive(true);
+        if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
+            JointsRobotsList.gameObject.SetActive(true);
+            JointsDynamicList.SetActive(true);
             UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
         } else {
-            JointsBlock.SetActive(false);
+            JointsRobotsList.gameObject.SetActive(false);
+            JointsDynamicList.SetActive(false);
+        }
+        if (SceneManager.Instance.SceneStarted) {
+            AddJointsButton.interactable = true;
+        } else {
+            AddJointsButton.interactable = false;
         }
 
         UpdateOrientationsDynamicList();
+        UpdateTooltips();
+    }
+
+    private void UpdateTooltips() {
+        const string noRobot = "There is no robot in the scene";
+        const string sceneNotStarted = "To add using robot, start the scene";
+
+        if (!SceneManager.Instance.RobotInScene()) {
+            UpdatePositionUsingRobotTooltip.description = noRobot;
+            AddOrientationUsingRobotTooltip.description = noRobot;
+            AddJointsTooltip.description = noRobot;
+            UpdatePositionUsingRobotTooltip.enabled = true;
+            AddOrientationUsingRobotTooltip.enabled = true;
+            AddJointsTooltip.enabled = true;
+            JointsListLabel.text = "To show joints list, add a robot to the scene";
+        } else if (!SceneManager.Instance.SceneStarted) {
+            UpdatePositionUsingRobotTooltip.description = "To update using robot, start the scene";
+            AddOrientationUsingRobotTooltip.description = sceneNotStarted;
+            AddJointsTooltip.description = sceneNotStarted;
+            UpdatePositionUsingRobotTooltip.enabled = true;
+            AddOrientationUsingRobotTooltip.enabled = true;
+            AddJointsTooltip.enabled = true;
+            JointsListLabel.text = "List of joints:";
+        } else {
+            UpdatePositionUsingRobotTooltip.enabled = false;
+            AddOrientationUsingRobotTooltip.enabled = false;
+            AddJointsTooltip.enabled = false;
+            JointsListLabel.text = "List of joints:";
+        }
     }
 
     private async void OnRobotChanged(string robot_name) {
@@ -202,7 +252,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
                 confirmationDialog.Close();
             }
-            
+            Notifications.Instance.ShowToastMessage("Position updated successfully");
         } catch (RequestFailedException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
@@ -241,27 +291,35 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             }
         }
         foreach (IO.Swagger.Model.NamedOrientation orientation in CurrentActionPoint.GetNamedOrientations()) {
-            ActionButton orientationButton = CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
-
-            // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding orientation when hovering over button
-            OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
-            EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
-            // Create OnPointerEnter entry
-            EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerEnter
-            };
-            onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
-            eventTrigger.triggers.Add(onPointerEnter);
-
-            // Create OnPointerExit entry
-            EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
-                eventID = EventTriggerType.PointerExit
-            };
-            onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
-            eventTrigger.triggers.Add(onPointerExit);
+            CreateOrientationBtn(orientation);
         }
 
         UpdateOrientationsListLabel();
+    }
+
+    /// <summary>
+    /// Creates button in orientations dynamic list with orientation's arrow highlight on hover
+    /// </summary>
+    /// <param name="orientation"></param>
+    private void CreateOrientationBtn(NamedOrientation orientation) {
+        ActionButton orientationButton = CreateBtn(OrientationsDynamicList.transform, orientation.Id, orientation.Name, () => OpenDetailMenu(orientation));
+
+        // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding orientation when hovering over button
+        OutlineOnClick orientationOutline = CurrentActionPoint.GetOrientationVisual(orientation.Id).GetComponent<OutlineOnClick>();
+        EventTrigger eventTrigger = orientationButton.gameObject.AddComponent<EventTrigger>();
+        // Create OnPointerEnter entry
+        EventTrigger.Entry onPointerEnter = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerEnter
+        };
+        onPointerEnter.callback.AddListener((eventData) => orientationOutline.Highlight());
+        eventTrigger.triggers.Add(onPointerEnter);
+
+        // Create OnPointerExit entry
+        EventTrigger.Entry onPointerExit = new EventTrigger.Entry {
+            eventID = EventTriggerType.PointerExit
+        };
+        onPointerExit.callback.AddListener((eventData) => orientationOutline.UnHighlight());
+        eventTrigger.triggers.Add(onPointerExit);
     }
 
     private ActionButton GetButton(string id, GameObject parent) {
@@ -279,7 +337,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     /// <param name="parent"></param>
     /// <returns></returns>
     private bool ContainActiveButton(Transform parent) {
-        foreach (ActionButton ab in OrientationsDynamicList.GetComponentsInChildren<ActionButton>()) {
+        foreach (ActionButton ab in parent.GetComponentsInChildren<ActionButton>()) {
             if (ab.gameObject.activeSelf) {
                 return true;
             }
@@ -287,8 +345,19 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         return false;
     }
 
+    private ServiceButton CreateJointsButton(Transform parent, string objectId, string label, UnityAction callback) {
+        ServiceButton serviceBtn = Instantiate(Base.GameManager.Instance.ServiceButtonPrefab, parent).GetComponent<ServiceButton>();
+        var btn = serviceBtn.GetComponentInChildren<ActionButton>();
+        btn.transform.localScale = new Vector3(1, 1, 1);
+        btn.SetLabel(label);
+        btn.ObjectId = objectId;
+        btn.Button.onClick.AddListener(callback);
+        return serviceBtn;
+    }
+
     private ActionButton CreateBtn(Transform parent, string objectId, string label, UnityAction callback) {
-        ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
+        ActionButton btn;
+        btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, parent).GetComponent<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);
         btn.SetLabel(label);
         btn.ObjectId = objectId;
@@ -320,7 +389,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
             System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
-                CreateBtn(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint));
+                CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint)).State = joint.IsValid;
             }
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
@@ -364,6 +433,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         try {
             name = CurrentActionPoint.GetFreeOrientationName();
             await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, new Orientation(), name);
+            Notifications.Instance.ShowToastMessage("Orientation added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }

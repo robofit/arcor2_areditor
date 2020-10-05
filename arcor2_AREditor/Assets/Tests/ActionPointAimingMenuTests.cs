@@ -173,6 +173,8 @@ namespace TrilleonAutomation
 
             GameManager.Instance.ExpertMode = true;
             yield return new WaitForSeconds(4); //wait for project to load
+            WebsocketManager.Instance.StartScene(false);
+            yield return new WaitForSeconds(apiWaitingTime);
 
             actionPoint = ProjectManager.Instance.GetactionpointByName("sph_ap");
             actionPoint.OnClick(Clickable.Click.MOUSE_RIGHT_BUTTON);
@@ -655,6 +657,8 @@ namespace TrilleonAutomation
         [DependencyTest(10)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator AimingMenuNoRobotExpertModeTest() {
+            WebsocketManager.Instance.StopScene(false);
+            yield return new WaitForSeconds(apiWaitingTime);
             GameManager.Instance.CloseProject(true);
             yield return new WaitForSeconds(4); //wait for project to close
 
@@ -667,6 +671,8 @@ namespace TrilleonAutomation
             }
 
             yield return new WaitForSeconds(4); //wait for project to load
+            WebsocketManager.Instance.StartScene(false);
+            yield return new WaitForSeconds(apiWaitingTime);
             GameManager.Instance.ExpertMode = true;
             currentNumberOfOrientations = 1; //reset counter for the new project
 
@@ -680,11 +686,11 @@ namespace TrilleonAutomation
 
             yield return StartCoroutine(Q.assert.IsTrue(positionCollapsable.gameObject.activeSelf, "Position collapsable menu should be active."));
             yield return StartCoroutine(Q.assert.IsTrue(orientationCollapsable.gameObject.activeSelf, "Orientations collapsable menu should be active."));
-            yield return StartCoroutine(Q.assert.IsTrue(!jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should not be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should be active."));
 
 
             //position collapsable menu tests
-            yield return StartCoroutine(Q.assert.IsTrue(!positionRobotPickBlock.gameObject.activeSelf, "Update robot pick block should not be active"));
+            yield return StartCoroutine(Q.assert.IsTrue(!positionUpdateUsingRobotBtn.GetComponent<Button>().interactable, "Position update using robot button should not be interactable"));
             yield return StartCoroutine(Q.assert.IsTrue(positionExpertBlock.gameObject.activeSelf, "Update position manually block should be active"));
             yield return StartCoroutine(Q.assert.IsTrue(positionManualEdit.gameObject.activeSelf, "Position manual editing should be active"));
 
@@ -722,9 +728,9 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.driver.Click(focusButton, "Click on aiming menu icon."));
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open, "Aiming menu should be opened"));
 
-            yield return StartCoroutine(Q.assert.IsTrue(!positionCollapsable.gameObject.activeSelf, "Position collapsable menu should not be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(positionCollapsable.gameObject.activeSelf, "Position collapsable menu should be active."));
             yield return StartCoroutine(Q.assert.IsTrue(orientationCollapsable.gameObject.activeSelf, "Orientations collapsable menu should be active."));
-            yield return StartCoroutine(Q.assert.IsTrue(!jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should not be active."));
+            yield return StartCoroutine(Q.assert.IsTrue(jointsCollapsable.gameObject.activeSelf, "Joints collapsable menu should be active."));
 
 
             //orientation collapsable menu tests
@@ -740,7 +746,7 @@ namespace TrilleonAutomation
         }
 
 
-        [DependencyTest(4)]
+        [DependencyTest(12)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator AddOrientationNoRobotLiteModeTest() {
             GameManager.Instance.ExpertMode = false;
@@ -762,7 +768,7 @@ namespace TrilleonAutomation
         }
 
 
-        [DependencyTest(12)]
+        [DependencyTest(13)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator AddOrientationNoRobotExpertModeTest() {
             GameManager.Instance.ExpertMode = true;
@@ -808,7 +814,7 @@ namespace TrilleonAutomation
         }
 
 
-        [DependencyTest(13)]
+        [DependencyTest(14)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator OrientationDetailNoRobotMenuExpertModeTest() {
             GameManager.Instance.ExpertMode = true;
@@ -861,7 +867,7 @@ namespace TrilleonAutomation
             yield return StartCoroutine(Q.assert.IsTrue(MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed, "Aiming menu should be closed"));
         }
 
-        [DependencyTest(14)]
+        [DependencyTest(15)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator OrientationDetailMenuNoRobotLiteModeTest() {
             GameManager.Instance.ExpertMode = false;

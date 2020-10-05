@@ -94,16 +94,22 @@ public class ActionPoint3D : Base.ActionPoint {
 
     }
 
-    public void StartManipulation() {
+    public async void StartManipulation() {
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {
-            // We have clicked with left mouse and started manipulation with object
-            Debug.LogWarning("Turning on gizmo overlay");
-            manipulationStarted = true;
-            updatePosition = false;
-            tfGizmo.AddTarget(Sphere.transform);
-            outlineOnClick.GizmoHighlight();
+
+            try {
+                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
+                // We have clicked with left mouse and started manipulation with object
+                Debug.LogWarning("Turning on gizmo overlay");
+                manipulationStarted = true;
+                updatePosition = false;
+                tfGizmo.AddTarget(Sphere.transform);
+                outlineOnClick.GizmoHighlight();
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
+            }
         }
     }
 
@@ -163,19 +169,16 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override (List<string>, Dictionary<string, string>) UpdateActionPoint(IO.Swagger.Model.ActionPoint projectActionPoint) {
         (List<string>, Dictionary<string, string>) result = base.UpdateActionPoint(projectActionPoint);
-        UpdateOrientationsVisuals();
         ActionPointName.text = projectActionPoint.Name;
         return result;
     }
 
     public override void UpdateOrientation(NamedOrientation orientation) {
         base.UpdateOrientation(orientation);
-        UpdateOrientationsVisuals();
     }
 
     public override void AddOrientation(NamedOrientation orientation) {
         base.AddOrientation(orientation);
-        UpdateOrientationsVisuals();
     }
 
     public override void HighlightAP(bool highlight) {
@@ -215,6 +218,7 @@ public class ActionPoint3D : Base.ActionPoint {
         ActionPointName.gameObject.SetActive(false);
         Lock.SetActive(false);
     }
+
 
     public override void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
         base.ActionPointBaseUpdate(apData);

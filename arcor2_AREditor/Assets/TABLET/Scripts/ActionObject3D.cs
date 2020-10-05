@@ -98,7 +98,7 @@ public class ActionObject3D : ActionObject
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
-    public override void OnClick(Click type) {        
+    public async override void OnClick(Click type) {        
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
@@ -117,9 +117,14 @@ public class ActionObject3D : ActionObject
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                manipulationStarted = true;
-                tfGizmo.AddTarget(Model.transform);
-                outlineOnClick.GizmoHighlight();
+                try {
+                    await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
+                    manipulationStarted = true;
+                    tfGizmo.AddTarget(Model.transform);
+                    outlineOnClick.GizmoHighlight();
+                } catch (RequestFailedException ex) {
+                    Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
+                }
             }
         }
         else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {

@@ -355,6 +355,10 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
             List<string> currentA = new List<string>();
+
+            foreach (NamedOrientation orientation in Data.Orientations) {
+                UpdateOrientation(orientation);
+            }
             // Connections between actions (action -> output --- input <- action2)
             Dictionary<string, string> connections = new Dictionary<string, string>();
             if (projectActionPoint.Actions != null) {
@@ -497,11 +501,18 @@ namespace Base {
         public virtual void UpdateOrientation(NamedOrientation orientation) {
             NamedOrientation originalOrientation = GetOrientation(orientation.Id);
             originalOrientation.Orientation = orientation.Orientation;
+            try {
+                APOrientation orientationArrow = GetOrientationVisual(orientation.Id);
+                orientationArrow.SetOrientation(orientation.Orientation);
+            } catch (KeyNotFoundException) {
+                AddNewOrientationVisual(orientation);
+            }
             BaseUpdateOrientation(originalOrientation, orientation);
         }
 
         public virtual void AddOrientation(NamedOrientation orientation) {
             Data.Orientations.Add(orientation);
+            AddNewOrientationVisual(orientation);
         }
 
 
@@ -525,7 +536,17 @@ namespace Base {
                 }
                 ++i;
             }
-            UpdateOrientationsVisuals();
+            RemoveOrientationVisual(id);
+        }
+
+        private void RemoveOrientationVisual(string id) {
+            try {
+                APOrientation o = GetOrientationVisual(id);
+                Destroy(o.gameObject);
+            } catch (KeyNotFoundException) {
+                // älready destroyed..
+            }          
+
         }
 
         public void UpdateJoints(ProjectRobotJoints joints) {
@@ -570,20 +591,17 @@ namespace Base {
 
         public abstract void SetSize(float size);
 
-        public void UpdateOrientationsVisuals() {
+        public void UpdateOrientationsVisuals(bool visible) {
             foreach (Transform transform in orientations.transform) {
-                Destroy(transform.gameObject);
+                transform.gameObject.SetActive(visible);
             }
-            if (!ProjectManager.Instance.APOrientationsVisible)
-                return;
-            if (!OrientationsVisible || Data.Orientations == null)
-                return;
-            foreach (IO.Swagger.Model.NamedOrientation orientation in Data.Orientations) {
-                APOrientation apOrientation = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orientations.transform).GetComponent<APOrientation>();
-                apOrientation.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation.Orientation));
-                apOrientation.ActionPoint = this;
-                apOrientation.OrientationId = orientation.Id;
-            }
+        }
+
+        private void AddNewOrientationVisual(NamedOrientation orientation) {
+            APOrientation apOrientation = Instantiate(ActionsManager.Instance.ActionPointOrientationPrefab, orientations.transform).GetComponent<APOrientation>();
+            apOrientation.ActionPoint = this;
+            apOrientation.SetOrientation(orientation.Orientation);
+            apOrientation.OrientationId = orientation.Id;
         }
 
         internal void ShowAimingMenu(string orientationId) {
