@@ -212,6 +212,7 @@ namespace Base {
             foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, false).Values) {
                     string prefix = "";
+                    Debug.LogError(joints.RobotId + " - " + actionProviderId);
                     if (joints.RobotId != actionProviderId)
                         prefix = "(another robot) ";
                     else if (!joints.IsValid) {
@@ -436,7 +437,7 @@ namespace Base {
             List<Tuple<DropdownParameter, Parameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Parameter>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (Parameter parameter in parameters) {
-                GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode);
+                GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode, actionProviderId);
 
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ActionParameterMetadata.Name);
