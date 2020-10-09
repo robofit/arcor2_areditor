@@ -81,7 +81,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.GameManager.Instance.OnDisconnectedFromServer += OnOpenDisconnectedScreen;
         Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneOrProjectSavedStatusChanged;
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnSceneOrProjectSavedStatusChanged;
-        Base.WebsocketManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+        Base.SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
 
         HideEverything();
@@ -175,7 +175,8 @@ public class MainMenu : MonoBehaviour, IMenu {
         orderedList.Sort(
             delegate (ActionObjectMetadata obj1,
             ActionObjectMetadata obj2) {
-                return obj2.Type.CompareTo(obj1.Type);
+                return obj2.Type.CompareTo(obj1
+                    .Type);
             }
         );
         foreach (Base.ActionObjectMetadata actionObjectMetadata in orderedList) {
@@ -383,7 +384,6 @@ public class MainMenu : MonoBehaviour, IMenu {
             SaveSceneBtn.SetInteractivity(false, "There are no unsaved changes");
             _ = UpdateBuildAndSaveBtns();
         }
-        Notifications.Instance.ShowNotification("Scene save sucessfull", "");
     }
 
     public async void SaveProject() {
@@ -392,7 +392,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             saveProjectResponse.Messages.ForEach(Debug.LogError);
             Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
             return;
-        }
+        } 
     }
 
 
@@ -410,6 +410,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         try {
             await Base.GameManager.Instance.BuildPackage(name);
             inputDialog.Close();
+            Notifications.Instance.ShowToastMessage("Package was built sucessfully.");
         } catch (Base.RequestFailedException ex) {
 
         }

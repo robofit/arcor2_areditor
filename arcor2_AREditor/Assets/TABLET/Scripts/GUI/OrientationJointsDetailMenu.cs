@@ -12,17 +12,17 @@ using System;
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, MoveHereBlock;
+    public GameObject OrientationBlock, OrientationExpertModeBlock, JointsBlock, JointsExpertModeBlock, InvalidJointsLabel;
 
     public OrientationManualEdit OrientationManualEdit;
 
     public Slider SpeedSlider;
 
     [SerializeField]
-    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip;
+    private TooltipContent updateButtonTooltip, manualOrientationEditTooltip, manualJointsEditTooltip, moveRobotTooltip, moveModelTooltip;
 
     [SerializeField]
-    private Button UpdateButton, ManualOrientationEditButton, ManualJointsEditButton;
+    private Button UpdateButton, ManualOrientationEditButton, moveRobotButton, moveModelButton;
 
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
@@ -69,31 +69,56 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
             RobotsList.Dropdown.dropdownItems.Clear();
             await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-            if (RobotsList.Dropdown.dropdownItems.Count > 0) {
+
+            if (SceneManager.Instance.SceneStarted && SceneManager.Instance.RobotInScene()) {
                 OrientationBlock.SetActive(true);
-                MoveHereBlock.SetActive(true);
-
-                UpdateButton.interactable = true;
-                updateButtonTooltip.enabled = false;
-
+                EnableButtons(true);
                 OnRobotChanged((string) RobotsList.GetValue());
-            } else {
+            } else if (!SceneManager.Instance.RobotInScene()) {
                 OrientationBlock.SetActive(false);
-                MoveHereBlock.SetActive(false);
 
                 updateButtonTooltip.description = "There is no robot to update orientation with";
-                updateButtonTooltip.enabled = true;
-                UpdateButton.interactable = false;
+                moveRobotTooltip.description = "There is no robot";
+                moveModelTooltip.description = moveRobotTooltip.description;
+                EnableButtons(false);
+            } else { //scene not started
+                OrientationBlock.SetActive(false);
+
+                updateButtonTooltip.description = "Scene is not started";
+                moveRobotTooltip.description = updateButtonTooltip.description;
+                moveModelTooltip.description = updateButtonTooltip.description;
+                EnableButtons(false);
             }
 
             OrientationManualEdit.SetOrientation(orientation.Orientation);
             ValidateFieldsOrientation();
         } else { //joints
+            if (!SceneManager.Instance.SceneStarted) {
+                updateButtonTooltip.description = "Scene is not started";
+                moveRobotTooltip.description = updateButtonTooltip.description;
+                moveModelTooltip.description = updateButtonTooltip.description;
+                EnableButtons(false);
+            } else {
+                EnableButtons(true);
+            }
             DetailName.text = joints.Name;
+            InvalidJointsLabel.SetActive(!joints.IsValid);
             UpdateJointsList();
         }
     }
 
+    /// <summary>
+    /// Sets interactibility of buttons and enables/disables tooltips
+    /// </summary>
+    /// <param name="enable">True if buttons should be interactable</param>
+    private void EnableButtons(bool enable) {
+        updateButtonTooltip.enabled = !enable;
+        moveRobotTooltip.enabled = !enable;
+        moveModelTooltip.enabled = !enable;
+        UpdateButton.interactable = enable;
+        moveRobotButton.interactable = enable;
+        moveModelButton.interactable = enable;
+    }
 
     private async void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
@@ -121,7 +146,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
             LabeledInput labeledInput = Instantiate(GameManager.Instance.LabeledFloatInput, JointsDynamicList.transform).GetComponent<LabeledInput>();
             labeledInput.SetLabel(joint.Name, joint.Name);
-            labeledInput.SetValue(joint.Value);
+
+            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
         }
     }
 
@@ -134,7 +162,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
 
             await WebsocketManager.Instance.UpdateActionPointJoints(joints.Id, updatedJoints);
-
+            Notifications.Instance.ShowToastMessage("Joints updated successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Joints update failed", ex.Message);
             return;
@@ -147,7 +175,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void OnOrientationSaveClick() {
         try {
             await WebsocketManager.Instance.UpdateActionPointOrientation(OrientationManualEdit.GetOrientation(), orientation.Id);
-            Notifications.Instance.ShowNotification("Orientation updated", "");
+            Notifications.Instance.ShowToastMessage("Orientation updated successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to update orientation", ex.Message);
         }
@@ -160,6 +188,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             try {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id);
+                Notifications.Instance.ShowToastMessage("Orientation updated successfully");
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed update orientation", ex.Message);
@@ -171,6 +200,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         {
             try {
                 await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(joints.Id);
+                Notifications.Instance.ShowToastMessage("Joints updated successfully");
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update joints", ex.Message);
             }
@@ -229,13 +259,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                     return;
                 }
                 await WebsocketManager.Instance.RenameActionPointOrientation(orientation.Id, name);
-                Notifications.Instance.ShowNotification("Orientation renamed successfully", "");
+                Notifications.Instance.ShowToastMessage("Orientation renamed successfully");
             } else {
                 if (name == joints.Name) {
                     return;
                 }
                 await WebsocketManager.Instance.RenameActionPointJoints(joints.Id, name);
-                Notifications.Instance.ShowNotification("Joints renamed successfully", "");
+                Notifications.Instance.ShowToastMessage("Joints renamed successfully");
             }
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to rename orientation/joints", ex.Message);
