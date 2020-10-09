@@ -103,7 +103,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
             DetailName.text = joints.Name;
             InvalidJointsLabel.SetActive(!joints.IsValid);
-            UpdateJointsList();
+
+            UpdateJointsValues();
+
         }
     }
 
@@ -134,19 +136,49 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     /// <summary>
-    /// Updates values (angles) of joints in expert block
+    /// Updates list of joints in expert block
     /// </summary>
-    public void UpdateJointsList() {
-        foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
-            if (!o.gameObject.CompareTag("Persistent")) {
-                Destroy(o.gameObject);
-            }
-        }
+    private void UpdateJointsList() {
+        DestroyJointsFields();
 
         foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
             LabeledInput labeledInput = Instantiate(GameManager.Instance.LabeledFloatInput, JointsDynamicList.transform).GetComponent<LabeledInput>();
             labeledInput.SetLabel(joint.Name, joint.Name);
 
+            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
+        }
+    }
+
+    private void DestroyJointsFields() {
+        foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
+            if (!o.gameObject.CompareTag("Persistent")) {
+                Destroy(o.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// returns LabeledInput from joints dynamic list
+    /// </summary>
+    /// <param name="name">Name of the joint</param>
+    /// <returns></returns>
+    private LabeledInput GetJointInput(string name) {
+        foreach (LabeledInput jointInput in JointsDynamicList.GetComponentsInChildren<LabeledInput>()) {
+            if (jointInput.GetName() == name) {
+                return jointInput;
+            }
+        }
+        throw new ItemNotFoundException("Joint input not found");
+    }
+
+    /// <summary>
+    /// Updates values of joints (angles) in joints dynamic list (expert block)
+    /// </summary>
+    private void UpdateJointsValues() {
+        foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
+            LabeledInput labeledInput = GetJointInput(joint.Name);
             NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
@@ -308,6 +340,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public void Close() {
         CurrentActionPoint.GetGameObject().SendMessage("Select", false);
+        if (!isOrientationDetail) {
+            DestroyJointsFields();
+        }
         SideMenu.Close();
     }
 
@@ -327,6 +362,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification(ex.Message, "");
         }
+        UpdateJointsList();
         ShowMenu(currentActionPoint);
     }
 
