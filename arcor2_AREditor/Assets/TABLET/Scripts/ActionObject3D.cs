@@ -31,6 +31,8 @@ public class ActionObject3D : ActionObject
     private Shader standardShader;
     private Shader transparentShader;
 
+   
+
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
@@ -152,18 +154,6 @@ public class ActionObject3D : ActionObject
         return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
     }
 
-    public override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
-        base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-        Data.Id = id;
-        Data.Type = type;
-        SetScenePosition(position);
-        SetSceneOrientation(orientation);
-        Data.Id = uuid;
-        ActionObjectMetadata = actionObjectMetadata;
-        CreateModel(customCollisionModels);
-        enabled = true;
-        SetVisibility(visibility);
-    }
 
     public override void SetVisibility(float value) {
         base.SetVisibility(value);
@@ -220,6 +210,7 @@ public class ActionObject3D : ActionObject
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
+            
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
         } else {

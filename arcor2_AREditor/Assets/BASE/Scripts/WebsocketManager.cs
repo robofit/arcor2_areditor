@@ -786,11 +786,11 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         /// <returns></returns>
-        private async Task HandleSceneObjectChanged(string data) {
+        private void HandleSceneObjectChanged(string data) {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    await SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
                     SceneManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
@@ -2134,6 +2134,51 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
             }
         }
+
+        public async Task UpdateObjectParameters(string id, List<IO.Swagger.Model.Parameter> parameters, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateObjectParametersRequestArgs args = new UpdateObjectParametersRequestArgs(id: id, parameters: parameters);
+            IO.Swagger.Model.UpdateObjectParametersRequest request = new IO.Swagger.Model.UpdateObjectParametersRequest(r_id, "UpdateObjectParameters", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateObjectParametersResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectParametersResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
+            }
+        }
+        
+        public async Task AddOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddOverrideRequestArgs args = new AddOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.AddOverrideRequest request = new IO.Swagger.Model.AddOverrideRequest(r_id, "AddOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddOverrideResponse response = await WaitForResult<IO.Swagger.Model.AddOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to override object parameter" } : response.Messages);
+            }
+        }
+
+        public async Task UpdateOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateOverrideRequestArgs args = new UpdateOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.UpdateOverrideRequest request = new IO.Swagger.Model.UpdateOverrideRequest(r_id, "UpdateOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateOverrideResponse response = await WaitForResult<IO.Swagger.Model.UpdateOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to override object parameter" } : response.Messages);
+            }
+        }
+
+        public async Task DeleteOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.DeleteOverrideRequestArgs args = new DeleteOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.DeleteOverrideRequest request = new IO.Swagger.Model.DeleteOverrideRequest(r_id, "DeleteOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeleteOverrideResponse response = await WaitForResult<IO.Swagger.Model.DeleteOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to delete override of object parameter" } : response.Messages);
+            }
+        }
+
 
 
     }

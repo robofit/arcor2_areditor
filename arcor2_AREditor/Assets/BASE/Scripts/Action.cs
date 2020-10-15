@@ -72,7 +72,7 @@ namespace Base {
                         // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
                         IO.Swagger.Model.ParameterMeta actionParameterMetadata = Metadata.GetParamMetadata(projectActionParameter.Name);
 
-                        actionParameter = new Parameter(actionParameterMetadata, this, projectActionParameter.Value);
+                        actionParameter = new Parameter(actionParameterMetadata, projectActionParameter.Value);
                         Parameters.Add(actionParameter.Name, actionParameter);
                     }
                 } catch (ItemNotFoundException ex) {

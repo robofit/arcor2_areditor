@@ -3,11 +3,7 @@ using UnityEngine.UI;
 using Base;
 using UnityEngine.EventSystems;
 
-public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
-    public Base.ActionObject CurrentObject;
-    [SerializeField]
-    private TMPro.TMP_Text objectName;
-    public Slider VisibilitySlider;
+public class ActionObjectMenuProjectEditor : ActionObjectMenu {
     public GameObject DynamicContent;
 
     [SerializeField]
@@ -36,9 +32,11 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
                          () => inputDialog.Close());
     }
 
-    public void UpdateMenu() {
-        objectName.text = CurrentObject.Data.Name;
-        VisibilitySlider.value = CurrentObject.GetVisibility()*100;
+    public override void UpdateMenu() {
+        base.UpdateMenu();
+
+
+
         foreach (Transform t in DynamicContent.transform) {
             Destroy(t.gameObject);
         }
@@ -67,26 +65,6 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         }
     }
 
-    public void OnVisibilityChange(float value) {
-        CurrentObject.SetVisibility(value/100f); 
-    }
-
-    public void ShowNextAO() {
-        ActionObject nextAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
-        ShowActionObject(nextAO);
-    }
-
-    public void ShowPreviousAO() {
-        ActionObject previousAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
-        ShowActionObject(previousAO);
-    }
-
-    private static void ShowActionObject(ActionObject actionObject) {
-        actionObject.ShowMenu();
-        SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
-        actionObject.SendMessage("Select", true);
-    }
-
     private static void ShowActionPoint(ActionPoint actionPoint) {
         MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
         actionPoint.ShowMenu(true);
@@ -94,5 +72,23 @@ public class ActionObjectMenuProjectEditor : MonoBehaviour, IMenu {
         SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         // Select(force = true) to force selection and not losing AP highlight upon ActionObjectMenuProjectEditor menu closing 
         actionPoint.SendMessage("Select", true);
+    }
+
+    public void OverrideParameters() {
+
+    }
+
+    protected override void UpdateSaveBtn() {
+        if (SceneManager.Instance.SceneStarted) {
+            SaveParametersBtn.SetInteractivity(false, "Parameters could be overrided only when scene is stopped.");
+            return;
+        }
+        if (!parametersChanged) {
+            SaveParametersBtn.SetInteractivity(false, "No parameter changed");
+            return;
+        }
+        // TODO: add dry run save
+        SaveParametersBtn.SetInteractivity(true);
+
     }
 }
