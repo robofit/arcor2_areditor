@@ -19,10 +19,13 @@ namespace Base {
         protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
+        public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
 
         protected virtual void Start() {
             actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
+
+
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
@@ -71,6 +74,7 @@ namespace Base {
                 }
                 
             }
+            
             //TODO: update all action points and actions.. ?
             ResetPosition();
             // update position and rotation based on received data from swagger

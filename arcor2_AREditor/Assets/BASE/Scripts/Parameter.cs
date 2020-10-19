@@ -75,6 +75,29 @@ namespace Base {
             return JsonConvert.DeserializeObject<T>(value);
         }
 
+        public string GetStringValue() {
+            return GetStringValue(Value, Type);
+        }
+
+
+        public static string GetStringValue(string value, string type) {
+            switch (type) {
+                case "relative_pose":
+                    return GetValue<IO.Swagger.Model.Pose>(value).ToString();
+                case "integer_enum":
+                case "integer":
+                    return GetValue<int>(value).ToString();
+                case "string_enum":
+                case "pose":
+                case "joints":
+                case "string":
+                    return GetValue<string>(value).ToString();
+                case "double":
+                    return GetValue<double>(value).ToString();
+            }
+            throw new RequestFailedException("Unknown parameter type");
+        } 
+
         public void SetValue(object newValue) {
             if (newValue == null)
                 Value = null;

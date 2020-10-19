@@ -241,6 +241,37 @@ namespace Base {
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
             WebsocketManager.Instance.OnSceneStateEvent += OnSceneState;
+
+            WebsocketManager.Instance.OnOverrideAdded += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideUpdated += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideBaseUpdated += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideRemoved += OnOverrideRemoved;
+        }
+
+        private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
+            try {
+                ActionObject actionObject = GetActionObject(args.ObjectId);
+                actionObject.Overrides.Remove(args.Parameter.Name);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+
+            }
+        }
+
+        private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
+
+            try {
+                ActionObject actionObject = GetActionObject(args.ObjectId);
+                if (actionObject.TryGetParameterMetadata(args.Parameter.Type, out ParameterMeta parameterMeta)) {
+                    Parameter p = new Parameter(parameterMeta, args.Parameter.Value);
+                    actionObject.Overrides[args.Parameter.Name] = p;
+                }
+                
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                
+            }
+            
         }
 
         private void OnSceneState(object sender, SceneStateEventArgs args) {

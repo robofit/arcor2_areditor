@@ -87,6 +87,11 @@ namespace Base {
         public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsBaseUpdated;
         public event AREditorEventArgs.StringEventHandler OnActionPointJointsRemoved;
 
+        public event AREditorEventArgs.ParameterHandler OnOverrideAdded;
+        public event AREditorEventArgs.ParameterHandler OnOverrideUpdated;
+        public event AREditorEventArgs.ParameterHandler OnOverrideBaseUpdated;
+        public event AREditorEventArgs.ParameterHandler OnOverrideRemoved;
+
         public event AREditorEventArgs.RobotMoveToPoseEventHandler OnRobotMoveToPoseEvent;
         public event AREditorEventArgs.RobotMoveToJointsEventHandler OnRobotMoveToJointsEvent;
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
@@ -276,6 +281,9 @@ namespace Base {
                     case "ActionPointChanged":
                         HandleActionPointChanged(data);
                         break;
+                    case "OverrideUpdated":
+                        HandleOverrideUpdated(data);
+                        break;
                     case "ActionChanged":
                         HandleActionChanged(data);
                         break;
@@ -431,6 +439,31 @@ namespace Base {
                     throw new NotImplementedException("Project changed update should never occured!");
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
                     OnProjectBaseUpdated?.Invoke(this, new BareProjectEventArgs(eventProjectChanged.Data));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+         /// <summary>
+        /// Handles changes on project
+        /// </summary>
+        /// <param name="obj">Message from server</param>
+        private void HandleOverrideUpdated(string obj) {            
+            ProjectManager.Instance.ProjectChanged = true;
+            IO.Swagger.Model.OverrideUpdated overrideUpdated = JsonConvert.DeserializeObject<IO.Swagger.Model.OverrideUpdated>(obj);
+            switch (overrideUpdated.ChangeType) {
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Add:
+                    OnOverrideAdded?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Remove:
+                    OnOverrideRemoved?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Update:
+                    OnOverrideUpdated?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Updatebase:
+                    OnOverrideBaseUpdated?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
                     break;
                 default:
                     throw new NotImplementedException();
