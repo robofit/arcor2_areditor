@@ -81,12 +81,12 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
 
-    public async virtual void UpdateMenu() {
+    public virtual void UpdateMenu() {
         objectName.text = CurrentObject.Data.Name;
         // Parameters:
 
         Parameters.GetComponent<VerticalLayoutGroup>().enabled = true;
-        foreach (RectTransform o in Parameters.GetComponentsInChildren<RectTransform>()) {
+        foreach (Transform o in Parameters.transform) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
             }
