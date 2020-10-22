@@ -145,15 +145,7 @@ namespace Base {
         public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
             //UrdfManager.Instance.OnUrdfReady += OnUrdfDownloaded;
-            Data.Id = id;
-            Data.Type = type;
-            SetScenePosition(position);
-            SetSceneOrientation(orientation);
-            Data.Id = uuid;
-            ActionObjectMetadata = actionObjectMetadata;
-            CreateModel(customCollisionModels);
-            enabled = true;
-            SetVisibility(visibility);
+           
             // if there should be an urdf robot model
             if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 // check if robot model exists
@@ -336,15 +328,7 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
                 return;
             }
-            // HANDLE MOUSE
-            if (type == Click.MOUSE_RIGHT_BUTTON) {
-                ShowMenu();
-            }
-            // HANDLE TOUCH
-            else if (type == Click.TOUCH) {
-                ShowMenu();
-            }
-
+           
             // HANDLE MOUSE
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
                 // We have clicked with left mouse and started manipulation with object

@@ -87,6 +87,11 @@ namespace Base {
         public event AREditorEventArgs.RobotJointsEventHandler OnActionPointJointsBaseUpdated;
         public event AREditorEventArgs.StringEventHandler OnActionPointJointsRemoved;
 
+        public event AREditorEventArgs.ParameterHandler OnOverrideAdded;
+        public event AREditorEventArgs.ParameterHandler OnOverrideUpdated;
+        public event AREditorEventArgs.ParameterHandler OnOverrideBaseUpdated;
+        public event AREditorEventArgs.ParameterHandler OnOverrideRemoved;
+
         public event AREditorEventArgs.RobotMoveToPoseEventHandler OnRobotMoveToPoseEvent;
         public event AREditorEventArgs.RobotMoveToJointsEventHandler OnRobotMoveToJointsEvent;
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
@@ -276,6 +281,9 @@ namespace Base {
                     case "ActionPointChanged":
                         HandleActionPointChanged(data);
                         break;
+                    case "OverrideUpdated":
+                        HandleOverrideUpdated(data);
+                        break;
                     case "ActionChanged":
                         HandleActionChanged(data);
                         break;
@@ -431,6 +439,31 @@ namespace Base {
                     throw new NotImplementedException("Project changed update should never occured!");
                 case IO.Swagger.Model.ProjectChanged.ChangeTypeEnum.Updatebase:
                     OnProjectBaseUpdated?.Invoke(this, new BareProjectEventArgs(eventProjectChanged.Data));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+         /// <summary>
+        /// Handles changes on project
+        /// </summary>
+        /// <param name="obj">Message from server</param>
+        private void HandleOverrideUpdated(string obj) {            
+            ProjectManager.Instance.ProjectChanged = true;
+            IO.Swagger.Model.OverrideUpdated overrideUpdated = JsonConvert.DeserializeObject<IO.Swagger.Model.OverrideUpdated>(obj);
+            switch (overrideUpdated.ChangeType) {
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Add:
+                    OnOverrideAdded?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Remove:
+                    OnOverrideRemoved?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Update:
+                    OnOverrideUpdated?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
+                    break;
+                case IO.Swagger.Model.OverrideUpdated.ChangeTypeEnum.Updatebase:
+                    OnOverrideBaseUpdated?.Invoke(this, new ParameterEventArgs(overrideUpdated.ParentId, overrideUpdated.Data));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -786,11 +819,11 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         /// <returns></returns>
-        private async Task HandleSceneObjectChanged(string data) {
+        private void HandleSceneObjectChanged(string data) {
             IO.Swagger.Model.SceneObjectChanged sceneObjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.SceneObjectChanged>(data);
             switch (sceneObjectChanged.ChangeType) {
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Add:
-                    await SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
+                    SceneManager.Instance.SceneObjectAdded(sceneObjectChanged.Data);
                     break;
                 case IO.Swagger.Model.SceneObjectChanged.ChangeTypeEnum.Remove:
                     SceneManager.Instance.SceneObjectRemoved(sceneObjectChanged.Data);
@@ -2134,6 +2167,51 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
             }
         }
+
+        public async Task UpdateObjectParameters(string id, List<IO.Swagger.Model.Parameter> parameters, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateObjectParametersRequestArgs args = new UpdateObjectParametersRequestArgs(id: id, parameters: parameters);
+            IO.Swagger.Model.UpdateObjectParametersRequest request = new IO.Swagger.Model.UpdateObjectParametersRequest(r_id, "UpdateObjectParameters", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateObjectParametersResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectParametersResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
+            }
+        }
+        
+        public async Task AddOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddOverrideRequestArgs args = new AddOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.AddOverrideRequest request = new IO.Swagger.Model.AddOverrideRequest(r_id, "AddOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddOverrideResponse response = await WaitForResult<IO.Swagger.Model.AddOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to override object parameter" } : response.Messages);
+            }
+        }
+
+        public async Task UpdateOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateOverrideRequestArgs args = new UpdateOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.UpdateOverrideRequest request = new IO.Swagger.Model.UpdateOverrideRequest(r_id, "UpdateOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateOverrideResponse response = await WaitForResult<IO.Swagger.Model.UpdateOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to override object parameter" } : response.Messages);
+            }
+        }
+
+        public async Task DeleteOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.DeleteOverrideRequestArgs args = new DeleteOverrideRequestArgs(id: id, _override: parameter);
+            IO.Swagger.Model.DeleteOverrideRequest request = new IO.Swagger.Model.DeleteOverrideRequest(r_id, "DeleteOverride", dryRun: dryRun, args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.DeleteOverrideResponse response = await WaitForResult<IO.Swagger.Model.DeleteOverrideResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to delete override of object parameter" } : response.Messages);
+            }
+        }
+
 
 
     }
