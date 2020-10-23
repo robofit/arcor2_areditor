@@ -293,7 +293,7 @@ namespace Base {
         }
 
 
-        private Firebase.FirebaseApp app;
+        //private Firebase.FirebaseApp app;
 
         /// <summary>
         /// Determines whether the application is in correct state (scene or project editor) and
@@ -616,7 +616,7 @@ namespace Base {
             SetDefaultFramerate();
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             ARSession.enabled = false;
-            Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
+            /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
               var dependencyStatus = task.Result;
               if (dependencyStatus == Firebase.DependencyStatus.Available) {
                 // Create and hold a reference to your FirebaseApp,
@@ -629,7 +629,7 @@ namespace Base {
                   "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
                 // Firebase Unity SDK is not safe to use here.
               }
-            });
+            });*/
 #endif
             VersionInfo.text = Application.version;
             Scene.SetActive(false);
