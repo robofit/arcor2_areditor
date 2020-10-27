@@ -310,6 +310,18 @@ namespace Base {
             StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
             EndAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
 
+            foreach (SceneObjectOverride objectOverrides in project.ObjectOverrides) {
+                ActionObject actionObject = SceneManager.Instance.GetActionObject(objectOverrides.Id);
+                foreach (IO.Swagger.Model.Parameter p in objectOverrides.Parameters) {
+                    if (actionObject.TryGetParameterMetadata(p.Name, out ParameterMeta meta)) {
+                        Parameter parameter = new Parameter(meta, p.Value);
+                        Debug.LogError(parameter);
+                        actionObject.Overrides[p.Name] = parameter;
+                    }
+                    
+                }
+            }
+
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);

@@ -155,7 +155,7 @@ namespace Base {
             this.loadResources = loadResources;
             LoadSettings();
             GameManager.Instance.Scene.SetActive(true);
-            await UpdateActionObjects(scene, customCollisionModels);
+            UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
                 await WebsocketManager.Instance.StopScene(true);
@@ -241,6 +241,37 @@ namespace Base {
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
             WebsocketManager.Instance.OnSceneStateEvent += OnSceneState;
+
+            WebsocketManager.Instance.OnOverrideAdded += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideUpdated += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideBaseUpdated += OnOverrideAddedOrUpdated;
+            WebsocketManager.Instance.OnOverrideRemoved += OnOverrideRemoved;
+        }
+
+        private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
+            try {
+                ActionObject actionObject = GetActionObject(args.ObjectId);
+                actionObject.Overrides.Remove(args.Parameter.Name);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+
+            }
+        }
+
+        private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
+
+            try {
+                ActionObject actionObject = GetActionObject(args.ObjectId);
+                if (actionObject.TryGetParameterMetadata(args.Parameter.Type, out ParameterMeta parameterMeta)) {
+                    Parameter p = new Parameter(parameterMeta, args.Parameter.Value);
+                    actionObject.Overrides[args.Parameter.Name] = p;
+                }
+                
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+                
+            }
+            
         }
 
         private void OnSceneState(object sender, SceneStateEventArgs args) {
@@ -444,7 +475,7 @@ namespace Base {
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
-        public async Task<ActionObject> SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
+        public ActionObject SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
             if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
                 return null;
             }
@@ -579,8 +610,8 @@ namespace Base {
         /// </summary>
         /// <param name="sceneObject">Description of action object</param>
         /// <returns></returns>
-        public async Task SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = await SpawnActionObject(sceneObject.Id, sceneObject.Type);
+        public void SceneObjectAdded(SceneObject sceneObject) {
+            ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
             actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisible, ActionObjectsInteractive);
             SceneChanged = true;
         }
@@ -606,10 +637,10 @@ namespace Base {
         /// <param name="scene">Scene description</param>
         /// <param name="customCollisionModels">Allows to override action object collision model</param>
         /// <returns></returns>
-        public async Task UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
+        public void UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
-                ActionObject actionObject = await SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
+                ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
