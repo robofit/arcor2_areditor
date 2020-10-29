@@ -290,6 +290,22 @@ namespace Base {
         }
     }
 
+    public class ParameterEventArgs : EventArgs {
+
+        public IO.Swagger.Model.Parameter Parameter {
+            get; set;
+        }
+
+        public string ObjectId {
+            get; set;
+        }
+
+        public ParameterEventArgs(string objectId, IO.Swagger.Model.Parameter @event) {
+            Parameter = @event;
+            ObjectId = objectId;
+        }
+    }
+
 
 
     public class AREditorEventArgs {
@@ -316,5 +332,6 @@ namespace Base {
         public delegate void RobotMoveToActionPointJointsEventHandler(object sender, RobotMoveToActionPointJointsEventArgs args);
         public delegate void RobotMoveToActionPointOrientationHandler(object sender, RobotMoveToActionPointOrientationEventArgs args);
         public delegate void SceneStateHandler(object sender, SceneStateEventArgs args);
+        public delegate void ParameterHandler(object sender, ParameterEventArgs args);
     }
 }

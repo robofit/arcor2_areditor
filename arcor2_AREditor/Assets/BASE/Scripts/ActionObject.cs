@@ -1,12 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 
 namespace Base {
     public abstract class ActionObject : Clickable, IActionProvider, IActionPointParent {
 
-        // string == IO.Swagger.Model.SceneObject Data.Uuid
-        //public Dictionary<string, ActionPoint> ActionPoints = new Dictionary<string, ActionPoint>();
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
         public int CounterAP = 0;
@@ -19,13 +18,28 @@ namespace Base {
         protected ActionObjectMenu actionObjectMenu;
         protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
+        public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
+        public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
+
         protected virtual void Start() {
             actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
+
+
         }
 
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
+            Data.Id = id;
+            Data.Type = type;
+            SetScenePosition(position);
+            SetSceneOrientation(orientation);
+            Data.Id = uuid;
+            ActionObjectMetadata = actionObjectMetadata;
+            CreateModel(customCollisionModels);
+            enabled = true;
             visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
+            SetVisibility(visibility);
+            
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -44,6 +58,23 @@ namespace Base {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
+            foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
+
+                if (!ObjectParameters.ContainsKey(p.Name)) {
+                    if (TryGetParameterMetadata(p.Name, out ParameterMeta parameterMeta)) {
+                        ObjectParameters[p.Name] = new Parameter(parameterMeta, p.Value);
+                    } else {
+                        Debug.LogError("Failed to load metadata for parameter " + p.Name);
+                        Notifications.Instance.ShowNotification("Critical error", "Failed to load parameter's metadata.");
+                        return;
+                    }
+
+                } else {
+                    ObjectParameters[p.Name].Value = p.Value;
+                }
+                
+            }
+            
             //TODO: update all action points and actions.. ?
             ResetPosition();
             // update position and rotation based on received data from swagger
@@ -66,7 +97,27 @@ namespace Base {
             return (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor);
         }
 
-        
+        public bool TryGetParameter(string id, out IO.Swagger.Model.Parameter parameter) {
+            foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
+                if (p.Name == id) {
+                    parameter = p;
+                    return true;
+                }
+            }
+            parameter = null;
+            return false;
+        }
+                
+        public bool TryGetParameterMetadata(string id, out IO.Swagger.Model.ParameterMeta parameterMeta) {
+            foreach (IO.Swagger.Model.ParameterMeta p in ActionObjectMetadata.Settings) {
+                if (p.Name == id) {
+                    parameterMeta = p;
+                    return true;
+                }
+            }
+            parameterMeta = null;
+            return false;
+        }
                 
         public abstract Vector3 GetScenePosition();
 

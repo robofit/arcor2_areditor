@@ -206,7 +206,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             Debug.Assert(ProjectManager.Instance.AllowEdit);
             try {
                 await WebsocketManager.Instance.UpdateAction(CurrentAction.Data.Id, parameters, CurrentAction.GetFlows());
-                Base.Notifications.Instance.ShowNotification("Parameters saved", "");
+                Base.Notifications.Instance.ShowToastMessage("Parameters saved");
                 SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
                 parametersChanged = false;
                 if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
