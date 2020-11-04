@@ -36,15 +36,12 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Modify() {
-        switch (parameterMetadata.Type) {
-            case "string":
-                Input = Parameter.InitializeStringParameter(parameterMetadata, OnChangeParameterHandler, null, null, Value.text);
-                Input.GetComponent<IParameter>().SetLabel("", "");
-                Value.gameObject.SetActive(false);
-                Input.transform.SetParent(Value.transform.parent);
-                Input.transform.SetAsFirstSibling();
-                break;
-        }
+        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, null, null, Parameter.Encode(Value.text, parameterMetadata.Type), true);
+        Input.GetComponent<IParameter>().SetLabel("", "");
+        Value.gameObject.SetActive(false);
+        Input.transform.SetParent(Value.transform.parent);
+        Input.transform.SetAsFirstSibling();
+        
         SaveBtn.gameObject.SetActive(true);
         ModifyBtn.gameObject.SetActive(false);
         RestoreBtn.gameObject.SetActive(false);
