@@ -2212,6 +2212,39 @@ namespace Base {
             }
         }
 
+        
+        public async Task<List<IO.Swagger.Model.Joint>> InverseKinematics(string robotId, string endEffectorId, bool avoidCollisions, IO.Swagger.Model.Pose pose, List<IO.Swagger.Model.Joint> startJoints) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.InverseKinematicsRequestArgs args = new InverseKinematicsRequestArgs(robotId: robotId,
+                endEffectorId: endEffectorId, pose: pose, avoidCollisions: avoidCollisions, startJoints: startJoints);
+
+            IO.Swagger.Model.InverseKinematicsRequest request = new IO.Swagger.Model.InverseKinematicsRequest(r_id, "InverseKinematics", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.InverseKinematicsResponse response = await WaitForResult<IO.Swagger.Model.InverseKinematicsResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to delete override of object parameter" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<IO.Swagger.Model.Pose> ForwardKinematics(string robotId, string endEffectorId, List<IO.Swagger.Model.Joint> joints) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ForwardKinematicsRequestArgs args = new ForwardKinematicsRequestArgs(robotId: robotId,
+                endEffectorId: endEffectorId, joints: joints);
+
+            IO.Swagger.Model.ForwardKinematicsRequest request = new IO.Swagger.Model.ForwardKinematicsRequest(r_id, "ForwardKinematics", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ForwardKinematicsResponse response = await WaitForResult<IO.Swagger.Model.ForwardKinematicsResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to delete override of object parameter" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        
+
 
 
     }

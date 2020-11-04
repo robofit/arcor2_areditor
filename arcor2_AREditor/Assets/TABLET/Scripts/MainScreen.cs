@@ -391,7 +391,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
             string projectName;
             try {
-                projectName = GameManager.Instance.GetProjectName(package.ProjectId);
+                projectName = package.ProjectMeta.Name;
             } catch (ItemNotFoundException _) {
                 projectName = "unknown";
             }            
@@ -399,8 +399,8 @@ public class MainScreen : Base.Singleton<MainScreen>
                           async () => await Base.GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
                           starred,
-                          package.Modified,
-                          package.Modified,
+                          package.PackageMeta.Built,
+                          package.PackageMeta.Executed,
                           package.Id,
                           projectName,
                           package.PackageMeta.Built.ToString());
