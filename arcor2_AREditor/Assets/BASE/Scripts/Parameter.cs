@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.Events;
+using MiniJSON;
 
 namespace Base {
     public class Parameter : IO.Swagger.Model.Parameter {
@@ -55,6 +56,9 @@ namespace Base {
                 case "double":
                     SetValue((double) value);
                     break;
+                case "boolean":
+                    SetValue((bool) value);
+                    break;
             }
         }
 
@@ -73,6 +77,26 @@ namespace Base {
                 return default; 
             }                
             return JsonConvert.DeserializeObject<T>(value);
+        }
+
+        public static string Encode(string value, string type) {
+            switch (type) {
+                /*case "relative_pose":
+                    return GetValue<IO.Swagger.Model.Pose>(value).ToString();*/
+                case "integer_enum":
+                case "integer":
+                    return JsonConvert.SerializeObject(int.Parse(value));
+                case "string_enum":
+                case "pose":
+                case "joints":
+                case "string":
+                    return JsonConvert.SerializeObject(value);                    
+                case "double":
+                    return JsonConvert.SerializeObject(double.Parse(value));
+                case "boolean":
+                    return JsonConvert.SerializeObject(bool.Parse(value));
+            }
+            throw new RequestFailedException("Unknown parameter type (" + type + ")");
         }
 
         public string GetStringValue() {
@@ -94,6 +118,8 @@ namespace Base {
                     return GetValue<string>(value).ToString();
                 case "double":
                     return GetValue<double>(value).ToString();
+                case "boolean":
+                    return GetValue<bool>(value).ToString();
             }
             throw new RequestFailedException("Unknown parameter type");
         } 
@@ -519,7 +545,7 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
+        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {
