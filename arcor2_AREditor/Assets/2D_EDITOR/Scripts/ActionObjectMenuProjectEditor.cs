@@ -117,16 +117,6 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
     }
 
     protected override void UpdateSaveBtn() {
-        if (SceneManager.Instance.SceneStarted) {
-            SaveParametersBtn.SetInteractivity(false, "Parameters could be overrided only when scene is stopped.");
-            return;
-        }
-        if (!parametersChanged) {
-            SaveParametersBtn.SetInteractivity(false, "No parameter changed");
-            return;
-        }
-        // TODO: add dry run save
-        SaveParametersBtn.SetInteractivity(true);
-
+        
     }
 }
