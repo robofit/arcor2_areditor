@@ -390,11 +390,10 @@ public class MainScreen : Base.Singleton<MainScreen>
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
             bool starred = PlayerPrefsHelper.LoadBool("package/" + package.Id + "/starred", false);
             string projectName;
-            try {
-                projectName = package.ProjectMeta.Name;
-            } catch (ItemNotFoundException _) {
+            if (package.ProjectMeta == null || package.ProjectMeta.Name == null)
                 projectName = "unknown";
-            }            
+            else
+                projectName = package.ProjectMeta.Name;
             tile.InitTile(package.PackageMeta.Name,
                           async () => await Base.GameManager.Instance.RunPackage(package.Id),
                           () => PackageOptionMenu.Open(tile),
