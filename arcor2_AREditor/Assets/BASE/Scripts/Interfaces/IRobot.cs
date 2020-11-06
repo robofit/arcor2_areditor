@@ -14,7 +14,7 @@ public interface IRobot
 
     bool HasUrdf();
 
-    void SetJointValue(string name, float angle);
+    void SetJointValue(string name, float angle, bool angle_in_degrees = false);
 
     List<IO.Swagger.Model.Joint> GetJoints();
 }

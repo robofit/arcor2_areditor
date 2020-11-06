@@ -493,7 +493,7 @@ namespace Base {
             }
             GameObject obj;
             if (aom.Robot) {
-                Debug.Log("URDF: spawning RobotActionObject");
+                //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);

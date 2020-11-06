@@ -31,7 +31,8 @@ public class ActionObject3D : ActionObject
     private Shader standardShader;
     private Shader transparentShader;
 
-   
+    private List<Renderer> aoRenderers = new List<Renderer>();
+    private List<Collider> aoColliders = new List<Collider>();
 
     protected override void Start() {
         base.Start();
@@ -186,14 +187,14 @@ public class ActionObject3D : ActionObject
 
     public override void Show() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+        foreach (Renderer renderer in aoRenderers) {
             renderer.enabled = true;
         }
     }
 
     public override void Hide() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in Visual.GetComponentsInChildren<Renderer>()) {
+        foreach (Renderer renderer in aoRenderers) {
             renderer.enabled = false;
         }
     }
@@ -273,6 +274,11 @@ public class ActionObject3D : ActionObject
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
         Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
+
+        aoRenderers.Clear();
+        aoColliders.Clear();
+        aoRenderers.AddRange(Visual.GetComponentsInChildren<Renderer>(true));
+        aoColliders.AddRange(Visual.GetComponentsInChildren<Collider>(true));
     }
 
     public override GameObject GetModelCopy() {
