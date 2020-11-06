@@ -4,7 +4,6 @@ mkdir -p ../arcor2_AREditor/Assets/Submodules
 ln -snf `pwd`/../arcor2_AREditor/Submodules/JSONObject ../arcor2_AREditor/Assets/Submodules/JSONObject
 ln -snf `pwd`/../arcor2_AREditor/Submodules/UnityDynamicPanels/Plugins ../arcor2_AREditor/Assets/Submodules/UnityDynamicPanels
 ln -snf `pwd`/../arcor2_AREditor/Submodules/UnityRuntimeInspector/Plugins ../arcor2_AREditor/Assets/Submodules/UnityRuntimeInspector
-ln -snf `pwd`/../arcor2_AREditor/Submodules/usfb/Assets/UniStandaloneFileBrowser ../arcor2_AREditor/Assets/Submodules/UnityStandaloneFileBrowser
 ln -snf `pwd`/../arcor2_AREditor/Submodules/Unity3DRuntimeTransformGizmo/Assets ../arcor2_AREditor/Assets/Submodules/Unity3DRuntimeTransformGizmo
 ln -snf `pwd`/../arcor2_AREditor/Submodules/RosSharp/Unity3D/Assets/RosSharp ../arcor2_AREditor/Assets/Submodules/RosSharp
 ln -snf `pwd`/../arcor2_AREditor/Submodules/Simple-Side-Menu ../arcor2_AREditor/Assets/Submodules/Simple-Side-Menu
