@@ -51,6 +51,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
+            MoveHereModel();
         }
     }
 
@@ -320,9 +321,45 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereModel() {
-        //TODO 
-        Notifications.Instance.ShowNotification("Not implemented yet", "");
+    public async void MoveHereModel(bool avoid_collision = true) {
+        List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
+        string robotId;
+        Debug.LogError("move here model method");
+
+        if (isOrientationDetail) {
+            try {
+                robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+                string ee = (string) EndEffectorList.GetValue();
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation.Orientation, DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
+                List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.GetRobot(robotId).GetJoints();
+
+                modelJoints = await WebsocketManager.Instance.InverseKinematics(robotId, ee, true, pose, startJoints);
+                Debug.LogError("IK called");
+                if (!avoid_collision) {
+                    Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
+                }
+            } catch(ItemNotFoundException ex) {
+                Debug.LogError("catch1");
+                Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+                return;
+            } catch (RequestFailedException ex) {
+                Debug.LogError("catch2");
+                if (avoid_collision) //if this is first call, try it again without avoiding collisions
+                    MoveHereModel(false);
+                else
+                    Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+
+                return;
+            }
+
+        } else { //joints
+            modelJoints = this.joints.Joints;
+            robotId = this.joints.RobotId;
+        }
+
+        foreach (IO.Swagger.Model.Joint joint in modelJoints) {
+            SceneManager.Instance.GetRobot(robotId).SetJointValue(joint.Name, (float) joint.Value);
+        }
     }
 
     public async void ValidateFieldsOrientation() {
@@ -362,6 +399,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification(ex.Message, "");
         }
+
+        MoveHereModel();
         UpdateJointsList();
         ShowMenu(currentActionPoint);
     }
@@ -373,7 +412,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         OrientationExpertModeBlock.SetActive(isOrientationDetail && GameManager.Instance.ExpertMode);
         JointsBlock.SetActive(!isOrientationDetail);
         JointsExpertModeBlock.SetActive(!isOrientationDetail && GameManager.Instance.ExpertMode);
-
 
         UpdateMenu();
         SideMenu.Open();

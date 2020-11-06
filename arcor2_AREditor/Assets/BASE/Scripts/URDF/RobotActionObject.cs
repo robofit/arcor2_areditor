@@ -460,6 +460,11 @@ namespace Base {
             RobotModel?.SetJointAngle(name, angle);
         }
 
+        public List<IO.Swagger.Model.Joint> GetJoints() {
+            return new List<IO.Swagger.Model.Joint>();
+            //TODO!!!
+        }
+
         private void OnDestroy() {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
