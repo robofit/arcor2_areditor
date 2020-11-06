@@ -33,6 +33,7 @@ ARCOR2 AR Editor
    - [UI Graph](https://assetstore.unity.com/packages/tools/gui/ui-graph-51304)
    - [Joystick Pack](https://assetstore.unity.com/packages/tools/input-management/joystick-pack-107631)
    - [Native Camera for Android & iOS](https://assetstore.unity.com/packages/tools/integration/native-camera-for-android-ios-117802) (only if you want to build Android version)
+   - [Trilib 2](https://assetstore.unity.com/packages/tools/modeling/trilib-2-model-loading-package-157548)
    - [Simple Collada](https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579)
      - requires to apply patch (<b>/scripts/ColladaImporter.patch</b> and <b>/scripts/StringExtensions.patch</b>) on script ColladaImporter.cs and OrbCreationExtensions/StringExtensions.cs
      - SimpleCollada asset must be moved to Assets/Submodule folder in order to patch script works
