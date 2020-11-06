@@ -60,6 +60,11 @@ namespace Base {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
+
+        private async void OnEnable() {
+            if (HasUrdf())
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
             _ = EnableVisualisationOfEE();            
