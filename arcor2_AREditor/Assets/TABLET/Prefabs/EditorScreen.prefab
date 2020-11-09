@@ -31,6 +31,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 906996558611689062}
   Description: Turn on or off the VR mode
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &4926856805167946227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,6 +275,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 3120078018192683199}
   Description: Editor settings
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &3120078018192683198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1284,6 +1286,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502474893954641}
   Description: Show notifications
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &7616502474893954643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2085,6 +2088,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502475868793098}
   Description: Create global action point
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &7616502475868793097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2286,6 +2290,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502476199801065}
   Description: Show/hide connections
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &7616502476199801070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2357,6 +2362,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502475376888075}
   Description: Show/hide trackables
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &7616502476474693699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2408,6 +2414,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502476474693710}
   Description: Rotate
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &7616502475185067219
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2459,6 +2466,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 7616502475185067230}
   Description: Move
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!1 &7724326380949209260
 GameObject:
   m_ObjectHideFlags: 0
@@ -2561,7 +2569,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltipContent: {fileID: 4845014677885259563}
   Description: Show/hide calibration cube
-  DescriptionAlternative: 
+  DescriptionAlternative: Button disabled, please locate the marker and calibrate
+    first.
+  displayAlternativeDescription: 1
 --- !u!114 &4845014677885259563
 MonoBehaviour:
   m_ObjectHideFlags: 0

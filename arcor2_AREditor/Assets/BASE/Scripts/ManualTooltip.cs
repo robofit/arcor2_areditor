@@ -9,6 +9,20 @@ public class ManualTooltip : MonoBehaviour {
     private TooltipContent tooltipContent;
     [SerializeField]
     public string Description, DescriptionAlternative;
+    [SerializeField]
+    private bool displayAlternativeDescription = false;
+
+    public bool DisplayAlternativeDescription {
+        get => displayAlternativeDescription;
+        set {
+            displayAlternativeDescription = value;
+            if (displayAlternativeDescription) {
+                ShowAlternativeDescription();
+            } else {
+                ShowDefaultDescription();
+            }
+        }
+    }
 
     private void Start() {
         Debug.Assert(tooltipContent != null);
@@ -20,7 +34,12 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
             tooltipContent.descriptionText = TooltipRef.Instance.Text;            
         }
-        ShowDefaultDescription();
+
+        if (DisplayAlternativeDescription) {
+            ShowAlternativeDescription();
+        } else {
+            ShowDefaultDescription();
+        }
     }
 
     public void ShowDefaultDescription() {
