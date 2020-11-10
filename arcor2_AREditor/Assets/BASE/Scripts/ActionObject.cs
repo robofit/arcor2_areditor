@@ -163,7 +163,7 @@ namespace Base {
             return ActionObjectMetadata.Robot;
         }
 
-        public void DeleteActionObject() {
+        public virtual void DeleteActionObject() {
             // Remove all actions of this action point
             RemoveActionPoints();
             
