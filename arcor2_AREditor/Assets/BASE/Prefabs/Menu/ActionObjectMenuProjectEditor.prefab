@@ -264,6 +264,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 144116015973390911}
   Description: Add new action point
   DescriptionAlternative: Action point could not be created for object without pose
+  displayAlternativeDescription: 0
 --- !u!114 &144116015973390911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1255,6 +1256,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Parameters
       objectReference: {fileID: 0}
+    - target: {fileID: 1346055510669276245, guid: 962caad8dd1393d4d91494c0abe624cc,
+        type: 3}
+      propertyPath: Name
+      value: Parameters
+      objectReference: {fileID: 0}
     - target: {fileID: 1637002369549633043, guid: 962caad8dd1393d4d91494c0abe624cc,
         type: 3}
       propertyPath: m_Name
@@ -1906,6 +1912,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7435696894175101132, guid: 962caad8dd1393d4d91494c0abe624cc,
+        type: 3}
+      propertyPath: m_TagString
+      value: Persistent
       objectReference: {fileID: 0}
     - target: {fileID: 8176438331313797490, guid: 962caad8dd1393d4d91494c0abe624cc,
         type: 3}

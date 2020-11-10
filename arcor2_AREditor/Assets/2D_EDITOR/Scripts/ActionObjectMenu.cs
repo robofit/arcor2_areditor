@@ -32,13 +32,17 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
     protected List<IParameter> objectParameters = new List<IParameter>();
 
     private void Start() {
-        menu = GetComponent<SimpleSideMenu>();
+        
         Debug.Assert(objectName != null);
         Debug.Assert(VisibilitySlider != null);
         Debug.Assert(InputDialog != null);
         Debug.Assert(ConfirmationDialog != null);
 
         
+    }
+
+    private void Awake() {
+        menu = GetComponent<SimpleSideMenu>();
     }
 
 
@@ -141,8 +145,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
 
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.ShowMenu();
-        SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
-        actionObject.SendMessage("Select", true);
+        actionObject.SendMessage("Select", false);
     }
 
 }
