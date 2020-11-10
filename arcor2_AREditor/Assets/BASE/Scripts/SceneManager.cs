@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
-using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
 using WebSocketSharp;
