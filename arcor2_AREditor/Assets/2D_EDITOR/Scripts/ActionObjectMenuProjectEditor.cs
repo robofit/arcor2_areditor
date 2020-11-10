@@ -72,12 +72,17 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
             ActionObjectParameterOverride overrideParam = Instantiate(ParameterOverridePrefab, Parameters.transform).GetComponent<ActionObjectParameterOverride>();
             overrideParam.transform.SetAsLastSibling();
             overrideParam.Init(param.GetStringValue(), false, param.ParameterMetadata, CurrentObject.Data.Id);
-            Debug.LogError(CurrentObject.Overrides.Count);
             if (CurrentObject.Overrides.TryGetValue(param.Name, out Parameter p)) {
                 Debug.LogError(p);
                 overrideParam.SetValue(p.GetStringValue(), true);
             }
             overrides[param.Name] = overrideParam;
+        }
+
+        foreach (Transform t in ActionPointsList.transform) {
+            if (t.gameObject.tag != "Persistent") {
+                Destroy(t.gameObject);
+            }
         }
 
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {

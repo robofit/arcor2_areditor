@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
-using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
 using WebSocketSharp;
@@ -481,7 +480,7 @@ namespace Base {
             }
             GameObject obj;
             if (aom.Robot) {
-                Debug.Log("URDF: spawning RobotActionObject");
+                //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);

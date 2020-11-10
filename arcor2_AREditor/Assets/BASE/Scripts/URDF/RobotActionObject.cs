@@ -35,6 +35,8 @@ namespace Base {
             private set;
         }
 
+        private bool robotVisible = false;
+
         private List<RobotEE> EndEffectors = new List<RobotEE>();
         
         private GameObject RobotPlaceholder;
@@ -144,49 +146,24 @@ namespace Base {
 
         public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-            //UrdfManager.Instance.OnUrdfReady += OnUrdfDownloaded;
-           
+
             // if there should be an urdf robot model
             if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                // check if robot model exists
-                if (UrdfManager.Instance.CheckIfRobotModelExists(type)) {
-                    // check if newer robot model exists on the server
-                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
-                        // TODO destroy the old robot version
-                        UrdfManager.Instance.RemoveOldModels(type);
-
-                        // download newer version of the urdf
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-
-                    } else {
-                        // get the robot model
-                        RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
-                        if (RobotModel != null) {
-                            RobotModelLoaded();
-                        } else {
-                            Debug.LogError("Fatal error, robot model should be present and loaded, but it is not. Report bug.");
-                        }
-                    }
-                }
-                // robot model is not loaded at all, check if urdf is downloaded locally and import it, otherwise download it
-                else {
-                    // check if newer robot model exists on the server.. if it is not downloaded at all, it will return true
-                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-                    } else { // the robot zip is downloaded, thus start direct build
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        UrdfManager.Instance.BuildRobotModelFromUrdf(type);
-                    }
+                // Get the robot model, if it returns null, the robot will be loading itself
+                RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
+                if (RobotModel != null) {
+                    RobotModelLoaded();
+                } else {
+                    // Robot is not loaded yet, let's wait for it to be loaded
+                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
                 }
             }
-            //LoadResources = loadResources;
+
             ResourcesLoaded = false;
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
-            Debug.Log("URDF: robot is fully loaded");
+            //Debug.Log("URDF:" + args.RobotType + " robot is fully loaded");
 
             // check if the robot of the type we need was loaded
             if (args.RobotType == Data.Type) {
@@ -201,8 +178,6 @@ namespace Base {
         }
 
         private async void RobotModelLoaded() {
-            Debug.Log("URDF: robot is fully loaded");
-
             RobotModel.RobotModelGameObject.transform.parent = transform;
             RobotModel.RobotModelGameObject.transform.localPosition = Vector3.zero;
             RobotModel.RobotModelGameObject.transform.localEulerAngles = Vector3.zero;
@@ -220,11 +195,20 @@ namespace Base {
 
             robotColliders.Clear();
             robotRenderers.Clear();
-            robotRenderers.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Renderer>());
-            robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
+            robotRenderers.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Renderer>(true));
+            robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>(true));
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
+
+            // Show or hide the robot based on global settings of displaying ActionObjects.
+            // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
+            if (robotVisible) {
+                Show();
+            } else {
+                Hide();
+            }
+
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
@@ -246,12 +230,14 @@ namespace Base {
         }
 
         public override void Show() {
+            robotVisible = true;
             foreach (Renderer renderer in robotRenderers) {
                 renderer.enabled = true;
             }
         }
 
         public override void Hide() {
+            robotVisible = false;
             foreach (Renderer renderer in robotRenderers) {
                 renderer.enabled = false;
             }
@@ -386,7 +372,6 @@ namespace Base {
             RobotPlaceholder.transform.parent = transform;
             RobotPlaceholder.transform.localPosition = Vector3.zero;
             RobotPlaceholder.transform.localPosition = Vector3.zero;
-            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
 
             RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
 
@@ -456,11 +441,16 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
-        public void SetJointValue(string name, float angle) {
-            RobotModel?.SetJointAngle(name, angle);
+        public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
+            RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
 
-        private void OnDestroy() {
+        public override void DeleteActionObject() {
+            base.DeleteActionObject();
+            UnloadRobotModel();
+        }
+
+        private void UnloadRobotModel() {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
