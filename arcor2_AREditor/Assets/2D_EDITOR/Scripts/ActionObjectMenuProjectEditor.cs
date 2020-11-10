@@ -79,6 +79,12 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
             overrides[param.Name] = overrideParam;
         }
 
+        foreach (Transform t in ActionPointsList.transform) {
+            if (t.gameObject.tag != "Persistent") {
+                Destroy(t.gameObject);
+            }
+        }
+
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
             Button button = GameManager.Instance.CreateButton(ActionPointsList.transform, actionPoint.Data.Name);
             button.onClick.AddListener(() => ShowActionPoint(actionPoint));
