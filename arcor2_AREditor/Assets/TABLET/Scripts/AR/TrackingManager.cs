@@ -101,37 +101,51 @@ public class TrackingManager : Singleton<TrackingManager> {
             case ARSessionState.Unsupported:
                 Notifications.Instance.ShowNotification("Tracking not supported", "This device does not support ARCore!");
                 break;
-            case ARSessionState.SessionInitializing:
-            case ARSessionState.Installing:
+            case ARSessionState.None:
             case ARSessionState.CheckingAvailability:
+            case ARSessionState.NeedsInstall:
+            case ARSessionState.Installing:
             case ARSessionState.Ready:
+            case ARSessionState.SessionInitializing:
                 break;
-            default:
+            case ARSessionState.SessionTracking:
                 Notifications.Instance.ShowNotification("Tracking state", sessionState.state.ToString());
-                if (sessionState.state != ARSessionState.SessionTracking) {
-                    NotTrackingReason trackingFailureReason = ARSession.notTrackingReason;
-                    switch (trackingFailureReason) {
-                        case NotTrackingReason.InsufficientFeatures:
-                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient features!", "Try to move the device slowly around your environment.", 9f));
-                            TrackingLostAnimation.PlayVideo();
-                            break;
-                        case NotTrackingReason.ExcessiveMotion:
-                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to excessive motion!", "You are moving the device too fast.", 9f));
-                            TrackingLostAnimation.PlayVideo();
-                            break;
-                        case NotTrackingReason.InsufficientLight:
-                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient light!", "Enlight your environment.", 9f));
-                            break;
-                        case NotTrackingReason.None:
-                            // ingnore notification when tracking was lost for no reason
-                            break;
-                        default:
-                            Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + trackingFailureReason.ToString());
-                            // notify user ever 9 seconds about tracking failure
-                            trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Reason: " + trackingFailureReason.ToString(), 9f));
-                            break;
-                    }
+                // When ar is tracking and the system is calibrated, display the scene
+                if (CalibrationManager.Instance.Calibrated) {
+                    GameManager.Instance.Scene.SetActive(true);
                 }
+                break;
+        }
+
+        switch (ARSession.notTrackingReason) {
+            case NotTrackingReason.None:
+                // ingnore notification when tracking was lost for no reason
+                break;
+            case NotTrackingReason.InsufficientLight:
+                trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient light!", "Enlight your environment.", 9f));
+                // Hide scene if there are some tracking issues
+                GameManager.Instance.Scene.SetActive(false);
+                break;
+            case NotTrackingReason.InsufficientFeatures:
+                trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to insufficient features!", "Try to move the device slowly around your environment.", 9f));
+                TrackingLostAnimation.PlayVideo();
+                // Hide scene if there are some tracking issues
+                GameManager.Instance.Scene.SetActive(false);
+                break;
+            case NotTrackingReason.ExcessiveMotion:
+                trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost due to excessive motion!", "You are moving the device too fast.", 9f));
+                TrackingLostAnimation.PlayVideo();
+                // Hide scene if there are some tracking issues
+                GameManager.Instance.Scene.SetActive(false);
+                break;
+            case NotTrackingReason.Initializing:
+            case NotTrackingReason.Relocalizing:
+            case NotTrackingReason.Unsupported:
+                Notifications.Instance.ShowNotification("Tracking lost!", "Reason: " + ARSession.notTrackingReason.ToString());
+                // notify user ever 9 seconds about tracking failure
+                trackingFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Reason: " + ARSession.notTrackingReason.ToString(), 9f));
+                // Hide scene if there are some tracking issues
+                GameManager.Instance.Scene.SetActive(false);
                 break;
         }
     }

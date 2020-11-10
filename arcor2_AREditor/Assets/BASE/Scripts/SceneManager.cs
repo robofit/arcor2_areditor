@@ -153,7 +153,7 @@ namespace Base {
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            GameManager.Instance.Scene.SetActive(true);
+            
             UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
