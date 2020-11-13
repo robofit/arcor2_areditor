@@ -45,8 +45,11 @@ namespace Base {
         private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;
+        private bool ghost = false;
+        private float currentVisibility = 0f;
 
         private Shader standardShader;
+        private Shader ghostShader;
         private Shader transparentShader;
 
         protected override void Start() {
@@ -201,6 +204,8 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
 
+            SetVisibility(currentVisibility, forceShaderChange:true);
+
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
             if (robotVisible) {
@@ -249,11 +254,17 @@ namespace Base {
             }
         }
 
-        public override void SetVisibility(float value) {
+        public override void SetVisibility(float value, bool forceShaderChange = false) {
             base.SetVisibility(value);
+
+            currentVisibility = value;
 
             if (standardShader == null) {
                 standardShader = Shader.Find("Standard");
+            }
+
+            if (ghostShader == null) {
+                ghostShader = Shader.Find("Custom/Ghost");
             }
 
             if (transparentShader == null) {
@@ -263,6 +274,7 @@ namespace Base {
             // Set opaque shader
             if (value >= 1) {
                 transparent = false;
+                ghost = false;
                 foreach (Renderer renderer in robotRenderers) {
                     // Robot has its outline active, we need to select second material,
                     // (first is mask, second is object material, third is outline)
@@ -274,16 +286,41 @@ namespace Base {
                 }
             }
             // Set transparent shader
-            else {
-                if (!transparent) {
+            else if (value <= 0.1) {
+                ghost = false;
+                if (forceShaderChange || !transparent) {
                     foreach (Renderer renderer in robotRenderers) {
+                        // Robot has its outline active, we need to select second material,
+                        // (first is mask, second is object material, third is outline)
                         if (renderer.materials.Length == 3) {
                             renderer.materials[1].shader = transparentShader;
                         } else {
                             renderer.material.shader = transparentShader;
                         }
+
+                        Material mat;
+                        if (renderer.materials.Length == 3) {
+                            mat = renderer.materials[1];
+                        } else {
+                            mat = renderer.material;
+                        }
+                        Color color = mat.color;
+                        color.a = 0f;
+                        mat.color = color;
                     }
                     transparent = true;
+                }
+            } else {
+                transparent = false;
+                if (forceShaderChange || !ghost) {
+                    foreach (Renderer renderer in robotRenderers) {
+                        if (renderer.materials.Length == 3) {
+                            renderer.materials[1].shader = ghostShader;
+                        } else {
+                            renderer.material.shader = ghostShader;
+                        }
+                    }
+                    ghost = true;
                 }
                 // set alpha of the material
                 foreach (Renderer renderer in robotRenderers) {

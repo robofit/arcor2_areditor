@@ -12,7 +12,7 @@ Shader "Outline/ModelFirstPass" {
 
     Subshader
     {
-        Zwrite On
+        Zwrite Off
         ZTest Always
         Tags {
             "Queue" = "Geometry-1"
