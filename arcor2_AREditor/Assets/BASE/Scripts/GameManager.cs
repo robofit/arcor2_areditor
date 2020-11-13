@@ -1588,7 +1588,7 @@ namespace Base {
                 Scene.SetActive(true);
             }
 #else
-            
+            Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
             EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;

@@ -153,7 +153,7 @@ namespace Base {
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            GameManager.Instance.Scene.SetActive(true);
+            
             UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
@@ -290,6 +290,7 @@ namespace Base {
                     SceneStarted = true;
                     if (RobotsEEVisible)
                         OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+                    RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
@@ -299,6 +300,17 @@ namespace Base {
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        /// <summary>
+        /// Register or unregister to/from subsription of joints or end effectors pose of each robot in the scene.
+        /// </summary>
+        /// <param name="send">To subscribe or to unsubscribe</param>
+        /// <param name="what">Pose of end effectors or joints</param>
+        public void RegisterRobotsForEvent(bool send, RegisterForRobotEventRequestArgs.WhatEnum what) {
+            foreach (IRobot robot in GetRobots()) {
+                WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), send, what);
+            }
         }
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {

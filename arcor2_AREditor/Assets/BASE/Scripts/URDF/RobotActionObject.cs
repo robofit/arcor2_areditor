@@ -62,6 +62,11 @@ namespace Base {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
+
+        private async void OnEnable() {
+            if (HasUrdf())
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
             _ = EnableVisualisationOfEE();            
@@ -445,7 +450,12 @@ namespace Base {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
 
-        public override void DeleteActionObject() {
+	public List<IO.Swagger.Model.Joint> GetJoints() {
+            return new List<IO.Swagger.Model.Joint>();
+            //TODO!!!
+        }
+
+	public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
         }

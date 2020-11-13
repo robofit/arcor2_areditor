@@ -51,6 +51,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
+            MoveHereModel();
         }
     }
 
@@ -103,7 +104,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
             DetailName.text = joints.Name;
             InvalidJointsLabel.SetActive(!joints.IsValid);
-            UpdateJointsList();
+
+            UpdateJointsValues();
+
         }
     }
 
@@ -134,19 +137,49 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     /// <summary>
-    /// Updates values (angles) of joints in expert block
+    /// Updates list of joints in expert block
     /// </summary>
-    public void UpdateJointsList() {
-        foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
-            if (!o.gameObject.CompareTag("Persistent")) {
-                Destroy(o.gameObject);
-            }
-        }
+    private void UpdateJointsList() {
+        DestroyJointsFields();
 
         foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
             LabeledInput labeledInput = Instantiate(GameManager.Instance.LabeledFloatInput, JointsDynamicList.transform).GetComponent<LabeledInput>();
             labeledInput.SetLabel(joint.Name, joint.Name);
 
+            NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
+            numberFormatInfo.NumberDecimalSeparator = ".";
+            labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
+        }
+    }
+
+    private void DestroyJointsFields() {
+        foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
+            if (!o.gameObject.CompareTag("Persistent")) {
+                Destroy(o.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// returns LabeledInput from joints dynamic list
+    /// </summary>
+    /// <param name="name">Name of the joint</param>
+    /// <returns></returns>
+    private LabeledInput GetJointInput(string name) {
+        foreach (LabeledInput jointInput in JointsDynamicList.GetComponentsInChildren<LabeledInput>()) {
+            if (jointInput.GetName() == name) {
+                return jointInput;
+            }
+        }
+        throw new ItemNotFoundException("Joint input not found");
+    }
+
+    /// <summary>
+    /// Updates values of joints (angles) in joints dynamic list (expert block)
+    /// </summary>
+    private void UpdateJointsValues() {
+        foreach (IO.Swagger.Model.Joint joint in joints.Joints) {
+            LabeledInput labeledInput = GetJointInput(joint.Name);
             NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
@@ -278,6 +311,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             if (isOrientationDetail) {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
+                MoveHereModel();
             } else {
                 await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
             }
@@ -288,9 +322,43 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereModel() {
-        //TODO 
-        Notifications.Instance.ShowNotification("Not implemented yet", "");
+    public async void MoveHereModel(bool avoid_collision = true) {
+        List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
+        string robotId;
+
+        if (isOrientationDetail) {
+            try {
+                robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
+                string ee = (string) EndEffectorList.GetValue();
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation.Orientation, DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
+                List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.GetRobot(robotId).GetJoints();
+
+                //await WebsocketManager.Instance.RegisterForRobotEvent(robotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+
+                modelJoints = await WebsocketManager.Instance.InverseKinematics(robotId, ee, true, pose, startJoints);
+                if (!avoid_collision) {
+                    Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
+                }
+            } catch(ItemNotFoundException ex) {
+                Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+                return;
+            } catch (RequestFailedException ex) {
+                if (avoid_collision) //if this is first call, try it again without avoiding collisions
+                    MoveHereModel(false);
+                else
+                    Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+
+                return;
+            }
+
+        } else { //joints
+            modelJoints = this.joints.Joints;
+            robotId = this.joints.RobotId;
+        }
+
+        foreach (IO.Swagger.Model.Joint joint in modelJoints) {
+            SceneManager.Instance.GetRobot(robotId).SetJointValue(joint.Name, (float) joint.Value);
+        }
     }
 
     public async void ValidateFieldsOrientation() {
@@ -306,8 +374,14 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void Close() {
+    public async void Close() {
         CurrentActionPoint.GetGameObject().SendMessage("Select", false);
+        if (isOrientationDetail) {
+            SceneManager.Instance.RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        } else {
+            DestroyJointsFields();
+            await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        }
         SideMenu.Close();
     }
 
@@ -316,10 +390,12 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         this.orientation = orientation;
         this.isOrientationDetail = true;
 
+        SceneManager.Instance.RegisterRobotsForEvent(false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+
         ShowMenu(currentActionPoint);
     }
 
-    public void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
+    public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
         this.joints = joints;
         isOrientationDetail = false;
         try {
@@ -327,6 +403,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification(ex.Message, "");
         }
+
+        await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+
+        MoveHereModel();
+        UpdateJointsList();
         ShowMenu(currentActionPoint);
     }
 
@@ -337,7 +418,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         OrientationExpertModeBlock.SetActive(isOrientationDetail && GameManager.Instance.ExpertMode);
         JointsBlock.SetActive(!isOrientationDetail);
         JointsExpertModeBlock.SetActive(!isOrientationDetail && GameManager.Instance.ExpertMode);
-
 
         UpdateMenu();
         SideMenu.Open();

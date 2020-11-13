@@ -68,7 +68,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
+            btn.GetComponent<TooltipContent>().enabled = !args.Data.IsValid;
             btn.GetComponentInParent<ServiceButton>().State = args.Data.IsValid;
+
         } catch (ItemNotFoundException) {
             // not currently opened action point
         }
@@ -105,8 +107,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         if (args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
-            var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data));
-            btn.State = args.Data.IsValid;
+            var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
             btn.GetComponentInChildren<ActionButton>().Highlight(2f);
         }
     }
@@ -344,14 +345,29 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
         return false;
     }
-
-    private ServiceButton CreateJointsButton(Transform parent, string objectId, string label, UnityAction callback) {
+    /// <summary>
+    /// Creates button for joints 
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <param name="jointsID"></param>
+    /// <param name="label"></param>
+    /// <param name="callback"></param>
+    /// <param name="isValid">State of joints</param>
+    /// <returns></returns>
+    private ServiceButton CreateJointsButton(Transform parent, string jointsID, string label, UnityAction callback, bool isValid) {
         ServiceButton serviceBtn = Instantiate(Base.GameManager.Instance.ServiceButtonPrefab, parent).GetComponent<ServiceButton>();
         var btn = serviceBtn.GetComponentInChildren<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);
         btn.SetLabel(label);
-        btn.ObjectId = objectId;
+        btn.ObjectId = jointsID;
         btn.Button.onClick.AddListener(callback);
+        serviceBtn.State = isValid;
+        btn.GetComponent<TooltipContent>().description = "Invalid";
+        if (isValid) {
+            btn.GetComponent<TooltipContent>().enabled = false;
+        } else {
+            btn.GetComponent<TooltipContent>().enabled = true;
+        }
         return serviceBtn;
     }
 
@@ -389,7 +405,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
             System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
-                CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint)).State = joint.IsValid;
+                CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint), joint.IsValid);
             }
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
