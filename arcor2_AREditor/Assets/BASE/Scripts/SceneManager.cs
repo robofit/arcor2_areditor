@@ -450,7 +450,7 @@ namespace Base {
             tmpGo.transform.localPosition = Vector3.zero;
             tmpGo.transform.localRotation = Quaternion.identity;
 
-            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize / 2, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
+            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
             
             // to avoid infinite loop
             int i = 0;
@@ -458,7 +458,7 @@ namespace Base {
                 Collider collider = colliders[0];
                 // TODO - depends on the rotation between detected marker and original position of camera, height of collision free point above will be slightly different
                 // How to solve this?
-                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y + 0.05f, 0), SceneOrigin.transform);
+                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y, 0), SceneOrigin.transform);
                 colliders = Physics.OverlapBox(tmpGo.transform.position, bbSize / 2, orientation);
                 ++i;
             }
