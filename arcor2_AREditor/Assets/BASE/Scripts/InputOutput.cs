@@ -4,71 +4,181 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using Newtonsoft.Json;
+using static Base.Clickable;
+using RuntimeInspectorNamespace;
+using UnityEngine.Events;
+using System.Runtime.CompilerServices;
+using MiniJSON;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
     public class InputOutput : Clickable {
         public Action Action;
-        private string logicItemId;
+        private List<string> logicItemIds = new List<string>();
         [SerializeField]
         private OutlineOnClick outlineOnClick;
 
+        private string type = "normal"; // normal / START / END
 
-        public void Init(string logicItemId) {
-            this.logicItemId = logicItemId;
-        }
+        public object ifValue;
 
-        public LogicItem GetLogicItem() {
+
+        public void AddLogicItem(string logicItemId) {
             Debug.Assert(logicItemId != null);
-            if (ProjectManager.Instance.LogicItems.TryGetValue(logicItemId, out LogicItem logicItem)) {
-                return logicItem;
-            } else {
-                throw new ItemNotFoundException("Logic item with ID " + logicItemId + " does not exists");
-            }
+            logicItemIds.Add(logicItemId);
         }
 
-        public override async void OnClick(Click type) {
-            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-                //return;
-            }
+        public void RemoveLogicItem(string logicItemId) {
+            Debug.Assert(logicItemIds.Contains(logicItemId));
+            logicItemIds.Remove(logicItemId);
+        }
+
+        public List<LogicItem> GetLogicItems() {
+            Debug.Assert(logicItemIds.Count > 0);
+            List<LogicItem> items = new List<LogicItem>();
+            foreach (string itemId in logicItemIds)
+                if (ProjectManager.Instance.LogicItems.TryGetValue(itemId, out LogicItem logicItem)) {
+                    items.Add(logicItem);
+                } else {
+                    throw new ItemNotFoundException("Logic item with ID " + itemId + " does not exists");
+                }
+            return items;
+        }
+
+        protected bool CheckClickType(Click type) {
+           
             if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
-                return;
+                return false;
             }
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
                 Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");
-                return;
+                return false;
             }
-            if (type == Click.MOUSE_LEFT_BUTTON || type == Click.TOUCH) {
-                if (ConnectionManagerArcoro.Instance.IsConnecting()) {
-                    if (string.IsNullOrEmpty(logicItemId)) {
-                        GameManager.Instance.ObjectSelected(this);
+            if (type != Click.MOUSE_LEFT_BUTTON && type != Click.TOUCH) {
+                return false;
+            }
+            return true;
+        }
+
+        public override async void OnClick(Click type) {
+            if (!CheckClickType(type))
+                return;
+            
+            if (ConnectionManagerArcoro.Instance.IsConnecting()) {
+                if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
+                    ShowOutputTypeDialog(() => GameManager.Instance.ObjectSelected(this));
+                } else {
+                    GameManager.Instance.ObjectSelected(this);
+                }
+                
+            } else {
+                if (logicItemIds.Count == 0) {
+                    if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
+                        ShowOutputTypeDialog(() => CreateNewConnection());
+                    } else {
+                        CreateNewConnection();
                     }
                 } else {
-                    if (string.IsNullOrEmpty(logicItemId)) {
-                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
-                        if (typeof(PuckOutput) == GetType()) {
-                            GetInput();
-                        } else {
-                            GetOutput();
-                        }
-                    } else {
-                        GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItem().GetConnection(), gameObject);
-                        
-                        try {
-                            await WebsocketManager.Instance.RemoveLogicItem(logicItemId);
-                            ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
-                            if (typeof(PuckOutput) == GetType()) {
-                                theOtherOne.GetComponent<PuckInput>().GetOutput();
-                            } else {
-                                theOtherOne.GetComponent<PuckOutput>().GetInput();
+                    // For output:
+                    // if there is "Any" connection, no new could be created and this one should be selected
+                    // if there are both "true" and "false" connections, no new could be created
+
+                    // For input:
+                    // every time show new connection button
+                    bool showNewConnectionButton = true;
+                    bool conditionValue = false;
+
+                    int howManyConditions = 0;
+
+                    // kterej connection chci, případně chci vytvořit novej
+                    Dictionary<string, LogicItem> items = new Dictionary<string, LogicItem>();
+                    foreach (string itemId in logicItemIds) {
+                        if (ProjectManager.Instance.LogicItems.TryGetValue(itemId, out LogicItem logicItem)) {
+                            Action start = ProjectManager.Instance.GetAction(logicItem.Data.Start);
+                            Action end = ProjectManager.Instance.GetAction(logicItem.Data.End);
+                            string label = start.Data.Name + " -> " + end.Data.Name;
+                            if (!(logicItem.Data.Condition is null)) {
+                                label += " (" + logicItem.Data.Condition.Value + ")";
+                                ++howManyConditions;
+                                conditionValue = Parameter.GetValue<bool>(logicItem.Data.Condition.Value);
                             }
-                        } catch (RequestFailedException ex) {
-                            Debug.LogError(ex);
-                            Notifications.Instance.SaveLogs("Failed to remove connection");
-                            ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+                            items.Add(label, logicItem);
+                        } else {
+                            throw new ItemNotFoundException("Logic item with ID " + itemId + " does not exists");
+                        }
+                        
+                    }
+                    if (GetType() == typeof(PuckOutput)) {
+                        if (howManyConditions == 2) {// both true and false are filled
+                            showNewConnectionButton = false;
+                        }
+                        else if(items.Count == 1 && howManyConditions == 0) { // the "any" connection already exists
+                            SelectedConnection(items.Values.First());
+                            return;
                         }
                     }
+                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this);
+
+                    /*GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItems().GetConnection(), gameObject);
+                        
+                    try {
+                        await WebsocketManager.Instance.RemoveLogicItem(logicItemIds);
+                        ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                        if (typeof(PuckOutput) == GetType()) {
+                            theOtherOne.GetComponent<PuckInput>().GetOutput();
+                        } else {
+                            theOtherOne.GetComponent<PuckOutput>().GetInput();
+                        }
+                    } catch (RequestFailedException ex) {
+                        Debug.LogError(ex);
+                        Notifications.Instance.SaveLogs("Failed to remove connection");
+                        ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+                    }*/
                 }
+            }
+            
+        }
+
+
+        public async void SelectedConnection(LogicItem logicItem) {
+            MenuManager.Instance.ConnectionSelectorDialog.Close();
+            if (logicItem == null) {
+                if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
+                    ShowOutputTypeDialog(() => CreateNewConnection());
+                } else {
+                    CreateNewConnection();
+                }
+            } else {
+            GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
+
+            try {
+                await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                if (typeof(PuckOutput) == GetType()) {
+                    theOtherOne.GetComponent<PuckInput>().GetOutput();
+                } else {
+                    theOtherOne.GetComponent<PuckOutput>().GetInput();
+                }
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.SaveLogs("Failed to remove connection");
+                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+            }
+            }
+        }
+
+
+        private void ShowOutputTypeDialog(UnityAction callback) {
+            MenuManager.Instance.OutputTypeDialog.Open(this, callback);
+        }
+
+        private void CreateNewConnection() {
+            ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
+            if (typeof(PuckOutput) == GetType()) {
+                GetInput();
+            } else {
+                GetOutput();
             }
         }
 
@@ -98,9 +208,9 @@ namespace Base {
         }
 
         private async Task<RequestResult> ValidateInput(object selectedInput) {
-            PuckInput input;
+            InputOutput input;
             try {
-                input = (PuckInput) selectedInput;
+                input = (InputOutput) selectedInput;
             } catch (InvalidCastException) {
                 return new RequestResult(false, "Wrong object type selected");
             } 
@@ -128,14 +238,16 @@ namespace Base {
             return result;
         }
 
-        private async void GetInput(object selectedInput) {
-            PuckInput input = (PuckInput) selectedInput;
+        protected async virtual void GetInput(object selectedInput) {
+            InputOutput input = (InputOutput) selectedInput;
+            
             if (selectedInput == null || input == null) {
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 return;
             }
             try {
-                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, false);
+                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, GetProjectLogicIf(ifValue), false);
+                ifValue = null;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -146,12 +258,14 @@ namespace Base {
 
         private async void GetOutput(object selectedOutput) {
             PuckOutput output = (PuckOutput) selectedOutput;
+            
             if (selectedOutput == null || output == null) {
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 return;
             }
             try {
-                await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, false);
+                await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, GetProjectLogicIf(output.ifValue), false);
+                ifValue = null;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();                
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -159,6 +273,16 @@ namespace Base {
             }
         }
 
+        private IO.Swagger.Model.ProjectLogicIf GetProjectLogicIf(object ifValue) {
+            if (ifValue is null)
+                return null;
+            List<Flow> flows = Action.GetFlows();
+            string flowName = flows[0].Type.GetValueOrDefault().ToString().ToLower();
+            Debug.LogError(ifValue);
+            IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(JsonConvert.SerializeObject(ifValue), Action.Data.Id + "/" + flowName + "/0");
+            Debug.LogError(projectLogicIf);
+            return projectLogicIf;
+        }
 
         public async override void OnHoverStart() {
             if (!Enabled)
@@ -173,7 +297,7 @@ namespace Base {
                 return;
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
             bool result;
-            if (GetType() == typeof(PuckInput)) {
+            if (GetType() == typeof(InputOutput)) {
                 result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this);
             } else {
                 result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne);
@@ -199,9 +323,9 @@ namespace Base {
         public override void Enable() {
             base.Enable();
             foreach (Renderer renderer in outlineOnClick.Renderers) {
-                if (logicItemId == "START")
+                if (type == "START")
                     renderer.material.color = Color.green;
-                else if (logicItemId == "END")
+                else if (type == "END")
                     renderer.material.color = Color.red;
                 else
                     renderer.material.color = new Color(0.9f, 0.84f, 0.27f);

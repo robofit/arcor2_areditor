@@ -195,7 +195,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>
-        public const string ApiVersion = "0.9.2";
+        public const string ApiVersion = "0.10.0a1";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -916,8 +916,9 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Action execution failed", data.Error);
             else {
                 string res = "";
-                if (data.Result != null)
-                    res = "Result: " + data.Result;
+                if (data.Results != null && data.Results.Count > 0) {
+                    res = "Result: " + data.Results[0];
+                }
                 Notifications.Instance.ShowNotification("Action execution finished sucessfully", res);
             }
             ExecutingAction = null;

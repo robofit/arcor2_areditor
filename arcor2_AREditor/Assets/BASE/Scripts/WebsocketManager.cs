@@ -1958,9 +1958,9 @@ namespace Base {
         /// <param name="endActionId">UUID of second action (to)</param>
         /// <param name="dryRun">If true, validates all parameters, but will not execute requested action itself.</param>
         /// <returns></returns>
-        public async Task AddLogicItem(string startActionId, string endActionId, bool dryRun) {
+        public async Task AddLogicItem(string startActionId, string endActionId, IO.Swagger.Model.ProjectLogicIf condition, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddLogicItemRequestArgs args = new IO.Swagger.Model.AddLogicItemRequestArgs(start: startActionId, end: endActionId);
+            IO.Swagger.Model.AddLogicItemRequestArgs args = new IO.Swagger.Model.AddLogicItemRequestArgs(start: startActionId, end: endActionId, condition: condition);
             IO.Swagger.Model.AddLogicItemRequest request = new IO.Swagger.Model.AddLogicItemRequest(r_id, "AddLogicItem", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddLogicItemResponse response = await WaitForResult<IO.Swagger.Model.AddLogicItemResponse>(r_id);
@@ -2242,6 +2242,8 @@ namespace Base {
                 return response.Data;
             }
         }
+
+
 
         
 

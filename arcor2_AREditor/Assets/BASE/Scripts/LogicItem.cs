@@ -8,7 +8,7 @@ public class LogicItem
 
     private Connection connection;
 
-    private PuckInput input;
+    private InputOutput input;
     private PuckOutput output;
 
     public LogicItem(IO.Swagger.Model.LogicItem logicItem) {
@@ -17,8 +17,8 @@ public class LogicItem
     }
 
     public void Remove() {
-        input.Init(null);
-        output.Init(null);
+        input.RemoveLogicItem(Data.Id);
+        output.RemoveLogicItem(Data.Id);
         UnityEngine.Object.Destroy(connection.gameObject);
         connection = null;
     }
@@ -29,8 +29,8 @@ public class LogicItem
         }
         input = ProjectManager.Instance.GetAction(logicItem.End).Input;
         output = ProjectManager.Instance.GetAction(logicItem.Start).Output;
-        input.Init(Data.Id);
-        output.Init(Data.Id);        
+        input.AddLogicItem(Data.Id);
+        output.AddLogicItem(Data.Id);        
         connection = ConnectionManagerArcoro.Instance.CreateConnection(input.gameObject, output.gameObject);
     }
 

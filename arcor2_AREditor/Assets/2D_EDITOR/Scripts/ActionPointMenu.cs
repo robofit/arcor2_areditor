@@ -6,6 +6,7 @@ using System.Linq;
 using Base;
 using System;
 using System.Threading.Tasks;
+using IO.Swagger.Model;
 
 public class ActionPointMenu : MonoBehaviour, IMenu {
     [System.NonSerialized]
@@ -99,6 +100,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public async void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
+
 
         Base.ActionPoint actionPoint;
         if (CurrentActionPoint == null) {
