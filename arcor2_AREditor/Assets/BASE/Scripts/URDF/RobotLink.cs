@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using UnityEngine;
@@ -43,6 +44,14 @@ public class RobotLink {
     public void SetJointAngle(float angle) {
         if (jointWriter != null) {
             jointWriter.Write(angle);
+        }
+    }
+
+    public decimal GetJointAngle() {
+        if (jointWriter != null) {
+            return Convert.ToDecimal(jointWriter.GetCurrentValue());
+        } else {
+            throw new RequestFailedException("Unable to read current joints angles");
         }
     }
 

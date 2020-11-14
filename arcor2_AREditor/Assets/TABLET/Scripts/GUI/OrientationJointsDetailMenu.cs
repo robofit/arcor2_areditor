@@ -333,8 +333,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation.Orientation, DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.GetRobot(robotId).GetJoints();
 
-                //await WebsocketManager.Instance.RegisterForRobotEvent(robotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(robotId, ee, true, pose, startJoints);
                 if (!avoid_collision) {
                     Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
@@ -347,11 +345,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                     MoveHereModel(false);
                 else
                     Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
-
                 return;
             }
 
-        } else { //joints
+        } else { //joints menu
             modelJoints = this.joints.Joints;
             robotId = this.joints.RobotId;
         }

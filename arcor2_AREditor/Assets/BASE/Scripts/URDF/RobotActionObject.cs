@@ -451,8 +451,10 @@ namespace Base {
         }
 
         public List<IO.Swagger.Model.Joint> GetJoints() {
-            return new List<IO.Swagger.Model.Joint>();
-            //TODO!!!
+            if (RobotModel == null)
+                throw new RequestFailedException("Model not found for this robot.");
+            else
+                return RobotModel.GetJoints();
         }
 
         private void OnDestroy() {

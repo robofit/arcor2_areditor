@@ -152,4 +152,15 @@ public class RobotModel {
             link?.SetJointAngle(angle);
         }
     }
+
+    public List<IO.Swagger.Model.Joint> GetJoints() {
+        List<IO.Swagger.Model.Joint> joints = new List<IO.Swagger.Model.Joint>();
+        foreach (KeyValuePair<string, string> joint in Joints) {
+            Links.TryGetValue(joint.Value, out RobotLink link);
+            if (link != null) {
+                joints.Add(new IO.Swagger.Model.Joint(link.LinkName, link.GetJointAngle()));
+            }
+        }
+        return joints;
+    }
 }
