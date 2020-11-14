@@ -23,6 +23,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public VideoPlayerImage TrackingLostAnimation;
 
     [HideInInspector]
+    public bool UsingCloudAnchors = false;
+
+    [HideInInspector]
     public ARAnchor WorldAnchorLocal;
 
 #if (UNITY_ANDROID || UNITY_IOS)
@@ -93,6 +96,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 StartCoroutine(HostCloudAnchor());
             } else {
                 Calibrated = true;
+                UsingCloudAnchors = false;
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorLocal.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 worldAnchorVis = null;
@@ -144,6 +148,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Cloud anchor created", WorldAnchorCloud.cloudAnchorState.ToString() + " ID: " + WorldAnchorCloud.cloudAnchorId);
 
             Calibrated = true;
+            UsingCloudAnchors = true;
             OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
@@ -241,6 +246,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 Notifications.Instance.ShowNotification("Cloud anchor loaded", "Cloud anchor loaded sucessfully");
 
                 Calibrated = true;
+                UsingCloudAnchors = true;
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 GameManager.Instance.Scene.SetActive(true);

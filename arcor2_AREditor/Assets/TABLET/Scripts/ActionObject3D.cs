@@ -156,7 +156,7 @@ public class ActionObject3D : ActionObject
     }
 
 
-    public override void SetVisibility(float value) {
+    public override void SetVisibility(float value, bool forceShaderChange = false) {
         base.SetVisibility(value);
 
         if (standardShader == null) {
