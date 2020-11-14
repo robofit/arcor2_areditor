@@ -1,5 +1,6 @@
 using System;
 using IO.Swagger.Model;
+using UnityEngine;
 
 namespace Base {
 
@@ -306,6 +307,15 @@ namespace Base {
         }
     }
 
+    public class GameObjectEventArgs : EventArgs {
+        public GameObject GameObj {
+            get; set;
+        }
+
+        public GameObjectEventArgs(GameObject gameObject) {
+            GameObj = gameObject;
+        }
+    }
 
 
     public class AREditorEventArgs {

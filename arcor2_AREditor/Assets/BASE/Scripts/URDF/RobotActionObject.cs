@@ -457,7 +457,12 @@ namespace Base {
                 return RobotModel.GetJoints();
         }
 
-        private void OnDestroy() {
+	public override void DeleteActionObject() {
+            base.DeleteActionObject();
+            UnloadRobotModel();
+        }
+
+        private void UnloadRobotModel() {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {

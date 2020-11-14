@@ -16,6 +16,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public SwitchComponent ShowModelSwitch;
     private int currentFocusPoint = -1;
+    public GameObject ObjectHasNoParameterLabel;
 
     private GameObject model;
 
@@ -40,8 +41,11 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
 
     public async override void UpdateMenu() {
         base.UpdateMenu();
-
-        objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);
+        if (CurrentObject.ObjectParameters.Count > 0) {
+            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);   
+        }
+        SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
+        ObjectHasNoParameterLabel.SetActive(CurrentObject.ObjectParameters.Count == 0);
         parametersChanged = false;
         UpdateSaveBtn();
 

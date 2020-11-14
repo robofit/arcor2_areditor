@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
-using OrbCreationExtensions;
 using UnityEngine;
 using UnityEngine.Networking;
 using WebSocketSharp;
@@ -154,7 +153,7 @@ namespace Base {
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            GameManager.Instance.Scene.SetActive(true);
+            
             UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
