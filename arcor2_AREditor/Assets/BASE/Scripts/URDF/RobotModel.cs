@@ -46,13 +46,15 @@ public class RobotModel {
 
             UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
             JointStateWriter jointWriter = null;
+            JointStateReader jointReader = null;
             if (urdfJoint != null) {
                 if (urdfJoint.JointType != UrdfJoint.JointTypes.Fixed) {
                     jointWriter = urdfJoint.transform.AddComponentIfNotExists<JointStateWriter>();
                     Joints.Add(urdfJoint.JointName, link.gameObject.name);
                 }
+                jointReader = urdfJoint.transform.AddComponentIfNotExists<JointStateReader>();
             }
-            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
+            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
         }
     }
 
