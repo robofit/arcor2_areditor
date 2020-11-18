@@ -241,6 +241,7 @@ namespace Base {
 
         public override void Show() {
             robotVisible = true;
+            SetGrey(!SceneManager.Instance.SceneStarted);
             foreach (Renderer renderer in robotRenderers) {
                 renderer.enabled = true;
             }
@@ -504,6 +505,23 @@ namespace Base {
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets grey color of robot model (indicates that model is not in position of real robot)
+        /// </summary>
+        /// <param name="grey">True for setting grey, false for standard state.</param>
+        public void SetGrey(bool grey) {
+            if (grey) {
+                foreach (Renderer renderer in robotRenderers) {
+                    renderer.material.SetColor("_EmissionColor", Color.grey);
+                    renderer.material.EnableKeyword("_EMISSION");
+                }
+            } else {
+                foreach (Renderer renderer in robotRenderers) {
+                    renderer.material.DisableKeyword("_EMISSION");
                 }
             }
         }

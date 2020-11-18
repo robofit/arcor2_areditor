@@ -374,9 +374,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void Close() {
         CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         if (isOrientationDetail) {
+            foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+                robot.SetGrey(!SceneManager.Instance.SceneStarted);
+            }
             SceneManager.Instance.RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         } else {
             DestroyJointsFields();
+            SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(!SceneManager.Instance.SceneStarted);
             await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         SideMenu.Close();
@@ -388,6 +392,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         this.isOrientationDetail = true;
 
         SceneManager.Instance.RegisterRobotsForEvent(false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+            robot.SetGrey(true);
+        }
 
         ShowMenu(currentActionPoint);
     }
@@ -402,6 +409,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
 
         await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(true);
 
         MoveHereModel();
         UpdateJointsList();
