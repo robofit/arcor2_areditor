@@ -299,6 +299,7 @@ namespace Base {
         /// <param name="allowEdit">Sets if project is editable</param>
         /// <returns>True if project sucessfully created</returns>
         public async Task<bool> CreateProject(IO.Swagger.Model.Project project, bool allowEdit) {
+            Debug.LogError("Create project");
             Debug.Assert(ActionsManager.Instance.ActionsReady);
             if (ProjectMeta != null)
                 return false;
@@ -355,6 +356,8 @@ namespace Base {
                 EndAction = null;
             }
             ActionPoints.Clear();
+            ConnectionManagerArcoro.Instance.Clear();
+            LogicItems.Clear();
             return true;
         }
 
@@ -367,9 +370,9 @@ namespace Base {
                 if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
                     logicItem = new LogicItem(projectLogicItem);
                     LogicItems.Add(logicItem.Data.Id, logicItem);
+                } else {
+                    logicItem.UpdateConnection(projectLogicItem);
                 }
-                logicItem.UpdateConnection(projectLogicItem);
-
             }
         }
 
