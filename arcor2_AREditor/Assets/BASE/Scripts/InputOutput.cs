@@ -28,11 +28,12 @@ namespace Base {
         }
 
         public override async void OnClick(Click type) {
+            if (!ControlBoxManager.Instance.ConnectionsToggle.isOn) {
+                Notifications.Instance.ShowNotification("Cannot manipulate connections", "When connections are disabled, they cannot be manipulated");
+                return;
+            }
             if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
                 //return;
-            }
-            if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
-                return;
             }
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
                 Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");

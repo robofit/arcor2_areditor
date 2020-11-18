@@ -126,7 +126,7 @@ namespace Base {
             foreach (RobotEE ee in EndEffectors) {
                 try {
                     ee.gameObject.SetActive(false);
-                } catch (MissingReferenceException) {
+                } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException)  {
                     continue;
                 }                    
             }            
