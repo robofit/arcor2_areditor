@@ -187,16 +187,12 @@ public class ActionObject3D : ActionObject
 
     public override void Show() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in aoRenderers) {
-            renderer.enabled = true;
-        }
+        SetVisibility(100);
     }
 
     public override void Hide() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in aoRenderers) {
-            renderer.enabled = false;
-        }
+        SetVisibility(0);
     }
 
     public override void SetInteractivity(bool interactivity) {
