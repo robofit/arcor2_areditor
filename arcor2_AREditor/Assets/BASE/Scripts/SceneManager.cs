@@ -285,12 +285,18 @@ namespace Base {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(true);
+                    }
                     break;
                 case SceneStateData.StateEnum.Started:
                     SceneStarted = true;
                     if (RobotsEEVisible)
                         OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
                     RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(false);
+                    }
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
