@@ -68,10 +68,11 @@ public class VRModeManager : Singleton<VRModeManager> {
             }
             // Translate camera based on left joystick and movement of tablet
             VRCamera.transform.Translate(ARCamera.transform.InverseTransformDirection(ARCamera.transform.position - arCameraPosition), Space.Self);
+            float posY = VRCamera.transform.localPosition.y;
             // Translate in horizontal plane
             VRCamera.transform.Translate(new Vector3(moveHorizontal, 0f, moveVertical) * Time.deltaTime * WalkingSpeed, Space.Self);
-            // Lock the Y axis to move only on plane
-            VRCamera.transform.localPosition = new Vector3(VRCamera.transform.localPosition.x, 0, VRCamera.transform.localPosition.z);
+            // Negate Y axis traslation
+            VRCamera.transform.localPosition = new Vector3(VRCamera.transform.localPosition.x, posY, VRCamera.transform.localPosition.z);
             // Translate the camera wrapper on Y axis to move up/down
             VRCamera.transform.parent.Translate(new Vector3(0f, moveUp, 0f) * Time.deltaTime * WalkingSpeed, Space.World);
             
@@ -83,11 +84,9 @@ public class VRModeManager : Singleton<VRModeManager> {
 
             // Add rotation from AR camera (tablet)
             Vector3 rotation = new Vector3(rotationX, rotationY, VRCamera.transform.eulerAngles.z) + ARCamera.transform.eulerAngles - arCameraRotation;
+            VRCamera.transform.eulerAngles = rotation;
 
-            // Clamp rotation around X, to make sure it won't surpass the interval of <-90, 90>, because it would cause flickering, when camera is looking down/up
-            VRCamera.transform.eulerAngles = new Vector3(Mathf.Clamp(rotation.x, minimumX, maximumX), rotation.y, rotation.z);
-
-            // Actualize new values of the AR camera
+            // Update new values of the AR camera
             arCameraRotation = ARCamera.transform.eulerAngles;
             arCameraPosition = ARCamera.transform.position;
 
