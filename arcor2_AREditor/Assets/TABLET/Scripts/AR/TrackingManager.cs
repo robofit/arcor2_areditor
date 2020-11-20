@@ -19,6 +19,10 @@ public class TrackingManager : Singleton<TrackingManager> {
     public Material PlaneTransparentMaterial;
     public Material PlaneOpaqueMaterial;
 
+    public event AREditorEventArgs.FloatEventHandler NewLowestPlanePosition; 
+
+    private float lowestPlanePosition = 0f;
+
     private bool planesAndPointCloudsActive = true;
     private bool planesTransparent = true;
 
@@ -156,6 +160,20 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     private void OnPlanesChanged(ARPlanesChangedEventArgs obj) {
         DisplayPlanes(planesAndPointCloudsActive, obj.added);
+        SetLowestPlane();
+    }
+
+    private void SetLowestPlane() {
+        float lowestPlanePos = 0f;
+        foreach (ARPlane plane in ARPlaneManager.trackables) {
+            if (plane.gameObject.transform.position.y < lowestPlanePos) {
+                lowestPlanePos = plane.gameObject.transform.position.y;
+            }
+        }
+        if (lowestPlanePos < lowestPlanePosition) {
+            NewLowestPlanePosition?.Invoke(this, new FloatEventArgs(lowestPlanePos));
+            lowestPlanePosition = lowestPlanePos;
+        }
     }
 
     /// <summary>

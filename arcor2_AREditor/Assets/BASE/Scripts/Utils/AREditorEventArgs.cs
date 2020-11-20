@@ -14,6 +14,16 @@ namespace Base {
         }
     }
 
+    public class FloatEventArgs : EventArgs {
+        public float Data {
+            get; set;
+        }
+
+        public FloatEventArgs(float data) {
+            Data = data;
+        }
+    }
+
     public class GameStateEventArgs : EventArgs {
         public GameManager.GameStateEnum Data {
             get; set;
@@ -320,6 +330,7 @@ namespace Base {
 
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
+        public delegate void FloatEventHandler(object sender, FloatEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
         public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
         public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
