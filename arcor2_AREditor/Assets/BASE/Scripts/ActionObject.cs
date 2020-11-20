@@ -183,7 +183,7 @@ namespace Base {
 
 
         public virtual void SetVisibility(float value, bool forceShaderChange = false) {
-            Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
+            //Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
             PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
