@@ -46,7 +46,6 @@ namespace Base {
 
         private bool transparent = false;
         private bool ghost = false;
-        private float currentVisibility = 0f;
 
         private Shader standardShader;
         private Shader ghostShader;
@@ -209,7 +208,7 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
 
-            SetVisibility(currentVisibility, forceShaderChange:true);
+            SetVisibility(visibility, forceShaderChange:true);
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
@@ -242,16 +241,12 @@ namespace Base {
         public override void Show() {
             robotVisible = true;
             SetGrey(!SceneManager.Instance.SceneStarted);
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = true;
-            }
+            SetVisibility(100);
         }
 
         public override void Hide() {
             robotVisible = false;
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = false;
-            }
+            SetVisibility(0);
         }
 
         public override void SetInteractivity(bool interactive) {
@@ -262,8 +257,6 @@ namespace Base {
 
         public override void SetVisibility(float value, bool forceShaderChange = false) {
             base.SetVisibility(value);
-
-            currentVisibility = value;
 
             if (standardShader == null) {
                 standardShader = Shader.Find("Standard");

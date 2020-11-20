@@ -1,8 +1,10 @@
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Custom/Ghost" {
+
     Properties{
         _Color("Main Color", Color) = (1,1,1,1)
+        _EmissionColor("Emission Color", Color) = (1,1,1,1)
         _MainTex("Base (RGB) Trans (A)", 2D) = "white" {}
     }
 
@@ -40,9 +42,11 @@ Shader "Custom/Ghost" {
             CGPROGRAM
             #pragma surface surf Lambert alpha
             #pragma debug
+            #pragma multi_compile _EMISSION
 
             sampler2D _MainTex;
             fixed4 _Color;
+            fixed4 _EmissionColor;
 
             struct Input {
                 float2 uv_MainTex;
@@ -51,6 +55,11 @@ Shader "Custom/Ghost" {
             void surf(Input IN, inout SurfaceOutput o) {
                 fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
                 o.Albedo = c.rgb;
+            #ifdef _EMISSION
+                o.Emission = _EmissionColor.rgb;
+            #else
+                o.Emission = 0;
+            #endif
                 o.Alpha = c.a;
             }
             ENDCG

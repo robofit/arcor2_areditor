@@ -13,11 +13,14 @@ Shader "Outline/ModelFirstPass" {
     Subshader
     {
         Zwrite Off
+        //ColorMask 0
         ZTest Always
         Tags {
             "Queue" = "Geometry-1"
         }
-        
+
+        Blend SrcAlpha OneMinusSrcAlpha
+
         // Render outer mask
         Pass {
             // Set stencil mask
@@ -26,7 +29,6 @@ Shader "Outline/ModelFirstPass" {
                 Comp Always
                 Pass Replace
             }
-            //Cull Front
 
             CGPROGRAM
             #pragma vertex vert
@@ -58,6 +60,7 @@ Shader "Outline/ModelFirstPass" {
 
         // Render inner mask
         Pass {
+            ColorMask 0
             Stencil {
                 Ref 1
                 Comp Always

@@ -11,11 +11,13 @@ Shader "Outline/FirstPass" {
 
     Subshader
     {
-        Zwrite On
+        Zwrite Off
         ZTest Always
         Tags {
             "Queue" = "Geometry-1"
         }
+
+        Blend SrcAlpha OneMinusSrcAlpha
 
         // Render outer mask
         Pass {
