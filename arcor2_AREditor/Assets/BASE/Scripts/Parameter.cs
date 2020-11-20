@@ -258,7 +258,6 @@ namespace Base {
             foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
                 foreach (IO.Swagger.Model.ProjectRobotJoints joints in ap.GetAllJoints(false, null, false).Values) {
                     string prefix = "";
-                    Debug.LogError(joints.RobotId + " - " + actionProviderId);
                     if (joints.RobotId != actionProviderId)
                         prefix = "(another robot) ";
                     else if (!joints.IsValid) {

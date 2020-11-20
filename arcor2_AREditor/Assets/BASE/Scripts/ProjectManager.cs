@@ -315,7 +315,6 @@ namespace Base {
                 foreach (IO.Swagger.Model.Parameter p in objectOverrides.Parameters) {
                     if (actionObject.TryGetParameterMetadata(p.Name, out ParameterMeta meta)) {
                         Parameter parameter = new Parameter(meta, p.Value);
-                        Debug.LogError(parameter);
                         actionObject.Overrides[p.Name] = parameter;
                     }
                     
@@ -355,6 +354,8 @@ namespace Base {
                 EndAction = null;
             }
             ActionPoints.Clear();
+            ConnectionManagerArcoro.Instance.Clear();
+            LogicItems.Clear();
             return true;
         }
 
@@ -367,9 +368,9 @@ namespace Base {
                 if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
                     logicItem = new LogicItem(projectLogicItem);
                     LogicItems.Add(logicItem.Data.Id, logicItem);
+                } else {
+                    logicItem.UpdateConnection(projectLogicItem);
                 }
-                logicItem.UpdateConnection(projectLogicItem);
-
             }
         }
 

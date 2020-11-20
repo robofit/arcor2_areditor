@@ -333,8 +333,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation.Orientation, DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.GetRobot(robotId).GetJoints();
 
-                //await WebsocketManager.Instance.RegisterForRobotEvent(robotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(robotId, ee, true, pose, startJoints);
                 if (!avoid_collision) {
                     Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
@@ -347,11 +345,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                     MoveHereModel(false);
                 else
                     Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
-
                 return;
             }
 
-        } else { //joints
+        } else { //joints menu
             modelJoints = this.joints.Joints;
             robotId = this.joints.RobotId;
         }
@@ -377,9 +374,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void Close() {
         CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         if (isOrientationDetail) {
+            foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+                robot.SetGrey(!SceneManager.Instance.SceneStarted);
+            }
             SceneManager.Instance.RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         } else {
             DestroyJointsFields();
+            SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(!SceneManager.Instance.SceneStarted);
             await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         SideMenu.Close();
@@ -391,6 +392,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         this.isOrientationDetail = true;
 
         SceneManager.Instance.RegisterRobotsForEvent(false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+            robot.SetGrey(true);
+        }
 
         ShowMenu(currentActionPoint);
     }
@@ -405,6 +409,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
 
         await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(true);
 
         MoveHereModel();
         UpdateJointsList();

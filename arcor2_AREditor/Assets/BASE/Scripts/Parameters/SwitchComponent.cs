@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.Events;
+using UnityEngine.Analytics;
 
 public class SwitchComponent : MonoBehaviour, IParameter
 {
@@ -61,7 +62,10 @@ public class SwitchComponent : MonoBehaviour, IParameter
     }
 
     public void AddOnValueChangedListener(UnityAction<bool> callback) {
+        Switch.OnEvents.RemoveAllListeners();
         Switch.OnEvents.AddListener(OnChange);
+        Switch.OffEvents.RemoveAllListeners();
+        Switch.OffEvents.AddListener(OnChange);
         onChangeCallback = callback;
     }
 

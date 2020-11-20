@@ -17,4 +17,7 @@ public interface IRobot
     void SetJointValue(string name, float angle, bool angle_in_degrees = false);
 
     List<IO.Swagger.Model.Joint> GetJoints();
+
+    void SetGrey(bool grey);
+
 }

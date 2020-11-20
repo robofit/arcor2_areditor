@@ -46,13 +46,15 @@ public class RobotModel {
 
             UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
             JointStateWriter jointWriter = null;
+            JointStateReader jointReader = null;
             if (urdfJoint != null) {
                 if (urdfJoint.JointType != UrdfJoint.JointTypes.Fixed) {
                     jointWriter = urdfJoint.transform.AddComponentIfNotExists<JointStateWriter>();
                     Joints.Add(urdfJoint.JointName, link.gameObject.name);
                 }
+                jointReader = urdfJoint.transform.AddComponentIfNotExists<JointStateReader>();
             }
-            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
+            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
         }
     }
 
@@ -151,5 +153,16 @@ public class RobotModel {
             }
             link?.SetJointAngle(angle);
         }
+    }
+
+    public List<IO.Swagger.Model.Joint> GetJoints() {
+        List<IO.Swagger.Model.Joint> joints = new List<IO.Swagger.Model.Joint>();
+        foreach (KeyValuePair<string, string> joint in Joints) {
+            Links.TryGetValue(joint.Value, out RobotLink link);
+            if (link != null) {
+                joints.Add(new IO.Swagger.Model.Joint(link.LinkName, link.GetJointAngle()));
+            }
+        }
+        return joints;
     }
 }

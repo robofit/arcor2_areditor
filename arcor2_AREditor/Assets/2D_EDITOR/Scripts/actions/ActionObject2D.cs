@@ -83,7 +83,7 @@ public class ActionObject2D : Base.ActionObject {
         throw new System.NotImplementedException();
     }
 
-    public override void SetVisibility(float value) {
+    public override void SetVisibility(float value, bool forceShaderChange = false) {
         throw new System.NotImplementedException();
     }
 

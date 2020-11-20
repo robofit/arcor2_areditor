@@ -285,12 +285,18 @@ namespace Base {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(true);
+                    }
                     break;
                 case SceneStateData.StateEnum.Started:
                     SceneStarted = true;
                     if (RobotsEEVisible)
                         OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
                     RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(false);
+                    }
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
@@ -300,6 +306,10 @@ namespace Base {
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        private void InitScene() {
+
         }
 
         /// <summary>
@@ -462,7 +472,7 @@ namespace Base {
             tmpGo.transform.localPosition = Vector3.zero;
             tmpGo.transform.localRotation = Quaternion.identity;
 
-            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize / 2, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
+            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
             
             // to avoid infinite loop
             int i = 0;
@@ -470,7 +480,7 @@ namespace Base {
                 Collider collider = colliders[0];
                 // TODO - depends on the rotation between detected marker and original position of camera, height of collision free point above will be slightly different
                 // How to solve this?
-                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y + 0.05f, 0), SceneOrigin.transform);
+                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y, 0), SceneOrigin.transform);
                 colliders = Physics.OverlapBox(tmpGo.transform.position, bbSize / 2, orientation);
                 ++i;
             }
@@ -494,6 +504,7 @@ namespace Base {
             if (aom.Robot) {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
+
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
