@@ -20,7 +20,7 @@ public class VRModeManager : Singleton<VRModeManager> {
     public float RotatingSpeed = 4f;
 
     private ARCameraBackground arCameraBG;
-    private bool VRModeON = false;
+    public bool VRModeON { get; private set; } = false;
 
     private Vector3 arCameraPosition;
     private Vector3 arCameraRotation;
@@ -125,6 +125,10 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         TrackingManager.Instance.ChangePlaneTransparency(false);
 
+        if (SceneManager.Instance.ActionObjectsVisibility < 0.01f) {
+            SceneManager.Instance.SetVisibilityActionObjects(100);
+        }
+
         VRModeON = true;
     }
 
@@ -150,6 +154,10 @@ public class VRModeManager : Singleton<VRModeManager> {
         TFGizmo.myCamera = ARCamera;
 
         TrackingManager.Instance.ChangePlaneTransparency(true);
+
+        if (SceneManager.Instance.ActionObjectsVisibility > 0.99f) {
+            SceneManager.Instance.SetVisibilityActionObjects(0);
+        }
 
         VRModeON = false;
     }

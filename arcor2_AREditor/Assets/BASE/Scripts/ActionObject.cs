@@ -37,8 +37,8 @@ namespace Base {
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
             enabled = true;
-            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
-            SetVisibility(visibility);
+            //visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
+            SetVisibility(VRModeManager.Instance.VRModeON ? 1f : 0f);
             
         }
         
@@ -54,7 +54,7 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
@@ -78,11 +78,12 @@ namespace Base {
             //TODO: update all action points and actions.. ?
             ResetPosition();
             // update position and rotation based on received data from swagger
-            if (visibility)
-                Show();
-            else
-                Hide();
+            //if (visibility)
+            //    Show();
+            //else
+            //    Hide();
 
+            SetVisibility(visibility);
             SetInteractivity(interactivity);
 
             

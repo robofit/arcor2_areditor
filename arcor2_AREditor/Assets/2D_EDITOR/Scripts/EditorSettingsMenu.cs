@@ -13,7 +13,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
     [SerializeField]
-    private Slider APSizeSlider;
+    private Slider APSizeSlider, ActionObjectsVisibilitySlider;
 
     private void Start() {
         Debug.Assert(ActionPointsScrollable != null);
@@ -74,10 +74,11 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         APSizeSlider.value = ProjectManager.Instance.APSize;
-        Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
+        //Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
         APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
+        ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
     }
 
     public void ShowActionObjects() {
@@ -86,6 +87,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void HideActionObjects() {
          Base.SceneManager.Instance.HideActionObjects();
+    }
+
+    public void SetVisibilityActionObjects() {
+        SceneManager.Instance.SetVisibilityActionObjects(ActionObjectsVisibilitySlider.value / 100f);
     }
 
     public void ShowAPOrientations() {
