@@ -143,7 +143,7 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newUserId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
         Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
         ActionObjectName.text = actionObjectSwagger.Name;
@@ -187,7 +187,7 @@ public class ActionObject3D : ActionObject
 
     public override void Show() {
         Debug.Assert(Model != null);
-        SetVisibility(100);
+        SetVisibility(1);
     }
 
     public override void Hide() {
