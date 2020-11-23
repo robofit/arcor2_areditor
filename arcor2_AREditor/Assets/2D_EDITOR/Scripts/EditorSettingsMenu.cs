@@ -8,7 +8,7 @@ using Base;
 using UnityEngine.EventSystems;
 
 public class EditorSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility, RobotsEEVisible;
+    public SwitchComponent Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
@@ -19,10 +19,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
         Debug.Assert(APSizeSlider != null);
-        Debug.Assert(Visiblity != null);
         Debug.Assert(Interactibility != null);
         Debug.Assert(APOrientationsVisibility != null);
         Debug.Assert(RobotsEEVisible != null);
+        Debug.Assert(ActionObjectsVisibilitySlider != null);
         Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -74,19 +74,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         APSizeSlider.value = ProjectManager.Instance.APSize;
-        //Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
         APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
-    }
-
-    public void ShowActionObjects() {
-        Base.SceneManager.Instance.ShowActionObjects();
-    }
-
-    public void HideActionObjects() {
-         Base.SceneManager.Instance.HideActionObjects();
     }
 
     public void SetVisibilityActionObjects() {

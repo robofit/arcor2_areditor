@@ -37,9 +37,12 @@ namespace Base {
             ActionObjectMetadata = actionObjectMetadata;
             CreateModel(customCollisionModels);
             enabled = true;
-            //visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
-            SetVisibility(VRModeManager.Instance.VRModeON ? 1f : 0f);
-            
+            if (VRModeManager.Instance.VRModeON) {
+                SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
+            } else {
+                SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
+            }
+
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -186,7 +189,7 @@ namespace Base {
         public virtual void SetVisibility(float value, bool forceShaderChange = false) {
             Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            //PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {

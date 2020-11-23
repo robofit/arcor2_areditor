@@ -94,10 +94,6 @@ namespace Base {
         /// </summary>
         public bool ActionObjectsInteractive;
         /// <summary>
-        /// Indicates if action objects should be visible in scene
-        /// </summary>
-        //public bool ActionObjectsVisible;
-        /// <summary>
         /// Indicates visibility of action objects in scene
         /// </summary>
         public float ActionObjectsVisibility;
@@ -420,8 +416,7 @@ namespace Base {
         /// Loads selected setings from player prefs
         /// </summary>
         internal void LoadSettings() {
-            //ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
-            ActionObjectsVisibility  = VRModeManager.Instance.VRModeON ? 1f : 0f;
+            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
@@ -729,33 +724,11 @@ namespace Base {
             return ActionObjects.First().Value;
         }
 
-        /// <summary>
-        /// Shows action objects models
-        /// </summary>
-        public void ShowActionObjects() {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.Show();
-            }
-            //PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
-            ActionObjectsVisibility = 1f;
-        }
-
-        /// <summary>
-        /// Hides action objects models
-        /// </summary>
-        public void HideActionObjects() {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.Hide();
-            }
-            //PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", false);
-            ActionObjectsVisibility = 0f;
-        }
-
         public void SetVisibilityActionObjects(float value) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 actionObject.SetVisibility(value);
             }
-            //ActionObjectsVisible = value > 0.01;
+            PlayerPrefsHelper.SaveFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), value);
             ActionObjectsVisibility = value;
         }
 

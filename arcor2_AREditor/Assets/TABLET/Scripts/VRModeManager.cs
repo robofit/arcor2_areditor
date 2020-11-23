@@ -125,11 +125,9 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         TrackingManager.Instance.ChangePlaneTransparency(false);
 
-        if (SceneManager.Instance.ActionObjectsVisibility < 0.01f) {
-            SceneManager.Instance.SetVisibilityActionObjects(100);
-        }
-
         VRModeON = true;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
     }
 
     public void DisableVRMode() {
@@ -155,10 +153,8 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         TrackingManager.Instance.ChangePlaneTransparency(true);
 
-        if (SceneManager.Instance.ActionObjectsVisibility > 0.99f) {
-            SceneManager.Instance.SetVisibilityActionObjects(0);
-        }
-
         VRModeON = false;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
     }
 }
