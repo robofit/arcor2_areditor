@@ -20,7 +20,7 @@ public class VRModeManager : Singleton<VRModeManager> {
     public float RotatingSpeed = 4f;
 
     private ARCameraBackground arCameraBG;
-    private bool VRModeON = false;
+    public bool VRModeON { get; private set; } = false;
 
     private Vector3 arCameraPosition;
     private Vector3 arCameraRotation;
@@ -126,6 +126,8 @@ public class VRModeManager : Singleton<VRModeManager> {
         TrackingManager.Instance.ChangePlaneTransparency(false);
 
         VRModeON = true;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
     }
 
     public void DisableVRMode() {
@@ -152,5 +154,7 @@ public class VRModeManager : Singleton<VRModeManager> {
         TrackingManager.Instance.ChangePlaneTransparency(true);
 
         VRModeON = false;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
     }
 }

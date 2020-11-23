@@ -212,12 +212,12 @@ namespace Base {
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
-            if (robotVisible) {
+            /*if (robotVisible) {
                 Show();
             } else {
                 Hide();
             }
-
+            */
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
@@ -241,7 +241,7 @@ namespace Base {
         public override void Show() {
             robotVisible = true;
             SetGrey(!SceneManager.Instance.SceneStarted);
-            SetVisibility(100);
+            SetVisibility(1);
         }
 
         public override void Hide() {
@@ -465,7 +465,7 @@ namespace Base {
             ActionObjectName.text = newUserId;
         }
 
-        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
             base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
             ActionObjectName.text = actionObjectSwagger.Name;
         }
