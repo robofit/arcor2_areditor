@@ -51,6 +51,9 @@ namespace Base {
         private Shader ghostShader;
         private Shader transparentShader;
 
+        private bool jointStateSubscribeIsValid = true;
+
+
         protected override void Start() {
             base.Start();
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
@@ -477,6 +480,43 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
+        public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
+            if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
+                if (CheckJointsAreValid(joints)) {
+                    foreach (IO.Swagger.Model.Joint joint in joints) {
+                        SetJointValue(joint.Name, (float) joint.Value);
+                    }
+                } else {
+                    Notifications.Instance.ShowNotification("Wrong joint names received!", "Unregistering joint state receiving for robot " + RobotModel.RobotType + ". Joints has to be named same as in urdf.");
+                    jointStateSubscribeIsValid = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if the joint names in joints corresponds to the joint names in RobotModel.
+        /// </summary>
+        /// <param name="joints"></param>
+        /// <returns></returns>
+        public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
+            if (RobotModel != null) {
+                List<IO.Swagger.Model.Joint> robotModelJoints = RobotModel.GetJoints();
+                foreach (IO.Swagger.Model.Joint joint in robotModelJoints) {
+                    joints.Remove(joint);
+                }
+                if (joints.Count != 0) {
+                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", robotModelJoints));
+                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", robotModelJoints));
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                //Debug.LogError("Trying to set joint values, but robot urdf model is not loaded nor assigned.");
+            }
+            return false;
+        }
+
         public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
@@ -488,7 +528,7 @@ namespace Base {
                 return RobotModel.GetJoints();
         }
 
-	public override void DeleteActionObject() {
+	    public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
         }

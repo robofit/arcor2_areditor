@@ -147,11 +147,13 @@ public class RobotModel {
     public void SetJointAngle(string jointName, float angle, bool angle_in_degrees = false) {
         if (RobotLoaded) {
             Joints.TryGetValue(jointName, out string linkName);
-            Links.TryGetValue(linkName, out RobotLink link);
-            if (angle_in_degrees) {
-                angle *= Mathf.Deg2Rad;
+            if (linkName != null) {
+                Links.TryGetValue(linkName, out RobotLink link);
+                if (angle_in_degrees) {
+                    angle *= Mathf.Deg2Rad;
+                }
+                link?.SetJointAngle(angle);
             }
-            link?.SetJointAngle(angle);
         }
     }
 
@@ -160,7 +162,7 @@ public class RobotModel {
         foreach (KeyValuePair<string, string> joint in Joints) {
             Links.TryGetValue(joint.Value, out RobotLink link);
             if (link != null) {
-                joints.Add(new IO.Swagger.Model.Joint(link.LinkName, link.GetJointAngle()));
+                joints.Add(new IO.Swagger.Model.Joint(joint.Key, link.GetJointAngle()));
             }
         }
         return joints;
