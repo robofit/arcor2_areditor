@@ -37,7 +37,7 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        tfGizmo = TransformGizmo.Instance;
         
     }
 
