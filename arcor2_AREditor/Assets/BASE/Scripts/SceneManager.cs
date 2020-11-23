@@ -308,6 +308,10 @@ namespace Base {
             OnSceneStateEvent?.Invoke(this, args);
         }
 
+        private void InitScene() {
+
+        }
+
         /// <summary>
         /// Register or unregister to/from subsription of joints or end effectors pose of each robot in the scene.
         /// </summary>
@@ -500,6 +504,7 @@ namespace Base {
             if (aom.Robot) {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
+
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }

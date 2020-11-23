@@ -53,8 +53,9 @@ namespace Base {
 
         protected override void Start() {
             base.Start();
-            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
+            if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+                _ = EnableVisualisationOfEE();
+            }
         }
 
         private async void OnDisable() {
@@ -66,6 +67,8 @@ namespace Base {
         }
 
         private async void OnEnable() {
+            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
             if (HasUrdf())
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
@@ -132,6 +135,8 @@ namespace Base {
         }
 
         public async Task DisableVisualisationOfEE() {
+            if (!eeVisible)
+                return;
             eeVisible = false;
             if (EndEffectors.Count > 0) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
@@ -141,6 +146,8 @@ namespace Base {
         
 
         public async Task EnableVisualisationOfEE() {
+            if (eeVisible)
+                return;
             eeVisible = true;
             if (!ResourcesLoaded)
                 await LoadResources();
@@ -393,14 +400,22 @@ namespace Base {
 
         public async Task LoadEndEffectors() {
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
-            List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
-            foreach (string eeId in endEffectors) {
-                RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                ee.InitEE(this, eeId);
-                ee.gameObject.SetActive(false);
-                EndEffectors.Add(ee);
-            }
-            GameManager.Instance.HideLoadingScreen();
+            try {
+
+
+                List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
+                foreach (string eeId in endEffectors) {
+                    RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                    ee.InitEE(this, eeId);
+                    ee.gameObject.SetActive(false);
+                    EndEffectors.Add(ee);
+                }
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex.Message);
+                Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
+            } finally {
+                GameManager.Instance.HideLoadingScreen();
+            }            
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
