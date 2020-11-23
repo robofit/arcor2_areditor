@@ -12,7 +12,17 @@ public class RobotModel {
 
     public bool IsBeingUsed { get; set; }
 
+    /// <summary>
+    /// Dictionary in format (linkName, RobotLink) - e.g. (magician_link_1, RobotLink)
+    /// For quick search of robot Links using link IDs.
+    /// </summary>
     public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
+
+    /// <summary>
+    /// Help dictionary in format (jointName, linkName) - e.g. (magician_joint_1, magician_link_1)
+    /// For quick search of robot Links using joint IDs.
+    /// To get the RobotLink, search this dictionary for corresponding linkName and use the linkName to search the Links dictionary.
+    /// </summary>
     public Dictionary<string, string> Joints = new Dictionary<string, string>();
 
     public bool RobotLoaded { get; set; }

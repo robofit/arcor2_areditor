@@ -480,12 +480,20 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
+        /// <summary>
+        /// Sets value of joints specified in List joints. Firstly checks if joint names are really equal or not.
+        /// If some joint name is not correct, method will not allow to set the joints nor to check if they are valid, unless option forceJointsValidCheck is set to true.
+        /// </summary>
+        /// <param name="joints">List of joints with new angle values.</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
+        /// <param name="forceJointsValidCheck">If true, check for valid joint names will be called even if previous one failed.</param>
         public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
             if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
                 if (CheckJointsAreValid(joints)) {
                     foreach (IO.Swagger.Model.Joint joint in joints) {
                         SetJointValue(joint.Name, (float) joint.Value);
                     }
+                    jointStateSubscribeIsValid = true;
                 } else {
                     Notifications.Instance.ShowNotification("Wrong joint names received!", "Unregistering joint state receiving for robot " + RobotModel.RobotType + ". Joints has to be named same as in urdf.");
                     jointStateSubscribeIsValid = false;
@@ -497,16 +505,21 @@ namespace Base {
         /// Checks if the joint names in joints corresponds to the joint names in RobotModel.
         /// </summary>
         /// <param name="joints"></param>
-        /// <returns></returns>
+        /// <returns>True if joints have equal names, false if not.</returns>
         public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
             if (RobotModel != null) {
-                List<IO.Swagger.Model.Joint> robotModelJoints = RobotModel.GetJoints();
-                foreach (IO.Swagger.Model.Joint joint in robotModelJoints) {
-                    joints.Remove(joint);
+                List<string> receivedJoints = new List<string>();
+                foreach (IO.Swagger.Model.Joint joint in joints) {
+                    receivedJoints.Add(joint.Name);
                 }
-                if (joints.Count != 0) {
-                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", robotModelJoints));
-                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", robotModelJoints));
+
+                foreach (string jointName in RobotModel.Joints.Keys) {
+                    receivedJoints.Remove(jointName);
+                }
+
+                if (receivedJoints.Count != 0) {
+                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", RobotModel.GetJoints()));
                     return false;
                 } else {
                     return true;
@@ -517,6 +530,12 @@ namespace Base {
             return false;
         }
 
+        /// <summary>
+        /// Sets the value of individual joint.
+        /// </summary>
+        /// <param name="name">Joint name.</param>
+        /// <param name="angle">Joint angle (in radians by default).</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
         public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
