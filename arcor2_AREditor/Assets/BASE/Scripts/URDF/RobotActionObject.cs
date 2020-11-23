@@ -212,6 +212,7 @@ namespace Base {
             outlineOnClick.InitGizmoMaterials();
 
             SetVisibility(visibility, forceShaderChange:true);
+            SetGrey(!SceneManager.Instance.SceneStarted);
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
@@ -556,6 +557,10 @@ namespace Base {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
+                    // remove every outlines on the robot
+                    outlineOnClick.UnHighlight();
+                    outlineOnClick.GizmoUnHighlight();
+                    outlineOnClick.UnHighlight();
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
                 }
             }
@@ -568,12 +573,16 @@ namespace Base {
         public void SetGrey(bool grey) {
             if (grey) {
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.SetColor("_EmissionColor", Color.grey);
-                    renderer.material.EnableKeyword("_EMISSION");
+                    foreach (Material mat in renderer.materials) {
+                        mat.SetColor("_EmissionColor", Color.grey);
+                        mat.EnableKeyword("_EMISSION");
+                    }
                 }
             } else {
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.DisableKeyword("_EMISSION");
+                    foreach (Material mat in renderer.materials) {
+                        mat.DisableKeyword("_EMISSION");
+                    }
                 }
             }
         }
