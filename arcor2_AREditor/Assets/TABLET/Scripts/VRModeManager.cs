@@ -33,6 +33,8 @@ public class VRModeManager : Singleton<VRModeManager> {
     private float gridInitPos;
 
     private void Start() {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        VRModeON = false;
         arCameraBG = ARCamera.GetComponent<ARCameraBackground>();
         arCameraPosition = ARCamera.transform.position;
         arCameraRotation = ARCamera.transform.eulerAngles;
@@ -46,6 +48,9 @@ public class VRModeManager : Singleton<VRModeManager> {
         gridInitPos = GridPlane.transform.position.y;
 
         TrackingManager.Instance.NewLowestPlanePosition += AdjustGridPlane;
+#elif UNITY_EDITOR || UNITY_STANDALONE
+        VRModeON = true;
+#endif
     }
 
     private void AdjustGridPlane(object sender, FloatEventArgs args) {
@@ -55,6 +60,7 @@ public class VRModeManager : Singleton<VRModeManager> {
     }
 
     private void Update() {
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (VRModeON) {
             float moveHorizontal = 0, moveVertical = 0,
                 rotateHorizontal = 0, rotateVertical = 0, moveUp = 0;
@@ -89,8 +95,8 @@ public class VRModeManager : Singleton<VRModeManager> {
             // Update new values of the AR camera
             arCameraRotation = ARCamera.transform.eulerAngles;
             arCameraPosition = ARCamera.transform.position;
-
         }
+#endif
     }
 
     public void EnableVRMode() {
