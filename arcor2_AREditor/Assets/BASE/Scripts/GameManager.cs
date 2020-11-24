@@ -194,12 +194,8 @@ namespace Base {
         public string ExecutingAction = null;
         /// <summary>
         /// Api version
-        /// </summary>
-<<<<<<< HEAD
-        public const string ApiVersion = "0.10.0a1";
-=======
+        /// </summary>        
         public const string ApiVersion = "0.10.0";
->>>>>>> devel
         /// <summary>
         /// List of projects metadata
         /// </summary>

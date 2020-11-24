@@ -16,8 +16,6 @@ namespace Base {
         [SerializeField]
         private OutlineOnClick outlineOnClick;
 
-        private string type = "normal"; // normal / START / END
-
         public object ifValue;
 
 
@@ -45,7 +43,7 @@ namespace Base {
 
         protected bool CheckClickType(Click type) {
            
-            if (!ConnectionManagerArcoro.Instance.ConnectionsActive) {
+            if (!ControlBoxManager.Instance.ConnectionsToggle.isOn) {
                 return false;
             }
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
@@ -63,7 +61,7 @@ namespace Base {
                 return;
             
             if (ConnectionManagerArcoro.Instance.IsConnecting()) {
-                if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
+                if (typeof(PuckOutput) == GetType() && Action.Data.Id != "START" && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
                     ShowOutputTypeDialog(() => GameManager.Instance.ObjectSelected(this));
                 } else {
                     GameManager.Instance.ObjectSelected(this);
@@ -71,7 +69,7 @@ namespace Base {
                 
             } else {
                 if (logicItemIds.Count == 0) {
-                    if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
+                    if (typeof(PuckOutput) == GetType() && Action.Data.Id != "START" && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
                         ShowOutputTypeDialog(() => CreateNewConnection());
                     } else {
                         CreateNewConnection();
@@ -320,9 +318,9 @@ namespace Base {
         public override void Enable() {
             base.Enable();
             foreach (Renderer renderer in outlineOnClick.Renderers) {
-                if (type == "START")
+                if (Action.Data.Id == "START")
                     renderer.material.color = Color.green;
-                else if (type == "END")
+                else if (Action.Data.Id == "END")
                     renderer.material.color = Color.red;
                 else
                     renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
