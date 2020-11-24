@@ -12,7 +12,17 @@ public class RobotModel {
 
     public bool IsBeingUsed { get; set; }
 
+    /// <summary>
+    /// Dictionary in format (linkName, RobotLink) - e.g. (magician_link_1, RobotLink)
+    /// For quick search of robot Links using link IDs.
+    /// </summary>
     public Dictionary<string, RobotLink> Links = new Dictionary<string, RobotLink>();
+
+    /// <summary>
+    /// Help dictionary in format (jointName, linkName) - e.g. (magician_joint_1, magician_link_1)
+    /// For quick search of robot Links using joint IDs.
+    /// To get the RobotLink, search this dictionary for corresponding linkName and use the linkName to search the Links dictionary.
+    /// </summary>
     public Dictionary<string, string> Joints = new Dictionary<string, string>();
 
     public bool RobotLoaded { get; set; }
@@ -46,13 +56,15 @@ public class RobotModel {
 
             UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
             JointStateWriter jointWriter = null;
+            JointStateReader jointReader = null;
             if (urdfJoint != null) {
                 if (urdfJoint.JointType != UrdfJoint.JointTypes.Fixed) {
                     jointWriter = urdfJoint.transform.AddComponentIfNotExists<JointStateWriter>();
                     Joints.Add(urdfJoint.JointName, link.gameObject.name);
                 }
+                jointReader = urdfJoint.transform.AddComponentIfNotExists<JointStateReader>();
             }
-            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
+            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
         }
     }
 
@@ -145,11 +157,24 @@ public class RobotModel {
     public void SetJointAngle(string jointName, float angle, bool angle_in_degrees = false) {
         if (RobotLoaded) {
             Joints.TryGetValue(jointName, out string linkName);
-            Links.TryGetValue(linkName, out RobotLink link);
-            if (angle_in_degrees) {
-                angle *= Mathf.Deg2Rad;
+            if (linkName != null) {
+                Links.TryGetValue(linkName, out RobotLink link);
+                if (angle_in_degrees) {
+                    angle *= Mathf.Deg2Rad;
+                }
+                link?.SetJointAngle(angle);
             }
-            link?.SetJointAngle(angle);
         }
+    }
+
+    public List<IO.Swagger.Model.Joint> GetJoints() {
+        List<IO.Swagger.Model.Joint> joints = new List<IO.Swagger.Model.Joint>();
+        foreach (KeyValuePair<string, string> joint in Joints) {
+            Links.TryGetValue(joint.Value, out RobotLink link);
+            if (link != null) {
+                joints.Add(new IO.Swagger.Model.Joint(joint.Key, link.GetJointAngle()));
+            }
+        }
+        return joints;
     }
 }

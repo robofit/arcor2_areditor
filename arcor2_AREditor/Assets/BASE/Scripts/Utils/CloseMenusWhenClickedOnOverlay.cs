@@ -20,6 +20,10 @@ public class CloseMenusWhenClickedOnOverlay : MonoBehaviour
         if (GetComponent<SimpleSideMenu>().useOverlay) {
             overlayBtn = GameObject.Find(gameObject.name + " (Overlay)").GetComponent<Button>();
             overlayBtn.onClick.AddListener(CloseAllMenus);
+
+            if (GetComponent<OrientationJointsDetailMenu>()) {
+                overlayBtn.onClick.AddListener(GetComponent<OrientationJointsDetailMenu>().Close); //there is some cleanup code, which needs to be executed
+            }
         }
         
     }

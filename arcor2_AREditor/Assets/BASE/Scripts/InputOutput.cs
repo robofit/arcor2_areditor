@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 using IO.Swagger.Model;
 using Newtonsoft.Json;
 using static Base.Clickable;
-using RuntimeInspectorNamespace;
 using UnityEngine.Events;
-using System.Runtime.CompilerServices;
-using MiniJSON;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]

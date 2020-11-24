@@ -45,14 +45,20 @@ namespace Base {
         private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;
+        private bool ghost = false;
 
         private Shader standardShader;
+        private Shader ghostShader;
         private Shader transparentShader;
+
+        private bool jointStateSubscribeIsValid = true;
+
 
         protected override void Start() {
             base.Start();
-            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
+            if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+                _ = EnableVisualisationOfEE();
+            }
         }
 
         private async void OnDisable() {
@@ -61,6 +67,13 @@ namespace Base {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
+        }
+
+        private async void OnEnable() {
+            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
+            if (HasUrdf())
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -118,13 +131,15 @@ namespace Base {
             foreach (RobotEE ee in EndEffectors) {
                 try {
                     ee.gameObject.SetActive(false);
-                } catch (MissingReferenceException) {
+                } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException)  {
                     continue;
                 }                    
             }            
         }
 
         public async Task DisableVisualisationOfEE() {
+            if (!eeVisible)
+                return;
             eeVisible = false;
             if (EndEffectors.Count > 0) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
@@ -134,6 +149,8 @@ namespace Base {
         
 
         public async Task EnableVisualisationOfEE() {
+            if (eeVisible)
+                return;
             eeVisible = true;
             if (!ResourcesLoaded)
                 await LoadResources();
@@ -201,14 +218,17 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
 
+            SetVisibility(visibility, forceShaderChange:true);
+            SetGrey(!SceneManager.Instance.SceneStarted);
+
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
-            if (robotVisible) {
+            /*if (robotVisible) {
                 Show();
             } else {
                 Hide();
             }
-
+            */
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
@@ -231,16 +251,13 @@ namespace Base {
 
         public override void Show() {
             robotVisible = true;
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = true;
-            }
+            SetGrey(!SceneManager.Instance.SceneStarted);
+            SetVisibility(1);
         }
 
         public override void Hide() {
             robotVisible = false;
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = false;
-            }
+            SetVisibility(0);
         }
 
         public override void SetInteractivity(bool interactive) {
@@ -249,11 +266,15 @@ namespace Base {
             }
         }
 
-        public override void SetVisibility(float value) {
+        public override void SetVisibility(float value, bool forceShaderChange = false) {
             base.SetVisibility(value);
 
             if (standardShader == null) {
                 standardShader = Shader.Find("Standard");
+            }
+
+            if (ghostShader == null) {
+                ghostShader = Shader.Find("Custom/Ghost");
             }
 
             if (transparentShader == null) {
@@ -263,6 +284,7 @@ namespace Base {
             // Set opaque shader
             if (value >= 1) {
                 transparent = false;
+                ghost = false;
                 foreach (Renderer renderer in robotRenderers) {
                     // Robot has its outline active, we need to select second material,
                     // (first is mask, second is object material, third is outline)
@@ -274,16 +296,41 @@ namespace Base {
                 }
             }
             // Set transparent shader
-            else {
-                if (!transparent) {
+            else if (value <= 0.1) {
+                ghost = false;
+                if (forceShaderChange || !transparent) {
                     foreach (Renderer renderer in robotRenderers) {
+                        // Robot has its outline active, we need to select second material,
+                        // (first is mask, second is object material, third is outline)
                         if (renderer.materials.Length == 3) {
                             renderer.materials[1].shader = transparentShader;
                         } else {
                             renderer.material.shader = transparentShader;
                         }
+
+                        Material mat;
+                        if (renderer.materials.Length == 3) {
+                            mat = renderer.materials[1];
+                        } else {
+                            mat = renderer.material;
+                        }
+                        Color color = mat.color;
+                        color.a = 0f;
+                        mat.color = color;
                     }
                     transparent = true;
+                }
+            } else {
+                transparent = false;
+                if (forceShaderChange || !ghost) {
+                    foreach (Renderer renderer in robotRenderers) {
+                        if (renderer.materials.Length == 3) {
+                            renderer.materials[1].shader = ghostShader;
+                        } else {
+                            renderer.material.shader = ghostShader;
+                        }
+                    }
+                    ghost = true;
                 }
                 // set alpha of the material
                 foreach (Renderer renderer in robotRenderers) {
@@ -357,14 +404,22 @@ namespace Base {
 
         public async Task LoadEndEffectors() {
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
-            List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
-            foreach (string eeId in endEffectors) {
-                RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                ee.InitEE(this, eeId);
-                ee.gameObject.SetActive(false);
-                EndEffectors.Add(ee);
-            }
-            GameManager.Instance.HideLoadingScreen();
+            try {
+
+
+                List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
+                foreach (string eeId in endEffectors) {
+                    RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                    ee.InitEE(this, eeId);
+                    ee.gameObject.SetActive(false);
+                    EndEffectors.Add(ee);
+                }
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex.Message);
+                Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
+            } finally {
+                GameManager.Instance.HideLoadingScreen();
+            }            
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
@@ -429,7 +484,7 @@ namespace Base {
             ActionObjectName.text = newUserId;
         }
 
-        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
             base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
             ActionObjectName.text = actionObjectSwagger.Name;
         }
@@ -441,11 +496,74 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
+        /// <summary>
+        /// Sets value of joints specified in List joints. Firstly checks if joint names are really equal or not.
+        /// If some joint name is not correct, method will not allow to set the joints nor to check if they are valid, unless option forceJointsValidCheck is set to true.
+        /// </summary>
+        /// <param name="joints">List of joints with new angle values.</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
+        /// <param name="forceJointsValidCheck">If true, check for valid joint names will be called even if previous one failed.</param>
+        public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
+            if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
+                if (CheckJointsAreValid(joints)) {
+                    foreach (IO.Swagger.Model.Joint joint in joints) {
+                        SetJointValue(joint.Name, (float) joint.Value);
+                    }
+                    jointStateSubscribeIsValid = true;
+                } else {
+                    Notifications.Instance.ShowNotification("Wrong joint names received!", "Unregistering joint state receiving for robot " + RobotModel.RobotType + ". Joints has to be named same as in urdf.");
+                    jointStateSubscribeIsValid = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if the joint names in joints corresponds to the joint names in RobotModel.
+        /// </summary>
+        /// <param name="joints"></param>
+        /// <returns>True if joints have equal names, false if not.</returns>
+        public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
+            if (RobotModel != null) {
+                List<string> receivedJoints = new List<string>();
+                foreach (IO.Swagger.Model.Joint joint in joints) {
+                    receivedJoints.Add(joint.Name);
+                }
+
+                foreach (string jointName in RobotModel.Joints.Keys) {
+                    receivedJoints.Remove(jointName);
+                }
+
+                if (receivedJoints.Count != 0) {
+                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                //Debug.LogError("Trying to set joint values, but robot urdf model is not loaded nor assigned.");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the value of individual joint.
+        /// </summary>
+        /// <param name="name">Joint name.</param>
+        /// <param name="angle">Joint angle (in radians by default).</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
         public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
 
-        public override void DeleteActionObject() {
+        public List<IO.Swagger.Model.Joint> GetJoints() {
+            if (RobotModel == null)
+                throw new RequestFailedException("Model not found for this robot.");
+            else
+                return RobotModel.GetJoints();
+        }
+
+	    public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
         }
@@ -454,7 +572,32 @@ namespace Base {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
+                    // remove every outlines on the robot
+                    outlineOnClick.UnHighlight();
+                    outlineOnClick.GizmoUnHighlight();
+                    outlineOnClick.UnHighlight();
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets grey color of robot model (indicates that model is not in position of real robot)
+        /// </summary>
+        /// <param name="grey">True for setting grey, false for standard state.</param>
+        public void SetGrey(bool grey) {
+            if (grey) {
+                foreach (Renderer renderer in robotRenderers) {
+                    foreach (Material mat in renderer.materials) {
+                        mat.SetColor("_EmissionColor", Color.grey);
+                        mat.EnableKeyword("_EMISSION");
+                    }
+                }
+            } else {
+                foreach (Renderer renderer in robotRenderers) {
+                    foreach (Material mat in renderer.materials) {
+                        mat.DisableKeyword("_EMISSION");
+                    }
                 }
             }
         }

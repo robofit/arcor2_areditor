@@ -25,7 +25,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     protected override void Start() {
         base.Start();
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        tfGizmo = TransformGizmo.Instance;
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 

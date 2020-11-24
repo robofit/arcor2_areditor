@@ -52,7 +52,9 @@ public class DropdownRobots : MonoBehaviour
             }
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
-        if (Dropdown.Dropdown.dropdownItems.Count > 0)
+        if (Dropdown.Dropdown.dropdownItems.Count > 0) {
+            Dropdown.Dropdown.selectedItemIndex = 0;
             Dropdown.Dropdown.SetupDropdown();
+        }
     }
 }

@@ -17,9 +17,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARRaycastManager ARRaycastManager;
     public ARTrackedImageManager ARTrackedImageManager;
     public ARPointCloudManager ARPointCloudManager;
+    public Transform ARCamera;
     public GameObject WorldAnchorPrefab;
 
     public VideoPlayerImage TrackingLostAnimation;
+
+    [HideInInspector]
+    public bool UsingCloudAnchors = false;
 
     [HideInInspector]
     public ARAnchor WorldAnchorLocal;
@@ -92,6 +96,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 StartCoroutine(HostCloudAnchor());
             } else {
                 Calibrated = true;
+                UsingCloudAnchors = false;
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorLocal.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 worldAnchorVis = null;
@@ -143,6 +148,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Cloud anchor created", WorldAnchorCloud.cloudAnchorState.ToString() + " ID: " + WorldAnchorCloud.cloudAnchorId);
 
             Calibrated = true;
+            UsingCloudAnchors = true;
             OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
@@ -240,6 +246,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 Notifications.Instance.ShowNotification("Cloud anchor loaded", "Cloud anchor loaded sucessfully");
 
                 Calibrated = true;
+                UsingCloudAnchors = true;
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 GameManager.Instance.Scene.SetActive(true);
@@ -274,7 +281,14 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void ActivateTrackableMarkers(bool active) {
         activateTrackableMarkers = active;
         foreach (ARTrackedImage trackedImg in ARTrackedImageManager.trackables) {
-            trackedImg.gameObject.SetActive(active);
+            // Control if camera is 5 cm from the marker cube, if so clip the cube and don't display it.
+            // Fixes the situation when user detects the marker but won't click on it, when he closes the scene and reopens,
+            // marker cube stays positioned at the camera position (transforms should be the same).
+            if (Vector3.Distance(trackedImg.transform.position, ARCamera.position) <= 0.05f) {
+                trackedImg.gameObject.SetActive(false);
+            } else {
+                trackedImg.gameObject.SetActive(active);
+            }
         }
     }
 
@@ -289,7 +303,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
 
         if (worldAnchorVis != null) {
-            worldAnchorVis?.SetActive(active);
+            worldAnchorVis.SetActive(active);
         }
     }
 #endif

@@ -161,7 +161,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         RunningProjectControls.SetActive(false);
     }
 
-    private void ActionObjectsUpdated(object sender, Base.StringEventArgs eventArgs) {
+    private void ActionObjectsUpdated(object sender, Base.StringListEventArgs eventArgs) {
 
         foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b.gameObject.tag == "PersistentButton") {
@@ -197,7 +197,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             btn.RemoveBtn.SetInteractivity(false, "");
             btnGO.transform.SetAsFirstSibling();
 
-            if (eventArgs.Data == actionObjectMetadata.Type) {
+            if (eventArgs.Data.Contains(actionObjectMetadata.Type)) {
                 btn.GetComponent<ActionButton>().Highlight(2f);
             }
             if (SceneManager.Instance.SceneStarted)
@@ -486,7 +486,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             }
         } else if (restoreButtons) {
             restoreButtons = false;
-            ActionObjectsUpdated(this, new StringEventArgs(""));
+            ActionObjectsUpdated(this, new StringListEventArgs(new List<string>()));
         }
     }
 

@@ -13,7 +13,7 @@ Shader "Outline/SecondPass" {
 
     Subshader
     {
-        Zwrite Off
+        Zwrite On
         ZTest Always
         Tags {
             "Queue" = "Transparent+10"

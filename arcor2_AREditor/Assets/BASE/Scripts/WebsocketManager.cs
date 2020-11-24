@@ -64,6 +64,10 @@ namespace Base {
         public event AREditorEventArgs.StringEventHandler OnProjectRemoved;
         public event AREditorEventArgs.BareProjectEventHandler OnProjectBaseUpdated;
 
+        public event AREditorEventArgs.StringListEventHandler OnObjectTypeRemoved;
+        public event AREditorEventArgs.ObjectTypesHandler OnObjectTypeAdded;
+        public event AREditorEventArgs.ObjectTypesHandler OnObjectTypeUpdated;
+
         public event AREditorEventArgs.StringEventHandler OnSceneRemoved;
         public event AREditorEventArgs.BareSceneEventHandler OnSceneBaseUpdated;
 
@@ -665,14 +669,19 @@ namespace Base {
             IO.Swagger.Model.ChangedObjectTypes objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypes>(data);
             switch (objectTypesChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
-                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
-                        ActionsManager.Instance.ObjectTypeAdded(type);
+                    OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
+                        
                     break;
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Remove:
+                    List<string> removed = new List<string>();
                     foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
-                        ActionsManager.Instance.ObjectTypeRemoved(type);
+                        removed.Add(type.Type);
+                    OnObjectTypeRemoved?.Invoke(this, new StringListEventArgs(removed));
                     break;
-                
+
+                case ChangedObjectTypes.ChangeTypeEnum.Update:
+                    OnObjectTypeUpdated?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
+                    break;
                 default:
                     throw new NotImplementedException();
             }

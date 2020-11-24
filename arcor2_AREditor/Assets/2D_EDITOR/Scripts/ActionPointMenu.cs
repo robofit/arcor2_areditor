@@ -89,7 +89,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public async void AddAP(string name) {
         Debug.Assert(CurrentActionPoint != null);
 
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentActionPoint.transform, Vector3.one * 0.025f, Quaternion.identity);
+        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentActionPoint.transform, Vector3.one * 0.1f, Quaternion.identity);
         IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id, offset);
         if (result)

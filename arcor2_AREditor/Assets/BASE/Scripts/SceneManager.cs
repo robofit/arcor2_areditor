@@ -94,9 +94,9 @@ namespace Base {
         /// </summary>
         public bool ActionObjectsInteractive;
         /// <summary>
-        /// Indicates if action objects should be visible in scene
+        /// Indicates visibility of action objects in scene
         /// </summary>
-        public bool ActionObjectsVisible;
+        public float ActionObjectsVisibility;
         /// <summary>
         /// Indicates if robots end effector should be visible
         /// </summary>
@@ -153,7 +153,7 @@ namespace Base {
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            GameManager.Instance.Scene.SetActive(true);
+            
             UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
             try {
@@ -285,11 +285,18 @@ namespace Base {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(true);
+                    }
                     break;
                 case SceneStateData.StateEnum.Started:
                     SceneStarted = true;
                     if (RobotsEEVisible)
                         OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+                    RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+                    foreach (IRobot robot in GetRobots()) {
+                        robot.SetGrey(false);
+                    }
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
@@ -299,6 +306,21 @@ namespace Base {
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        private void InitScene() {
+
+        }
+
+        /// <summary>
+        /// Register or unregister to/from subsription of joints or end effectors pose of each robot in the scene.
+        /// </summary>
+        /// <param name="send">To subscribe or to unsubscribe</param>
+        /// <param name="what">Pose of end effectors or joints</param>
+        public void RegisterRobotsForEvent(bool send, RegisterForRobotEventRequestArgs.WhatEnum what) {
+            foreach (IRobot robot in GetRobots()) {
+                WebsocketManager.Instance.RegisterForRobotEvent(robot.GetId(), send, what);
+            }
         }
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
@@ -319,9 +341,7 @@ namespace Base {
                 return;
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
-                foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
-                    robot.SetJointValue(joint.Name, (float) joint.Value); 
-                }
+                robot.SetJointValue(args.Data.Joints);
             } catch (ItemNotFoundException) {
                 
             }
@@ -398,7 +418,7 @@ namespace Base {
         /// Loads selected setings from player prefs
         /// </summary>
         internal void LoadSettings() {
-            ActionObjectsVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
+            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
@@ -450,7 +470,7 @@ namespace Base {
             tmpGo.transform.localPosition = Vector3.zero;
             tmpGo.transform.localRotation = Quaternion.identity;
 
-            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize / 2, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
+            Collider[] colliders = Physics.OverlapBox(transform.position, bbSize, orientation);   //OverlapSphere(tmpGo.transform.position, 0.025f);
             
             // to avoid infinite loop
             int i = 0;
@@ -458,7 +478,7 @@ namespace Base {
                 Collider collider = colliders[0];
                 // TODO - depends on the rotation between detected marker and original position of camera, height of collision free point above will be slightly different
                 // How to solve this?
-                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y + 0.05f, 0), SceneOrigin.transform);
+                tmpGo.transform.Translate(new Vector3(0, collider.bounds.extents.y, 0), SceneOrigin.transform);
                 colliders = Physics.OverlapBox(tmpGo.transform.position, bbSize / 2, orientation);
                 ++i;
             }
@@ -482,6 +502,7 @@ namespace Base {
             if (aom.Robot) {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
+
             } else {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             }
@@ -583,7 +604,7 @@ namespace Base {
         public void SceneObjectUpdated(SceneObject sceneObject) {
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
-                actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisible, SceneManager.Instance.ActionObjectsInteractive);
+                actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisibility, SceneManager.Instance.ActionObjectsInteractive);
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
@@ -611,7 +632,7 @@ namespace Base {
         /// <returns></returns>
         public void SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
-            actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisible, ActionObjectsInteractive);
+            actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisibility, ActionObjectsInteractive);
             SceneChanged = true;
         }
 
@@ -640,7 +661,7 @@ namespace Base {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
                 ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
-                actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisible, ActionObjectsInteractive);
+                actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisibility, ActionObjectsInteractive);
                 currentAO.Add(aoSwagger.Id);
             }
 
@@ -706,29 +727,15 @@ namespace Base {
             return ActionObjects.First().Value;
         }
 
-        /// <summary>
-        /// Shows action objects models
-        /// </summary>
-        public void ShowActionObjects() {
+        public void SetVisibilityActionObjects(float value) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.Show();
+                actionObject.SetVisibility(value);
             }
-            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", true);
-            ActionObjectsVisible = true;
+            PlayerPrefsHelper.SaveFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), value);
+            ActionObjectsVisibility = value;
         }
 
         /// <summary>
-        /// Hides action objects models
-        /// </summary>
-        public void HideActionObjects() {
-            foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.Hide();
-            }
-            PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOVisibility", false);
-            ActionObjectsVisible = false;
-        }
-
-         /// <summary>
         /// Sets whether action objects should react to user inputs (i.e. enables/disables colliders)
         /// </summary>
         public void SetActionObjectsInteractivity(bool interactivity) {

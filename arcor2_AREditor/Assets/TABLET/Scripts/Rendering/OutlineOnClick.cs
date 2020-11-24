@@ -185,7 +185,7 @@ public class OutlineOnClick : Clickable {
     /// Called when OnHoverStart/OnHoverEnd event is triggered from attached gameobject.
     /// </summary>
     public void Highlight() {
-        if (!selected && !gizmoHighlighted) {
+        if (!selected && !gizmoHighlighted && !highlighted) {
             highlighted = true;
             if (OutlineShaderType == OutlineType.OnePassShader) {
                 SetOutline(OutlineHoverMaterial);
@@ -207,12 +207,14 @@ public class OutlineOnClick : Clickable {
             UnHighlight();
         }
 
-        if (OutlineShaderType == OutlineType.OnePassShader) {
-            SetOutline(gizmoMaterial[0]);
-        } else {
-            SetOutline(gizmoMaterial[0], gizmoMaterial[1]);
+        if (!gizmoHighlighted) {
+            if (OutlineShaderType == OutlineType.OnePassShader) {
+                SetOutline(gizmoMaterial[0]);
+            } else {
+                SetOutline(gizmoMaterial[0], gizmoMaterial[1]);
+            }
+            gizmoHighlighted = true;
         }
-        gizmoHighlighted = true;
     }
 
     public void GizmoUnHighlight() {

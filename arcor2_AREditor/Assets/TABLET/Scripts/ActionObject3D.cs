@@ -37,7 +37,7 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        tfGizmo = TransformGizmo.Instance;
         
     }
 
@@ -143,7 +143,7 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newUserId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
         Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
         ActionObjectName.text = actionObjectSwagger.Name;
@@ -156,7 +156,7 @@ public class ActionObject3D : ActionObject
     }
 
 
-    public override void SetVisibility(float value) {
+    public override void SetVisibility(float value, bool forceShaderChange = false) {
         base.SetVisibility(value);
 
         if (standardShader == null) {
@@ -187,16 +187,12 @@ public class ActionObject3D : ActionObject
 
     public override void Show() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in aoRenderers) {
-            renderer.enabled = true;
-        }
+        SetVisibility(1);
     }
 
     public override void Hide() {
         Debug.Assert(Model != null);
-        foreach (Renderer renderer in aoRenderers) {
-            renderer.enabled = false;
-        }
+        SetVisibility(0);
     }
 
     public override void SetInteractivity(bool interactivity) {

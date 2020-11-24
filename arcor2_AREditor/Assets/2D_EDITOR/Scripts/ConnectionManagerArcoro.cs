@@ -14,36 +14,32 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     [SerializeField]
     private Material EnabledMaterial, DisabledMaterial;
 
-    public bool ConnectionsActive = true;
-
     private void Start() {
         virtualPointer = VirtualConnectionOnTouch.Instance.VirtualPointer;
 
-        Base.GameManager.Instance.OnCloseProject += OnCloseProject;
     }
 
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
-        if (!ConnectionsActive)
-            return null;
-        GameObject c = Instantiate(ConnectionPrefab);
+        Connection c = Instantiate(ConnectionPrefab).GetComponent<Connection>();
         c.transform.SetParent(transform);
         // Set correct targets. Output has to be always at 0 index, because we are connecting output to input.
         // Output has direction to the east, while input has direction to the west.
         if (o1.GetComponent<Base.InputOutput>().GetType() == typeof(Base.PuckOutput)) {
-            c.GetComponent<Connection>().target[0] = o1.GetComponent<RectTransform>();
-            c.GetComponent<Connection>().target[1] = o2.GetComponent<RectTransform>();
+            c.target[0] = o1.GetComponent<RectTransform>();
+            c.target[1] = o2.GetComponent<RectTransform>();
         } else {
-            c.GetComponent<Connection>().target[1] = o1.GetComponent<RectTransform>();
-            c.GetComponent<Connection>().target[0] = o2.GetComponent<RectTransform>();
+            c.target[1] = o1.GetComponent<RectTransform>();
+            c.target[0] = o2.GetComponent<RectTransform>();
         }
-        Connections.Add(c.GetComponent<Connection>());
-        return c.GetComponent<Connection>();
+        Connections.Add(c);
+        if (!ControlBoxManager.Instance.ConnectionsToggle.isOn)
+            c.gameObject.SetActive(false);
+        
+        return c;
     }
 
     public void CreateConnectionToPointer(GameObject o) {
-        if (!ConnectionsActive)
-            return;
         if (virtualConnectionToMouse != null)
             Destroy(virtualConnectionToMouse.gameObject);
         VirtualConnectionOnTouch.Instance.DrawVirtualConnection = true;
@@ -51,8 +47,6 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public void DestroyConnectionToMouse() {
-        if (!ConnectionsActive)
-            return;
         Destroy(virtualConnectionToMouse.gameObject);
         Connections.Remove(virtualConnectionToMouse);
         VirtualConnectionOnTouch.Instance.DrawVirtualConnection = false;
@@ -134,7 +128,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return true;
     }
 
-    private void OnCloseProject(object sender, EventArgs e) {
+    public void Clear() {
         foreach (Connection c in Connections) {
             if (c != null && c.gameObject != null) {
                 Destroy(c.gameObject);
@@ -147,7 +141,6 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         foreach (Connection connection in Connections) {
             connection.gameObject.SetActive(active);
         }
-        ConnectionsActive = active;
     }
 
     public void DisableConnectionToMouse() {

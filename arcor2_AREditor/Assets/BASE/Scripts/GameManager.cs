@@ -195,7 +195,11 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>
+<<<<<<< HEAD
         public const string ApiVersion = "0.10.0a1";
+=======
+        public const string ApiVersion = "0.10.0";
+>>>>>>> devel
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -848,13 +852,13 @@ namespace Base {
         /// <summary>
         /// Updates action objects and their actions from server
         /// </summary>
-        /// <param name="highlighteObject">When set, object with this ID will gets highlighted for a few seconds in menu
+        /// <param name="highlightedObject">When set, object with this ID will gets highlighted for a few seconds in menu
         /// to inform user about it</param>
         /// <returns></returns>
-        public async Task UpdateActionObjects(string highlighteObject = null) {
+        public async Task UpdateActionObjects() {
             try {
                 List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-                await ActionsManager.Instance.UpdateObjects(objectTypeMetas, highlighteObject);
+                await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to update action objects");
@@ -1589,7 +1593,7 @@ namespace Base {
                 Scene.SetActive(true);
             }
 #else
-            
+            Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
             EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;

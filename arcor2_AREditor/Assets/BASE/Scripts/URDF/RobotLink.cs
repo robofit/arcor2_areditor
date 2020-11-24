@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using RosSharp.RosBridgeClient;
 using RosSharp.Urdf;
 using UnityEngine;
@@ -30,11 +31,13 @@ public class RobotLink {
     }
 
     private JointStateWriter jointWriter;
+    private JointStateReader jointReader;
 
-    public RobotLink(string link_name, UrdfJoint urdf_joint, JointStateWriter joint_writer, Dictionary<UrdfVisual, bool> visuals_gameObject = null, Dictionary<UrdfCollision, bool> collisions_gameObject = null, bool is_base_link = false) {
+    public RobotLink(string link_name, UrdfJoint urdf_joint, JointStateWriter joint_writer, JointStateReader joint_reader, Dictionary<UrdfVisual, bool> visuals_gameObject = null, Dictionary<UrdfCollision, bool> collisions_gameObject = null, bool is_base_link = false) {
         LinkName = link_name;
         UrdfJoint = urdf_joint;
         jointWriter = joint_writer;
+        jointReader = joint_reader;
         Visuals = visuals_gameObject ?? new Dictionary<UrdfVisual, bool>();
         Collisions = collisions_gameObject ?? new Dictionary<UrdfCollision, bool>();
         IsBaseLink = is_base_link;
@@ -43,6 +46,15 @@ public class RobotLink {
     public void SetJointAngle(float angle) {
         if (jointWriter != null) {
             jointWriter.Write(angle);
+        }
+    }
+
+    public decimal GetJointAngle() {
+        if (jointReader != null) {
+            jointReader.Read(out string name, out float position, out float velocity, out float effort);
+            return Convert.ToDecimal(position);
+        } else {
+            throw new RequestFailedException("Unable to read current joints angles");
         }
     }
 
