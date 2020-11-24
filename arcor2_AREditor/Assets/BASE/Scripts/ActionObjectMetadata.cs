@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ARServer.Models;
 using IO.Swagger.Model;
 using UnityEngine;
-
+using UnityEngine.PlayerLoop;
 
 namespace Base {
     public class ActionObjectMetadata : ObjectTypeMeta {
@@ -24,7 +24,17 @@ namespace Base {
            
         }
 
-
+        public void Update(ObjectTypeMeta objectTypeMeta) {
+            Abstract = objectTypeMeta.Abstract;
+            Base = objectTypeMeta.Base;
+            BuiltIn = objectTypeMeta.BuiltIn;
+            Description = objectTypeMeta.Description;
+            HasPose = objectTypeMeta.HasPose;
+            NeedsParentType = objectTypeMeta.NeedsParentType;
+            ObjectModel = objectTypeMeta.ObjectModel;
+            Problem = objectTypeMeta.Problem;
+            Settings = objectTypeMeta.Settings;
+        }
 
         public bool Robot {
             get => robot;
