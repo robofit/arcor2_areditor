@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 public class ControlBoxManager : Singleton<ControlBoxManager> {
 
-    private TransformGizmo tfGizmo;
     [SerializeField]
     private InputDialog InputDialog;
     [SerializeField]
@@ -29,7 +28,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         set {
             useGizmoMove = value;
             if (useGizmoMove) {
-                tfGizmo.transformType = TransformType.Move;
+                TransformGizmo.Instance.transformType = TransformType.Move;
                 useGizmoRotate = false;
                 RotateToggle.isOn = false;
                 MoveToggle.isOn = true;
@@ -43,7 +42,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         set {
             useGizmoRotate = value;
             if (useGizmoRotate) {
-                tfGizmo.transformType = TransformType.Rotate;
+                TransformGizmo.Instance.transformType = TransformType.Rotate;
                 useGizmoMove = false;
                 RotateToggle.isOn = true;
                 MoveToggle.isOn = false;
@@ -53,7 +52,6 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private void Start() {
         Debug.Assert(CreateGlobalActionPointBtn != null);
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
         MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
         RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
 #if UNITY_ANDROID && !UNITY_EDITOR

@@ -341,9 +341,7 @@ namespace Base {
                 return;
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
-                foreach (IO.Swagger.Model.Joint joint in args.Data.Joints) {
-                    robot.SetJointValue(joint.Name, (float) joint.Value); 
-                }
+                robot.SetJointValue(args.Data.Joints);
             } catch (ItemNotFoundException) {
                 
             }

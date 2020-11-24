@@ -51,6 +51,9 @@ namespace Base {
         private Shader ghostShader;
         private Shader transparentShader;
 
+        private bool jointStateSubscribeIsValid = true;
+
+
         protected override void Start() {
             base.Start();
             if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
@@ -216,6 +219,7 @@ namespace Base {
             outlineOnClick.InitGizmoMaterials();
 
             SetVisibility(visibility, forceShaderChange:true);
+            SetGrey(!SceneManager.Instance.SceneStarted);
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
@@ -492,6 +496,62 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
+        /// <summary>
+        /// Sets value of joints specified in List joints. Firstly checks if joint names are really equal or not.
+        /// If some joint name is not correct, method will not allow to set the joints nor to check if they are valid, unless option forceJointsValidCheck is set to true.
+        /// </summary>
+        /// <param name="joints">List of joints with new angle values.</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
+        /// <param name="forceJointsValidCheck">If true, check for valid joint names will be called even if previous one failed.</param>
+        public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
+            if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
+                if (CheckJointsAreValid(joints)) {
+                    foreach (IO.Swagger.Model.Joint joint in joints) {
+                        SetJointValue(joint.Name, (float) joint.Value);
+                    }
+                    jointStateSubscribeIsValid = true;
+                } else {
+                    Notifications.Instance.ShowNotification("Wrong joint names received!", "Unregistering joint state receiving for robot " + RobotModel.RobotType + ". Joints has to be named same as in urdf.");
+                    jointStateSubscribeIsValid = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if the joint names in joints corresponds to the joint names in RobotModel.
+        /// </summary>
+        /// <param name="joints"></param>
+        /// <returns>True if joints have equal names, false if not.</returns>
+        public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
+            if (RobotModel != null) {
+                List<string> receivedJoints = new List<string>();
+                foreach (IO.Swagger.Model.Joint joint in joints) {
+                    receivedJoints.Add(joint.Name);
+                }
+
+                foreach (string jointName in RobotModel.Joints.Keys) {
+                    receivedJoints.Remove(jointName);
+                }
+
+                if (receivedJoints.Count != 0) {
+                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                //Debug.LogError("Trying to set joint values, but robot urdf model is not loaded nor assigned.");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the value of individual joint.
+        /// </summary>
+        /// <param name="name">Joint name.</param>
+        /// <param name="angle">Joint angle (in radians by default).</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
         public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
             RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
         }
@@ -503,7 +563,7 @@ namespace Base {
                 return RobotModel.GetJoints();
         }
 
-	public override void DeleteActionObject() {
+	    public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
         }
@@ -512,6 +572,10 @@ namespace Base {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
+                    // remove every outlines on the robot
+                    outlineOnClick.UnHighlight();
+                    outlineOnClick.GizmoUnHighlight();
+                    outlineOnClick.UnHighlight();
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
                 }
             }
@@ -524,12 +588,16 @@ namespace Base {
         public void SetGrey(bool grey) {
             if (grey) {
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.SetColor("_EmissionColor", Color.grey);
-                    renderer.material.EnableKeyword("_EMISSION");
+                    foreach (Material mat in renderer.materials) {
+                        mat.SetColor("_EmissionColor", Color.grey);
+                        mat.EnableKeyword("_EMISSION");
+                    }
                 }
             } else {
                 foreach (Renderer renderer in robotRenderers) {
-                    renderer.material.DisableKeyword("_EMISSION");
+                    foreach (Material mat in renderer.materials) {
+                        mat.DisableKeyword("_EMISSION");
+                    }
                 }
             }
         }
