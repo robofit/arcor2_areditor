@@ -106,7 +106,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     public bool ValidateConnection(Connection c) {
         if (c == null)
             return false;
-        int input = GetIndexByType(c, typeof(Base.PuckInput)), output = GetIndexByType(c, typeof(Base.PuckOutput));
+        int input = GetIndexByType(c, typeof(Base.InputOutput)), output = GetIndexByType(c, typeof(Base.PuckOutput));
         if (input < 0 || output < 0)
             return false;
         return input + output == 1;
@@ -120,7 +120,8 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             return false;
         }
         try {
-            await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, true);
+            // TODO: how to pass condition?
+            //await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, null, true);
         } catch (RequestFailedException) {
             return false;
         }

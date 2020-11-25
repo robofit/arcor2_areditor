@@ -80,7 +80,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             menu.SetActive(true);
     }
 
-    public void UpdateObjectsList(object sender, Base.StringEventArgs eventArgs) {
+    public void UpdateObjectsList(object sender, Base.StringListEventArgs eventArgs) {
         string originalValue = "";
         if (ParentsList.Dropdown.dropdownItems.Count > 0)
             originalValue = (string) ParentsList.GetValue();

@@ -17,14 +17,14 @@ public abstract class StartEndAction : Action3D {
         }
     }
 
-    public virtual void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
+    public virtual void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
         base.Init(projectAction, metadata, ap, actionProvider);
 
         if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
             Destroy(gameObject);
             return;
         }
-        playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + keySuffix;
+        playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + actionType;
         
     }
 
