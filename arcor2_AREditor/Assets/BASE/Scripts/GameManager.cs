@@ -1075,6 +1075,7 @@ namespace Base {
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
                 SceneManager.Instance.DestroyScene();
+                OnStopPackage?.Invoke(this, new EventArgs());
             }
         }
 
