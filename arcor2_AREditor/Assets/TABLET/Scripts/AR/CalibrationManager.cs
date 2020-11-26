@@ -220,7 +220,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private IEnumerator Calibrate() {
         // Do nothing while in the MainScreen (just track feature points, planes, etc. as user moves unintentionally with the device)
         yield return new WaitUntil(() => GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor ||
-                                         GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor);
+                                         GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor ||
+                                         GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning);
 
         Notifications.Instance.ShowNotification("Calibrating", "Move the device around your workspace");
         TrackingLostAnimation.PlayVideo();

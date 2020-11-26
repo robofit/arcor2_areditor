@@ -74,6 +74,7 @@ public class TrackingManager : Singleton<TrackingManager> {
         // We want to stop notifications everywhere else.
         GameManager.Instance.OnCloseProject += StopTrackingNotifications;
         GameManager.Instance.OnCloseScene += StopTrackingNotifications;
+        GameManager.Instance.OnStopPackage += StopTrackingNotifications;
 
         ARPlaneManager.planesChanged += OnPlanesChanged;
         ARPointCloudManager.pointCloudsChanged += OnPointCloudChanged;
