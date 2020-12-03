@@ -51,6 +51,9 @@ namespace Base {
             Debug.Assert(InteractiveObjects != null);
             Init();
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
+            WebsocketManager.Instance.OnObjectTypeAdded += ObjectTypeAdded;
+            WebsocketManager.Instance.OnObjectTypeRemoved += ObjectTypeRemoved;
+            WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdated;
         }
         
         private void OnDisconnected(object sender, EventArgs args) {
@@ -113,11 +116,15 @@ namespace Base {
 
 
 
-        public void ObjectTypeRemoved(object sender, StringEventArgs type) {
-            if (actionObjectsMetadata.ContainsKey(type.Data)) {
-                actionObjectsMetadata.Remove(type.Data);
+        public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
+            foreach (string item in type.Data) {
+                if (actionObjectsMetadata.ContainsKey(item)) {
+                    actionObjectsMetadata.Remove(item);
+                }
+            }
+            if (type.Data.Count > 0)
                 OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(new List<string>()));
-            }            
+
         }
 
         public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
