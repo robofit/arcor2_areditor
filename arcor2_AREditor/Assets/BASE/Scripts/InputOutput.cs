@@ -211,7 +211,7 @@ namespace Base {
             } 
             
             RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input)) {
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input, GetProjectLogicIf(ifValue))) {
                 result.Success = false;
                 result.Message = "Invalid connection";
             }
@@ -226,7 +226,7 @@ namespace Base {
                 return new RequestResult(false, "Wrong object type selected");
             }
             RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this)) {
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this, GetProjectLogicIf(output.ifValue))) {
                 result.Success = false;
                 result.Message = "Invalid connection";
             }
@@ -292,10 +292,10 @@ namespace Base {
                 return;
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
             bool result;
-            if (GetType() == typeof(InputOutput)) {
-                result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this);
+            if (GetType() == typeof(PuckInput)) {
+                result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this, GetProjectLogicIf(theOtherOne.ifValue));
             } else {
-                result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne);
+                result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne, null);
             }
             if (!result)
                 ConnectionManagerArcoro.Instance.DisableConnectionToMouse();

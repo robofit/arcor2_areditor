@@ -112,7 +112,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return input + output == 1;
     }
 
-    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input) {
+    public async Task<bool> ValidateConnection(InputOutput output, InputOutput input, IO.Swagger.Model.ProjectLogicIf condition) {
         string[] startEnd = new[] { "START", "END" };
         if (output.GetType() == input.GetType() ||
             output.Action.Data.Id.Equals(input.Action.Data.Id) ||
@@ -121,7 +121,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         }
         try {
             // TODO: how to pass condition?
-            //await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, null, true);
+            await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, input.Action.Data.Id, condition, true);
         } catch (RequestFailedException) {
             return false;
         }
