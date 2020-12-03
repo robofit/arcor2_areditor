@@ -105,7 +105,7 @@ public class Action3D : Base.Action {
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {

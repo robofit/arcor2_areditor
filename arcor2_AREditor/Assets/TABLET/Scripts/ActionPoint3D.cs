@@ -192,10 +192,11 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void OnHoverStart() {
         if (!enabled)
             return;
+        Debug.LogError(GameManager.Instance.GetEditorState());
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {

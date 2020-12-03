@@ -47,7 +47,6 @@ namespace Base {
                 return false;
             }
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-                Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");
                 return false;
             }
             if (type != Click.MOUSE_LEFT_BUTTON && type != Click.TOUCH) {
@@ -283,7 +282,6 @@ namespace Base {
             if (!Enabled)
                 return;
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-                Notifications.Instance.ShowNotification("Not allowed", "Editation of connections only allowed in project editor");
                 return;
             }
             outlineOnClick.Highlight();

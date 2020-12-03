@@ -364,7 +364,7 @@ public class ActionObject3D : ActionObject {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {
