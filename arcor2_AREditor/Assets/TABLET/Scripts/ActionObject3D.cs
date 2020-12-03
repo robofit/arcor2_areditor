@@ -166,7 +166,8 @@ public class ActionObject3D : ActionObject {
             transparentShader = Shader.Find("Transparent/Diffuse");
         }
 
-        if (ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
+        if (ActionObjectMetadata.ObjectModel != null &&
+            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
             // Set opaque shader
             if (value >= 1) {
                 transparent = false;
@@ -221,7 +222,8 @@ public class ActionObject3D : ActionObject {
     public override void SetInteractivity(bool interactivity) {
         Debug.Assert(Model != null);
         //Model.GetComponent<Collider>().enabled = interactivity;
-        if (ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
+        if (ActionObjectMetadata.ObjectModel != null &&
+            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
             foreach (var col in aoColliders) {
                 col.enabled = interactivity;
             }

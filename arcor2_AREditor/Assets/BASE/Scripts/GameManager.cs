@@ -285,6 +285,8 @@ namespace Base {
         /// </summary>
         private Func<object, Task<RequestResult>> ObjectValidationCallback;
 
+        private bool openPackageRunningScreenFlag = false;
+
         /// <summary>
         /// Checks whether scene is interactable
         /// </summary>
@@ -425,6 +427,11 @@ namespace Base {
             if (openMainScreenRequest && ActionsManager.Instance.ActionsReady) {
                 openMainScreenRequest = false;
                 await OpenMainScreen(openMainScreenData.What, openMainScreenData.Highlight);
+            }
+            if (openPackageRunningScreenFlag && (GetGameState() == GameStateEnum.MainScreen ||
+                GetGameState() == GameStateEnum.Disconnected)) {
+                openPackageRunningScreenFlag = false;
+                OpenPackageRunningScreen();
             }
 
         }
@@ -1054,7 +1061,7 @@ namespace Base {
                         if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
-                        OpenPackageRunningScreen();
+                        openPackageRunningScreenFlag = true;
                         if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                         }
@@ -1624,9 +1631,9 @@ namespace Base {
         /// Opens package running screen
         /// </summary>
         public async void OpenPackageRunningScreen() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            ARSession.enabled = true;
-#endif
+            openPackageRunningScreenFlag = false;
+            Debug.LogError("OpenPackageRunningScreen");
+            Debug.LogError(GetGameState());
             try {
                 MenuManager.Instance.MainMenu.Close();
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
@@ -1635,6 +1642,7 @@ namespace Base {
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
                 EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+                ARSession.enabled = true;
                 if (CalibrationManager.Instance.Calibrated) {
                     Scene.SetActive(true);
                 }
