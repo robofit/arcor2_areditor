@@ -164,7 +164,23 @@ namespace Base {
 
 
         private void ShowOutputTypeDialog(UnityAction callback) {
-            MenuManager.Instance.OutputTypeDialog.Open(this, callback);
+            if (logicItemIds.Count == 2) {
+                Notifications.Instance.ShowNotification("Failed", "Cannot create any other connection.");
+                return;
+            } else if (logicItemIds.Count == 1) {
+                List<LogicItem> items = GetLogicItems();
+                Debug.Assert(items.Count == 1, "There must be exactly one valid logic item!");
+                LogicItem item = items[0];
+                if (item.Data.Condition is null) {
+                    Notifications.Instance.ShowNotification("Failed", "There is already connection which serves all results");
+                    return;
+                } else {
+                    bool condition = JsonConvert.DeserializeObject<bool>(item.Data.Condition.Value);
+                    MenuManager.Instance.OutputTypeDialog.Open(this, callback, false, !condition, condition);                
+                    return;
+                }
+            }
+            MenuManager.Instance.OutputTypeDialog.Open(this, callback, true, true, true);
         }
 
         private void CreateNewConnection() {
@@ -272,9 +288,7 @@ namespace Base {
                 return null;
             List<Flow> flows = Action.GetFlows();
             string flowName = flows[0].Type.GetValueOrDefault().ToString().ToLower();
-            Debug.LogError(ifValue);
             IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(JsonConvert.SerializeObject(ifValue), Action.Data.Id + "/" + flowName + "/0");
-            Debug.LogError(projectLogicIf);
             return projectLogicIf;
         }
 
