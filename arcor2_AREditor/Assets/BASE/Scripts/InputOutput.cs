@@ -211,7 +211,7 @@ namespace Base {
             } 
             
             RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input, GetProjectLogicIf(ifValue))) {
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input, GetProjectLogicIf())) {
                 result.Success = false;
                 result.Message = "Invalid connection";
             }
@@ -226,7 +226,7 @@ namespace Base {
                 return new RequestResult(false, "Wrong object type selected");
             }
             RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this, GetProjectLogicIf(output.ifValue))) {
+            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this, output.GetProjectLogicIf())) {
                 result.Success = false;
                 result.Message = "Invalid connection";
             }
@@ -241,7 +241,7 @@ namespace Base {
                 return;
             }
             try {
-                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, GetProjectLogicIf(ifValue), false);
+                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, GetProjectLogicIf(), false);
                 ifValue = null;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
             } catch (RequestFailedException ex) {
@@ -259,7 +259,7 @@ namespace Base {
                 return;
             }
             try {
-                await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, GetProjectLogicIf(output.ifValue), false);
+                await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, output.GetProjectLogicIf(), false);
                 ifValue = null;
                 ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();                
             } catch (RequestFailedException ex) {
@@ -268,7 +268,7 @@ namespace Base {
             }
         }
 
-        private IO.Swagger.Model.ProjectLogicIf GetProjectLogicIf(object ifValue) {
+        private IO.Swagger.Model.ProjectLogicIf GetProjectLogicIf() {
             if (ifValue is null)
                 return null;
             List<Flow> flows = Action.GetFlows();
@@ -293,7 +293,7 @@ namespace Base {
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
             bool result;
             if (GetType() == typeof(PuckInput)) {
-                result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this, GetProjectLogicIf(theOtherOne.ifValue));
+                result = await ConnectionManagerArcoro.Instance.ValidateConnection(theOtherOne, this, theOtherOne.GetProjectLogicIf());
             } else {
                 result = await ConnectionManagerArcoro.Instance.ValidateConnection(this, theOtherOne, null);
             }
