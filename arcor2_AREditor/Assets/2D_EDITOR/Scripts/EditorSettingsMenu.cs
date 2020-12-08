@@ -14,6 +14,8 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
     [SerializeField]
     private Slider APSizeSlider, ActionObjectsVisibilitySlider;
+    [SerializeField]
+    private LabeledInput markerOffsetX, markerOffsetY, markerOffsetZ;
 
     private void Start() {
         Debug.Assert(ActionPointsScrollable != null);
@@ -78,6 +80,10 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
+        Vector3 offset = TransformConvertor.UnityToROS(PlayerPrefsHelper.LoadVector3("/marker_offset", Vector3.zero));
+        markerOffsetX.SetValue(offset.x);
+        markerOffsetY.SetValue(offset.y);
+        markerOffsetZ.SetValue(offset.z);
     }
 
     public void SetVisibilityActionObjects() {
@@ -157,6 +163,18 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         }
     }
 
+    public void UpdateMarkerOffset() {
+
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        Vector3 offset = TransformConvertor.ROSToUnity(new Vector3((float) (double) markerOffsetX.GetValue(),
+                                      (float) (double) markerOffsetY.GetValue(),
+                                      (float) (double) markerOffsetZ.GetValue()));
+        PlayerPrefsHelper.SaveVector3("/marker_offset", offset);
+        CalibrationManager.Instance.UpdateMarkerOffset(offset);
+
+    
+#endif
+    }
     private void AddActionPointButton(Base.ActionPoint actionPoint) {
         ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform).GetComponent<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);

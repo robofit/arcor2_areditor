@@ -192,9 +192,16 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             GameManager.Instance.Scene.transform.parent = worldAnchor.transform;
         }
 
-        GameManager.Instance.Scene.transform.localPosition = Vector3.zero;
+        Vector3 offset = PlayerPrefsHelper.LoadVector3("/marker_offset", Vector3.zero);
+
+        GameManager.Instance.Scene.transform.localPosition = offset;
         GameManager.Instance.Scene.transform.localScale = new Vector3(1f, 1f, 1f);
         GameManager.Instance.Scene.transform.localEulerAngles = Vector3.zero;
+    }
+
+    public void UpdateMarkerOffset(Vector3 offset) {
+        PlayerPrefsHelper.SaveVector3("/marker_offset", offset);
+        GameManager.Instance.Scene.transform.localPosition = offset;
     }
 
     private void DetachScene() {
