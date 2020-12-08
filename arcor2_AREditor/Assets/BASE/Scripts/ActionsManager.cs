@@ -62,7 +62,7 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                
+                Debug.LogError("Actions not ready and objects loaded");
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
                         return;
@@ -129,6 +129,7 @@ namespace Base {
 
         public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
+            enabled = true;
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
@@ -143,6 +144,7 @@ namespace Base {
 
         public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
+            enabled = true;
             List<string> updated = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
