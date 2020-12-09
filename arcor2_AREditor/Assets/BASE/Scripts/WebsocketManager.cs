@@ -2252,10 +2252,31 @@ namespace Base {
             }
         }
 
-
-
         
+        public async Task CalibrateRobot(string robotId, string cameraId, bool moveToCalibrationPose) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CalibrateRobotRequestArgs args = new CalibrateRobotRequestArgs(robotId: robotId,
+                cameraId: cameraId, moveToCalibrationPose: moveToCalibrationPose);
 
+            IO.Swagger.Model.CalibrateRobotRequest request = new IO.Swagger.Model.CalibrateRobotRequest(r_id, "CalibrateRobot", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CalibrateRobotResponse response = await WaitForResult<IO.Swagger.Model.CalibrateRobotResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+            } 
+        }
+
+        public async Task CalibrateCamera(string cameraId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CalibrateCameraRequestArgs args = new CalibrateCameraRequestArgs(id: cameraId);
+
+            IO.Swagger.Model.CalibrateCameraRequest request = new IO.Swagger.Model.CalibrateCameraRequest(r_id, "CalibrateCamera", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CalibrateCameraResponse response = await WaitForResult<IO.Swagger.Model.CalibrateCameraResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+            } 
+        }
 
 
     }

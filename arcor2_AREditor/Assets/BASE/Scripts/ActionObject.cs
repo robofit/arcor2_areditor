@@ -167,6 +167,10 @@ namespace Base {
             return ActionObjectMetadata.Robot;
         }
 
+        public bool IsCamera() {
+            return ActionObjectMetadata.Camera;
+        }
+
         public virtual void DeleteActionObject() {
             // Remove all actions of this action point
             RemoveActionPoints();

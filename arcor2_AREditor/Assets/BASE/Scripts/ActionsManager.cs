@@ -135,6 +135,7 @@ namespace Base {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
                 await UpdateActionsOfActionObject(m);
                 m.Robot = IsDescendantOfType("Robot", m);
+                m.Camera = IsDescendantOfType("Camera", m);
                 actionObjectsMetadata.Add(obj.Type, m);
                 added.Add(obj.Type);
             }
@@ -218,6 +219,7 @@ namespace Base {
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
+                kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
             }
             enabled = true;
             ActionObjectsLoaded = true;

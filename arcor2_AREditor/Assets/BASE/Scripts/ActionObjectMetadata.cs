@@ -8,7 +8,7 @@ namespace Base {
     public class ActionObjectMetadata : ObjectTypeMeta {
 
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private bool robot, actionsLoaded;
+        private bool robot, actionsLoaded, camera;
 
         public ActionObjectMetadata(ObjectTypeMeta meta) : base(_abstract: meta.Abstract,
                                                                 _base: meta.Base,
@@ -40,6 +40,12 @@ namespace Base {
             get => robot;
             set => robot = value;
         }
+
+        public bool Camera {
+            get => camera;
+            set => camera = value;
+        }
+
         public bool ActionsLoaded {
             get => actionsLoaded;
             set => actionsLoaded = value;

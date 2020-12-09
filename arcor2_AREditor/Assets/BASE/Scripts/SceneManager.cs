@@ -552,15 +552,43 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public List<IRobot> GetRobots() {
-            List<string> robotIds = new List<string>();
             List<IRobot> robots = new List<IRobot>();
             foreach (ActionObject actionObject in ActionObjects.Values) {
                 if (actionObject.IsRobot()) {
                     robots.Add((RobotActionObject) actionObject);
-                    robotIds.Add(actionObject.Data.Id);
                 }                    
             }
             return robots;
+        }
+
+        public List<ActionObject> GetCameras() {
+            List<ActionObject> cameras = new List<ActionObject>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (actionObject.IsCamera()) {
+                    cameras.Add(actionObject);
+                }
+            }
+            return cameras;
+        }
+
+        public List<string> GetCamerasIds() {
+            List<string> cameraIds = new List<string>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (actionObject.IsCamera()) {
+                    cameraIds.Add(actionObject.Data.Id);
+                }
+            }
+            return cameraIds;
+        }
+
+        public List<string> GetCamerasNames() {
+            List<string> camerasNames = new List<string>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (actionObject.IsCamera()) {
+                    camerasNames.Add(actionObject.Data.Name);
+                }
+            }
+            return camerasNames;
         }
 
         /// <summary>
