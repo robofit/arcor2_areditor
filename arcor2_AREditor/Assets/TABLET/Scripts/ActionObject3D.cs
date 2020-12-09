@@ -171,21 +171,30 @@ public class ActionObject3D : ActionObject {
             // Set opaque shader
             if (value >= 1) {
                 transparent = false;
-                foreach (var rend in aoRenderers) {
-                    rend.material.shader = standardShader;
+                foreach (var renderer in aoRenderers) {
+                    foreach (var material in renderer.materials) {
+                        material.shader = standardShader;
+                        Color col = material.color;
+                        col.a = 1f;
+                        material.color = col;
+                    }
                 }
             }
             // Set transparent shader
             else {
                 if (!transparent) {
                     transparent = true;
-                    foreach (var rend in aoRenderers) {
-                        rend.material.shader = transparentShader;
-
-                        // set alpha of the material
-                        Color color = rend.material.color;
-                        color.a = value;
-                        modelMaterial.color = color;
+                    foreach (var renderer in aoRenderers) {
+                        foreach (var material in renderer.materials) {
+                            material.shader = transparentShader;
+                        }
+                    }
+                }
+                foreach (var renderer in aoRenderers) {
+                    foreach (var material in renderer.materials) {
+                        Color col = material.color;
+                        col.a = value;
+                        material.color = col;
                     }
                 }
             }
@@ -347,6 +356,9 @@ public class ActionObject3D : ActionObject {
 
         outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
+
+        transparent = false; //needs to be set before 1st call of SetVisibility after model loading
+        SetVisibility(visibility);
     }
 
     /// <summary>
