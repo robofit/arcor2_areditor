@@ -77,5 +77,5 @@ public abstract class Dialog : MonoBehaviour
         Close();
     }
 
-    public virtual void Confirm() { }
+    public abstract void Confirm();
 }

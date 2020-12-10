@@ -35,6 +35,7 @@ namespace Base {
             SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
+            
             CreateModel(customCollisionModels);
             enabled = true;
             if (VRModeManager.Instance.VRModeON) {

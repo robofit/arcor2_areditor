@@ -163,7 +163,7 @@ namespace Base {
 
         public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-
+            
             // if there should be an urdf robot model
             if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 // Get the robot model, if it returns null, the robot will be loading itself

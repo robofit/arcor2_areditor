@@ -15,14 +15,14 @@ public class CalibrateRobotDialog : Dialog {
             Notifications.Instance.ShowNotification("Calibration failed", "Could not calibrate robot wihtout camera");
             Close();
         }
-        Switch.Switch.isOn = false;
+        Switch.SetValue(false);
         Dropdown.PutData(cameraNames, "", null);
         this.robotId = robotId;
     }
 
 
 
-    public async new Task Confirm() {
+    public async override void Confirm() {
         string cameraName = (string) Dropdown.GetValue();
         if (SceneManager.Instance.TryGetActionObjectByName(cameraName, out ActionObject camera)) {
             try {
