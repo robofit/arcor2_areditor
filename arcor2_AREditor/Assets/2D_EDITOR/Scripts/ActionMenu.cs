@@ -80,7 +80,13 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             RemoveActionBtn.SetInteractivity(true);
         } catch (RequestFailedException e) {
             RemoveActionBtn.SetInteractivity(false, e.Message);
-        }        
+        }
+
+        foreach (Flow flow in CurrentAction.GetFlows()) {
+            Debug.LogError(flow.Type);
+            flow.Outputs.ForEach(Debug.LogError);
+
+        }
     }
 
     private async Task UpdateExecuteAndStopBtns() {

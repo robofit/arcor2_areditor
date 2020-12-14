@@ -30,7 +30,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
             Select();
         }
         // HANDLE TOUCH
-        else if (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
+        else if (type == Click.TOUCH) {
             Select();
         }
     }    

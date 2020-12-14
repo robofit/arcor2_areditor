@@ -23,7 +23,7 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event AREditorEventArgs.StringEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringListEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ActionObjectsLoaded;
 
@@ -51,6 +51,9 @@ namespace Base {
             Debug.Assert(InteractiveObjects != null);
             Init();
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
+            WebsocketManager.Instance.OnObjectTypeAdded += ObjectTypeAdded;
+            WebsocketManager.Instance.OnObjectTypeRemoved += ObjectTypeRemoved;
+            WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdated;
         }
         
         private void OnDisconnected(object sender, EventArgs args) {
@@ -59,10 +62,8 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
-                       
                         return;
                     }
                 }
@@ -114,19 +115,47 @@ namespace Base {
 
 
 
-        public void ObjectTypeRemoved(ObjectTypeMeta objectType) {
-            if (actionObjectsMetadata.ContainsKey(objectType.Type)) {
-                actionObjectsMetadata.Remove(objectType.Type);
-                OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(null));
-            }            
+        public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
+            foreach (string item in type.Data) {
+                if (actionObjectsMetadata.ContainsKey(item)) {
+                    actionObjectsMetadata.Remove(item);
+                }
+            }
+            if (type.Data.Count > 0)
+                OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(new List<string>()));
+
         }
 
-        public async void ObjectTypeAdded(ObjectTypeMeta objectType) {
-            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectType);
-            await UpdateActionsOfActionObject(m);
-            m.Robot = IsDescendantOfType("Robot", m);               
-            actionObjectsMetadata.Add(objectType.Type, m);
-            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(objectType.Type));
+        public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
+            ActionsReady = false;
+            enabled = true;
+            List<string> added = new List<string>();
+            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
+                ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
+                await UpdateActionsOfActionObject(m);
+                m.Robot = IsDescendantOfType("Robot", m);
+                m.Camera = IsDescendantOfType("Camera", m);
+                actionObjectsMetadata.Add(obj.Type, m);
+                added.Add(obj.Type);
+            }
+            
+            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(added));
+        }
+
+        public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
+            ActionsReady = false;
+            enabled = true;
+            List<string> updated = new List<string>();
+            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
+                if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
+                    actionObjectMetadata.Update(obj);
+                    await UpdateActionsOfActionObject(actionObjectMetadata);
+                    updated.Add(obj.Type);
+                } else {
+                    Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
+                }
+            }
+            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(updated));
         }
         
 
@@ -179,7 +208,7 @@ namespace Base {
             
         }
 
-        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata, string highlighteObject = null) {
+        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
@@ -189,10 +218,11 @@ namespace Base {
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
+                kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
             }
             enabled = true;
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, new Base.StringEventArgs(highlighteObject));
+            OnActionObjectsUpdated?.Invoke(this, new Base.StringListEventArgs(new List<string>()));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {

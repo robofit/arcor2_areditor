@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -9,16 +10,17 @@ public class VRModeManager : Singleton<VRModeManager> {
 
     public Camera VRCamera;
     public Camera ARCamera;
-    public GameObject VRCameraBase;
     public TransformGizmo TFGizmo;
     public GameObject ARCameraVis;
+    public GameObject GridPlane;
     public Joystick CameraMoveJoystick;
+    public Joystick CameraMoveUpJoystick;
     public Joystick CameraRotateJoystick;
     public float WalkingSpeed = 5f;
     public float RotatingSpeed = 4f;
 
     private ARCameraBackground arCameraBG;
-    private bool VRModeON = false;
+    public bool VRModeON { get; private set; } = false;
 
     private Vector3 arCameraPosition;
     private Vector3 arCameraRotation;
@@ -28,31 +30,57 @@ public class VRModeManager : Singleton<VRModeManager> {
     private float minimumX = -90f;
     private float maximumX = 90f;
 
+    private float gridInitPos;
+
     private void Start() {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        VRModeON = false;
         arCameraBG = ARCamera.GetComponent<ARCameraBackground>();
         arCameraPosition = ARCamera.transform.position;
         arCameraRotation = ARCamera.transform.eulerAngles;
 
         CameraMoveJoystick.gameObject.SetActive(false);
+        CameraMoveUpJoystick.gameObject.SetActive(false);
         CameraRotateJoystick.gameObject.SetActive(false);
         ARCameraVis.SetActive(false);
         VRCamera.enabled = false;
+        GridPlane.SetActive(false);
+        gridInitPos = GridPlane.transform.position.y;
+
+        TrackingManager.Instance.NewLowestPlanePosition += AdjustGridPlane;
+#elif UNITY_EDITOR || UNITY_STANDALONE
+        VRModeON = true;
+#endif
+    }
+
+    private void AdjustGridPlane(object sender, FloatEventArgs args) {
+        if (args.Data < gridInitPos) {
+            GridPlane.transform.position = new Vector3(GridPlane.transform.position.x, args.Data, GridPlane.transform.position.z);
+        }
     }
 
     private void Update() {
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (VRModeON) {
             float moveHorizontal = 0, moveVertical = 0,
-                rotateHorizontal = 0, rotateVertical = 0;
+                rotateHorizontal = 0, rotateVertical = 0, moveUp = 0;
             // Move with joysticks only when no menu is opened
             if (GameManager.Instance.SceneInteractable) {
                 moveHorizontal = CameraMoveJoystick.Horizontal;
                 moveVertical = CameraMoveJoystick.Vertical;
                 rotateHorizontal = CameraRotateJoystick.Horizontal;
                 rotateVertical = CameraRotateJoystick.Vertical;
+                moveUp = CameraMoveUpJoystick.Vertical;
             }
             // Translate camera based on left joystick and movement of tablet
             VRCamera.transform.Translate(ARCamera.transform.InverseTransformDirection(ARCamera.transform.position - arCameraPosition), Space.Self);
-            VRCamera.transform.Translate(new Vector3(moveHorizontal, 0f, moveVertical) * Time.deltaTime * WalkingSpeed);
+            float posY = VRCamera.transform.localPosition.y;
+            // Translate in horizontal plane
+            VRCamera.transform.Translate(new Vector3(moveHorizontal, 0f, moveVertical) * Time.deltaTime * WalkingSpeed, Space.Self);
+            // Negate Y axis traslation
+            VRCamera.transform.localPosition = new Vector3(VRCamera.transform.localPosition.x, posY, VRCamera.transform.localPosition.z);
+            // Translate the camera wrapper on Y axis to move up/down
+            VRCamera.transform.parent.Translate(new Vector3(0f, moveUp, 0f) * Time.deltaTime * WalkingSpeed, Space.World);
             
             // Add joystick
             rotationY = VRCamera.transform.eulerAngles.y + rotateHorizontal * RotatingSpeed;
@@ -62,15 +90,13 @@ public class VRModeManager : Singleton<VRModeManager> {
 
             // Add rotation from AR camera (tablet)
             Vector3 rotation = new Vector3(rotationX, rotationY, VRCamera.transform.eulerAngles.z) + ARCamera.transform.eulerAngles - arCameraRotation;
+            VRCamera.transform.eulerAngles = rotation;
 
-            // Clamp rotation around X, to make sure it won't surpass the interval of <-90, 90>, because it would cause flickering, when camera is looking down/up
-            VRCamera.transform.eulerAngles = new Vector3(Mathf.Clamp(rotation.x, minimumX, maximumX), rotation.y, rotation.z);
-
-            // Actualize new values of the AR camera
+            // Update new values of the AR camera
             arCameraRotation = ARCamera.transform.eulerAngles;
             arCameraPosition = ARCamera.transform.position;
-
         }
+#endif
     }
 
     public void EnableVRMode() {
@@ -80,13 +106,17 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.enabled = true;
 
         // Init position/rotation variables
-        VRCamera.transform.position = ARCamera.transform.localPosition;
+        VRCamera.transform.parent.position = ARCamera.transform.localPosition;
+        VRCamera.transform.localPosition = Vector3.zero;
         VRCamera.transform.rotation = ARCamera.transform.rotation;
         arCameraRotation = ARCamera.transform.eulerAngles;
         arCameraPosition = ARCamera.transform.position;
         
         CameraMoveJoystick.gameObject.SetActive(true);
+        CameraMoveUpJoystick.gameObject.SetActive(true);
         CameraRotateJoystick.gameObject.SetActive(true);
+
+        GridPlane.SetActive(true);
 
         // Switch Camera.main by tag
         ARCamera.tag = "Untagged";
@@ -102,6 +132,8 @@ public class VRModeManager : Singleton<VRModeManager> {
         TrackingManager.Instance.ChangePlaneTransparency(false);
 
         VRModeON = true;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
     }
 
     public void DisableVRMode() {
@@ -111,7 +143,10 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         VRCamera.enabled = false;
         CameraMoveJoystick.gameObject.SetActive(false);
+        CameraMoveUpJoystick.gameObject.SetActive(false);
         CameraRotateJoystick.gameObject.SetActive(false);
+
+        GridPlane.SetActive(false);
 
         // Switch Camera.main by tag
         ARCamera.tag = "MainCamera";
@@ -125,5 +160,7 @@ public class VRModeManager : Singleton<VRModeManager> {
         TrackingManager.Instance.ChangePlaneTransparency(true);
 
         VRModeON = false;
+
+        SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
     }
 }

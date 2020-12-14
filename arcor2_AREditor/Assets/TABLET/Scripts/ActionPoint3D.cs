@@ -25,7 +25,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     protected override void Start() {
         base.Start();
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
+        tfGizmo = TransformGizmo.Instance;
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 
@@ -195,7 +195,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {

@@ -17,7 +17,7 @@ namespace Base {
         // Dictionary of all action parameters for this Action
         private Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
         
-        public PuckInput Input;
+        public InputOutput Input;
         public PuckOutput Output;
 
         public GameObject InputArrow, OutputArrow;
@@ -34,7 +34,7 @@ namespace Base {
 
             ActionPoint = ap;
             this.metadata = metadata;
-            this.ActionProvider = actionProvider;
+            ActionProvider = actionProvider;
             Data = projectAction;
 
             if (!Base.ProjectManager.Instance.ProjectMeta.HasLogic) {
@@ -46,12 +46,7 @@ namespace Base {
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();
-            foreach (InputOutput io in GetComponentsInChildren<InputOutput>()) {
-                io.Init(null);
-            }
-
-
-
+            
         }
 
         public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {

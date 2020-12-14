@@ -79,13 +79,13 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     }
 
     public void OnClick() {
-        gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
+        gameObject.GetComponent<VerticalLayoutGroup>().enabled = false;
         LayoutGroupToBeDisabled.enabled = false;
         enabled = true;
     }
 
     public void DisableLayoutSelf() {
-        gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
+        gameObject.GetComponent<VerticalLayoutGroup>().enabled = false;
     }
 
     public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback) {

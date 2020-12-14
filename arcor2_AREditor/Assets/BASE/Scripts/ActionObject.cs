@@ -35,11 +35,15 @@ namespace Base {
             SetSceneOrientation(orientation);
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
+            
             CreateModel(customCollisionModels);
             enabled = true;
-            visibility = PlayerPrefsHelper.LoadFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + id + "/visibility", 1);
-            SetVisibility(visibility);
-            
+            if (VRModeManager.Instance.VRModeON) {
+                SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
+            } else {
+                SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
+            }
+
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -54,7 +58,7 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
@@ -78,12 +82,10 @@ namespace Base {
             //TODO: update all action points and actions.. ?
             ResetPosition();
             // update position and rotation based on received data from swagger
-            if (visibility)
-                Show();
-            else
-                Hide();
-
-            SetInteractivity(interactivity);
+            //if (visibility)
+            //    Show();
+            //else
+            //    Hide();
 
             
         }
@@ -163,6 +165,10 @@ namespace Base {
             return ActionObjectMetadata.Robot;
         }
 
+        public bool IsCamera() {
+            return ActionObjectMetadata.Camera;
+        }
+
         public virtual void DeleteActionObject() {
             // Remove all actions of this action point
             RemoveActionPoints();
@@ -185,7 +191,7 @@ namespace Base {
         public virtual void SetVisibility(float value, bool forceShaderChange = false) {
             //Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
+            //PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {

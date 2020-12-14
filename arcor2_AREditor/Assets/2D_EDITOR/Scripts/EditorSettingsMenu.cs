@@ -8,21 +8,23 @@ using Base;
 using UnityEngine.EventSystems;
 
 public class EditorSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Visiblity, Interactibility, APOrientationsVisibility, RobotsEEVisible;
+    public SwitchComponent Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
     [SerializeField]
     private GameObject ActionPointsScrollable, ActionObjectsScrollable;
     [SerializeField]
-    private Slider APSizeSlider;
+    private Slider APSizeSlider, ActionObjectsVisibilitySlider;
+    [SerializeField]
+    private LabeledInput markerOffsetX, markerOffsetY, markerOffsetZ;
 
     private void Start() {
         Debug.Assert(ActionPointsScrollable != null);
         Debug.Assert(ActionObjectsScrollable != null);
         Debug.Assert(APSizeSlider != null);
-        Debug.Assert(Visiblity != null);
         Debug.Assert(Interactibility != null);
         Debug.Assert(APOrientationsVisibility != null);
         Debug.Assert(RobotsEEVisible != null);
+        Debug.Assert(ActionObjectsVisibilitySlider != null);
         Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -74,18 +76,18 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMenu() {
         APSizeSlider.value = ProjectManager.Instance.APSize;
-        Visiblity.SetValue(Base.SceneManager.Instance.ActionObjectsVisible);
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
         APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
+        ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
+        Vector3 offset = TransformConvertor.UnityToROS(PlayerPrefsHelper.LoadVector3("/marker_offset", Vector3.zero));
+        markerOffsetX.SetValue(offset.x);
+        markerOffsetY.SetValue(offset.y);
+        markerOffsetZ.SetValue(offset.z);
     }
 
-    public void ShowActionObjects() {
-        Base.SceneManager.Instance.ShowActionObjects();
-    }
-
-    public void HideActionObjects() {
-         Base.SceneManager.Instance.HideActionObjects();
+    public void SetVisibilityActionObjects() {
+        SceneManager.Instance.SetVisibilityActionObjects(ActionObjectsVisibilitySlider.value / 100f);
     }
 
     public void ShowAPOrientations() {
@@ -161,6 +163,18 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         }
     }
 
+    public void UpdateMarkerOffset() {
+
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        Vector3 offset = TransformConvertor.ROSToUnity(new Vector3((float) (double) markerOffsetX.GetValue(),
+                                      (float) (double) markerOffsetY.GetValue(),
+                                      (float) (double) markerOffsetZ.GetValue()));
+        PlayerPrefsHelper.SaveVector3("/marker_offset", offset);
+        CalibrationManager.Instance.UpdateMarkerOffset(offset);
+
+    
+#endif
+    }
     private void AddActionPointButton(Base.ActionPoint actionPoint) {
         ActionButton btn = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionPointsList.transform).GetComponent<ActionButton>();
         btn.transform.localScale = new Vector3(1, 1, 1);

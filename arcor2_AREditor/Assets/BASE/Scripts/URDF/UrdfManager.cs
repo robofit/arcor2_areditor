@@ -36,13 +36,12 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="fileName">Where URDF should be stored.</param>
     /// <returns></returns>
     public IEnumerator DownloadUrdfPackage(string robotType, string fileName) {
-        GameManager.Instance.SetTurboFramerate();
+        //GameManager.Instance.SetTurboFramerate();
 
         //Debug.Log("URDF: download started");
-
         string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
-            // Request and wait for the desired page.
+                // Request and wait for the desired page.
             yield return www.Send();
             if (www.isNetworkError || www.isHttpError) {
                 Debug.LogError(www.error + " (" + uri + ")");
@@ -77,6 +76,8 @@ public class UrdfManager : Singleton<UrdfManager> {
                 }
             }
         }
+        
+        
     }
 
     /// <summary>
@@ -232,7 +233,6 @@ public class UrdfManager : Singleton<UrdfManager> {
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(fileName);
         }
-
         string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
 
         HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
@@ -332,8 +332,9 @@ public class UrdfManager : Singleton<UrdfManager> {
         }
         // Robot model does not exist, lets create an entry in RobotModels and initiate downloading process
         else {
+            
             RobotModels.Add(robotType, new List<RobotModel>() { });
-
+            
             if (urdfDataPackageFilename != null ? CheckIfNewerRobotModelExists(robotType, urdfDataPackageFilename) : false) {
                 RemoveOldModels(robotType);
                 StartCoroutine(DownloadUrdfPackage(robotType, urdfDataPackageFilename));

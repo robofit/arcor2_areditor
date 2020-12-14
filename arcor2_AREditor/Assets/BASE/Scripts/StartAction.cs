@@ -18,8 +18,8 @@ public class StartAction : StartEndAction
         Init(projectAction, null, null, null, "START");
     }
 
-    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
-        base.Init(projectAction, metadata, ap, actionProvider, keySuffix);
+    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
+        base.Init(projectAction, metadata, ap, actionProvider, actionType);
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0.5f, 0, 0));
     }
 

@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using ARServer.Models;
 using IO.Swagger.Model;
 using UnityEngine;
-
+using UnityEngine.PlayerLoop;
 
 namespace Base {
     public class ActionObjectMetadata : ObjectTypeMeta {
 
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private bool robot, actionsLoaded;
+        private bool robot, actionsLoaded, camera;
 
         public ActionObjectMetadata(ObjectTypeMeta meta) : base(_abstract: meta.Abstract,
                                                                 _base: meta.Base,
@@ -24,12 +24,28 @@ namespace Base {
            
         }
 
-
+        public void Update(ObjectTypeMeta objectTypeMeta) {
+            Abstract = objectTypeMeta.Abstract;
+            Base = objectTypeMeta.Base;
+            BuiltIn = objectTypeMeta.BuiltIn;
+            Description = objectTypeMeta.Description;
+            HasPose = objectTypeMeta.HasPose;
+            NeedsParentType = objectTypeMeta.NeedsParentType;
+            ObjectModel = objectTypeMeta.ObjectModel;
+            Problem = objectTypeMeta.Problem;
+            Settings = objectTypeMeta.Settings;
+        }
 
         public bool Robot {
             get => robot;
             set => robot = value;
         }
+
+        public bool Camera {
+            get => camera;
+            set => camera = value;
+        }
+
         public bool ActionsLoaded {
             get => actionsLoaded;
             set => actionsLoaded = value;

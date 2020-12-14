@@ -7,6 +7,7 @@ using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 using DanielLochner.Assets.SimpleSideMenu;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
 
 public class ActionObjectMenuSceneEditor : ActionObjectMenu
 {
@@ -17,8 +18,9 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
     public SwitchComponent ShowModelSwitch;
     private int currentFocusPoint = -1;
     public GameObject ObjectHasNoParameterLabel;
-
+    public CalibrateRobotDialog CalibrateRobotDialog;
     private GameObject model;
+    public ButtonWithTooltip CalibrateBtn;
 
     private void Start() {
         Debug.Assert(RobotsList != null);
@@ -41,6 +43,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
 
     public async override void UpdateMenu() {
         base.UpdateMenu();
+        CalibrateBtn.gameObject.SetActive(false);
         if (CurrentObject.ObjectParameters.Count > 0) {
             objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);   
         }
@@ -55,6 +58,19 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             RobotsListsBlock.SetActive(false);
             return;
         }
+
+        
+        CalibrateBtn.Button.onClick.RemoveAllListeners();
+        if (CurrentObject.IsRobot()) {
+            CalibrateBtn.gameObject.SetActive(true);
+            CalibrateBtn.SetDescription("Calibrate robot");
+            CalibrateBtn.Button.onClick.AddListener(() => ShowCalibrateRobotDialog());
+        } else if (CurrentObject.IsCamera()) {
+            CalibrateBtn.gameObject.SetActive(true);
+            CalibrateBtn.SetDescription("Calibrate camera");
+            CalibrateBtn.Button.onClick.AddListener(() => ShowCalibrateCameraDialog());
+        } 
+
         if (currentFocusPoint >= 0)
             return;
         if (SceneManager.Instance.RobotInScene()) {
@@ -101,6 +117,8 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         FocusObjectDoneButton.interactable = false;
         NextButton.interactable = false;
         PreviousButton.interactable = false;
+
+        
     }
 
     private async void OnRobotChanged(string robot_id) {
@@ -322,6 +340,26 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update object parameters ", e.Message);
             }
+        }
+    }
+
+    public void ShowCalibrateRobotDialog() {
+        CalibrateRobotDialog.Init(SceneManager.Instance.GetCamerasNames(), CurrentObject.Data.Id);
+        CalibrateRobotDialog.Open();
+    }
+
+
+    public void ShowCalibrateCameraDialog() {
+        ConfirmationDialog.Open("Camera calibration", "Are you sure you want to initiate camera calibration?",
+            async () => await CalibrateCamera(), () => ConfirmationDialog.Close());
+    }
+
+    public async Task CalibrateCamera() {
+        try {
+            await WebsocketManager.Instance.CalibrateCamera(CurrentObject.Data.Id);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to calibrate camera", ex.Message);
+            ConfirmationDialog.Close();
         }
     }
 

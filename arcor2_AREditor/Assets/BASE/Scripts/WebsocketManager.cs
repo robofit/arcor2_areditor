@@ -64,6 +64,10 @@ namespace Base {
         public event AREditorEventArgs.StringEventHandler OnProjectRemoved;
         public event AREditorEventArgs.BareProjectEventHandler OnProjectBaseUpdated;
 
+        public event AREditorEventArgs.StringListEventHandler OnObjectTypeRemoved;
+        public event AREditorEventArgs.ObjectTypesHandler OnObjectTypeAdded;
+        public event AREditorEventArgs.ObjectTypesHandler OnObjectTypeUpdated;
+
         public event AREditorEventArgs.StringEventHandler OnSceneRemoved;
         public event AREditorEventArgs.BareSceneEventHandler OnSceneBaseUpdated;
 
@@ -665,14 +669,19 @@ namespace Base {
             IO.Swagger.Model.ChangedObjectTypes objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypes>(data);
             switch (objectTypesChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
-                    foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
-                        ActionsManager.Instance.ObjectTypeAdded(type);
+                    OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
+                        
                     break;
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Remove:
+                    List<string> removed = new List<string>();
                     foreach (ObjectTypeMeta type in objectTypesChangedEvent.Data)
-                        ActionsManager.Instance.ObjectTypeRemoved(type);
+                        removed.Add(type.Type);
+                    OnObjectTypeRemoved?.Invoke(this, new StringListEventArgs(removed));
                     break;
-                
+
+                case ChangedObjectTypes.ChangeTypeEnum.Update:
+                    OnObjectTypeUpdated?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -1958,9 +1967,9 @@ namespace Base {
         /// <param name="endActionId">UUID of second action (to)</param>
         /// <param name="dryRun">If true, validates all parameters, but will not execute requested action itself.</param>
         /// <returns></returns>
-        public async Task AddLogicItem(string startActionId, string endActionId, bool dryRun) {
+        public async Task AddLogicItem(string startActionId, string endActionId, IO.Swagger.Model.ProjectLogicIf condition, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddLogicItemRequestArgs args = new IO.Swagger.Model.AddLogicItemRequestArgs(start: startActionId, end: endActionId);
+            IO.Swagger.Model.AddLogicItemRequestArgs args = new IO.Swagger.Model.AddLogicItemRequestArgs(start: startActionId, end: endActionId, condition: condition);
             IO.Swagger.Model.AddLogicItemRequest request = new IO.Swagger.Model.AddLogicItemRequest(r_id, "AddLogicItem", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddLogicItemResponse response = await WaitForResult<IO.Swagger.Model.AddLogicItemResponse>(r_id);
@@ -2244,7 +2253,30 @@ namespace Base {
         }
 
         
+        public async Task CalibrateRobot(string robotId, string cameraId, bool moveToCalibrationPose) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CalibrateRobotRequestArgs args = new CalibrateRobotRequestArgs(robotId: robotId,
+                cameraId: cameraId, moveToCalibrationPose: moveToCalibrationPose);
 
+            IO.Swagger.Model.CalibrateRobotRequest request = new IO.Swagger.Model.CalibrateRobotRequest(r_id, "CalibrateRobot", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CalibrateRobotResponse response = await WaitForResult<IO.Swagger.Model.CalibrateRobotResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+            } 
+        }
+
+        public async Task CalibrateCamera(string cameraId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CalibrateCameraRequestArgs args = new CalibrateCameraRequestArgs(id: cameraId);
+
+            IO.Swagger.Model.CalibrateCameraRequest request = new IO.Swagger.Model.CalibrateCameraRequest(r_id, "CalibrateCamera", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CalibrateCameraResponse response = await WaitForResult<IO.Swagger.Model.CalibrateCameraResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+            } 
+        }
 
 
     }

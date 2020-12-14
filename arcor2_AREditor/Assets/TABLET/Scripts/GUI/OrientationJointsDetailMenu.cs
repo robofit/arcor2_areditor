@@ -7,6 +7,7 @@ using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
@@ -40,6 +41,10 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     private NamedOrientation orientation;
     private ProjectRobotJoints joints;
     private bool isOrientationDetail; //true for orientation, false for joints
+
+    //visibility of robot model backup: Dictionary<robotID,visibilityValue>
+    private Dictionary<string, float> robotVisibilityBackup = new Dictionary<string, float>();
+
 
     private void Start() {
         SideMenu = GetComponent<SimpleSideMenu>();
@@ -311,7 +316,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             if (isOrientationDetail) {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
                 await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
-                MoveHereModel();
             } else {
                 await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
             }
@@ -334,6 +338,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.GetRobot(robotId).GetJoints();
 
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(robotId, ee, true, pose, startJoints);
+                await PrepareRobotModel(robotId, false);
                 if (!avoid_collision) {
                     Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
                 }
@@ -370,19 +375,40 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         ManualOrientationEditButton.interactable = interactable;
     }
 
+    /// <summary>
+    /// Prepares robot model for setting position (joints angles) different to the position of real robot.
+    /// Takes care of: (un)registering to joints stream, grey color and visibility
+    /// </summary>
+    /// <param name="robotID"></param>
+    /// <param name="shadowRealRobot">Should model shadow position of real robot?</param>
+    /// <returns></returns>
+    private async Task PrepareRobotModel(string robotID, bool shadowRealRobot) {
+        if (shadowRealRobot) {
+            robotVisibilityBackup.TryGetValue(robotID, out float originalVisibility);
+            SceneManager.Instance.GetActionObject(robotID).SetVisibility(originalVisibility);
+        } else {
+            if (!robotVisibilityBackup.TryGetValue(robotID, out _)) {
+                robotVisibilityBackup.Add(robotID, SceneManager.Instance.GetActionObject(robotID).GetVisibility());
+                SceneManager.Instance.GetActionObject(robotID).SetVisibility(1f);
+            }
+        }
+
+        await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+    }
 
     public async void Close() {
         CurrentActionPoint.GetGameObject().SendMessage("Select", false);
         if (isOrientationDetail) {
-            foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
-                robot.SetGrey(!SceneManager.Instance.SceneStarted);
-            }
-            SceneManager.Instance.RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-        } else {
+
+        } else { //joints
             DestroyJointsFields();
-            SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(!SceneManager.Instance.SceneStarted);
-            await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
+
+        foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
+            await PrepareRobotModel(rv.Key, true);
+        }
+        robotVisibilityBackup.Clear();
         SideMenu.Close();
     }
 
@@ -390,11 +416,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
-
-        SceneManager.Instance.RegisterRobotsForEvent(false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-        foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
-            robot.SetGrey(true);
-        }
 
         ShowMenu(currentActionPoint);
     }
@@ -408,13 +429,14 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             Notifications.Instance.ShowNotification(ex.Message, "");
         }
 
-        await WebsocketManager.Instance.RegisterForRobotEvent(joints.RobotId, false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-        SceneManager.Instance.GetRobot(joints.RobotId).SetGrey(true);
+        await PrepareRobotModel(joints.RobotId, false);
 
         MoveHereModel();
         UpdateJointsList();
         ShowMenu(currentActionPoint);
     }
+
+
 
     private void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;

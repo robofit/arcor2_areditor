@@ -11,7 +11,10 @@ public class MenuManager : Base.Singleton<MenuManager> {
         AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
-    
+
+    public OutputTypeDialog OutputTypeDialog;
+    public ConnectionSelectorDialog ConnectionSelectorDialog;
+
     public bool IsAnyMenuOpened {
         get;
         private set;

@@ -5,10 +5,11 @@ using TMPro;
 using Base;
 using RuntimeGizmos;
 using IO.Swagger.Model;
+using TriLibCore;
+using System;
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class ActionObject3D : ActionObject
-{
+public class ActionObject3D : ActionObject {
     public TextMeshPro ActionObjectName;
     public GameObject Visual, Model;
 
@@ -37,8 +38,8 @@ public class ActionObject3D : ActionObject
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        
+        tfGizmo = TransformGizmo.Instance;
+
     }
 
 
@@ -61,7 +62,7 @@ public class ActionObject3D : ActionObject
 
             } else {
                 manipulationStarted = false;
-            }           
+            }
 
         }
 
@@ -86,7 +87,7 @@ public class ActionObject3D : ActionObject
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));        
+        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
@@ -101,7 +102,7 @@ public class ActionObject3D : ActionObject
         Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
-    public async override void OnClick(Click type) {        
+    public async override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
             GameManager.Instance.ObjectSelected(this);
@@ -129,13 +130,12 @@ public class ActionObject3D : ActionObject
                     Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
                 }
             }
-        }
-        else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
+        } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
             ShowMenu();
             tfGizmo.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
         }
-                
+
     }
 
     public override void UpdateUserId(string newUserId) {
@@ -143,9 +143,9 @@ public class ActionObject3D : ActionObject
         ActionObjectName.text = newUserId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
         Debug.Assert(Model != null);
-        base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
+        base.ActionObjectUpdate(actionObjectSwagger);
         ActionObjectName.text = actionObjectSwagger.Name;
 
     }
@@ -158,7 +158,6 @@ public class ActionObject3D : ActionObject
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
         base.SetVisibility(value);
-
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
         }
@@ -167,27 +166,61 @@ public class ActionObject3D : ActionObject
             transparentShader = Shader.Find("Transparent/Diffuse");
         }
 
-        // Set opaque shader
-        if (value >= 1) {
-            transparent = false;
-            modelMaterial.shader = standardShader;
-        }
-        // Set transparent shader
-        else {
-            if (!transparent) {
-                modelMaterial.shader = transparentShader;
-                transparent = true;
+        if (ActionObjectMetadata.ObjectModel != null &&
+            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
+            // Set opaque shader
+            if (value >= 1) {
+                transparent = false;
+                foreach (var renderer in aoRenderers) {
+                    foreach (var material in renderer.materials) {
+                        material.shader = standardShader;
+                        Color col = material.color;
+                        col.a = 1f;
+                        material.color = col;
+                    }
+                }
             }
-            // set alpha of the material
-            Color color = modelMaterial.color;
-            color.a = value;
-            modelMaterial.color = color;
+            // Set transparent shader
+            else {
+                if (!transparent) {
+                    transparent = true;
+                    foreach (var renderer in aoRenderers) {
+                        foreach (var material in renderer.materials) {
+                            material.shader = transparentShader;
+                        }
+                    }
+                }
+                foreach (var renderer in aoRenderers) {
+                    foreach (var material in renderer.materials) {
+                        Color col = material.color;
+                        col.a = value;
+                        material.color = col;
+                    }
+                }
+            }
+        } else { //not mesh
+            // Set opaque shader
+            if (value >= 1) {
+                transparent = false;
+                modelMaterial.shader = standardShader;
+            }
+            // Set transparent shader
+            else {
+                if (!transparent) {
+                    modelMaterial.shader = transparentShader;
+                    transparent = true;
+                }
+                // set alpha of the material
+                Color color = modelMaterial.color;
+                color.a = value;
+                modelMaterial.color = color;
+            }
         }
     }
 
     public override void Show() {
         Debug.Assert(Model != null);
-        SetVisibility(100);
+        SetVisibility(1);
     }
 
     public override void Hide() {
@@ -197,7 +230,15 @@ public class ActionObject3D : ActionObject
 
     public override void SetInteractivity(bool interactivity) {
         Debug.Assert(Model != null);
-        Model.GetComponent<Collider>().enabled = interactivity;
+        //Model.GetComponent<Collider>().enabled = interactivity;
+        if (ActionObjectMetadata.ObjectModel != null &&
+            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
+            foreach (var col in aoColliders) {
+                col.enabled = interactivity;
+            }
+        } else {
+            Collider.enabled = interactivity;
+        }
     }
 
     public override void ActivateForGizmo(string layer) {
@@ -207,7 +248,6 @@ public class ActionObject3D : ActionObject
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
-            
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
         } else {
@@ -229,7 +269,6 @@ public class ActionObject3D : ActionObject
                 case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
                     Model = Instantiate(CylinderPrefab, Visual.transform);
                     if (customCollisionModels == null) {
-                        
                         Model.transform.localScale = new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height / 2, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius);
                     } else {
                         foreach (IO.Swagger.Model.Cylinder cylinder in customCollisionModels.Cylinders) {
@@ -253,15 +292,22 @@ public class ActionObject3D : ActionObject
                         }
                     }
                     break;
+                case ObjectModel.TypeEnum.Mesh:
+                    var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
+                    var webRequest = AssetDownloader.CreateWebRequest(ActionObjectMetadata.ObjectModel.Mesh.Uri);
+                    AssetDownloader.LoadModelFromUri(webRequest, null, OnModelLoaded, null, OnModelLoadError, null, assetLoaderOptions);
+                    Model = Instantiate(CubePrefab, Visual.transform);
+                    Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
+                    break;
                 default:
                     Model = Instantiate(CubePrefab, Visual.transform);
                     Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
                     break;
             }
         }
-        if (IsRobot()) {
-            Model.tag = "Robot";
-        }
+        //if (IsRobot()) {
+        //    Model.tag = "Robot";
+        //}
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
         Model.GetComponent<OnClickCollider>().Target = gameObject;
@@ -273,14 +319,54 @@ public class ActionObject3D : ActionObject
 
         aoRenderers.Clear();
         aoColliders.Clear();
-        aoRenderers.AddRange(Visual.GetComponentsInChildren<Renderer>(true));
-        aoColliders.AddRange(Visual.GetComponentsInChildren<Collider>(true));
+        aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
+        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
     }
 
     public override GameObject GetModelCopy() {
         GameObject model = Instantiate(Model);
         model.transform.localScale = Model.transform.localScale;
         return model;
+    }
+
+    /// <summary>
+    /// For meshes...
+    /// </summary>
+    /// <param name="assetLoaderContext"></param>
+    public void OnModelLoaded(AssetLoaderContext assetLoaderContext) {
+        Model.SetActive(false);
+        Destroy(Model);
+        Model = assetLoaderContext.RootGameObject;
+
+        Model.gameObject.transform.parent = Visual.transform;
+        Model.gameObject.transform.localPosition = Vector3.zero;
+
+        gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
+        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
+
+        foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
+            child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
+            child.gameObject.AddComponent<MeshCollider>();
+        }
+
+        aoRenderers.Clear();
+        aoColliders.Clear();
+        aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
+        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
+
+        outlineOnClick.ClearRenderers();
+        outlineOnClick.InitRenderers(aoRenderers);
+
+        transparent = false; //needs to be set before 1st call of SetVisibility after model loading
+        SetVisibility(visibility);
+    }
+
+    /// <summary>
+    /// For meshes...
+    /// </summary>
+    /// <param name="obj"></param>
+    private void OnModelLoadError(IContextualizedError obj) {
+        Notifications.Instance.ShowNotification("Unable to show mesh " + this.GetName(), obj.GetInnerException().Message);
     }
 
 
@@ -290,7 +376,7 @@ public class ActionObject3D : ActionObject
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {
