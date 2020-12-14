@@ -58,7 +58,7 @@ namespace Base {
             }
         }
 
-        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
+        public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
                 UpdateUserId(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
@@ -86,9 +86,6 @@ namespace Base {
             //    Show();
             //else
             //    Hide();
-
-            SetVisibility(visibility);
-            SetInteractivity(interactivity);
 
             
         }

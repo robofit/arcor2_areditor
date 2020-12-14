@@ -484,8 +484,8 @@ namespace Base {
             ActionObjectName.text = newUserId;
         }
 
-        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
-            base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
+        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+            base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
         }
 

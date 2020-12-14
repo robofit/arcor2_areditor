@@ -143,9 +143,9 @@ public class ActionObject3D : ActionObject {
         ActionObjectName.text = newUserId;
     }
 
-    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, float visibility, bool interactivity) {
+    public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
         Debug.Assert(Model != null);
-        base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
+        base.ActionObjectUpdate(actionObjectSwagger);
         ActionObjectName.text = actionObjectSwagger.Name;
 
     }

@@ -632,7 +632,7 @@ namespace Base {
         public void SceneObjectUpdated(SceneObject sceneObject) {
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
-                actionObject.ActionObjectUpdate(sceneObject, SceneManager.Instance.ActionObjectsVisibility, SceneManager.Instance.ActionObjectsInteractive);
+                actionObject.ActionObjectUpdate(sceneObject);
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
@@ -660,7 +660,7 @@ namespace Base {
         /// <returns></returns>
         public void SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
-            actionObject.ActionObjectUpdate(sceneObject, ActionObjectsVisibility, ActionObjectsInteractive);
+            actionObject.ActionObjectUpdate(sceneObject);
             SceneChanged = true;
         }
 
@@ -689,7 +689,7 @@ namespace Base {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
                 ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
-                actionObject.ActionObjectUpdate(aoSwagger, ActionObjectsVisibility, ActionObjectsInteractive);
+                actionObject.ActionObjectUpdate(aoSwagger);
                 currentAO.Add(aoSwagger.Id);
             }
 
