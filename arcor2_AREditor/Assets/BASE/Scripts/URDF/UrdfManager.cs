@@ -332,7 +332,6 @@ public class UrdfManager : Singleton<UrdfManager> {
         }
         // Robot model does not exist, lets create an entry in RobotModels and initiate downloading process
         else {
-            Debug.LogError("Downloading");
             
             RobotModels.Add(robotType, new List<RobotModel>() { });
             

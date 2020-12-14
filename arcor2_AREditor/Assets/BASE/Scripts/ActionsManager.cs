@@ -62,7 +62,6 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                Debug.LogError("Actions not ready and objects loaded");
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
                         return;
