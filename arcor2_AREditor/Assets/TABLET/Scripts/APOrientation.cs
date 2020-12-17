@@ -5,7 +5,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class APOrientation : Base.Clickable {
+public class APOrientation : InteractiveObject {
     public Base.ActionPoint ActionPoint;
     public string OrientationId;
 
@@ -63,5 +63,9 @@ public class APOrientation : Base.Clickable {
 
     public void SetOrientation(IO.Swagger.Model.Orientation orientation) {
         transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(orientation));
+    }
+
+    public override string GetName() {
+        return ProjectManager.Instance.GetNamedOrientation(OrientationId).Name;
     }
 }

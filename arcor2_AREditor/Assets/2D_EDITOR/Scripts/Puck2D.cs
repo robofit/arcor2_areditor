@@ -21,4 +21,8 @@ public class Puck2D : Base.Action {
     public override void OnHoverEnd() {
 
     }
+
+    public override string GetName() {
+        throw new System.NotImplementedException();
+    }
 }

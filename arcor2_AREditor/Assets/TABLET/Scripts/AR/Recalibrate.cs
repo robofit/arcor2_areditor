@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
-public class Recalibrate : Clickable {
+public class Recalibrate : InteractiveObject {
 
 
     public override void OnClick(Click type) {
@@ -25,5 +25,9 @@ public class Recalibrate : Clickable {
 
     public override void OnHoverEnd() {
 
+    }
+
+    public override string GetName() {
+        return "Calibration cube";
     }
 }

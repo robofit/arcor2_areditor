@@ -76,4 +76,8 @@ public class ActionPoint2D : Base.ActionPoint {
     public override void OnHoverEnd() {
 
     }
+
+    public override string GetName() {
+        throw new System.NotImplementedException();
+    }
 }

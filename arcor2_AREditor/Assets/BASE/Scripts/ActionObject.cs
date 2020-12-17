@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using IO.Swagger.Model;
 
 namespace Base {
-    public abstract class ActionObject : Clickable, IActionProvider, IActionPointParent {
+    public abstract class ActionObject : InteractiveObject, IActionProvider, IActionPointParent {
 
         public GameObject ActionPointsSpawn;
         [System.NonSerialized]
@@ -235,7 +235,7 @@ namespace Base {
             return actionPoints;
         }
 
-        public string GetName() {
+        public override string GetName() {
             return Data.Name;
         }
 

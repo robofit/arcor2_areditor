@@ -2,9 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TabletVis : Base.Clickable {
+public class TabletVis : InteractiveObject {
     [SerializeField]
     private GameObject name;
+
+    public override string GetName() {
+        return "Me";
+    }
+
     public override void OnClick(Click type) {
         
     }

@@ -10,7 +10,7 @@ using UnityEngine.Events;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public class InputOutput : Clickable {
+    public class InputOutput : InteractiveObject {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -338,6 +338,14 @@ namespace Base {
                     renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
             }
                 
+        }
+
+        public override string GetName() {
+            if (typeof(PuckOutput) == GetType()) {
+                return "Output of " + Action.Data.Name;
+            } else {
+                return "Input of " + Action.Data.Name;
+            }
         }
     }
 

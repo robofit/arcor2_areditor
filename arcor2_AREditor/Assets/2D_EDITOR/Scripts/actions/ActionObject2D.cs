@@ -115,6 +115,11 @@ public class ActionObject2D : Base.ActionObject {
     public override void OnHoverEnd() {
 
     }
+
+    public override string GetName() {
+        throw new System.NotImplementedException();
+    }
+
 }
 
 

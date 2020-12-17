@@ -7,7 +7,7 @@ using IO.Swagger.Model;
 using WebSocketSharp;
 
 namespace Base {
-    public abstract class ActionPoint : Clickable, IActionPointParent {
+    public abstract class ActionPoint : InteractiveObject, IActionPointParent {
 
         // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
@@ -318,7 +318,7 @@ namespace Base {
             return Parent;
         }
 
-        public string GetName() {
+        public override string GetName() {
             return Data.Name;
         }
 

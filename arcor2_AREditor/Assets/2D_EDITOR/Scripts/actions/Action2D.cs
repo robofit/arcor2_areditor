@@ -17,6 +17,9 @@ public class Action2D : Base.Action {
 
     }
 
+    public override string GetName() {
+        throw new System.NotImplementedException();
+    }
 }
 
 

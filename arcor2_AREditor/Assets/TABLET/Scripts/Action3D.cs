@@ -136,4 +136,7 @@ public class Action3D : Base.Action {
             renderer.material.color = Color.gray;
     }
 
+    public override string GetName() {
+        return Data.Name;
+    }
 }

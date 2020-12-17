@@ -1,6 +1,6 @@
 using Base;
 
-public class CreateAnchor : Base.Clickable {
+public class CreateAnchor : InteractiveObject {
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal ||
@@ -17,4 +17,7 @@ public class CreateAnchor : Base.Clickable {
 
     }
 
+    public override string GetName() {
+        return "Calibration cube";
+    }
 }
