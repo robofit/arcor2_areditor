@@ -7,6 +7,7 @@ using RuntimeGizmos;
 using IO.Swagger.Model;
 using TriLibCore;
 using System;
+using TriLibCore.General;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionObject3D : ActionObject {
