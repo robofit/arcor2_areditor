@@ -858,6 +858,16 @@ namespace Base {
             }
         }
 
+        public List<ActionObject> GetAllActionObjectsWithoutPose() {
+            List<ActionObject> objects = new List<ActionObject>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (!actionObject.ActionObjectMetadata.HasPose) {
+                    objects.Add(actionObject);
+                }
+            }
+            return objects;
+        }
+             
         
 
         #endregion

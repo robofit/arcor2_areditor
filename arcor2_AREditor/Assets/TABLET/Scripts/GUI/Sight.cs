@@ -17,11 +17,23 @@ namespace Base {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
             RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.5f, 0.5f, 0.0001f), ray.direction);
 
-            List<Tuple<float, Transform>> orderedTransforms = new List<Tuple<float, Transform>>();
+            List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();
             foreach (RaycastHit hit in hits) {
 
                 float distance = Vector3.Cross(ray.direction, hit.point - ray.origin).magnitude;
-                orderedTransforms.Add(new Tuple<float, Transform>(distance, hit.collider.transform));
+
+                InteractiveObject interactiveObject = hit.collider.transform.gameObject.GetComponent<InteractiveObject>();
+                if (interactiveObject is null) {
+                    OnClickCollider collider = hit.collider.transform.gameObject.GetComponent<OnClickCollider>();
+                    if (collider is null) {
+                        continue;
+                    }
+                    interactiveObject = collider.Target.gameObject.GetComponent<InteractiveObject>();
+                    if (interactiveObject is null) {
+                        continue;
+                    }
+                }
+                orderedTransforms.Add(new Tuple<float, InteractiveObject>(distance, interactiveObject));
 
                 //hit.collider.transform.gameObject.SendMessage("OnHoverStart");
                 /*try {
@@ -52,8 +64,10 @@ namespace Base {
                     Debug.LogError(e);
                 }*/
             }
+
             orderedTransforms.Sort((x, y) => x.Item1.CompareTo(y.Item1));
-            SelectorMenu.Instance.UpdateMenu(orderedTransforms.Select(_ => _.Item2).ToList());
+
+            SelectorMenu.Instance.UpdateAimMenu(orderedTransforms.Select(_ => _.Item2).Distinct().ToList());
             
              /*else {
                 if (CurrentObject != null) {
@@ -62,6 +76,8 @@ namespace Base {
                 }
             }*/
         }
+
+        
 
         private IEnumerator HoverEnd() {
             endingHover = true;

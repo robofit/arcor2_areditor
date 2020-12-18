@@ -1759,6 +1759,21 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
+        public List<InteractiveObject> GetAllInteractiveObjects() {
+            List<InteractiveObject> objects = new List<InteractiveObject>();
+            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }
+
+            if (GetGameState() == GameStateEnum.ProjectEditor) {
+                foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {
+                    objects.Add(ap);
+                }
+            }
+
+            return objects;
+        }
+
     }
 
     /// <summary>
@@ -1804,5 +1819,7 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
+        
     }
 }
