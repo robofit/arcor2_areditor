@@ -293,9 +293,9 @@ public class ActionObject3D : ActionObject {
                     }
                     break;
                 case ObjectModel.TypeEnum.Mesh:
-                    var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
-                    var webRequest = AssetDownloader.CreateWebRequest(ActionObjectMetadata.ObjectModel.Mesh.Uri);
-                    AssetDownloader.LoadModelFromUri(webRequest, null, OnModelLoaded, null, OnModelLoadError, null, assetLoaderOptions);
+                    MeshImporter.Instance.OnMeshImported += OnModelLoaded;
+                    MeshImporter.Instance.LoadModel(ActionObjectMetadata.ObjectModel.Mesh, GetId());
+
                     Model = Instantiate(CubePrefab, Visual.transform);
                     Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
                     break;
@@ -333,10 +333,12 @@ public class ActionObject3D : ActionObject {
     /// For meshes...
     /// </summary>
     /// <param name="assetLoaderContext"></param>
-    public void OnModelLoaded(AssetLoaderContext assetLoaderContext) {
+    public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
+        if (args.Name != this.GetId())
+            return;
         Model.SetActive(false);
         Destroy(Model);
-        Model = assetLoaderContext.RootGameObject;
+        Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;
         Model.gameObject.transform.localPosition = Vector3.zero;
@@ -359,6 +361,8 @@ public class ActionObject3D : ActionObject {
 
         transparent = false; //needs to be set before 1st call of SetVisibility after model loading
         SetVisibility(visibility);
+
+        MeshImporter.Instance.OnMeshImported -= OnModelLoaded;
     }
 
     /// <summary>
