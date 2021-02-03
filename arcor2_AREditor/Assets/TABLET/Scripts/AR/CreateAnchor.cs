@@ -20,4 +20,24 @@ public class CreateAnchor : InteractiveObject {
     public override string GetName() {
         return "Calibration cube";
     }
+
+    public override string GetId() {
+        return "Calibration cube";
+    }
+
+    public override void OpenMenu() {
+        throw new System.NotImplementedException();
+    }
+
+    public override bool HasMenu() {
+        return false;
+    }
+
+    public override bool Movable() {
+        return false;
+    }
+
+    public override void StartManipulation() {
+        throw new System.NotImplementedException();
+    }
 }

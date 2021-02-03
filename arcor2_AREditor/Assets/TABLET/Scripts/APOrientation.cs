@@ -22,8 +22,7 @@ public class APOrientation : InteractiveObject {
             return;
         }
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
-            ActionPoint.ShowAimingMenu(OrientationId);
-            HighlightOrientation(true);
+            OpenMenu();
         }       
         
     }
@@ -67,5 +66,26 @@ public class APOrientation : InteractiveObject {
 
     public override string GetName() {
         return ProjectManager.Instance.GetNamedOrientation(OrientationId).Name;
+    }
+
+    public override string GetId() {
+        return OrientationId;
+    }
+
+    public override void OpenMenu() {
+        ActionPoint.ShowAimingMenu(OrientationId);
+        HighlightOrientation(true);
+    }
+
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public override bool Movable() {
+        return false;
+    }
+
+    public override void StartManipulation() {
+        throw new System.NotImplementedException();
     }
 }

@@ -51,4 +51,24 @@ public class RobotEE : InteractiveObject {
     public override string GetName() {
         return EEId;
     }
+
+    public override string GetId() {
+        return EEId;
+    }
+
+    public override void OpenMenu() {
+        throw new System.NotImplementedException();
+    }
+
+    public override bool HasMenu() {
+        return false;
+    }
+
+    public override bool Movable() {
+        return false;
+    }
+
+    public override void StartManipulation() {
+        throw new System.NotImplementedException();
+    }
 }

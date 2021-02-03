@@ -304,11 +304,7 @@ namespace Base {
             Actions[action_id].DeleteAction();
         }
 
-        public void ShowMenu(bool enableBackButton) {
-            actionPointMenu.CurrentActionPoint = this;
-            actionPointMenu.EnableBackButton(enableBackButton);
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);            
-        }
+        
 
         public virtual void ActivateForGizmo(string layer) {
             gameObject.layer = LayerMask.NameToLayer(layer);
@@ -320,10 +316,6 @@ namespace Base {
 
         public override string GetName() {
             return Data.Name;
-        }
-
-        public string GetId() {
-            return Data.Id;
         }
 
         public bool IsActionObject() {
@@ -580,11 +572,6 @@ namespace Base {
                 ++i;
             }
         }
-
-        public void ShowMenu() {
-            ShowMenu(false);
-        }
-
         public GameObject GetGameObject() {
             return gameObject;
         }
@@ -605,7 +592,7 @@ namespace Base {
         }
 
         internal void ShowAimingMenu(string orientationId) {
-            ShowMenu(false);
+            OpenMenu();
             actionPointMenu.OpenActionPointAimingMenu(orientationId);
         }
 
@@ -615,6 +602,14 @@ namespace Base {
         public void ResetPosition() {
             transform.localPosition = GetScenePosition();
             transform.localRotation = GetSceneOrientation();
+        }
+
+        public override bool Movable() {
+            return true;
+        }
+
+        public override string GetId() {
+            return Data.Id;
         }
 
     }

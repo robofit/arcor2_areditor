@@ -205,17 +205,6 @@ namespace Base {
         public abstract void SetInteractivity(bool interactive);
 
 
-        public void ShowMenu() {
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
-        }
-
         public virtual void ActivateForGizmo(string layer) {
             gameObject.layer = LayerMask.NameToLayer(layer);
         }
@@ -239,10 +228,7 @@ namespace Base {
             return Data.Name;
         }
 
-        public string GetId() {
-            return Data.Id;
-        }
-
+      
         public bool IsActionObject() {
             return true;
         }
@@ -263,6 +249,14 @@ namespace Base {
             return gameObject;
         }
 
+        public override string GetId() {
+            return Data.Id;
+        }
+
+        public override bool Movable() {
+            return true;
+        }
+
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
         public abstract GameObject GetModelCopy();
 
@@ -275,5 +269,7 @@ namespace Base {
     }
 
     }
+
+   
 
 }

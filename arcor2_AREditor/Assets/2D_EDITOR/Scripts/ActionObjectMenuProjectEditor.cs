@@ -87,7 +87,7 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
 
         foreach (ActionPoint actionPoint in CurrentObject.GetActionPoints()) {
             Button button = GameManager.Instance.CreateButton(ActionPointsList.transform, actionPoint.Data.Name);
-            button.onClick.AddListener(() => ShowActionPoint(actionPoint));
+            button.onClick.AddListener(() => ShowActionPoint((ActionPoint3D) actionPoint));
 
             // Add EventTrigger OnPointerEnter and OnPointerExit - to be able to highlight corresponding AP when hovering over button
             OutlineOnClick APoutline = actionPoint.GetComponent<OutlineOnClick>();
@@ -108,7 +108,7 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
         }
     }
 
-    private static void ShowActionPoint(ActionPoint actionPoint) {
+    private static void ShowActionPoint(ActionPoint3D actionPoint) {
         MenuManager.Instance.ActionObjectMenuProjectEditor.Close();
         actionPoint.ShowMenu(true);
         

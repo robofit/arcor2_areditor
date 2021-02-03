@@ -94,24 +94,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
     }
 
-    public async void StartManipulation() {
-        if (Locked) {
-            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
-        } else {
-
-            try {
-                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
-                // We have clicked with left mouse and started manipulation with object
-                Debug.LogWarning("Turning on gizmo overlay");
-                manipulationStarted = true;
-                updatePosition = false;
-                tfGizmo.AddTarget(Sphere.transform);
-                outlineOnClick.GizmoHighlight();
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
-            }
-        }
+    public void ShowMenu(bool enableBackButton = false) {
+        actionPointMenu.CurrentActionPoint = this;
+        actionPointMenu.EnableBackButton(enableBackButton);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
     }
+
 
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
@@ -240,4 +228,30 @@ public class ActionPoint3D : Base.ActionPoint {
         sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
     }
 
+    public override void OpenMenu() {
+        ShowMenu();
+    }
+
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public async override void StartManipulation() {
+        if (Locked) {
+            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
+        } else {
+
+            try {
+                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
+                // We have clicked with left mouse and started manipulation with object
+                Debug.LogWarning("Turning on gizmo overlay");
+                manipulationStarted = true;
+                updatePosition = false;
+                tfGizmo.AddTarget(Sphere.transform);
+                outlineOnClick.GizmoHighlight();
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
+            }
+        }
+    }
 }

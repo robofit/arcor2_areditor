@@ -146,6 +146,14 @@ namespace Base {
         public List<Flow> GetFlows() {
             return Data.Flows;
         }
+
+        public override string GetId() {
+            return Data.Id;
+        }
+
+        public override bool Movable() {
+            return false;
+        }
     }
 
 }

@@ -121,19 +121,11 @@ public class ActionObject3D : ActionObject {
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                try {
-                    await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
-                    manipulationStarted = true;
-                    tfGizmo.AddTarget(Model.transform);
-                    outlineOnClick.GizmoHighlight();
-                } catch (RequestFailedException ex) {
-                    Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
-                }
+                StartManipulation();
             }
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ShowMenu();
-            tfGizmo.ClearTargets();
-            outlineOnClick.GizmoUnHighlight();
+            OpenMenu();
+
         }
 
     }
@@ -407,4 +399,31 @@ public class ActionObject3D : ActionObject {
         modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
     }
 
+    public override void OpenMenu() {
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+            actionObjectMenu.CurrentObject = this;
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+            actionObjectMenuProjectEditor.CurrentObject = this;
+            actionObjectMenuProjectEditor.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+        }
+    }
+
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public async override void StartManipulation() {
+        try {
+            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
+            manipulationStarted = true;
+            tfGizmo.AddTarget(Model.transform);
+            outlineOnClick.GizmoHighlight();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
+        }
+    }
 }

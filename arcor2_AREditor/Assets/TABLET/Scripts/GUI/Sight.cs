@@ -15,7 +15,7 @@ namespace Base {
         private void Update() {
             //if (Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0)), out hit, Mathf.Infinity)) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-            RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.5f, 0.5f, 0.0001f), ray.direction);
+            RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction);
 
             List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();
             foreach (RaycastHit hit in hits) {
@@ -33,7 +33,9 @@ namespace Base {
                         continue;
                     }
                 }
-                orderedTransforms.Add(new Tuple<float, InteractiveObject>(distance, interactiveObject));
+                if (!InteractiveObjectInList(orderedTransforms, interactiveObject)) {
+                    orderedTransforms.Add(new Tuple<float, InteractiveObject>(distance, interactiveObject));
+                }
 
                 //hit.collider.transform.gameObject.SendMessage("OnHoverStart");
                 /*try {
@@ -67,7 +69,8 @@ namespace Base {
 
             orderedTransforms.Sort((x, y) => x.Item1.CompareTo(y.Item1));
 
-            SelectorMenu.Instance.UpdateAimMenu(orderedTransforms.Select(_ => _.Item2).Distinct().ToList());
+            SelectorMenu.Instance.UpdateAimMenu(orderedTransforms);
+            //SelectorMenu.Instance.UpdateAimMenu(orderedTransforms.Select(_ => _.Item2).Distinct().ToList());
             
              /*else {
                 if (CurrentObject != null) {
@@ -77,7 +80,14 @@ namespace Base {
             }*/
         }
 
-        
+        private bool InteractiveObjectInList(List<Tuple<float, InteractiveObject>> list, InteractiveObject interactiveObject) {
+            foreach (Tuple<float, InteractiveObject> item in list) {
+                if (interactiveObject.GetId() == item.Item2.GetId()) {
+                    return true;
+                }
+            }
+            return false;
+        }        
 
         private IEnumerator HoverEnd() {
             endingHover = true;

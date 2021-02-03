@@ -88,10 +88,7 @@ public class Action3D : Base.Action {
         if (!CheckClick())
             return;
         if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ActionMenu.Instance.CurrentAction = this;
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
-            selected = true;
-            ActionPoint.HighlightAP(true);
+            OpenMenu();
         }
     }
 
@@ -138,5 +135,20 @@ public class Action3D : Base.Action {
 
     public override string GetName() {
         return Data.Name;
+    }
+
+    public override void OpenMenu() {
+        ActionMenu.Instance.CurrentAction = this;
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        selected = true;
+        ActionPoint.HighlightAP(true);
+    }
+
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public override void StartManipulation() {
+        throw new NotImplementedException();
     }
 }
