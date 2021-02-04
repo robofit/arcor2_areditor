@@ -51,9 +51,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
             MenuManager.Instance.IsAnyMenuOpened) {
             CanvasGroup.interactable = false;
+            CanvasGroup.blocksRaycasts = false;
             CanvasGroup.alpha = 0;
         } else {
             CanvasGroup.interactable = true;
+            CanvasGroup.blocksRaycasts = true;
             CanvasGroup.alpha = 1;
         }
     }
