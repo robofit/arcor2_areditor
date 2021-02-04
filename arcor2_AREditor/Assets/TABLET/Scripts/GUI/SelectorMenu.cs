@@ -9,12 +9,29 @@ using System.Linq;
 public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject SelectorItemPrefab;
 
-    private CanvasGroup CanvasGroup;
+    public CanvasGroup CanvasGroup;
     public GameObject ContentAim, ContentAlphabet, ContentNoPose;
 
     private bool manuallySelected;
 
     private long iteration = 0;
+
+
+    private void Start() {
+        GameManager.Instance.OnCloseProject += OnCloseProjectScene;
+        GameManager.Instance.OnCloseScene += OnCloseProjectScene;
+        SceneManager.Instance.OnSceneChanged += OnSceneChanged;
+        ProjectManager.Instance.OnProjectChanged += OnProjectChanged;
+    }
+
+    private void OnCloseProjectScene(object sender, System.EventArgs e) {
+        Debug.LogError("on close");
+        for (int i = 0; i < selectorItems.Count; ++i) {
+            Destroy(selectorItems[i].gameObject);
+        }
+        selectorItems.Clear();
+        manuallySelected = false;
+    }
 
     private class SelectorItemComparer : IComparer<SelectorItem> {
         public int Compare(SelectorItem x, SelectorItem y) {
@@ -28,10 +45,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         CanvasGroup = GetComponent<CanvasGroup>();
     }
 
-    private void Start() {
-        SceneManager.Instance.OnSceneChanged += OnSceneChanged;
-        ProjectManager.Instance.OnProjectChanged += OnProjectChanged;
-    }
 
     private void Update() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||

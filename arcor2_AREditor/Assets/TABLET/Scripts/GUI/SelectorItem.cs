@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,8 @@ public class SelectorItem : MonoBehaviour
     private void Awake() {
         Button = GetComponent<Button>();
     }
+
+
     public void SetText(string text) {
         Label.text = text;
     }
