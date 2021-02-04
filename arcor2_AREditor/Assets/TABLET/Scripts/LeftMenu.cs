@@ -10,7 +10,7 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
     private CanvasGroup CanvasGroup;
 
-    public Button MoveBtn, MenuBtn, ConnectionsBtn;
+    public Button MoveBtn, MenuBtn, ConnectionsBtn, InteractBtn;
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
@@ -34,10 +34,13 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
             MoveBtn.interactable = selectedObject.Movable();
             MenuBtn.interactable = selectedObject.HasMenu();
+            InteractBtn.interactable = selectedObject.GetType() == typeof(Recalibrate) ||
+                selectedObject.GetType() == typeof(CreateAnchor);
         } else {
             ConnectionsBtn.interactable = false;
             MoveBtn.interactable = false;
             MenuBtn.interactable = false;
+            InteractBtn.interactable = false;
         }
     }
 
@@ -69,5 +72,16 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
             ((InputOutput) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
         
+    }
+
+    public void InteractButtonCb() {
+        InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
+        if (selectedObject is null)
+            return;
+        if (selectedObject.GetType() == typeof(Recalibrate)) {
+            ((Recalibrate) selectedObject).OnClick(Clickable.Click.TOUCH);
+        } else if (selectedObject.GetType() == typeof(CreateAnchor)) {
+            ((CreateAnchor) selectedObject).OnClick(Clickable.Click.TOUCH);
+        }
     }
 }

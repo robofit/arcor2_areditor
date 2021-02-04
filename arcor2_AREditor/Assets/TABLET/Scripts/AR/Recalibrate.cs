@@ -10,9 +10,7 @@ public class Recalibrate : InteractiveObject {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;
         }
-        if (type == Click.LONG_TOUCH) {
-            Calibrate();
-        }
+        Calibrate();
     }
 
     public void Calibrate() {
