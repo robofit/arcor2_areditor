@@ -254,7 +254,7 @@ namespace Base {
         }
 
         public override bool Movable() {
-            return true;
+            return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
         }
 
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
