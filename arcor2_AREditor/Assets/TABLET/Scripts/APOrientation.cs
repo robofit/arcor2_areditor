@@ -65,7 +65,8 @@ public class APOrientation : InteractiveObject {
     }
 
     public override string GetName() {
-        return ProjectManager.Instance.GetNamedOrientation(OrientationId).Name;
+        return ActionPoint.GetNamedOrientation(OrientationId).Name;
+        //return ProjectManager.Instance.GetNamedOrientation(OrientationId).Name;
     }
 
     public override string GetId() {

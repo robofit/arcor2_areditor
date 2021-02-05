@@ -17,7 +17,7 @@ namespace Base {
                 return;
             //if (Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0)), out hit, Mathf.Infinity)) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-            RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction);
+            RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction, Camera.main.transform.rotation);
 
             List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();
             foreach (RaycastHit hit in hits) {

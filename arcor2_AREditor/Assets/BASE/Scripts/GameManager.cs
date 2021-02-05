@@ -1761,8 +1761,14 @@ namespace Base {
 
         public List<InteractiveObject> GetAllInteractiveObjects() {
             List<InteractiveObject> objects = new List<InteractiveObject>();
+            /*foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }
             foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
                 objects.Add(actionObject);
+            }*/
+            foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
+                objects.Add(interactiveObject);
             }
 
             if (GetGameState() == GameStateEnum.ProjectEditor) {
@@ -1770,7 +1776,7 @@ namespace Base {
                     objects.Add(ap);
                 }
             }
-
+            Debug.LogWarning("Interactive objects: " + objects.Count);
             return objects;
         }
 
