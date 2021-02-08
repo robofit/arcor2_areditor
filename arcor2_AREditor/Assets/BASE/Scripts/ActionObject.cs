@@ -31,11 +31,13 @@ namespace Base {
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
             Data.Id = id;
             Data.Type = type;
-            SetScenePosition(position);
-            SetSceneOrientation(orientation);
+            if (actionObjectMetadata.HasPose) {
+                SetScenePosition(position);
+                SetSceneOrientation(orientation);
+            }
+            
             Data.Id = uuid;
             ActionObjectMetadata = actionObjectMetadata;
-            
             CreateModel(customCollisionModels);
             enabled = true;
             if (VRModeManager.Instance.VRModeON) {
@@ -43,7 +45,6 @@ namespace Base {
             } else {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
             }
-
         }
         
         public virtual void UpdateUserId(string newUserId) {
@@ -51,9 +52,7 @@ namespace Base {
         }
 
         protected virtual void Update() {
-            if (gameObject.transform.hasChanged) {
-                //SetScenePosition(transform.localPosition);
-                //SetSceneOrientation(transform.localRotation);
+            if (ActionObjectMetadata.HasPose && gameObject.transform.hasChanged) {
                 transform.hasChanged = false;
             }
         }
@@ -80,7 +79,8 @@ namespace Base {
             }
             
             //TODO: update all action points and actions.. ?
-            ResetPosition();
+            if (ActionObjectMetadata.HasPose)
+                ResetPosition();
             // update position and rotation based on received data from swagger
             //if (visibility)
             //    Show();
@@ -206,7 +206,8 @@ namespace Base {
 
 
         public virtual void ActivateForGizmo(string layer) {
-            gameObject.layer = LayerMask.NameToLayer(layer);
+            if (ActionObjectMetadata.HasPose)
+                gameObject.layer = LayerMask.NameToLayer(layer);
         }
 
         public string GetProviderId() {
@@ -254,7 +255,8 @@ namespace Base {
         }
 
         public override bool Movable() {
-            return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
+            return ActionObjectMetadata.HasPose &&
+                GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
         }
 
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);

@@ -44,17 +44,13 @@ public class ActionObject3D : ActionObject {
 
 
     protected override void Update() {
-        if (manipulationStarted) {
+
+        if (ActionObjectMetadata.HasPose && manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
 
-                    if (ActionObjectMetadata.HasPose) {
-                        UpdatePose();
-                    } else {
-                        PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
-                            transform.localPosition, transform.localRotation);
-                    }
+                    UpdatePose();
                 }
 
                 if (tfGizmo.isTransforming)
@@ -71,7 +67,8 @@ public class ActionObject3D : ActionObject {
 
     private async void UpdatePose() {
         try {
-            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+            if (ActionObjectMetadata.HasPose)
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
             ResetPosition();
@@ -82,24 +79,24 @@ public class ActionObject3D : ActionObject {
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
         else
-            return PlayerPrefsHelper.LoadVector3("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/position",
-                            Vector3.zero);
+            throw new RequestFailedException("This object has no pose");
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        if (ActionObjectMetadata.HasPose)
+            Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
         else
-            return PlayerPrefsHelper.LoadQuaternion("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/rotation",
-                            Quaternion.identity);
+            throw new RequestFailedException("This object has no pose");
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
+        if (ActionObjectMetadata.HasPose)
+            Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
     public async override void OnClick(Click type) {
@@ -120,7 +117,7 @@ public class ActionObject3D : ActionObject {
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+            if (ActionObjectMetadata.HasPose && GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 StartManipulation();
             }
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
@@ -136,7 +133,6 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-        Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger);
         ActionObjectName.text = actionObjectSwagger.Name;
 
@@ -150,6 +146,8 @@ public class ActionObject3D : ActionObject {
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
         base.SetVisibility(value);
+        if (!ActionObjectMetadata.HasPose)
+            return;
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
         }
@@ -221,7 +219,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void SetInteractivity(bool interactivity) {
-        Debug.Assert(Model != null);
+        Debug.Assert(Model != null && ActionObjectMetadata.HasPose);
         //Model.GetComponent<Collider>().enabled = interactivity;
         if (ActionObjectMetadata.ObjectModel != null &&
             ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
@@ -235,10 +233,13 @@ public class ActionObject3D : ActionObject {
 
     public override void ActivateForGizmo(string layer) {
         base.ActivateForGizmo(layer);
-        Model.layer = LayerMask.NameToLayer(layer);
+        if (ActionObjectMetadata.HasPose)
+            Model.layer = LayerMask.NameToLayer(layer);
     }
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
+        if (!ActionObjectMetadata.HasPose)
+            return;
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -422,10 +423,12 @@ public class ActionObject3D : ActionObject {
 
     public async override void StartManipulation() {
         try {
-            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
-            manipulationStarted = true;
-            tfGizmo.AddTarget(Model.transform);
-            outlineOnClick.GizmoHighlight();
+            if (ActionObjectMetadata.HasPose) {
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
+                manipulationStarted = true;
+                tfGizmo.AddTarget(Model.transform);
+                outlineOnClick.GizmoHighlight();
+            }            
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
         }

@@ -176,9 +176,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void HideCurrentWorldAnchor() {
         if (WorldAnchorLocal != null) {
             WorldAnchorLocal.gameObject.SetActive(false);
+            SelectorMenu.Instance.ForceUpdateMenus();
         }
         if (WorldAnchorCloud != null) {
             WorldAnchorCloud.gameObject.SetActive(false);
+            SelectorMenu.Instance.ForceUpdateMenus();
         }
     }
 
@@ -247,6 +249,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
                 worldAnchorVis.transform.SetParent(WorldAnchorCloud.transform, false);
                 AttachScene(WorldAnchorCloud.gameObject);
+                SelectorMenu.Instance.ForceUpdateMenus();
 
                 // disactivate marker tracking, because anchor is loaded from the cloud
                 ActivateTrackableMarkers(false);
@@ -294,8 +297,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             // marker cube stays positioned at the camera position (transforms should be the same).
             if (Vector3.Distance(trackedImg.transform.position, ARCamera.position) <= 0.05f) {
                 trackedImg.gameObject.SetActive(false);
+                SelectorMenu.Instance.ForceUpdateMenus();
             } else {
                 trackedImg.gameObject.SetActive(active);
+                SelectorMenu.Instance.ForceUpdateMenus();
             }
         }
     }
@@ -312,6 +317,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         if (worldAnchorVis != null) {
             worldAnchorVis.SetActive(active);
+            SelectorMenu.Instance.ForceUpdateMenus();
         }
     }
 #endif
