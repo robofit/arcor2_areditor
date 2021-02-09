@@ -5,6 +5,10 @@ using Base;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using System.Threading.Tasks;
+using IO.Swagger.Model;
 #if (UNITY_ANDROID || UNITY_IOS)
 using Google.XR.ARCoreExtensions;
 #endif
@@ -17,6 +21,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARRaycastManager ARRaycastManager;
     public ARTrackedImageManager ARTrackedImageManager;
     public ARPointCloudManager ARPointCloudManager;
+    public ARCameraManager ARCameraManager;
     public Transform ARCamera;
     public GameObject WorldAnchorPrefab;
 
@@ -44,6 +49,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private bool activateTrackableMarkers = false;
     private GameObject worldAnchorVis;
+
+    public GameObject MarkerPositionGameObject;
 
 #if UNITY_STANDALONE || UNITY_EDITOR
     private void Start() {
@@ -314,4 +321,191 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 #endif
+
+    //private void RegisterFramesReceiving() {
+    //    ARCameraManager.frameReceived += OnCameraFrameReceived;
+    //}
+
+    //private void UnregisterFramesReceiving() {
+    //    ARCameraManager.frameReceived -= OnCameraFrameReceived;
+    //}
+
+    //private unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs) {
+    //    if (!ARCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+    //        return;
+
+    //    var conversionParams = new XRCpuImage.ConversionParams {
+    //        // Get the entire image.
+    //        inputRect = new RectInt(0, 0, image.width, image.height),
+
+    //        // Downsample by 2.
+    //        //outputDimensions = new Vector2Int(image.width / 2, image.height / 2),
+
+    //        // Choose RGBA format.
+    //        outputFormat = TextureFormat.RGBA32,
+
+    //        // Flip across the vertical axis (mirror image).
+    //        transformation = XRCpuImage.Transformation.MirrorY
+    //    };
+
+    //    // See how many bytes you need to store the final image.
+    //    int size = image.GetConvertedDataSize(conversionParams);
+
+    //    // Allocate a buffer to store the image.
+    //    var buffer = new NativeArray<byte>(size, Allocator.Temp);
+
+    //    // Extract the image data
+    //    image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+
+    //    // The image was converted to RGBA32 format and written into the provided buffer
+    //    // so you can dispose of the XRCpuImage. You must do this or it will leak resources.
+    //    image.Dispose();
+
+    //    // At this point, you can process the image, pass it to a computer vision algorithm, etc.
+    //    // In this example, you apply it to a texture to visualize it.
+
+    //    // You've got the data; let's put it into a texture so you can visualize it.
+    //    Texture2D m_Texture = new Texture2D(
+    //        conversionParams.outputDimensions.x,
+    //        conversionParams.outputDimensions.y,
+    //        conversionParams.outputFormat,
+    //        false);
+
+    //    m_Texture.LoadRawTextureData(buffer);
+    //    m_Texture.Apply();
+
+    //    // Done with your temporary data, so you can dispose it.
+    //    buffer.Dispose();
+    //}
+
+
+    public unsafe void CalibrateUsingServer() {
+        if (!ARCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+            return;
+
+        if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics))
+            return;
+
+        var conversionParams = new XRCpuImage.ConversionParams {
+            // Get the entire image.
+            inputRect = new RectInt(0, 0, image.width, image.height),
+
+            // Downsample by 2.
+            outputDimensions = new Vector2Int(image.width, image.height),
+
+            // Choose RGBA format.
+            outputFormat = TextureFormat.RGBA32,
+
+            // Flip across the vertical axis (mirror image).
+            transformation = XRCpuImage.Transformation.MirrorY
+        };
+
+        // See how many bytes you need to store the final image.
+        int size = image.GetConvertedDataSize(conversionParams);
+
+        // Allocate a buffer to store the image.
+        var buffer = new NativeArray<byte>(size, Allocator.Temp);
+
+        // Extract the image data
+        image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+
+        // The image was converted to RGBA32 format and written into the provided buffer
+        // so you can dispose of the XRCpuImage. You must do this or it will leak resources.
+        image.Dispose();
+
+        // At this point, you can process the image, pass it to a computer vision algorithm, etc.
+        // In this example, you apply it to a texture to visualize it.
+
+        // You've got the data; let's put it into a texture so you can visualize it.
+        Texture2D texture = new Texture2D(
+            conversionParams.outputDimensions.x,
+            conversionParams.outputDimensions.y,
+            conversionParams.outputFormat,
+            false);
+
+        texture.LoadRawTextureData(buffer);
+        texture.Apply();
+
+        // Done with your temporary data, so you can dispose it.
+        buffer.Dispose();
+
+        string imageString = System.Text.Encoding.GetEncoding("iso-8859-1").GetString(texture.EncodeToJPG());
+
+
+        CameraParameters cameraParams = new CameraParameters(cx: (decimal) cameraIntrinsics.principalPoint.x,
+                                                             cy: (decimal) cameraIntrinsics.principalPoint.y,
+                                                             distCoefs: new List<decimal>() { 0, 0, 0, 0 },
+                                                             fx: (decimal) cameraIntrinsics.focalLength.x,
+                                                             fy: (decimal) cameraIntrinsics.focalLength.y);
+
+        GetCameraPosition(cameraParams, imageString);
+    }
+
+
+
+    public async Task GetCameraPosition(CameraParameters cameraParams, string image) {
+        try {
+            IO.Swagger.Model.Pose cameraPose = await WebsocketManager.Instance.CalibrateTablet(cameraParams, image);
+            Vector3 cameraPosition = TransformConvertor.ROSToUnity(new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z));
+            Quaternion cameraRotation = TransformConvertor.ROSToUnity(new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y, (float) cameraPose.Orientation.Z, (float) cameraPose.Orientation.W));
+            Vector3 cameraPositionOrig = new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z);
+            Quaternion cameraRotationOrig = new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y, (float) cameraPose.Orientation.Z, (float) cameraPose.Orientation.W);
+            Debug.Log("RECEIVED camera position: " + cameraPositionOrig + " and orientation: " + cameraRotationOrig);
+            Debug.Log("RECEIVED camera position transformed: " + cameraPosition + " and orientation: " + cameraRotation);
+            Debug.Log("RECEIVED marker position: " + cameraPositionOrig * -1f + " and orientation: " + Quaternion.Inverse(cameraRotationOrig));
+            Debug.Log("RECEIVED marker position transformed: " + cameraPosition * -1f + " and orientation: " + Quaternion.Inverse(cameraRotation));
+
+            Matrix4x4 cameraMatrix = Matrix4x4.TRS(cameraPosition, cameraRotation, Vector3.one);
+            Matrix4x4 cameraMatrixROS = Matrix4x4.TRS(cameraPositionOrig, cameraRotationOrig, Vector3.one);
+            Matrix4x4 markerMatrix = cameraMatrix.inverse;
+            Matrix4x4 markerMatrixROS = cameraMatrixROS.inverse;
+
+            GameObject marker = Instantiate(MarkerPositionGameObject, ARCamera);
+            marker.transform.localPosition = markerMatrix.GetColumn(3);
+            marker.transform.localRotation = Quaternion.LookRotation(markerMatrix.GetColumn(2), markerMatrix.GetColumn(1));
+            marker.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+
+            GameObject marker1 = Instantiate(MarkerPositionGameObject, ARCamera);
+            marker1.transform.localPosition = TransformConvertor.ROSToUnity(markerMatrixROS.GetColumn(3));
+            marker1.transform.localRotation = TransformConvertor.ROSToUnity(Quaternion.LookRotation(markerMatrixROS.GetColumn(2), markerMatrixROS.GetColumn(1)));
+            marker1.transform.localScale = new Vector3(0.2f, 0.4f, 0.2f);
+
+
+            //GameObject markerVis = Instantiate(MarkerPositionGameObject, ARCamera);
+            //markerVis.transform.localPosition = cameraPosition * -1f;
+            //markerVis.transform.localRotation = Quaternion.Inverse(cameraRotation);
+            //markerVis.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+
+            //GameObject markerVisOrig = Instantiate(MarkerPositionGameObject, ARCamera);
+            //markerVisOrig.transform.localPosition = cameraPositionOrig * -1f;
+            //markerVisOrig.transform.localRotation = Quaternion.Inverse(cameraRotationOrig);
+            //markerVisOrig.transform.localScale = new Vector3(0.2f, 0.4f, 0.2f);
+
+
+            //GameObject cameraVis = Instantiate(MarkerPositionGameObject, ARCamera);
+            //cameraVis.transform.localPosition = cameraPosition;
+            //cameraVis.transform.localRotation = cameraRotation;
+            //cameraVis.transform.localScale = new Vector3(0.4f, 0.2f, 0.2f);
+
+            //GameObject cameraVisOrig = Instantiate(MarkerPositionGameObject, ARCamera);
+            //cameraVisOrig.transform.localPosition = cameraPositionOrig;
+            //cameraVisOrig.transform.localRotation = cameraRotationOrig;
+            //cameraVisOrig.transform.localScale = new Vector3(0.2f, 0.2f, 0.4f);
+
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to calibrate camera", ex.Message);
+        }
+    }
+
+    public async Task ReceiveImageFromCamera() {
+        // EXAMPLE OF LOADING IMAGE FROM CAMERA ON SERVER
+        string image = await WebsocketManager.Instance.GetCameraColorImage("ID");
+        //Debug.Log("RECEIVED Image " + image);
+        byte[] bytes = System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(image);
+        Texture2D texture = new Texture2D(1, 1);
+        texture.LoadImage(bytes);
+        texture.Apply();
+        //File.WriteAllBytes(Application.persistentDataPath + "/images/Received.jpg", texture.EncodeToJPG());
+        //File.WriteAllBytes(Application.persistentDataPath + "/images/Received.jpg", bytes);
+    }
 }
