@@ -567,11 +567,16 @@ public class MainMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.StopScene(false);
     }
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
     public void Recalibrate() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
         CalibrationManager.Instance.Recalibrate();
-    }
 #endif
+    }
 
- 
+    public void CalibrateUsingServer() {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        CalibrationManager.Instance.CalibrateUsingServer();
+#endif
+    }
+
 }

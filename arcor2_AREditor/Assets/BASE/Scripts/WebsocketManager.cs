@@ -2278,8 +2278,35 @@ namespace Base {
             } 
         }
 
+        public async Task<string> GetCameraColorImage(string cameraId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CameraColorImageRequestArgs args = new CameraColorImageRequestArgs(id: cameraId);
+
+            IO.Swagger.Model.CameraColorImageRequest request = new IO.Swagger.Model.CameraColorImageRequest(r_id, "CameraColorImage", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CameraColorImageResponse response = await WaitForResult<IO.Swagger.Model.CameraColorImageResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get image from camera " + cameraId } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<IO.Swagger.Model.Pose> CalibrateTablet(CameraParameters cameraParams, string img) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CalibrationRequestArgs args = new CalibrationRequestArgs(cameraParameters: cameraParams, image: img);
+
+            IO.Swagger.Model.CalibrationRequest request = new IO.Swagger.Model.CalibrationRequest(r_id, "Calibration", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CalibrationResponse response = await WaitForResult<IO.Swagger.Model.CalibrationResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
 
     }
 
-    
+
 }
