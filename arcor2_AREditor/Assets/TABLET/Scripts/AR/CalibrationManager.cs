@@ -71,48 +71,47 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public void CreateAnchor(Transform tf) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
 
+        ARPlane plane = null;
+        UnityEngine.Pose hitPose = new Pose();
+
         // try to raycast straight down to intersect closest plane
         List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
         if (ARRaycastManager.Raycast(new Ray(tf.position, Vector3.down), raycastHits, TrackableType.PlaneWithinPolygon)) {
-
-            // remove all old local anchors, if there are some (in case we are recalibrating)
-            RemoveLocalWorldAnchor();
-            RemoveCloudWorldAnchor();
-
-            Pose hitPose = raycastHits[0].pose;
+            hitPose = raycastHits[0].pose;
             TrackableId hitPlaneId = raycastHits[0].trackableId;
-            ARPlane plane = ARPlaneManager.GetPlane(hitPlaneId);
-
-            // set temporary world anchor
-            WorldAnchorLocal = ARAnchorManager.AttachAnchor(plane,
-                new Pose(hitPose.position, Quaternion.FromToRotation(tf.up, plane.normal) * tf.rotation));
-            // immediately attach scene to local anchor (after cloud anchor is created, scene will be attached to it)
-            AttachScene(WorldAnchorLocal.gameObject);
-
-            // Create cloud anchor
-            if (Settings.Instance.UseCloudAnchors) {
-                WorldAnchorCloud = ARAnchorManager.HostCloudAnchor(WorldAnchorLocal);
-
-                StartCoroutine(HostCloudAnchor());
-            } else {
-                Calibrated = true;
-                UsingCloudAnchors = false;
-                OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorLocal.gameObject));
-                Notifications.Instance.ShowNotification("Calibration successful", "");
-                worldAnchorVis = null;
-                ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
-            }
-
-            GameManager.Instance.Scene.SetActive(true);
-
-            ActivateTrackableMarkers(false);
+            plane = ARPlaneManager.GetPlane(hitPlaneId);
         }
-        // if there is no plane beneath detected marker then display notification about unsufficient tracking
-        else {
-            Notifications.Instance.ShowNotification("Calibration error", "Plane beneath calibration marker is not detected");
-            //Play animation for moving with the device
-            TrackingLostAnimation.PlayVideo(5f);
+
+        // remove all old local anchors, if there are some (in case we are recalibrating)
+        RemoveLocalWorldAnchor();
+        RemoveCloudWorldAnchor();
+
+        // set temporary world anchor
+        //WorldAnchorLocal = ARAnchorManager.AttachAnchor(plane,
+        //    new Pose(hitPose.position, Quaternion.FromToRotation(tf.up, plane.normal) * tf.rotation));
+
+        WorldAnchorLocal = ARAnchorManager.AddAnchor(new UnityEngine.Pose(hitPose != new Pose() ? hitPose.position : tf.position,
+            plane != null ? Quaternion.FromToRotation(tf.up, plane.normal) * tf.rotation : tf.rotation));
+        // immediately attach scene to local anchor (after cloud anchor is created, scene will be attached to it)
+        AttachScene(WorldAnchorLocal.gameObject);
+
+        // Create cloud anchor
+        if (Settings.Instance.UseCloudAnchors) {
+            WorldAnchorCloud = ARAnchorManager.HostCloudAnchor(WorldAnchorLocal);
+
+            StartCoroutine(HostCloudAnchor());
+        } else {
+            Calibrated = true;
+            UsingCloudAnchors = false;
+            OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorLocal.gameObject));
+            Notifications.Instance.ShowNotification("Calibration successful", "");
+            worldAnchorVis = null;
+            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
         }
+
+        GameManager.Instance.Scene.SetActive(true);
+
+        ActivateTrackableMarkers(false);
 #endif
     }
 
