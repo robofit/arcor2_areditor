@@ -84,9 +84,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         UpdateNoPoseMenu();
     }
 
-    private SelectorItem GetSelectorItem(string id) {
+    private SelectorItem GetSelectorItem(InteractiveObject io) {
         foreach (SelectorItem item in selectorItemsAimMenu) {
-            if (string.Equals(item.InteractiveObject.GetId(), id)) {
+            if (string.Compare(item.InteractiveObject.GetId(), io.GetId()) == 0) {
                 return item;
             }
         }
@@ -108,8 +108,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
-        }        
-
+        }
         if (ContentAim.activeSelf) {
             int count = 0;
             for (int i = selectorItemsAimMenu.Count - 1; i >= 0; --i) {
@@ -121,18 +120,17 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             List<SelectorItem> newItems = new List<SelectorItem>();
             foreach (Tuple<float, InteractiveObject> item in items) {
                 if (selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
-                    SelectorItem selectorItem = GetSelectorItem(item.Item2.GetId());
+                    SelectorItem selectorItem = GetSelectorItem(item.Item2);
                     if (selectorItem == null) {
-                        //SelectorItem newItem = CreateSelectorItem(item.Item2, ContentAim.transform, item.Item1);
-                        SelectorItem newItem = selectorItems[item.Item2.GetId()];
-                        selectorItemsAimMenu.Add(newItem);
-                        newItem.transform.SetParent(ContentAim.transform);
-                        newItems.Add(newItem);
+                        selectorItem = selectorItems[item.Item2.GetId()];
+                        selectorItemsAimMenu.Add(selectorItem);
+                        selectorItem.transform.SetParent(ContentAim.transform);
+                        newItems.Add(selectorItem);
                     } else {
-                        selectorItem.UpdateScore(item.Item1, iteration);
                         if (selectorItem.transform.parent != ContentAim.transform)
-                            selectorItem.transform.SetParent(ContentAim.transform);
+                          selectorItem.transform.SetParent(ContentAim.transform);
                     }
+                    selectorItem.UpdateScore(item.Item1, iteration);
                 }
                 if (count++ > 7)
                     break;
@@ -158,58 +156,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ++iteration;
     }
 
-        /*
-        public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
-            if (ContentAim.activeSelf) {
-                int count = 0;
-                for (int i = selectorItemsAimMenu.Count - 1; i >= 0; --i) {
-                    if ((iteration - selectorItemsAimMenu[i].GetLastUpdate()) > 5) {
-                        selectorItemsAimMenu[i].transform.SetParent(ContentAlphabet.transform);
-                        selectorItemsAimMenu.RemoveAt(i);
-                    }
-                }
-                List<SelectorItem> newItems = new List<SelectorItem>();
-                foreach (Tuple<float, InteractiveObject> item in items) {
-                    if (selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
-                        SelectorItem selectorItem = GetSelectorItem(item.Item2.GetId());
-                        if (selectorItem == null) {
-                            //SelectorItem newItem = CreateSelectorItem(item.Item2, ContentAim.transform, item.Item1);
-                            SelectorItem newItem = selectorItems[item.Item2.GetId()];
-                            selectorItemsAimMenu.Add(newItem);
-                            newItem.transform.SetParent(ContentAim.transform);
-                            newItems.Add(newItem);    
-                        } else {
-                            selectorItem.UpdateScore(item.Item1, iteration);
-                            if (selectorItem.transform.parent != ContentAim.transform)
-                                selectorItem.transform.SetParent(ContentAim.transform);
-                        }
-                    }
-                    if (count++ > 7)
-                        break;
-                }
-                selectorItemsAimMenu.Sort(new SelectorItemComparer());
-                while (selectorItemsAimMenu.Count > 6) {
-                    selectorItemsAimMenu.Last().transform.SetParent(ContentAlphabet.transform);
-                    selectorItemsAimMenu.RemoveAt(selectorItemsAimMenu.Count - 1);
-                }
-            }
-            if (!manuallySelected) {
-                if (ContentAim.activeSelf) {
-                     if (selectorItemsAimMenu.Count > 0)
-                        SetSelectedObject(selectorItemsAimMenu.First(), false);
-                }                
-                else if (ContentAlphabet.activeSelf && items.Count > 0) {
-                    SetSelectedObject(items.First().Item2, false);
-                }
-                if (items.Count == 0) {
-                    DeselectObject(false);
-                }
-            }
 
-            ++iteration;
-        }*/
-
-        private void RemoveItem(int index, List<SelectorItem> selectorItems) {
+    private void RemoveItem(int index, List<SelectorItem> selectorItems) {
         if (selectorItems[index].IsSelected()) {
             manuallySelected = false;
             selectorItems[index].SetSelected(false, true);

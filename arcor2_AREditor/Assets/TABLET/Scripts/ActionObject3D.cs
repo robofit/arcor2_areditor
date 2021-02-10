@@ -134,7 +134,12 @@ public class ActionObject3D : ActionObject {
 
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
         base.ActionObjectUpdate(actionObjectSwagger);
-        ActionObjectName.text = actionObjectSwagger.Name;
+        if (ActionObjectMetadata.HasPose) {
+            ActionObjectName.text = actionObjectSwagger.Name;
+        } else {
+            ActionObjectName.gameObject.SetActive(false);
+        }
+        
 
     }
 

@@ -35,6 +35,8 @@ namespace Base {
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
+            } else {
+                
             }
             
             Data.Id = uuid;
