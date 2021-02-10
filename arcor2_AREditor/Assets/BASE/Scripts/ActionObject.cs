@@ -31,13 +31,14 @@ namespace Base {
         public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
             Data.Id = id;
             Data.Type = type;
+            ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
             }
             
             Data.Id = uuid;
-            ActionObjectMetadata = actionObjectMetadata;
+            
             CreateModel(customCollisionModels);
             enabled = true;
             if (VRModeManager.Instance.VRModeON) {
@@ -52,7 +53,7 @@ namespace Base {
         }
 
         protected virtual void Update() {
-            if (ActionObjectMetadata.HasPose && gameObject.transform.hasChanged) {
+            if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && gameObject.transform.hasChanged) {
                 transform.hasChanged = false;
             }
         }

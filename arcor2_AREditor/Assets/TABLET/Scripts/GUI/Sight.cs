@@ -24,17 +24,19 @@ namespace Base {
             if (Physics.Raycast(ray, out RaycastHit hit)) {
                 hitinfo = hit;
                 anyHit = true;
-            } else if (Physics.BoxCast(ray.origin, new Vector3(0.02f, 0.02f, 0.0001f), ray.direction, out hit, Camera.main.transform.rotation)) {
+            } else if (Physics.BoxCast(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction, out hit, Camera.main.transform.rotation)) {
                 hitinfo = hit;
                 anyHit = true;
             }
             if (anyHit) {
-                
+
                 Vector3 lhs = hitinfo.point - ray.origin;
 
                 float dotP = Vector3.Dot(lhs, ray.direction.normalized);
                 Vector3 point = ray.origin + ray.direction.normalized * dotP;
                 SelectorMenu.Instance.UpdateAimMenu(point);
+            } else {
+                SelectorMenu.Instance.UpdateAimMenu(null);
             }
             /*ExtDebug.DrawBoxCastBox(ray.origin, new Vector3(0.05f, 0.05f, 0.00001f), Camera.main.transform.rotation, ray.direction, 20f, Color.green);
             List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();

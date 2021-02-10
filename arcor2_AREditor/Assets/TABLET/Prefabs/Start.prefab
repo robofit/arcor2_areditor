@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 1563120680691529670}
   Input: {fileID: 5516121032883629286}
   Output: {fileID: 2987135247976725981}
   InputArrow: {fileID: 8633720928761024007}
@@ -72,6 +74,11 @@ PrefabInstance:
     - target: {fileID: 1030236983171118047, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
       propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1030236983171118047, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2155999195898541985, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
@@ -251,6 +258,12 @@ GameObject:
 --- !u!23 &3106567406072180561 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 6417292780173919765, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+    type: 3}
+  m_PrefabInstance: {fileID: 8219759058149648708}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1563120680691529670 stripped
+MeshCollider:
+  m_CorrespondingSourceObject: {fileID: 7467850720681680514, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
     type: 3}
   m_PrefabInstance: {fileID: 8219759058149648708}
   m_PrefabAsset: {fileID: 0}

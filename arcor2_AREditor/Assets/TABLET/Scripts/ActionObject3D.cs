@@ -45,7 +45,7 @@ public class ActionObject3D : ActionObject {
 
     protected override void Update() {
 
-        if (ActionObjectMetadata.HasPose && manipulationStarted) {
+        if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;

@@ -100,13 +100,15 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
     }
 
-    public void UpdateAimMenu(Vector3 aimingPoint) {
+    public void UpdateAimMenu(Vector3? aimingPoint) {
         List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
-        foreach (SelectorItem item in selectorItems.Values) {
-            float dist = item.InteractiveObject.GetDistance(aimingPoint);
-            items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
-        }
-        items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+        if (aimingPoint.HasValue) {
+            foreach (SelectorItem item in selectorItems.Values) {
+                float dist = item.InteractiveObject.GetDistance(aimingPoint.Value);
+                items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
+            }
+            items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+        }        
 
         if (ContentAim.activeSelf) {
             int count = 0;
