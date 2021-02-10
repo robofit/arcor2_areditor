@@ -301,8 +301,10 @@ public class ActionObject3D : ActionObject {
         //if (IsRobot()) {
         //    Model.tag = "Robot";
         //}
+
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
+        Colliders.Add(Collider);
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         modelRenderer = Model.GetComponent<Renderer>();
         modelMaterial = modelRenderer.material;

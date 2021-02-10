@@ -100,7 +100,14 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
     }
 
-    public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
+    public void UpdateAimMenu(Vector3 aimingPoint) {
+        List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
+        foreach (SelectorItem item in selectorItems.Values) {
+            float dist = item.InteractiveObject.GetDistance(aimingPoint);
+            items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
+        }
+        items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+
         if (ContentAim.activeSelf) {
             int count = 0;
             for (int i = selectorItemsAimMenu.Count - 1; i >= 0; --i) {
@@ -118,7 +125,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                         SelectorItem newItem = selectorItems[item.Item2.GetId()];
                         selectorItemsAimMenu.Add(newItem);
                         newItem.transform.SetParent(ContentAim.transform);
-                        newItems.Add(newItem);    
+                        newItems.Add(newItem);
                     } else {
                         selectorItem.UpdateScore(item.Item1, iteration);
                         if (selectorItem.transform.parent != ContentAim.transform)
@@ -136,10 +143,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         if (!manuallySelected) {
             if (ContentAim.activeSelf) {
-                 if (selectorItemsAimMenu.Count > 0)
+                if (selectorItemsAimMenu.Count > 0)
                     SetSelectedObject(selectorItemsAimMenu.First(), false);
-            }                
-            else if (ContentAlphabet.activeSelf && items.Count > 0) {
+            } else if (ContentAlphabet.activeSelf && items.Count > 0) {
                 SetSelectedObject(items.First().Item2, false);
             }
             if (items.Count == 0) {
@@ -150,7 +156,58 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ++iteration;
     }
 
-    private void RemoveItem(int index, List<SelectorItem> selectorItems) {
+        /*
+        public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
+            if (ContentAim.activeSelf) {
+                int count = 0;
+                for (int i = selectorItemsAimMenu.Count - 1; i >= 0; --i) {
+                    if ((iteration - selectorItemsAimMenu[i].GetLastUpdate()) > 5) {
+                        selectorItemsAimMenu[i].transform.SetParent(ContentAlphabet.transform);
+                        selectorItemsAimMenu.RemoveAt(i);
+                    }
+                }
+                List<SelectorItem> newItems = new List<SelectorItem>();
+                foreach (Tuple<float, InteractiveObject> item in items) {
+                    if (selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
+                        SelectorItem selectorItem = GetSelectorItem(item.Item2.GetId());
+                        if (selectorItem == null) {
+                            //SelectorItem newItem = CreateSelectorItem(item.Item2, ContentAim.transform, item.Item1);
+                            SelectorItem newItem = selectorItems[item.Item2.GetId()];
+                            selectorItemsAimMenu.Add(newItem);
+                            newItem.transform.SetParent(ContentAim.transform);
+                            newItems.Add(newItem);    
+                        } else {
+                            selectorItem.UpdateScore(item.Item1, iteration);
+                            if (selectorItem.transform.parent != ContentAim.transform)
+                                selectorItem.transform.SetParent(ContentAim.transform);
+                        }
+                    }
+                    if (count++ > 7)
+                        break;
+                }
+                selectorItemsAimMenu.Sort(new SelectorItemComparer());
+                while (selectorItemsAimMenu.Count > 6) {
+                    selectorItemsAimMenu.Last().transform.SetParent(ContentAlphabet.transform);
+                    selectorItemsAimMenu.RemoveAt(selectorItemsAimMenu.Count - 1);
+                }
+            }
+            if (!manuallySelected) {
+                if (ContentAim.activeSelf) {
+                     if (selectorItemsAimMenu.Count > 0)
+                        SetSelectedObject(selectorItemsAimMenu.First(), false);
+                }                
+                else if (ContentAlphabet.activeSelf && items.Count > 0) {
+                    SetSelectedObject(items.First().Item2, false);
+                }
+                if (items.Count == 0) {
+                    DeselectObject(false);
+                }
+            }
+
+            ++iteration;
+        }*/
+
+        private void RemoveItem(int index, List<SelectorItem> selectorItems) {
         if (selectorItems[index].IsSelected()) {
             manuallySelected = false;
             selectorItems[index].SetSelected(false, true);

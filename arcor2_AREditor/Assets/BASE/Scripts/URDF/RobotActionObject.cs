@@ -430,6 +430,7 @@ namespace Base {
             robotRenderers.Clear();
             robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
             robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
+            Colliders = robotColliders;
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;

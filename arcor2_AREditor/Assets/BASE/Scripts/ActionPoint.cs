@@ -43,7 +43,6 @@ namespace Base {
 
         private void Awake() {
            
-            
         }
         protected virtual void Start() {
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
@@ -212,6 +211,14 @@ namespace Base {
                 }
             }
             throw new KeyNotFoundException("Orientation with id " + id + " not found.");
+        }
+
+        public List<APOrientation> GetOrientationsVisuals() {
+            List<APOrientation> orientationsList = new List<APOrientation>();
+            foreach (Transform transform in orientations.transform) {
+                orientationsList.Add(transform.GetComponent<APOrientation>());
+            }
+            return orientationsList;
         }
 
         public IO.Swagger.Model.Pose GetDefaultPose() {

@@ -43,7 +43,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public event ARRecalibrateEventHandler OnARRecalibrate;
 
     private bool activateTrackableMarkers = false;
-    private GameObject worldAnchorVis;
+    public GameObject worldAnchorVis;
 
 #if UNITY_STANDALONE || UNITY_EDITOR
     private void Start() {

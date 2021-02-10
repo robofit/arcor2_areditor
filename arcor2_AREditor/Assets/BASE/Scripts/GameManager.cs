@@ -1760,16 +1760,46 @@ namespace Base {
         }
 
         public List<InteractiveObject> GetAllInteractiveObjects() {
+            
             List<InteractiveObject> objects = new List<InteractiveObject>();
+            if (!GameManager.Instance.Scene.activeSelf)
+                return objects;
             /*foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
                 objects.Add(actionObject);
             }
             foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
                 objects.Add(actionObject);
             }*/
-            foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
+            System.DateTime startTime = System.DateTime.UtcNow;
+            objects.AddRange(FindObjectsOfType<InteractiveObject>());
+            Debug.LogError((System.DateTime.UtcNow - startTime).TotalMilliseconds);
+            /*foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
                 objects.Add(interactiveObject);
             }
+            objects.Clear();
+            startTime = System.DateTime.UtcNow;
+            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }
+            foreach (KeyValuePair<string, ActionPoint> actionPoint in ProjectManager.Instance.ActionPoints) {
+                objects.Add(actionPoint.Value);
+                foreach (KeyValuePair<string, Action> action in actionPoint.Value.Actions) {
+                    objects.Add(action.Value);
+                    objects.Add(action.Value.Input);
+                    objects.Add(action.Value.Output);
+                }
+                foreach (APOrientation orientation in actionPoint.Value.GetOrientationsVisuals()) {
+                    objects.Add(orientation);
+                }
+            }
+            objects.Add(ProjectManager.Instance.StartAction);
+            objects.Add(ProjectManager.Instance.StartAction.Output);
+            objects.Add(ProjectManager.Instance.EndAction);
+            objects.Add(ProjectManager.Instance.EndAction.Input);
+            if (CalibrationManager.Instance.worldAnchorVis != null)
+                objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
+                */
+            Debug.LogError((System.DateTime.UtcNow - startTime).TotalMilliseconds);
 
             if (GetGameState() == GameStateEnum.ProjectEditor) {
                 foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {

@@ -5,7 +5,8 @@ using UnityEngine;
 using System.Linq;
 
 namespace Base {
-    public class Sight : Singleton<Sight> {
+
+   public class Sight : Singleton<Sight> {
         public GameObject CurrentObject;
 
         public System.DateTime HoverStartTime;
@@ -17,13 +18,33 @@ namespace Base {
                 return;
             //if (Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0)), out hit, Mathf.Infinity)) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-            RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction, Camera.main.transform.rotation);
 
+            RaycastHit hitinfo = new RaycastHit();
+            bool anyHit = false;
+            if (Physics.Raycast(ray, out RaycastHit hit)) {
+                hitinfo = hit;
+                anyHit = true;
+            } else if (Physics.BoxCast(ray.origin, new Vector3(0.02f, 0.02f, 0.0001f), ray.direction, out hit, Camera.main.transform.rotation)) {
+                hitinfo = hit;
+                anyHit = true;
+            }
+            if (anyHit) {
+                
+                Vector3 lhs = hitinfo.point - ray.origin;
+
+                float dotP = Vector3.Dot(lhs, ray.direction.normalized);
+                Vector3 point = ray.origin + ray.direction.normalized * dotP;
+                SelectorMenu.Instance.UpdateAimMenu(point);
+            }
+            /*ExtDebug.DrawBoxCastBox(ray.origin, new Vector3(0.05f, 0.05f, 0.00001f), Camera.main.transform.rotation, ray.direction, 20f, Color.green);
             List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();
-            foreach (RaycastHit hit in hits) {
+            if (hits.Length > 0) {
+                RaycastHit hit = hits.First();
+                GameManager.Instance.GetAllInteractiveObjects();
+            }*/
+            /*foreach (RaycastHit hit in hits) {
 
-                float distance = Vector3.Cross(ray.direction, hit.point - ray.origin).magnitude;
-
+                float dist = Vector3.Cross(ray.direction, hit.point - ray.origin).magnitude;
                 InteractiveObject interactiveObject = hit.collider.transform.gameObject.GetComponent<InteractiveObject>();
                 if (interactiveObject is null) {
                     OnClickCollider collider = hit.collider.transform.gameObject.GetComponent<OnClickCollider>();
@@ -36,7 +57,7 @@ namespace Base {
                     }
                 }
                 if (!InteractiveObjectInList(orderedTransforms, interactiveObject)) {
-                    orderedTransforms.Add(new Tuple<float, InteractiveObject>(distance, interactiveObject));
+                    orderedTransforms.Add(new Tuple<float, InteractiveObject>(dist, interactiveObject));
                 }
 
                 //hit.collider.transform.gameObject.SendMessage("OnHoverStart");
@@ -67,7 +88,7 @@ namespace Base {
                 } catch (Exception e) {
                     Debug.LogError(e);
                 }*/
-            }
+            /*}
 
             orderedTransforms.Sort((x, y) => x.Item1.CompareTo(y.Item1));
 
