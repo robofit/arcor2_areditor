@@ -21,12 +21,27 @@ namespace Base {
 
             RaycastHit hitinfo = new RaycastHit();
             bool anyHit = false;
-            if (Physics.Raycast(ray, out RaycastHit hit)) {
-                hitinfo = hit;
+            if (/*Physics.Raycast(ray, out RaycastHit hit)*/false) {
+                //hitinfo = hit;
                 anyHit = true;
-            } else if (Physics.BoxCast(ray.origin, new Vector3(0.1f, 0.1f, 0.0001f), ray.direction, out hit, Camera.main.transform.rotation)) {
-                hitinfo = hit;
-                anyHit = true;
+            } else {
+                RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.03f, 0.03f, 0.0001f), ray.direction, Camera.main.transform.rotation);
+                if (hits.Length > 0) {
+                    float minDist = float.MaxValue;
+                    foreach (RaycastHit h in hits) {
+                        Vector3 dir = ray.direction;
+                        
+                        Vector3 point = ray.origin + dir * Vector3.Distance(ray.origin, h.point);
+                        float dist = Vector3.Distance(point, h.collider.ClosestPointOnBounds(point));
+                        Debug.DrawLine(point, h.point);
+                        Debug.DrawRay(ray.origin, ray.direction);
+                        if (dist < minDist) {
+                            hitinfo = h;
+                            anyHit = true;
+                            minDist = dist;
+                        }
+                    }
+                }
             }
             if (anyHit) {
 

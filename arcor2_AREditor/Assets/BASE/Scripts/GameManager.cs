@@ -1770,9 +1770,7 @@ namespace Base {
             foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
                 objects.Add(actionObject);
             }*/
-            System.DateTime startTime = System.DateTime.UtcNow;
             objects.AddRange(FindObjectsOfType<InteractiveObject>());
-            Debug.LogError((System.DateTime.UtcNow - startTime).TotalMilliseconds);
             /*foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
                 objects.Add(interactiveObject);
             }
@@ -1799,7 +1797,6 @@ namespace Base {
             if (CalibrationManager.Instance.worldAnchorVis != null)
                 objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
                 */
-            Debug.LogError((System.DateTime.UtcNow - startTime).TotalMilliseconds);
 
             if (GetGameState() == GameStateEnum.ProjectEditor) {
                 foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {

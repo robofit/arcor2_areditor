@@ -13,10 +13,10 @@ public abstract class InteractiveObject : Clickable {
     public abstract bool Movable();
     public abstract void StartManipulation();
     public virtual float GetDistance(Vector3 origin) {
-        float minDist = 999999;
+        float minDist = float.MaxValue;
         foreach (Collider collider in Colliders) {
             Vector3 point = collider.ClosestPointOnBounds(origin);
-            Debug.DrawLine(origin, point);
+           
             minDist = Math.Min(Vector3.Distance(origin, point), minDist);
 
         }
