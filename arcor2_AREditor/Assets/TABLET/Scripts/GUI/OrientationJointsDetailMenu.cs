@@ -393,8 +393,16 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
         }
 
-        await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-        SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+        if (SceneManager.Instance.SceneStarted) {
+            await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+            SceneManager.Instance.GetActionObject(robotID).SetInteractivity(shadowRealRobot);
+        } else { //is possible only for joints, not orientation
+            foreach (IO.Swagger.Model.Joint joint in joints.Joints) { //set default angles of joints
+                SceneManager.Instance.GetRobot(joints.RobotId).SetJointValue(joint.Name, (float) 0f);
+            }
+        }
+        
     }
 
     public async void Close() {
