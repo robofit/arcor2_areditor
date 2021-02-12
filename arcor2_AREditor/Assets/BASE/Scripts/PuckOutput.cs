@@ -7,11 +7,6 @@ namespace Base {
         {
         
 
-        public override void OnHoverStart() {
-            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionOutput)
-                return;
-            base.OnHoverStart();
-        }
 
 
     }

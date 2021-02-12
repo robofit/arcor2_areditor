@@ -26,6 +26,7 @@ public class OnClickCollider : Clickable {
         }
     }
 
+
     //public void OnMouseOver() {
     //    // if we are clicking on UI
     //    if (EventSystem.current.IsPointerOverGameObject()) {

@@ -785,7 +785,7 @@ namespace Base {
                     return actionPoint.GetOrientation(id);
                 } catch (KeyNotFoundException ex) { }
             }
-            throw new KeyNotFoundException("Joints with id " + id + " not found");
+            throw new KeyNotFoundException("Orientations with id " + id + " not found");
         }
 
         /// <summary>

@@ -7,10 +7,11 @@ using IO.Swagger.Model;
 using Newtonsoft.Json;
 using static Base.Clickable;
 using UnityEngine.Events;
+using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public class InputOutput : Clickable {
+    public class InputOutput : InteractiveObject {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -338,6 +339,34 @@ namespace Base {
                     renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
             }
                 
+        }
+
+        public override string GetName() {
+            if (typeof(PuckOutput) == GetType()) {
+                return "Output of " + Action.Data.Name;
+            } else {
+                return "Input of " + Action.Data.Name;
+            }
+        }
+
+        public override string GetId() {
+            return GetName();
+        }
+
+        public override void OpenMenu() {
+            throw new NotImplementedException();
+        }
+
+        public override bool HasMenu() {
+            return false;
+        }
+
+        public override bool Movable() {
+            return false;
+        }
+
+        public override void StartManipulation() {
+            throw new NotImplementedException();
         }
     }
 

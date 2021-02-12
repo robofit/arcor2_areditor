@@ -144,7 +144,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
     }
 
     private static void ShowActionObject(ActionObject actionObject) {
-        actionObject.ShowMenu();
+        actionObject.OpenMenu();
         actionObject.SendMessage("Select", false);
     }
 

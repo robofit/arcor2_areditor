@@ -511,9 +511,6 @@ namespace Base {
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
-
-            
-
             return actionObject;
         }
 
@@ -858,6 +855,16 @@ namespace Base {
             }
         }
 
+        public List<ActionObject> GetAllActionObjectsWithoutPose() {
+            List<ActionObject> objects = new List<ActionObject>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (!actionObject.ActionObjectMetadata.HasPose && actionObject.gameObject.activeSelf) {
+                    objects.Add(actionObject);
+                }
+            }
+            return objects;
+        }
+             
         
 
         #endregion

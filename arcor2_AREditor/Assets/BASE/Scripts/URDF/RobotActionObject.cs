@@ -366,17 +366,13 @@ namespace Base {
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
                 // We have clicked with left mouse and started manipulation with object
                 if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                    manipulationStarted = true;
-                    HideRobotEE();
-                    TransformGizmo.Instance.AddTarget(transform);
-                    outlineOnClick.GizmoHighlight();
+                    StartManipulation();
                 }
             } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-                ShowMenu();
-                TransformGizmo.Instance.ClearTargets();
-                outlineOnClick.GizmoUnHighlight();
+                OpenMenu();
             }
         }
+
 
         public async Task<List<string>> GetEndEffectorIds() {
             if (!ResourcesLoaded) {
@@ -434,6 +430,7 @@ namespace Base {
             robotRenderers.Clear();
             robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
             robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
+            Colliders = robotColliders;
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
@@ -600,6 +597,30 @@ namespace Base {
                     }
                 }
             }
+        }
+
+        public override void OpenMenu() {
+            TransformGizmo.Instance.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        public override bool HasMenu() {
+            return true;
+        }
+
+        public override void StartManipulation() {
+            manipulationStarted = true;
+            HideRobotEE();
+            TransformGizmo.Instance.AddTarget(transform);
+            outlineOnClick.GizmoHighlight();
         }
     }
 }

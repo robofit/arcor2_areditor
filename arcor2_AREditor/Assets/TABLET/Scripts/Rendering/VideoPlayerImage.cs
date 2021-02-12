@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -23,11 +24,17 @@ public class VideoPlayerImage : MonoBehaviour {
     }
 
     public void PlayVideo() {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
+            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen)
+            return;
         // Play() will call function Prepare() which triggers event prepareCompleted
         VideoPlayer.Play();
     }
 
     public void PlayVideo(float playingTime) {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
+            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen)
+            return;
         VideoPlayer.Play();
         Invoke("StopVideo", playingTime);
     }

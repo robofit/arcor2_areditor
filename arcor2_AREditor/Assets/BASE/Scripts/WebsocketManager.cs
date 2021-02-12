@@ -315,8 +315,11 @@ namespace Base {
                     case "RobotMoveToActionPointJoints":
                         HandleRobotMoveToActionPointJointsEvent(data);
                         break;
-                    case "CurrentAction":
-                        HandleCurrentAction(data);
+                    case "ActionStateBefore":
+                        HandleStateBefore(data);
+                        break;
+                    case "ActionStateAfter":
+                        HandleActionStateAfter(data);
                         break;
                     case "PackageState":
                         HandlePackageState(data);
@@ -537,21 +540,17 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
-                /// <summary>
-        /// Handles info about currently running action
-        /// </summary>
-        /// <param name="obj">Message from server</param>
-        private void HandleCurrentAction(string obj) {
+        private void HandleStateBefore(string obj) {
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
                 Debug.LogWarning("Project not yet loaded, ignoring current action");
                 return;
             }
             try {
-                
-                IO.Swagger.Model.CurrentAction currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentAction>(obj);
 
-                puck_id = currentActionEvent.Data.ActionId;
+                IO.Swagger.Model.ActionStateBefore actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateBefore>(obj);
+
+                puck_id = actionStateBefore.Data.ActionId;
 
 
 
@@ -570,8 +569,39 @@ namespace Base {
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
             }
-            
         }
+
+        private void HandleActionStateAfter(string obj) {
+            string puck_id;
+            if (!ProjectManager.Instance.Valid) {
+                Debug.LogWarning("Project not yet loaded, ignoring current action");
+                return;
+            }
+            try {
+
+                IO.Swagger.Model.ActionStateAfter actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateAfter>(obj);
+
+                puck_id = actionStateBefore.Data.ActionId;
+
+
+
+            } catch (NullReferenceException e) {
+                Debug.Log("Parse error in HandleCurrentAction()");
+                return;
+            }
+            // Stop previously running action (change its color to default)
+            /*if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+            try {
+                Action puck = ProjectManager.Instance.GetAction(puck_id);
+                ActionsManager.Instance.CurrentlyRunningAction = puck;
+                // Run current action (set its color to running)
+                puck.RunAction();
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+            }*/
+        }
+
 
         /// <summary>
         /// Handles result of recently executed action

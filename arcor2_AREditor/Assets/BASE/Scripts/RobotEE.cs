@@ -4,7 +4,7 @@ using Base;
 using RosSharp.Urdf;
 using UnityEngine;
 
-public class RobotEE : Base.Clickable {
+public class RobotEE : InteractiveObject {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
@@ -46,5 +46,29 @@ public class RobotEE : Base.Clickable {
         // rotation set according to this
         // https://answers.unity.com/questions/275565/what-is-the-rotation-equivalent-of-inversetransfor.html
         transform.rotation = SceneManager.Instance.SceneOrigin.transform.rotation * orientation;
+    }
+
+    public override string GetName() {
+        return EEId;
+    }
+
+    public override string GetId() {
+        return EEId;
+    }
+
+    public override void OpenMenu() {
+        throw new System.NotImplementedException();
+    }
+
+    public override bool HasMenu() {
+        return false;
+    }
+
+    public override bool Movable() {
+        return false;
+    }
+
+    public override void StartManipulation() {
+        throw new System.NotImplementedException();
     }
 }

@@ -195,7 +195,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.10.0";
+        public const string ApiVersion = "0.11.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -1759,6 +1759,53 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
+        public List<InteractiveObject> GetAllInteractiveObjects() {
+            
+            List<InteractiveObject> objects = new List<InteractiveObject>();
+            
+            /*foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }
+            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }*/
+            objects.AddRange(FindObjectsOfType<InteractiveObject>());
+            /*foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
+                objects.Add(interactiveObject);
+            }
+            objects.Clear();
+            startTime = System.DateTime.UtcNow;
+            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
+                objects.Add(actionObject);
+            }
+            foreach (KeyValuePair<string, ActionPoint> actionPoint in ProjectManager.Instance.ActionPoints) {
+                objects.Add(actionPoint.Value);
+                foreach (KeyValuePair<string, Action> action in actionPoint.Value.Actions) {
+                    objects.Add(action.Value);
+                    objects.Add(action.Value.Input);
+                    objects.Add(action.Value.Output);
+                }
+                foreach (APOrientation orientation in actionPoint.Value.GetOrientationsVisuals()) {
+                    objects.Add(orientation);
+                }
+            }
+            objects.Add(ProjectManager.Instance.StartAction);
+            objects.Add(ProjectManager.Instance.StartAction.Output);
+            objects.Add(ProjectManager.Instance.EndAction);
+            objects.Add(ProjectManager.Instance.EndAction.Input);
+            if (CalibrationManager.Instance.worldAnchorVis != null)
+                objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
+                */
+
+            if (GetGameState() == GameStateEnum.ProjectEditor) {
+                foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {
+                    objects.Add(ap);
+                }
+            }
+            Debug.LogWarning("Interactive objects: " + objects.Count);
+            return objects;
+        }
+
     }
 
     /// <summary>
@@ -1804,5 +1851,7 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
+        
     }
 }
