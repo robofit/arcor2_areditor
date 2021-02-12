@@ -48,7 +48,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 #if UNITY_STANDALONE || UNITY_EDITOR
     private void Start() {
         Calibrated = true;
+        
     }
+
 #endif
 
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
@@ -59,6 +61,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void OnTrackedImageChanged(ARTrackedImagesChangedEventArgs obj) {
         ActivateTrackableMarkers(activateTrackableMarkers);
+        if (obj.added.Count > 0 || obj.removed.Count > 0)
+            SelectorMenu.Instance.ForceUpdateMenus();
     }
 #endif
 
@@ -104,6 +108,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             }
 
             GameManager.Instance.Scene.SetActive(true);
+                
+            SelectorMenu.Instance.ForceUpdateMenus();
 
             ActivateTrackableMarkers(false);
         }
@@ -153,6 +159,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Calibration successful", "");
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
             GameManager.Instance.Scene.SetActive(true);
+                
+                SelectorMenu.Instance.ForceUpdateMenus();
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
             Debug.LogError("Cloud anchor error: " + WorldAnchorCloud.cloudAnchorState);
@@ -177,10 +185,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         if (WorldAnchorLocal != null) {
             WorldAnchorLocal.gameObject.SetActive(false);
             SelectorMenu.Instance.ForceUpdateMenus();
+            Debug.LogError("HideCurrentWorldAnchor");
         }
         if (WorldAnchorCloud != null) {
             WorldAnchorCloud.gameObject.SetActive(false);
             SelectorMenu.Instance.ForceUpdateMenus();
+            Debug.LogError("HideCurrentWorldAnchor");
         }
     }
 
@@ -249,7 +259,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 worldAnchorVis = Instantiate(WorldAnchorPrefab, Vector3.zero, Quaternion.identity);
                 worldAnchorVis.transform.SetParent(WorldAnchorCloud.transform, false);
                 AttachScene(WorldAnchorCloud.gameObject);
-                SelectorMenu.Instance.ForceUpdateMenus();
+                Debug.LogError("Calibrate");
 
                 // disactivate marker tracking, because anchor is loaded from the cloud
                 ActivateTrackableMarkers(false);
@@ -261,6 +271,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 GameManager.Instance.Scene.SetActive(true);
+                
+                SelectorMenu.Instance.ForceUpdateMenus();
             }
             //TODO If anchor is not present in the system, play animation to manually calibrate by clicking on marker
             else {
@@ -297,10 +309,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             // marker cube stays positioned at the camera position (transforms should be the same).
             if (Vector3.Distance(trackedImg.transform.position, ARCamera.position) <= 0.05f) {
                 trackedImg.gameObject.SetActive(false);
-                SelectorMenu.Instance.ForceUpdateMenus();
             } else {
+                bool wasActive = trackedImg.gameObject.activeSelf;                
                 trackedImg.gameObject.SetActive(active);
-                SelectorMenu.Instance.ForceUpdateMenus();
+                
             }
         }
     }
@@ -318,6 +330,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         if (worldAnchorVis != null) {
             worldAnchorVis.SetActive(active);
             SelectorMenu.Instance.ForceUpdateMenus();
+            Debug.LogError("ActivateCalibrationElements");
         }
     }
 #endif

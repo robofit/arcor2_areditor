@@ -1795,13 +1795,13 @@ namespace Base {
             objects.Add(ProjectManager.Instance.EndAction.Input);
             if (CalibrationManager.Instance.worldAnchorVis != null)
                 objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
-                */
+                
 
             if (GetGameState() == GameStateEnum.ProjectEditor) {
                 foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {
                     objects.Add(ap);
                 }
-            }
+            }*/
             Debug.LogWarning("Interactive objects: " + objects.Count);
             return objects;
         }
