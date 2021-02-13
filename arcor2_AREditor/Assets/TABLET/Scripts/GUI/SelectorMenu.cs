@@ -87,7 +87,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private SelectorItem GetSelectorItem(InteractiveObject io) {
         foreach (SelectorItem item in selectorItemsAimMenu) {
             if (string.Compare(item.InteractiveObject.GetId(), io.GetId()) == 0) {
-                Debug.LogError("has");
+                //Debug.LogError("has");
                 return item;
             }
         }
