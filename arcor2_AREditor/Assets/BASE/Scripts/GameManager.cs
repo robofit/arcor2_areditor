@@ -1762,8 +1762,7 @@ namespace Base {
         public List<InteractiveObject> GetAllInteractiveObjects() {
             
             List<InteractiveObject> objects = new List<InteractiveObject>();
-            if (!GameManager.Instance.Scene.activeSelf)
-                return objects;
+            
             /*foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
                 objects.Add(actionObject);
             }
@@ -1796,13 +1795,13 @@ namespace Base {
             objects.Add(ProjectManager.Instance.EndAction.Input);
             if (CalibrationManager.Instance.worldAnchorVis != null)
                 objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
-                */
+                
 
             if (GetGameState() == GameStateEnum.ProjectEditor) {
                 foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {
                     objects.Add(ap);
                 }
-            }
+            }*/
             Debug.LogWarning("Interactive objects: " + objects.Count);
             return objects;
         }

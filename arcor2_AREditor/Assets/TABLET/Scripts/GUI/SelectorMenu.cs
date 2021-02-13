@@ -87,6 +87,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private SelectorItem GetSelectorItem(InteractiveObject io) {
         foreach (SelectorItem item in selectorItemsAimMenu) {
             if (string.Compare(item.InteractiveObject.GetId(), io.GetId()) == 0) {
+                Debug.LogError("has");
                 return item;
             }
         }
@@ -137,6 +138,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             while (selectorItemsAimMenu.Count > 6) {
+                if (selectorItemsAimMenu.Last().IsSelected()) {
+                    SelectorItem item = selectorItemsAimMenu.Last();
+                    selectorItemsAimMenu.RemoveAt(selectorItemsAimMenu.Count - 1);
+                    selectorItemsAimMenu.Insert(selectorItemsAimMenu.Count - 2, item);
+                }
+                    
                 selectorItemsAimMenu.Last().transform.SetParent(ContentAlphabet.transform);
                 selectorItemsAimMenu.RemoveAt(selectorItemsAimMenu.Count - 1);
             }
