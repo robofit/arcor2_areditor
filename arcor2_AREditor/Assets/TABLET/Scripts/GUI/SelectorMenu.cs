@@ -42,6 +42,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             case EditorStateEnum.Normal:
             case EditorStateEnum.Closed:
             case EditorStateEnum.InteractionDisabled:
+                DeselectObject(true);
                 requestingObject = false;
                 break;
             case EditorStateEnum.SelectingAction:
@@ -50,6 +51,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             case EditorStateEnum.SelectingActionOutput:
             case EditorStateEnum.SelectingActionPoint:
             case EditorStateEnum.SelectingActionPointParent:
+                DeselectObject(true);
                 requestingObject = true;
                 break;
         }

@@ -588,9 +588,9 @@ namespace Base {
         /// <param name="enable"></param>
         public void EnableServiceInteractiveObjects(bool enable) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>().Enable(enable);
-#endif
+            CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
             VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
+#endif
         }
 
         /// <summary>
