@@ -836,88 +836,68 @@ namespace Base {
         /// <summary>
         /// Disables all action points
         /// </summary>
-        public void DisableAllActionPoints() {
+        public void EnableAllActionPoints(bool enable) {
             foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.Disable();
+                ap.Enable(enable);
             }
         }
 
         /// <summary>
-        /// Enables all action points
+        /// Disables all orientation visuals
         /// </summary>
-        public void EnableAllActionPoints() {
+        public void EnableAllOrientations(bool enable) {
             foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.Enable();
+                foreach (APOrientation orietationVisual in ap.GetOrientationsVisuals()) {
+                    orietationVisual.Enable(enable);
+                }
             }
         }
+
+        /// <summary>
+        /// Disables all orientation visuals
+        /// </summary>
+        public void EnableAllRobotsEE(bool enable) {
+            foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+                foreach (RobotEE robotEE in robot.GetAllEE()) {
+                    robotEE.Enable(enable);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Disables all actions
         /// </summary>
-        public void DisableAllActions() {
+        public void EnableAllActions(bool enable) {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Disable();
+                    action.Enable(enable);
             }
-            StartAction.Disable();
-            EndAction.Disable();
-        }
-
-        /// <summary>
-        /// Enables all actions
-        /// </summary>
-        public void EnableAllActions() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Enable();
-            }
-            StartAction.Enable();
-            EndAction.Enable();
+            StartAction.Enable(enable);
         }
 
         /// <summary>
         /// Disables all action inputs
         /// </summary>
-        public void DisableAllActionInputs() {
+        public void EnableAllActionInputs(bool enable) {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Input.Disable();
+                    action.Input.Enable(enable);
             }
-            EndAction.Input.Disable();
         }
 
-        /// <summary>
-        /// Enables all action inputs
-        /// </summary>
-        public void EnableAllActionsInputs() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Input.Enable();
-            }
-            EndAction.Input.Enable();
-        }
 
         /// <summary>
         /// Disable all action outputs
         /// </summary>
-        public void DisableAllActionOutputs() {
+        public void EnableAllActionOutputs(bool enable) {
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Output.Disable();
+                    action.Output.Enable(enable);
             }
-            StartAction.Output.Disable();
+            StartAction.Output.Enable(enable);
         }
 
-        /// <summary>
-        /// Enables all action outputs
-        /// </summary>
-        public void EnableAllActionsOutputs() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Output.Enable();
-            }
-            StartAction.Output.Enable();
-        }
 
         #region ACTIONS
 

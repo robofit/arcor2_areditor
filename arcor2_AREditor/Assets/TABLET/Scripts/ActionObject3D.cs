@@ -136,9 +136,7 @@ public class ActionObject3D : ActionObject {
         base.ActionObjectUpdate(actionObjectSwagger);
         if (ActionObjectMetadata.HasPose) {
             ActionObjectName.text = actionObjectSwagger.Name;
-        } else {
-            ActionObjectName.gameObject.SetActive(false);
-        }
+        } 
         
 
     }
@@ -392,7 +390,9 @@ public class ActionObject3D : ActionObject {
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
             return;
         }
-        ActionObjectName.gameObject.SetActive(true);
+        if (ActionObjectMetadata.HasPose) {
+            ActionObjectName.gameObject.SetActive(true);
+        }
         outlineOnClick.Highlight();
     }
 
@@ -401,14 +401,15 @@ public class ActionObject3D : ActionObject {
         outlineOnClick.UnHighlight();
     }
 
-    public override void Disable() {
-        base.Disable();
-        modelMaterial.color = Color.gray;
-    }
+    public override void Enable(bool enable) {
+        base.Enable(enable);
 
-    public override void Enable() {
-        base.Enable();
-        modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+        if (!ActionObjectMetadata.HasPose)
+            return;
+        if (enable)
+            modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+        else
+            modelMaterial.color = Color.gray;
     }
 
     public override void OpenMenu() {

@@ -21,9 +21,10 @@ public class EndAction : StartEndAction
     }
 
 
-    public override void Enable() {
-        base.Enable();
-        foreach (Renderer renderer in outlineOnClick.Renderers)
-            renderer.material.color = Color.red;
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        if (enable)
+            foreach (Renderer renderer in outlineOnClick.Renderers)
+                renderer.material.color = Color.red;
     }
 }

@@ -838,20 +838,11 @@ namespace Base {
         }
 
         /// <summary>
-        /// Disables (i.e. greys out) all action objects
-        /// </summary>
-        public void DisableAllActionObjects() {
-            foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Disable();
-            }
-        }
-
-        /// <summary>
         /// Enables all action objects
         /// </summary>
-        public void EnableAllActionObjects() {
+        public void EnableAllActionObjects(bool enable) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Enable();
+                ao.Enable(enable);
             }
         }
 
