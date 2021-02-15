@@ -874,6 +874,7 @@ namespace Base {
                     action.Enable(enable);
             }
             StartAction.Enable(enable);
+            EndAction.Enable(enable);
         }
 
         /// <summary>
@@ -884,6 +885,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Input.Enable(enable);
             }
+            EndAction.Input.Enable(enable);
         }
 
 

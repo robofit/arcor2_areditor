@@ -285,8 +285,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
                 Destroy(item.gameObject);
                 selectorItems.Remove(id);
-                if (ContentAim.activeSelf)
-                    RemoveItemWithId(id, selectorItemsAimMenu);
+                RemoveItemWithId(id, selectorItemsAimMenu);
             }
            
         }
@@ -368,4 +367,38 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         return null;
     }
+
+    public void ShowRobots(bool show) {
+        ProjectManager.Instance.EnableAllRobotsEE(show);
+        SceneManager.Instance.EnableAllRobots(show);
+        ForceUpdateMenus();
+    }
+
+    public void ShowActionObjects(bool show) {
+        SceneManager.Instance.EnableAllActionObjects(show, false);
+        ForceUpdateMenus();
+    }
+
+    public void ShowActionPoints(bool show) {
+        ProjectManager.Instance.EnableAllActionPoints(show);
+        ProjectManager.Instance.EnableAllOrientations(show);
+        ForceUpdateMenus();
+    }
+
+    public void ShowIO(bool show) {
+        ProjectManager.Instance.EnableAllActionInputs(show);
+        ProjectManager.Instance.EnableAllActionOutputs(show);
+        ForceUpdateMenus();
+    }
+
+    public void ShowActions(bool show) {
+        ProjectManager.Instance.EnableAllActions(show);
+        ForceUpdateMenus();
+    }
+
+    public void ShowOthers(bool show) {
+        GameManager.Instance.EnableServiceInteractiveObjects(show);
+        ForceUpdateMenus();
+    }
+    
 }

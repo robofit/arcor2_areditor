@@ -840,9 +840,18 @@ namespace Base {
         /// <summary>
         /// Enables all action objects
         /// </summary>
-        public void EnableAllActionObjects(bool enable) {
+        public void EnableAllActionObjects(bool enable, bool includingRobots=true) {
             foreach (ActionObject ao in ActionObjects.Values) {
+                if (!includingRobots && ao.IsRobot())
+                    continue;
                 ao.Enable(enable);
+            }
+        }
+
+        public void EnableAllRobots(bool enable) {
+            foreach (ActionObject ao in ActionObjects.Values) {
+                if (ao.IsRobot())
+                    ao.Enable(enable);
             }
         }
 
