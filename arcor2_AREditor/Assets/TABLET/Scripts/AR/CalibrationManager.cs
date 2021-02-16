@@ -318,6 +318,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public void ActivateCalibrationElements(bool active) {
+        
         if (worldAnchorVis == null) {
             foreach (Transform child in WorldAnchorLocal.transform) {
                 if (child.tag == "world_anchor") {
@@ -326,11 +327,14 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 }
             }
         }
-
+        
         if (worldAnchorVis != null) {
             worldAnchorVis.SetActive(active);
-            SelectorMenu.Instance.ForceUpdateMenus();
             Debug.LogError("ActivateCalibrationElements");
+            Recalibrate r = FindObjectOfType<Recalibrate>();
+            if (r != null)
+                r.Enable(active);
+            SelectorMenu.Instance.ForceUpdateMenus();
         }
     }
 #endif
