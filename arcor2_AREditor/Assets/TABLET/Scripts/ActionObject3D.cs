@@ -45,17 +45,13 @@ public class ActionObject3D : ActionObject {
 
 
     protected override void Update() {
-        if (manipulationStarted) {
+
+        if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
                 if (!tfGizmo.isTransforming && updatePose) {
                     updatePose = false;
 
-                    if (ActionObjectMetadata.HasPose) {
-                        UpdatePose();
-                    } else {
-                        PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
-                            transform.localPosition, transform.localRotation);
-                    }
+                    UpdatePose();
                 }
 
                 if (tfGizmo.isTransforming)
@@ -72,7 +68,8 @@ public class ActionObject3D : ActionObject {
 
     private async void UpdatePose() {
         try {
-            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
+            if (ActionObjectMetadata.HasPose)
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
             ResetPosition();
@@ -83,24 +80,24 @@ public class ActionObject3D : ActionObject {
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
         else
-            return PlayerPrefsHelper.LoadVector3("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/position",
-                            Vector3.zero);
+            throw new RequestFailedException("This object has no pose");
     }
 
     public override void SetScenePosition(Vector3 position) {
-        Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        if (ActionObjectMetadata.HasPose)
+            Data.Pose.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
         if (ActionObjectMetadata.HasPose)
             return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Pose.Orientation));
         else
-            return PlayerPrefsHelper.LoadQuaternion("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose/rotation",
-                            Quaternion.identity);
+            throw new RequestFailedException("This object has no pose");
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
-        Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
+        if (ActionObjectMetadata.HasPose)
+            Data.Pose.Orientation = DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation));
     }
 
     public async override void OnClick(Click type) {
@@ -121,20 +118,12 @@ public class ActionObject3D : ActionObject {
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                try {
-                    await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
-                    manipulationStarted = true;
-                    tfGizmo.AddTarget(Model.transform);
-                    outlineOnClick.GizmoHighlight();
-                } catch (RequestFailedException ex) {
-                    Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
-                }
+            if (ActionObjectMetadata.HasPose && GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+                StartManipulation();
             }
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ShowMenu();
-            tfGizmo.ClearTargets();
-            outlineOnClick.GizmoUnHighlight();
+            OpenMenu();
+
         }
 
     }
@@ -145,9 +134,11 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
-        Debug.Assert(Model != null);
         base.ActionObjectUpdate(actionObjectSwagger);
-        ActionObjectName.text = actionObjectSwagger.Name;
+        if (ActionObjectMetadata.HasPose) {
+            ActionObjectName.text = actionObjectSwagger.Name;
+        } 
+        
 
     }
 
@@ -159,6 +150,8 @@ public class ActionObject3D : ActionObject {
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
         base.SetVisibility(value);
+        if (!ActionObjectMetadata.HasPose)
+            return;
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
         }
@@ -230,7 +223,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void SetInteractivity(bool interactivity) {
-        Debug.Assert(Model != null);
+        Debug.Assert(Model != null && ActionObjectMetadata.HasPose);
         //Model.GetComponent<Collider>().enabled = interactivity;
         if (ActionObjectMetadata.ObjectModel != null &&
             ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
@@ -244,10 +237,13 @@ public class ActionObject3D : ActionObject {
 
     public override void ActivateForGizmo(string layer) {
         base.ActivateForGizmo(layer);
-        Model.layer = LayerMask.NameToLayer(layer);
+        if (ActionObjectMetadata.HasPose)
+            Model.layer = LayerMask.NameToLayer(layer);
     }
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
+        if (!ActionObjectMetadata.HasPose)
+            return;
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -294,9 +290,9 @@ public class ActionObject3D : ActionObject {
                     }
                     break;
                 case ObjectModel.TypeEnum.Mesh:
-                    var assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
-                    var webRequest = AssetDownloader.CreateWebRequest(ActionObjectMetadata.ObjectModel.Mesh.Uri);
-                    AssetDownloader.LoadModelFromUri(webRequest, null, OnModelLoaded, null, OnModelLoadError, null, assetLoaderOptions);
+                    MeshImporter.Instance.OnMeshImported += OnModelLoaded;
+                    MeshImporter.Instance.LoadModel(ActionObjectMetadata.ObjectModel.Mesh, GetId());
+
                     Model = Instantiate(CubePrefab, Visual.transform);
                     Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
                     break;
@@ -309,8 +305,10 @@ public class ActionObject3D : ActionObject {
         //if (IsRobot()) {
         //    Model.tag = "Robot";
         //}
+
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
+        Colliders.Add(Collider);
         Model.GetComponent<OnClickCollider>().Target = gameObject;
         modelRenderer = Model.GetComponent<Renderer>();
         modelMaterial = modelRenderer.material;
@@ -334,10 +332,12 @@ public class ActionObject3D : ActionObject {
     /// For meshes...
     /// </summary>
     /// <param name="assetLoaderContext"></param>
-    public void OnModelLoaded(AssetLoaderContext assetLoaderContext) {
+    public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
+        if (args.Name != this.GetId())
+            return;
         Model.SetActive(false);
         Destroy(Model);
-        Model = assetLoaderContext.RootGameObject;
+        Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;
         Model.gameObject.transform.localPosition = Vector3.zero;
@@ -360,6 +360,8 @@ public class ActionObject3D : ActionObject {
 
         transparent = false; //needs to be set before 1st call of SetVisibility after model loading
         SetVisibility(visibility);
+
+        MeshImporter.Instance.OnMeshImported -= OnModelLoaded;
     }
 
     /// <summary>
@@ -389,7 +391,9 @@ public class ActionObject3D : ActionObject {
             GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
             return;
         }
-        ActionObjectName.gameObject.SetActive(true);
+        if (ActionObjectMetadata.HasPose) {
+            ActionObjectName.gameObject.SetActive(true);
+        }
         outlineOnClick.Highlight();
     }
 
@@ -398,14 +402,44 @@ public class ActionObject3D : ActionObject {
         outlineOnClick.UnHighlight();
     }
 
-    public override void Disable() {
-        base.Disable();
-        modelMaterial.color = Color.gray;
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+
+        if (!ActionObjectMetadata.HasPose)
+            return;
+        if (enable)
+            modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+        else
+            modelMaterial.color = Color.gray;
     }
 
-    public override void Enable() {
-        base.Enable();
-        modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+    public override void OpenMenu() {
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
+        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+            actionObjectMenu.CurrentObject = this;
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+            actionObjectMenuProjectEditor.CurrentObject = this;
+            actionObjectMenuProjectEditor.UpdateMenu();
+            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+        }
     }
 
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public async override void StartManipulation() {
+        try {
+            if (ActionObjectMetadata.HasPose) {
+                await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
+                manipulationStarted = true;
+                tfGizmo.AddTarget(Model.transform);
+                outlineOnClick.GizmoHighlight();
+            }            
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
+        }
+    }
 }

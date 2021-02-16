@@ -7,10 +7,11 @@ using IO.Swagger.Model;
 using Newtonsoft.Json;
 using static Base.Clickable;
 using UnityEngine.Events;
+using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public class InputOutput : Clickable {
+    public class InputOutput : InteractiveObject {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -322,22 +323,50 @@ namespace Base {
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
         }
 
-        public override void Disable() {
-            base.Disable();
-            foreach (Renderer renderer in outlineOnClick.Renderers)
-                renderer.material.color = Color.gray;
-        }
-        public override void Enable() {
-            base.Enable();
-            foreach (Renderer renderer in outlineOnClick.Renderers) {
-                if (Action.Data.Id == "START")
-                    renderer.material.color = Color.green;
-                else if (Action.Data.Id == "END")
-                    renderer.material.color = Color.red;
-                else
-                    renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+        public override void Enable(bool enable) {
+            base.Enable(enable);
+            if (enable)
+                foreach (Renderer renderer in outlineOnClick.Renderers) {
+                    if (Action.Data.Id == "START")
+                        renderer.material.color = Color.green;
+                    else if (Action.Data.Id == "END")
+                        renderer.material.color = Color.red;
+                    else
+                        renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+                }
+            else {
+                foreach (Renderer renderer in outlineOnClick.Renderers)
+                    renderer.material.color = Color.gray;
             }
                 
+        }
+
+        public override string GetName() {
+            if (typeof(PuckOutput) == GetType()) {
+                return "Output of " + Action.Data.Name;
+            } else {
+                return "Input of " + Action.Data.Name;
+            }
+        }
+
+        public override string GetId() {
+            return GetName();
+        }
+
+        public override void OpenMenu() {
+            throw new NotImplementedException();
+        }
+
+        public override bool HasMenu() {
+            return false;
+        }
+
+        public override bool Movable() {
+            return false;
+        }
+
+        public override void StartManipulation() {
+            throw new NotImplementedException();
         }
     }
 

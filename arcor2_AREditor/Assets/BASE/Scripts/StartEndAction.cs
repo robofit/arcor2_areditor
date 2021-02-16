@@ -12,8 +12,7 @@ public abstract class StartEndAction : Action3D {
             return;
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
-            TransformGizmo.Instance.AddTarget(Visual.transform);
-            outlineOnClick.GizmoHighlight();
+            StartManipulation();
         }
     }
 
@@ -43,5 +42,18 @@ public abstract class StartEndAction : Action3D {
         base.OnHoverEnd();
     }
 
-    
-}
+    public override bool Movable() {
+        return true;
+    }
+
+    public override bool HasMenu() {
+        return false;
+    }
+
+    public override void StartManipulation() {
+        TransformGizmo.Instance.AddTarget(Visual.transform);
+        outlineOnClick.GizmoHighlight();
+    }
+
+
+    }

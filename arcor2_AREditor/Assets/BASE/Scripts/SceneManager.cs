@@ -511,9 +511,6 @@ namespace Base {
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
-
-            
-
             return actionObject;
         }
 
@@ -841,23 +838,33 @@ namespace Base {
         }
 
         /// <summary>
-        /// Disables (i.e. greys out) all action objects
-        /// </summary>
-        public void DisableAllActionObjects() {
-            foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Disable();
-            }
-        }
-
-        /// <summary>
         /// Enables all action objects
         /// </summary>
-        public void EnableAllActionObjects() {
+        public void EnableAllActionObjects(bool enable, bool includingRobots=true) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Enable();
+                if (!includingRobots && ao.IsRobot())
+                    continue;
+                ao.Enable(enable);
             }
         }
 
+        public void EnableAllRobots(bool enable) {
+            foreach (ActionObject ao in ActionObjects.Values) {
+                if (ao.IsRobot())
+                    ao.Enable(enable);
+            }
+        }
+
+        public List<ActionObject> GetAllActionObjectsWithoutPose() {
+            List<ActionObject> objects = new List<ActionObject>();
+            foreach (ActionObject actionObject in ActionObjects.Values) {
+                if (!actionObject.ActionObjectMetadata.HasPose && actionObject.gameObject.activeSelf) {
+                    objects.Add(actionObject);
+                }
+            }
+            return objects;
+        }
+             
         
 
         #endregion

@@ -11,7 +11,7 @@ using IO.Swagger.Model;
 using TMPro;
 
 namespace Base {
-    public abstract class Action : Clickable {
+    public abstract class Action : InteractiveObject {
         // Metadata of this Action
         private ActionMetadata metadata;
         // Dictionary of all action parameters for this Action
@@ -145,6 +145,14 @@ namespace Base {
 
         public List<Flow> GetFlows() {
             return Data.Flows;
+        }
+
+        public override string GetId() {
+            return Data.Id;
+        }
+
+        public override bool Movable() {
+            return false;
         }
     }
 

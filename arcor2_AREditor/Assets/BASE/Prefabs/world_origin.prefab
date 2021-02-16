@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 4476520059106650956}
 --- !u!114 &2558004917790460925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,10 +169,70 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4770105150089538908, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 4770105150089538908, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4770105150089538908, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 4770105150089538908, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
+    - target: {fileID: 5357028322485480444, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 5357028322485480444, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5357028322485480444, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 5357028322485480444, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
     - target: {fileID: 6790891077592568175, guid: 4d48c217765fe4241bc9579955acde2f,
         type: 3}
       propertyPath: m_Mesh
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034188439998132360, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034188439998132360, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034188439998132360, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 7034188439998132360, guid: 4d48c217765fe4241bc9579955acde2f,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4d48c217765fe4241bc9579955acde2f, type: 3}
@@ -183,6 +245,12 @@ GameObject:
 --- !u!4 &4476520059100159852 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 4d48c217765fe4241bc9579955acde2f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4476520059100284396}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &4476520059106650956 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 6500000, guid: 4d48c217765fe4241bc9579955acde2f,
     type: 3}
   m_PrefabInstance: {fileID: 4476520059100284396}
   m_PrefabAsset: {fileID: 0}

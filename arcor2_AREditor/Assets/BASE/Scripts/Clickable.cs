@@ -1,4 +1,5 @@
 using System;
+using Boo.Lang;
 using UnityEngine;
 
 namespace Base
@@ -26,12 +27,12 @@ namespace Base
 
         public abstract void OnHoverEnd();
 
-        public virtual void Disable() {
-            Enabled = false;
+        public virtual void Enable(bool enable) {
+            Enabled = enable;
         }
-        public virtual void Enable() {
-            Enabled = true;
-        }
+
+       
+
     }
 
     
