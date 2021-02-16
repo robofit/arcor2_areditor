@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
+using System.Collections;
 
 namespace Base {
     /// <summary>
@@ -653,6 +654,41 @@ namespace Base {
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         }
 
+        private IEnumerator Waiter() {
+            for (int i = 0; i < 50; i++) {
+                Debug.LogError("ziju" + i.ToString());
+               yield return new WaitForSeconds(2);
+            }
+        }
+        
+        private void OnApplicationPause(bool pause) {
+            Debug.LogError("onAppPause, pause:" + pause.ToString());
+            if(pause)
+                StartCoroutine(Waiter());
+
+
+            //Notifications.Instance.ShowNotification("on app pause", pause.ToString());
+            //if (pause && ConnectionStatus != ConnectionStatusEnum.Disconnected)
+            //  WebsocketManager.Instance.DisconnectFromSever();
+        }
+
+        private void OnApplicationFocus(bool focus) {
+            if (ConnectionStatus == ConnectionStatusEnum.Disconnected) {
+                Debug.LogError("onAppFocus, disconnected state, focus: " + focus.ToString());
+                if (focus) {
+                    try {
+                       //LandingScreen.Instance.ConnectToServer();
+                    } catch(NullReferenceException ex) {
+                        Debug.LogError("na landing je websocket ještě null " + ex.Message);
+                    }
+                }
+                //Notifications.Instance.ShowNotification("onAppFocus", "disconnected state");
+            } else {
+                Debug.LogError("onAppFocus, connected/ing state, focus: " + focus.ToString());
+                //Notifications.Instance.ShowNotification("onAppFocus", "connected/ing state");
+            }
+        }
+        
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
@@ -736,6 +772,7 @@ namespace Base {
             // initialize when connected to the server
             ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            Debug.LogError("onConnected triggered");
         }
 
         /// <summary>

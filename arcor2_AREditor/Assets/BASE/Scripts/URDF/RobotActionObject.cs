@@ -60,11 +60,11 @@ namespace Base {
                 _ = EnableVisualisationOfEE();
             }
         }
-
+        
         private async void OnDisable() {
-            await DisableVisualisationOfEE();
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            //await DisableVisualisationOfEE();
+            //if (HasUrdf())
+              //  await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
@@ -72,8 +72,8 @@ namespace Base {
         private async void OnEnable() {
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            //if (HasUrdf())
+              //      await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -258,8 +258,8 @@ namespace Base {
 
         public override void Show() {
             robotVisible = true;
-            SetGrey(!SceneManager.Instance.SceneStarted);
             SetVisibility(1);
+            SetGrey(!SceneManager.Instance.SceneStarted);
         }
 
         public override void Hide() {
@@ -591,6 +591,7 @@ namespace Base {
         /// <param name="grey">True for setting grey, false for standard state.</param>
         public void SetGrey(bool grey) {
             if (grey) {
+                Debug.LogError("setting grey");
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
                         mat.SetColor("_EmissionColor", Color.grey);
@@ -598,6 +599,7 @@ namespace Base {
                     }
                 }
             } else {
+                Debug.LogError("setting natural color");
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
                         mat.DisableKeyword("_EMISSION");
