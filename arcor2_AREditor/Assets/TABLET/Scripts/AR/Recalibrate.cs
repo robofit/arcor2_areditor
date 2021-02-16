@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
-public class Recalibrate : InteractiveObject {
+public class Recalibrate : InteractiveObject
+    {
 
 
     public override void OnClick(Click type) {

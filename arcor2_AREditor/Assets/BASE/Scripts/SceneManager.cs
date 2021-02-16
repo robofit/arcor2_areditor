@@ -838,20 +838,20 @@ namespace Base {
         }
 
         /// <summary>
-        /// Disables (i.e. greys out) all action objects
+        /// Enables all action objects
         /// </summary>
-        public void DisableAllActionObjects() {
+        public void EnableAllActionObjects(bool enable, bool includingRobots=true) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Disable();
+                if (!includingRobots && ao.IsRobot())
+                    continue;
+                ao.Enable(enable);
             }
         }
 
-        /// <summary>
-        /// Enables all action objects
-        /// </summary>
-        public void EnableAllActionObjects() {
+        public void EnableAllRobots(bool enable) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Enable();
+                if (ao.IsRobot())
+                    ao.Enable(enable);
             }
         }
 

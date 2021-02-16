@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ public class SelectorItem : MonoBehaviour
     public float Score;
     private long lastUpdate;
     private bool selected;
+    public Sprite ActionPoint, ActionObject, Robot, RobotEE, Orientation, ActionInput, ActionOutput, Action, Others;
 
     private void Awake() {
         Button = GetComponent<Button>();
@@ -29,6 +31,25 @@ public class SelectorItem : MonoBehaviour
         Score = score;
         Button.onClick.AddListener(() => SelectorMenu.Instance.SetSelectedObject(this, true));
         lastUpdate = currentIteration;
+        if (interactiveObject.GetType() == typeof(RobotActionObject)) {
+            Icon.sprite = Robot;
+        } else if (interactiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
+            Icon.sprite = ActionObject;
+        } else if (interactiveObject.GetType() == typeof(PuckInput)) {
+            Icon.sprite = ActionInput;
+        } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
+            Icon.sprite = ActionOutput;
+        } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
+            Icon.sprite = Action;
+        } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
+            Icon.sprite = ActionPoint;
+        } else if (interactiveObject.GetType() == typeof(RobotEE)) {
+            Icon.sprite = RobotEE;
+        } else if (interactiveObject.GetType() == typeof(APOrientation)) {
+            Icon.sprite = Orientation;
+        } else {
+            Icon.sprite = Others;
+        }
     }
 
     public void UpdateScore(float score, long currentIteration) {
