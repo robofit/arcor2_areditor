@@ -83,12 +83,13 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
             return;
         }
+
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             StartManipulation();            
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ShowMenu(false);
-            tfGizmo.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
         }
 
@@ -235,6 +236,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
+        tfGizmo.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {
