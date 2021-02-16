@@ -29,7 +29,7 @@ public class InputHandler : Singleton<InputHandler> {
 
     private void Update() {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        //HandleTouch();
+        HandleTouch();
 #else
         HandleInputStandalone();
 #endif

@@ -108,6 +108,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private void OnSceneChanged(object sender, System.EventArgs e) {
         UpdateAlphabetMenu();
         UpdateNoPoseMenu();
+        Debug.LogError("Scene changed");
     }
 
     private SelectorItem GetSelectorItem(InteractiveObject io) {
@@ -139,6 +140,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         if (aimingPoint.HasValue) {
             foreach (SelectorItem item in selectorItems.Values) {
                 float dist = item.InteractiveObject.GetDistance(aimingPoint.Value);
+                if (dist > 0.2) // add objects max 20cm away from point of impact
+                    continue; 
                 items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
@@ -153,6 +156,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             List<SelectorItem> newItems = new List<SelectorItem>();
             foreach (Tuple<float, InteractiveObject> item in items) {
+                if (item.Item2.GetType() == typeof(ActionObjectNoPose))
+                    continue;
                 if (selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
                     if (!selectorItems.ContainsKey(item.Item2.GetId())) {
                         continue;
