@@ -2,8 +2,10 @@ using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 using UnityEngine.UI;
+using static Base.GameManager;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class LeftMenu : Base.Singleton<LeftMenu> {
@@ -15,6 +17,9 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
     }
+
+    private bool requestingObject = false;
+    private EditorStateEnum editorState;
 
     private void Update() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
@@ -28,22 +33,39 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
             CanvasGroup.blocksRaycasts = true;
             CanvasGroup.alpha = 1;
         }
+        if (GameManager.Instance.GetEditorState() != editorState) {
+            editorState = GameManager.Instance.GetEditorState();
+            switch (editorState) {
+                case EditorStateEnum.Normal:
+                    requestingObject = false;
+                    break;
+                case EditorStateEnum.SelectingAction:
+                case EditorStateEnum.SelectingActionInput:
+                case EditorStateEnum.SelectingActionObject:
+                case EditorStateEnum.SelectingActionOutput:
+                case EditorStateEnum.SelectingActionPoint:
+                case EditorStateEnum.SelectingActionPointParent:
+                    requestingObject = true;
+                    break;
+            }
+        }
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
-        if (selectedObject != null) {
-            //Debug.LogError(selectedObject.GetType());
+        if (requestingObject || selectedObject == null) {
+            ConnectionsBtn.interactable = false;
+            MoveBtn.interactable = false;
+            MenuBtn.interactable = false;
+            InteractBtn.interactable = false;
+            
+        } else {
             ConnectionsBtn.interactable = selectedObject.GetType() == typeof(PuckInput) ||
-                selectedObject.GetType() == typeof(PuckOutput);
+                 selectedObject.GetType() == typeof(PuckOutput);
 
             MoveBtn.interactable = selectedObject.Movable();
             MenuBtn.interactable = selectedObject.HasMenu();
             InteractBtn.interactable = selectedObject.GetType() == typeof(Recalibrate) ||
                 selectedObject.GetType() == typeof(CreateAnchor);
-        } else {
-            ConnectionsBtn.interactable = false;
-            MoveBtn.interactable = false;
-            MenuBtn.interactable = false;
-            InteractBtn.interactable = false;
         }
+        
     }
 
     public void MoveButtonCb() {

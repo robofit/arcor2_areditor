@@ -21,12 +21,46 @@ namespace Base {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
 
             RaycastHit hitinfo = new RaycastHit();
-            
+            bool anyHit = false;
+            if (Physics.Raycast(ray, out RaycastHit hit)) {
+                hitinfo = hit;
+                anyHit = true;
+            } else {
+                RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.03f, 0.03f, 0.0001f), ray.direction, Camera.main.transform.rotation);
+                if (hits.Length > 0) {
+                    float minDist = float.MaxValue;
+                    foreach (RaycastHit h in hits) {
+                        Vector3 dir = ray.direction;
+
+                        Vector3 point = ray.origin + dir * Vector3.Distance(ray.origin, h.point);
+                        float dist = Vector3.Distance(point, h.collider.ClosestPointOnBounds(point));
+                        Debug.DrawLine(point, h.point);
+                        Debug.DrawRay(ray.origin, ray.direction);
+                        if (dist < minDist) {
+                            hitinfo = h;
+                            anyHit = true;
+                            minDist = dist;
+                        }
+                    }
+                }
+            }
+            if (anyHit) {
+                Vector3 lhs = hitinfo.point - ray.origin;
+
+                float dotP = Vector3.Dot(lhs, ray.direction.normalized);
+                Vector3 point = ray.origin + ray.direction.normalized * dotP;
+                SelectorMenu.Instance.UpdateAimMenu(point);
+            } else {
+                SelectorMenu.Instance.UpdateAimMenu(null);
+            }
+
+            /*
             RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.03f, 0.03f, 0.0001f), ray.direction, Camera.main.transform.rotation);
             if (hits.Length > 0) {
                 float minDist = float.MaxValue;
                 foreach (RaycastHit h in hits) {
                     Vector3 dir = ray.direction;
+                    dir.Normalize();
                     Vector3 point = ray.origin + dir * Vector3.Distance(ray.origin, h.point);
                     float dist = Vector3.Distance(point, h.collider.ClosestPointOnBounds(point));
                     Debug.DrawLine(point, h.point);
@@ -44,7 +78,7 @@ namespace Base {
             } else {
                 SelectorMenu.Instance.UpdateAimMenu(null);
             }
-
+            */
             /*ExtDebug.DrawBoxCastBox(ray.origin, new Vector3(0.05f, 0.05f, 0.00001f), Camera.main.transform.rotation, ray.direction, 20f, Color.green);
             List<Tuple<float, InteractiveObject>> orderedTransforms = new List<Tuple<float, InteractiveObject>>();
             if (hits.Length > 0) {
@@ -103,7 +137,7 @@ namespace Base {
 
             SelectorMenu.Instance.UpdateAimMenu(orderedTransforms);
             //SelectorMenu.Instance.UpdateAimMenu(orderedTransforms.Select(_ => _.Item2).Distinct().ToList());
-            
+
              /*else {
                 if (CurrentObject != null) {
                     if (!endingHover)
@@ -112,7 +146,7 @@ namespace Base {
             }*/
         }
 
-        private bool InteractiveObjectInList(List<Tuple<float, InteractiveObject>> list, InteractiveObject interactiveObject) {
+            private bool InteractiveObjectInList(List<Tuple<float, InteractiveObject>> list, InteractiveObject interactiveObject) {
             foreach (Tuple<float, InteractiveObject> item in list) {
                 if (interactiveObject.GetId() == item.Item2.GetId()) {
                     return true;

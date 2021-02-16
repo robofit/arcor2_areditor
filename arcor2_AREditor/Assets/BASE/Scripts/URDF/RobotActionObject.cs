@@ -629,5 +629,9 @@ namespace Base {
             TransformGizmo.Instance.AddTarget(transform);
             outlineOnClick.GizmoHighlight();
         }
+
+        public List<RobotEE> GetAllEE() {
+            return EndEffectors;
+        }
     }
 }
