@@ -37,23 +37,19 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ProjectManager.Instance.OnProjectChanged += OnProjectChanged;
         GameManager.Instance.OnOpenProjectEditor += OnProjectChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
-        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        ProjectManager.Instance.OnLoadProject += OnLoadProjectScene;
+        SceneManager.Instance.OnLoadScene += OnLoadProjectScene;
     }
 
-    private void OnGameStateChanged(object sender, GameStateEventArgs args) {
-        switch (args.Data) {
-            case GameStateEnum.ProjectEditor:
-            case GameStateEnum.SceneEditor:
-            case GameStateEnum.PackageRunning:
-                ShowRobots(RobotsToggle.Toggled);
-                ShowActionObjects(ObjectsToggle.Toggled);
-                ShowActionPoints(PointsToggle.Toggled);
-                ShowActions(ActionsToggle.Toggled);
-                ShowIO(IOToggle.Toggled);
-                ShowOthers(OthersToggle.Toggled);
-                break;
-        }
+    private void OnLoadProjectScene(object sender, EventArgs e) {
+        ShowRobots(RobotsToggle.Toggled);
+        ShowActionObjects(ObjectsToggle.Toggled);
+        ShowActionPoints(PointsToggle.Toggled);
+        ShowActions(ActionsToggle.Toggled);
+        ShowIO(IOToggle.Toggled);
+        ShowOthers(OthersToggle.Toggled);
     }
+
 
     private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
         editorState = args.Data;
