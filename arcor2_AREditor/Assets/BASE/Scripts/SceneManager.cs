@@ -241,6 +241,7 @@ namespace Base {
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
+                Sight.Instance.enabled = true;
             }
         }
 
@@ -351,6 +352,7 @@ namespace Base {
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
                 robot.SetJointValue(args.Data.Joints);
+                updateScene = true;
             } catch (ItemNotFoundException) {
                 
             }
@@ -677,6 +679,7 @@ namespace Base {
         /// </summary>
         /// <param name="sceneObject">Description of action object</param>
         public void SceneObjectRemoved(SceneObject sceneObject) {
+            Sight.Instance.enabled = false;
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
                 ActionObjects.Remove(sceneObject.Id);

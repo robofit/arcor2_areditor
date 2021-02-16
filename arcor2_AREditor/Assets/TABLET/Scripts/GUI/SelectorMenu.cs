@@ -5,6 +5,7 @@ using Base;
 using System;
 using System.Linq;
 using static Base.GameManager;
+using TMPro;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -25,6 +26,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     private bool requestingObject = false;
 
+    public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
+
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -34,6 +37,22 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ProjectManager.Instance.OnProjectChanged += OnProjectChanged;
         GameManager.Instance.OnOpenProjectEditor += OnProjectChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+    }
+
+    private void OnGameStateChanged(object sender, GameStateEventArgs args) {
+        switch (args.Data) {
+            case GameStateEnum.ProjectEditor:
+            case GameStateEnum.SceneEditor:
+            case GameStateEnum.PackageRunning:
+                ShowRobots(RobotsToggle.Toggled);
+                ShowActionObjects(ObjectsToggle.Toggled);
+                ShowActionPoints(PointsToggle.Toggled);
+                ShowActions(ActionsToggle.Toggled);
+                ShowIO(IOToggle.Toggled);
+                ShowOthers(OthersToggle.Toggled);
+                break;
+        }
     }
 
     private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
@@ -284,10 +303,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         foreach (string id in idsToRemove) {
             if (selectorItems.TryGetValue(id, out SelectorItem item)) {
-                if (manuallySelected && item.IsSelected()) {
-                    item.SetSelected(false, manuallySelected);
-                    manuallySelected = false;
-                }
+                if (item.IsSelected()) {
+                    item.SetSelected(false, true);
+                    if (manuallySelected) {
+                        manuallySelected = false;
+                    }
+                }                
                 Destroy(item.gameObject);
                 selectorItems.Remove(id);
                 RemoveItemWithId(id, selectorItemsAimMenu);

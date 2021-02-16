@@ -20,13 +20,15 @@ public class ToggleIconButton : MonoBehaviour
 
     public UnityEvent OnToggledOn, OnToggledOff;
 
+    public bool Toggled => toggled;
+
     public void SwitchToggle() {
-        Toggle(!toggled);
+        Toggle(!Toggled);
     }
 
     public void Toggle(bool toggle) {
-        toggled = toggle;
-        if (toggled) {
+        this.toggled = toggle;
+        if (Toggled) {
             Icon.color = Color.white;
             OnToggledOn.Invoke();
         } else {
@@ -34,5 +36,7 @@ public class ToggleIconButton : MonoBehaviour
             OnToggledOff.Invoke();
         }
     }
+
+
 
 }

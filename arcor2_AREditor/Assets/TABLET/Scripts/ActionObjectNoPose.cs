@@ -54,7 +54,7 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override void SetInteractivity(bool interactive) {
-        throw new NotImplementedException();
+        
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
