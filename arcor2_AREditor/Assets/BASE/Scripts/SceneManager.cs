@@ -66,6 +66,10 @@ namespace Base {
         /// </summary>
         public GameObject ActionObjectPrefab;
         /// <summary>
+        /// Prefab for action object without pose
+        /// </summary>
+        public GameObject ActionObjectNoPosePrefab;
+        /// <summary>
         /// Object which is currently selected in scene
         /// </summary>
         public GameObject CurrentlySelectedObject;
@@ -114,6 +118,11 @@ namespace Base {
         /// are instantioned and are ready
         /// </summary>
         public bool SceneStarted = false;
+
+        /// <summary>
+        /// Flag which indicates whether scene update event should be trigered during update
+        /// </summary>
+        private bool updateScene = false;
 
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
@@ -229,6 +238,10 @@ namespace Base {
                     sceneActive = false;
                 }
             }
+            if (updateScene) {
+                SceneChanged = true;
+                updateScene = false;
+            }
         }
 
         /// <summary>
@@ -311,10 +324,6 @@ namespace Base {
             OnSceneStateEvent?.Invoke(this, args);
         }
 
-        private void InitScene() {
-
-        }
-
         /// <summary>
         /// Register or unregister to/from subsription of joints or end effectors pose of each robot in the scene.
         /// </summary>
@@ -329,7 +338,7 @@ namespace Base {
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
                 SetSceneMeta(args.Scene);
-                sceneChanged = true;
+                updateScene = true;
             }
         }
 
@@ -506,8 +515,10 @@ namespace Base {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
 
-            } else {
+            } else if (aom.HasPose) {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
+            } else {
+                obj = Instantiate(ActionObjectNoPosePrefab, ActionObjectsSpawn.transform);
             }
             ActionObject actionObject = obj.GetComponent<ActionObject>();
             actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom, customCollisionModels);
@@ -650,7 +661,7 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            SceneChanged = true;
+            updateScene = true;
         }
 
         /// <summary>
@@ -661,7 +672,7 @@ namespace Base {
         public void SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
             actionObject.ActionObjectUpdate(sceneObject);
-            SceneChanged = true;
+            updateScene = true;
         }
 
         /// <summary>
@@ -676,7 +687,7 @@ namespace Base {
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
-            SceneChanged = true;
+            updateScene = true;
         }
 
         /// <summary>
@@ -841,20 +852,20 @@ namespace Base {
         }
 
         /// <summary>
-        /// Disables (i.e. greys out) all action objects
+        /// Enables all action objects
         /// </summary>
-        public void DisableAllActionObjects() {
+        public void EnableAllActionObjects(bool enable, bool includingRobots=true) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Disable();
+                if (!includingRobots && ao.IsRobot())
+                    continue;
+                ao.Enable(enable);
             }
         }
 
-        /// <summary>
-        /// Enables all action objects
-        /// </summary>
-        public void EnableAllActionObjects() {
+        public void EnableAllRobots(bool enable) {
             foreach (ActionObject ao in ActionObjects.Values) {
-                ao.Enable();
+                if (ao.IsRobot())
+                    ao.Enable(enable);
             }
         }
 

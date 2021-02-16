@@ -218,14 +218,12 @@ public class ActionPoint3D : Base.ActionPoint {
         ActionPointName.text = apData.Name;
     }
 
-    public override void Disable() {
-        base.Disable();
-        sphereMaterial.color = Color.gray;
-    }
-
-    public override void Enable() {
-        base.Enable();
-        sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        if (enable)
+            sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+        else
+            sphereMaterial.color = Color.gray;
     }
 
     public override void OpenMenu() {

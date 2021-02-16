@@ -323,20 +323,20 @@ namespace Base {
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
         }
 
-        public override void Disable() {
-            base.Disable();
-            foreach (Renderer renderer in outlineOnClick.Renderers)
-                renderer.material.color = Color.gray;
-        }
-        public override void Enable() {
-            base.Enable();
-            foreach (Renderer renderer in outlineOnClick.Renderers) {
-                if (Action.Data.Id == "START")
-                    renderer.material.color = Color.green;
-                else if (Action.Data.Id == "END")
-                    renderer.material.color = Color.red;
-                else
-                    renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+        public override void Enable(bool enable) {
+            base.Enable(enable);
+            if (enable)
+                foreach (Renderer renderer in outlineOnClick.Renderers) {
+                    if (Action.Data.Id == "START")
+                        renderer.material.color = Color.green;
+                    else if (Action.Data.Id == "END")
+                        renderer.material.color = Color.red;
+                    else
+                        renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+                }
+            else {
+                foreach (Renderer renderer in outlineOnClick.Renderers)
+                    renderer.material.color = Color.gray;
             }
                 
         }

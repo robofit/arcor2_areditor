@@ -520,27 +520,50 @@ namespace Base {
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActions();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActionInputs();
-                    SceneManager.Instance.DisableAllActionObjects();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    SceneManager.Instance.EnableAllActionObjects(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActionOutputs();
-                    SceneManager.Instance.DisableAllActionObjects();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    SceneManager.Instance.EnableAllActionObjects(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
+                    ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
-                    ProjectManager.Instance.DisableAllActions();
+                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    EnableServiceInteractiveObjects(false);
                     break;
 
             }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
-            // display info for user and bind cancel callback
+            // display info for user and bind cancel callback,
+#if true//(UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            SelectorMenu.Instance.ForceUpdateMenus();
+#endif
             SelectObjectInfo.Show(message, () => CancelSelection());
         }
 
@@ -557,6 +580,18 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             EnableEverything();
+            SelectorMenu.Instance.ForceUpdateMenus();
+        }
+
+        /// <summary>
+        /// Enables / disables interactive objects which are not part of scene or project
+        /// </summary>
+        /// <param name="enable"></param>
+        public void EnableServiceInteractiveObjects(bool enable) {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
+            VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
+#endif
         }
 
         /// <summary>
@@ -578,6 +613,7 @@ namespace Base {
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
             EnableEverything();
+            SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
                 ObjectCallback.Invoke(selectedObject);
@@ -588,11 +624,14 @@ namespace Base {
         /// Enables all visual elements (objects, actions etc.)
         /// </summary>
         private void EnableEverything() {
-            ProjectManager.Instance.EnableAllActionPoints();
-            ProjectManager.Instance.EnableAllActionsInputs();
-            ProjectManager.Instance.EnableAllActionsOutputs();
-            ProjectManager.Instance.EnableAllActions();
-            SceneManager.Instance.EnableAllActionObjects();            
+            ProjectManager.Instance.EnableAllActionPoints(true);
+            ProjectManager.Instance.EnableAllActionInputs(true);
+            ProjectManager.Instance.EnableAllActionOutputs(true);
+            ProjectManager.Instance.EnableAllActions(true);
+            ProjectManager.Instance.EnableAllOrientations(true);
+            ProjectManager.Instance.EnableAllRobotsEE(true);
+            SceneManager.Instance.EnableAllActionObjects(true);
+            EnableServiceInteractiveObjects(true);
         }
 
         /// <summary>
@@ -1796,51 +1835,8 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
-        public List<InteractiveObject> GetAllInteractiveObjects() {
-            
-            List<InteractiveObject> objects = new List<InteractiveObject>();
-            
-            /*foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
-                objects.Add(actionObject);
-            }
-            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
-                objects.Add(actionObject);
-            }*/
-            objects.AddRange(FindObjectsOfType<InteractiveObject>());
-            /*foreach (InteractiveObject interactiveObject in FindObjectsOfType(typeof(InteractiveObject))) {
-                objects.Add(interactiveObject);
-            }
-            objects.Clear();
-            startTime = System.DateTime.UtcNow;
-            foreach (ActionObject actionObject in SceneManager.Instance.ActionObjects.Values) {
-                objects.Add(actionObject);
-            }
-            foreach (KeyValuePair<string, ActionPoint> actionPoint in ProjectManager.Instance.ActionPoints) {
-                objects.Add(actionPoint.Value);
-                foreach (KeyValuePair<string, Action> action in actionPoint.Value.Actions) {
-                    objects.Add(action.Value);
-                    objects.Add(action.Value.Input);
-                    objects.Add(action.Value.Output);
-                }
-                foreach (APOrientation orientation in actionPoint.Value.GetOrientationsVisuals()) {
-                    objects.Add(orientation);
-                }
-            }
-            objects.Add(ProjectManager.Instance.StartAction);
-            objects.Add(ProjectManager.Instance.StartAction.Output);
-            objects.Add(ProjectManager.Instance.EndAction);
-            objects.Add(ProjectManager.Instance.EndAction.Input);
-            if (CalibrationManager.Instance.worldAnchorVis != null)
-                objects.Add(CalibrationManager.Instance.worldAnchorVis.GetComponent<InteractiveObject>());
-                
-
-            if (GetGameState() == GameStateEnum.ProjectEditor) {
-                foreach (ActionPoint ap in ProjectManager.Instance.ActionPoints.Values) {
-                    objects.Add(ap);
-                }
-            }*/
-            Debug.LogWarning("Interactive objects: " + objects.Count);
-            return objects;
+        public List<InteractiveObject> GetAllInteractiveObjects() {          
+            return FindObjectsOfType<InteractiveObject>().ToList();
         }
 
     }

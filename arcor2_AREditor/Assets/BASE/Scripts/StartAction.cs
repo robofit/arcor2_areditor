@@ -24,9 +24,10 @@ public class StartAction : StartEndAction
     }
 
 
-    public override void Enable() {
-        base.Enable();
-        foreach (Renderer renderer in outlineOnClick.Renderers)
-            renderer.material.color = Color.green;
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        if (enable)
+            foreach (Renderer renderer in outlineOnClick.Renderers)
+                renderer.material.color = Color.green;
     }
 }

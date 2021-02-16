@@ -27,11 +27,11 @@ public class Recalibrate : InteractiveObject
     }
 
     public override string GetName() {
-        return "Calibration cube";
+        return "ReCalibration cube";
     }
 
     public override string GetId() {
-        return "Calibration cube";
+        return "ReCalibration cube";
     }
 
     public override void OpenMenu() {
