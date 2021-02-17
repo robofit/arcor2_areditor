@@ -1672,8 +1672,6 @@ namespace Base {
         /// </summary>
         public async void OpenPackageRunningScreen() {
             openPackageRunningScreenFlag = false;
-            Debug.LogError("OpenPackageRunningScreen");
-            Debug.LogError(GetGameState());
             try {
                 MenuManager.Instance.MainMenu.Close();
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;

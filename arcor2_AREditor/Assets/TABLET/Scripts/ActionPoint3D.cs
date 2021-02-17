@@ -22,12 +22,11 @@ public class ActionPoint3D : Base.ActionPoint {
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
-
-    protected override void Start() {
-        base.Start();
+    private void Awake() {
         tfGizmo = TransformGizmo.Instance;
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
+
 
     protected override void Update() {
         if (manipulationStarted) {

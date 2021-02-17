@@ -22,9 +22,9 @@ namespace Base {
         private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
             switch (args.Data) {
                 case GameManager.EditorStateEnum.Normal:
+                case GameManager.EditorStateEnum.InteractionDisabled:
                     enabled = true;
                     break;
-                case GameManager.EditorStateEnum.InteractionDisabled:
                 case GameManager.EditorStateEnum.Closed:
                     enabled = false;
                     break;
