@@ -42,12 +42,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private void OnLoadProjectScene(object sender, EventArgs e) {
-        ShowRobots(RobotsToggle.Toggled);
-        ShowActionObjects(ObjectsToggle.Toggled);
-        ShowActionPoints(PointsToggle.Toggled);
-        ShowActions(ActionsToggle.Toggled);
-        ShowIO(IOToggle.Toggled);
-        ShowOthers(OthersToggle.Toggled);
+        ShowRobots(RobotsToggle.Toggled, false);
+        ShowActionObjects(ObjectsToggle.Toggled, false);
+        ShowActionPoints(PointsToggle.Toggled, false);
+        ShowActions(ActionsToggle.Toggled, false);
+        ShowIO(IOToggle.Toggled, false);
+        ShowOthers(OthersToggle.Toggled, false);
+        ForceUpdateMenus();
     }
 
 
@@ -152,19 +153,24 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void UpdateAimMenu(Vector3? aimingPoint) {
         List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
+        
         if (aimingPoint.HasValue) {
             foreach (SelectorItem item in selectorItems.Values) {
-                float dist = item.InteractiveObject.GetDistance(aimingPoint.Value);
-                if (dist > 0.2) // add objects max 20cm away from point of impact
-                    continue; 
-                items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
+                try {
+                    float dist = item.InteractiveObject.GetDistance(aimingPoint.Value);
+                    if (dist > 0.2) // add objects max 20cm away from point of impact
+                        continue;
+                    items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
+                } catch (MissingReferenceException ex) {
+                    Debug.LogError(item);
+                }
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
         }
         if (ContentAim.activeSelf) {
             int count = 0;
             for (int i = selectorItemsAimMenu.Count - 1; i >= 0; --i) {
-                if (!selectorItemsAimMenu[i].IsSelected() && (iteration - selectorItemsAimMenu[i].GetLastUpdate()) > 5) {
+                if (!(selectorItemsAimMenu[i].IsSelected() && manuallySelected) && (iteration - selectorItemsAimMenu[i].GetLastUpdate()) > 5) {
                     selectorItemsAimMenu[i].transform.SetParent(ContentAlphabet.transform);
                     selectorItemsAimMenu.RemoveAt(i);
                 }
@@ -194,7 +200,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             while (selectorItemsAimMenu.Count > 6) {
-                if (selectorItemsAimMenu.Last().IsSelected()) {
+                if (selectorItemsAimMenu.Last().IsSelected() && manuallySelected) {
                     SelectorItem item = selectorItemsAimMenu.Last();
                     selectorItemsAimMenu.RemoveAt(selectorItemsAimMenu.Count - 1);
                     selectorItemsAimMenu.Insert(selectorItemsAimMenu.Count - 2, item);
@@ -283,6 +289,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     public void UpdateAlphabetMenu() {
+        Debug.LogError("update alphabet");
         //ClearMenu(selectorItemsAlphabetMenu);
         List<string> idsToRemove = selectorItems.Keys.ToList();
         foreach (InteractiveObject io in GameManager.Instance.GetAllInteractiveObjects()) {
@@ -292,6 +299,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 item.transform.SetParent(ContentAlphabet.transform);
                 item.transform.SetAsLastSibling();
                 idsToRemove.Remove(io.GetId());
+                if (item.InteractiveObject == null)
+                    item.InteractiveObject = io;
             } else {
                 SelectorItem newItem = CreateSelectorItem(io, ContentAlphabet.transform, 0);
                 selectorItems.Add(io.GetId(), newItem);
@@ -390,37 +399,43 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         return null;
     }
 
-    public void ShowRobots(bool show) {
+    public void ShowRobots(bool show, bool updateMenus = true) {
         ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
 
-    public void ShowActionObjects(bool show) {
+    public void ShowActionObjects(bool show, bool updateMenus = true) {
         SceneManager.Instance.EnableAllActionObjects(show, false);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
 
-    public void ShowActionPoints(bool show) {
+    public void ShowActionPoints(bool show, bool updateMenus = true) {
         ProjectManager.Instance.EnableAllActionPoints(show);
         ProjectManager.Instance.EnableAllOrientations(show);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
 
-    public void ShowIO(bool show) {
+    public void ShowIO(bool show, bool updateMenus = true) {
         ProjectManager.Instance.EnableAllActionInputs(show);
         ProjectManager.Instance.EnableAllActionOutputs(show);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
 
-    public void ShowActions(bool show) {
+    public void ShowActions(bool show, bool updateMenus = true) {
         ProjectManager.Instance.EnableAllActions(show);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
 
-    public void ShowOthers(bool show) {
+    public void ShowOthers(bool show, bool updateMenus = true) {
         GameManager.Instance.EnableServiceInteractiveObjects(show);
-        ForceUpdateMenus();
+        if (updateMenus)
+            ForceUpdateMenus();
     }
     
 }
