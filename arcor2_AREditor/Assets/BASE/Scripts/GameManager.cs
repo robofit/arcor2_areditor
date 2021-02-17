@@ -475,7 +475,7 @@ namespace Base {
         /// and invoke corresponding event
         /// </summary>
         /// <param name="newState">New state</param>
-        private void SetEditorState(EditorStateEnum newState) {
+        public void SetEditorState(EditorStateEnum newState) {
             editorState = newState;
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
             switch (newState) {
@@ -1053,6 +1053,7 @@ namespace Base {
                 return;
             }
             if (GetGameState() == GameStateEnum.SceneEditor) {
+                SetEditorState(EditorStateEnum.InteractionDisabled);
                 SceneManager.Instance.DestroyScene();
             }
             try {
