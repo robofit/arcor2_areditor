@@ -302,6 +302,9 @@ namespace Base {
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     foreach (IRobot robot in GetRobots()) {
                         robot.SetGrey(true);
+                        foreach (var joint in robot.GetJoints()) { //set default angles of joints
+                            robot.SetJointValue(joint.Name, 0f);
+                        }
                     }
                     break;
                 case SceneStateData.StateEnum.Started:
