@@ -22,9 +22,8 @@ public class ActionPoint3D : Base.ActionPoint {
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
+
     private void Awake() {
-        tfGizmo = TransformGizmo.Instance;
-        sphereMaterial = Sphere.GetComponent<Renderer>().material;
     }
 
 
@@ -215,6 +214,8 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
+        tfGizmo = TransformGizmo.Instance;
+        sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 

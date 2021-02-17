@@ -311,7 +311,9 @@ namespace Base {
             LoadSettings();
 
             StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            StartAction.Init(null, null, null, null, "START");
             EndAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
+            EndAction.Init(null, null, null, null, "END");
 
             foreach (SceneObjectOverride objectOverrides in project.ObjectOverrides) {
                 ActionObject actionObject = SceneManager.Instance.GetActionObject(objectOverrides.Id);
@@ -329,9 +331,8 @@ namespace Base {
                 UpdateLogicItems(project.Logic);
 
             projectChanged = project.Modified == DateTime.MinValue;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
-            
             Valid = true;
+            OnLoadProject?.Invoke(this, EventArgs.Empty);            
             (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
             ProjectChanged = !successClose;
             return true;
@@ -523,7 +524,6 @@ namespace Base {
             } else {
                 AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
             }
-
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
             actionPoint.InitAP(apData, APSize, actionPointParent);
