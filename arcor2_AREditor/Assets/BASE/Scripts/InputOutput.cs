@@ -327,9 +327,6 @@ namespace Base {
             base.Enable(enable);
             if (enable)
                 foreach (Renderer renderer in outlineOnClick.Renderers) {
-                    Debug.LogError(Action);
-                    Debug.LogError(Action.Data);
-                    Debug.LogError(Action.Data.Id);
                     if (Action.Data.Id == "START")
                         renderer.material.color = Color.green;
                     else if (Action.Data.Id == "END")

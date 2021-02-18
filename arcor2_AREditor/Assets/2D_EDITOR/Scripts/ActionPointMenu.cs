@@ -218,7 +218,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         try {
             await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
             ConfirmationDialog.Close();
-            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+            MenuManager.Instance.HideMenu();
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
         }

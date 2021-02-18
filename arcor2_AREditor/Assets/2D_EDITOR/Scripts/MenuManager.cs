@@ -15,6 +15,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public OutputTypeDialog OutputTypeDialog;
     public ConnectionSelectorDialog ConnectionSelectorDialog;
 
+
     public bool IsAnyMenuOpened {
         get;
         private set;
@@ -38,6 +39,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public void ShowMenu(SimpleSideMenu menu) {
         Debug.Assert(menu != null); 
         HideAllMenus();
+        menu.gameObject.SetActive(true);
         menu.Open();
         menu.gameObject.GetComponent<IMenu>().UpdateMenu();
         MenuOpened = menu;
@@ -46,27 +48,38 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public void HideAllMenus() {
         if (ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open) {
             ActionObjectMenuSceneEditor.Close();
+            ActionObjectMenuSceneEditor.gameObject.SetActive(false);
         }
         if (ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open) {
             ActionObjectMenuProjectEditor.Close();
+            ActionObjectMenuProjectEditor.gameObject.SetActive(false);
         }
         if (ActionPointMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointMenu.Close();
+            ActionPointMenu.gameObject.SetActive(false);
         }
         if (PuckMenu.CurrentState == SimpleSideMenu.State.Open) {
             PuckMenu.Close();
+            PuckMenu.gameObject.SetActive(false);
         }
         if (ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointAimingMenu.Close();
+            ActionPointAimingMenu.gameObject.SetActive(false);
         }
         if (AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open) {
             AddOrientationMenu.Close();
+            AddOrientationMenu.gameObject.SetActive(false);
         }
         if (AddJointsMenu.CurrentState == SimpleSideMenu.State.Open) {
             AddJointsMenu.Close();
+            AddJointsMenu.gameObject.SetActive(false);
         }
         if (OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open) {
             OrientationJointsDetailMenu.Close();
+            OrientationJointsDetailMenu.gameObject.SetActive(false);
+        }
+        if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
+            MainMenu.Close();
         }
     }
 
@@ -94,9 +107,10 @@ public class MenuManager : Base.Singleton<MenuManager> {
         OrientationJointsDetailMenu.gameObject.SetActive(true);
     }
 
-    public void HideMenu(SimpleSideMenu menu) {
+    public void HideMenu() {
         if (MenuOpened != null) {
             MenuOpened.Close();
+            MenuOpened.gameObject.SetActive(false);
             MenuOpened = null;
         }
     }
@@ -113,6 +127,8 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     // no menus are opened, scene should be interactable
                     // invoke an event from GameManager to let everyone know, that scene is interactable
                     GameManager.Instance.InvokeSceneInteractable(true);
+                    if (menu.GetComponent<MainMenu>() == null)
+                        menu.gameObject.SetActive(false);
                 }
                 break;
         }
