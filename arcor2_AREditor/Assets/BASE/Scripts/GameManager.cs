@@ -515,6 +515,7 @@ namespace Base {
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
+            MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {

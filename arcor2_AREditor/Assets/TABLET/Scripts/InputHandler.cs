@@ -143,7 +143,6 @@ public class InputHandler : Singleton<InputHandler> {
 
 
     private void HandleTouch() {
-        RaycastHit hit = new RaycastHit();
         if (!GameManager.Instance.SceneInteractable)
             return;
 
@@ -164,6 +163,7 @@ public class InputHandler : Singleton<InputHandler> {
                         TransformGizmo.Instance.ClearTargets();
                     }
                 }
+                SelectorMenu.Instance.DeselectObject(true);
             }
         }
     }

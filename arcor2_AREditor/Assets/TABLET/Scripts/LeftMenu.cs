@@ -76,7 +76,7 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
     private void UpdateVisibility() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
             GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
-            MenuManager.Instance.IsAnyMenuOpened) {
+            MenuManager.Instance.CheckIsAnyMenuOpened()) {
             CanvasGroup.interactable = false;
             CanvasGroup.blocksRaycasts = false;
             CanvasGroup.alpha = 0;

@@ -110,7 +110,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public void HideMenu() {
         if (MenuOpened != null) {
             MenuOpened.Close();
-            MenuOpened.gameObject.SetActive(false);
             MenuOpened = null;
         }
     }

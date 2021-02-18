@@ -274,7 +274,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }        
     }
 
-    private void DeselectObject(bool manually = true) {
+    public void DeselectObject(bool manually = true) {
         if (manually)
             manuallySelected = false;
         foreach (SelectorItem item in selectorItems.Values.ToList()) {
