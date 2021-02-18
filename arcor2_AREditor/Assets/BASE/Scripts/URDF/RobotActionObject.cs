@@ -60,20 +60,15 @@ namespace Base {
                 _ = EnableVisualisationOfEE();
             }
         }
-
-        private async void OnDisable() {
-            await DisableVisualisationOfEE();
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        
+        private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
 
-        private async void OnEnable() {
+        private void OnEnable() {
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -258,8 +253,8 @@ namespace Base {
 
         public override void Show() {
             robotVisible = true;
-            SetGrey(!SceneManager.Instance.SceneStarted);
             SetVisibility(1);
+            SetGrey(!SceneManager.Instance.SceneStarted);
         }
 
         public override void Hide() {
