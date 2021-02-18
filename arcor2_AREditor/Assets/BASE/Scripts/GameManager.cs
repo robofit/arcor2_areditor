@@ -693,18 +693,17 @@ namespace Base {
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         }
 
-        private IEnumerator Waiter() {
-            for (int i = 0; i < 50; i++) {
-                Debug.LogError("ziju" + i.ToString());
-               yield return new WaitForSeconds(2);
-            }
-        }
+        //private IEnumerator Waiter() {
+        //    for (int i = 0; i < 20; i++) {
+        //        Debug.LogError("ziju" + i.ToString());
+        //       yield return new WaitForSeconds(2);
+        //    }
+        //}
         
         private void OnApplicationPause(bool pause) {
             Debug.LogError("onAppPause, pause:" + pause.ToString());
-            if(pause)
-                StartCoroutine(Waiter());
-
+            //if(pause)
+            //    StartCoroutine(Waiter());
 
             //Notifications.Instance.ShowNotification("on app pause", pause.ToString());
             //if (pause && ConnectionStatus != ConnectionStatusEnum.Disconnected)
@@ -721,10 +720,8 @@ namespace Base {
                         Debug.LogError("na landing je websocket ještě null " + ex.Message);
                     }
                 }
-                //Notifications.Instance.ShowNotification("onAppFocus", "disconnected state");
             } else {
                 Debug.LogError("onAppFocus, connected/ing state, focus: " + focus.ToString());
-                //Notifications.Instance.ShowNotification("onAppFocus", "connected/ing state");
             }
         }
         

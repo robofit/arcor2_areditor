@@ -591,7 +591,6 @@ namespace Base {
         /// <param name="grey">True for setting grey, false for standard state.</param>
         public void SetGrey(bool grey) {
             if (grey) {
-                Debug.LogError("setting grey");
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
                         mat.SetColor("_EmissionColor", Color.grey);
@@ -599,7 +598,6 @@ namespace Base {
                     }
                 }
             } else {
-                Debug.LogError("setting natural color");
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
                         mat.DisableKeyword("_EMISSION");

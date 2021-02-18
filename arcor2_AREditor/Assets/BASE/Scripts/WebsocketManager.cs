@@ -139,6 +139,7 @@ namespace Base {
         /// <param name="domain">Domain name or IP address of server</param>
         /// <param name="port">Server port</param>
         public async void ConnectToServer(string domain, int port) {
+            Debug.Log("connectToServer called");
            
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             try {
@@ -239,8 +240,12 @@ namespace Base {
         /// </summary>
         /// <param name="data"></param>
         private async void SendWebSocketMessage(string data) {
-            if (websocket.State == WebSocketState.Open) {
-                await websocket.SendText(data);
+            try {
+                if (websocket.State == WebSocketState.Open) {
+                    await websocket.SendText(data);
+                }
+            }catch(WebSocketException ex) {
+                Debug.Log("socketexception in sendwebsocketmessage: " + ex.Message);
             }
         }
 
