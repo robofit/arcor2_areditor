@@ -356,7 +356,6 @@ namespace Base {
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
                 robot.SetJointValue(args.Data.Joints);
-                updateScene = true;
             } catch (ItemNotFoundException) {
                 
             }
