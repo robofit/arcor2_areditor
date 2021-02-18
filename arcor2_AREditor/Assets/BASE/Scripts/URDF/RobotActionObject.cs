@@ -61,19 +61,14 @@ namespace Base {
             }
         }
         
-        private async void OnDisable() {
-            //await DisableVisualisationOfEE();
-            //if (HasUrdf())
-              //  await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
 
-        private async void OnEnable() {
+        private void OnEnable() {
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
-            //if (HasUrdf())
-              //      await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
