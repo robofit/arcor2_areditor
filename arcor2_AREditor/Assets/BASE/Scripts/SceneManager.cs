@@ -10,6 +10,7 @@ using IO.Swagger.Model;
 using UnityEngine;
 using UnityEngine.Networking;
 using WebSocketSharp;
+using static Base.GameManager;
 
 namespace Base {
    
@@ -241,6 +242,7 @@ namespace Base {
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
+                GameManager.Instance.SetEditorState(EditorStateEnum.Normal);
             }
         }
 
@@ -680,6 +682,7 @@ namespace Base {
         /// </summary>
         /// <param name="sceneObject">Description of action object</param>
         public void SceneObjectRemoved(SceneObject sceneObject) {
+            GameManager.Instance.SetEditorState(EditorStateEnum.InteractionDisabled);
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
                 ActionObjects.Remove(sceneObject.Id);

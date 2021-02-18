@@ -16,39 +16,44 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
+        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
     }
 
+    private bool updateButtonsInteractivity = false;
+
     private bool requestingObject = false;
-    private EditorStateEnum editorState;
+
+    private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
+        switch (args.Data) {
+            case GameManager.EditorStateEnum.Normal:
+                requestingObject = false;
+                updateButtonsInteractivity = true;
+                break;
+            case GameManager.EditorStateEnum.InteractionDisabled:
+                updateButtonsInteractivity = false;
+                ConnectionsBtn.interactable = false;
+                MoveBtn.interactable = false;
+                MenuBtn.interactable = false;
+                InteractBtn.interactable = false;
+                break;
+            case GameManager.EditorStateEnum.Closed:
+                updateButtonsInteractivity = false;
+                break;
+            case EditorStateEnum.SelectingAction:
+            case EditorStateEnum.SelectingActionInput:
+            case EditorStateEnum.SelectingActionObject:
+            case EditorStateEnum.SelectingActionOutput:
+            case EditorStateEnum.SelectingActionPoint:
+            case EditorStateEnum.SelectingActionPointParent:
+                requestingObject = true;
+                break;
+        }
+    }
 
     private void Update() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
-            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
-            MenuManager.Instance.IsAnyMenuOpened) {
-            CanvasGroup.interactable = false;
-            CanvasGroup.blocksRaycasts = false;
-            CanvasGroup.alpha = 0;
-        } else {
-            CanvasGroup.interactable = true;
-            CanvasGroup.blocksRaycasts = true;
-            CanvasGroup.alpha = 1;
-        }
-        if (GameManager.Instance.GetEditorState() != editorState) {
-            editorState = GameManager.Instance.GetEditorState();
-            switch (editorState) {
-                case EditorStateEnum.Normal:
-                    requestingObject = false;
-                    break;
-                case EditorStateEnum.SelectingAction:
-                case EditorStateEnum.SelectingActionInput:
-                case EditorStateEnum.SelectingActionObject:
-                case EditorStateEnum.SelectingActionOutput:
-                case EditorStateEnum.SelectingActionPoint:
-                case EditorStateEnum.SelectingActionPointParent:
-                    requestingObject = true;
-                    break;
-            }
-        }
+        UpdateVisibility();
+        if (!updateButtonsInteractivity)
+            return;
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (requestingObject || selectedObject == null) {
             ConnectionsBtn.interactable = false;
@@ -66,6 +71,20 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
                 selectedObject.GetType() == typeof(CreateAnchor);
         }
         
+    }
+
+    private void UpdateVisibility() {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
+            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
+            MenuManager.Instance.CheckIsAnyMenuOpened()) {
+            CanvasGroup.interactable = false;
+            CanvasGroup.blocksRaycasts = false;
+            CanvasGroup.alpha = 0;
+        } else {
+            CanvasGroup.interactable = true;
+            CanvasGroup.blocksRaycasts = true;
+            CanvasGroup.alpha = 1;
+        }
     }
 
     public void MoveButtonCb() {

@@ -23,11 +23,9 @@ public class ActionPoint3D : Base.ActionPoint {
     private OutlineOnClick outlineOnClick;
 
 
-    protected override void Start() {
-        base.Start();
-        tfGizmo = TransformGizmo.Instance;
-        sphereMaterial = Sphere.GetComponent<Renderer>().material;
+    private void Awake() {
     }
+
 
     protected override void Update() {
         if (manipulationStarted) {
@@ -83,12 +81,13 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
             return;
         }
+
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             StartManipulation();            
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ShowMenu(false);
-            tfGizmo.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
         }
 
@@ -215,6 +214,8 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
+        tfGizmo = TransformGizmo.Instance;
+        sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 
@@ -235,6 +236,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
+        tfGizmo.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {

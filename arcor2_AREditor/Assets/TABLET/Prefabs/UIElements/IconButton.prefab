@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3750091178015956156}
   - component: {fileID: 2685198304057975679}
   - component: {fileID: 6290073754276278303}
+  - component: {fileID: 5799529892309636525}
   m_Layer: 0
   m_Name: IconButton
   m_TagString: Untagged
@@ -140,6 +141,7 @@ MonoBehaviour:
   tooltipContent: {fileID: 2685198304057975679}
   Description: 
   DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!114 &2685198304057975679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,6 +173,21 @@ MonoBehaviour:
   tooltip: {fileID: 3750091178015956156}
   Button: {fileID: 4991226775622563084}
   TooltipContent: {fileID: 2685198304057975679}
+--- !u!114 &5799529892309636525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1171430893015759436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7b0b998864f44e4fb60f2873be6b6dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Button: {fileID: 4991226775622563084}
+  Background: {fileID: 7444835444152595909}
+  Icon: {fileID: 8975218753414749740}
 --- !u!1 &2000112917390502529
 GameObject:
   m_ObjectHideFlags: 0

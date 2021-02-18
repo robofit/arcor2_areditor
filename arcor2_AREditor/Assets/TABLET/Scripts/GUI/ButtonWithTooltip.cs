@@ -46,4 +46,5 @@ public class ButtonWithTooltip : MonoBehaviour {
     public bool IsInteractive() {
         return Button.interactable;
     }
+
 }

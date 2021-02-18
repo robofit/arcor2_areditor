@@ -106,6 +106,8 @@ public class ActionObject3D : ActionObject {
             return;
         }
 
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
@@ -412,6 +414,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public async override void StartManipulation() {
+        tfGizmo.ClearTargets();
         try {
             await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
             manipulationStarted = true;

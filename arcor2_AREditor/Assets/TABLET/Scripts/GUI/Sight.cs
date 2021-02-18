@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using RuntimeInspectorNamespace;
 
 namespace Base {
 
@@ -13,6 +14,22 @@ namespace Base {
         public System.DateTime HoverStartTime;
 
         private bool endingHover = false;
+
+        private void Awake() {
+            GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        }
+
+        private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
+            switch (args.Data) {
+                case GameManager.EditorStateEnum.Normal:
+                case GameManager.EditorStateEnum.InteractionDisabled:
+                    enabled = true;
+                    break;
+                case GameManager.EditorStateEnum.Closed:
+                    enabled = false;
+                    break;
+            }
+        }
 
         private void Update() {
             if (SelectorMenu.Instance.CanvasGroup.alpha == 0)
@@ -49,7 +66,7 @@ namespace Base {
 
                 float dotP = Vector3.Dot(lhs, ray.direction.normalized);
                 Vector3 point = ray.origin + ray.direction.normalized * dotP;
-                SelectorMenu.Instance.UpdateAimMenu(point);
+                SelectorMenu.Instance.UpdateAimMenu(hitinfo.point);
             } else {
                 SelectorMenu.Instance.UpdateAimMenu(null);
             }

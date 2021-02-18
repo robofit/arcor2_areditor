@@ -619,6 +619,7 @@ namespace Base {
         }
 
         public override void StartManipulation() {
+            TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
             TransformGizmo.Instance.AddTarget(transform);
