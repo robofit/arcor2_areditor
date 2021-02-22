@@ -187,6 +187,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
 
         UpdateOrientationsDynamicList();
+        this.gameObject.SetActive(true); //so the couroutine can be started for sure
         StartCoroutine(UpdateTooltips());
     }
 
