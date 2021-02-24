@@ -475,7 +475,7 @@ namespace Base {
         /// and invoke corresponding event
         /// </summary>
         /// <param name="newState">New state</param>
-        private void SetEditorState(EditorStateEnum newState) {
+        public void SetEditorState(EditorStateEnum newState) {
             editorState = newState;
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
             switch (newState) {
@@ -515,6 +515,7 @@ namespace Base {
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
+            MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
@@ -588,7 +589,8 @@ namespace Base {
         /// <param name="enable"></param>
         public void EnableServiceInteractiveObjects(bool enable) {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
+            if (CalibrationManager.Instance.WorldAnchorLocal != null)
+                CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
             VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
 #endif
         }
@@ -1053,6 +1055,7 @@ namespace Base {
                 return;
             }
             if (GetGameState() == GameStateEnum.SceneEditor) {
+                SetEditorState(EditorStateEnum.InteractionDisabled);
                 SceneManager.Instance.DestroyScene();
             }
             try {
@@ -1671,8 +1674,6 @@ namespace Base {
         /// </summary>
         public async void OpenPackageRunningScreen() {
             openPackageRunningScreenFlag = false;
-            Debug.LogError("OpenPackageRunningScreen");
-            Debug.LogError(GetGameState());
             try {
                 MenuManager.Instance.MainMenu.Close();
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;

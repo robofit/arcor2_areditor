@@ -41,12 +41,8 @@ namespace Base {
             }
         }
 
-        private void Awake() {
-           
-        }
         protected virtual void Start() {
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
-
         }
 
         protected virtual void Update() {

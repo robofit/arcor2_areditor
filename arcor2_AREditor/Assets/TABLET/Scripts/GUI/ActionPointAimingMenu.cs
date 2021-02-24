@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Base;
@@ -186,10 +187,13 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
 
         UpdateOrientationsDynamicList();
-        UpdateTooltips();
+        StartCoroutine(UpdateTooltips());
     }
 
-    private void UpdateTooltips() {
+
+    private IEnumerator UpdateTooltips() {
+        yield return new WaitForSeconds(0.1f); //fixes a bug, when after the first collapsing of collapsable menu there is no tooltip
+
         const string noRobot = "There is no robot in the scene";
         const string sceneNotStarted = "To add using robot, start the scene";
 

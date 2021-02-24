@@ -218,8 +218,10 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
 
-            SetVisibility(visibility, forceShaderChange:true);
+            SetVisibility(visibility, forceShaderChange: true);
             SetGrey(!SceneManager.Instance.SceneStarted);
+
+            SetDefaultJoints();
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
@@ -232,6 +234,11 @@ namespace Base {
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
+        private void SetDefaultJoints() {
+            foreach (var joint in RobotModel.Joints) {
+                SetJointValue(joint.Key, 0f);
+            }
+        }
 
         public override Vector3 GetScenePosition() {
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
@@ -617,6 +624,7 @@ namespace Base {
         }
 
         public override void StartManipulation() {
+            TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
             TransformGizmo.Instance.AddTarget(transform);

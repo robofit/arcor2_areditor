@@ -62,16 +62,14 @@ public class SelectorItem : MonoBehaviour
     }
 
     public void SetSelected(bool selected, bool manually) {
-        try {        
+        if (InteractiveObject != null) {
             if (selected) {
                 InteractiveObject.SendMessage("OnHoverStart");
             } else {
                 if (this.selected)
                     InteractiveObject.SendMessage("OnHoverEnd");
             }
-        } catch (MissingReferenceException ex) {
-            return;
-        }
+        }   
         this.selected = selected;
         if (manually) {
             SelectionBorder.gameObject.SetActive(false);

@@ -82,8 +82,7 @@ namespace Base {
             }
             
             //TODO: update all action points and actions.. ?
-            if (ActionObjectMetadata.HasPose)
-                ResetPosition();
+                
             // update position and rotation based on received data from swagger
             //if (visibility)
             //    Show();
@@ -209,8 +208,7 @@ namespace Base {
 
 
         public virtual void ActivateForGizmo(string layer) {
-            if (ActionObjectMetadata.HasPose)
-                gameObject.layer = LayerMask.NameToLayer(layer);
+            gameObject.layer = LayerMask.NameToLayer(layer);
         }
 
         public string GetProviderId() {
