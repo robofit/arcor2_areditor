@@ -44,13 +44,13 @@ PrefabInstance:
       objectReference: {fileID: 2216787758147975141}
     - target: {fileID: 2270924808524609739, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
-      propertyPath: m_TextStyleHashCode
-      value: -1183493901
+      propertyPath: m_textAlignment
+      value: 65535
       objectReference: {fileID: 0}
     - target: {fileID: 2270924808524609739, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
-      propertyPath: m_HorizontalAlignment
-      value: 2
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
       objectReference: {fileID: 0}
     - target: {fileID: 2270924808524609739, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
@@ -58,6 +58,11 @@ PrefabInstance:
       value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 2270924808524609739, guid: 323d6551af1e8b6498377367ae54d218,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3223256087622749178, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
       propertyPath: m_textAlignment
       value: 65535
@@ -69,15 +74,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3223256087622749178, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
-      propertyPath: m_HorizontalAlignment
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3223256087622749178, guid: 323d6551af1e8b6498377367ae54d218,
-        type: 3}
       propertyPath: m_VerticalAlignment
       value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 3223256087622749178, guid: 323d6551af1e8b6498377367ae54d218,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3589496353291678754, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
       propertyPath: m_textAlignment
       value: 65535
@@ -89,18 +94,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3589496353291678754, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
-      propertyPath: m_HorizontalAlignment
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3589496353291678754, guid: 323d6551af1e8b6498377367ae54d218,
-        type: 3}
       propertyPath: m_VerticalAlignment
       value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 3589496353291678754, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
-      propertyPath: m_textAlignment
-      value: 65535
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
@@ -119,6 +124,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -130,16 +140,6 @@ PrefabInstance:
     - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4476520058714655708, guid: 323d6551af1e8b6498377367ae54d218,
