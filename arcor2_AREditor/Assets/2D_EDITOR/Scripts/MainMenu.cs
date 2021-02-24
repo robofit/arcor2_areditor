@@ -568,13 +568,13 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public void Recalibrate() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         CalibrationManager.Instance.Recalibrate();
 #endif
     }
 
     public void CalibrateUsingServer() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         CalibrationManager.Instance.CalibrateUsingServer();
 #endif
     }

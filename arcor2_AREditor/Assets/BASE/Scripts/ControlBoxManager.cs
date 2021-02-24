@@ -54,7 +54,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         Debug.Assert(CreateGlobalActionPointBtn != null);
         MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
         RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
         CalibrationElementsToggle.interactable = false;
         CalibrationElementsToggle.isOn = true;
@@ -82,7 +82,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     /// <param name="sender"></param>
     /// <param name="args"></param>
     private void OnARCalibrated(object sender, GameObjectEventArgs args) {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         // Activate toggle to enable hiding/displaying calibration cube
         CalibrationElementsToggle.interactable = true;
         calibrationElementsTooltip.ShowDefaultDescription();
@@ -91,7 +91,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
 
     private void OnARRecalibrate(object sender, EventArgs args) {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         // Disactivate toggle to disable hiding/displaying calibration cube
         CalibrationElementsToggle.interactable = false;
         calibrationElementsTooltip.ShowAlternativeDescription();
@@ -134,13 +134,13 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public void DisplayTrackables(bool active) {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         TrackingManager.Instance.DisplayPlanesAndPointClouds(active);
 #endif
     }
 
     public void DisplayCalibrationElements(bool active) {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         CalibrationManager.Instance.ActivateCalibrationElements(active);
 #endif
     }
@@ -182,7 +182,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
         PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
 #endif
         PlayerPrefsHelper.SaveBool("control_box_display_connections", ConnectionsToggle.isOn);

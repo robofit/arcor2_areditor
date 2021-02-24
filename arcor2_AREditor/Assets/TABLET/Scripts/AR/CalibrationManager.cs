@@ -9,7 +9,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
-#if (UNITY_ANDROID || UNITY_IOS)
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
 using Google.XR.ARCoreExtensions;
 #endif
 
@@ -33,7 +33,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     [HideInInspector]
     public ARAnchor WorldAnchorLocal;
 
-#if (UNITY_ANDROID || UNITY_IOS)
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
     [HideInInspector]
     public ARCloudAnchor WorldAnchorCloud;
 #endif
@@ -48,22 +48,32 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public event ARRecalibrateEventHandler OnARRecalibrate;
 
     private bool activateTrackableMarkers = false;
+
+    [HideInInspector]
     public GameObject worldAnchorVis;
 
     public GameObject MarkerPositionGameObject;
 
-#if UNITY_STANDALONE || UNITY_EDITOR
+    private bool firstFrameReceived = false;
+    private XRCameraConfiguration? cameraConfiguration;
+    private Matrix4x4? displayMatrix;
+
+#if UNITY_STANDALONE || !AR_ON
     private void Start() {
         Calibrated = true;
         
     }
-
 #endif
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
     private void OnEnable() {
         GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         ARTrackedImageManager.trackedImagesChanged += OnTrackedImageChanged;
+        ARCameraManager.frameReceived += FrameReceived;
+    }
+
+    private void OnDisable() {
+        ARCameraManager.frameReceived -= FrameReceived;
     }
 
     private void OnTrackedImageChanged(ARTrackedImagesChangedEventArgs obj) {
@@ -80,10 +90,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     /// </summary>
     /// <param name="tf"></param>
     public void CreateAnchor(Transform tf) {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         ARPlane plane = null;
-        UnityEngine.Pose hitPose = new Pose();
+        UnityEngine.Pose hitPose = new UnityEngine.Pose();
 
         // try to raycast straight down to intersect closest plane
         List<ARRaycastHit> raycastHits = new List<ARRaycastHit>();
@@ -101,7 +110,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         //WorldAnchorLocal = ARAnchorManager.AttachAnchor(plane,
         //    new Pose(hitPose.position, Quaternion.FromToRotation(tf.up, plane.normal) * tf.rotation));
 
-        WorldAnchorLocal = ARAnchorManager.AddAnchor(new UnityEngine.Pose(hitPose != new Pose() ? hitPose.position : tf.position,
+        WorldAnchorLocal = ARAnchorManager.AddAnchor(new UnityEngine.Pose(hitPose != new UnityEngine.Pose() ? hitPose.position : tf.position,
             plane != null ? Quaternion.FromToRotation(tf.up, plane.normal) * tf.rotation : tf.rotation));
         // immediately attach scene to local anchor (after cloud anchor is created, scene will be attached to it)
         AttachScene(WorldAnchorLocal.gameObject);
@@ -127,7 +136,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public void Recalibrate() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         HideCurrentWorldAnchor();
         ActivateTrackableMarkers(true);
         Calibrated = false;
@@ -137,7 +146,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
     private IEnumerator HostCloudAnchor() {
         // Wait until the anchor is fully uploaded to the cloud
         yield return new WaitWhile(() => WorldAnchorCloud.cloudAnchorState == CloudAnchorState.None ||
@@ -396,13 +405,26 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     //}
 
 
+    private void FrameReceived(ARCameraFrameEventArgs arCameraArgs) {
+        if (!firstFrameReceived) {
+            firstFrameReceived = true;
+
+            displayMatrix = arCameraArgs.displayMatrix;
+            if (ARCameraManager.descriptor.supportsCameraConfigurations) {
+                cameraConfiguration = ARCameraManager.currentConfiguration;
+                Debug.Log("Camera Resolution: " + cameraConfiguration.Value);
+                Debug.Log("Camera width: " + cameraConfiguration.Value.width + " height: " + cameraConfiguration.Value.height + " framerate: " + cameraConfiguration.Value.framerate);
+            }
+        }
+    }
+
     public unsafe void CalibrateUsingServer() {
         if (!ARCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
             return;
 
         if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics))
             return;
-
+        
         var conversionParams = new XRCpuImage.ConversionParams {
             // Get the entire image.
             inputRect = new RectInt(0, 0, image.width, image.height),
@@ -439,6 +461,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             conversionParams.outputDimensions.y,
             conversionParams.outputFormat,
             false);
+        Debug.Log("Image size: " + conversionParams.outputDimensions.x + " x " + conversionParams.outputDimensions.y);
+        Debug.Log("Camera Resolution: " + cameraConfiguration.Value);
+        Debug.Log("Camera width: " + cameraConfiguration.Value.width + " height: " + cameraConfiguration.Value.height + " framerate: " + cameraConfiguration.Value.framerate);
 
         texture.LoadRawTextureData(buffer);
         texture.Apply();
@@ -455,14 +480,33 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                                                              fx: (decimal) cameraIntrinsics.focalLength.x,
                                                              fy: (decimal) cameraIntrinsics.focalLength.y);
 
-        GetCameraPosition(cameraParams, imageString);
+        //GetCameraPosition(cameraParams, imageString);
+        GetMarkerCornersPosition(cameraParams, imageString);     
     }
 
+    public async Task GetMarkerCornersPosition(CameraParameters cameraParams, string image) {
+        try {
+            List<IO.Swagger.Model.MarkerCorners> markerCorners = await WebsocketManager.Instance.GetMarkerCorners(cameraParams, image);
+            foreach (MarkerCorners marker in markerCorners) {
+                foreach (Corner corner in marker.Corners) {
+                    
+                    //Vector3 position = Camera.main.ScreenToWorldPoint(new Vector3((1920f - ((float) corner.X * 3f)), (float) corner.Y * 2.25f, 0.5f));
+                    Vector3 position = Camera.main.ScreenToWorldPoint(new Vector3((float) corner.X, (float) corner.Y, 0.5f));
+                    position = displayMatrix.Value.MultiplyVector(position);
+                    GameObject cornerGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cornerGO.transform.position = position;
+                    cornerGO.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
+                }
+            }
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to get marker corners.", ex.Message);
+        }
+    }
 
 
     public async Task GetCameraPosition(CameraParameters cameraParams, string image) {
         try {
-            IO.Swagger.Model.Pose cameraPose = await WebsocketManager.Instance.CalibrateTablet(cameraParams, image);
+            IO.Swagger.Model.Pose cameraPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image);
             Vector3 cameraPosition = TransformConvertor.ROSToUnity(new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z));
             Quaternion cameraRotation = TransformConvertor.ROSToUnity(new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y, (float) cameraPose.Orientation.Z, (float) cameraPose.Orientation.W));
             Vector3 cameraPositionOrig = new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z);

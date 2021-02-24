@@ -560,9 +560,9 @@ namespace Base {
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,
-#if true//(UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+
             SelectorMenu.Instance.ForceUpdateMenus();
-#endif
+
             SelectObjectInfo.Show(message, () => CancelSelection());
         }
 
@@ -587,7 +587,7 @@ namespace Base {
         /// </summary>
         /// <param name="enable"></param>
         public void EnableServiceInteractiveObjects(bool enable) {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
             VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
 #endif
@@ -660,7 +660,7 @@ namespace Base {
         /// </summary>
         private void Start() {
             SetDefaultFramerate();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
             /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
               var dependencyStatus = task.Result;
@@ -1593,8 +1593,8 @@ namespace Base {
         /// <param name="updateResources">Whether or not update lists of scenes/packages/projects</param>
         /// <returns></returns>
         public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight, bool updateResources = true) {
-            
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
@@ -1630,7 +1630,7 @@ namespace Base {
         /// Opens scene editor
         /// </summary>
         public void OpenSceneEditor() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = true;
             if (CalibrationManager.Instance.Calibrated) {
                 Scene.SetActive(true);
@@ -1650,7 +1650,7 @@ namespace Base {
         /// Opens project editor
         /// </summary>
         public void OpenProjectEditor() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = true;
             if (CalibrationManager.Instance.Calibrated) {
                 Scene.SetActive(true);
@@ -1680,7 +1680,7 @@ namespace Base {
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
                 EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
                 ARSession.enabled = true;
                 if (CalibrationManager.Instance.Calibrated) {
                     Scene.SetActive(true);
@@ -1715,7 +1715,7 @@ namespace Base {
         /// Opens disconnected screen
         /// </summary>
         public void OpenDisconnectedScreen() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             MenuManager.Instance.MainMenu.Close();
