@@ -183,6 +183,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void RemoveLocalWorldAnchor() {
         if (WorldAnchorLocal != null) {
             DetachScene();
+            worldAnchorVis = null;
             ARAnchorManager.RemoveAnchor(WorldAnchorLocal);
         }
     }
@@ -190,20 +191,25 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void RemoveCloudWorldAnchor() {
         if (WorldAnchorCloud != null) {
             DetachScene();
+            worldAnchorVis = null;
             Destroy(WorldAnchorCloud.gameObject);
         }
     }
 
     private void HideCurrentWorldAnchor() {
         if (WorldAnchorLocal != null) {
-            WorldAnchorLocal.gameObject.SetActive(false);
+            if (!worldAnchorVis) {
+                worldAnchorVis = Helper.FindComponentInChildWithTag<Transform>(WorldAnchorLocal.gameObject, "world_anchor").gameObject;
+            }
+            worldAnchorVis.SetActive(false);
             SelectorMenu.Instance.ForceUpdateMenus();
-            Debug.LogError("HideCurrentWorldAnchor");
         }
         if (WorldAnchorCloud != null) {
-            WorldAnchorCloud.gameObject.SetActive(false);
+            if (!worldAnchorVis) {
+                worldAnchorVis = Helper.FindComponentInChildWithTag<Transform>(WorldAnchorCloud.gameObject, "world_anchor").gameObject;
+            }
+            worldAnchorVis.SetActive(false);
             SelectorMenu.Instance.ForceUpdateMenus();
-            Debug.LogError("HideCurrentWorldAnchor");
         }
     }
 
