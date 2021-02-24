@@ -2308,8 +2308,49 @@ namespace Base {
             } 
         }
 
+        public async Task<string> GetCameraColorImage(string cameraId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CameraColorImageRequestArgs args = new CameraColorImageRequestArgs(id: cameraId);
+
+            IO.Swagger.Model.CameraColorImageRequest request = new IO.Swagger.Model.CameraColorImageRequest(r_id, "CameraColorImage", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CameraColorImageResponse response = await WaitForResult<IO.Swagger.Model.CameraColorImageResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get image from camera " + cameraId } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<IO.Swagger.Model.Pose> GetCameraPose(CameraParameters cameraParams, string img) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img);
+
+            IO.Swagger.Model.GetCameraPoseRequest request = new IO.Swagger.Model.GetCameraPoseRequest(r_id, "GetCameraPose", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetCameraPoseResponse response = await WaitForResult<IO.Swagger.Model.GetCameraPoseResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<List<IO.Swagger.Model.MarkerCorners>> GetMarkerCorners(CameraParameters cameraParams, string img) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.MarkersCornersRequestArgs args = new MarkersCornersRequestArgs(cameraParameters: cameraParams, image: img);
+
+            IO.Swagger.Model.MarkersCornersRequest request = new IO.Swagger.Model.MarkersCornersRequest(r_id, "MarkersCorners", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.MarkersCornersResponse response = await WaitForResult<IO.Swagger.Model.MarkersCornersResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
 
     }
 
-    
+
 }
