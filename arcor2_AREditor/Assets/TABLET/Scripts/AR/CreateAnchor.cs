@@ -10,6 +10,16 @@ public class CreateAnchor : InteractiveObject {
         }
     }
 
+    private void OnEnable() {
+        Enabled = true;
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
+    private void OnDisable() {
+        Enabled = false;
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
     public override void OnHoverStart() {
 
     }

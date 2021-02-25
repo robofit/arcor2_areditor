@@ -33,7 +33,7 @@ public class VRModeManager : Singleton<VRModeManager> {
     private float gridInitPos;
 
     private void Start() {
-#if UNITY_ANDROID && AR_ON
+#if UNITY_ANDROID
         VRModeON = false;
         arCameraBG = ARCamera.GetComponent<ARCameraBackground>();
         arCameraPosition = ARCamera.transform.position;
@@ -48,8 +48,6 @@ public class VRModeManager : Singleton<VRModeManager> {
         gridInitPos = GridPlane.transform.position.y;
 
         TrackingManager.Instance.NewLowestPlanePosition += AdjustGridPlane;
-#elif UNITY_STANDALONE || !AR_ON
-        VRModeON = true;
 #endif
     }
 
@@ -60,7 +58,7 @@ public class VRModeManager : Singleton<VRModeManager> {
     }
 
     private void Update() {
-#if UNITY_ANDROID && AR_ON
+#if UNITY_ANDROID
         if (VRModeON) {
             float moveHorizontal = 0, moveVertical = 0,
                 rotateHorizontal = 0, rotateVertical = 0, moveUp = 0;

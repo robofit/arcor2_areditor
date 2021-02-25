@@ -78,8 +78,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void OnTrackedImageChanged(ARTrackedImagesChangedEventArgs obj) {
         ActivateTrackableMarkers(activateTrackableMarkers);
-        if (obj.added.Count > 0 || obj.removed.Count > 0)
-            SelectorMenu.Instance.ForceUpdateMenus();
     }
 #endif
 
@@ -118,7 +116,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         // Create cloud anchor
         if (Settings.Instance.UseCloudAnchors) {
             WorldAnchorCloud = ARAnchorManager.HostCloudAnchor(WorldAnchorLocal);
-
             StartCoroutine(HostCloudAnchor());
         } else {
             Calibrated = true;
@@ -130,7 +127,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
 
         GameManager.Instance.Scene.SetActive(true);
-        SelectorMenu.Instance.ForceUpdateMenus();
         ActivateTrackableMarkers(false);
 #endif
     }
@@ -172,8 +168,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             Notifications.Instance.ShowNotification("Calibration successful", "");
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
             GameManager.Instance.Scene.SetActive(true);
-                
-                SelectorMenu.Instance.ForceUpdateMenus();
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
             Debug.LogError("Cloud anchor error: " + WorldAnchorCloud.cloudAnchorState);
@@ -184,7 +178,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         if (WorldAnchorLocal != null) {
             DetachScene();
             worldAnchorVis = null;
-            ARAnchorManager.RemoveAnchor(WorldAnchorLocal);
+            Destroy(WorldAnchorLocal.gameObject);
         }
     }
 
@@ -202,14 +196,14 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 worldAnchorVis = Helper.FindComponentInChildWithTag<Transform>(WorldAnchorLocal.gameObject, "world_anchor").gameObject;
             }
             worldAnchorVis.SetActive(false);
-            SelectorMenu.Instance.ForceUpdateMenus();
+            WorldAnchorLocal.GetComponent<Recalibrate>().Enable(false);
         }
         if (WorldAnchorCloud != null) {
             if (!worldAnchorVis) {
                 worldAnchorVis = Helper.FindComponentInChildWithTag<Transform>(WorldAnchorCloud.gameObject, "world_anchor").gameObject;
             }
             worldAnchorVis.SetActive(false);
-            SelectorMenu.Instance.ForceUpdateMenus();
+            WorldAnchorCloud.GetComponent<Recalibrate>().Enable(false);
         }
     }
 
@@ -290,13 +284,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
                 GameManager.Instance.Scene.SetActive(true);
-                
-                SelectorMenu.Instance.ForceUpdateMenus();
             }
             //TODO If anchor is not present in the system, play animation to manually calibrate by clicking on marker
             else {
                 Calibrated = false;
-                Notifications.Instance.ShowNotification("Cloud anchor does not exist", "Please calibrate manually by clicking on the cube displayed on your marker");
+                Notifications.Instance.ShowNotification("Calibrate by clicking on the Calibration cube", "Cloud anchor does not exist. Please calibrate manually by clicking on the cube displayed on your marker");
 
                 //AttachScene(null, initLocalAnchor: true);
 
@@ -304,7 +296,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             }
         } else {
             Calibrated = false;
-            Notifications.Instance.ShowNotification("Cloud anchors are disabled", "Please calibrate manually by clicking on the cube displayed on your marker");
+            Notifications.Instance.ShowNotification("Calibrate by clicking on the Calibration cube", "Please calibrate manually by clicking on the cube displayed on your marker");
 
             //AttachScene(null, initLocalAnchor: true);
 
@@ -331,13 +323,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             } else {
                 bool wasActive = trackedImg.gameObject.activeSelf;                
                 trackedImg.gameObject.SetActive(active);
-                
             }
         }
     }
 
-    public void ActivateCalibrationElements(bool active) {
-        
+    public void ActivateCalibrationElements(bool active) {        
         if (worldAnchorVis == null) {
             foreach (Transform child in WorldAnchorLocal.transform) {
                 if (child.tag == "world_anchor") {
@@ -349,11 +339,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         
         if (worldAnchorVis != null) {
             worldAnchorVis.SetActive(active);
-            Debug.LogError("ActivateCalibrationElements");
-            Recalibrate r = FindObjectOfType<Recalibrate>();
-            if (r != null)
-                r.Enable(active);
-            SelectorMenu.Instance.ForceUpdateMenus();
+            WorldAnchorLocal.GetComponent<Recalibrate>().Enable(active);
         }
     }
 #endif

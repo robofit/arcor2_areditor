@@ -18,6 +18,21 @@ public class Recalibrate : InteractiveObject
         CalibrationManager.Instance.Recalibrate();
     }
 
+    private void OnEnable() {
+        Enabled = true;
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
+    private void OnDisable() {
+        Enabled = false;
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
     public override void OnHoverStart() {
 
     }
@@ -27,7 +42,7 @@ public class Recalibrate : InteractiveObject
     }
 
     public override string GetName() {
-        return "ReCalibration cube";
+        return "Calibration cube";
     }
 
     public override string GetId() {
