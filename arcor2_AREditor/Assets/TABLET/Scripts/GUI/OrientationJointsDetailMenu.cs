@@ -30,6 +30,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TMPro.TMP_Text RobotName; //name of robot - only for joints
 
+    public SwitchComponent SafeMove;
+
 
     public DropdownParameter RobotsList, EndEffectorList; //only for orientation
 
@@ -315,9 +317,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         try {
             if (isOrientationDetail) {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id, (bool) SafeMove.GetValue());
             } else {
-                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id, (bool) SafeMove.GetValue());
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
