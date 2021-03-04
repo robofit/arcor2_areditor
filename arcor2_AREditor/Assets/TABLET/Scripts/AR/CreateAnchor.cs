@@ -1,4 +1,5 @@
 using Base;
+using UnityEngine;
 
 public class CreateAnchor : InteractiveObject {
 
@@ -7,6 +8,16 @@ public class CreateAnchor : InteractiveObject {
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
             CalibrationManager.Instance.CreateAnchor(transform);
         }
+    }
+
+    private void OnEnable() {
+        Enabled = true;
+        SelectorMenu.Instance.ForceUpdateMenus();
+    }
+
+    private void OnDisable() {
+        Enabled = false;
+        SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public override void OnHoverStart() {

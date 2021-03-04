@@ -1,5 +1,4 @@
 using System;
-using Boo.Lang;
 using UnityEngine;
 
 namespace Base
@@ -30,11 +29,5 @@ namespace Base
         public virtual void Enable(bool enable) {
             Enabled = enable;
         }
-
-       
-
     }
-
-    
-
 }
