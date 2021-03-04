@@ -12,8 +12,14 @@ Development is supported by [Test-it-off: Robotic offline product testing](https
 <img src="https://user-images.githubusercontent.com/1199396/109945756-dba88780-7cd7-11eb-8b95-49175dcbcc72.jpg" width="250" alt="VR mode."/>
 </p>
 
+### Installation
 
-### Instalation
+With each [release](https://github.com/robofit/arcor2_areditor/releases), we are building Android apk which can be simply installed on a supported device, which is any [ARCore compatible tablet](https://developers.google.com/ar/discover/supported-devices#google_play_devices). We use primarily Samsung devices (S6, S7). There are also Linux/Windows binaries, but mainly for testing and debugging purposes (no AR).
+
+### Development
+
+These are instructions for developers.
+
  - clone this repo
  - get submodules:
    ```bash
