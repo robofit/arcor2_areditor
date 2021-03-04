@@ -105,7 +105,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        if (args.ActionPointId != CurrentActionPoint.GetId())
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open &&
+                args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
             var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
@@ -135,7 +136,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
-        if (CurrentActionPoint.Data.Id == args.ActionPointId) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open &&
+                CurrentActionPoint.Data.Id == args.ActionPointId) {
             CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
