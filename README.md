@@ -7,9 +7,9 @@ This repository contains the main user interface, Unity-based client application
 Development is supported by [Test-it-off: Robotic offline product testing](https://www.fit.vut.cz/research/project/1308/) project (Ministry of Industry and Trade of the Czech Republic).
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/1199396/109945741-d77c6a00-7cd7-11eb-9eb0-0448e346b60a.jpg" width="300" alt="Main menu with overview of scene, projects and execution packages."/>
-<img src="https://user-images.githubusercontent.com/1199396/109945708-d0555c00-7cd7-11eb-9e7a-eeee34b3acab.jpg" width="300" alt="AREditor being used to program Dobot M1."/>
-<img src="https://user-images.githubusercontent.com/1199396/109945756-dba88780-7cd7-11eb-8b95-49175dcbcc72.jpg" width="300" alt="VR mode."/>
+<img src="https://user-images.githubusercontent.com/1199396/109945741-d77c6a00-7cd7-11eb-9eb0-0448e346b60a.jpg" width="250" alt="Main menu with overview of scene, projects and execution packages."/>
+<img src="https://user-images.githubusercontent.com/1199396/109945708-d0555c00-7cd7-11eb-9e7a-eeee34b3acab.jpg" width="250" alt="AREditor being used to program Dobot M1."/>
+<img src="https://user-images.githubusercontent.com/1199396/109945756-dba88780-7cd7-11eb-8b95-49175dcbcc72.jpg" width="250" alt="VR mode."/>
 </p>
 
 
