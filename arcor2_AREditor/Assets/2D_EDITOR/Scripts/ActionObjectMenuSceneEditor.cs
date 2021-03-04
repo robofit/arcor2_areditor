@@ -8,6 +8,7 @@ using DanielLochner.Assets.SimpleSideMenu;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 
 public class ActionObjectMenuSceneEditor : ActionObjectMenu
 {

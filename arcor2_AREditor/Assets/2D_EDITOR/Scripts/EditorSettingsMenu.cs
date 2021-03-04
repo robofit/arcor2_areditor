@@ -165,7 +165,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMarkerOffset() {
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         Vector3 offset = TransformConvertor.ROSToUnity(new Vector3((float) (double) markerOffsetX.GetValue(),
                                       (float) (double) markerOffsetY.GetValue(),
                                       (float) (double) markerOffsetZ.GetValue()));

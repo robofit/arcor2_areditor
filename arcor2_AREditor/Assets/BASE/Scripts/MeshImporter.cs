@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Net;
 using Base;
 using TriLibCore;
+using TriLibCore.General;
 using UnityEngine;
 using UnityEngine.Networking;
 

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 #if UNITY_EDITOR || UNITY_STANDALONE
-using SFB;
+using TriLibCore.SFB;
 #endif
 using System.Threading.Tasks;
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
