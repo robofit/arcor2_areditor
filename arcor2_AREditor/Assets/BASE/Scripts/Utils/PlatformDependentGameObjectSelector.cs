@@ -36,7 +36,10 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
             obj.SetActive(false);
         }
 #elif UNITY_STANDALONE || !AR_ON
+        int i = 0;
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
+            if (i++ > 6)
+                break;
             obj.SetActive(false);
         }
         foreach (GameObject obj in GameObjectsForIOSOnly) {

@@ -486,6 +486,7 @@ namespace Base {
         public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
+            ResetPosition();
         }
 
         public RobotEE GetEE(string ee_id) {
