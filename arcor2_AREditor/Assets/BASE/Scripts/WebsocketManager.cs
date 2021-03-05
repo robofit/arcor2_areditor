@@ -1850,9 +1850,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="jointsId">ID of joints on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId) {
+        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId, bool safe) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId, safe: safe);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
@@ -1870,9 +1870,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="orientationId">ID of orientation on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId) {
+        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId, bool safe) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null, safe: safe);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.MoveToActionPointResponse response = await WaitForResult<IO.Swagger.Model.MoveToActionPointResponse>(r_id);

@@ -11,7 +11,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     [SerializeField]
     private InputDialog InputDialog;
     [SerializeField]
-    private GameObject CreateGlobalActionPointBtn;
+    private GameObject CreateGlobalActionPointBtn, CreateGlobalActionPointUsingRobotBtn;
 
     public Toggle MoveToggle;
     public Toggle RotateToggle;
@@ -20,7 +20,11 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public Toggle VRModeToggle;
     public Toggle CalibrationElementsToggle;
 
+    public AddActionPointUsingRobotDialog AddActionPointUsingRobotDialog;
+
     private ManualTooltip calibrationElementsTooltip;
+
+    private string waitingForAPName = "", updateAPWithRobotId = "", updateAPWithEE = "";
 
     private bool useGizmoMove = false;
     public bool UseGizmoMove {
@@ -69,11 +73,34 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void OnEnable() {
         CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
         CalibrationManager.Instance.OnARRecalibrate += OnARRecalibrate;
+        ProjectManager.Instance.OnActionPointAddedToScene += OnActionPointAddedToScene;
     }
 
     private void OnDisable() {
         CalibrationManager.Instance.OnARCalibrated -= OnARCalibrated;
         CalibrationManager.Instance.OnARRecalibrate -= OnARRecalibrate;
+        ProjectManager.Instance.OnActionPointAddedToScene -= OnActionPointAddedToScene;
+    }
+
+    private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
+        if (!string.IsNullOrEmpty(waitingForAPName) && args.ActionPoint.GetName() == waitingForAPName) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
+                await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
+            } finally {
+                waitingForAPName = "";
+                updateAPWithRobotId = "";
+                updateAPWithEE = "";
+                GameManager.Instance.HideLoadingScreen();
+            }
+            
+            
+        }
+
     }
 
     /// <summary>
@@ -110,12 +137,15 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
         CreateGlobalActionPointBtn.SetActive(false);
+        CreateGlobalActionPointUsingRobotBtn.SetActive(false);
         MoveToggle.gameObject.SetActive(false);
         RotateToggle.gameObject.SetActive(false);
         ConnectionsToggle.gameObject.SetActive(false);
         switch (args.Data) {
+
             case GameManager.GameStateEnum.ProjectEditor:
                 CreateGlobalActionPointBtn.SetActive(true);
+                CreateGlobalActionPointUsingRobotBtn.SetActive(true);
                 MoveToggle.gameObject.SetActive(true);
                 // use move only if the gizmo was previously active (for tablet version)
                 if (UseGizmoMove || UseGizmoRotate)
@@ -171,14 +201,41 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-       Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, Vector3.one * 0.1f, Quaternion.identity);
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
-
-        bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             InputDialog.Close();
     }
-    
+
+    public async void ShowCreateGlobalActionPointUsingRobotDialog() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to create new AP", "Only available when online");
+            return;
+        }
+        GameManager.Instance.ShowLoadingScreen("Loading robots...");
+        await AddActionPointUsingRobotDialog.Open(
+                         ProjectManager.Instance.GetFreeAPName("global"),
+                         () => CreateGlobalActionPointUsingRobot(AddActionPointUsingRobotDialog.GetName(), AddActionPointUsingRobotDialog.GetRobotId(), AddActionPointUsingRobotDialog.GetEEId()),
+                         () => AddActionPointUsingRobotDialog.Close());
+        GameManager.Instance.HideLoadingScreen();
+    }
+
+    public async void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+            Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
+            return;
+        }
+        GameManager.Instance.ShowLoadingScreen("Adding AP...");
+        updateAPWithEE = eeId;
+        updateAPWithRobotId = robotId;
+        waitingForAPName = name;
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
+        if (result)
+            AddActionPointUsingRobotDialog.Close();
+        else {
+            GameManager.Instance.HideLoadingScreen();
+        }
+    }
+
     private void OnDestroy() {
         PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
         PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);

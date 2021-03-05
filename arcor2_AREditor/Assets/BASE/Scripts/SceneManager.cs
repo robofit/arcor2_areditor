@@ -291,20 +291,21 @@ namespace Base {
         private void OnSceneState(object sender, SceneStateEventArgs args) {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
-                    GameManager.Instance.ShowLoadingScreen("Starting scene...");
+                    GameManager.Instance.ShowLoadingScreen("Going online...");
                     break;
                 case SceneStateData.StateEnum.Stopping:
                     SceneStarted = false;
-                    GameManager.Instance.ShowLoadingScreen("Stopping scene...");
+                    GameManager.Instance.ShowLoadingScreen("Going offline...");
                     if (!args.Event.Message.IsNullOrEmpty()) {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     foreach (IRobot robot in GetRobots()) {
                         robot.SetGrey(true);
-                        foreach (var joint in robot.GetJoints()) { //set default angles of joints
-                            robot.SetJointValue(joint.Name, 0f);
-                        }
+                        if (robot.HasUrdf())
+                            foreach (var joint in robot.GetJoints()) { //set default angles of joints
+                                robot.SetJointValue(joint.Name, 0f);
+                            }
                     }
                     break;
                 case SceneStateData.StateEnum.Started:
@@ -409,7 +410,7 @@ namespace Base {
         /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
         public bool ShowRobotsEE() {
             if (!SceneStarted) {
-                Notifications.Instance.ShowNotification("Failed to show robots EE", "This can only be done when scene is started");
+                Notifications.Instance.ShowNotification("Failed to show robots EE", "This can only be done when online");
                 return false;
             }
             RobotsEEVisible = true;

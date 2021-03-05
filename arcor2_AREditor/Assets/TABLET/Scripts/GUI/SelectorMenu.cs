@@ -322,6 +322,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
            
         }
+        
     }
 
 
@@ -330,6 +331,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             return;
         selectorItemsNoPoseMenu.Clear();
         foreach (ActionObject actionObject in SceneManager.Instance.GetAllActionObjectsWithoutPose()) {
+            if (!actionObject.Enabled)
+                continue;
             SelectorItem newItem = selectorItems[actionObject.GetId()];
             selectorItemsNoPoseMenu.Add(newItem);
             newItem.transform.SetParent(ContentNoPose.transform);
