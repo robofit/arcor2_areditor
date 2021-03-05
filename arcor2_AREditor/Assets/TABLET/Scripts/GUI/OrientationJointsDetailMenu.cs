@@ -30,6 +30,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TMPro.TMP_Text RobotName; //name of robot - only for joints
 
+    public SwitchComponent SafeMove;
+
 
     public DropdownParameter RobotsList, EndEffectorList; //only for orientation
 
@@ -53,6 +55,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
@@ -61,7 +65,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
-         if (orientation != null && orientation.Id == args.Data.Id) {
+        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
+        if (orientation != null && orientation.Id == args.Data.Id) {
             orientation = args.Data;
             UpdateMenu();
          }
@@ -315,9 +321,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         try {
             if (isOrientationDetail) {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id);
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id, (bool) SafeMove.GetValue());
             } else {
-                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id);
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id, (bool) SafeMove.GetValue());
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
@@ -393,8 +399,16 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             }
         }
 
-        await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-        SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+        if (SceneManager.Instance.SceneStarted) {
+            await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+            SceneManager.Instance.GetActionObject(robotID).SetInteractivity(shadowRealRobot);
+        } else { //is possible only for joints, not orientation
+            foreach (IO.Swagger.Model.Joint joint in joints.Joints) { //set default angles of joints
+                SceneManager.Instance.GetRobot(joints.RobotId).SetJointValue(joint.Name, (float) 0f);
+            }
+        }
+        
     }
 
     public async void Close() {

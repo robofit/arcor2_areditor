@@ -60,20 +60,15 @@ namespace Base {
                 _ = EnableVisualisationOfEE();
             }
         }
-
-        private async void OnDisable() {
-            await DisableVisualisationOfEE();
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        
+        private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
         }
 
-        private async void OnEnable() {
+        private void OnEnable() {
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -218,8 +213,10 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
 
-            SetVisibility(visibility, forceShaderChange:true);
+            SetVisibility(visibility, forceShaderChange: true);
             SetGrey(!SceneManager.Instance.SceneStarted);
+
+            SetDefaultJoints();
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
@@ -232,6 +229,11 @@ namespace Base {
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
+        private void SetDefaultJoints() {
+            foreach (var joint in RobotModel.Joints) {
+                SetJointValue(joint.Key, 0f);
+            }
+        }
 
         public override Vector3 GetScenePosition() {
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
@@ -251,8 +253,8 @@ namespace Base {
 
         public override void Show() {
             robotVisible = true;
-            SetGrey(!SceneManager.Instance.SceneStarted);
             SetVisibility(1);
+            SetGrey(!SceneManager.Instance.SceneStarted);
         }
 
         public override void Hide() {
@@ -366,17 +368,13 @@ namespace Base {
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
                 // We have clicked with left mouse and started manipulation with object
                 if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                    manipulationStarted = true;
-                    HideRobotEE();
-                    TransformGizmo.Instance.AddTarget(transform);
-                    outlineOnClick.GizmoHighlight();
+                    StartManipulation();
                 }
             } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-                ShowMenu();
-                TransformGizmo.Instance.ClearTargets();
-                outlineOnClick.GizmoUnHighlight();
+                OpenMenu();
             }
         }
+
 
         public async Task<List<string>> GetEndEffectorIds() {
             if (!ResourcesLoaded) {
@@ -434,6 +432,7 @@ namespace Base {
             robotRenderers.Clear();
             robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
             robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
+            Colliders = robotColliders;
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
@@ -487,6 +486,7 @@ namespace Base {
         public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
+            ResetPosition();
         }
 
         public RobotEE GetEE(string ee_id) {
@@ -600,6 +600,35 @@ namespace Base {
                     }
                 }
             }
+        }
+
+        public override void OpenMenu() {
+            TransformGizmo.Instance.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        public override bool HasMenu() {
+            return true;
+        }
+
+        public override void StartManipulation() {
+            TransformGizmo.Instance.ClearTargets();
+            manipulationStarted = true;
+            HideRobotEE();
+            TransformGizmo.Instance.AddTarget(transform);
+            outlineOnClick.GizmoHighlight();
+        }
+
+        public List<RobotEE> GetAllEE() {
+            return EndEffectors;
         }
     }
 }

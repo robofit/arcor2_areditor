@@ -15,6 +15,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public OutputTypeDialog OutputTypeDialog;
     public ConnectionSelectorDialog ConnectionSelectorDialog;
 
+
     public bool IsAnyMenuOpened {
         get;
         private set;
@@ -68,6 +69,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open) {
             OrientationJointsDetailMenu.Close();
         }
+        if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
+            MainMenu.Close();
+        }
     }
 
     public void DisableAllMenus() {
@@ -94,7 +98,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
         OrientationJointsDetailMenu.gameObject.SetActive(true);
     }
 
-    public void HideMenu(SimpleSideMenu menu) {
+    public void HideMenu() {
         if (MenuOpened != null) {
             MenuOpened.Close();
             MenuOpened = null;

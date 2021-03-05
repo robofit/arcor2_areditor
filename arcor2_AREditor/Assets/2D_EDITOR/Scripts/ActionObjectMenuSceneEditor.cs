@@ -8,6 +8,7 @@ using DanielLochner.Assets.SimpleSideMenu;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 
 public class ActionObjectMenuSceneEditor : ActionObjectMenu
 {
@@ -305,7 +306,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
 
     protected override void UpdateSaveBtn() {
         if (SceneManager.Instance.SceneStarted) {
-            SaveParametersBtn.SetInteractivity(false, "Parameters could be updated only when scene is stopped.");
+            SaveParametersBtn.SetInteractivity(false, "Parameters could be updated only when offline.");
             return;
         }
         if (!parametersChanged) {

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
+using System.Collections;
 
 namespace Base {
     /// <summary>
@@ -195,7 +196,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.10.0";
+        public const string ApiVersion = "0.12.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -475,7 +476,7 @@ namespace Base {
         /// and invoke corresponding event
         /// </summary>
         /// <param name="newState">New state</param>
-        private void SetEditorState(EditorStateEnum newState) {
+        public void SetEditorState(EditorStateEnum newState) {
             editorState = newState;
             OnEditorStateChanged?.Invoke(this, new EditorStateEventArgs(newState));
             switch (newState) {
@@ -515,31 +516,55 @@ namespace Base {
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
+            MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActions();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActionInputs();
-                    SceneManager.Instance.DisableAllActionObjects();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    SceneManager.Instance.EnableAllActionObjects(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
-                    ProjectManager.Instance.DisableAllActionPoints();
-                    ProjectManager.Instance.DisableAllActionOutputs();
-                    SceneManager.Instance.DisableAllActionObjects();
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActions(false);
+                    SceneManager.Instance.EnableAllActionObjects(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    EnableServiceInteractiveObjects(false);
+                    ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
-                    ProjectManager.Instance.DisableAllActions();
+                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    EnableServiceInteractiveObjects(false);
                     break;
 
             }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
-            // display info for user and bind cancel callback
+            // display info for user and bind cancel callback,
+
+            SelectorMenu.Instance.ForceUpdateMenus();
+
             SelectObjectInfo.Show(message, () => CancelSelection());
         }
 
@@ -556,6 +581,19 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             EnableEverything();
+            SelectorMenu.Instance.ForceUpdateMenus();
+        }
+
+        /// <summary>
+        /// Enables / disables interactive objects which are not part of scene or project
+        /// </summary>
+        /// <param name="enable"></param>
+        public void EnableServiceInteractiveObjects(bool enable) {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+            if (CalibrationManager.Instance.WorldAnchorLocal != null)
+                CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
+            VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
+#endif
         }
 
         /// <summary>
@@ -577,6 +615,7 @@ namespace Base {
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
             EnableEverything();
+            SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
                 ObjectCallback.Invoke(selectedObject);
@@ -587,11 +626,14 @@ namespace Base {
         /// Enables all visual elements (objects, actions etc.)
         /// </summary>
         private void EnableEverything() {
-            ProjectManager.Instance.EnableAllActionPoints();
-            ProjectManager.Instance.EnableAllActionsInputs();
-            ProjectManager.Instance.EnableAllActionsOutputs();
-            ProjectManager.Instance.EnableAllActions();
-            SceneManager.Instance.EnableAllActionObjects();            
+            ProjectManager.Instance.EnableAllActionPoints(true);
+            ProjectManager.Instance.EnableAllActionInputs(true);
+            ProjectManager.Instance.EnableAllActionOutputs(true);
+            ProjectManager.Instance.EnableAllActions(true);
+            ProjectManager.Instance.EnableAllOrientations(true);
+            ProjectManager.Instance.EnableAllRobotsEE(true);
+            SceneManager.Instance.EnableAllActionObjects(true);
+            EnableServiceInteractiveObjects(true);
         }
 
         /// <summary>
@@ -621,7 +663,7 @@ namespace Base {
         /// </summary>
         private void Start() {
             SetDefaultFramerate();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
             /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
               var dependencyStatus = task.Result;
@@ -653,6 +695,38 @@ namespace Base {
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         }
 
+        //private IEnumerator Waiter() {
+        //    for (int i = 0; i < 20; i++) {
+        //        Debug.LogError("ziju" + i.ToString());
+        //       yield return new WaitForSeconds(2);
+        //    }
+        //}
+        
+        private void OnApplicationPause(bool pause) {
+            Debug.LogError("onAppPause, pause:" + pause.ToString());
+            //if(pause)
+            //    StartCoroutine(Waiter());
+
+            //Notifications.Instance.ShowNotification("on app pause", pause.ToString());
+            //if (pause && ConnectionStatus != ConnectionStatusEnum.Disconnected)
+            //  WebsocketManager.Instance.DisconnectFromSever();
+        }
+
+        private void OnApplicationFocus(bool focus) {
+            if (ConnectionStatus == ConnectionStatusEnum.Disconnected) {
+                Debug.LogError("onAppFocus, disconnected state, focus: " + focus.ToString());
+                if (focus) {
+                    try {
+                       //LandingScreen.Instance.ConnectToServer();
+                    } catch(NullReferenceException ex) {
+                        Debug.LogError("na landing je websocket ještě null " + ex.Message);
+                    }
+                }
+            } else {
+                Debug.LogError("onAppFocus, connected/ing state, focus: " + focus.ToString());
+            }
+        }
+        
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
@@ -736,6 +810,7 @@ namespace Base {
             // initialize when connected to the server
             ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
+            Debug.LogError("onConnected triggered");
         }
 
         /// <summary>
@@ -1014,6 +1089,7 @@ namespace Base {
                 return;
             }
             if (GetGameState() == GameStateEnum.SceneEditor) {
+                SetEditorState(EditorStateEnum.InteractionDisabled);
                 SceneManager.Instance.DestroyScene();
             }
             try {
@@ -1554,8 +1630,8 @@ namespace Base {
         /// <param name="updateResources">Whether or not update lists of scenes/packages/projects</param>
         /// <returns></returns>
         public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight, bool updateResources = true) {
-            
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
@@ -1591,7 +1667,7 @@ namespace Base {
         /// Opens scene editor
         /// </summary>
         public void OpenSceneEditor() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = true;
             if (CalibrationManager.Instance.Calibrated) {
                 Scene.SetActive(true);
@@ -1611,7 +1687,7 @@ namespace Base {
         /// Opens project editor
         /// </summary>
         public void OpenProjectEditor() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = true;
             if (CalibrationManager.Instance.Calibrated) {
                 Scene.SetActive(true);
@@ -1632,8 +1708,6 @@ namespace Base {
         /// </summary>
         public async void OpenPackageRunningScreen() {
             openPackageRunningScreenFlag = false;
-            Debug.LogError("OpenPackageRunningScreen");
-            Debug.LogError(GetGameState());
             try {
                 MenuManager.Instance.MainMenu.Close();
                 EditorInfo.text = "Running: " + PackageInfo.PackageId;
@@ -1641,7 +1715,7 @@ namespace Base {
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
                 EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
                 ARSession.enabled = true;
                 if (CalibrationManager.Instance.Calibrated) {
                     Scene.SetActive(true);
@@ -1676,7 +1750,7 @@ namespace Base {
         /// Opens disconnected screen
         /// </summary>
         public void OpenDisconnectedScreen() {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             MenuManager.Instance.MainMenu.Close();
@@ -1707,8 +1781,11 @@ namespace Base {
         /// <param name="parent">ID of parent object (empty string if global action point)</param>
         /// <param name="position">Relative offset from parent object (or from scene origin if global AP)</param>
         /// <returns></returns>
-        public async Task<bool> AddActionPoint(string name, string parent, Position position) {
+        public async Task<bool> AddActionPoint(string name, string parent) {
             try {
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                Position position = DataHelper.Vector3ToPosition(point);
                 await WebsocketManager.Instance.AddActionPoint(name, parent, position);
                 return true;
             } catch (RequestFailedException e) {
@@ -1759,6 +1836,10 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
+        public List<InteractiveObject> GetAllInteractiveObjects() {
+            return FindObjectsOfType<InteractiveObject>().OrderBy(o => o.GetName()).ToList();
+        }
+
     }
 
     /// <summary>
@@ -1804,5 +1885,7 @@ namespace Base {
         public static implicit operator RequestResult((bool success, string message) value) {
             return new RequestResult(value.success, value.message);
         }
+
+        
     }
 }

@@ -16,6 +16,10 @@ public class BindParentToChild : MonoBehaviour
 
     // Start is called before the first frame update
     private void Start() {
+        if (ChildToBind == null) {
+            enabled = false;
+            return;
+        }
         // Save original child transform
         originalLocalPosition = ChildToBind.transform.localPosition;
         originalLocalRotation = ChildToBind.transform.localRotation;
@@ -23,6 +27,8 @@ public class BindParentToChild : MonoBehaviour
 
     // Update is called once per frame
     private void Update() {
+        
+            
         // Update only if scene is in interactable mode
         if (GameManager.Instance.SceneInteractable) {
             // Update parent transform to match moved child

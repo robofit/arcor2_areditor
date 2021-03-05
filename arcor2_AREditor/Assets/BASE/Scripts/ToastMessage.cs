@@ -10,7 +10,7 @@ public class ToastMessage : Base.Singleton<ToastMessage>
     private CanvasGroup canvasGroup;
 
     public void ShowMessage(string message, int duration) {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
             AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             AndroidJavaObject unityActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
@@ -22,7 +22,7 @@ public class ToastMessage : Base.Singleton<ToastMessage>
                     toastObject.Call("show");
                 }));
             }
-#elif UNITY_STANDALONE || UNITY_EDITOR
+#elif UNITY_STANDALONE || !AR_ON
         text.text = message;
         StartCoroutine(ShowToast());
         StartCoroutine(HideToast(duration));

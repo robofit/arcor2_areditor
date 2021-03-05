@@ -61,6 +61,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 7157647198806504771}
   eeName: {fileID: 2613969908525368025}
   RobotId: 
   EEId: 
@@ -423,6 +425,12 @@ Transform:
 --- !u!23 &5195496566737001950 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
+    type: 3}
+  m_PrefabInstance: {fileID: 4593720685819818358}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &7157647198806504771 stripped
+MeshCollider:
+  m_CorrespondingSourceObject: {fileID: 6671307229801022517, guid: b4e538696a8355b4f95165a806cc9e1b,
     type: 3}
   m_PrefabInstance: {fileID: 4593720685819818358}
   m_PrefabAsset: {fileID: 0}

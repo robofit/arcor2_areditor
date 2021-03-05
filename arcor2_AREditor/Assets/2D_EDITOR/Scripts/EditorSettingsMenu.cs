@@ -165,7 +165,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void UpdateMarkerOffset() {
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         Vector3 offset = TransformConvertor.ROSToUnity(new Vector3((float) (double) markerOffsetX.GetValue(),
                                       (float) (double) markerOffsetY.GetValue(),
                                       (float) (double) markerOffsetZ.GetValue()));
@@ -201,7 +201,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     private void ShowActionPoint(ActionPoint actionPoint) {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
-        actionPoint.ShowMenu();
+        actionPoint.OpenMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         // Select(force = true) to force selection and not losing AP highlight upon EditorSettingsMenu closing 
         actionPoint.SendMessage("Select", true);
@@ -209,7 +209,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     private void ShowActionObject(Base.ActionObject actionObject) {
         MenuManager.Instance.ActionObjectSettingsMenu.Close();
-        actionObject.ShowMenu();
+        actionObject.OpenMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select", true);
     }

@@ -201,7 +201,7 @@ public class MainMenu : MonoBehaviour, IMenu {
                 btn.GetComponent<ActionButton>().Highlight(2f);
             }
             if (SceneManager.Instance.SceneStarted)
-                btnTooltip.SetInteractivity(false, "Objects could not be added when scene is started");
+                btnTooltip.SetInteractivity(false, "Objects could not be added when online");
             else
                 btnTooltip.SetInteractivity(!actionObjectMetadata.Disabled, actionObjectMetadata.Problem);
 
@@ -482,7 +482,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             restoreButtons = true;
             foreach (ButtonWithTooltip b in ActionObjectsContent.GetComponentsInChildren<ButtonWithTooltip>()) {
                 if (b.gameObject.tag == "ActionObjectButton")
-                    b.SetInteractivity(false, "Objects could not be added when scene is started.");
+                    b.SetInteractivity(false, "Objects could not be added when online.");
             }
         } else if (restoreButtons) {
             restoreButtons = false;
@@ -567,11 +567,16 @@ public class MainMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.StopScene(false);
     }
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
     public void Recalibrate() {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         CalibrationManager.Instance.Recalibrate();
-    }
 #endif
+    }
 
- 
+    public void CalibrateUsingServer() {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+        CalibrationManager.Instance.CalibrateUsingServer();
+#endif
+    }
+
 }

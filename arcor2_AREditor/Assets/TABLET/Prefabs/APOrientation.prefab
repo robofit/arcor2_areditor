@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 1138759833440681489}
   ActionPoint: {fileID: 0}
   OrientationId: 
   outlineOnClick: {fileID: 3977943581295511037}
@@ -187,6 +189,12 @@ Transform:
 --- !u!23 &2630874748632323724 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 8636268259890015400, guid: b4e538696a8355b4f95165a806cc9e1b,
+    type: 3}
+  m_PrefabInstance: {fileID: 6005706906708998692}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1138759833440681489 stripped
+MeshCollider:
+  m_CorrespondingSourceObject: {fileID: 6671307229801022517, guid: b4e538696a8355b4f95165a806cc9e1b,
     type: 3}
   m_PrefabInstance: {fileID: 6005706906708998692}
   m_PrefabAsset: {fileID: 0}

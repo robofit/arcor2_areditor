@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
@@ -59,4 +60,9 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.enabled = true;
         }
     }
+
+    private void OnDisable() {
+        tooltipContent.OnPointerExit(null);
+    }
+
 }

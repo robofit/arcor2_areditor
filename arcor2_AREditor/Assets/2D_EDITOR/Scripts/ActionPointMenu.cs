@@ -88,10 +88,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
 
     public async void AddAP(string name) {
         Debug.Assert(CurrentActionPoint != null);
-
-        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(CurrentActionPoint.transform, Vector3.one * 0.1f, Quaternion.identity);
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
-        bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id, offset);
+        bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id);
         if (result)
             inputDialog.Close();
         UpdateMenu();
@@ -218,7 +215,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         try {
             await WebsocketManager.Instance.RemoveActionPoint(CurrentActionPoint.Data.Id);
             ConfirmationDialog.Close();
-            MenuManager.Instance.HideMenu(MenuManager.Instance.ActionPointMenu);
+            MenuManager.Instance.HideMenu();
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to remove action point", e.Message);
         }
@@ -272,7 +269,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
     public void BackToParentMenu() {
-        CurrentActionPoint.Parent.ShowMenu();
+        CurrentActionPoint.Parent.OpenMenu();
         Base.SceneManager.Instance.SetSelectedObject(CurrentActionPoint.Parent.GetGameObject());
         CurrentActionPoint.Parent.GetGameObject().SendMessage("Select", true);
     }

@@ -139,6 +139,7 @@ namespace Base {
         /// <param name="domain">Domain name or IP address of server</param>
         /// <param name="port">Server port</param>
         public async void ConnectToServer(string domain, int port) {
+            Debug.Log("connectToServer called");
            
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             try {
@@ -239,8 +240,12 @@ namespace Base {
         /// </summary>
         /// <param name="data"></param>
         private async void SendWebSocketMessage(string data) {
-            if (websocket.State == WebSocketState.Open) {
-                await websocket.SendText(data);
+            try {
+                if (websocket.State == WebSocketState.Open) {
+                    await websocket.SendText(data);
+                }
+            }catch(WebSocketException ex) {
+                Debug.Log("socketexception in sendwebsocketmessage: " + ex.Message);
             }
         }
 
@@ -315,8 +320,11 @@ namespace Base {
                     case "RobotMoveToActionPointJoints":
                         HandleRobotMoveToActionPointJointsEvent(data);
                         break;
-                    case "CurrentAction":
-                        HandleCurrentAction(data);
+                    case "ActionStateBefore":
+                        HandleStateBefore(data);
+                        break;
+                    case "ActionStateAfter":
+                        HandleActionStateAfter(data);
                         break;
                     case "PackageState":
                         HandlePackageState(data);
@@ -537,21 +545,17 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
-                /// <summary>
-        /// Handles info about currently running action
-        /// </summary>
-        /// <param name="obj">Message from server</param>
-        private void HandleCurrentAction(string obj) {
+        private void HandleStateBefore(string obj) {
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
                 Debug.LogWarning("Project not yet loaded, ignoring current action");
                 return;
             }
             try {
-                
-                IO.Swagger.Model.CurrentAction currentActionEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.CurrentAction>(obj);
 
-                puck_id = currentActionEvent.Data.ActionId;
+                IO.Swagger.Model.ActionStateBefore actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateBefore>(obj);
+
+                puck_id = actionStateBefore.Data.ActionId;
 
 
 
@@ -570,8 +574,39 @@ namespace Base {
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
             }
-            
         }
+
+        private void HandleActionStateAfter(string obj) {
+            string puck_id;
+            if (!ProjectManager.Instance.Valid) {
+                Debug.LogWarning("Project not yet loaded, ignoring current action");
+                return;
+            }
+            try {
+
+                IO.Swagger.Model.ActionStateAfter actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateAfter>(obj);
+
+                puck_id = actionStateBefore.Data.ActionId;
+
+
+
+            } catch (NullReferenceException e) {
+                Debug.Log("Parse error in HandleCurrentAction()");
+                return;
+            }
+            // Stop previously running action (change its color to default)
+            /*if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+            try {
+                Action puck = ProjectManager.Instance.GetAction(puck_id);
+                ActionsManager.Instance.CurrentlyRunningAction = puck;
+                // Run current action (set its color to running)
+                puck.RunAction();
+            } catch (ItemNotFoundException ex) {
+                Debug.LogError(ex);
+            }*/
+        }
+
 
         /// <summary>
         /// Handles result of recently executed action
@@ -1815,9 +1850,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="jointsId">ID of joints on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId) {
+        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId, bool safe) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId, safe: safe);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
@@ -1835,9 +1870,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="orientationId">ID of orientation on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId) {
+        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId, bool safe) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null, safe: safe);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.MoveToActionPointResponse response = await WaitForResult<IO.Swagger.Model.MoveToActionPointResponse>(r_id);
@@ -2278,8 +2313,49 @@ namespace Base {
             } 
         }
 
+        public async Task<string> GetCameraColorImage(string cameraId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CameraColorImageRequestArgs args = new CameraColorImageRequestArgs(id: cameraId);
+
+            IO.Swagger.Model.CameraColorImageRequest request = new IO.Swagger.Model.CameraColorImageRequest(r_id, "CameraColorImage", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CameraColorImageResponse response = await WaitForResult<IO.Swagger.Model.CameraColorImageResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get image from camera " + cameraId } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<IO.Swagger.Model.Pose> GetCameraPose(CameraParameters cameraParams, string img) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img);
+
+            IO.Swagger.Model.GetCameraPoseRequest request = new IO.Swagger.Model.GetCameraPoseRequest(r_id, "GetCameraPose", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetCameraPoseResponse response = await WaitForResult<IO.Swagger.Model.GetCameraPoseResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+        public async Task<List<IO.Swagger.Model.MarkerCorners>> GetMarkerCorners(CameraParameters cameraParams, string img) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.MarkersCornersRequestArgs args = new MarkersCornersRequestArgs(cameraParameters: cameraParams, image: img);
+
+            IO.Swagger.Model.MarkersCornersRequest request = new IO.Swagger.Model.MarkersCornersRequest(r_id, "MarkersCorners", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.MarkersCornersResponse response = await WaitForResult<IO.Swagger.Model.MarkersCornersResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
 
     }
 
-    
+
 }

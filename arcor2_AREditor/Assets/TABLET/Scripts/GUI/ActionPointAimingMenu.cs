@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Base;
@@ -66,6 +67,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
             btn.GetComponent<TooltipContent>().enabled = !args.Data.IsValid;
@@ -77,6 +80,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
@@ -84,6 +89,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         try {
             ActionButton btn = GetButton(args.Data, JointsDynamicList);
             btn.gameObject.SetActive(false);
@@ -95,6 +102,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
             btn.SetLabel(args.Data.Name);
@@ -104,7 +113,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        if (args.ActionPointId != CurrentActionPoint.GetId())
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed ||
+                args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
             var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
@@ -113,6 +123,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         try {
             ActionButton btn = GetButton(args.Data, OrientationsDynamicList);
             btn.gameObject.SetActive(false);
@@ -124,6 +136,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationBaseUpdated(object sender, ActionPointOrientationEventArgs args) {
+
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         try {
             CurrentActionPoint.GetOrientation(args.Data.Id);
             ActionButton btn = GetButton(args.Data.Id, OrientationsDynamicList);
@@ -134,7 +149,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
-        if (CurrentActionPoint.Data.Id == args.ActionPointId) {
+
+        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open &&
+                CurrentActionPoint.Data.Id == args.ActionPointId) {
             CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
@@ -186,10 +203,14 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
 
         UpdateOrientationsDynamicList();
-        UpdateTooltips();
+        this.gameObject.SetActive(true); //so the couroutine can be started for sure
+        StartCoroutine(UpdateTooltips());
     }
 
-    private void UpdateTooltips() {
+
+    private IEnumerator UpdateTooltips() {
+        yield return new WaitForSeconds(0.1f); //fixes a bug, when after the first collapsing of collapsable menu there is no tooltip
+
         const string noRobot = "There is no robot in the scene";
         const string sceneNotStarted = "To add using robot, start the scene";
 
