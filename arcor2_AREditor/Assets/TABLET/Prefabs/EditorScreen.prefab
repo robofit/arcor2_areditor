@@ -402,7 +402,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooltipContent: {fileID: 496191313064914549}
-  Description: Create global action point
+  Description: Create global action point using robot
   DescriptionAlternative: 
   displayAlternativeDescription: 0
 --- !u!114 &7480289986921247574
@@ -29825,6 +29825,36 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2285657552841285564, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3362024104828284466, guid: 5a8dc56bb5e69bf448f73eaa13b44172,
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
