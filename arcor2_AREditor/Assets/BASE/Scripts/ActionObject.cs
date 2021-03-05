@@ -44,6 +44,7 @@ namespace Base {
             
             CreateModel(customCollisionModels);
             enabled = true;
+            
             if (VRModeManager.Instance.VRModeON) {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
             } else {

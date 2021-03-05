@@ -79,6 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders: []
   ActionPointsSpawn: {fileID: 7608964153753617350}
   Collider: {fileID: 0}
   ActionObjectName: {fileID: 826771530686706174}
@@ -117,7 +118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
-  OutlineShaderType: 1
+  OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
   OutlineClickSecondPass: {fileID: 2100000, guid: ec9869b8f200e5144b913b44d0b5a07c,
@@ -358,6 +359,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 4858314525976248428}
   m_maskType: 0
+  _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
 --- !u!1 &7608964153753617350
