@@ -33,7 +33,6 @@ namespace Base {
             Data.Type = type;
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
-                Debug.LogError(position);
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
             } else {

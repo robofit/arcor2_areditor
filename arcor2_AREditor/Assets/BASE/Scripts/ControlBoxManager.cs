@@ -201,10 +201,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-       Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, Vector3.one * 0.1f, Quaternion.identity);
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
-
-        bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             InputDialog.Close();
     }
@@ -231,7 +228,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         updateAPWithEE = eeId;
         updateAPWithRobotId = robotId;
         waitingForAPName = name;
-        bool result = await GameManager.Instance.AddActionPoint(name, "", new IO.Swagger.Model.Position());
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             AddActionPointUsingRobotDialog.Close();
         else {

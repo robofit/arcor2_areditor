@@ -1781,8 +1781,11 @@ namespace Base {
         /// <param name="parent">ID of parent object (empty string if global action point)</param>
         /// <param name="position">Relative offset from parent object (or from scene origin if global AP)</param>
         /// <returns></returns>
-        public async Task<bool> AddActionPoint(string name, string parent, Position position) {
+        public async Task<bool> AddActionPoint(string name, string parent) {
             try {
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                Position position = DataHelper.Vector3ToPosition(point);
                 await WebsocketManager.Instance.AddActionPoint(name, parent, position);
                 return true;
             } catch (RequestFailedException e) {
