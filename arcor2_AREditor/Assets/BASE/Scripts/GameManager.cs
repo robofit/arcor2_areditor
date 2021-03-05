@@ -1833,8 +1833,8 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
-        public List<InteractiveObject> GetAllInteractiveObjects() {          
-            return FindObjectsOfType<InteractiveObject>().ToList();
+        public List<InteractiveObject> GetAllInteractiveObjects() {
+            return FindObjectsOfType<InteractiveObject>().OrderBy(o => o.GetName()).ToList();
         }
 
     }
