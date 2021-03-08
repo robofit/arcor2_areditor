@@ -33,7 +33,6 @@ namespace Base {
             Data.Type = type;
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
-                Debug.LogError(position);
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
             } else {
@@ -44,6 +43,7 @@ namespace Base {
             
             CreateModel(customCollisionModels);
             enabled = true;
+            
             if (VRModeManager.Instance.VRModeON) {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
             } else {

@@ -36,6 +36,9 @@ public class AddActionPointUsingRobotDialog : Dialog
         await DropdownRobots.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
         if (DropdownRobots.Dropdown.dropdownItems.Count > 0) {
             OnRobotChanged((string) DropdownRobots.GetValue());
+        } else {
+            Notifications.Instance.ShowNotification("Failed to add AP", "There is no robot with EE in the scene");
+            return;
         }
         Name.inputText.text = inputValue;
 

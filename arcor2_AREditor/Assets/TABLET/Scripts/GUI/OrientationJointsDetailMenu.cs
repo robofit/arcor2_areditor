@@ -55,6 +55,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
+        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
@@ -63,7 +65,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
-         if (orientation != null && orientation.Id == args.Data.Id) {
+        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+            return;
+        if (orientation != null && orientation.Id == args.Data.Id) {
             orientation = args.Data;
             UpdateMenu();
          }

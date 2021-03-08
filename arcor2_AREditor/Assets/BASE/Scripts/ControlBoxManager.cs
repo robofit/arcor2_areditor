@@ -11,7 +11,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     [SerializeField]
     private InputDialog InputDialog;
     [SerializeField]
-    private GameObject CreateGlobalActionPointBtn;
+    private GameObject CreateGlobalActionPointBtn, CreateGlobalActionPointUsingRobotBtn;
 
     public Toggle MoveToggle;
     public Toggle RotateToggle;
@@ -84,14 +84,21 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
         if (!string.IsNullOrEmpty(waitingForAPName) && args.ActionPoint.GetName() == waitingForAPName) {
-            await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
-            await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
-            await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
-            waitingForAPName = "";
-            updateAPWithRobotId = "";
-            updateAPWithEE = "";
-
-            GameManager.Instance.HideLoadingScreen();
+            try {
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
+                await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
+            } finally {
+                waitingForAPName = "";
+                updateAPWithRobotId = "";
+                updateAPWithEE = "";
+                GameManager.Instance.HideLoadingScreen();
+            }
+            
+            
         }
 
     }
@@ -130,12 +137,15 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
         CreateGlobalActionPointBtn.SetActive(false);
+        CreateGlobalActionPointUsingRobotBtn.SetActive(false);
         MoveToggle.gameObject.SetActive(false);
         RotateToggle.gameObject.SetActive(false);
         ConnectionsToggle.gameObject.SetActive(false);
         switch (args.Data) {
+
             case GameManager.GameStateEnum.ProjectEditor:
                 CreateGlobalActionPointBtn.SetActive(true);
+                CreateGlobalActionPointUsingRobotBtn.SetActive(true);
                 MoveToggle.gameObject.SetActive(true);
                 // use move only if the gizmo was previously active (for tablet version)
                 if (UseGizmoMove || UseGizmoRotate)
@@ -191,10 +201,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     public async void CreateGlobalActionPoint(string name) {
-       Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, Vector3.one * 0.1f, Quaternion.identity);
-        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint)); 
-
-        bool result = await GameManager.Instance.AddActionPoint(name, "", offset);
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             InputDialog.Close();
     }
@@ -221,9 +228,12 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         updateAPWithEE = eeId;
         updateAPWithRobotId = robotId;
         waitingForAPName = name;
-        bool result = await GameManager.Instance.AddActionPoint(name, "", new IO.Swagger.Model.Position());
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             AddActionPointUsingRobotDialog.Close();
+        else {
+            GameManager.Instance.HideLoadingScreen();
+        }
     }
 
     private void OnDestroy() {

@@ -1790,12 +1790,17 @@ namespace Base {
         /// <param name="parent">ID of parent object (empty string if global action point)</param>
         /// <param name="position">Relative offset from parent object (or from scene origin if global AP)</param>
         /// <returns></returns>
-        public async Task<bool> AddActionPoint(string name, string parent, Position position) {
+        public async Task<bool> AddActionPoint(string name, string parent) {
             try {
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                Position position = DataHelper.Vector3ToPosition(point);
+                ProjectManager.Instance.SelectAPNameWhenCreated = name;
                 await WebsocketManager.Instance.AddActionPoint(name, parent, position);
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                ProjectManager.Instance.SelectAPNameWhenCreated = "";
                 return false;
             }
         }
@@ -1842,8 +1847,8 @@ namespace Base {
             throw new ItemNotFoundException("Scene with id: " + sceneId + " not found");
         }
 
-        public List<InteractiveObject> GetAllInteractiveObjects() {          
-            return FindObjectsOfType<InteractiveObject>().ToList();
+        public List<InteractiveObject> GetAllInteractiveObjects() {
+            return FindObjectsOfType<InteractiveObject>().OrderBy(o => o.GetName()).ToList();
         }
 
     }
