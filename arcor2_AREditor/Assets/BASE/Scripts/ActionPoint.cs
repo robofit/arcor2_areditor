@@ -195,6 +195,7 @@ namespace Base {
         }
 
         /// <summary>
+        /// 
         /// Returns visual representation of orientation
         /// </summary>
         /// <param name="id">UUID of orientation</param>

@@ -67,7 +67,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
-        if (!enabled)
+        if (!enabled || !Enabled)
             return;
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
