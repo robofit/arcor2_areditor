@@ -27,12 +27,16 @@ public class ActionObjectParameterOverride : MonoBehaviour
         this.overridden = overridden;
     }
 
-    public void Init(string value, bool overriden, ParameterMetadata parameterMetadata, string objectId) {
+    public void Init(string value, bool overriden, ParameterMetadata parameterMetadata, string objectId, bool updateEnabled) {
         
         SaveBtn.gameObject.SetActive(false);
         this.parameterMetadata = parameterMetadata;
         this.objectId = objectId;
         SetValue(value, overriden);
+        SaveBtn.SetInteractivity(updateEnabled, "Modification could only be done when offline");
+        ModifyBtn.SetInteractivity(updateEnabled, "Modification could only be done when offline");
+        RestoreBtn.SetInteractivity(updateEnabled, "Modification could only be done when offline");
+        CancelBtn.SetInteractivity(updateEnabled, "Modification could only be done when offline");
     }
 
     public void Modify() {

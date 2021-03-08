@@ -38,11 +38,16 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
         Debug.Assert(InputDialog != null);
         Debug.Assert(ConfirmationDialog != null);
 
-        
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+
     }
 
     private void Awake() {
         menu = GetComponent<SimpleSideMenu>();
+    }
+    private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        if (CurrentObject != null)
+            UpdateMenu();
     }
 
 

@@ -617,6 +617,10 @@ namespace Base {
             GameManager.Instance.HandleActionResult(actionResult.Data);
         }
 
+        public bool IsWebsocketNull() {
+            return websocket == null;
+        }
+
         /// <summary>
         /// Informs that execution of action was canceled
         /// </summary>

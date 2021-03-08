@@ -150,11 +150,11 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         if (CurrentActionPoint.Parent == null) {
             UntieBtn.onClick.RemoveAllListeners();
             UntieBtn.onClick.AddListener(() => AssignToParent());
-            UntieBtnTooltip.ShowAlternativeDescription();
+            UntieBtnTooltip.DisplayAlternativeDescription = true;
         } else {
             UntieBtn.onClick.RemoveAllListeners();
             UntieBtn.onClick.AddListener(() => ShowUntieActionPointDialog());
-            UntieBtnTooltip.ShowDefaultDescription();
+            UntieBtnTooltip.DisplayAlternativeDescription = false;
         }
 
         try {
