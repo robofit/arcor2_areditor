@@ -212,7 +212,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         yield return new WaitForSeconds(0.1f); //fixes a bug, when after the first collapsing of collapsable menu there is no tooltip
 
         const string noRobot = "There is no robot in the scene";
-        const string sceneNotStarted = "To add using robot, start the scene";
+        const string sceneNotStarted = "To add using robot, go online";
 
         if (!SceneManager.Instance.RobotInScene()) {
             UpdatePositionUsingRobotTooltip.description = noRobot;
@@ -223,7 +223,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             AddJointsTooltip.enabled = true;
             JointsListLabel.text = "To show joints list, add a robot to the scene";
         } else if (!SceneManager.Instance.SceneStarted) {
-            UpdatePositionUsingRobotTooltip.description = "To update using robot, start the scene";
+            UpdatePositionUsingRobotTooltip.description = "To update using robot, go online";
             AddOrientationUsingRobotTooltip.description = sceneNotStarted;
             AddJointsTooltip.description = sceneNotStarted;
             UpdatePositionUsingRobotTooltip.enabled = true;
