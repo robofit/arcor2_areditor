@@ -87,6 +87,11 @@ namespace Base {
             } 
         }
 
+        public string SelectAPNameWhenCreated {
+            get;
+            internal set;
+        }
+
         /// <summary>
         /// Invoked when some of the action point weas updated. Contains action point description
         /// </summary>
@@ -274,16 +279,22 @@ namespace Base {
         
 
         private void OnActionPointAdded(object sender, ProjectActionPointEventArgs data) {
+            ActionPoint ap = null;
             if (data.ActionPoint.Parent == null || data.ActionPoint.Parent == "") {
-                SpawnActionPoint(data.ActionPoint, null);
+                ap = SpawnActionPoint(data.ActionPoint, null);
             } else {
                 try {
                     IActionPointParent actionPointParent = GetActionPointParent(data.ActionPoint.Parent);
-                    ActionPoint ap = SpawnActionPoint(data.ActionPoint, actionPointParent);
+                    ap = SpawnActionPoint(data.ActionPoint, actionPointParent);
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
                 }
 
+            }
+            if (ap != null && SelectAPNameWhenCreated.Equals(ap.GetName())) {
+                SelectorMenu.Instance.ForceUpdateMenus();
+                SelectorMenu.Instance.SetSelectedObject(ap, true);
+                SelectAPNameWhenCreated = "";
             }
             updateProject = true;
         }

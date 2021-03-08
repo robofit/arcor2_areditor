@@ -276,7 +276,7 @@ namespace Base {
 
             try {
                 ActionObject actionObject = GetActionObject(args.ObjectId);
-                if (actionObject.TryGetParameterMetadata(args.Parameter.Type, out ParameterMeta parameterMeta)) {
+                if (actionObject.TryGetParameterMetadata(args.Parameter.Name, out ParameterMeta parameterMeta)) {
                     Parameter p = new Parameter(parameterMeta, args.Parameter.Value);
                     actionObject.Overrides[args.Parameter.Name] = p;
                 }
