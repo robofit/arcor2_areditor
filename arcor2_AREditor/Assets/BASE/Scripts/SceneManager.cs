@@ -351,8 +351,8 @@ namespace Base {
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
         private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
-            // if initializing or deinitializing scene, dont update robot joints
-            if (!Valid)
+            // if initializing or deinitializing scene OR scene is not started, dont update robot joints
+            if (!Valid || !SceneStarted)
                 return;
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
@@ -360,7 +360,6 @@ namespace Base {
             } catch (ItemNotFoundException) {
                 
             }
-                        
         }
 
         /// <summary>
