@@ -18,16 +18,23 @@ public class AddNewActionObjectDialog : Dialog {
     [SerializeField]
     private LabeledInput nameInput;
     private GameObject overlay;
+    private System.Action callback = null;
 
 
     private void Init() {
 
     }
 
-    public void InitFromMetadata(Base.ActionObjectMetadata metadata) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="metadata"></param>
+    /// <param name="callback">Function to be called if adding action object was successful</param>
+    public void InitFromMetadata(Base.ActionObjectMetadata metadata, System.Action callback = null) {
         InitDialog(metadata);
         actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
         nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
+        this.callback = callback;
     }
 
 
@@ -78,6 +85,7 @@ public class AddNewActionObjectDialog : Dialog {
                     pose = new IO.Swagger.Model.Pose(position: offset, orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
                 }
                 await Base.WebsocketManager.Instance.AddObjectToScene(newActionObjectName, actionObjectMetadata.Type, pose, parameters);
+                callback?.Invoke();
                 Close();
             } catch (Base.RequestFailedException e) {
                 Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);

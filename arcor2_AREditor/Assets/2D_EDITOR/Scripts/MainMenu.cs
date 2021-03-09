@@ -288,7 +288,7 @@ public class MainMenu : MonoBehaviour, IMenu {
     public void ShowAddObjectDialog(string type) {
         
         if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
-            addNewActionObjectDialog.InitFromMetadata(actionObjectMetadata);
+            addNewActionObjectDialog.InitFromMetadata(actionObjectMetadata, UpdateRemoveBtns);
             addNewActionObjectDialog.Open();
         } else {
             Notifications.Instance.SaveLogs("Failed to load metadata for object type" + type);
