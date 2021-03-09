@@ -408,13 +408,14 @@ namespace Base {
         /// </summary>
         /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
         public bool ShowRobotsEE() {
-            if (!SceneStarted) {
-                Notifications.Instance.ShowNotification("Failed to show robots EE", "This can only be done when online");
-                return false;
-            }
             RobotsEEVisible = true;
-            OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
-            
+
+            if (SceneStarted) {
+                OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+            } else {
+                Notifications.Instance.ShowToastMessage("End effectors will be shown after going online");
+            }
+
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
             return true;
         }
