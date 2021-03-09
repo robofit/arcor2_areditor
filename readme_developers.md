@@ -48,6 +48,11 @@
  - in Unity, go to Project Settings -> XR -> ARCore Extensions and change Android Authentication Strategy from "Keyless" to "Api Key"
 
 ### Building
- - when building for Android: go to Project Settings -> Player -> Other Settings and add "AR_ON" to Scripting Define Symbols
- - when building for Unity editor (no matter which platform): Remove "AR_ON" from Scripting Define Symbols in Project Settings -> Player -> Other Settings
+ - when platform is set to Android - building .apk or want to use AR Foundation Remote:  
+   - Add "AR_ON" to Scripting Define Symbols in Project Settings -> Player -> Other Settings
+ -  when platform is set to Android - running play mode in Unity:  
+    - Remove "AR_ON" from Scripting Define Symbols in Project Settings -> Player -> Other Settings
+ - when platform is set to Standalone:  
+    - No need of (un)setting "AR_ON" in Scripting Define Symbols, it is ignored
+ - note: IL2CPP scripting backend is meant mainly for releases, while for faster development cycle the Mono backend is suitable (can be changed in Project Settings -> Player -> Other Settings)
  
