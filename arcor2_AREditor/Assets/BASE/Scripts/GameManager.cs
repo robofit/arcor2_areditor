@@ -1758,6 +1758,15 @@ namespace Base {
         }
 
         /// <summary>
+        /// Activates/Disactivates the Scene and calls all necessary methods (Selector menu update).
+        /// </summary>
+        /// <param name="active"></param>
+        public void SceneSetActive(bool active) {
+            Scene.SetActive(active);
+            SelectorMenu.Instance.ForceUpdateMenus();
+        }
+
+        /// <summary>
         /// Helper method to create button
         /// </summary>
         /// <param name="parent">Parent GUI element</param>

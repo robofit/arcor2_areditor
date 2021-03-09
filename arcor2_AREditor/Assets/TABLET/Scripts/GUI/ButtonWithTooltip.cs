@@ -22,9 +22,9 @@ public class ButtonWithTooltip : MonoBehaviour {
     public void SetInteractivity(bool interactable) {
         Button.interactable = interactable;
         if (interactable) {
-            tooltip.ShowDefaultDescription();
+            tooltip.DisplayAlternativeDescription = false;
         } else {
-            tooltip.ShowAlternativeDescription();
+            tooltip.DisplayAlternativeDescription = true;
         }
     }
 
@@ -36,7 +36,7 @@ public class ButtonWithTooltip : MonoBehaviour {
 
     public void SetDescription(string description) {
         tooltip.Description = description;
-        tooltip.ShowDefaultDescription();
+        tooltip.DisplayAlternativeDescription = false;
     }
 
     public void HideTooltip() {

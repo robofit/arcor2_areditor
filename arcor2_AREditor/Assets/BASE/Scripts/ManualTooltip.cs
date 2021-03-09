@@ -43,7 +43,7 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
-    public void ShowDefaultDescription() {
+    private void ShowDefaultDescription() {
         if (string.IsNullOrEmpty(Description)) {
             tooltipContent.enabled = false;
         } else {
@@ -52,7 +52,7 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
-    public void ShowAlternativeDescription() {        
+    private void ShowAlternativeDescription() {
         if (string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
         } else {
