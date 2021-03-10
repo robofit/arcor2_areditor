@@ -1148,13 +1148,14 @@ namespace Base {
         public void HighlightOrientation(string orientationId, bool highlight) {
             if (!Valid)
                 return;
-            ActionPoint ap = GetActionPointWithOrientation(orientationId);
-            APOrientation orientation = ap.GetOrientationVisual(orientationId);
-            orientation.HighlightOrientation(highlight);
-        }
-
-
-        
+            try {
+                ActionPoint ap = GetActionPointWithOrientation(orientationId);
+                APOrientation orientation = ap.GetOrientationVisual(orientationId);
+                orientation.HighlightOrientation(highlight);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+        }        
 
     }
 
