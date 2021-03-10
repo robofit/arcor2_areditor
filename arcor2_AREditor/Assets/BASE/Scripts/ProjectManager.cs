@@ -1146,6 +1146,8 @@ namespace Base {
         }
 
         public void HighlightOrientation(string orientationId, bool highlight) {
+            if (!Valid)
+                return;
             ActionPoint ap = GetActionPointWithOrientation(orientationId);
             APOrientation orientation = ap.GetOrientationVisual(orientationId);
             orientation.HighlightOrientation(highlight);
