@@ -2413,7 +2413,31 @@ namespace Base {
 
 
 
+    public async Task WriteLock(string objId, bool lockTree) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.WriteLockRequestArgs args = new WriteLockRequestArgs(lockTree: lockTree, objectId: objId);
+            
+            IO.Swagger.Model.WriteLockRequest request = new IO.Swagger.Model.WriteLockRequest(r_id, "WriteLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.WriteLockResponse response = await WaitForResult<IO.Swagger.Model.WriteLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            } 
+    }    
+
+    public async Task WriteUnlock(string objId) {
+        int r_id = Interlocked.Increment(ref requestID);
+        IO.Swagger.Model.WriteUnlockRequestArgs args = new WriteUnlockRequestArgs(objectId: objId);
+
+        IO.Swagger.Model.WriteUnlockRequest request = new IO.Swagger.Model.WriteUnlockRequest(r_id, "WriteUnlock", args: args);
+        SendDataToServer(request.ToJson(), r_id, true);
+        IO.Swagger.Model.WriteUnlockResponse response = await WaitForResult<IO.Swagger.Model.WriteUnlockResponse>(r_id);
+        if (response == null || !response.Result) {
+            throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+        }
     }
+
+}
 
 
 }
