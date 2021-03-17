@@ -289,4 +289,17 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         CollapseBtn.gameObject.SetActive(true);
         ExpandBtn.gameObject.SetActive(false);
     }
+
+
+
+    public async void HideMenu() {
+        if (CurrentActionPoint == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentActionPoint.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
+            return;
+        }
+    }
 }

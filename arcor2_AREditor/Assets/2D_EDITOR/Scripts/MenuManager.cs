@@ -117,6 +117,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     // no menus are opened, scene should be interactable
                     // invoke an event from GameManager to let everyone know, that scene is interactable
                     GameManager.Instance.InvokeSceneInteractable(true);
+                    if (menu == ActionPointMenu) {
+                        ActionPointMenu.GetComponent<ActionPointMenu>().HideMenu();
+                    }
                 }
                 break;
         }

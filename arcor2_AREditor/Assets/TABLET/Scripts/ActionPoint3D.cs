@@ -27,7 +27,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
         if (manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
                 if (!tfGizmo.isTransforming && updatePosition) {
@@ -41,6 +41,12 @@ public class ActionPoint3D : Base.ActionPoint {
 
             } else {
                 manipulationStarted = false;
+                try {
+                    await WebsocketManager.Instance.WriteUnlock(GetId());
+                } catch (RequestFailedException ex) {
+                    Notifications.Instance.ShowNotification("Failed to revoke manipulation lock of AP", ex.Message);
+                    return;
+                }
             }
         }
             
@@ -67,6 +73,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        return;
         if (!enabled)
             return;
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
@@ -227,7 +234,13 @@ public class ActionPoint3D : Base.ActionPoint {
             sphereMaterial.color = Color.gray;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to open AP menu", ex.Message);
+            return;
+        }
         ShowMenu();
     }
 
@@ -236,6 +249,12 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), true);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to invoke manipulation of AP", ex.Message);
+            return;
+        }
         tfGizmo.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
