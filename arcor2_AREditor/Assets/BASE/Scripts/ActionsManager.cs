@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using IO.Swagger.Model;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace Base {
 
@@ -126,13 +127,13 @@ namespace Base {
 
         }
 
-        public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
+        public void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
-                await UpdateActionsOfActionObject(m);
+                UpdateActionsOfActionObject(m);
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
                 actionObjectsMetadata.Add(obj.Type, m);
@@ -142,14 +143,14 @@ namespace Base {
             OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(added));
         }
 
-        public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
+        public void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
             List<string> updated = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
                     actionObjectMetadata.Update(obj);
-                    await UpdateActionsOfActionObject(actionObjectMetadata);
+                    UpdateActionsOfActionObject(actionObjectMetadata);
                     updated.Add(obj.Type);
                 } else {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
@@ -159,7 +160,7 @@ namespace Base {
         }
         
 
-        private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
+        private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
                 try {
                     actionObject.ActionsMetadata = ParseActions(await WebsocketManager.Instance.GetActions(actionObject.Type));
@@ -208,12 +209,12 @@ namespace Base {
             
         }
 
-        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
+        public void UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
-                await UpdateActionsOfActionObject(m);
+                UpdateActionsOfActionObject(m);
                 actionObjectsMetadata.Add(metadata.Type, m);
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
@@ -221,6 +222,7 @@ namespace Base {
                 kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
             }
             enabled = true;
+
             ActionObjectsLoaded = true;
             OnActionObjectsUpdated?.Invoke(this, new Base.StringListEventArgs(new List<string>()));
         }

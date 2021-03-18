@@ -434,6 +434,10 @@ namespace Base {
             
         }
 
+        private void Update() {
+            websocket.DispatchMessageQueue();
+        }
+
         /// <summary>
         /// Handles changes on project
         /// </summary>

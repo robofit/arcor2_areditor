@@ -535,19 +535,23 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void UpdateRemoveBtns() {
+    public void UpdateRemoveBtns() {
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
             return;
         }
         foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b == null || b.RemoveBtn == null)
                 return;
-            try {
-                await WebsocketManager.Instance.DeleteObjectType(b.GetLabel(), true);
-                b.RemoveBtn.SetInteractivity(true);
-            } catch (RequestFailedException ex) {
-                b.RemoveBtn.SetInteractivity(false, ex.Message);
-            }
+            UpdateRemoveBtn(b);
+        }
+    }
+
+    public async void UpdateRemoveBtn(ActionObjectButton actionObjectButton) {
+        try {
+            await WebsocketManager.Instance.DeleteObjectType(actionObjectButton.GetLabel(), true);
+            actionObjectButton.RemoveBtn.SetInteractivity(true);
+        } catch (RequestFailedException ex) {
+            actionObjectButton.RemoveBtn.SetInteractivity(false, ex.Message);
         }
     }
 
