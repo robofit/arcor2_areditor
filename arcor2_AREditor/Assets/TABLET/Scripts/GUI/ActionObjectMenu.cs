@@ -50,6 +50,17 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
             UpdateMenu();
     }
 
+    internal async void HideMenu() {
+        if (CurrentObject == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentObject.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock action object menu", ex.Message);
+            return;
+        }
+    }
+
 
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response =

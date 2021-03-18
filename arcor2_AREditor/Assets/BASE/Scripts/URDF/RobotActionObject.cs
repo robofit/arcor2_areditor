@@ -82,7 +82,7 @@ namespace Base {
             _ = DisableVisualisationOfEE();
         }
 
-        protected override void Update() {
+        protected override async void Update() {
             if (manipulationStarted) {
                 if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
                     if (!TransformGizmo.Instance.isTransforming && updatePose) {
@@ -103,6 +103,12 @@ namespace Base {
                     if (eeVisible)
                         ShowRobotEE();
                     manipulationStarted = false;
+                    try {
+                        await WebsocketManager.Instance.WriteUnlock(GetId());
+                    } catch (RequestFailedException ex) {
+                        Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+                        return;
+                    }
                 }
 
             }
@@ -639,7 +645,13 @@ namespace Base {
             }
         }
 
-        public override void OpenMenu() {
+        public override async void OpenMenu() {
+            try {
+                await WebsocketManager.Instance.WriteLock(GetId(), false);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+                return;
+            }
             TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -656,7 +668,13 @@ namespace Base {
             return true;
         }
 
-        public override void StartManipulation() {
+        public override async void StartManipulation() {
+            try {
+                await WebsocketManager.Instance.WriteLock(GetId(), true);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+                return;
+            }
             TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();

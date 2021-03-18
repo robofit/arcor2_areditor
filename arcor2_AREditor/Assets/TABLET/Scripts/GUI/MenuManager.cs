@@ -134,6 +134,10 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     GameManager.Instance.InvokeSceneInteractable(true);
                     if (menu == ActionPointMenu) {
                         ActionPointMenu.GetComponent<ActionPointMenu>().HideMenu();
+                    } else if (menu == ActionObjectMenuSceneEditor) {
+                        ActionObjectMenuSceneEditor.GetComponent<ActionObjectMenuSceneEditor>().HideMenu();
+                    } else if (menu == ActionObjectMenuProjectEditor) {
+                        ActionObjectMenuProjectEditor.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
                     }
                 }
                 break;

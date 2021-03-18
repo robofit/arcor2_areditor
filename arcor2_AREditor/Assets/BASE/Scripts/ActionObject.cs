@@ -300,6 +300,7 @@ namespace Base {
         }
     }
 
+
     public async override void Remove() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
             await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
@@ -311,7 +312,6 @@ namespace Base {
     }
 
     
-
 
 
 }
