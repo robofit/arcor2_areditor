@@ -271,7 +271,10 @@ namespace Base {
             return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
     }
 
+
     }
+
+    
 
    
 

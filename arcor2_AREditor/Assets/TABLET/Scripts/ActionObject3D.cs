@@ -44,7 +44,7 @@ public class ActionObject3D : ActionObject {
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
 
         if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
@@ -59,6 +59,12 @@ public class ActionObject3D : ActionObject {
 
             } else {
                 manipulationStarted = false;
+                try {
+                    await WebsocketManager.Instance.WriteUnlock(GetId());
+                } catch (RequestFailedException ex) {
+                    Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+                    return;
+                }
             }
 
         }
@@ -396,7 +402,13 @@ public class ActionObject3D : ActionObject {
             modelMaterial.color = Color.gray;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+            return;
+        }
         tfGizmo.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -414,6 +426,12 @@ public class ActionObject3D : ActionObject {
     }
 
     public async override void StartManipulation() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), true);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+            return;
+        }
         tfGizmo.ClearTargets();
         try {
             await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);

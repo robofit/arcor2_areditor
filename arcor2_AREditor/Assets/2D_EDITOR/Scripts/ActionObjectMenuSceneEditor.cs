@@ -128,6 +128,8 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         UpdateModelOnEE();
     }
 
+    
+
     private void OnEEChanged(string eeId) {
         UpdateModelOnEE();
     }

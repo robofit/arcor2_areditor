@@ -61,9 +61,9 @@ public class InputHandler : Singleton<InputHandler> {
         // Middle Button
         else if (Input.GetMouseButtonDown(2)) {
             TryToRaycast(Clickable.Click.MOUSE_MIDDLE_BUTTON);
-        } else {
+        } /*else {
             TryToRaycast(Clickable.Click.MOUSE_HOVER);
-        }
+        }*/
     }
 
     private void TryToRaycast(Clickable.Click clickType) {
