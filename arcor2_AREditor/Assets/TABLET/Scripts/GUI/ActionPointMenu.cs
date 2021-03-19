@@ -33,7 +33,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     private InputDialog inputDialog;
 
     [SerializeField]
-    private ActionPointAimingMenu ActionPointAimingMenu;
+    public ActionPointAimingMenu ActionPointAimingMenu;
 
     private ManualTooltip UntieBtnTooltip;
 

@@ -75,7 +75,7 @@ public class APOrientation : InteractiveObject {
         return OrientationId;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
         ActionPoint.ShowAimingMenu(OrientationId);
         HighlightOrientation(true);
     }

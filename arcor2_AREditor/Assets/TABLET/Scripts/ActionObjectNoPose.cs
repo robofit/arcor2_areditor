@@ -46,7 +46,13 @@ public class ActionObjectNoPose : ActionObject {
         // should not do anything
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+            return;
+        }
         TransformGizmo.Instance.ClearTargets();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = this;

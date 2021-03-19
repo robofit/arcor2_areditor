@@ -594,6 +594,8 @@ namespace Base {
 
         internal void ShowAimingMenu(string orientationId) {
             OpenMenu();
+            actionPointMenu.CurrentActionPoint = this;
+            actionPointMenu.ActionPointAimingMenu.CurrentActionPoint = this;
             actionPointMenu.OpenActionPointAimingMenu(orientationId);
         }
 

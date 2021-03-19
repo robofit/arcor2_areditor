@@ -427,7 +427,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
+    public async void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
+        CurrentActionPoint = currentActionPoint;
         this.orientation = orientation;
         this.isOrientationDetail = true;
 
@@ -435,6 +436,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
+        CurrentActionPoint = currentActionPoint;
+
         this.joints = joints;
         isOrientationDetail = false;
         try {
@@ -463,4 +466,17 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         UpdateMenu();
         SideMenu.Open();
     }
+
+    public async void HideMenu() {
+        if (CurrentActionPoint == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentActionPoint.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
+            return;
+        }
+    }
+
+
 }
