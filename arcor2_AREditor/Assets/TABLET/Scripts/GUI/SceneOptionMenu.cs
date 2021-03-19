@@ -4,6 +4,7 @@ using System;
 using Base;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using glTFLoader2.Schema;
 
 public class SceneOptionMenu : TileOptionMenu {
 
@@ -32,14 +33,29 @@ public class SceneOptionMenu : TileOptionMenu {
         Close();
     }
 
-    public void ShowRenameDialog() {
+    public async void ShowRenameDialog() {
+        try {
+            await WebsocketManager.Instance.ReadLock(sceneTile.SceneId);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock scene", ex.Message);
+            return;
+        }
         inputDialog.Open("Rename scene",
                          "",
                          "New name",
                          sceneTile.GetLabel(),
                          () => RenameScene(inputDialog.GetValue()),
-                         () => inputDialog.Close(),
+                         () => CloseRenameDialog(),
                          validateInput: ValidateSceneNameAsync);
+    }
+
+    private async void CloseRenameDialog() {
+        try {
+            await WebsocketManager.Instance.ReadUnlock(sceneTile.SceneId);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock scene", ex.Message);
+        }
+        inputDialog.Close();
     }
 
     public async Task<RequestResult> ValidateSceneNameAsync(string newName) {
@@ -62,6 +78,11 @@ public class SceneOptionMenu : TileOptionMenu {
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
         } finally {
+            try {
+                await WebsocketManager.Instance.ReadUnlock(sceneTile.SceneId);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to unlock scene", ex.Message);
+            }
             Base.GameManager.Instance.HideLoadingScreen();
         }        
     }
