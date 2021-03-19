@@ -8,6 +8,7 @@ using DanielLochner.Assets.SimpleSideMenu;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using System.Linq;
+using Newtonsoft.Json;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
@@ -220,7 +221,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public async void RemoveActionObject(string type) {
         try {
-            await WebsocketManager.Instance.DeleteObjectType(type, false);
+            await WebsocketManager.Instance.DeleteObjectType(type);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to remove object type.", ex.Message);
             Debug.LogError(ex);
@@ -542,16 +543,17 @@ public class MainMenu : MonoBehaviour, IMenu {
         foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
             if (b == null || b.RemoveBtn == null)
                 return;
-            UpdateRemoveBtn(b);
+            WebsocketManager.Instance.DeleteObjectTypeDryRun(b.GetLabel(), UpdateRemoveBtnCallback);
         }
     }
 
-    public async void UpdateRemoveBtn(ActionObjectButton actionObjectButton) {
-        try {
-            await WebsocketManager.Instance.DeleteObjectType(actionObjectButton.GetLabel(), true);
-            actionObjectButton.RemoveBtn.SetInteractivity(true);
-        } catch (RequestFailedException ex) {
-            actionObjectButton.RemoveBtn.SetInteractivity(false, ex.Message);
+    public void UpdateRemoveBtnCallback(string id, string data) {
+        IO.Swagger.Model.DeleteObjectTypeResponse deleteObjectTypeResponse =
+            JsonConvert.DeserializeObject<IO.Swagger.Model.DeleteObjectTypeResponse>(data);
+        foreach (ActionObjectButton b in ActionObjectsContent.GetComponentsInChildren<ActionObjectButton>()) {
+            if (b != null && b.RemoveBtn != null && deleteObjectTypeResponse != null && id == b.GetLabel())
+                b.RemoveBtn.SetInteractivity(deleteObjectTypeResponse.Result,
+                    deleteObjectTypeResponse.Messages != null && deleteObjectTypeResponse.Messages.Count > 0 ? deleteObjectTypeResponse.Messages[0] : "");
         }
     }
 

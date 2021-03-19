@@ -5,6 +5,7 @@ using UnityEngine;
 using IO.Swagger.Model;
 using System.Threading.Tasks;
 using System.Collections;
+using Newtonsoft.Json;
 
 namespace Base {
 
@@ -160,19 +161,27 @@ namespace Base {
         }
         
 
-        private async void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
+        private void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
                 try {
-                    actionObject.ActionsMetadata = ParseActions(await WebsocketManager.Instance.GetActions(actionObject.Type));
-                    if (actionObject.ActionsMetadata == null) {
-                        actionObject.Disabled = true;
-                        actionObject.Problem = "Failed to load actions";
-                    }
-                    actionObject.ActionsLoaded = true;
+                    WebsocketManager.Instance.GetActions(actionObject.Type, GetActionsCallback);                    
                 } catch (RequestFailedException e) {
-                    Debug.LogError("Failed to load action for object " + name);
-                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + name);                    
+                    Debug.LogError("Failed to load action for object " + actionObject.Type);
+                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + actionObject.Type);
+                    Notifications.Instance.SaveLogs();
                 }            
+        }
+
+        public void GetActionsCallback(string actionName, string data) {
+            IO.Swagger.Model.GetActionsResponse getActionsResponse = JsonConvert.DeserializeObject<IO.Swagger.Model.GetActionsResponse>(data);
+            if (actionObjectsMetadata.TryGetValue(actionName, out ActionObjectMetadata actionObject)) {
+                actionObject.ActionsMetadata = ParseActions(getActionsResponse.Data);
+                if (actionObject.ActionsMetadata == null) {
+                    actionObject.Disabled = true;
+                    actionObject.Problem = "Failed to load actions";
+                }
+                actionObject.ActionsLoaded = true;
+            }
         }
         
 

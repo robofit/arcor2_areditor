@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NativeWebSocket;
 using IO.Swagger.Model;
 using UnityEditor;
+using UnityEngine.Events;
 
 namespace Base {
 
@@ -24,6 +25,7 @@ namespace Base {
         /// Dictionary of unprocessed responses
         /// </summary>
         private Dictionary<int, string> responses = new Dictionary<int, string>();
+        private Dictionary<int, Tuple<string, UnityAction<string, string>>> responsesCallback = new Dictionary<int, Tuple<string, UnityAction<string, string>>>();
         /// <summary>
         /// Requset id pool
         /// </summary>
@@ -272,8 +274,8 @@ namespace Base {
 
                 if (responses.ContainsKey(dispatch.id)) {
                     responses[dispatch.id] = data;
-                } else {
-                    // TODO: response to unknown request
+                } else if (responsesCallback.TryGetValue(dispatch.id, out Tuple<string, UnityAction<string, string>> callbackData)) {
+                    callbackData.Item2.Invoke(callbackData.Item1, data);
                 }
                    
             } else if (dispatch.@event != null) {
@@ -435,7 +437,8 @@ namespace Base {
         }
 
         private void Update() {
-            websocket.DispatchMessageQueue();
+            if (websocket != null && websocket.State == WebSocketState.Open)
+                websocket.DispatchMessageQueue();
         }
 
         /// <summary>
@@ -971,14 +974,10 @@ namespace Base {
         /// </summary>
         /// <param name="name">Object type</param>
         /// <returns>List of actions</returns>
-        public async Task<List<IO.Swagger.Model.ObjectAction>> GetActions(string name) {
+        public void GetActions(string name, UnityAction<string, string> callback) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.GetActionsRequest(id: id, request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: name)).ToJson(), id, true);
-            IO.Swagger.Model.GetActionsResponse response = await WaitForResult<IO.Swagger.Model.GetActionsResponse>(id);
-            if (response != null && response.Result)
-                return response.Data;
-            else
-                throw new RequestFailedException("Failed to load actions for object/service " + name);
+            responsesCallback.Add(id, Tuple.Create(name, callback));
+            SendDataToServer(new IO.Swagger.Model.GetActionsRequest(id: id, request: "GetActions", args: new IO.Swagger.Model.TypeArgs(type: name)).ToJson(), id, false);
         }
 
         /// <summary>
@@ -1307,15 +1306,23 @@ namespace Base {
         /// <param name="type">Action object type</param>
         /// <param name="dryRun">If true, validates all parameters, but will not execute requested action itself.</param>
         /// <returns></returns>
-        public async Task DeleteObjectType(string type, bool dryRun) {
+        public async Task DeleteObjectType(string type) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
-            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: dryRun);
+            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: false);
             SendDataToServer(request.ToJson(), r_id, true);
             RemoveFromSceneResponse response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
+        }
+
+        public void DeleteObjectTypeDryRun(string type, UnityAction<string, string> callback) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
+            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: true);
+            responsesCallback.Add(r_id, Tuple.Create(type, callback));
+            SendDataToServer(request.ToJson(), r_id, false);
         }
 
         /// <summary>
