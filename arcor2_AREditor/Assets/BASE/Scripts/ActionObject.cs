@@ -38,7 +38,6 @@ namespace Base {
             } else {
                 
             }
-            Debug.LogError(transform.localPosition);
             Data.Id = uuid;
             
             CreateModel(customCollisionModels);

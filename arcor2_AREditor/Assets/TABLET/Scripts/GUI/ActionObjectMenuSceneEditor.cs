@@ -76,19 +76,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             return;
         if (SceneManager.Instance.RobotInScene()) {
             await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-            string robotId = null;
-            try {
-                robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-                robotId = null;
-            }
-            if (string.IsNullOrEmpty(robotId)) {
-                Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-
-            } else {
-                OnRobotChanged(robotId);
-            }
+            OnRobotChanged(RobotsList.GetValue().ToString());
 
             if (CurrentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 UpdatePositionBlockVO.SetActive(false);
@@ -122,9 +110,24 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         
     }
 
-    private async void OnRobotChanged(string robot_id) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="robot_name"></param>
+    private async void OnRobotChanged(string robot_name) {
         EndEffectorList.Dropdown.dropdownItems.Clear();
-        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robot_id, OnEEChanged);
+        string robotId = null;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+        }
+        if (string.IsNullOrEmpty(robotId)) {
+            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+
+        }
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnEEChanged);
         UpdateModelOnEE();
     }
 
