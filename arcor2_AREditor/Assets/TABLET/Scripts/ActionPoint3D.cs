@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using IO.Swagger.Model;
 using TMPro;
+using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -13,7 +14,6 @@ public class ActionPoint3D : Base.ActionPoint {
     private Material sphereMaterial;
 
     private bool manipulationStarted = false;
-    private TransformGizmo tfGizmo;
 
     private float interval = 0.1f;
     private float nextUpdate = 0;
@@ -29,13 +29,13 @@ public class ActionPoint3D : Base.ActionPoint {
 
     protected override async void Update() {
         if (manipulationStarted) {
-            if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
-                if (!tfGizmo.isTransforming && updatePosition) {
+            if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, Sphere)) {
+                if (!TransformGizmo.Instance.isTransforming && updatePosition) {
                     updatePosition = false;
                     UpdatePose();
                 }
 
-                if (tfGizmo.isTransforming)
+                if (TransformGizmo.Instance.isTransforming)
                     updatePosition = true;
 
 
@@ -89,7 +89,7 @@ public class ActionPoint3D : Base.ActionPoint {
             return;
         }
 
-        tfGizmo.ClearTargets();
+        TransformGizmo.Instance.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
@@ -221,7 +221,6 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
-        tfGizmo = TransformGizmo.Instance;
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
@@ -242,6 +241,7 @@ public class ActionPoint3D : Base.ActionPoint {
             return;
         }
         ShowMenu();
+
     }
 
     public override bool HasMenu() {
@@ -255,7 +255,7 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowNotification("Failed to invoke manipulation of AP", ex.Message);
             return;
         }
-        tfGizmo.ClearTargets();
+        TransformGizmo.Instance.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {
@@ -266,7 +266,7 @@ public class ActionPoint3D : Base.ActionPoint {
                 Debug.LogWarning("Turning on gizmo overlay");
                 manipulationStarted = true;
                 updatePosition = false;
-                tfGizmo.AddTarget(Sphere.transform);
+                TransformGizmo.Instance.AddTarget(Sphere.transform);
                 outlineOnClick.GizmoHighlight();
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);

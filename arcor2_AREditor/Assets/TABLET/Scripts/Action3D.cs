@@ -136,7 +136,13 @@ public class Action3D : Base.Action {
         return Data.Name;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to open action menu", ex.Message);
+            return;
+        }
         ActionMenu.Instance.CurrentAction = this;
         MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         selected = true;

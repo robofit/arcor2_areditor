@@ -150,6 +150,17 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
+    internal async void HideMenu() {
+        if (CurrentAction == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentAction.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
+            return;
+        }
+    }
+
     public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
