@@ -2393,6 +2393,29 @@ namespace Base {
             throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
         }
     }
+    public async Task ReadLock(string objId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ReadLockRequestArgs args = new ReadLockRequestArgs(objectId: objId);
+            
+            IO.Swagger.Model.ReadLockRequest request = new IO.Swagger.Model.ReadLockRequest(r_id, "ReadLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ReadLockResponse response = await WaitForResult<IO.Swagger.Model.ReadLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            } 
+    }    
+
+    public async Task ReadUnlock(string objId) {
+        int r_id = Interlocked.Increment(ref requestID);
+        IO.Swagger.Model.ReadUnlockRequestArgs args = new ReadUnlockRequestArgs(objectId: objId);
+
+        IO.Swagger.Model.ReadUnlockRequest request = new IO.Swagger.Model.ReadUnlockRequest(r_id, "ReadUnlock", args: args);
+        SendDataToServer(request.ToJson(), r_id, true);
+        IO.Swagger.Model.ReadUnlockResponse response = await WaitForResult<IO.Swagger.Model.ReadUnlockResponse>(r_id);
+        if (response == null || !response.Result) {
+            throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+        }
+    }
 
 }
 
