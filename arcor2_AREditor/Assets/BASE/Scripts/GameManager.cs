@@ -933,7 +933,7 @@ namespace Base {
         public async Task UpdateActionObjects() {
             try {
                 List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-                await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
+                ActionsManager.Instance.UpdateObjects(objectTypeMetas);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to update action objects");

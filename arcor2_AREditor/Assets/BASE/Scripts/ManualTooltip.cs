@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.EventSystems;
+using RuntimeInspectorNamespace;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
@@ -44,6 +45,8 @@ public class ManualTooltip : MonoBehaviour {
     }
 
     private void ShowDefaultDescription() {
+        if (tooltipContent == null)
+            return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(Description)) {
             tooltipContent.enabled = false;
         } else {
@@ -53,6 +56,8 @@ public class ManualTooltip : MonoBehaviour {
     }
 
     private void ShowAlternativeDescription() {
+        if (tooltipContent == null)
+            return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
         } else {
