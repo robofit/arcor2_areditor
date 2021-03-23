@@ -1792,11 +1792,16 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                Position position = DataHelper.Vector3ToPosition(point);
                 ProjectManager.Instance.SelectAPNameWhenCreated = name;
-                await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                if (string.IsNullOrEmpty(parent)) {
+                    Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                    Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                    Position position = DataHelper.Vector3ToPosition(point);
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                } else {
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, new Position());
+                }
+                
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
