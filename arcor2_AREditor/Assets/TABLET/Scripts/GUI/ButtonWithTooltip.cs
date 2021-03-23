@@ -20,30 +20,40 @@ public class ButtonWithTooltip : MonoBehaviour {
 
 
     public void SetInteractivity(bool interactable) {
+        if (Button == null)
+            return;
         Button.interactable = interactable;
         if (interactable) {
-            tooltip.ShowDefaultDescription();
+            tooltip.DisplayAlternativeDescription = false;
         } else {
-            tooltip.ShowAlternativeDescription();
+            tooltip.DisplayAlternativeDescription = true;
         }
     }
 
     public void SetInteractivity(bool interactable, string alternativeDescription) {
+        if (tooltip == null)
+            return;
         tooltip.DescriptionAlternative = alternativeDescription;
         SetInteractivity(interactable);
         
     }
 
     public void SetDescription(string description) {
+        if (tooltip == null)
+            return;
         tooltip.Description = description;
-        tooltip.ShowDefaultDescription();
+        tooltip.DisplayAlternativeDescription = false;
     }
 
     public void HideTooltip() {
+        if (TooltipContent == null)
+            return;
         TooltipContent.tooltipAnimator.Play("Out");
     }
 
     public bool IsInteractive() {
+        if (Button == null)
+            return false;
         return Button.interactable;
     }
 

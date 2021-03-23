@@ -63,7 +63,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         CalibrationElementsToggle.interactable = false;
         CalibrationElementsToggle.isOn = true;
         calibrationElementsTooltip = CalibrationElementsToggle.GetComponent<ManualTooltip>();
-        calibrationElementsTooltip.ShowAlternativeDescription();
+        calibrationElementsTooltip.DisplayAlternativeDescription = true;
 #endif
         ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
         GameManager.Instance.OnGameStateChanged += GameStateChanged;
@@ -112,7 +112,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 #if UNITY_ANDROID && AR_ON
         // Activate toggle to enable hiding/displaying calibration cube
         CalibrationElementsToggle.interactable = true;
-        calibrationElementsTooltip.ShowDefaultDescription();
+        calibrationElementsTooltip.DisplayAlternativeDescription = false;
 #endif
     }
 
@@ -121,7 +121,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 #if UNITY_ANDROID && AR_ON
         // Disactivate toggle to disable hiding/displaying calibration cube
         CalibrationElementsToggle.interactable = false;
-        calibrationElementsTooltip.ShowAlternativeDescription();
+        calibrationElementsTooltip.DisplayAlternativeDescription = true;
 #endif
     }
 
