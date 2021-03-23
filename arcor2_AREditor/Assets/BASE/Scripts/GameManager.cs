@@ -130,7 +130,10 @@ namespace Base {
         /// Holds current editor state
         /// </summary>
         private EditorStateEnum editorState;
-
+        /// <summary>
+        /// Prefab for transform gizmo
+        /// </summary>
+        public GameObject GizmoPrefab;
         /// <summary>
         /// Loading screen with animation
         /// </summary>

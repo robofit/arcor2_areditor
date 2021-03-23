@@ -31,6 +31,8 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     public GameObject DummyBoxing;
 
+    private GameObject gizmo;
+
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
@@ -276,8 +278,8 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
-        RobotTabletBtn.SetInteractivity(true);
-        RotateTranslateBtn.SetInteractivity(true);
+        RobotTabletBtn.SetInteractivity(SceneManager.Instance.SceneStarted);
+        RotateTranslateBtn.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D));
         DummyBoxing.SetActive(false);
         offsetPosition = Vector3.zero;
         ResetTransformWheel();
@@ -288,6 +290,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {
             model = ((ActionPoint3D) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(false);
+            model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
         } else if (interactiveObject.GetType() == typeof(ActionObject3D)) {
             model = ((ActionObject3D) interactiveObject).GetModelCopy();
         } 
@@ -295,20 +298,19 @@ public class TransformMenu : Singleton<TransformMenu> {
             Hide();
             return;
         }
-        
-        
-        GameManager.Instance.Gizmo.transform.SetParent(model.transform);
-        GameManager.Instance.Gizmo.transform.localPosition = Vector3.zero;
-        GameManager.Instance.Gizmo.transform.localRotation = Quaternion.identity;
-        GameManager.Instance.Gizmo.SetActive(true);
+        if (gizmo == null)
+            gizmo = Instantiate(GameManager.Instance.GizmoPrefab, model.transform);
+        else
+            gizmo.transform.SetParent(model.transform);
+        gizmo.transform.localPosition = Vector3.zero;
+        gizmo.transform.localRotation = Quaternion.identity;
+        gizmo.SetActive(true);
         enabled = true;
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
     public void Hide() {
         InteractiveObject = null;
-        GameManager.Instance.Gizmo.SetActive(false);
-        GameManager.Instance.Gizmo.transform.SetParent(GameManager.Instance.Scene.transform);
         Destroy(model);
         model = null;
         enabled = false;
@@ -417,7 +419,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public async void RobotStep(float step) {
-        if (RobotTabletBtn.CurrentState == "robot" && endEffector != null) {
+        /*if (RobotTabletBtn.CurrentState == "robot" && endEffector != null) {
             IO.Swagger.Model.Position position = endEffector.Position;
             Vector3 offset = Vector3.zero;
 
@@ -459,6 +461,6 @@ public class TransformMenu : Singleton<TransformMenu> {
                 }
             }
 
-        }
+        }*/
     }
 }
