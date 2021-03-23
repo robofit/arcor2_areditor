@@ -47,7 +47,8 @@ Shader "Unlit/GridOverlay"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = mul(unity_ObjectToWorld, v.vertex).xz;
+                //o.uv = mul(unity_ObjectToWorld, v.vertex).xz;
+                o.uv = v.vertex.xz;
                 return o;
             }
 
@@ -58,7 +59,7 @@ Shader "Unlit/GridOverlay"
 
                 float2 gUV = uv / sz + aaThresh;
 
-                float2 fl = floor(gUV);
+                //float2 fl = floor(gUV);
                 gUV = frac(gUV);
                 gUV -= aaThresh;
                 gUV = smoothstep(aaThresh, aaMin, abs(gUV));
