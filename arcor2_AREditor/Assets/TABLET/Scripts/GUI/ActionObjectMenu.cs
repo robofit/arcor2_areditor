@@ -100,13 +100,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
                 Destroy(o.gameObject);
             }
         }
-
-       
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
-        
-
-
-        
     }
 
     protected abstract void UpdateSaveBtn();

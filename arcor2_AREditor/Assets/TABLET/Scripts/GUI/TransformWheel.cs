@@ -15,7 +15,8 @@ public class TransformWheel : MonoBehaviour
         TransformWheelItems.Clear();
         List.Init();
         foreach (Transform child in List.transform) {
-            GameObject.Destroy(child.gameObject);
+            if (child.gameObject.tag != "Persistent")
+                GameObject.Destroy(child.gameObject);
         }
         TransformWheelItem newItem = Instantiate(ItemPrefab, List.transform).GetComponent<TransformWheelItem>();
         newItem.SetValue(0);

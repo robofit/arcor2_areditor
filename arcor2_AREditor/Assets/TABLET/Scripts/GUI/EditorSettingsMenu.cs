@@ -129,7 +129,8 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void OnSceneChanged(object sender, EventArgs eventArgs) {
         foreach (Transform t in ActionObjectsList.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
         foreach (Base.ActionObject actionObject in Base.SceneManager.Instance.ActionObjects.Values) {
             GameObject btnGO = Instantiate(Base.GameManager.Instance.ButtonPrefab, ActionObjectsList.transform);
@@ -159,7 +160,8 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
 
     public void ClearMenu() {
         foreach (Transform t in ActionPointsList.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
     }
 
