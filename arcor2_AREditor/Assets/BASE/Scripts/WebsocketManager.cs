@@ -174,7 +174,6 @@ namespace Base {
             } catch (WebSocketException e) {
                 //already closed probably..
             }
-            CleanupAfterDisconnect();
         }
 
         /// <summary>
@@ -2367,6 +2366,30 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
             } else {
                 return response.Data;
+            }
+        }
+
+        public async Task HandTeachingMode(string robotId, bool enable) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.HandTeachingModeRequestArgs args = new HandTeachingModeRequestArgs(enable: enable, robotId: robotId);
+
+            IO.Swagger.Model.HandTeachingModeRequest request = new IO.Swagger.Model.HandTeachingModeRequest(r_id, "HandTeachingMode", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.HandTeachingModeResponse response = await WaitForResult<IO.Swagger.Model.HandTeachingModeResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to enable / disable hand teaching mode" } : response.Messages);
+            }
+        }
+
+        public async Task CopyActionPoint(string actionPointId, Position position) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CopyActionPointRequestArgs args = new CopyActionPointRequestArgs(id: actionPointId, position: position);
+
+            IO.Swagger.Model.CopyActionPointRequest request = new IO.Swagger.Model.CopyActionPointRequest(r_id, "CopyActionPoint", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CopyActionPointResponse response = await WaitForResult<IO.Swagger.Model.CopyActionPointResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to copy action point" } : response.Messages);
             }
         }
 

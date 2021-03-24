@@ -130,7 +130,10 @@ namespace Base {
         /// Holds current editor state
         /// </summary>
         private EditorStateEnum editorState;
-
+        /// <summary>
+        /// Prefab for transform gizmo
+        /// </summary>
+        public GameObject GizmoPrefab;
         /// <summary>
         /// Loading screen with animation
         /// </summary>
@@ -521,6 +524,7 @@ namespace Base {
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
@@ -556,6 +560,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
 
             }
@@ -580,7 +586,7 @@ namespace Base {
             }
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
         }
 
@@ -614,7 +620,7 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
@@ -625,15 +631,8 @@ namespace Base {
         /// <summary>
         /// Enables all visual elements (objects, actions etc.)
         /// </summary>
-        private void EnableEverything() {
-            ProjectManager.Instance.EnableAllActionPoints(true);
-            ProjectManager.Instance.EnableAllActionInputs(true);
-            ProjectManager.Instance.EnableAllActionOutputs(true);
-            ProjectManager.Instance.EnableAllActions(true);
-            ProjectManager.Instance.EnableAllOrientations(true);
-            ProjectManager.Instance.EnableAllRobotsEE(true);
-            SceneManager.Instance.EnableAllActionObjects(true);
-            EnableServiceInteractiveObjects(true);
+        private void RestoreFilters() {
+            SelectorMenu.Instance.UpdateFilters();
         }
 
         /// <summary>
@@ -717,9 +716,7 @@ namespace Base {
                     WebsocketManager.Instance.DisconnectFromSever();
                 }
             } else { //automatically connect again
-                if (LandingScreen.Instance.KeepConnected.isOn) {
-                    StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer()));
-                }
+                StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer(false)));
             }
         }
 #endif
@@ -1789,11 +1786,16 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                Position position = DataHelper.Vector3ToPosition(point);
                 ProjectManager.Instance.SelectAPNameWhenCreated = name;
-                await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                if (string.IsNullOrEmpty(parent)) {
+                    Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                    Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                    Position position = DataHelper.Vector3ToPosition(point);
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                } else {
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, new Position());
+                }
+                
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
