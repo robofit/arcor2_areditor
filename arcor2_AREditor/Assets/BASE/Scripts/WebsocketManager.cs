@@ -714,6 +714,7 @@ namespace Base {
             IO.Swagger.Model.ChangedObjectTypes objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypes>(data);
             switch (objectTypesChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
+                    ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
                         
                     break;
@@ -725,6 +726,7 @@ namespace Base {
                     break;
 
                 case ChangedObjectTypes.ChangeTypeEnum.Update:
+                    ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeUpdated?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
                     break;
                 default:
@@ -1224,14 +1226,11 @@ namespace Base {
         /// Throws RequestFailedException when request failed
         /// </summary>
         /// <returns>List of scenes metadata</returns>
-        public async Task<List<IO.Swagger.Model.ListScenesResponseData>> LoadScenes() {
-            int id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: id, request: "ListScenes");
-            SendDataToServer(request.ToJson(), id, true);
-            IO.Swagger.Model.ListScenesResponse response = await WaitForResult<IO.Swagger.Model.ListScenesResponse>(id);
-            if (response == null)
-                throw new RequestFailedException("Failed to load scenes");
-            return response.Data;
+        public void LoadScenes(UnityAction<string, string> callback) {
+            int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: r_id, request: "ListScenes");
+            SendDataToServer(request.ToJson(), r_id, false);            
         }
 
         /// <summary>
@@ -1239,14 +1238,12 @@ namespace Base {
         /// Throws RequestFailedException when request failed
         /// </summary>
         /// <returns>List of projects metadata</returns>
-        public async Task<List<IO.Swagger.Model.ListProjectsResponseData>> LoadProjects() {
+        public void LoadProjects(UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
             IO.Swagger.Model.ListProjectsRequest request = new IO.Swagger.Model.ListProjectsRequest(id: r_id, request: "ListProjects");
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ListProjectsResponse response = await WaitForResult<IO.Swagger.Model.ListProjectsResponse>(r_id);
-            if (response == null)
-                throw new RequestFailedException("Failed to load projects");
-            return response.Data;
+            SendDataToServer(request.ToJson(), r_id, false);
+
         }
 
         /// <summary>
@@ -1254,14 +1251,12 @@ namespace Base {
         /// Throws RequestFailedException when request failed
         /// </summary>
         /// <returns>List of packages metadata</returns>
-        public async Task<List<IO.Swagger.Model.PackageSummary>> LoadPackages() {
+        public void LoadPackages(UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
             IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.ListPackagesResponse response = await WaitForResult<IO.Swagger.Model.ListPackagesResponse>(r_id);
-            if (response == null)
-                throw new RequestFailedException("Failed to load packages");
-            return response.Data;
+            SendDataToServer(request.ToJson(), r_id, false);
+            
         }
 
         /// <summary>

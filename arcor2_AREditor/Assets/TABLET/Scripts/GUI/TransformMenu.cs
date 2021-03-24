@@ -230,7 +230,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (endEffector == null) {
             endEffector = FindObjectOfType<RobotEE>();
             if (endEffector == null) {
-                Notifications.Instance.ShowNotification("Robot not ready", "Scene not started");
+                Notifications.Instance.ShowNotification("Robot not ready", "Offline");
                 return;
             }
         }

@@ -52,11 +52,11 @@ namespace Base {
         private Shader transparentShader;
 
         private bool jointStateSubscribeIsValid = true;
-
+        private bool modelLoading = false;
 
         protected override void Start() {
             base.Start();
-            if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
                 _ = EnableVisualisationOfEE();
             }
         }
@@ -168,6 +168,7 @@ namespace Base {
                 } else {
                     // Robot is not loaded yet, let's wait for it to be loaded
                     UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                    modelLoading = true;
                 }
             }
 
@@ -186,6 +187,7 @@ namespace Base {
                 
                 // if robot is loaded, unsubscribe from UrdfManager event
                 UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+                modelLoading = false;
             }
         }
 
@@ -557,8 +559,14 @@ namespace Base {
         }
 
         public List<IO.Swagger.Model.Joint> GetJoints() {
-            if (RobotModel == null)
-                throw new RequestFailedException("Model not found for this robot.");
+            if (RobotModel == null) {
+                // if urdf model is still loading, return empty joint list
+                if (modelLoading) {
+                    return new List<IO.Swagger.Model.Joint>();
+                } else {
+                    throw new RequestFailedException("Model not found for this robot.");
+                }
+            }
             else
                 return RobotModel.GetJoints();
         }
@@ -567,6 +575,7 @@ namespace Base {
             base.DeleteActionObject();
             UnloadRobotModel();
             UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+            modelLoading = false;
         }
 
         private void UnloadRobotModel() {

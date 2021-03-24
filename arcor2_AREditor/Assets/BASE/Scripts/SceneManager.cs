@@ -172,6 +172,9 @@ namespace Base {
             } catch (RequestFailedException) {
                 WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
             }
+
+            (bool successClose, _) = await GameManager.Instance.CloseScene(false, true);
+            SceneChanged = !successClose;
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             Valid = true;
             return true;

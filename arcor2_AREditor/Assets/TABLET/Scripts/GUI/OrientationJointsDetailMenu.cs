@@ -96,7 +96,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             } else { //scene not started
                 OrientationBlock.SetActive(false);
 
-                updateButtonTooltip.description = "Scene is not started";
+                updateButtonTooltip.description = "Not available when offline";
                 moveRobotTooltip.description = updateButtonTooltip.description;
                 moveModelTooltip.description = updateButtonTooltip.description;
                 EnableButtons(false);
@@ -106,7 +106,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             ValidateFieldsOrientation();
         } else { //joints
             if (!SceneManager.Instance.SceneStarted) {
-                updateButtonTooltip.description = "Scene is not started";
+                updateButtonTooltip.description = "Not available when offline";
                 moveRobotTooltip.description = updateButtonTooltip.description;
                 moveModelTooltip.description = updateButtonTooltip.description;
                 EnableButtons(false);
