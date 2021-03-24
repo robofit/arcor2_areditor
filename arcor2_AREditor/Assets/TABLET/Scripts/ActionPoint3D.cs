@@ -245,11 +245,11 @@ public class ActionPoint3D : Base.ActionPoint {
             try {
                 await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
                 // We have clicked with left mouse and started manipulation with object
-                Debug.LogWarning("Turning on gizmo overlay");
                 manipulationStarted = true;
                 updatePosition = false;
                 tfGizmo.AddTarget(Sphere.transform);
                 outlineOnClick.GizmoHighlight();
+                //TransformMenu.Instance.Show(this);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
             }

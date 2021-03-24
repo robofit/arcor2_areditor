@@ -56,7 +56,7 @@ namespace Base {
 
         protected override void Start() {
             base.Start();
-            if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
                 _ = EnableVisualisationOfEE();
             }
         }
