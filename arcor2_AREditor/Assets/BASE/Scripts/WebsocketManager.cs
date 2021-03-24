@@ -174,7 +174,6 @@ namespace Base {
             } catch (WebSocketException e) {
                 //already closed probably..
             }
-            CleanupAfterDisconnect();
         }
 
         /// <summary>

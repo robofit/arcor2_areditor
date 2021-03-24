@@ -35,7 +35,12 @@ public class LandingScreen : Base.Singleton<LandingScreen>
 #endif
     }
 
-    public void ConnectToServer() {
+    public void ConnectToServer(bool force = true) {
+        if (!force) {
+            if (PlayerPrefs.GetInt("arserver_keep_connected", 0) == 0) {
+                return;
+            }
+        }
         string domain = Domain.text;
         int port = int.Parse(Port.text);
         PlayerPrefs.SetString("arserver_domain", domain);

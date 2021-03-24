@@ -720,9 +720,7 @@ namespace Base {
                     WebsocketManager.Instance.DisconnectFromSever();
                 }
             } else { //automatically connect again
-                if (LandingScreen.Instance.KeepConnected.isOn) {
-                    StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer()));
-                }
+                StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer(false)));
             }
         }
 #endif
