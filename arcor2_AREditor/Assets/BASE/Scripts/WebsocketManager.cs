@@ -714,6 +714,7 @@ namespace Base {
             IO.Swagger.Model.ChangedObjectTypes objectTypesChangedEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ChangedObjectTypes>(data);
             switch (objectTypesChangedEvent.ChangeType) {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
+                    ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
                         
                     break;
@@ -725,6 +726,7 @@ namespace Base {
                     break;
 
                 case ChangedObjectTypes.ChangeTypeEnum.Update:
+                    ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeUpdated?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
                     break;
                 default:
