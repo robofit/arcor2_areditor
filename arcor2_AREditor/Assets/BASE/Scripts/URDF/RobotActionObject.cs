@@ -640,5 +640,13 @@ namespace Base {
         public List<RobotEE> GetAllEE() {
             return EndEffectors;
         }
+
+        public override bool Removable() {
+            return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
+        }
+
+        public override void Remove() {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -424,4 +424,12 @@ public class ActionObject3D : ActionObject {
             Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
         }
     }
+
+    public override bool Removable() {
+        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
+    }
+
+    public override void Remove() {
+        throw new NotImplementedException();
+    }
 }

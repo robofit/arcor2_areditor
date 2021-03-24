@@ -247,9 +247,9 @@ public class ActionPoint3D : Base.ActionPoint {
                 // We have clicked with left mouse and started manipulation with object
                 manipulationStarted = true;
                 updatePosition = false;
-                tfGizmo.AddTarget(Sphere.transform);
-                outlineOnClick.GizmoHighlight();
-                //TransformMenu.Instance.Show(this);
+                //tfGizmo.AddTarget(Sphere.transform);
+                //outlineOnClick.GizmoHighlight();
+                TransformMenu.Instance.Show(this);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
             }
@@ -263,5 +263,23 @@ public class ActionPoint3D : Base.ActionPoint {
         sphere.transform.localPosition = Visual.transform.localPosition;
         sphere.transform.localRotation = Visual.transform.localRotation;
         return sphere;
+    }
+
+    public override bool Removable() {
+        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor;
+    }
+
+    public override void Remove() {
+        throw new NotImplementedException();
+    }
+
+    public async override void Rename(string name) {
+        try {
+            await WebsocketManager.Instance.RenameActionPoint(GetId(), name);
+            Notifications.Instance.ShowToastMessage("Action point renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
+            throw;
+        }
     }
 }

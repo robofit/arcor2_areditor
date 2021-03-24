@@ -150,4 +150,22 @@ public class Action3D : Base.Action {
     public override void StartManipulation() {
         throw new NotImplementedException();
     }
+
+    public override bool Removable() {
+        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor;
+    }
+
+    public override void Remove() {
+        throw new NotImplementedException();
+    }
+
+    public async override void Rename(string newName) {
+        try {
+            await WebsocketManager.Instance.RenameAction(GetId(), newName);
+            Notifications.Instance.ShowToastMessage("Action renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
+            throw;
+        }
+    }
 }

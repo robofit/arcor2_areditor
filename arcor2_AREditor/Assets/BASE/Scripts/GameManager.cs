@@ -515,7 +515,7 @@ namespace Base {
         /// <param name="message">Message displayed to the user</param>
         /// <param name="validationCallback">Action to be called when user selects object. If returns true, callback is called,
         /// otherwise waits for selection of another object</param>
-        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null) {
+        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null, UnityAction onCancelCallback = null) {
             // only for "selection" requests
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
@@ -572,7 +572,16 @@ namespace Base {
 
             SelectorMenu.Instance.ForceUpdateMenus();
 
-            SelectObjectInfo.Show(message, () => CancelSelection());
+            if (onCancelCallback == null) {
+                SelectObjectInfo.Show(message, () => CancelSelection());
+            } else {
+
+                SelectObjectInfo.Show(message,
+                    () => {
+                        onCancelCallback();
+                        CancelSelection();
+                    });
+            }
         }
 
         /// <summary>

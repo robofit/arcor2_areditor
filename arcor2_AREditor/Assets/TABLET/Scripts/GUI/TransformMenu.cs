@@ -273,6 +273,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void Show(InteractiveObject interactiveObject) {
+        InteractiveObject = interactiveObject;
         foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
             robotId = robot.GetId();
         }
@@ -284,7 +285,6 @@ public class TransformMenu : Singleton<TransformMenu> {
         offsetPosition = Vector3.zero;
         ResetTransformWheel();
         SwitchToTranslate();
-        InteractiveObject = interactiveObject;
         SwitchToTablet();
         
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {

@@ -368,6 +368,18 @@ namespace Base {
         public override void StartManipulation() {
             throw new NotImplementedException();
         }
+
+        public override bool Removable() {
+            return false;
+        }
+
+        public override void Remove() {
+            throw new NotImplementedException();
+        }
+
+        public override void Rename(string name) {
+            throw new NotImplementedException();
+        }
     }
 
 }

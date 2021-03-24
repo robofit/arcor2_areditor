@@ -89,4 +89,22 @@ public class APOrientation : InteractiveObject {
     public override void StartManipulation() {
         throw new System.NotImplementedException();
     }
+
+    public override bool Removable() {
+        return false;
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public async override void Rename(string name) {
+        try {
+            await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
+            Notifications.Instance.ShowToastMessage("Orientation renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename orientation", e.Message);
+            throw;
+        }
+    }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using static Base.GameManager;
 using TMPro;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -15,6 +16,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
+    public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
 
     private Dictionary<string, SelectorItem> selectorItems = new Dictionary<string, SelectorItem>();
 
@@ -266,11 +268,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 if (selectorItem.IsSelected() && manuallySelected) {
                     selectorItem.SetSelected(false, manually);
                     manuallySelected = false;
+                    OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(null));
                     return;
                 }
             }
             DeselectObject(manually);
             selectorItem.SetSelected(true, manually);
+            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(selectorItem.InteractiveObject));
             if (manually)
                 manuallySelected = true;
         }        

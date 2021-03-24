@@ -71,4 +71,16 @@ public class RobotEE : InteractiveObject {
     public override void StartManipulation() {
         throw new System.NotImplementedException();
     }
+
+    public override bool Removable() {
+        return false;
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Rename(string name) {
+        throw new System.NotImplementedException();
+    }
 }

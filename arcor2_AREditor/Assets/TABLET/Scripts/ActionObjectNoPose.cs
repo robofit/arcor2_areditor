@@ -76,4 +76,12 @@ public class ActionObjectNoPose : ActionObject {
     public override bool Movable() {
         return false;
     }
+
+    public override bool Removable() {
+        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
+    }
+
+    public override void Remove() {
+        throw new NotImplementedException();
+    }
 }
