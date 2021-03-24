@@ -583,7 +583,7 @@ namespace Base {
             }
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
         }
 
@@ -617,7 +617,7 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
@@ -628,15 +628,8 @@ namespace Base {
         /// <summary>
         /// Enables all visual elements (objects, actions etc.)
         /// </summary>
-        private void EnableEverything() {
-            ProjectManager.Instance.EnableAllActionPoints(true);
-            ProjectManager.Instance.EnableAllActionInputs(true);
-            ProjectManager.Instance.EnableAllActionOutputs(true);
-            ProjectManager.Instance.EnableAllActions(true);
-            ProjectManager.Instance.EnableAllOrientations(true);
-            ProjectManager.Instance.EnableAllRobotsEE(true);
-            SceneManager.Instance.EnableAllActionObjects(true);
-            EnableServiceInteractiveObjects(true);
+        private void RestoreFilters() {
+            SelectorMenu.Instance.UpdateFilters();
         }
 
         /// <summary>
