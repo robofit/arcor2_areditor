@@ -126,7 +126,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
         }
 
-        GameManager.Instance.Scene.SetActive(true);
+        GameManager.Instance.SceneSetActive(true);
         ActivateTrackableMarkers(false);
 #endif
     }
@@ -137,7 +137,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         ActivateTrackableMarkers(true);
         Calibrated = false;
         OnARRecalibrate(this, new EventArgs());
-        GameManager.Instance.Scene.SetActive(false);
+        GameManager.Instance.SceneSetActive(false);
 #endif
     }
 
@@ -167,7 +167,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
-            GameManager.Instance.Scene.SetActive(true);
+            GameManager.Instance.SceneSetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
             Debug.LogError("Cloud anchor error: " + WorldAnchorCloud.cloudAnchorState);
@@ -283,7 +283,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 UsingCloudAnchors = true;
                 OnARCalibrated?.Invoke(this, new GameObjectEventArgs(WorldAnchorCloud.gameObject));
                 Notifications.Instance.ShowNotification("Calibration successful", "");
-                GameManager.Instance.Scene.SetActive(true);
+                GameManager.Instance.SceneSetActive(true);
             }
             //TODO If anchor is not present in the system, play animation to manually calibrate by clicking on marker
             else {

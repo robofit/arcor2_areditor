@@ -43,6 +43,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private void OnLoadProjectScene(object sender, EventArgs e) {
+        UpdateFilters();
+    }
+
+    public void UpdateFilters() {
         ShowRobots(RobotsToggle.Toggled, false);
         ShowActionObjects(ObjectsToggle.Toggled, false);
         ShowActionPoints(PointsToggle.Toggled, false);
@@ -51,7 +55,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ShowOthers(OthersToggle.Toggled, false);
         ForceUpdateMenus();
     }
-
 
     private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
         editorState = args.Data;
@@ -125,7 +128,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private void OnSceneChanged(object sender, System.EventArgs e) {
         UpdateAlphabetMenu();
         UpdateNoPoseMenu();
-        Debug.LogError("Scene changed");
     }
 
     private SelectorItem GetSelectorItem(InteractiveObject io) {

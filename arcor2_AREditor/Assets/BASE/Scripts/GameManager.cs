@@ -130,7 +130,10 @@ namespace Base {
         /// Holds current editor state
         /// </summary>
         private EditorStateEnum editorState;
-
+        /// <summary>
+        /// Prefab for transform gizmo
+        /// </summary>
+        public GameObject GizmoPrefab;
         /// <summary>
         /// Loading screen with animation
         /// </summary>
@@ -521,6 +524,7 @@ namespace Base {
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
@@ -556,6 +560,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
 
             }
@@ -580,7 +586,7 @@ namespace Base {
             }
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
         }
 
@@ -614,7 +620,7 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
-            EnableEverything();
+            RestoreFilters();
             SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
@@ -625,15 +631,8 @@ namespace Base {
         /// <summary>
         /// Enables all visual elements (objects, actions etc.)
         /// </summary>
-        private void EnableEverything() {
-            ProjectManager.Instance.EnableAllActionPoints(true);
-            ProjectManager.Instance.EnableAllActionInputs(true);
-            ProjectManager.Instance.EnableAllActionOutputs(true);
-            ProjectManager.Instance.EnableAllActions(true);
-            ProjectManager.Instance.EnableAllOrientations(true);
-            ProjectManager.Instance.EnableAllRobotsEE(true);
-            SceneManager.Instance.EnableAllActionObjects(true);
-            EnableServiceInteractiveObjects(true);
+        private void RestoreFilters() {
+            SelectorMenu.Instance.UpdateFilters();
         }
 
         /// <summary>
@@ -695,38 +694,33 @@ namespace Base {
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
         }
 
-        //private IEnumerator Waiter() {
-        //    for (int i = 0; i < 20; i++) {
-        //        Debug.LogError("ziju" + i.ToString());
-        //       yield return new WaitForSeconds(2);
-        //    }
-        //}
-        
-        private void OnApplicationPause(bool pause) {
-            Debug.LogError("onAppPause, pause:" + pause.ToString());
-            //if(pause)
-            //    StartCoroutine(Waiter());
-
-            //Notifications.Instance.ShowNotification("on app pause", pause.ToString());
-            //if (pause && ConnectionStatus != ConnectionStatusEnum.Disconnected)
-            //  WebsocketManager.Instance.DisconnectFromSever();
+        /// <summary>
+        /// Waits until websocket is null and calls callback method (because after application pause disconnecting isn't finished completely)
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        private IEnumerator WaitUntilWebsocketFullyDisconnected(UnityAction callback) {
+            yield return new WaitWhile(() => !WebsocketManager.Instance.IsWebsocketNull());
+            callback();
         }
 
-        private void OnApplicationFocus(bool focus) {
-            if (ConnectionStatus == ConnectionStatusEnum.Disconnected) {
-                Debug.LogError("onAppFocus, disconnected state, focus: " + focus.ToString());
-                if (focus) {
-                    try {
-                       //LandingScreen.Instance.ConnectToServer();
-                    } catch(NullReferenceException ex) {
-                        Debug.LogError("na landing je websocket ještě null " + ex.Message);
-                    }
+#if (UNITY_ANDROID || UNITY_IOS)
+
+        /// <summary>
+        /// Manages connection to server when app is paused or gains focus again
+        /// </summary>
+        /// <param name="pause"></param>
+        private void OnApplicationPause(bool pause) {
+            if (pause) {
+                if (connectionStatus == ConnectionStatusEnum.Connected) {
+                    WebsocketManager.Instance.DisconnectFromSever();
                 }
-            } else {
-                Debug.LogError("onAppFocus, connected/ing state, focus: " + focus.ToString());
+            } else { //automatically connect again
+                StartCoroutine(WaitUntilWebsocketFullyDisconnected(() => LandingScreen.Instance.ConnectToServer(false)));
             }
         }
-        
+#endif
+
 
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
@@ -810,7 +804,7 @@ namespace Base {
             // initialize when connected to the server
             ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            Debug.LogError("onConnected triggered");
+            //Debug.LogError("onConnected triggered");
         }
 
         /// <summary>
@@ -936,7 +930,7 @@ namespace Base {
         public async Task UpdateActionObjects() {
             try {
                 List<IO.Swagger.Model.ObjectTypeMeta> objectTypeMetas = await WebsocketManager.Instance.GetObjectTypes();
-                await ActionsManager.Instance.UpdateObjects(objectTypeMetas);
+                ActionsManager.Instance.UpdateObjects(objectTypeMetas);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs("Failed to update action objects");
@@ -1761,6 +1755,15 @@ namespace Base {
         }
 
         /// <summary>
+        /// Activates/Disactivates the Scene and calls all necessary methods (Selector menu update).
+        /// </summary>
+        /// <param name="active"></param>
+        public void SceneSetActive(bool active) {
+            Scene.SetActive(active);
+            SelectorMenu.Instance.ForceUpdateMenus();
+        }
+
+        /// <summary>
         /// Helper method to create button
         /// </summary>
         /// <param name="parent">Parent GUI element</param>
@@ -1783,13 +1786,20 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-                Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                Position position = DataHelper.Vector3ToPosition(point);
-                await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                ProjectManager.Instance.SelectAPNameWhenCreated = name;
+                if (string.IsNullOrEmpty(parent)) {
+                    Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                    Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                    Position position = DataHelper.Vector3ToPosition(point);
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                } else {
+                    await WebsocketManager.Instance.AddActionPoint(name, parent, new Position());
+                }
+                
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
+                ProjectManager.Instance.SelectAPNameWhenCreated = "";
                 return false;
             }
         }
