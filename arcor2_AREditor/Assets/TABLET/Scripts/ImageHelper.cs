@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 #if UNITY_EDITOR || UNITY_STANDALONE
-using USFB;
+using TriLibCore.SFB;
 #endif
 using System.Threading.Tasks;
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
@@ -73,11 +75,16 @@ public class ImageHelper
         ExtensionFilter[] extensions = new[] {
         new ExtensionFilter("Image Files", "png", "jpg", "jpeg" )
         };
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, false);
-        if (paths.Length == 0)
+        //string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, false);
+        //if (paths.Length == 0)
+        //    return null;
+        //else
+        //    return paths[0];
+        IList<ItemWithStream> paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, false);
+        if (paths.Count == 0)
             return null;
         else
-            return paths[0];
+            return paths[0].Name;
 #endif
     }
 

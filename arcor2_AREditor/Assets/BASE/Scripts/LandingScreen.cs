@@ -27,12 +27,20 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         Port.text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
         KeepConnected.isOn = keepConnected;
         Version.text = Application.version;
+
+#if UNITY_STANDALONE //automatic connection for android and ios is handled by OnApplicationPause method in GameManager
         if (keepConnected) {
             ConnectToServer();
         }
+#endif
     }
 
-    public void ConnectToServer() {
+    public void ConnectToServer(bool force = true) {
+        if (!force) {
+            if (PlayerPrefs.GetInt("arserver_keep_connected", 0) == 0) {
+                return;
+            }
+        }
         string domain = Domain.text;
         int port = int.Parse(Port.text);
         PlayerPrefs.SetString("arserver_domain", domain);

@@ -61,9 +61,7 @@ public class InputHandler : Singleton<InputHandler> {
         // Middle Button
         else if (Input.GetMouseButtonDown(2)) {
             TryToRaycast(Clickable.Click.MOUSE_MIDDLE_BUTTON);
-        } else {
-            TryToRaycast(Clickable.Click.MOUSE_HOVER);
-        }
+        } 
     }
 
     private void TryToRaycast(Clickable.Click clickType) {
@@ -143,76 +141,32 @@ public class InputHandler : Singleton<InputHandler> {
 
 
     private void HandleTouch() {
-        RaycastHit hit = new RaycastHit();
         if (!GameManager.Instance.SceneInteractable)
             return;
-        
+
         foreach (Touch touch in Input.touches) {
             if (touch.phase == TouchPhase.Began) {
                 // This is only valid in Began phase. During end phase it always return false
                 if (EventSystem.current.IsPointerOverGameObject(touch.fingerId)) {
                     // skip if clicking on GUI object (e.g. controlbox)
                     pointerOverUI = true;
-                    continue;                    
+                    continue;
                 }
                 pointerOverUI = false;
-                if (coroutine != null)
-                    StopCoroutine(coroutine);
-                coroutine = LongTouch(touch);
-                StartCoroutine(coroutine);
-                
-
             } else if (touch.phase == TouchPhase.Ended) {
                 if (pointerOverUI)
                     return;
-                
-                if (longTouch) {
-                    longTouch = false;
-                } else {                    
-                    if (coroutine != null)
-                        StopCoroutine(coroutine);
-                    longTouch = false;
-                    if (TransformGizmo.Instance.mainTargetRoot != null) {
-                        if (TransformGizmo.Instance.translatingAxis == Axis.None) {
-                            TransformGizmo.Instance.ClearTargets();
-                            Sight.Instance.Touch();
-                        }
-                    } else {
-                        Sight.Instance.Touch();
+                if (TransformGizmo.Instance.mainTargetRoot != null) {
+                    if (TransformGizmo.Instance.translatingAxis == Axis.None) {
+                        TransformGizmo.Instance.ClearTargets();
                     }
-                    
-                            
                 }
+                SelectorMenu.Instance.DeselectObject(true);
             }
         }
     }
 
-    private IEnumerator LongTouch(Touch touch) {
-        yield return new WaitForSeconds(1f);
-        longTouch = true;
-        //TransformGizmo.Instance.ClearTargets();
-        Sight.Instance.LongTouch();
-
-        /*
-        yield return new WaitForSeconds(3f);
-
-        longTouch = true;
-        RaycastHit hit = new RaycastHit();
-
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(touch.position), out hit, Mathf.Infinity, LayerMask)) {
-            try {
-                hit.collider.transform.gameObject.SendMessage("OnClick", Clickable.Click.LONG_TOUCH);
-            } catch (Exception e) {
-                Debug.LogError(e);
-            }
-        } else {
-            OnBlindClick?.Invoke(this, new EventClickArgs(Clickable.Click.LONG_TOUCH));
-        }
-
-        OnGeneralClick?.Invoke(this, new EventClickArgs(Clickable.Click.LONG_TOUCH));
-        */
-    }
-
+   
 }
 
 public class EventClickArgs : EventArgs {

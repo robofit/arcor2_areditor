@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using IO.Swagger.Model;
 using TMPro;
+using System;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -23,11 +24,9 @@ public class ActionPoint3D : Base.ActionPoint {
     private OutlineOnClick outlineOnClick;
 
 
-    protected override void Start() {
-        base.Start();
-        tfGizmo = Camera.main.GetComponent<TransformGizmo>();
-        sphereMaterial = Sphere.GetComponent<Renderer>().material;
+    private void Awake() {
     }
+
 
     protected override void Update() {
         if (manipulationStarted) {
@@ -69,7 +68,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
-        if (!enabled)
+        if (!enabled || !Enabled)
             return;
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
@@ -83,35 +82,24 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
             return;
         }
+
+        tfGizmo.ClearTargets();
+        outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             StartManipulation();            
         } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ShowMenu(false);
-            tfGizmo.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
         }
 
     }
 
-    public async void StartManipulation() {
-        if (Locked) {
-            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
-        } else {
-
-            try {
-                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
-                // We have clicked with left mouse and started manipulation with object
-                Debug.LogWarning("Turning on gizmo overlay");
-                manipulationStarted = true;
-                updatePosition = false;
-                tfGizmo.AddTarget(Sphere.transform);
-                outlineOnClick.GizmoHighlight();
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
-            }
-        }
+    public void ShowMenu(bool enableBackButton = false) {
+        actionPointMenu.CurrentActionPoint = this;
+        actionPointMenu.EnableBackButton(enableBackButton);
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
     }
+
 
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
@@ -195,7 +183,7 @@ public class ActionPoint3D : Base.ActionPoint {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {
@@ -227,17 +215,53 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
+        tfGizmo = TransformGizmo.Instance;
+        sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 
-    public override void Disable() {
-        base.Disable();
-        sphereMaterial.color = Color.gray;
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        if (enable)
+            sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+        else
+            sphereMaterial.color = Color.gray;
     }
 
-    public override void Enable() {
-        base.Enable();
-        sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+    public override void OpenMenu() {
+        ShowMenu();
     }
 
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public async override void StartManipulation() {
+        tfGizmo.ClearTargets();
+        if (Locked) {
+            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
+        } else {
+
+            try {
+                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
+                // We have clicked with left mouse and started manipulation with object
+                manipulationStarted = true;
+                updatePosition = false;
+                tfGizmo.AddTarget(Sphere.transform);
+                outlineOnClick.GizmoHighlight();
+                //TransformMenu.Instance.Show(this);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
+            }
+        }
+    }
+
+    internal GameObject GetModelCopy() {
+        GameObject sphere = Instantiate(Sphere);
+        Destroy(sphere.GetComponent<SphereCollider>());
+        sphere.transform.localScale = Visual.transform.localScale;
+        sphere.transform.localPosition = Visual.transform.localPosition;
+        sphere.transform.localRotation = Visual.transform.localRotation;
+        return sphere;
+    }
 }

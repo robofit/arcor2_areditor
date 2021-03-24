@@ -65,6 +65,10 @@ namespace Base {
         /// </summary>
         private bool projectChanged;
         /// <summary>
+        /// Flag which indicates whether project changed event should be trigered during Update()
+        /// </summary>
+        private bool updateProject = false;
+        /// <summary>
         /// Public setter for project changed property. Invokes OnProjectChanged event with each change and
         /// OnProjectSavedSatusChanged when projectChanged value differs from original value (i.e. when project
         /// was not changed and now it is and vice versa) 
@@ -81,6 +85,11 @@ namespace Base {
                     OnProjectSavedSatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             } 
+        }
+
+        public string SelectAPNameWhenCreated {
+            get;
+            internal set;
         }
 
         /// <summary>
@@ -141,7 +150,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(args.Data);
                 actionPoint.RemoveJoints(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
                 OnProjectChanged?.Invoke(this, EventArgs.Empty);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -154,8 +163,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(args.Data.Id);
                 actionPoint.BaseUpdateJoints(args.Data);
-                ProjectChanged = true;
-                OnProjectChanged?.Invoke(this, EventArgs.Empty);
+                updateProject = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -167,7 +175,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithJoints(args.Data.Id);
                 actionPoint.UpdateJoints(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to update action point joints", ex.Message);
@@ -179,7 +187,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(args.ActionPointId);
                 actionPoint.AddJoints(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to add action point joints", ex.Message);
@@ -191,7 +199,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(args.ActionPoint.Id);
                 actionPoint.ActionPointBaseUpdate(args.ActionPoint);
-                ProjectChanged = true;
+                updateProject = true;
             } catch (KeyNotFoundException ex) {
                 Debug.Log("Action point " + args.ActionPoint.Id + " not found!");
                 Notifications.Instance.ShowNotification("", "Action point " + args.ActionPoint.Id + " not found!");
@@ -203,7 +211,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.BaseUpdateOrientation(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
                 OnActionPointOrientationBaseUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -216,7 +224,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPointWithOrientation(args.Data);
                 actionPoint.RemoveOrientation(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
                 OnActionPointOrientationRemoved?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -229,7 +237,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.UpdateOrientation(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
                 OnActionPointOrientationUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -242,7 +250,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = GetActionPoint(args.ActionPointId);
                 actionPoint.AddOrientation(args.Data);
-                ProjectChanged = true;
+                updateProject = true;
                 OnActionPointOrientationAdded?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
@@ -253,14 +261,14 @@ namespace Base {
 
         private void OnActionPointRemoved(object sender, StringEventArgs args) {
             RemoveActionPoint(args.Data);
-            ProjectChanged = true;
+            updateProject = true;
         }
 
         private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
             try {
                 ActionPoint actionPoint = GetActionPoint(args.ActionPoint.Id);
                 actionPoint.UpdateActionPoint(args.ActionPoint);
-                ProjectChanged = true;
+                updateProject = true;
                 // TODO - update orientations, joints etc.
             } catch (KeyNotFoundException ex) {
                 Debug.LogError("Action point " + args.ActionPoint.Id + " not found!");
@@ -271,24 +279,30 @@ namespace Base {
         
 
         private void OnActionPointAdded(object sender, ProjectActionPointEventArgs data) {
+            ActionPoint ap = null;
             if (data.ActionPoint.Parent == null || data.ActionPoint.Parent == "") {
-                SpawnActionPoint(data.ActionPoint, null);
+                ap = SpawnActionPoint(data.ActionPoint, null);
             } else {
                 try {
                     IActionPointParent actionPointParent = GetActionPointParent(data.ActionPoint.Parent);
-                    ActionPoint ap = SpawnActionPoint(data.ActionPoint, actionPointParent);
+                    ap = SpawnActionPoint(data.ActionPoint, actionPointParent);
                 } catch (KeyNotFoundException ex) {
                     Debug.LogError(ex);
                 }
 
             }
-            ProjectChanged = true;
+            if (ap != null && SelectAPNameWhenCreated.Equals(ap.GetName())) {
+                SelectorMenu.Instance.ForceUpdateMenus();
+                SelectorMenu.Instance.SetSelectedObject(ap, true);
+                SelectAPNameWhenCreated = "";
+            }
+            updateProject = true;
         }
 
         private void OnProjectBaseUpdated(object sender, BareProjectEventArgs args) {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
                 SetProjectMeta(args.Project);
-                ProjectChanged = true;
+                updateProject = true;
             } 
         }
 
@@ -308,16 +322,28 @@ namespace Base {
             LoadSettings();
 
             StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            StartAction.Init(null, null, null, null, "START");
             EndAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
+            EndAction.Init(null, null, null, null, "END");
+
+            foreach (SceneObjectOverride objectOverrides in project.ObjectOverrides) {
+                ActionObject actionObject = SceneManager.Instance.GetActionObject(objectOverrides.Id);
+                foreach (IO.Swagger.Model.Parameter p in objectOverrides.Parameters) {
+                    if (actionObject.TryGetParameterMetadata(p.Name, out ParameterMeta meta)) {
+                        Parameter parameter = new Parameter(meta, p.Value);
+                        actionObject.Overrides[p.Name] = parameter;
+                    }
+                    
+                }
+            }
 
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
 
             projectChanged = project.Modified == DateTime.MinValue;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);
-            
             Valid = true;
+            OnLoadProject?.Invoke(this, EventArgs.Empty);            
             (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
             ProjectChanged = !successClose;
             return true;
@@ -343,6 +369,8 @@ namespace Base {
                 EndAction = null;
             }
             ActionPoints.Clear();
+            ConnectionManagerArcoro.Instance.Clear();
+            LogicItems.Clear();
             return true;
         }
 
@@ -355,9 +383,9 @@ namespace Base {
                 if (!LogicItems.TryGetValue(projectLogicItem.Id, out LogicItem logicItem)) {
                     logicItem = new LogicItem(projectLogicItem);
                     LogicItems.Add(logicItem.Data.Id, logicItem);
+                } else {
+                    logicItem.UpdateConnection(projectLogicItem);
                 }
-                logicItem.UpdateConnection(projectLogicItem);
-
             }
         }
 
@@ -460,6 +488,10 @@ namespace Base {
                     projectActive = false;
                 }
             }
+            if (updateProject) {
+                ProjectChanged = true;
+                updateProject = false;
+            }
         }
 
         /// <summary>
@@ -503,7 +535,6 @@ namespace Base {
             } else {
                 AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
             }
-
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
             actionPoint.InitAP(apData, APSize, actionPointParent);
@@ -772,7 +803,7 @@ namespace Base {
                     return actionPoint.GetOrientation(id);
                 } catch (KeyNotFoundException ex) { }
             }
-            throw new KeyNotFoundException("Joints with id " + id + " not found");
+            throw new KeyNotFoundException("Orientations with id " + id + " not found");
         }
 
         /// <summary>
@@ -823,88 +854,80 @@ namespace Base {
         /// <summary>
         /// Disables all action points
         /// </summary>
-        public void DisableAllActionPoints() {
+        public void EnableAllActionPoints(bool enable) {
+            if (!Valid)
+                return;
             foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.Disable();
+                ap.Enable(enable);
             }
         }
 
         /// <summary>
-        /// Enables all action points
+        /// Disables all orientation visuals
         /// </summary>
-        public void EnableAllActionPoints() {
+        public void EnableAllOrientations(bool enable) {
+            if (!Valid)
+                return;
             foreach (ActionPoint ap in ActionPoints.Values) {
-                ap.Enable();
+                foreach (APOrientation orietationVisual in ap.GetOrientationsVisuals()) {
+                    orietationVisual.Enable(enable);
+                }
             }
         }
+
+        /// <summary>
+        /// Disables all orientation visuals
+        /// </summary>
+        public void EnableAllRobotsEE(bool enable) {
+            foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
+                foreach (RobotEE robotEE in robot.GetAllEE()) {
+                    robotEE.Enable(enable);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Disables all actions
         /// </summary>
-        public void DisableAllActions() {
+        public void EnableAllActions(bool enable) {
+            if (!Valid)
+                return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Disable();
+                    action.Enable(enable);
             }
-            StartAction.Disable();
-            EndAction.Disable();
-        }
-
-        /// <summary>
-        /// Enables all actions
-        /// </summary>
-        public void EnableAllActions() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Enable();
-            }
-            StartAction.Enable();
-            EndAction.Enable();
+            StartAction.Enable(enable);
+            EndAction.Enable(enable);
         }
 
         /// <summary>
         /// Disables all action inputs
         /// </summary>
-        public void DisableAllActionInputs() {
+        public void EnableAllActionInputs(bool enable) {
+            if (!Valid)
+                return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Input.Disable();
+                    action.Input.Enable(enable);
             }
-            EndAction.Input.Disable();
+            EndAction.Input.Enable(enable);
         }
 
-        /// <summary>
-        /// Enables all action inputs
-        /// </summary>
-        public void EnableAllActionsInputs() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Input.Enable();
-            }
-            EndAction.Input.Enable();
-        }
 
         /// <summary>
         /// Disable all action outputs
         /// </summary>
-        public void DisableAllActionOutputs() {
+        public void EnableAllActionOutputs(bool enable) {
+            if (!Valid)
+                return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Output.Disable();
+                    action.Output.Enable(enable);
             }
-            StartAction.Output.Disable();
+            StartAction.Output.Enable(enable);
         }
 
-        /// <summary>
-        /// Enables all action outputs
-        /// </summary>
-        public void EnableAllActionsOutputs() {
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    action.Output.Enable();
-            }
-            StartAction.Output.Enable();
-        }
 
         #region ACTIONS
 
@@ -1068,7 +1091,7 @@ namespace Base {
                 return;
             }
             action.ActionUpdate(projectAction, true);
-            ProjectChanged = true;
+            updateProject = true;
         }
 
         /// <summary>
@@ -1082,7 +1105,7 @@ namespace Base {
                 return;
             }
             action.ActionUpdateBaseData(projectAction);
-            ProjectChanged = true;
+            updateProject = true;
         }
 
         /// <summary>
@@ -1098,7 +1121,7 @@ namespace Base {
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
-                ProjectChanged = true;
+                updateProject = true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
             }            
@@ -1110,7 +1133,7 @@ namespace Base {
         /// <param name="action"></param>
         public void ActionRemoved(IO.Swagger.Model.BareAction action) {
             ProjectManager.Instance.RemoveAction(action.Id);
-            ProjectChanged = true;
+            updateProject = true;
         }
 
         /// <summary>
@@ -1123,13 +1146,16 @@ namespace Base {
         }
 
         public void HighlightOrientation(string orientationId, bool highlight) {
-            ActionPoint ap = GetActionPointWithOrientation(orientationId);
-            APOrientation orientation = ap.GetOrientationVisual(orientationId);
-            orientation.HighlightOrientation(highlight);
-        }
-
-
-        
+            if (!Valid)
+                return;
+            try {
+                ActionPoint ap = GetActionPointWithOrientation(orientationId);
+                APOrientation orientation = ap.GetOrientationVisual(orientationId);
+                orientation.HighlightOrientation(highlight);
+            } catch (KeyNotFoundException ex) {
+                Debug.LogError(ex);
+            }
+        }        
 
     }
 

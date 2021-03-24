@@ -4,6 +4,8 @@ using System;
 using UnityEngine;
 using IO.Swagger.Model;
 using System.Threading.Tasks;
+using System.Collections;
+using Newtonsoft.Json;
 
 namespace Base {
 
@@ -23,7 +25,7 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event AREditorEventArgs.StringEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringListEventHandler OnActionObjectsUpdated;
 
         public bool ActionsReady, ActionObjectsLoaded;
 
@@ -51,6 +53,9 @@ namespace Base {
             Debug.Assert(InteractiveObjects != null);
             Init();
             WebsocketManager.Instance.OnDisconnectEvent += OnDisconnected;
+            WebsocketManager.Instance.OnObjectTypeAdded += ObjectTypeAdded;
+            WebsocketManager.Instance.OnObjectTypeRemoved += ObjectTypeRemoved;
+            WebsocketManager.Instance.OnObjectTypeUpdated += ObjectTypeUpdated;
         }
         
         private void OnDisconnected(object sender, EventArgs args) {
@@ -59,10 +64,8 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                
                 foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
-                       
                         return;
                     }
                 }
@@ -114,35 +117,71 @@ namespace Base {
 
 
 
-        public void ObjectTypeRemoved(ObjectTypeMeta objectType) {
-            if (actionObjectsMetadata.ContainsKey(objectType.Type)) {
-                actionObjectsMetadata.Remove(objectType.Type);
-                OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(null));
-            }            
+        public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
+            foreach (string item in type.Data) {
+                if (actionObjectsMetadata.ContainsKey(item)) {
+                    actionObjectsMetadata.Remove(item);
+                }
+            }
+            if (type.Data.Count > 0)
+                OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(new List<string>()));
+
         }
 
-        public async void ObjectTypeAdded(ObjectTypeMeta objectType) {
-            ActionObjectMetadata m = new ActionObjectMetadata(meta: objectType);
-            await UpdateActionsOfActionObject(m);
-            m.Robot = IsDescendantOfType("Robot", m);               
-            actionObjectsMetadata.Add(objectType.Type, m);
-            OnActionObjectsUpdated?.Invoke(this, new StringEventArgs(objectType.Type));
+        public void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
+            ActionsReady = false;
+            enabled = true;
+            List<string> added = new List<string>();
+            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
+                ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
+                UpdateActionsOfActionObject(m);
+                m.Robot = IsDescendantOfType("Robot", m);
+                m.Camera = IsDescendantOfType("Camera", m);
+                actionObjectsMetadata.Add(obj.Type, m);
+                added.Add(obj.Type);
+            }
+            
+            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(added));
+        }
+
+        public void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
+            ActionsReady = false;
+            enabled = true;
+            List<string> updated = new List<string>();
+            foreach (ObjectTypeMeta obj in args.ObjectTypes) {
+                if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
+                    actionObjectMetadata.Update(obj);
+                    UpdateActionsOfActionObject(actionObjectMetadata);
+                    updated.Add(obj.Type);
+                } else {
+                    Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
+                }
+            }
+            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(updated));
         }
         
 
-        private async Task UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
+        private void UpdateActionsOfActionObject(ActionObjectMetadata actionObject) {
             if (!actionObject.Disabled)
                 try {
-                    actionObject.ActionsMetadata = ParseActions(await WebsocketManager.Instance.GetActions(actionObject.Type));
-                    if (actionObject.ActionsMetadata == null) {
-                        actionObject.Disabled = true;
-                        actionObject.Problem = "Failed to load actions";
-                    }
-                    actionObject.ActionsLoaded = true;
+                    WebsocketManager.Instance.GetActions(actionObject.Type, GetActionsCallback);                    
                 } catch (RequestFailedException e) {
-                    Debug.LogError("Failed to load action for object " + name);
-                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + name);                    
+                    Debug.LogError("Failed to load action for object " + actionObject.Type);
+                    Notifications.Instance.ShowNotification("Failed to load actions", "Failed to load action for object " + actionObject.Type);
+                    Notifications.Instance.SaveLogs();
                 }            
+        }
+
+        public void GetActionsCallback(string actionName, string data) {
+            IO.Swagger.Model.GetActionsResponse getActionsResponse = JsonConvert.DeserializeObject<IO.Swagger.Model.GetActionsResponse>(data);
+            if (actionObjectsMetadata.TryGetValue(actionName, out ActionObjectMetadata actionObject)) {
+                actionObject.ActionsMetadata = ParseActions(getActionsResponse.Data);
+                if (actionObject.ActionsMetadata == null) {
+                    actionObject.Disabled = true;
+                    actionObject.Problem = "Failed to load actions";
+                }
+                actionObject.ActionsLoaded = true;
+            }
         }
         
 
@@ -179,20 +218,22 @@ namespace Base {
             
         }
 
-        public async Task UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata, string highlighteObject = null) {
+        public void UpdateObjects(List<IO.Swagger.Model.ObjectTypeMeta> newActionObjectsMetadata) {
             ActionsReady = false;
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
-                await UpdateActionsOfActionObject(m);
+                UpdateActionsOfActionObject(m);
                 actionObjectsMetadata.Add(metadata.Type, m);
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
+                kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
             }
             enabled = true;
+
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, new Base.StringEventArgs(highlighteObject));
+            OnActionObjectsUpdated?.Invoke(this, new Base.StringListEventArgs(new List<string>()));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {

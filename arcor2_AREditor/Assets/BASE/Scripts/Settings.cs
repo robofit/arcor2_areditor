@@ -21,7 +21,7 @@ public class Settings : Singleton<Settings> {
     private void Start() {
         useCloudAnchors = PlayerPrefsHelper.LoadBool("use_cloud_anchors", false);
 
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         if (DontTurnOffScreenOnTablet) {
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
         }

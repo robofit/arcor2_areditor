@@ -35,6 +35,8 @@ namespace Base {
             private set;
         }
 
+        private bool robotVisible = false;
+
         private List<RobotEE> EndEffectors = new List<RobotEE>();
         
         private GameObject RobotPlaceholder;
@@ -43,22 +45,30 @@ namespace Base {
         private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;
+        private bool ghost = false;
 
         private Shader standardShader;
+        private Shader ghostShader;
         private Shader transparentShader;
+
+        private bool jointStateSubscribeIsValid = true;
+        private bool modelLoading = false;
 
         protected override void Start() {
             base.Start();
-            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+                _ = EnableVisualisationOfEE();
+            }
+        }
+        
+        private void OnDisable() {
+            SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
         }
 
-        private async void OnDisable() {
-            await DisableVisualisationOfEE();
-            if (HasUrdf())
-                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-            SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
+        private void OnEnable() {
+            SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
+            SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -116,13 +126,15 @@ namespace Base {
             foreach (RobotEE ee in EndEffectors) {
                 try {
                     ee.gameObject.SetActive(false);
-                } catch (MissingReferenceException) {
+                } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException)  {
                     continue;
                 }                    
             }            
         }
 
         public async Task DisableVisualisationOfEE() {
+            if (!eeVisible)
+                return;
             eeVisible = false;
             if (EndEffectors.Count > 0) {
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), false, RegisterForRobotEventRequestArgs.WhatEnum.Eefpose);
@@ -132,6 +144,8 @@ namespace Base {
         
 
         public async Task EnableVisualisationOfEE() {
+            if (eeVisible)
+                return;
             eeVisible = true;
             if (!ResourcesLoaded)
                 await LoadResources();
@@ -144,57 +158,25 @@ namespace Base {
 
         public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-            //UrdfManager.Instance.OnUrdfReady += OnUrdfDownloaded;
-            Data.Id = id;
-            Data.Type = type;
-            SetScenePosition(position);
-            SetSceneOrientation(orientation);
-            Data.Id = uuid;
-            ActionObjectMetadata = actionObjectMetadata;
-            CreateModel(customCollisionModels);
-            enabled = true;
-            SetVisibility(visibility);
+            
             // if there should be an urdf robot model
             if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                // check if robot model exists
-                if (UrdfManager.Instance.CheckIfRobotModelExists(type)) {
-                    // check if newer robot model exists on the server
-                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
-                        // TODO destroy the old robot version
-                        UrdfManager.Instance.RemoveOldModels(type);
-
-                        // download newer version of the urdf
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-
-                    } else {
-                        // get the robot model
-                        RobotModel = UrdfManager.Instance.GetRobotModelInstance(type);
-                        if (RobotModel != null) {
-                            RobotModelLoaded();
-                        } else {
-                            Debug.LogError("Fatal error, robot model should be present and loaded, but it is not. Report bug.");
-                        }
-                    }
-                }
-                // robot model is not loaded at all, check if urdf is downloaded locally and import it, otherwise download it
-                else {
-                    // check if newer robot model exists on the server.. if it is not downloaded at all, it will return true
-                    if (UrdfManager.Instance.CheckIfNewerRobotModelExists(robotMeta.UrdfPackageFilename, type)) {
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        StartCoroutine(UrdfManager.Instance.DownloadUrdfPackage(robotMeta.UrdfPackageFilename, robotMeta.Type));
-                    } else { // the robot zip is downloaded, thus start direct build
-                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                        UrdfManager.Instance.BuildRobotModelFromUrdf(type);
-                    }
+                // Get the robot model, if it returns null, the robot will be loading itself
+                RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
+                if (RobotModel != null) {
+                    RobotModelLoaded();
+                } else {
+                    // Robot is not loaded yet, let's wait for it to be loaded
+                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                    modelLoading = true;
                 }
             }
-            //LoadResources = loadResources;
+
             ResourcesLoaded = false;
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
-            Debug.Log("URDF: robot is fully loaded");
+            //Debug.Log("URDF:" + args.RobotType + " robot is fully loaded");
 
             // check if the robot of the type we need was loaded
             if (args.RobotType == Data.Type) {
@@ -205,12 +187,11 @@ namespace Base {
                 
                 // if robot is loaded, unsubscribe from UrdfManager event
                 UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+                modelLoading = false;
             }
         }
 
         private async void RobotModelLoaded() {
-            Debug.Log("URDF: robot is fully loaded");
-
             RobotModel.RobotModelGameObject.transform.parent = transform;
             RobotModel.RobotModelGameObject.transform.localPosition = Vector3.zero;
             RobotModel.RobotModelGameObject.transform.localEulerAngles = Vector3.zero;
@@ -228,14 +209,33 @@ namespace Base {
 
             robotColliders.Clear();
             robotRenderers.Clear();
-            robotRenderers.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Renderer>());
-            robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>());
+            robotRenderers.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Renderer>(true));
+            robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>(true));
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitGizmoMaterials();
+
+            SetVisibility(visibility, forceShaderChange: true);
+            SetGrey(!SceneManager.Instance.SceneStarted);
+
+            SetDefaultJoints();
+
+            // Show or hide the robot based on global settings of displaying ActionObjects.
+            // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
+            /*if (robotVisible) {
+                Show();
+            } else {
+                Hide();
+            }
+            */
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
+        private void SetDefaultJoints() {
+            foreach (var joint in RobotModel.Joints) {
+                SetJointValue(joint.Key, 0f);
+            }
+        }
 
         public override Vector3 GetScenePosition() {
             return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
@@ -254,15 +254,14 @@ namespace Base {
         }
 
         public override void Show() {
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = true;
-            }
+            robotVisible = true;
+            SetVisibility(1);
+            SetGrey(!SceneManager.Instance.SceneStarted);
         }
 
         public override void Hide() {
-            foreach (Renderer renderer in robotRenderers) {
-                renderer.enabled = false;
-            }
+            robotVisible = false;
+            SetVisibility(0);
         }
 
         public override void SetInteractivity(bool interactive) {
@@ -271,11 +270,15 @@ namespace Base {
             }
         }
 
-        public override void SetVisibility(float value) {
+        public override void SetVisibility(float value, bool forceShaderChange = false) {
             base.SetVisibility(value);
 
             if (standardShader == null) {
                 standardShader = Shader.Find("Standard");
+            }
+
+            if (ghostShader == null) {
+                ghostShader = Shader.Find("Custom/Ghost");
             }
 
             if (transparentShader == null) {
@@ -285,6 +288,7 @@ namespace Base {
             // Set opaque shader
             if (value >= 1) {
                 transparent = false;
+                ghost = false;
                 foreach (Renderer renderer in robotRenderers) {
                     // Robot has its outline active, we need to select second material,
                     // (first is mask, second is object material, third is outline)
@@ -296,16 +300,41 @@ namespace Base {
                 }
             }
             // Set transparent shader
-            else {
-                if (!transparent) {
+            else if (value <= 0.1) {
+                ghost = false;
+                if (forceShaderChange || !transparent) {
                     foreach (Renderer renderer in robotRenderers) {
+                        // Robot has its outline active, we need to select second material,
+                        // (first is mask, second is object material, third is outline)
                         if (renderer.materials.Length == 3) {
                             renderer.materials[1].shader = transparentShader;
                         } else {
                             renderer.material.shader = transparentShader;
                         }
+
+                        Material mat;
+                        if (renderer.materials.Length == 3) {
+                            mat = renderer.materials[1];
+                        } else {
+                            mat = renderer.material;
+                        }
+                        Color color = mat.color;
+                        color.a = 0f;
+                        mat.color = color;
                     }
                     transparent = true;
+                }
+            } else {
+                transparent = false;
+                if (forceShaderChange || !ghost) {
+                    foreach (Renderer renderer in robotRenderers) {
+                        if (renderer.materials.Length == 3) {
+                            renderer.materials[1].shader = ghostShader;
+                        } else {
+                            renderer.material.shader = ghostShader;
+                        }
+                    }
+                    ghost = true;
                 }
                 // set alpha of the material
                 foreach (Renderer renderer in robotRenderers) {
@@ -336,30 +365,18 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
                 return;
             }
-            // HANDLE MOUSE
-            if (type == Click.MOUSE_RIGHT_BUTTON) {
-                ShowMenu();
-            }
-            // HANDLE TOUCH
-            else if (type == Click.TOUCH) {
-                ShowMenu();
-            }
-
+           
             // HANDLE MOUSE
             if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
                 // We have clicked with left mouse and started manipulation with object
                 if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                    manipulationStarted = true;
-                    HideRobotEE();
-                    TransformGizmo.Instance.AddTarget(transform);
-                    outlineOnClick.GizmoHighlight();
+                    StartManipulation();
                 }
             } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-                ShowMenu();
-                TransformGizmo.Instance.ClearTargets();
-                outlineOnClick.GizmoUnHighlight();
+                OpenMenu();
             }
         }
+
 
         public async Task<List<string>> GetEndEffectorIds() {
             if (!ResourcesLoaded) {
@@ -387,14 +404,22 @@ namespace Base {
 
         public async Task LoadEndEffectors() {
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
-            List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
-            foreach (string eeId in endEffectors) {
-                RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                ee.InitEE(this, eeId);
-                ee.gameObject.SetActive(false);
-                EndEffectors.Add(ee);
-            }
-            GameManager.Instance.HideLoadingScreen();
+            try {
+
+
+                List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
+                foreach (string eeId in endEffectors) {
+                    RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                    ee.InitEE(this, eeId);
+                    ee.gameObject.SetActive(false);
+                    EndEffectors.Add(ee);
+                }
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex.Message);
+                Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
+            } finally {
+                GameManager.Instance.HideLoadingScreen();
+            }            
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
@@ -402,7 +427,6 @@ namespace Base {
             RobotPlaceholder.transform.parent = transform;
             RobotPlaceholder.transform.localPosition = Vector3.zero;
             RobotPlaceholder.transform.localPosition = Vector3.zero;
-            //Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
 
             RobotPlaceholder.GetComponent<OnClickCollider>().Target = gameObject;
 
@@ -410,6 +434,7 @@ namespace Base {
             robotRenderers.Clear();
             robotRenderers.AddRange(RobotPlaceholder.GetComponentsInChildren<Renderer>());
             robotColliders.AddRange(RobotPlaceholder.GetComponentsInChildren<Collider>());
+            Colliders = robotColliders;
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
@@ -434,7 +459,7 @@ namespace Base {
             if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
                 GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionObject &&
                 GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-                if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+                if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                     if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                         return;
                 } else {
@@ -460,9 +485,10 @@ namespace Base {
             ActionObjectName.text = newUserId;
         }
 
-        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger, bool visibility, bool interactivity) {
-            base.ActionObjectUpdate(actionObjectSwagger, visibility, interactivity);
+        public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
+            base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
+            ResetPosition();
         }
 
         public RobotEE GetEE(string ee_id) {
@@ -472,17 +498,147 @@ namespace Base {
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
-        public void SetJointValue(string name, float angle) {
-            RobotModel?.SetJointAngle(name, angle);
+        /// <summary>
+        /// Sets value of joints specified in List joints. Firstly checks if joint names are really equal or not.
+        /// If some joint name is not correct, method will not allow to set the joints nor to check if they are valid, unless option forceJointsValidCheck is set to true.
+        /// </summary>
+        /// <param name="joints">List of joints with new angle values.</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
+        /// <param name="forceJointsValidCheck">If true, check for valid joint names will be called even if previous one failed.</param>
+        public void SetJointValue(List<IO.Swagger.Model.Joint> joints, bool angle_in_degrees = false, bool forceJointsValidCheck = false) {
+            if (RobotModel != null && (jointStateSubscribeIsValid || forceJointsValidCheck)) {
+                if (CheckJointsAreValid(joints)) {
+                    foreach (IO.Swagger.Model.Joint joint in joints) {
+                        SetJointValue(joint.Name, (float) joint.Value);
+                    }
+                    jointStateSubscribeIsValid = true;
+                } else {
+                    Notifications.Instance.ShowNotification("Wrong joint names received!", "Unregistering joint state receiving for robot " + RobotModel.RobotType + ". Joints has to be named same as in urdf.");
+                    jointStateSubscribeIsValid = false;
+                }
+            }
         }
 
-        private void OnDestroy() {
+        /// <summary>
+        /// Checks if the joint names in joints corresponds to the joint names in RobotModel.
+        /// </summary>
+        /// <param name="joints"></param>
+        /// <returns>True if joints have equal names, false if not.</returns>
+        public bool CheckJointsAreValid(List<IO.Swagger.Model.Joint> joints) {
+            if (RobotModel != null) {
+                List<string> receivedJoints = new List<string>();
+                foreach (IO.Swagger.Model.Joint joint in joints) {
+                    receivedJoints.Add(joint.Name);
+                }
+
+                foreach (string jointName in RobotModel.Joints.Keys) {
+                    receivedJoints.Remove(jointName);
+                }
+
+                if (receivedJoints.Count != 0) {
+                    Debug.LogError("Received wrong joints: " + string.Join(",", joints) + " .. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    Notifications.Instance.ShowNotification("Received wrong joints!", "Received:" + string.Join(",", joints) + ".. but expected: " + string.Join(",", RobotModel.GetJoints()));
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                //Debug.LogError("Trying to set joint values, but robot urdf model is not loaded nor assigned.");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Sets the value of individual joint.
+        /// </summary>
+        /// <param name="name">Joint name.</param>
+        /// <param name="angle">Joint angle (in radians by default).</param>
+        /// <param name="angle_in_degrees">Whether the joint angle is in degrees.</param>
+        public void SetJointValue(string name, float angle, bool angle_in_degrees = false) {
+            RobotModel?.SetJointAngle(name, angle, angle_in_degrees);
+        }
+
+        public List<IO.Swagger.Model.Joint> GetJoints() {
+            if (RobotModel == null) {
+                // if urdf model is still loading, return empty joint list
+                if (modelLoading) {
+                    return new List<IO.Swagger.Model.Joint>();
+                } else {
+                    throw new RequestFailedException("Model not found for this robot.");
+                }
+            }
+            else
+                return RobotModel.GetJoints();
+        }
+
+	    public override void DeleteActionObject() {
+            base.DeleteActionObject();
+            UnloadRobotModel();
+            UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+            modelLoading = false;
+        }
+
+        private void UnloadRobotModel() {
             // if RobotModel was present, lets return it to the UrdfManager robotModel pool
             if (RobotModel != null) {
                 if (UrdfManager.Instance != null) {
+                    // remove every outlines on the robot
+                    outlineOnClick.UnHighlight();
+                    outlineOnClick.GizmoUnHighlight();
+                    outlineOnClick.UnHighlight();
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets grey color of robot model (indicates that model is not in position of real robot)
+        /// </summary>
+        /// <param name="grey">True for setting grey, false for standard state.</param>
+        public void SetGrey(bool grey) {
+            if (grey) {
+                foreach (Renderer renderer in robotRenderers) {
+                    foreach (Material mat in renderer.materials) {
+                        mat.SetColor("_EmissionColor", Color.grey);
+                        mat.EnableKeyword("_EMISSION");
+                    }
+                }
+            } else {
+                foreach (Renderer renderer in robotRenderers) {
+                    foreach (Material mat in renderer.materials) {
+                        mat.DisableKeyword("_EMISSION");
+                    }
+                }
+            }
+        }
+
+        public override void OpenMenu() {
+            TransformGizmo.Instance.ClearTargets();
+            outlineOnClick.GizmoUnHighlight();
+            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
+                actionObjectMenu.CurrentObject = this;
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
+            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
+                actionObjectMenuProjectEditor.CurrentObject = this;
+                actionObjectMenuProjectEditor.UpdateMenu();
+                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
+            }
+        }
+
+        public override bool HasMenu() {
+            return true;
+        }
+
+        public override void StartManipulation() {
+            TransformGizmo.Instance.ClearTargets();
+            manipulationStarted = true;
+            HideRobotEE();
+            TransformGizmo.Instance.AddTarget(transform);
+            outlineOnClick.GizmoHighlight();
+        }
+
+        public List<RobotEE> GetAllEE() {
+            return EndEffectors;
         }
     }
 }

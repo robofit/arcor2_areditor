@@ -45,15 +45,16 @@ public class DropdownRobots : MonoBehaviour
             CustomDropdown.Item item = new CustomDropdown.Item {
                 itemName = robotName
             };
-            string robot_id = SceneManager.Instance.RobotNameToId(robotName);
             if (callback != null) {
                 if (item.OnItemSelection == null)
                     item.OnItemSelection = new UnityEvent();
-                item.OnItemSelection.AddListener(() => callback(robot_id));
+                item.OnItemSelection.AddListener(() => callback(robotName));
             }
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
-        if (Dropdown.Dropdown.dropdownItems.Count > 0)
+        if (Dropdown.Dropdown.dropdownItems.Count > 0) {
+            Dropdown.Dropdown.selectedItemIndex = 0;
             Dropdown.Dropdown.SetupDropdown();
+        }
     }
 }

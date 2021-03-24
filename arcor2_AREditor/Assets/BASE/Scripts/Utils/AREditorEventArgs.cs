@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using IO.Swagger.Model;
+using UnityEngine;
 
 namespace Base {
 
@@ -9,6 +11,26 @@ namespace Base {
         }
 
         public StringEventArgs(string data) {
+            Data = data;
+        }
+    }
+
+    public class StringListEventArgs : EventArgs {
+        public List<string> Data {
+            get; set;
+        }
+
+        public StringListEventArgs(List<string> data) {
+            Data = data;
+        }
+    }
+
+    public class FloatEventArgs : EventArgs {
+        public float Data {
+            get; set;
+        }
+
+        public FloatEventArgs(float data) {
             Data = data;
         }
     }
@@ -290,10 +312,57 @@ namespace Base {
         }
     }
 
+    public class ParameterEventArgs : EventArgs {
+
+        public IO.Swagger.Model.Parameter Parameter {
+            get; set;
+        }
+
+        public string ObjectId {
+            get; set;
+        }
+
+        public ParameterEventArgs(string objectId, IO.Swagger.Model.Parameter @event) {
+            Parameter = @event;
+            ObjectId = objectId;
+        }
+    }
+
+    public class GameObjectEventArgs : EventArgs {
+        public GameObject GameObj {
+            get; set;
+        }
+
+        public GameObjectEventArgs(GameObject gameObject) {
+            GameObj = gameObject;
+        }
+    }
+
+    public class ObjectTypeEventArgs : EventArgs {
+        public ObjectTypeMeta ObjectType {
+            get; set;
+        }
+
+        public ObjectTypeEventArgs(ObjectTypeMeta objectType) {
+            ObjectType = objectType;
+        }
+    }
+
+    public class ObjectTypesEventArgs : EventArgs {
+        public List<ObjectTypeMeta> ObjectTypes {
+            get; set;
+        }
+
+        public ObjectTypesEventArgs(List<ObjectTypeMeta> objectTypes) {
+            ObjectTypes = objectTypes;
+        }
+    }
 
 
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
+        public delegate void StringListEventHandler(object sender, StringListEventArgs args);
+        public delegate void FloatEventHandler(object sender, FloatEventArgs args);
         public delegate void GameStateEventHandler(object sender, GameStateEventArgs args);
         public delegate void EditorStateEventHandler(object sender, EditorStateEventArgs args);
         public delegate void ProjectMetaEventHandler(object sender, ProjectMetaEventArgs args);
@@ -316,5 +385,8 @@ namespace Base {
         public delegate void RobotMoveToActionPointJointsEventHandler(object sender, RobotMoveToActionPointJointsEventArgs args);
         public delegate void RobotMoveToActionPointOrientationHandler(object sender, RobotMoveToActionPointOrientationEventArgs args);
         public delegate void SceneStateHandler(object sender, SceneStateEventArgs args);
+        public delegate void ParameterHandler(object sender, ParameterEventArgs args);
+        public delegate void ObjectTypeHandler(object sender, ObjectTypeEventArgs args);
+        public delegate void ObjectTypesHandler(object sender, ObjectTypesEventArgs args);
     }
 }

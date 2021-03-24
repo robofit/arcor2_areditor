@@ -8,16 +8,16 @@ using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.Events;
+using MiniJSON;
 
 namespace Base {
     public class Parameter : IO.Swagger.Model.Parameter {
-        public ParameterMetadata ActionParameterMetadata;
-        // Reference to parent Action
-        public Action Action;
+        public ParameterMetadata ParameterMetadata;
 
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, bool isValueValid = true);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
+        //public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata)
 
         /// <summary>
         /// Creates action parameter based on it's metadata, parent action and action paramater swagger model.
@@ -25,21 +25,19 @@ namespace Base {
         /// <param name="parameterMetadata"></param>
         /// <param name="action"></param>
         /// <param name="value"></param>
-        public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata, Action action, string value) {
+        public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata, string value) {
             Debug.Assert(value != null);
-            ActionParameterMetadata = new ParameterMetadata(parameterMetadata);
-            Name = ActionParameterMetadata.Name;
-            Type = ActionParameterMetadata.Type;
-            Action = action;
+            ParameterMetadata = new ParameterMetadata(parameterMetadata);
+            Name = ParameterMetadata.Name;
+            Type = ParameterMetadata.Type;
             Value = value;
             
         }
 
-        public Parameter(IO.Swagger.Model.ParameterMeta actionParameterMetadata, Action action, object value) {
-            ActionParameterMetadata = new ParameterMetadata(actionParameterMetadata);
-            Name = ActionParameterMetadata.Name;
-            Type = ActionParameterMetadata.Type;
-            Action = action;
+        public Parameter(IO.Swagger.Model.ParameterMeta actionParameterMetadata, object value) {
+            ParameterMetadata = new ParameterMetadata(actionParameterMetadata);
+            Name = ParameterMetadata.Name;
+            Type = ParameterMetadata.Type;
 
             switch (Type) {
                 case "relative_pose":
@@ -57,6 +55,9 @@ namespace Base {
                     break;
                 case "double":
                     SetValue((double) value);
+                    break;
+                case "boolean":
+                    SetValue((bool) value);
                     break;
             }
         }
@@ -77,6 +78,51 @@ namespace Base {
             }                
             return JsonConvert.DeserializeObject<T>(value);
         }
+
+        public static string Encode(string value, string type) {
+            switch (type) {
+                /*case "relative_pose":
+                    return GetValue<IO.Swagger.Model.Pose>(value).ToString();*/
+                case "integer_enum":
+                case "integer":
+                    return JsonConvert.SerializeObject(int.Parse(value));
+                case "string_enum":
+                case "pose":
+                case "joints":
+                case "string":
+                    return JsonConvert.SerializeObject(value);                    
+                case "double":
+                    return JsonConvert.SerializeObject(double.Parse(value));
+                case "boolean":
+                    return JsonConvert.SerializeObject(bool.Parse(value));
+            }
+            throw new RequestFailedException("Unknown parameter type (" + type + ")");
+        }
+
+        public string GetStringValue() {
+            return GetStringValue(Value, Type);
+        }
+
+
+        public static string GetStringValue(string value, string type) {
+            switch (type) {
+                case "relative_pose":
+                    return GetValue<IO.Swagger.Model.Pose>(value).ToString();
+                case "integer_enum":
+                case "integer":
+                    return GetValue<int>(value).ToString();
+                case "string_enum":
+                case "pose":
+                case "joints":
+                case "string":
+                    return GetValue<string>(value).ToString();
+                case "double":
+                    return GetValue<double>(value).ToString();
+                case "boolean":
+                    return GetValue<bool>(value).ToString();
+            }
+            throw new RequestFailedException("Unknown parameter type");
+        } 
 
         public void SetValue(object newValue) {
             if (newValue == null)
@@ -371,6 +417,21 @@ namespace Base {
             return parameters;
         }
 
+        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
+            List<IParameter> parameters = new List<IParameter>();
+            foreach (Parameter parameter in _parameters) {
+                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode);
+                if (paramGO == null) {
+                    Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
+                    continue;
+                }
+                parameters.Add(paramGO.GetComponent<IParameter>());
+                paramGO.transform.SetParent(parentObject.transform);
+                paramGO.transform.localScale = new Vector3(1, 1, 1);
+            }
+            return parameters;
+        }
+
         public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, ActionPoint actionPoint, bool darkMode) {
             List<Tuple<DropdownParameter, ParameterMetadata>> dynamicDropdowns = new List<Tuple<DropdownParameter, ParameterMetadata>>();
             List<IParameter> actionParameters = new List<IParameter>();
@@ -436,16 +497,16 @@ namespace Base {
             List<Tuple<DropdownParameter, Parameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Parameter>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (Parameter parameter in parameters) {
-                GameObject paramGO = InitializeParameter(parameter.ActionParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode);
+                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode, actionProviderId);
 
                 if (paramGO == null) {
-                    Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ActionParameterMetadata.Name);
+                    Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Name);
                     continue;
                 }
                 actionParameters.Add(paramGO.GetComponent<IParameter>());
                 if (paramGO == null)
                     continue;
-                if (parameter.ActionParameterMetadata.DynamicValue) {
+                if (parameter.ParameterMetadata.DynamicValue) {
                     dynamicDropdowns.Add(new Tuple<DropdownParameter, Parameter>(paramGO.GetComponent<DropdownParameter>(), parameter));
                 }
                 paramGO.transform.SetParent(parentObject.transform);
@@ -458,11 +519,11 @@ namespace Base {
             while (dynamicDropdowns.Count > 0) {
                 for (int i = dynamicDropdowns.Count - 1; i >= 0; i--) {
                     Tuple<DropdownParameter, Parameter> tuple = dynamicDropdowns[i];
-                    if ((tuple.Item2.ActionParameterMetadata.DynamicValueParents == null && parentCount == 0) || tuple.Item2.ActionParameterMetadata.DynamicValueParents.Count == parentCount) {
+                    if ((tuple.Item2.ParameterMetadata.DynamicValueParents == null && parentCount == 0) || tuple.Item2.ParameterMetadata.DynamicValueParents.Count == parentCount) {
                         try {
 
-                            await LoadDropdownValues(actionProviderId, tuple.Item2.GetValue<string>(), tuple.Item1, tuple.Item2.ActionParameterMetadata, handler, parentObject,
-                                async () => await LoadDropdownValues(actionProviderId, tuple.Item2.GetValue<string>(), tuple.Item1, tuple.Item2.ActionParameterMetadata, handler, parentObject));
+                            await LoadDropdownValues(actionProviderId, tuple.Item2.GetValue<string>(), tuple.Item1, tuple.Item2.ParameterMetadata, handler, parentObject,
+                                async () => await LoadDropdownValues(actionProviderId, tuple.Item2.GetValue<string>(), tuple.Item1, tuple.Item2.ParameterMetadata, handler, parentObject));
                         } catch (Exception ex) when (ex is Base.ItemNotFoundException || ex is Base.RequestFailedException) {
                             Debug.LogError(ex);
                         } finally {
@@ -483,7 +544,7 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        private static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
+        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {

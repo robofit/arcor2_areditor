@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 1910968989511566013}
   Input: {fileID: 4880005387537242525}
   Output: {fileID: 2756236505218533542}
   InputArrow: {fileID: 8711459906157853564}
@@ -133,7 +135,12 @@ PrefabInstance:
         type: 3}
       propertyPath: outlineOnClick
       value: 
-      objectReference: {fileID: 6975415401428609950}
+      objectReference: {fileID: 8810147691791079383}
+    - target: {fileID: 4605352205466647572, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4760982012042395671, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -209,6 +216,12 @@ MeshRenderer:
     type: 3}
   m_PrefabInstance: {fileID: 9017898060511943743}
   m_PrefabAsset: {fileID: 0}
+--- !u!64 &1910968989511566013 stripped
+MeshCollider:
+  m_CorrespondingSourceObject: {fileID: 7467850720681680514, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+    type: 3}
+  m_PrefabInstance: {fileID: 9017898060511943743}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8711459906157853564 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 415263692387985219, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
@@ -231,6 +244,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9a5f7246b592244092f30d9aa142523, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8810147691791079383 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 533091770654837736, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+    type: 3}
+  m_PrefabInstance: {fileID: 9017898060511943743}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &2756236505218533542 stripped

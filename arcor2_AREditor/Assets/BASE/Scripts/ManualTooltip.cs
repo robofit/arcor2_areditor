@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.EventSystems;
+using RuntimeInspectorNamespace;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
@@ -9,6 +11,20 @@ public class ManualTooltip : MonoBehaviour {
     private TooltipContent tooltipContent;
     [SerializeField]
     public string Description, DescriptionAlternative;
+    [SerializeField]
+    private bool displayAlternativeDescription = false;
+
+    public bool DisplayAlternativeDescription {
+        get => displayAlternativeDescription;
+        set {
+            displayAlternativeDescription = value;
+            if (displayAlternativeDescription) {
+                ShowAlternativeDescription();
+            } else {
+                ShowDefaultDescription();
+            }
+        }
+    }
 
     private void Start() {
         Debug.Assert(tooltipContent != null);
@@ -20,10 +36,17 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
             tooltipContent.descriptionText = TooltipRef.Instance.Text;            
         }
-        ShowDefaultDescription();
+
+        if (DisplayAlternativeDescription) {
+            ShowAlternativeDescription();
+        } else {
+            ShowDefaultDescription();
+        }
     }
 
-    public void ShowDefaultDescription() {
+    private void ShowDefaultDescription() {
+        if (tooltipContent == null)
+            return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(Description)) {
             tooltipContent.enabled = false;
         } else {
@@ -32,7 +55,9 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
-    public void ShowAlternativeDescription() {        
+    private void ShowAlternativeDescription() {
+        if (tooltipContent == null)
+            return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
         } else {
@@ -40,4 +65,9 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.enabled = true;
         }
     }
+
+    private void OnDisable() {
+        tooltipContent.OnPointerExit(null);
+    }
+
 }

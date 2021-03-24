@@ -15,7 +15,7 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
     public List<GameObject> GameObjectsForSTANDALONEOnly = new List<GameObject>();
 
     private void Awake() {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && AR_ON
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
             obj.SetActive(true);
         }
@@ -25,7 +25,7 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
         foreach (GameObject obj in GameObjectsForSTANDALONEOnly) {
             obj.SetActive(false);
         }
-#elif UNITY_IOS && !UNITY_EDITOR
+#elif UNITY_IOS && AR_ON
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
             obj.SetActive(false);
         }
@@ -35,7 +35,7 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
         foreach (GameObject obj in GameObjectsForSTANDALONEOnly) {
             obj.SetActive(false);
         }
-#elif UNITY_EDITOR || UNITY_STANDALONE
+#elif UNITY_STANDALONE || !AR_ON
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
             obj.SetActive(false);
         }

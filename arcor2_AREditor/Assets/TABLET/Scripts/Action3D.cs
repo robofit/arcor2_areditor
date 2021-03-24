@@ -88,10 +88,7 @@ public class Action3D : Base.Action {
         if (!CheckClick())
             return;
         if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            ActionMenu.Instance.CurrentAction = this;
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
-            selected = true;
-            ActionPoint.HighlightAP(true);
+            OpenMenu();
         }
     }
 
@@ -105,7 +102,7 @@ public class Action3D : Base.Action {
     public override void OnHoverStart() {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
                 if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
                     return;
             } else {
@@ -125,15 +122,32 @@ public class Action3D : Base.Action {
         NameText.gameObject.SetActive(false);
     }
 
-    public override void Enable() {
-        base.Enable();
+    public override void Enable(bool enable) {
+        base.Enable(enable);
         foreach (Renderer renderer in outlineOnClick.Renderers)
-            renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
-    }
-    public override void Disable() {
-        base.Disable();
-        foreach (Renderer renderer in outlineOnClick.Renderers)
-            renderer.material.color = Color.gray;
+            if (enable)
+                renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+            else
+                renderer.material.color = Color.gray;
+
     }
 
+    public override string GetName() {
+        return Data.Name;
+    }
+
+    public override void OpenMenu() {
+        ActionMenu.Instance.CurrentAction = this;
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        selected = true;
+        ActionPoint.HighlightAP(true);
+    }
+
+    public override bool HasMenu() {
+        return true;
+    }
+
+    public override void StartManipulation() {
+        throw new NotImplementedException();
+    }
 }

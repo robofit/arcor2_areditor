@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  Colliders:
+  - {fileID: 473133092953715677}
 --- !u!1001 &4075514997655640209
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20,6 +22,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 979191907006130168, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2041338025187177873, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4476520058714655708, guid: 1305cfe93b82f34419a7759751ccaedf,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -85,6 +97,71 @@ PrefabInstance:
       propertyPath: m_TagString
       value: world_anchor
       objectReference: {fileID: 0}
+    - target: {fileID: 6881990993477514596, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881990993477514596, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881990993477514596, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881990993477514596, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
+    - target: {fileID: 6927059809796822147, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8379008296415227408, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8379008296415227408, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8379008296415227408, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 8379008296415227408, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
+    - target: {fileID: 8947836737196681392, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 8947836737196681392, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8947836737196681392, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
+      objectReference: {fileID: 0}
+    - target: {fileID: 8947836737196681392, guid: 1305cfe93b82f34419a7759751ccaedf,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1790867302840684268, guid: 1305cfe93b82f34419a7759751ccaedf, type: 3}
     - {fileID: 0}
@@ -92,6 +169,12 @@ PrefabInstance:
 --- !u!1 &473133093634675534 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4476520058714655711, guid: 1305cfe93b82f34419a7759751ccaedf,
+    type: 3}
+  m_PrefabInstance: {fileID: 4075514997655640209}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &473133092953715677 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 4476520059106650956, guid: 1305cfe93b82f34419a7759751ccaedf,
     type: 3}
   m_PrefabInstance: {fileID: 4075514997655640209}
   m_PrefabAsset: {fileID: 0}
