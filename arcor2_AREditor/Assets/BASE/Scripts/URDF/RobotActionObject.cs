@@ -63,7 +63,7 @@ namespace Base {
         
         private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
         }
 
         private void OnEnable() {
@@ -566,6 +566,7 @@ namespace Base {
 	    public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
+            UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
         }
 
         private void UnloadRobotModel() {
