@@ -203,7 +203,7 @@ namespace Base {
         public APOrientation GetOrientationVisual(string id) {
             foreach (Transform transform in orientations.transform) {
                 APOrientation orientation = transform.GetComponent<APOrientation>();
-                if (orientation.OrientationId == id) {
+                if (orientation != null && orientation.OrientationId == id) {
                     return orientation;
                 }
             }
@@ -213,7 +213,9 @@ namespace Base {
         public List<APOrientation> GetOrientationsVisuals() {
             List<APOrientation> orientationsList = new List<APOrientation>();
             foreach (Transform transform in orientations.transform) {
-                orientationsList.Add(transform.GetComponent<APOrientation>());
+                APOrientation o = transform.GetComponent<APOrientation>();
+                if (o != null)
+                    orientationsList.Add(o);
             }
             return orientationsList;
         }

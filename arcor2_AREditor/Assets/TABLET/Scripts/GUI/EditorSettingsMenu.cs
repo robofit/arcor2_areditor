@@ -68,7 +68,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     private ActionButton GetActionPointBtn(string id) {
         foreach (Transform t in ActionPointsList.transform) {
             ActionButton apBtn = t.GetComponent<ActionButton>();
-            if (apBtn.ObjectId == id)
+            if (apBtn != null && apBtn.ObjectId == id)
                 return apBtn;
         }
         throw new ItemNotFoundException("Button with id " + id + " does not exists");
