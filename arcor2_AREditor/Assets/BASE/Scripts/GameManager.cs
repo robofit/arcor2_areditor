@@ -8,6 +8,7 @@ using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
 using System.Collections;
+using Newtonsoft.Json;
 
 namespace Base {
     /// <summary>
@@ -849,9 +850,9 @@ namespace Base {
                         return;
                     }
 
-                    await LoadScenes();
-                    await LoadProjects();
-                    await LoadPackages();
+                    WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+                    WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                    WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
 
                     connectionStatus = newState;
                     break;
@@ -1189,66 +1190,46 @@ namespace Base {
             throw new RequestFailedException("No scene with name: " + name);
         }
 
-        /// <summary>
-        /// Loads list of scenes from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadScenes() {
-            try {
-                Scenes = await WebsocketManager.Instance.LoadScenes();
-                Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
-                    return y.Modified.CompareTo(x.Modified);
-                });
-                OnSceneListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
-            }
+        public void LoadScenesCb(string id, string responseData) {
+            IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
+            Scenes = response.Data;
+            Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
+                return y.Modified.CompareTo(x.Modified);
+            });
+            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Loads list of projects from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadProjects() {
-            try {
-                Projects = await WebsocketManager.Instance.LoadProjects();
-                Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
-                    return y.Modified.CompareTo(x.Modified);
-                });
-                OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
-            }
+        public void LoadProjectsCb(string id, string responseData) {
+            IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
+            Projects = response.Data;
+            Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
+                return y.Modified.CompareTo(x.Modified);
+            });
+            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Loads list of packages from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadPackages() {
-            try {
-                Packages = await WebsocketManager.Instance.LoadPackages();
-                Packages.Sort(delegate(PackageSummary x, PackageSummary y) {
-                    return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
-                });
-                OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                DisconnectFromSever();
-            }
+       
+        public void LoadPackagesCb(string id, string responseData) {
+            IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
+            Packages = response.Data;
+            Packages.Sort(delegate (PackageSummary x, PackageSummary y) {
+                return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
+            });
+            OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Gets package by ID
-        /// </summary>
-        /// <param name="id">Id of package</param>
-        /// <returns>Package with corresponding ID</returns>
-        public PackageSummary GetPackage(string id) {
+            /// <summary>
+            /// Gets package by ID
+            /// </summary>
+            /// <param name="id">Id of package</param>
+            /// <returns>Package with corresponding ID</returns>
+            public PackageSummary GetPackage(string id) {
             foreach (PackageSummary package in Packages) {
                 if (id == package.Id)
                     return package;
@@ -1631,9 +1612,9 @@ namespace Base {
             Scene.SetActive(false);
             MenuManager.Instance.MainMenu.Close();
             if (updateResources) {
-                await LoadScenes();
-                await LoadProjects();
-                await LoadPackages();
+                WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
             }
             switch (what) {
                 case ShowMainScreenData.WhatEnum.PackagesList:

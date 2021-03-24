@@ -57,7 +57,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     }
 
     public void SetType(string contentType) {
-        switch (ParameterType) {
+        switch (contentType) {
             case "integer":
                 Input.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
                 break;
