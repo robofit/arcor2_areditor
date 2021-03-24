@@ -1,25 +1,6 @@
-# ARCOR2 AREditor
+# arcor2_editor
 
-**ARCOR** stands for **A**ugmented **R**eality **C**ollaborative **R**obot. It is a system for simplified programming of collaborative robots based on augmented reality developed by [Robo@FIT](https://www.fit.vut.cz/research/group/robo/.en).
-
-This repository contains the main user interface, Unity-based client application for ARCore-supported tablets: AREditor. The backend part of the solution is available [here](https://github.com/robofit/arcor2).
-
-Development is supported by [Test-it-off: Robotic offline product testing](https://www.fit.vut.cz/research/project/1308/) project (Ministry of Industry and Trade of the Czech Republic).
-
-<p align="center">
-<img src="https://user-images.githubusercontent.com/1199396/109945741-d77c6a00-7cd7-11eb-9eb0-0448e346b60a.jpg" width="250" alt="Main menu with overview of scene, projects and execution packages."/>
-<img src="https://user-images.githubusercontent.com/1199396/109945708-d0555c00-7cd7-11eb-9e7a-eeee34b3acab.jpg" width="250" alt="AREditor being used to program Dobot M1."/>
-<img src="https://user-images.githubusercontent.com/1199396/109945756-dba88780-7cd7-11eb-8b95-49175dcbcc72.jpg" width="250" alt="VR mode."/>
-</p>
-
-### Installation
-
-With each [release](https://github.com/robofit/arcor2_areditor/releases), we are building Android apk which can be simply installed on a supported device, which is any [ARCore compatible tablet](https://developers.google.com/ar/discover/supported-devices#google_play_devices). We use primarily Samsung devices (S6, S7). There are also Linux/Windows binaries, but mainly for testing and debugging purposes (no AR).
-
-### Development
-
-These are instructions for developers.
-
+### Instalation
  - clone this repo
  - get submodules:
    ```bash
@@ -43,6 +24,7 @@ These are instructions for developers.
    git lfs install
    git lfs pull
    ```
+ - when downloading Unity (current version for this project is 2019.4.20.f1) choose modules according to your needs (e.g. Android build support for creating .apk files)
  - get third party assets from Unity AssetStore (extract and copy into Assets/Submodules):
    - [Lunar Mobile Console](https://assetstore.unity.com/packages/tools/gui/lunar-mobile-console-free-82881) (optional)
    - [Loading screen animation](https://assetstore.unity.com/packages/tools/loading-screen-animation-98505) 
@@ -61,4 +43,16 @@ These are instructions for developers.
      ```
      - on Linux, you can use bash script in /scripts/patch_simple_collada_asset.sh
 
- - <b>(Optional)</b> - Get Google Cloud API Key to enable Cloud Anchors (follow step 7 in [Codelabs ARCore Extensions tutorial](https://codelabs.developers.google.com/codelabs/arcore-extensions-cloud-anchors/#6))
+ - download and set custom gradle - follow https://developers.google.com/ar/develop/unity/android-11-build#unity_20193_and_20194 (We recommend "binary-only" version of gradle, since we encountered bugs with "complete" version)
+ - delete folder repository\arcor2_AREditor\Assets\Submodules\TriLib\TriLibSamples
+ - in Unity, go to Project Settings -> XR -> ARCore Extensions and change Android Authentication Strategy from "Keyless" to "Api Key"
+
+### Building
+ - when platform is set to Android - building .apk or want to use AR Foundation Remote:  
+   - Add "AR_ON" to Scripting Define Symbols in Project Settings -> Player -> Other Settings
+ -  when platform is set to Android - running play mode in Unity:  
+    - Remove "AR_ON" from Scripting Define Symbols in Project Settings -> Player -> Other Settings
+ - when platform is set to Standalone:  
+    - No need of (un)setting "AR_ON" in Scripting Define Symbols, it is ignored
+ - note: IL2CPP scripting backend is meant mainly for releases, while for faster development cycle the Mono backend is suitable (can be changed in Project Settings -> Player -> Other Settings)
+ 
