@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
-public class Recalibrate : InteractiveObject
-    {
-
+public class Recalibrate : InteractiveObject {
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
@@ -16,16 +14,6 @@ public class Recalibrate : InteractiveObject
 
     public void Calibrate() {
         CalibrationManager.Instance.Recalibrate();
-    }
-
-    private void OnEnable() {
-        Enabled = true;
-        SelectorMenu.Instance.ForceUpdateMenus();
-    }
-
-    private void OnDisable() {
-        Enabled = false;
-        SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public override void Enable(bool enable) {
