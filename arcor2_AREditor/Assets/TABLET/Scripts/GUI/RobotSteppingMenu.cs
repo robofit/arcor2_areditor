@@ -107,14 +107,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private float GetPositionValue(float v) {
         switch (Units.GetValue()) {
-            case "m":
-                return v;
+            case "dm":
+                return v * 0.1f;
             case "cm":
                 return v * 0.01f;
             case "mm":
                 return v * 0.001f;
-            case "μm":
-                return v * 0.000001f;
+            case "0.1mm":
+                return v * 0.0001f;
             default:
                 return v;
         };
@@ -122,12 +122,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private int ComputePositionValue(float value) {
         switch (Units.GetValue()) {
+            case "dm":
+                return (int) (value * 10);
             case "cm":
                 return (int) (value * 100);
             case "mm":
                 return (int) (value * 1000);
-            case "μm":
-                return (int) (value * 1000000);
+            case "0.1mm":
+                return (int) (value * 10000);
             default:
                 return (int) value;
         };

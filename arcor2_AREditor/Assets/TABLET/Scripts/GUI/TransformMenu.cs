@@ -60,7 +60,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             Vector3 position = TransformConvertor.ROSToUnity(interPosition + offsetPosition);
             model.transform.localPosition = position;
             
-        } else if (InteractiveObject.GetType() == typeof(ActionObject3D)) {
+        } else if (InteractiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
             Vector3 position = TransformConvertor.ROSToUnity(interPosition + offsetPosition);
             model.transform.localPosition = position;
             Quaternion rotation = TransformConvertor.ROSToUnity(interRotation * offsetRotation);
@@ -286,7 +286,16 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
         } else if (interactiveObject.GetType() == typeof(ActionObject3D)) {
             model = ((ActionObject3D) interactiveObject).GetModelCopy();
-        } 
+            RotateTranslateBtn.SetInteractivity(true);
+            model.transform.SetParent(interactiveObject.transform);
+            model.transform.localRotation = Quaternion.identity;
+        } else if (interactiveObject.GetType() == typeof(RobotActionObject)) {
+            model = ((RobotActionObject) interactiveObject).GetModelCopy();
+            RotateTranslateBtn.SetInteractivity(true);
+            model.transform.SetParent(interactiveObject.transform);
+            model.transform.localRotation = Quaternion.identity;
+        }
+        Debug.LogError(model);
         if (model == null) {
             Hide();
             return;
@@ -348,11 +357,11 @@ public class TransformMenu : Singleton<TransformMenu> {
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
             }
-        } else if (InteractiveObject.GetType() == typeof(ActionObject3D)) {
+        } else if (InteractiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
             try {
                 if (RobotTabletBtn.CurrentState == "tablet")
-                    ;
-                //await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
+                    await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)),
+                                                                                                                                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(InteractiveObject.transform.localRotation * model.transform.localRotation))));
                 else {
                     await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top);
                 }

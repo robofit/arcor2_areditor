@@ -442,7 +442,7 @@ namespace Base {
         }
 
         public override GameObject GetModelCopy() {
-            throw new System.NotImplementedException();
+            return Instantiate(RobotModel.RobotModelGameObject);
         }
 
 

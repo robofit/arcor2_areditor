@@ -243,13 +243,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
-        if (selectedObject.GetType() == typeof(PuckInput) ||
-            selectedObject.GetType() == typeof(PuckOutput)) {
-            selectedObject.StartManipulation();
-            return;
-        }
-
-
+        
         //was clicked the button in favorites or settings submenu?
         Button clickedButton = MoveButton;
         if (currentSubmenuOpened == LeftMenuSelection.Favorites)
