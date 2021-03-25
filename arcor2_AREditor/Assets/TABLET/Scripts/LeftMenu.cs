@@ -55,6 +55,8 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     protected virtual void UpdateBtns(InteractiveObject selectedObject) {
+        RobotSteppingButton.interactable = SceneManager.Instance.SceneStarted;
+        RobotSelectorButton.interactable = SceneManager.Instance.SceneStarted;
         if (requestingObject || selectedObject == null) {
             SelectedObjectText.text = "";
             MoveButton.interactable = false;
@@ -204,6 +206,13 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     public void RobotSteppingButtonClick() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
+            return;
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Robot or EE not selected");
+            return;
+        }
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }

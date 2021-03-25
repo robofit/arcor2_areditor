@@ -282,16 +282,19 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {
             model = ((ActionPoint3D) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(false);
+            RobotTabletBtn.SetInteractivity(true);
             model.transform.SetParent(interactiveObject.transform);
             model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
         } else if (interactiveObject.GetType() == typeof(ActionObject3D)) {
             model = ((ActionObject3D) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(true);
+            RobotTabletBtn.SetInteractivity(true);
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
         } else if (interactiveObject.GetType() == typeof(RobotActionObject)) {
             model = ((RobotActionObject) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(true);
+            RobotTabletBtn.SetInteractivity(false);
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
         }
@@ -300,10 +303,10 @@ public class TransformMenu : Singleton<TransformMenu> {
             Hide();
             return;
         }
-        if (gizmo == null)
-            gizmo = Instantiate(GameManager.Instance.GizmoPrefab, model.transform);
-        else
-            gizmo.transform.SetParent(model.transform);
+        if (gizmo != null)
+            Destroy(gizmo);
+        gizmo = Instantiate(GameManager.Instance.GizmoPrefab, model.transform);
+        gizmo.transform.localScale = Vector3.one;
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.SetActive(true);
