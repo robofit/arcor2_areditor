@@ -260,8 +260,8 @@ public class ActionPoint3D : Base.ActionPoint {
         GameObject sphere = Instantiate(Sphere);
         Destroy(sphere.GetComponent<SphereCollider>());
         sphere.transform.localScale = Visual.transform.localScale;
-        sphere.transform.localPosition = Visual.transform.localPosition;
-        sphere.transform.localRotation = Visual.transform.localRotation;
+        sphere.transform.localPosition = Vector3.zero;
+        sphere.transform.localRotation = Quaternion.identity;
         return sphere;
     }
 

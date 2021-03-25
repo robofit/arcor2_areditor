@@ -6,6 +6,7 @@ using Michsky.UI.ModernUIPack;
 using System.Linq;
 using System.Threading.Tasks;
 using Base;
+using System;
 
 public class DropdownRobots : MonoBehaviour
 {
@@ -16,12 +17,17 @@ public class DropdownRobots : MonoBehaviour
     /// </summary>
     /// <param name="callback">Function to call when item is selected. Will pass robot_id</param>
     /// <param name="withEEOnly">Only puts robots with at least one end effector</param>
-    public async Task Init(UnityAction<string> callback, bool withEEOnly) {
+    public Task Init(UnityAction<string> callback, bool withEEOnly) {
+        return Init(callback, withEEOnly, null);
+    }
+
+    internal async Task Init(UnityAction<string> callback, bool withEEOnly, string selectedRobotName) {
         List<string> robotNames = new List<string>();
 
         if (!withEEOnly) {
             foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
                 robotNames.Add(robot.GetName());
+                
             }
         } else if (withEEOnly && SceneManager.Instance.SceneStarted) {
             foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
@@ -33,18 +39,18 @@ public class DropdownRobots : MonoBehaviour
         } else {
             return;
         }
-
-        Init(robotNames, callback);
+        Init(robotNames, callback, selectedRobotName);
     }
 
-
-    public void Init(List<string> robotNames, UnityAction<string> callback) {
+    public void Init(List<string> robotNames, UnityAction<string> callback, string selectedRobotName = null) {
         Dropdown.Dropdown.dropdownItems.Clear();
-
+        int selectedItemIndex = 0;
         foreach (string robotName in robotNames) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = robotName
+                itemName = robotName                
             };
+            if (robotName == selectedRobotName)
+                selectedItemIndex = Dropdown.Dropdown.dropdownItems.Count;
             if (callback != null) {
                 if (item.OnItemSelection == null)
                     item.OnItemSelection = new UnityEvent();
@@ -53,7 +59,7 @@ public class DropdownRobots : MonoBehaviour
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
         if (Dropdown.Dropdown.dropdownItems.Count > 0) {
-            Dropdown.Dropdown.selectedItemIndex = 0;
+            Dropdown.Dropdown.selectedItemIndex = selectedItemIndex;
             Dropdown.Dropdown.SetupDropdown();
         }
     }

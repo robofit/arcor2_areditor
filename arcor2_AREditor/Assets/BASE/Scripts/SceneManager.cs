@@ -127,6 +127,10 @@ namespace Base {
 
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
+        public IRobot SelectedRobot;
+
+        public RobotEE SelectedEndEffector;
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -319,15 +323,48 @@ namespace Base {
                     foreach (IRobot robot in GetRobots()) {
                         robot.SetGrey(false);
                     }
+                    string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+                    string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                    SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
+                    SelectedRobot = null;
+                    SelectedEndEffector = null;
                     break;
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        public void SelectRobotAndEE(string robotId, string eeId) {
+            if (!string.IsNullOrEmpty(robotId)) {
+                try {
+                    SelectedRobot = GetRobot(robotId);
+                    if (!string.IsNullOrEmpty(eeId)) {
+                        try {
+                            SelectedEndEffector = SelectedRobot.GetEE(eeId);
+                        } catch (ItemNotFoundException ex) {
+                            PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                            Debug.LogError(ex);
+                        }
+                    }
+                } catch (ItemNotFoundException ex) {
+                    PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                    Debug.LogError(ex);
+                }
+
+            }
+        }
+
+        public bool IsRobotSelected() {
+            return SelectedRobot != null;
+        }
+
+        public bool IsRobotAndEESelected() {
+            return IsRobotSelected() && SelectedEndEffector != null;
         }
 
         /// <summary>

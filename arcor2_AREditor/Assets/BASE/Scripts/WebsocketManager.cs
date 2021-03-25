@@ -108,7 +108,7 @@ namespace Base {
         /// </summary>
         private string serverDomain;
 
-       
+
         /// <summary>
         /// Callbeck when connection to the server is closed
         /// </summary>
@@ -142,19 +142,19 @@ namespace Base {
         /// <param name="port">Server port</param>
         public async void ConnectToServer(string domain, int port) {
             Debug.Log("connectToServer called");
-           
+
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             try {
-            APIDomainWS = GetWSURI(domain, port);
-            websocket = new WebSocket(APIDomainWS);
-            serverDomain = domain;
+                APIDomainWS = GetWSURI(domain, port);
+                websocket = new WebSocket(APIDomainWS);
+                serverDomain = domain;
 
-            websocket.OnOpen += OnConnected;
-            websocket.OnError += OnError;
-            websocket.OnClose += OnClose;
-            websocket.OnMessage += HandleReceivedData;
+                websocket.OnOpen += OnConnected;
+                websocket.OnError += OnError;
+                websocket.OnClose += OnClose;
+                websocket.OnMessage += HandleReceivedData;
 
-            await websocket.Connect();
+                await websocket.Connect();
             } catch (UriFormatException ex) {
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to parse domain", ex.Message);
@@ -197,7 +197,7 @@ namespace Base {
             return serverDomain;
         }
 
-       
+
         /// <summary>
         /// Create websocket URI from domain name and port
         /// </summary>
@@ -235,7 +235,7 @@ namespace Base {
             }
             SendWebSocketMessage(data);
         }
-      
+
         /// <summary>
         /// Sends data to server
         /// </summary>
@@ -245,7 +245,7 @@ namespace Base {
                 if (websocket.State == WebSocketState.Open) {
                     await websocket.SendText(data);
                 }
-            }catch(WebSocketException ex) {
+            } catch (WebSocketException ex) {
                 Debug.Log("socketexception in sendwebsocketmessage: " + ex.Message);
             }
         }
@@ -262,7 +262,7 @@ namespace Base {
                 @event = "",
                 request = ""
             };
-            
+
             var dispatch = JsonConvert.DeserializeAnonymousType(data, dispatchType);
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
@@ -276,7 +276,7 @@ namespace Base {
                 } else if (responsesCallback.TryGetValue(dispatch.id, out Tuple<string, UnityAction<string, string>> callbackData)) {
                     callbackData.Item2.Invoke(callbackData.Item1, data);
                 }
-                   
+
             } else if (dispatch.@event != null) {
                 switch (dispatch.@event) {
                     case "SceneChanged":
@@ -383,7 +383,7 @@ namespace Base {
 
         }
 
-        
+
 
         /// <summary>
         /// Waits until response with selected ID is recieved.
@@ -432,7 +432,7 @@ namespace Base {
                     }
                 }
             });
-            
+
         }
 
         private void Update() {
@@ -444,7 +444,7 @@ namespace Base {
         /// Handles changes on project
         /// </summary>
         /// <param name="obj">Message from server</param>
-        private void HandleProjectChanged(string obj) {            
+        private void HandleProjectChanged(string obj) {
             ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.ProjectChanged eventProjectChanged = JsonConvert.DeserializeObject<IO.Swagger.Model.ProjectChanged>(obj);
             switch (eventProjectChanged.ChangeType) {
@@ -463,11 +463,11 @@ namespace Base {
             }
         }
 
-         /// <summary>
+        /// <summary>
         /// Handles changes on project
         /// </summary>
         /// <param name="obj">Message from server</param>
-        private void HandleOverrideUpdated(string obj) {            
+        private void HandleOverrideUpdated(string obj) {
             ProjectManager.Instance.ProjectChanged = true;
             IO.Swagger.Model.OverrideUpdated overrideUpdated = JsonConvert.DeserializeObject<IO.Swagger.Model.OverrideUpdated>(obj);
             switch (overrideUpdated.ChangeType) {
@@ -512,7 +512,7 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleShowMainScreen(string data) {
             IO.Swagger.Model.ShowMainScreen showMainScreenEvent = JsonConvert.DeserializeObject<IO.Swagger.Model.ShowMainScreen>(data);
-            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));            
+            OnShowMainScreen?.Invoke(this, new ShowMainScreenEventArgs(showMainScreenEvent.Data));
         }
 
         private void HandleRobotMoveToActionPointOrientation(string data) {
@@ -716,7 +716,7 @@ namespace Base {
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Add:
                     ActionsManager.Instance.ActionsReady = false;
                     OnObjectTypeAdded?.Invoke(this, new ObjectTypesEventArgs(objectTypesChangedEvent.Data));
-                        
+
                     break;
                 case IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum.Remove:
                     List<string> removed = new List<string>();
@@ -1022,7 +1022,7 @@ namespace Base {
         /// <param name="packageId">Id of package</param>
         /// <param name="cleanupAfterRun"></param>
         /// <returns></returns>
-        public async Task RunPackage(string packageId, bool cleanupAfterRun=true) {
+        public async Task RunPackage(string packageId, bool cleanupAfterRun = true) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId, cleanupAfterRun: cleanupAfterRun);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
@@ -1094,7 +1094,7 @@ namespace Base {
         /// <param name="endEffectorId">Id of end effector</param>
         /// <returns></returns>
         public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
-            
+
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs(actionPointId: actionPointId,
@@ -1140,7 +1140,7 @@ namespace Base {
         /// <returns></returns>
         public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum pivot) {
-            
+
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs
@@ -1151,7 +1151,7 @@ namespace Base {
             IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-     
+
         }
 
         /// <summary>
@@ -1230,7 +1230,7 @@ namespace Base {
             int r_id = Interlocked.Increment(ref requestID);
             responsesCallback.Add(r_id, Tuple.Create("", callback));
             IO.Swagger.Model.ListScenesRequest request = new IO.Swagger.Model.ListScenesRequest(id: r_id, request: "ListScenes");
-            SendDataToServer(request.ToJson(), r_id, false);            
+            SendDataToServer(request.ToJson(), r_id, false);
         }
 
         /// <summary>
@@ -1256,7 +1256,7 @@ namespace Base {
             responsesCallback.Add(r_id, Tuple.Create("", callback));
             IO.Swagger.Model.ListPackagesRequest request = new IO.Swagger.Model.ListPackagesRequest(id: r_id, request: "ListPackages");
             SendDataToServer(request.ToJson(), r_id, false);
-            
+
         }
 
         /// <summary>
@@ -1278,7 +1278,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
             }
         }
-        
+
         /// <summary>
         /// Asks server to remove object from scene.
         /// 
@@ -1291,7 +1291,7 @@ namespace Base {
             IO.Swagger.Model.RemoveFromSceneRequestArgs args = new IO.Swagger.Model.RemoveFromSceneRequestArgs(id: id, force: force);
             IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
-            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);            
+            return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
         }
 
         /// <summary>
@@ -1394,15 +1394,15 @@ namespace Base {
         /// </summary>
         /// <returns>Information about server</returns>
         public async Task<IO.Swagger.Model.SystemInfoResponseData> GetSystemInfo() {
-             int r_id = Interlocked.Increment(ref requestID);
+            int r_id = Interlocked.Increment(ref requestID);
 
-             IO.Swagger.Model.SystemInfoRequest request = new IO.Swagger.Model.SystemInfoRequest(id: r_id, request: "SystemInfo");
-             SendDataToServer(request.ToJson(), r_id, true);
-             IO.Swagger.Model.SystemInfoResponse response = await WaitForResult<IO.Swagger.Model.SystemInfoResponse>(r_id);
-             if (response == null || !response.Result)
-                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
-             return response.Data;
-         }
+            IO.Swagger.Model.SystemInfoRequest request = new IO.Swagger.Model.SystemInfoRequest(id: r_id, request: "SystemInfo");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.SystemInfoResponse response = await WaitForResult<IO.Swagger.Model.SystemInfoResponse>(r_id);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            return response.Data;
+        }
 
         /// <summary>
         /// Asks server to build package from project.
@@ -1600,7 +1600,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointResponse>(r_id);
 
-            if (response == null || !response.Result)   
+            if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
@@ -1850,7 +1850,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
 
-        
+
         /// <summary>
         /// Asks server to move selected robot to action point, using joints
         /// Throws RequestFailedException when request failed
@@ -2166,7 +2166,7 @@ namespace Base {
             IO.Swagger.Model.RegisterForRobotEventRequest request = new IO.Swagger.Model.RegisterForRobotEventRequest(r_id, "RegisterForRobotEvent", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RegisterForRobotEventResponse response = await WaitForResult<IO.Swagger.Model.RegisterForRobotEventResponse>(r_id);
-            
+
             // TODO: is this correct?
             return response == null ? false : response.Result;
         }
@@ -2231,7 +2231,7 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
             }
         }
-        
+
         public async Task AddOverride(string id, IO.Swagger.Model.Parameter parameter, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddOverrideRequestArgs args = new AddOverrideRequestArgs(id: id, _override: parameter);
@@ -2265,7 +2265,7 @@ namespace Base {
             }
         }
 
-        
+
         public async Task<List<IO.Swagger.Model.Joint>> InverseKinematics(string robotId, string endEffectorId, bool avoidCollisions, IO.Swagger.Model.Pose pose, List<IO.Swagger.Model.Joint> startJoints) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.InverseKinematicsRequestArgs args = new InverseKinematicsRequestArgs(robotId: robotId,
@@ -2296,7 +2296,7 @@ namespace Base {
             }
         }
 
-        
+
         public async Task CalibrateRobot(string robotId, string cameraId, bool moveToCalibrationPose) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CalibrateRobotRequestArgs args = new CalibrateRobotRequestArgs(robotId: robotId,
@@ -2307,7 +2307,7 @@ namespace Base {
             IO.Swagger.Model.CalibrateRobotResponse response = await WaitForResult<IO.Swagger.Model.CalibrateRobotResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
-            } 
+            }
         }
 
         public async Task CalibrateCamera(string cameraId) {
@@ -2319,7 +2319,7 @@ namespace Base {
             IO.Swagger.Model.CalibrateCameraResponse response = await WaitForResult<IO.Swagger.Model.CalibrateCameraResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
-            } 
+            }
         }
 
         public async Task<string> GetCameraColorImage(string cameraId) {
@@ -2387,6 +2387,31 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to copy action point" } : response.Messages);
             }
         }
+
+
+        public async Task StepRobotEef(StepRobotEefRequestArgs.AxisEnum axis, string endEffectorId, bool safe, string robotId, decimal speed, decimal step,
+            StepRobotEefRequestArgs.WhatEnum what, StepRobotEefRequestArgs.ModeEnum mode = StepRobotEefRequestArgs.ModeEnum.World) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.StepRobotEefRequestArgs args = new StepRobotEefRequestArgs(axis: axis, endEffectorId: endEffectorId, mode: mode, robotId: robotId, safe: safe, speed: speed, step: step, what: what);
+            IO.Swagger.Model.StepRobotEefRequest request = new IO.Swagger.Model.StepRobotEefRequest(r_id, "StepRobotEef", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StepRobotEefResponse response = await WaitForResult<IO.Swagger.Model.StepRobotEefResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to step robot" } : response.Messages);
+            }
+        }
+        public async Task SetEefPerpendicularToWorld(string robotId, string eeId, decimal speed, bool safe) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs args = new SetEefPerpendicularToWorldRequestArgs(robotId: robotId, endEffectorId: eeId, safe: safe, speed: speed);
+            IO.Swagger.Model.SetEefPerpendicularToWorldRequest request = new SetEefPerpendicularToWorldRequest(r_id, "SetEefPerpendicularToWorld", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.SetEefPerpendicularToWorldResponse response = await WaitForResult<IO.Swagger.Model.SetEefPerpendicularToWorldResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to set EE" } : response.Messages);
+            }
+        }
+
+
 
     }
 

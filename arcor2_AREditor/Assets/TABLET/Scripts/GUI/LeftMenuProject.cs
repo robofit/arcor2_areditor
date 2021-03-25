@@ -3,11 +3,15 @@ using UnityEngine.UI;
 using Base;
 using System.Collections.Generic;
 using IO.Swagger.Model;
+using UnityEngine;
 
 public class LeftMenuProject : LeftMenu
 {
 
-    public Button SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2;
+    public Button SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
+        AddConnectionButton, AddConnectionButton2;
+
+    public GameObject ActionPicker;
     protected override void Update() {
         base.Update();
 
@@ -39,6 +43,7 @@ public class LeftMenuProject : LeftMenu
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
+        //ActionPicker.SetActive(false);
     }
 
     public void CopyObjectClick() {
@@ -62,10 +67,9 @@ public class LeftMenuProject : LeftMenu
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
-        if ((selectedObject.GetType() == typeof(Action3D) ||
-                selectedObject.GetType() == typeof(StartAction) ||
-                selectedObject.GetType() == typeof(EndAction))) {
-            ((Action3D) selectedObject).OnClick(Clickable.Click.TOUCH);
+        if ((selectedObject.GetType() == typeof(PuckInput) ||
+                selectedObject.GetType() == typeof(PuckOutput))) {
+            ((InputOutput) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
     }
 
@@ -84,11 +88,11 @@ public class LeftMenuProject : LeftMenu
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            ActionPicker.SetActive(false);
+            //ActionPicker.SetActive(false);
         } else {
             clickedButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
-            ActionPicker.SetActive(true);
+            //ActionPicker.SetActive(true);
         }
     }
 
@@ -96,5 +100,14 @@ public class LeftMenuProject : LeftMenu
 
     public void AddActionPointClick() {
         ControlBoxManager.Instance.ShowCreateGlobalActionPointDialog();
+    }
+
+    public override void UpdateVisibility() {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
+            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);
+        } else {
+            UpdateVisibility(false);
+        }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
@@ -10,16 +11,16 @@ using UnityEngine.UI;
 using static Base.GameManager;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class LeftMenu : Base.Singleton<LeftMenu> {
+public abstract class LeftMenu : MonoBehaviour {
 
-    protected CanvasGroup CanvasGroup;
+    public CanvasGroup CanvasGroup;
 
-    public Button FavoritesButton, RobotButton, AddButton, SettingsButton, HomeButton;
-    public Button MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton, ResizeCubeButton,
-        AddConnectionButton, AddConnectionButton2; //Buttons with number 2 are duplicates in favorites submenu
-    public GameObject FavoritesButtons, HomeButtons, SettingsButtons, AddButtons, MeshPicker, ActionPicker;
+    public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
+    public Button MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton, OpenMenuButton, RobotSelectorButton, RobotSteppingButton; //Buttons with number 2 are duplicates in favorites submenu
+    public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
-    public TMPro.TMP_Text ProjectName, SelectedObjectText;
+    public RobotSelectorDialog RobotSelector;
+    public TMPro.TMP_Text EditorInfo, SelectedObjectText;
 
     private bool isVisibilityForced = false;
     protected ActionPoint3D selectedActionPoint;
@@ -27,20 +28,30 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
-        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
     }
 
     private void OnEnable() {
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        
     }
 
     private void OnDisable() {
         SelectorMenu.Instance.OnObjectSelectedChangedEvent -= OnObjectSelectedChangedEvent;
+        GameManager.Instance.OnGameStateChanged -= OnGameStateChanged;
+        GameManager.Instance.OnEditorStateChanged -= OnEditorStateChanged;
     }
 
     private void OnObjectSelectedChangedEvent(object sender, InteractiveObjectEventArgs args) {
-        if (!updateButtonsInteractivity)
+        if (updateButtonsInteractivity)
             UpdateBtns(args.InteractiveObject);
+    }
+
+    private void OnGameStateChanged(object sender, GameStateEventArgs _) {
+        if (!isVisibilityForced)
+            UpdateVisibility();
     }
 
     protected virtual void UpdateBtns(InteractiveObject selectedObject) {
@@ -50,19 +61,18 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
             MoveButton2.interactable = false;
             RemoveButton.interactable = false;
             RenameButton.interactable = false;
-            CalibrationButton.interactable = false;            
+            CalibrationButton.interactable = false;
+            OpenMenuButton.interactable = false;
         } else {
             SelectedObjectText.text = selectedObject.GetName() + "\n" + selectedObject.GetType();
-
             MoveButton.interactable = selectedObject.Movable();
             MoveButton2.interactable = selectedObject.Movable();
             RemoveButton.interactable = selectedObject.Removable();
-
             RenameButton.interactable = selectedObject is ActionPoint3D ||
-                selectedObject is Action3D;
+                selectedObject is Action3D || selectedObject is ActionObject3D || selectedObject is APOrientation;
             CalibrationButton.interactable = selectedObject.GetType() == typeof(Recalibrate) ||
                 selectedObject.GetType() == typeof(CreateAnchor);
-            
+            OpenMenuButton.interactable = selectedObject.HasMenu();            
         }
     }
 
@@ -94,8 +104,6 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
     }
 
     protected virtual void Update() {
-        if (!isVisibilityForced)
-            UpdateVisibility();
 
         if (!updateButtonsInteractivity)
             return;
@@ -105,32 +113,32 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
             RobotButton.interactable = false;
             AddButton.interactable = false;
-            SettingsButton.interactable = false;
+            UtilityButton.interactable = false;
             HomeButton.interactable = false;
             return;
         }
 
         RobotButton.interactable = true;
         AddButton.interactable = true;
-        SettingsButton.interactable = true;
+        UtilityButton.interactable = true;
         HomeButton.interactable = true;
 
                
 
         if (SceneManager.Instance.SceneMeta != null)
-            ProjectName.text = "Project: \n" + SceneManager.Instance.SceneMeta.Name;
+            EditorInfo.text = "Project: \n" + SceneManager.Instance.SceneMeta.Name;
     }
 
-    public void UpdateVisibility() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
-            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
-            GameManager.Instance.GetEditorState() == EditorStateEnum.SelectingActionPointParent ||
-            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Open) {
-            UpdateVisibility(false);
-        } else {
-            UpdateVisibility(true);
-        }
+    public void OpenMenuButtonClick() {
+        InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
+        if (selectedObject is null)
+            return;
+        selectedObject.OpenMenu();
+
+        //SetActiveSubmenu(LeftMenuSelection.None);
     }
+
+    public abstract void UpdateVisibility();
 
     public void UpdateVisibility(bool visible, bool force = false) {
         isVisibilityForced = force;
@@ -149,8 +157,7 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
     }
 
     public void RobotButtonClick() {
-        SetActiveSubmenu(LeftMenuSelection.None);
-        Notifications.Instance.ShowNotification("Not implemented", "");
+        SetActiveSubmenu(LeftMenuSelection.Robot);
 
     }
 
@@ -159,10 +166,8 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
     }
 
-    public void SettingsButtonClick() {
-        SetActiveSubmenu(LeftMenuSelection.Settings);
-
-
+    public void UtilityButtonClick() {
+        SetActiveSubmenu(LeftMenuSelection.Utility);
     }
 
     public void HomeButtonClick() {
@@ -171,12 +176,48 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 
     #region Add submenu button click methods
 
-    
-
-    
 
 
-    
+
+
+
+
+
+    #endregion
+
+    #region Robot buttons methods
+
+    public void RobotSelectorButtonClick() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
+            return;
+        }
+        if (RobotSelectorButton.GetComponent<Image>().enabled) {
+            RobotSelectorButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            RobotSelector.Close();
+        } else {
+            RobotSelectorButton.GetComponent<Image>().enabled = true;
+            SelectorMenu.Instance.gameObject.SetActive(false);
+            RobotSelector.Open();
+        }
+    }
+
+    public void RobotSteppingButtonClick() {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
+        if (RobotSteppingButton.GetComponent<Image>().enabled) {
+            RobotSteppingButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            RobotSteppingMenu.Instance.Hide();
+        } else {
+            RobotSteppingButton.GetComponent<Image>().enabled = true;
+            SelectorMenu.Instance.gameObject.SetActive(false);
+            RobotSteppingMenu.Instance.Show();
+        }
+    }
 
     #endregion
 
@@ -237,7 +278,7 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
             return;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf) { //other menu/dialog opened
-            SetActiveSubmenu(LeftMenuSelection.Settings); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(LeftMenuSelection.Utility); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         UpdateVisibility(false, true);
@@ -322,13 +363,17 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
                 AddButtons.SetActive(active);
                 AddButton.GetComponent<Image>().enabled = active;
                 break;
-            case LeftMenuSelection.Settings:
-                SettingsButtons.SetActive(active);
-                SettingsButton.GetComponent<Image>().enabled = active;
+            case LeftMenuSelection.Utility:
+                UtilityButtons.SetActive(active);
+                UtilityButton.GetComponent<Image>().enabled = active;
                 break;
             case LeftMenuSelection.Home:
                 HomeButtons.SetActive(active);
                 HomeButton.GetComponent<Image>().enabled = active;
+                break;
+            case LeftMenuSelection.Robot:
+                RobotButtons.SetActive(active);
+                RobotButton.GetComponent<Image>().enabled = active;
                 break;
             
         }
@@ -340,23 +385,24 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
             RenameDialog.Close();
         TransformMenu.Instance.Hide();
 
-        MeshPicker.SetActive(false);
-        ActionPicker.SetActive(false);
 
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);
-        SettingsButtons.SetActive(false);
+        UtilityButtons.SetActive(false);
         AddButtons.SetActive(false);
+        RobotButtons.SetActive(false);
 
         FavoritesButton.GetComponent<Image>().enabled = false;
         RobotButton.GetComponent<Image>().enabled = false;
         AddButton.GetComponent<Image>().enabled = false;
-        SettingsButton.GetComponent<Image>().enabled = false;
+        UtilityButton.GetComponent<Image>().enabled = false;
         HomeButton.GetComponent<Image>().enabled = false;
 
         MoveButton.GetComponent<Image>().enabled = false;
         MoveButton2.GetComponent<Image>().enabled = false;
-        ResizeCubeButton.GetComponent<Image>().enabled = false;
+        OpenMenuButton.GetComponent<Image>().enabled = false;
+        RobotSelectorButton.GetComponent<Image>().enabled = false;
+        RobotSelector.Close(false);
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {
@@ -394,6 +440,6 @@ public class LeftMenu : Base.Singleton<LeftMenu> {
 }
 
 public enum LeftMenuSelection{
-    None, Favorites, Add, Settings, Home
+    None, Favorites, Add, Utility, Home, Robot
 }
 

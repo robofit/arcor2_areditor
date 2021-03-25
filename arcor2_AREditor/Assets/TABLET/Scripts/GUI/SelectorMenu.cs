@@ -30,6 +30,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
 
+    private InteractiveObject lastSelectedObject = null;
+
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -132,6 +134,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         UpdateNoPoseMenu();
     }
 
+    private void SelectedObjectChanged(InteractiveObject interactiveObject) {
+        if (interactiveObject != lastSelectedObject) {
+            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
+            lastSelectedObject = interactiveObject;
+        }
+    }
+
     private SelectorItem GetSelectorItem(InteractiveObject io) {
         foreach (SelectorItem item in selectorItemsAimMenu) {
             if (string.Compare(item.InteractiveObject.GetId(), io.GetId()) == 0) {
@@ -158,7 +167,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void UpdateAimMenu(Vector3? aimingPoint) {
         List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
-        
+
         if (aimingPoint.HasValue) {
             foreach (SelectorItem item in selectorItems.Values) {
                 try {
@@ -173,6 +182,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+        } else {
+            SelectedObjectChanged(null);
         }
         if (ContentAim.activeSelf) {
             int count = 0;
@@ -243,8 +254,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ++iteration;
     }
 
-
-
     private void RemoveItem(int index, List<SelectorItem> selectorItems) {
         if (selectorItems[index].IsSelected()) {
             manuallySelected = false;
@@ -268,13 +277,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 if (selectorItem.IsSelected() && manuallySelected) {
                     selectorItem.SetSelected(false, manually);
                     manuallySelected = false;
-                    OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(null));
+                    SelectedObjectChanged(null);
                     return;
                 }
             }
             DeselectObject(manually);
             selectorItem.SetSelected(true, manually);
-            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(selectorItem.InteractiveObject));
+            SelectedObjectChanged(selectorItem.InteractiveObject);
             if (manually)
                 manuallySelected = true;
         }        

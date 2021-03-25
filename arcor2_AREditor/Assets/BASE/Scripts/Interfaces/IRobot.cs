@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public interface IRobot
 {
@@ -23,5 +24,7 @@ public interface IRobot
     List<IO.Swagger.Model.Joint> GetJoints();
 
     void SetGrey(bool grey);
+
+    Transform GetTransform();
 
 }

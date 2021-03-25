@@ -11,7 +11,7 @@ public class DropdownEndEffectors : MonoBehaviour {
 
 
     public async Task Init(string robotId, UnityAction<string> onChangeCallback) {
-        if (!SceneManager.Instance.SceneStarted || robotId == "") {
+        if (!SceneManager.Instance.SceneStarted || string.IsNullOrEmpty(robotId)) {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
             return;

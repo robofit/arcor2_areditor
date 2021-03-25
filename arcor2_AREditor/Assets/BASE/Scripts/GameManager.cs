@@ -123,6 +123,9 @@ namespace Base {
         /// </summary>
         public event EventHandler OnActionExecutionCanceled;
 
+        public LeftMenuScene LeftMenuScene;
+        public LeftMenuProject LeftMenuProject;
+
         /// <summary>
         /// Holds current application state (opened screen)
         /// </summary>
@@ -200,7 +203,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.12.0";
+        public const string ApiVersion = "0.13.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -471,8 +474,9 @@ namespace Base {
         /// </summary>
         /// <param name="value">New game state</param>
         public void SetGameState(GameStateEnum value) {
-            gameState = value;
+            gameState = value;            
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            
         }
 
         /// <summary>
@@ -731,7 +735,7 @@ namespace Base {
         }
 #endif
 
-
+        
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
                 if (s.Id == args.Scene.Id) {
