@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Base;
 using System.Threading.Tasks;
 using System;
+using UnityEngine.Events;
 
 public class RenameDialog : Dialog
 {
@@ -19,7 +20,10 @@ public class RenameDialog : Dialog
 
     private InteractiveObject selectedObject;
 
-    public void Init(InteractiveObject objectToRename) {
+    private UnityAction _updateVisibilityCallback;
+
+    public void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback) {
+        _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
         if (objectToRename == null)
             return;
@@ -51,7 +55,8 @@ public class RenameDialog : Dialog
     public override void Close() {
         //LeftMenu.Instance.UpdateVisibility();
         SelectorMenu.Instance.gameObject.SetActive(true);
-
+        if (_updateVisibilityCallback != null)
+            _updateVisibilityCallback.Invoke();
         base.Close();
     }
 }

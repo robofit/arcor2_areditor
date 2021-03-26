@@ -288,7 +288,7 @@ public abstract class LeftMenu : MonoBehaviour {
         UpdateVisibility(false, true);
         SelectorMenu.Instance.gameObject.SetActive(false);
 
-        RenameDialog.Init(selectedObject);
+        RenameDialog.Init(selectedObject, UpdateVisibility);
         RenameDialog.Open();
     }
 

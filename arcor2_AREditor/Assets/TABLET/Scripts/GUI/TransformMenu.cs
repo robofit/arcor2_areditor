@@ -41,11 +41,11 @@ public class TransformMenu : Singleton<TransformMenu> {
             if (SceneManager.Instance.IsRobotAndEESelected()) {
                 model.transform.position = SceneManager.Instance.SelectedEndEffector.transform.position;
                 Coordinates.X.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.x);
-                Coordinates.X.SetDeltaMeters(model.transform.position.x - InteractiveObject.transform.position.x);
+                Coordinates.X.SetDeltaMeters(model.transform.localPosition.x);
                 Coordinates.Y.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.y);
-                Coordinates.Y.SetDeltaMeters(model.transform.position.y - InteractiveObject.transform.position.y);
+                Coordinates.Y.SetDeltaMeters(model.transform.localPosition.y);
                 Coordinates.Z.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.z);
-                Coordinates.Z.SetDeltaMeters(model.transform.position.z - InteractiveObject.transform.position.z);
+                Coordinates.Z.SetDeltaMeters(model.transform.localPosition.z);
                 UpdateTranslate(GetPositionValue(TransformWheel.GetValue()));
                 return;
             }
@@ -122,7 +122,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         };
     }
 
-    private async void UpdateTranslate(float wheelValue) {
+    private void UpdateTranslate(float wheelValue) {
         if (model == null)
             return;
 
@@ -268,6 +268,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         ResetTransformWheel();
         SwitchToTranslate();
         SwitchToTablet();
+        Coordinates.X.Select();
         
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {
             model = ((ActionPoint3D) interactiveObject).GetModelCopy();
@@ -291,15 +292,16 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.localRotation = Quaternion.identity;
             model.transform.localPosition = Vector3.zero;
         }
-        Debug.LogError(model);
+
         if (model == null) {
             Hide();
             return;
         }
         if (gizmo != null)
             Destroy(gizmo);
-        gizmo = Instantiate(GameManager.Instance.GizmoPrefab, model.transform);
-        gizmo.transform.localScale = Vector3.one;
+
+        gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
+        gizmo.transform.SetParent(model.transform);
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.SetActive(true);
