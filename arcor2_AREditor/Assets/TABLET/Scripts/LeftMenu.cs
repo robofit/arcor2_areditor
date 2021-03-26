@@ -70,8 +70,9 @@ public abstract class LeftMenu : MonoBehaviour {
             MoveButton.interactable = selectedObject.Movable();
             MoveButton2.interactable = selectedObject.Movable();
             RemoveButton.interactable = selectedObject.Removable();
-            RenameButton.interactable = selectedObject is ActionPoint3D ||
-                selectedObject is Action3D || selectedObject is ActionObject3D || selectedObject is APOrientation;
+            RenameButton.interactable = selectedObject.GetType() == typeof(ActionPoint3D) ||
+                selectedObject.GetType() == typeof(Action3D) || selectedObject.GetType() == typeof(ActionObject3D) ||
+                selectedObject.GetType() == typeof(APOrientation);
             CalibrationButton.interactable = selectedObject.GetType() == typeof(Recalibrate) ||
                 selectedObject.GetType() == typeof(CreateAnchor);
             OpenMenuButton.interactable = selectedObject.HasMenu();            

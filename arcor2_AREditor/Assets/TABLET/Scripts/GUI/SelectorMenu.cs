@@ -135,10 +135,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private void SelectedObjectChanged(InteractiveObject interactiveObject) {
-        if (interactiveObject != lastSelectedObject) {
+        //if (interactiveObject != lastSelectedObject) {
             OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
-            lastSelectedObject = interactiveObject;
-        }
+            //lastSelectedObject = interactiveObject;
+        //}
     }
 
     private SelectorItem GetSelectorItem(InteractiveObject io) {
