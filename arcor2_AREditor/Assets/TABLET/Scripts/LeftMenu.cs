@@ -196,15 +196,16 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         }
         if (RobotSelectorButton.GetComponent<Image>().enabled) {
-            RobotSelectorButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSelector.Close();
         } else {
-            RobotSelectorButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
-            RobotSelector.Open();
+            UpdateVisibility(false, true);
+            RobotSelector.Open(UpdateVisibility);
         }
     }
+
+
 
     public void RobotSteppingButtonClick() {
         if (!SceneManager.Instance.SceneStarted) {
@@ -388,7 +389,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (RenameDialog.isActiveAndEnabled)
             RenameDialog.Close();
         TransformMenu.Instance.Hide();
-
+        RobotSteppingMenu.Instance.Hide();
 
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);
@@ -406,6 +407,7 @@ public abstract class LeftMenu : MonoBehaviour {
         MoveButton2.GetComponent<Image>().enabled = false;
         OpenMenuButton.GetComponent<Image>().enabled = false;
         RobotSelectorButton.GetComponent<Image>().enabled = false;
+        RobotSteppingButton.GetComponent<Image>().enabled = false;
         RobotSelector.Close(false);
     }
 

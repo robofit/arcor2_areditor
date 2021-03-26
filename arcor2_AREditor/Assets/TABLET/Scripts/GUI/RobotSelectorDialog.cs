@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Base;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class RobotSelectorDialog : Dialog {
 
@@ -9,7 +10,10 @@ public class RobotSelectorDialog : Dialog {
     public DropdownEndEffectors DropdownEndEffectors;
     private string robotId, eeId;
 
-    public async override void Open() {
+    private UnityAction _closeCallback;
+
+    public async void Open(UnityAction closeCallback) {
+        _closeCallback = closeCallback;
         robotId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotId", null);
         eeId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedEndEffectorId", null);
         Debug.LogError(robotId);
@@ -63,16 +67,11 @@ public class RobotSelectorDialog : Dialog {
         Close(true);
     }
 
-    public void Close(bool setActiveSubmenu) {
-        //LeftMenu.Instance.UpdateVisibility();
+    public void Close(bool closeCallbackCall) {
         SelectorMenu.Instance.gameObject.SetActive(true);
-
         base.Close();
-
-        //LeftMenu.Instance.UpdateVisibility();
-
-        if (setActiveSubmenu) {
-            //LeftMenu.Instance.SetActiveSubmenu(LeftMenuSelection.Robot);
+        if (closeCallbackCall) {
+            _closeCallback.Invoke();
         }
     }
 }
