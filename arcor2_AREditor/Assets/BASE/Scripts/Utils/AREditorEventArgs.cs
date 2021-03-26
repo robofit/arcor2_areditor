@@ -369,6 +369,7 @@ namespace Base {
     }
 
 
+
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void StringListEventHandler(object sender, StringListEventArgs args);

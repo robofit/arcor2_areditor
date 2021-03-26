@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using Base;
 using System;
+using UnityEngine.UI;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 {
+    public Button StepuUpButton, StepDownButton;
+    public Slider SpeedSlider;
     public GameObject StepButtons;
     public CoordinatesBtnGroup Coordinates;
     public TranformWheelUnits Units, UnitsDegrees;
@@ -15,15 +18,30 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private GameObject gizmo;
 
-    private bool safe = true, world = false;
+    private bool safe = true, world = false, translate = true;
 
+    private void OnEnable() {
+        WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
+    }
+
+    private void OnDisable() {
+        WebsocketManager.Instance.OnRobotMoveToPoseEvent -= OnRobotMoveToPoseEvent;
+    }
+
+    private void OnRobotMoveToPoseEvent(object sender, RobotMoveToPoseEventArgs args) {
+        if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.End ||
+            args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Failed) {
+            StepuUpButton.interactable = true;
+            StepDownButton.interactable = true;
+        }
+    }
 
     private void Update() {
         if (CanvasGroup.alpha == 1 && gizmo != null) {
             if (world) {
                 gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
             } else {
-                gizmo.transform.rotation = Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * SceneManager.Instance.SelectedRobot.GetTransform().rotation;
+                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
             }
         }
     }
@@ -52,6 +70,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         world = true;
     }
 
+    public void SwithToTranslate() {
+        translate = true;
+    }
+
+    public void SwitchToRotate() {
+        translate = false;
+    }
+
     public async void HoldPressed() {
         try {
             await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
@@ -72,9 +98,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         if (gizmo != null)
             Destroy(gizmo);
 
-        gizmo = Instantiate(GameManager.Instance.GizmoPrefab, SceneManager.Instance.SelectedEndEffector.transform);
-        
-
+        gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
+        gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
+        gizmo.transform.localPosition = Vector3.zero;
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
@@ -88,6 +114,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     public async void RobotStep(float step) {
+
+        StepuUpButton.interactable = false;
+        StepDownButton.interactable = false;
         IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
         switch (Coordinates.GetSelectedAxis()) {
             case "x":
@@ -100,8 +129,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Z;
                 break;
         }
-        await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), 0.3m,
-            (decimal) step, IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position, world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
+        await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+            (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
+            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
 
     }
 

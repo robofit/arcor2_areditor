@@ -393,12 +393,11 @@ namespace Base {
 
         private async Task LoadResources() {
             if (!ResourcesLoaded) {
-                await LoadEndEffectors();
-                ResourcesLoaded = true;
+                ResourcesLoaded = await LoadEndEffectors();
             }
         }
 
-        public async Task LoadEndEffectors() {
+        public async Task<bool> LoadEndEffectors() {
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
 
@@ -410,9 +409,11 @@ namespace Base {
                     ee.gameObject.SetActive(false);
                     EndEffectors.Add(ee);
                 }
+                return true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
                 Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
+                return false;
             } finally {
                 GameManager.Instance.HideLoadingScreen();
             }            

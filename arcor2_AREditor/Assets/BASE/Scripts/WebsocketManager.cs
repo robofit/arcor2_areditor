@@ -103,6 +103,7 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+
         /// <summary>
         /// ARServer domain or IP address
         /// </summary>
@@ -529,8 +530,6 @@ namespace Base {
             OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
             if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
-            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToJointsEvent(string data) {
