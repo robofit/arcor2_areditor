@@ -19,8 +19,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     public TwoStatesToggle RobotTabletBtn, RotateTranslateBtn;
     private float prevValue;
 
-    private Vector3 /*offsetPosition = new Vector3(), interPosition = new Vector3(),*/ cameraPrev = new Vector3();
-    //private Quaternion offsetRotation = new Quaternion(), interRotation = Quaternion.identity;
+    private Vector3 cameraPrev = new Vector3();
+    
 
     public CanvasGroup CanvasGroup;
 
@@ -50,22 +50,6 @@ public class TransformMenu : Singleton<TransformMenu> {
                 return;
             }
         }
-        /*if (RotateTranslateBtn.CurrentState == "rotate") {
-            UpdateRotate(GetRotationValue(TransformWheel.GetValue()));
-        } else {
-            UpdateTranslate(GetPositionValue(TransformWheel.GetValue()));
-        }
-        
-        if (InteractiveObject.GetType() == typeof(ActionPoint3D)) {
-            Vector3 position = TransformConvertor.ROSToUnity(interPosition + offsetPosition);
-            model.transform.localPosition = position;
-            
-        } else if (InteractiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
-            Vector3 position = TransformConvertor.ROSToUnity(interPosition + offsetPosition);
-            model.transform.localPosition = position;
-            Quaternion rotation = TransformConvertor.ROSToUnity(interRotation * offsetRotation);
-            model.transform.localRotation = rotation;
-        }*/
 
         float newValue = 0;
         if (RotateTranslateBtn.CurrentState == "rotate") {
@@ -160,11 +144,6 @@ public class TransformMenu : Singleton<TransformMenu> {
                     break;
             }
         }
-
-        //Vector3 position = TransformConvertor.ROSToUnity(interPosition + offsetPosition);
-        //model.transform.localPosition = position;
-
-        /*Vector3 newPosition = TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition);*/
         Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).x);
         Coordinates.X.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).x);
         Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).y);
@@ -181,15 +160,12 @@ public class TransformMenu : Singleton<TransformMenu> {
             switch (Coordinates.GetSelectedAxis()) {
                 case "x":
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.right));
-                    //offsetRotation = Quaternion.Euler(wheelValue, offsetRotation.eulerAngles.y, offsetRotation.eulerAngles.z);
                     break;
                 case "y":
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.up));
-                    //offsetRotation = Quaternion.Euler(offsetRotation.eulerAngles.x, wheelValue, offsetRotation.eulerAngles.z);
                     break;
                 case "z":
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.forward));
-                    //offsetRotation = Quaternion.Euler(offsetRotation.eulerAngles.x, offsetRotation.eulerAngles.y, wheelValue);
                     break;
             }
 
@@ -340,28 +316,6 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void ResetTransformWheel() {
-        /*if (handHolding)
-            cameraOrig = TransformConvertor.UnityToROS(InteractiveObject.transform.InverseTransformPoint(Camera.main.transform.position));*/
-        /*switch (Coordinates.GetSelectedAxis()) {
-            case "x":
-                if (RotateTranslateBtn.CurrentState == "rotate")
-                    TransformWheel.InitList(ComputeRotationValue(offsetPosition.x));
-                else
-                    TransformWheel.InitList(ComputePositionValue(offsetPosition.x));
-                break;
-            case "y":
-                if (RotateTranslateBtn.CurrentState == "rotate")
-                    TransformWheel.InitList(ComputeRotationValue(offsetPosition.y));
-                else
-                    TransformWheel.InitList(ComputePositionValue(offsetPosition.y));
-                break;
-            case "z":
-                if (RotateTranslateBtn.CurrentState == "rotate")
-                    TransformWheel.InitList(ComputeRotationValue(offsetPosition.z));
-                else
-                    TransformWheel.InitList(ComputePositionValue(offsetPosition.z));
-                break;
-        }*/
         prevValue = 0;
         TransformWheel.InitList(0);
     }
