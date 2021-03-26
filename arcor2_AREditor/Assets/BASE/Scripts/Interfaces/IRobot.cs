@@ -11,9 +11,9 @@ public interface IRobot
 
     Task<List<string>> GetEndEffectorIds();
 
-    RobotEE GetEE(string ee_id);
+    Task<RobotEE> GetEE(string ee_id);
 
-    List<RobotEE> GetAllEE();
+    Task<List<RobotEE>> GetAllEE();
 
     bool HasUrdf();
 

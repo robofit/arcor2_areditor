@@ -339,13 +339,13 @@ namespace Base {
             OnSceneStateEvent?.Invoke(this, args);
         }
 
-        public void SelectRobotAndEE(string robotId, string eeId) {
+        public async void SelectRobotAndEE(string robotId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
                     SelectedRobot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectedEndEffector = SelectedRobot.GetEE(eeId);
+                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
                             Debug.LogError(ex);
@@ -407,14 +407,14 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
-        private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
+        private async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
                 return;
             }
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
                 try {
                     IRobot robot = GetRobot(args.Data.RobotId);
-                    RobotEE ee = robot.GetEE(eefPose.EndEffectorId);
+                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId);
                     ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
                         TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
                 } catch (ItemNotFoundException) {

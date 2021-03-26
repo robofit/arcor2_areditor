@@ -379,9 +379,7 @@ namespace Base {
 
 
         public async Task<List<string>> GetEndEffectorIds() {
-            if (!ResourcesLoaded) {
-                await LoadResources();
-            }
+            await LoadResources();
             List<string> result = new List<string>();
             foreach (RobotEE ee in EndEffectors)
                 result.Add(ee.EEId);
@@ -389,17 +387,15 @@ namespace Base {
         }
 
         public async Task<List<RobotEE>> GetEndEffectors() {
-            if (!ResourcesLoaded) {
-                await LoadEndEffectors();
-            }
+            await LoadResources();
             return EndEffectors;            
         }
 
         private async Task LoadResources() {
             if (!ResourcesLoaded) {
                 await LoadEndEffectors();
+                ResourcesLoaded = true;
             }
-            ResourcesLoaded = true;
         }
 
         public async Task LoadEndEffectors() {
@@ -491,7 +487,10 @@ namespace Base {
             ResetPosition();
         }
 
-        public RobotEE GetEE(string ee_id) {
+        public async Task<RobotEE> GetEE(string ee_id) {
+            if (!ResourcesLoaded) {
+                await LoadResources();
+            }
             foreach (RobotEE ee in EndEffectors)
                 if (ee.EEId == ee_id)
                     return ee;
@@ -637,7 +636,8 @@ namespace Base {
             outlineOnClick.GizmoHighlight();
         }
 
-        public List<RobotEE> GetAllEE() {
+        public async Task<List<RobotEE>> GetAllEE() {
+            await LoadResources();
             return EndEffectors;
         }
 

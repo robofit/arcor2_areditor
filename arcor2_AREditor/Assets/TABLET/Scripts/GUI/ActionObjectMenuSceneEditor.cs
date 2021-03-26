@@ -259,7 +259,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         UpdateModelOnEE();
     }
 
-    private void UpdateModelOnEE() {
+    private async void UpdateModelOnEE() {
         if (model == null)
             return;
         string robotName = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
@@ -269,7 +269,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
 
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robotName);
-            RobotEE ee = SceneManager.Instance.GetRobot(robotId).GetEE(eeId);
+            RobotEE ee = await(SceneManager.Instance.GetRobot(robotId).GetEE(eeId));
             model.transform.parent = ee.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
