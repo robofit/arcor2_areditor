@@ -57,10 +57,25 @@ public class TransformMenu : Singleton<TransformMenu> {
             if (prevValue != newValue)
                 UpdateRotate(newValue - prevValue);
 
+            Quaternion delta = TransformConvertor.UnityToROS(model.transform.localRotation);
+            Quaternion newrotation = TransformConvertor.UnityToROS(model.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+            Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
+            Coordinates.X.SetDeltaDegrees(delta.eulerAngles.x);
+            Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
+            Coordinates.Y.SetDeltaDegrees(delta.eulerAngles.y);
+            Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+            Coordinates.Z.SetDeltaDegrees(delta.eulerAngles.z);
         } else {
             newValue = GetPositionValue(TransformWheel.GetValue());
             if (handHolding || prevValue != newValue)
                 UpdateTranslate(newValue - prevValue);
+
+            Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).x);
+            Coordinates.X.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).x);
+            Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).y);
+            Coordinates.Y.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).y);
+            Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).z);
+            Coordinates.Z.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).z);
         }
 
 
@@ -144,12 +159,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                     break;
             }
         }
-        Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).x);
-        Coordinates.X.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).x);
-        Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).y);
-        Coordinates.Y.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).y);
-        Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).z);
-        Coordinates.Z.SetDeltaMeters(TransformConvertor.UnityToROS(model.transform.localPosition).z);
+        
     }
 
     private void UpdateRotate(float wheelValue) {
@@ -171,16 +181,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
         }
 
-        Quaternion delta = TransformConvertor.UnityToROS(model.transform.localRotation);
-
-
-        Quaternion newrotation = TransformConvertor.UnityToROS(model.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-        Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
-        Coordinates.X.SetDeltaDegrees(delta.eulerAngles.x);
-        Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
-        Coordinates.Y.SetDeltaDegrees(delta.eulerAngles.y);
-        Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
-        Coordinates.Z.SetDeltaDegrees(delta.eulerAngles.z);
+        
     }
 
     public float GetRoundedValue(float value) {

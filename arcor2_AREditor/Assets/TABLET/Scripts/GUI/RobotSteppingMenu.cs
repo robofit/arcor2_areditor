@@ -43,6 +43,18 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             } else {
                 gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
             }
+
+            if (translate) {
+                Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).x);
+                Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).y);
+                Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).z);
+
+            } else {
+                Quaternion newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
+                Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
+                Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+            }
         }
     }
 
@@ -129,9 +141,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Z;
                 break;
         }
-        await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+        try {
+            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
+        } catch (RequestFailedException ex ) {
+            Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
+        }
+        
 
     }
 
