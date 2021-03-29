@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using Base;
 using static Base.GameManager;
 using System.Threading.Tasks;
+using System.Collections;
+using TMPro;
 
 public class LeftMenuScene : LeftMenu
 {
@@ -25,25 +27,28 @@ public class LeftMenuScene : LeftMenu
             EditorInfo.text = "Scene: \n" + SceneManager.Instance.SceneMeta.Name;
     }
 
-    protected override void OnEnable() {
-        base.OnEnable();
-    }
-
-
-    protected override void OnDisable() {
-        base.OnDisable();
-    }
 
     private void OnSceneSavedStatusChanged(object sender, EventArgs e) {
         _ = UpdateBuildAndSaveBtns();
     }
 
-    protected override void UpdateBtns(InteractiveObject selectedObject) {
-        base.UpdateBtns(selectedObject);
-        if (requestingObject || selectedObject == null) {
+    protected async override Task UpdateBtns(InteractiveObject obj) {
+        try {
+        
+        if (CanvasGroup.alpha == 0) {
+            return;
+        }
+
+        await base.UpdateBtns(obj);
+
+        if (requestingObject || obj == null) {
 
         } else {
 
+        }
+        previousUpdateDone = true;
+        } finally {
+            previousUpdateDone = true;
         }
     }
 

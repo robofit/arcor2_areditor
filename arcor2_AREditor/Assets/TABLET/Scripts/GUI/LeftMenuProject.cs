@@ -1,10 +1,11 @@
 using System;
 using UnityEngine.UI;
 using Base;
-using System.Collections.Generic;
+using System.Collections;
 using IO.Swagger.Model;
 using UnityEngine;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 public class LeftMenuProject : LeftMenu
 {
@@ -28,14 +29,12 @@ public class LeftMenuProject : LeftMenu
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
     }
 
-    protected override void OnEnable() {
-        base.OnEnable();
+    protected void OnEnable() {
         ProjectManager.Instance.OnActionPointAddedToScene += OnActionPointAddedToScene;
 
     }
 
-    protected override void OnDisable() {
-        base.OnEnable();
+    protected void OnDisable() {
         ProjectManager.Instance.OnActionPointAddedToScene -= OnActionPointAddedToScene;
     }
 
@@ -60,55 +59,67 @@ public class LeftMenuProject : LeftMenu
 
     }
 
-    protected override void UpdateBtns(InteractiveObject selectedObject) {
-        base.UpdateBtns(selectedObject);
-        if (requestingObject || selectedObject == null) {
-            SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
-            AddActionButton.SetInteractivity(false, "No action point is selected");
-            AddActionButton2.SetInteractivity(false, "No action point is selected");
-            AddConnectionButton.SetInteractivity(false, "No input / output is selected");
-            AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
-            RunButton.SetInteractivity(false, "No object is selected");
-            RunButton2.SetInteractivity(false, "No object is selected");
-        } else {
-            SetActionPointParentButton.SetInteractivity(selectedObject is ActionPoint3D, "Selected object is not action point");
-            AddActionButton.SetInteractivity(selectedObject is ActionPoint3D, "Selected object is not action point");
-            AddActionButton2.SetInteractivity(selectedObject is ActionPoint3D, "Selected object is not action point");
-            AddConnectionButton.SetInteractivity(selectedObject.GetType() == typeof(PuckInput) ||
-                selectedObject.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
-            AddConnectionButton2.SetInteractivity(selectedObject.GetType() == typeof(PuckInput) ||
-                selectedObject.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
-            string runBtnInteractivity = null;
-
-            if (selectedObject.GetType() == typeof(Action3D)) {
-                if (!SceneManager.Instance.SceneStarted)
-                    runBtnInteractivity = "Scene offline";
-                else if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
-                    runBtnInteractivity = "Some action is already excecuted";
-                }
-                RunButton.SetDescription("Execute action");
-                RunButton2.SetDescription("Execute action");
-            } else if (selectedObject.GetType() == typeof(StartAction)) {
-                if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
-                    runBtnInteractivity = "Project without logic could not be started from editor";
-                } else if (SaveButton.IsInteractive()) {
-                    runBtnInteractivity = "Project has unsaved changes";
-                }
-                RunButton.SetDescription("Run project");
-                RunButton2.SetDescription("Run project");
-            } else {
-                runBtnInteractivity = "Selected object is not action or START";
+    protected async override Task UpdateBtns(InteractiveObject obj) {
+        try {
+            if (CanvasGroup.alpha == 0) {
+                previousUpdateDone = true;
+                return;
             }
+        
+        
+            Debug.LogError(selectedObjectUpdated);
+            await base.UpdateBtns(obj);
+            if (requestingObject || obj == null) {
+                SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
+                AddActionButton.SetInteractivity(false, "No action point is selected");
+                AddActionButton2.SetInteractivity(false, "No action point is selected");
+                AddConnectionButton.SetInteractivity(false, "No input / output is selected");
+                AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
+                RunButton.SetInteractivity(false, "No object is selected");
+                RunButton2.SetInteractivity(false, "No object is selected");
+            } else {
+                SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                string runBtnInteractivity = null;
 
-            RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
-            RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
-        }
-        if (!SceneManager.Instance.SceneStarted) {
-            AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
-        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
-        } else {
-            AddActionPointUsingRobotButton.SetInteractivity(true);
+                if (obj.GetType() == typeof(Action3D)) {
+                    if (!SceneManager.Instance.SceneStarted)
+                        runBtnInteractivity = "Scene offline";
+                    else if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
+                        runBtnInteractivity = "Some action is already excecuted";
+                    }
+                    RunButton.SetDescription("Execute action");
+                    RunButton2.SetDescription("Execute action");
+                } else if (obj.GetType() == typeof(StartAction)) {
+                    if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
+                        runBtnInteractivity = "Project without logic could not be started from editor";
+                    } else if (SaveButton.IsInteractive()) {
+                        runBtnInteractivity = "Project has unsaved changes";
+                    }
+                    RunButton.SetDescription("Run project");
+                    RunButton2.SetDescription("Run project");
+                } else {
+                    runBtnInteractivity = "Selected object is not action or START";
+                }
+
+                RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
+                RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
+            }
+            if (!SceneManager.Instance.SceneStarted) {
+                AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
+            } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+                AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
+            } else {
+                AddActionPointUsingRobotButton.SetInteractivity(true);
+            }
+        
+        } finally {
+            previousUpdateDone = true;
         }
     }
 

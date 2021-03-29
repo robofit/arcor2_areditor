@@ -30,30 +30,27 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public ConfirmationDialog ConfirmationDialog;
 
+    protected InteractiveObject selectedObject = null;
+    protected bool selectedObjectUpdated = true, previousUpdateDone = true;
+
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SceneManager.Instance.OnSceneStateEvent += Instance_OnSceneStateEvent;
+        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
     }
 
     private void Instance_OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         _ = UpdateBuildAndSaveBtns();
     }
 
-    protected virtual void OnEnable() {
-        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
-        
-    }
 
-    protected virtual void OnDisable() {
-        SelectorMenu.Instance.OnObjectSelectedChangedEvent -= OnObjectSelectedChangedEvent;
-    }
 
     private void OnObjectSelectedChangedEvent(object sender, InteractiveObjectEventArgs args) {
-        if (updateButtonsInteractivity)
-            UpdateBtns(args.InteractiveObject);
+        selectedObject = args.InteractiveObject;
+        selectedObjectUpdated = true;
     }
 
     private void OnGameStateChanged(object sender, GameStateEventArgs args) {
@@ -63,10 +60,19 @@ public abstract class LeftMenu : MonoBehaviour {
             _ = UpdateBuildAndSaveBtns();
     }
 
-    protected async virtual void UpdateBtns(InteractiveObject selectedObject) {
+
+
+    protected async virtual Task UpdateBtns(InteractiveObject obj) {
+        if (CanvasGroup.alpha == 0)
+            return;
+        Debug.LogError(obj);
+        if (obj == null)
+            Debug.LogError(null);
+        else
+            Debug.LogError(obj.GetName());
         RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
-        if (requestingObject || selectedObject == null) {
+        if (requestingObject || obj == null) {
             SelectedObjectText.text = "";
             MoveButton.SetInteractivity(false, "No object selected");
             MoveButton2.SetInteractivity(false, "No object selected");
@@ -74,20 +80,23 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(false, "No object selected");
             CalibrationButton.SetInteractivity(false, "No object selected");
             OpenMenuButton.SetInteractivity(false, "No object selected");
+            Debug.Log(obj);
         } else {
-            RequestResult result;
-            SelectedObjectText.text = selectedObject.GetName() + "\n" + selectedObject.GetObjectTypeName();
-            result = await selectedObject.Movable();
-            MoveButton.SetInteractivity(result.Success, result.Message);
-            MoveButton2.SetInteractivity(result.Success, result.Message);
-            result = await selectedObject.Removable();
-            RemoveButton.SetInteractivity(result.Success, result.Message);
-            RenameButton.SetInteractivity(selectedObject.GetType() == typeof(ActionPoint3D) ||
-                selectedObject.GetType() == typeof(Action3D) || (selectedObject.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted) ||
-                selectedObject.GetType() == typeof(APOrientation), "Selected object could not be renamed");
-            CalibrationButton.SetInteractivity(selectedObject.GetType() == typeof(Recalibrate) ||
-                selectedObject.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
-            OpenMenuButton.SetInteractivity(selectedObject.HasMenu(), "Selected object has no menu");            
+            SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
+            Task<RequestResult> tMove = Task.Run(() => obj.Movable());
+            Task<RequestResult> tRemove = Task.Run(() => obj.Removable());
+            RequestResult move = await tMove;
+            RequestResult remove = await tRemove;
+            MoveButton.SetInteractivity(move.Success, move.Message);
+            MoveButton2.SetInteractivity(move.Success, move.Message);
+            RemoveButton.SetInteractivity(remove.Success, remove.Message);
+            RenameButton.SetInteractivity(obj.GetType() == typeof(ActionPoint3D) ||
+                obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted) ||
+                obj.GetType() == typeof(APOrientation), "Selected object could not be renamed");
+            CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
+                obj.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
+            OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
+            Debug.Log(obj);
         }
     }
 
@@ -135,7 +144,18 @@ public abstract class LeftMenu : MonoBehaviour {
         RobotButton.interactable = true;
         AddButton.interactable = true;
         UtilityButton.interactable = true;
-        HomeButton.interactable = true;        
+        HomeButton.interactable = true;
+
+        
+    }
+
+    private async void LateUpdate() {
+        if (CanvasGroup.alpha > 0 && selectedObjectUpdated && previousUpdateDone) {
+            selectedObjectUpdated = false;
+            previousUpdateDone = false;
+            Debug.LogError("update btns");
+            await UpdateBtns(selectedObject);
+        }
     }
 
     public void OpenMenuButtonClick() {
@@ -155,6 +175,7 @@ public abstract class LeftMenu : MonoBehaviour {
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;
+        
     }
 
     public abstract Task UpdateBuildAndSaveBtns();

@@ -29,8 +29,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     private bool requestingObject = false;
 
-    public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
 
+
+    public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
+    private InteractiveObject lastSelectedObject = null;
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -133,11 +135,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         UpdateNoPoseMenu();
     }
 
-    private void SelectedObjectChanged(InteractiveObject interactiveObject) {
-        //if (interactiveObject != lastSelectedObject) {
+    private void SelectedObjectChanged(InteractiveObject interactiveObject, bool force = false) {
+        if (force || interactiveObject != lastSelectedObject) {
             OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
-            //lastSelectedObject = interactiveObject;
-        //}
+            Debug.LogWarning(interactiveObject?.GetName());
+            lastSelectedObject = interactiveObject;
+        }
     }
 
     private SelectorItem GetSelectorItem(InteractiveObject io) {
@@ -281,7 +284,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
             }
             DeselectObject(manually);
-            selectorItem.SetSelected(true, manually);
+            selectorItem.SetSelected(true, manually);            
             SelectedObjectChanged(selectorItem.InteractiveObject);
             if (manually)
                 manuallySelected = true;
@@ -336,6 +339,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
            
         }
+        // force update of left menu icons
+        SelectedObjectChanged(lastSelectedObject, true);
         
     }
 
@@ -410,12 +415,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public InteractiveObject GetSelectedObject() {
-        
+        /*
         foreach (SelectorItem item in selectorItems.Values.ToList()) {
             if (item.IsSelected())
                 return item.InteractiveObject;
         }
-        return null;
+        return null;*/
+        return lastSelectedObject;
     }
 
     public async Task ShowRobots(bool show, bool updateMenus) {

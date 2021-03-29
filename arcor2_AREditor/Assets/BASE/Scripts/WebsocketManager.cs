@@ -429,7 +429,7 @@ namespace Base {
                         if (value != null) {
                             return value;
                         } else {
-                            Thread.Sleep(10);
+                            Thread.Sleep(2);
                         }
                     }
                 }
