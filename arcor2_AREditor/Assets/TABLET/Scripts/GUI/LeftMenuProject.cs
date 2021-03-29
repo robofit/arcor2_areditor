@@ -14,7 +14,6 @@ public class LeftMenuProject : LeftMenu
 
     public GameObject ActionPicker;
     public InputDialog InputDialog;
-    public AddActionPointUsingRobotDialog AddActionPointUsingRobotDialog;
 
     private string waitingForAPName = "", updateAPWithRobotId = "", updateAPWithEE = "";
 
@@ -108,6 +107,8 @@ public class LeftMenuProject : LeftMenu
             AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
         } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
             AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
+        } else {
+            AddActionPointUsingRobotButton.SetInteractivity(true);
         }
     }
 
@@ -276,17 +277,19 @@ public class LeftMenuProject : LeftMenu
             InputDialog.Close();
     }
 
-    private async void ShowCreateGlobalActionPointUsingRobotDialog() {
+    private void ShowCreateGlobalActionPointUsingRobotDialog() {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to create new AP", "Only available when online");
             return;
         }
-        GameManager.Instance.ShowLoadingScreen("Loading robots...");
-        await AddActionPointUsingRobotDialog.Open(
+        InputDialog.Open("Create action point using robot",
+                         SceneManager.Instance.SelectedRobot.GetName() + "/" + SceneManager.Instance.SelectedEndEffector.GetName(),
+                         "Name",
                          ProjectManager.Instance.GetFreeAPName("global"),
-                         () => CreateGlobalActionPointUsingRobot(AddActionPointUsingRobotDialog.GetName(), AddActionPointUsingRobotDialog.GetRobotId(), AddActionPointUsingRobotDialog.GetEEId()),
-                         () => AddActionPointUsingRobotDialog.Close());
-        GameManager.Instance.HideLoadingScreen();
+                         () => CreateGlobalActionPointUsingRobot(InputDialog.GetValue(),
+                                                                 SceneManager.Instance.SelectedRobot.GetId(),
+                                                                 SceneManager.Instance.SelectedEndEffector.GetId()),
+                         () => InputDialog.Close());
     }
 
     private async void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
@@ -300,7 +303,7 @@ public class LeftMenuProject : LeftMenu
         waitingForAPName = name;
         bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
-            AddActionPointUsingRobotDialog.Close();
+            InputDialog.Close();
         else {
             GameManager.Instance.HideLoadingScreen();
         }

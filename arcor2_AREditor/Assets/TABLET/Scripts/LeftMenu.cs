@@ -196,7 +196,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     #region Robot buttons methods
 
-    public void RobotSelectorButtonClick() {
+    public async void RobotSelectorButtonClick() {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
             return;
@@ -205,9 +205,10 @@ public abstract class LeftMenu : MonoBehaviour {
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSelector.Close();
         } else {
-            SelectorMenu.Instance.gameObject.SetActive(false);
             UpdateVisibility(false, true);
-            RobotSelector.Open(UpdateVisibility);
+            if (await RobotSelector.Open(UpdateVisibility)) {
+                SelectorMenu.Instance.gameObject.SetActive(false);
+            }
         }
     }
 

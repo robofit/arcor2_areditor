@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,15 +13,18 @@ public class RobotSelectorDialog : Dialog {
 
     private UnityAction _closeCallback;
 
-    public async void Open(UnityAction closeCallback) {
+    public async Task<bool> Open(UnityAction closeCallback) {
+        if (!SceneManager.Instance.RobotInScene()) {
+            Notifications.Instance.ShowNotification("Failed to open robot selector menu", "There are no robots in scene");
+            closeCallback.Invoke();
+            return false;
+        }
         _closeCallback = closeCallback;
         robotId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotId", null);
         eeId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedEndEffectorId", null);
-        Debug.LogError(robotId);
-        Debug.LogError(eeId);
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
-            return;
+            return false;
         }
         base.Open();
         string robotName = null;
@@ -30,9 +34,15 @@ public class RobotSelectorDialog : Dialog {
         } catch (ItemNotFoundException ex) {
             robotName = null;
         }
+        DropdownRobots.Dropdown.Dropdown.dropdownItems.Clear();
         await DropdownRobots.Init(SelectRobot, false, robotName);
         if (DropdownRobots.Dropdown.Dropdown.dropdownItems.Count > 0) {
             SelectRobot(DropdownRobots.Dropdown.GetValue().ToString());
+            return true;
+        } else {
+            Notifications.Instance.ShowNotification("Failed to open robot selector menu", "There are no robots in scene");
+            Close();
+            return false;
         }
     }
 
