@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using IO.Swagger.Model;
 using TMPro;
 using System;
+using System.Threading.Tasks;
+using NativeWebSocket;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -265,8 +267,19 @@ public class ActionPoint3D : Base.ActionPoint {
         return sphere;
     }
 
-    public override bool Removable() {
-        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor;
+    public async override Task<RequestResult> Removable() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+            return new RequestResult(false, "AP could only be removed in project editor");
+        else if (Locked) {
+            return new RequestResult(false, "AP is locked");
+        } else {
+            try {
+                await WebsocketManager.Instance.RemoveActionPoint(GetId(), true);
+                return new RequestResult(true);
+            } catch (RequestFailedException ex) {
+                return new RequestResult(false, ex.Message);
+            }
+        }
     }
 
     public override void Remove() {

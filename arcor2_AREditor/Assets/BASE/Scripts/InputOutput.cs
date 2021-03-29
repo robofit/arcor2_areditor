@@ -361,16 +361,16 @@ namespace Base {
             return false;
         }
 
-        public override bool Movable() {
-            return false;
+        public async override Task<RequestResult> Movable() {
+            return new RequestResult(false, "Input / output could not be moved");
         }
 
         public override void StartManipulation() {
             throw new NotImplementedException();
         }
 
-        public override bool Removable() {
-            return false;
+        public async override Task<RequestResult> Removable() {
+            return new RequestResult(false, "Input / output could not be removed");
         }
 
         public override void Remove() {

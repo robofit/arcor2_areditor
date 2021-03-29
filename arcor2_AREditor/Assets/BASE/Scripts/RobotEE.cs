@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using RosSharp.Urdf;
 using UnityEngine;
@@ -64,16 +65,16 @@ public class RobotEE : InteractiveObject {
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Robot EE could not be moved at the moment (will be added in next release)");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
     }
 
-    public override bool Removable() {
-        return false;
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Robot EE could not be removed");
     }
 
     public override void Remove() {

@@ -53,7 +53,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
 
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
-            await WebsocketManager.Instance.RemoveFromScene(CurrentObject.Data.Id, false);
+            await WebsocketManager.Instance.RemoveFromScene(CurrentObject.Data.Id, false, false);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to remove object " + CurrentObject.Data.Name, response.Messages[0]);
             return;

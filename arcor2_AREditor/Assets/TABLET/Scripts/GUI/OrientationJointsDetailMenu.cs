@@ -256,7 +256,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void Delete() {
         try {
             if (isOrientationDetail) {
-                await WebsocketManager.Instance.RemoveActionPointOrientation(orientation.Id);
+                await WebsocketManager.Instance.RemoveActionPointOrientation(orientation.Id, false);
             } else {
                 await WebsocketManager.Instance.RemoveActionPointJoints(joints.Id);
             }

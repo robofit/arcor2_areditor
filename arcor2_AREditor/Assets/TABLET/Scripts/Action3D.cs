@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using Newtonsoft.Json;
 using TMPro;
@@ -151,8 +152,17 @@ public class Action3D : Base.Action {
         throw new NotImplementedException();
     }
 
-    public override bool Removable() {
-        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor;
+    public async override Task<RequestResult> Removable() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+            return new RequestResult(false, "Action could only be removed in project editor");
+        else {
+            try {
+                await WebsocketManager.Instance.RemoveAction(GetId(), true);
+                return new RequestResult(true);
+            } catch (RequestFailedException ex) {
+                return new RequestResult(false, ex.Message);
+            }
+        }
     }
 
     public override void Remove() {

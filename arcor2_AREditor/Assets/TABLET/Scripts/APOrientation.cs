@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
@@ -82,20 +83,29 @@ public class APOrientation : InteractiveObject {
         return true;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Orientation could not be moved");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
     }
 
-    public override bool Removable() {
-        return false;
+    public async override Task<RequestResult> Removable() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, true);
+            return new RequestResult(true);
+        } catch (RequestFailedException ex) {
+            return new RequestResult(false, ex.Message);
+        }
     }
 
-    public override void Remove() {
-        throw new System.NotImplementedException();
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove orientation", ex.Message);
+        }
     }
 
     public async override void Rename(string name) {

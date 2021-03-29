@@ -535,7 +535,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
@@ -544,7 +545,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
@@ -554,14 +556,16 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
@@ -1862,6 +1866,11 @@ namespace Base {
         public RequestResult(bool success, string message) {
             this.Success = success;
             this.Message = message;
+        }
+
+        public RequestResult(bool success) {
+            this.Success = success;
+            this.Message = "";
         }
 
         public override bool Equals(object obj) {

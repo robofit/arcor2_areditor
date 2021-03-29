@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using RuntimeGizmos;
@@ -73,15 +74,4 @@ public class ActionObjectNoPose : ActionObject {
         throw new RequestFailedException("This object has no pose");
     }
 
-    public override bool Movable() {
-        return false;
-    }
-
-    public override bool Removable() {
-        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
-    }
-
-    public override void Remove() {
-        throw new NotImplementedException();
-    }
 }

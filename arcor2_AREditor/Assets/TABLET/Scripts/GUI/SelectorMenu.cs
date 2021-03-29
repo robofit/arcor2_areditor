@@ -420,7 +420,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void ShowRobots(bool show, bool updateMenus) {
-        ProjectManager.Instance.EnableAllRobotsEE(show);
+        if (SceneManager.Instance.SceneStarted)
+            ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
         if (updateMenus)
             ForceUpdateMenus();

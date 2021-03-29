@@ -3,16 +3,38 @@ using UnityEngine;
 using UnityEngine.UI;
 using Base;
 using static Base.GameManager;
+using System.Threading.Tasks;
 
 public class LeftMenuScene : LeftMenu
 {
 
     //public GameObject MeshPicker;
 
+    public ButtonWithTooltip CreateProjectBtn, AddNewObjectTypeButton;
+
+    public InputDialogWithToggle InputDialogWithToggle;
+
     public Button AddMeshButton;
+
+    private void Start() {
+        Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
+    }
     protected override void Update() {
         base.Update();
 
+    }
+
+    protected override void OnEnable() {
+        base.OnEnable();
+    }
+
+
+    protected override void OnDisable() {
+        base.OnDisable();
+    }
+
+    private void OnSceneSavedStatusChanged(object sender, EventArgs e) {
+        _ = UpdateBuildAndSaveBtns();
     }
 
     protected override void UpdateBtns(InteractiveObject selectedObject) {
@@ -54,4 +76,105 @@ public class LeftMenuScene : LeftMenu
         }
         
     }
+
+    public async void SaveScene() {
+        IO.Swagger.Model.SaveSceneResponse saveSceneResponse = await Base.GameManager.Instance.SaveScene();
+        if (!saveSceneResponse.Result) {
+            saveSceneResponse.Messages.ForEach(Debug.LogError);
+            Notifications.Instance.ShowNotification("Scene save failed", saveSceneResponse.Messages.Count > 0 ? saveSceneResponse.Messages[0] : "Failed to save scene");
+            return;
+        } else {
+            SaveButton.SetInteractivity(false, "There are no unsaved changes");
+            _ = UpdateBuildAndSaveBtns();
+        }
+    }
+
+    public override async Task UpdateBuildAndSaveBtns() {
+        string messageForce;
+        bool successForce;
+        (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
+        if (!SceneManager.Instance.SceneChanged) {
+            SaveButton.SetInteractivity(false, "There are no unsaved changes");
+            CreateProjectBtn.SetInteractivity(true);
+        } else {
+            SaveButton.SetInteractivity(true);
+            CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
+        }
+        CloseButton.SetInteractivity(successForce, messageForce); 
+    }
+
+    public void ShowNewProjectDialog() {
+        InputDialogWithToggle.Open("New project",
+            "",
+            "Name",
+            "",
+            () => CreateProject(),
+            () => InputDialogWithToggle.Close(),
+            validateInput: ValidateProjectName);
+    }
+
+    private async Task<Base.RequestResult> ValidateProjectName(string name) {
+        try {
+            await WebsocketManager.Instance.CreateProject(name,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            InputDialogWithToggle.GetToggleValue(),
+            true);
+        } catch (RequestFailedException ex) {
+            return new RequestResult(false, ex.Message);
+        }
+        return new RequestResult(true, "");
+    }
+
+
+    private async void CreateProject() {
+        GameManager.Instance.ShowLoadingScreen("Creating new project", true);
+        string nameOfNewProject = InputDialogWithToggle.GetValue();
+        if (string.IsNullOrEmpty(nameOfNewProject)) {
+            Notifications.Instance.ShowNotification("Failed to create new project", "Name of project must not be empty");
+            GameManager.Instance.HideLoadingScreen(true);
+            return;
+        }
+        try {
+            await WebsocketManager.Instance.CreateProject(nameOfNewProject,
+            SceneManager.Instance.SceneMeta.Id,
+            "",
+            InputDialogWithToggle.GetToggleValue(),
+            false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to create new project", ex.Message);
+            GameManager.Instance.HideLoadingScreen(true);
+        }
+        InputDialogWithToggle.Close();
+    }
+
+
+    public async void ShowCloseSceneDialog() {
+        (bool success, _) = await Base.GameManager.Instance.CloseScene(false);
+        if (!success) {
+            GameManager.Instance.HideLoadingScreen();
+            ConfirmationDialog.Open("Close scene",
+                         "Are you sure you want to close current scene? Unsaved changes will be lost.",
+                         () => CloseScene(),
+                         () => ConfirmationDialog.Close());
+        }
+    }
+
+
+    public async void CloseScene() {
+        (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
+        if (success) {
+
+            ConfirmationDialog.Close();
+            MenuManager.Instance.MainMenu.Close();
+        }
+    }
+
+
+    public void ShowNewObjectTypeMenu() {
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
+    }
+
+
 }
+

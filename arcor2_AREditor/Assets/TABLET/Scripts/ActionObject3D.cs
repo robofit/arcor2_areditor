@@ -8,6 +8,7 @@ using IO.Swagger.Model;
 using TriLibCore;
 using System;
 using TriLibCore.General;
+using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionObject3D : ActionObject {
@@ -425,11 +426,5 @@ public class ActionObject3D : ActionObject {
         }
     }
 
-    public override bool Removable() {
-        return GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
-    }
-
-    public override void Remove() {
-        throw new NotImplementedException();
-    }
+    
 }

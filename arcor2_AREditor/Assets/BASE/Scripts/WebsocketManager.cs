@@ -268,7 +268,8 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
+            if ((dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) &&
+                (dispatch?.response == null  || !dispatch.response.Contains("Remove")))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -1285,11 +1286,11 @@ namespace Base {
         /// <param name="id">ID of action object</param>
         /// <param name="force">Indicates whether or not it should be forced</param>
         /// <returns>Response from server</returns>
-        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force) {
+        public async Task<IO.Swagger.Model.RemoveFromSceneResponse> RemoveFromScene(string id, bool force, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveFromSceneRequestArgs args = new IO.Swagger.Model.RemoveFromSceneRequestArgs(id: id, force: force);
-            IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", args: args);
-            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveFromSceneRequest request = new IO.Swagger.Model.RemoveFromSceneRequest(id: r_id, request: "RemoveFromScene", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true, logInfo: !dryRun);
             return await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
         }
 
@@ -1508,6 +1509,7 @@ namespace Base {
             IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(r_id, "CloseScene", args, dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
+            Debug.LogError(response);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1684,11 +1686,11 @@ namespace Base {
         /// <param name="actionPointId">UUID of action point</param>
         /// <param name="orientationId">UUID of orientation</param>
         /// <returns></returns>
-        public async Task RemoveActionPointOrientation(string orientationId) {
+        public async Task RemoveActionPointOrientation(string orientationId, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveActionPointOrientationRequestArgs args = new IO.Swagger.Model.RemoveActionPointOrientationRequestArgs(orientationId: orientationId);
-            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args);
-            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveActionPointOrientationRequest request = new IO.Swagger.Model.RemoveActionPointOrientationRequest(r_id, "RemoveActionPointOrientation", args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true, logInfo: !dryRun);
             IO.Swagger.Model.RemoveActionPointOrientationResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointOrientationResponse>(r_id);
 
             if (response == null || !response.Result)
@@ -1977,7 +1979,7 @@ namespace Base {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: actionId);
             IO.Swagger.Model.RemoveActionRequest request = new IO.Swagger.Model.RemoveActionRequest(r_id, "RemoveAction", args, dryRun: dryRun);
-            SendDataToServer(request.ToJson(), r_id, true);
+            SendDataToServer(request.ToJson(), r_id, true, logInfo: !dryRun);
             IO.Swagger.Model.RemoveActionResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionResponse>(r_id);
 
             if (response == null || !response.Result)
@@ -2106,7 +2108,7 @@ namespace Base {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(actionPointId);
             IO.Swagger.Model.RemoveActionPointRequest request = new IO.Swagger.Model.RemoveActionPointRequest(r_id, "RemoveActionPoint", args, dryRun: dryRun);
-            SendDataToServer(request.ToJson(), r_id, true);
+            SendDataToServer(request.ToJson(), r_id, true, logInfo: !dryRun);
             IO.Swagger.Model.RemoveActionPointResponse response = await WaitForResult<IO.Swagger.Model.RemoveActionPointResponse>(r_id);
 
             if (response == null || !response.Result)

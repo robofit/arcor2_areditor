@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Base;
 using UnityEngine;
 
 public class TabletVis : InteractiveObject {
@@ -18,8 +20,8 @@ public class TabletVis : InteractiveObject {
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Tablet vizualization could not be moved");
     }
 
     public override void OnClick(Click type) {
@@ -38,8 +40,8 @@ public class TabletVis : InteractiveObject {
         throw new System.NotImplementedException();
     }
 
-    public override bool Removable() {
-        return false;
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Tablet vizualization could not be removed");
     }
 
     public override void Remove() {

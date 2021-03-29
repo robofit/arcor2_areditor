@@ -610,8 +610,11 @@ namespace Base {
             transform.localRotation = GetSceneOrientation();
         }
 
-        public override bool Movable() {
-            return true;
+        public async override Task<RequestResult> Movable() {
+            if (Locked)
+                return new RequestResult(false, "Ap is locked");
+            else
+                return new RequestResult(true);
         }
 
         public override string GetId() {

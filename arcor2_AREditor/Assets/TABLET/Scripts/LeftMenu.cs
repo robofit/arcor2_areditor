@@ -16,7 +16,8 @@ public abstract class LeftMenu : MonoBehaviour {
     public CanvasGroup CanvasGroup;
 
     public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
-    public Button MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton, OpenMenuButton, RobotSelectorButton, RobotSteppingButton; //Buttons with number 2 are duplicates in favorites submenu
+    public ButtonWithTooltip MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton,
+        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton; //Buttons with number 2 are duplicates in favorites submenu
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
@@ -26,22 +27,22 @@ public abstract class LeftMenu : MonoBehaviour {
     protected ActionPoint3D selectedActionPoint;
     protected LeftMenuSelection currentSubmenuOpened;
 
+    public ConfirmationDialog ConfirmationDialog;
+
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
-    }
-
-    private void OnEnable() {
-        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+    }
+
+    protected virtual void OnEnable() {
+        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
         
     }
 
-    private void OnDisable() {
+    protected virtual void OnDisable() {
         SelectorMenu.Instance.OnObjectSelectedChangedEvent -= OnObjectSelectedChangedEvent;
-        GameManager.Instance.OnGameStateChanged -= OnGameStateChanged;
-        GameManager.Instance.OnEditorStateChanged -= OnEditorStateChanged;
     }
 
     private void OnObjectSelectedChangedEvent(object sender, InteractiveObjectEventArgs args) {
@@ -49,33 +50,38 @@ public abstract class LeftMenu : MonoBehaviour {
             UpdateBtns(args.InteractiveObject);
     }
 
-    private void OnGameStateChanged(object sender, GameStateEventArgs _) {
+    private void OnGameStateChanged(object sender, GameStateEventArgs args) {
         if (!isVisibilityForced)
             UpdateVisibility();
+        if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor)
+            _ = UpdateBuildAndSaveBtns();
     }
 
-    protected virtual void UpdateBtns(InteractiveObject selectedObject) {
-        RobotSteppingButton.interactable = SceneManager.Instance.SceneStarted;
-        RobotSelectorButton.interactable = SceneManager.Instance.SceneStarted;
+    protected async virtual void UpdateBtns(InteractiveObject selectedObject) {
+        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
+        RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         if (requestingObject || selectedObject == null) {
             SelectedObjectText.text = "";
-            MoveButton.interactable = false;
-            MoveButton2.interactable = false;
-            RemoveButton.interactable = false;
-            RenameButton.interactable = false;
-            CalibrationButton.interactable = false;
-            OpenMenuButton.interactable = false;
+            MoveButton.SetInteractivity(false, "No object selected");
+            MoveButton2.SetInteractivity(false, "No object selected");
+            RemoveButton.SetInteractivity(false, "No object selected");
+            RenameButton.SetInteractivity(false, "No object selected");
+            CalibrationButton.SetInteractivity(false, "No object selected");
+            OpenMenuButton.SetInteractivity(false, "No object selected");
         } else {
+            RequestResult result;
             SelectedObjectText.text = selectedObject.GetName() + "\n" + selectedObject.GetType();
-            MoveButton.interactable = selectedObject.Movable();
-            MoveButton2.interactable = selectedObject.Movable();
-            RemoveButton.interactable = selectedObject.Removable();
-            RenameButton.interactable = selectedObject.GetType() == typeof(ActionPoint3D) ||
-                selectedObject.GetType() == typeof(Action3D) || selectedObject.GetType() == typeof(ActionObject3D) ||
-                selectedObject.GetType() == typeof(APOrientation);
-            CalibrationButton.interactable = selectedObject.GetType() == typeof(Recalibrate) ||
-                selectedObject.GetType() == typeof(CreateAnchor);
-            OpenMenuButton.interactable = selectedObject.HasMenu();            
+            result = await selectedObject.Movable();
+            MoveButton.SetInteractivity(result.Success, result.Message);
+            MoveButton2.SetInteractivity(result.Success, result.Message);
+            result = await selectedObject.Removable();
+            RemoveButton.SetInteractivity(result.Success, result.Message);
+            RenameButton.SetInteractivity(selectedObject.GetType() == typeof(ActionPoint3D) ||
+                selectedObject.GetType() == typeof(Action3D) || (selectedObject.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted) ||
+                selectedObject.GetType() == typeof(APOrientation), "Selected object could not be renamed");
+            CalibrationButton.SetInteractivity(selectedObject.GetType() == typeof(Recalibrate) ||
+                selectedObject.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
+            OpenMenuButton.SetInteractivity(selectedObject.HasMenu(), "Selected object has no menu");            
         }
     }
 
@@ -151,7 +157,7 @@ public abstract class LeftMenu : MonoBehaviour {
         CanvasGroup.alpha = visible ? 1 : 0;
     }
 
-
+    public abstract Task UpdateBuildAndSaveBtns();
 
     public void FavoritesButtonClick() {
         MenuManager.Instance.HideAllMenus();
@@ -256,9 +262,9 @@ public abstract class LeftMenu : MonoBehaviour {
 
         
         //was clicked the button in favorites or settings submenu?
-        Button clickedButton = MoveButton;
+        Button clickedButton = MoveButton.Button;
         if (currentSubmenuOpened == LeftMenuSelection.Favorites)
-            clickedButton = MoveButton2;
+            clickedButton = MoveButton2.Button;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons

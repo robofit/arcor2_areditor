@@ -2,6 +2,7 @@ using System;
 using Base;
 using UnityEngine;
 using RuntimeGizmos;
+using System.Threading.Tasks;
 
 public abstract class StartEndAction : Action3D {
 
@@ -42,8 +43,8 @@ public abstract class StartEndAction : Action3D {
         base.OnHoverEnd();
     }
 
-    public override bool Movable() {
-        return true;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(true);
     }
 
     public override bool HasMenu() {

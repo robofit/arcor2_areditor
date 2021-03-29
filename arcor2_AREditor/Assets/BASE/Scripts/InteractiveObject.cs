@@ -3,6 +3,7 @@ using Base;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 public abstract class InteractiveObject : Clickable {
 
@@ -10,10 +11,10 @@ public abstract class InteractiveObject : Clickable {
     public abstract string GetId();
     public abstract void OpenMenu();
     public abstract bool HasMenu();
-    public abstract bool Movable();
+    public abstract Task<RequestResult> Movable();
     public abstract void StartManipulation();
 
-    public abstract bool Removable();
+    public abstract Task<RequestResult> Removable();
 
     public abstract void Remove();
     public virtual float GetDistance(Vector3 origin) {
