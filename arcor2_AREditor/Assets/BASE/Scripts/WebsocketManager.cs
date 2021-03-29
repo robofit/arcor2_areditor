@@ -1509,7 +1509,6 @@ namespace Base {
             IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(r_id, "CloseScene", args, dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
-            Debug.LogError(response);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }

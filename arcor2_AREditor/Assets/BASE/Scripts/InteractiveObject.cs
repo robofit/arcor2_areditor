@@ -9,6 +9,8 @@ public abstract class InteractiveObject : Clickable {
 
     public abstract string GetName();
     public abstract string GetId();
+
+    public abstract string GetObjectTypeName();
     public abstract void OpenMenu();
     public abstract bool HasMenu();
     public abstract Task<RequestResult> Movable();

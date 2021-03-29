@@ -426,5 +426,7 @@ public class ActionObject3D : ActionObject {
         }
     }
 
-    
+    public override string GetObjectTypeName() {
+        return "Action object";
+    }
 }

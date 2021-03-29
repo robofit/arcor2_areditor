@@ -10,15 +10,18 @@ public class LeftMenuProject : LeftMenu
 {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
-        AddConnectionButton, AddConnectionButton2, BuildPackageButton;
+        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton;
 
     public GameObject ActionPicker;
-    private InputDialog inputDialog;
+    public InputDialog InputDialog;
+    public AddActionPointUsingRobotDialog AddActionPointUsingRobotDialog;
 
+    private string waitingForAPName = "", updateAPWithRobotId = "", updateAPWithEE = "";
 
     protected override void Update() {
         base.Update();
-
+        if (ProjectManager.Instance.ProjectMeta != null)
+            EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
 
     private void Start() {
@@ -28,11 +31,34 @@ public class LeftMenuProject : LeftMenu
 
     protected override void OnEnable() {
         base.OnEnable();
-        
+        ProjectManager.Instance.OnActionPointAddedToScene += OnActionPointAddedToScene;
+
     }
 
     protected override void OnDisable() {
         base.OnEnable();
+        ProjectManager.Instance.OnActionPointAddedToScene -= OnActionPointAddedToScene;
+    }
+
+    private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
+        if (!string.IsNullOrEmpty(waitingForAPName) && args.ActionPoint.GetName() == waitingForAPName) {
+            try {
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
+                await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
+            } finally {
+                waitingForAPName = "";
+                updateAPWithRobotId = "";
+                updateAPWithEE = "";
+                GameManager.Instance.HideLoadingScreen();
+            }
+
+
+        }
+
     }
 
     protected override void UpdateBtns(InteractiveObject selectedObject) {
@@ -78,6 +104,11 @@ public class LeftMenuProject : LeftMenu
             RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
             RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
         }
+        if (!SceneManager.Instance.SceneStarted) {
+            AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
+        }
     }
 
     protected override void DeactivateAllSubmenus() {
@@ -111,7 +142,7 @@ public class LeftMenuProject : LeftMenu
     public async void BuildPackage(string name) {
         try {
             await Base.GameManager.Instance.BuildPackage(name);
-            inputDialog.Close();
+            InputDialog.Close();
             Notifications.Instance.ShowToastMessage("Package was built sucessfully.");
         } catch (Base.RequestFailedException ex) {
 
@@ -133,12 +164,12 @@ public class LeftMenuProject : LeftMenu
     }
 
     public void ShowBuildPackageDialog() {
-        inputDialog.Open("Build package",
+        InputDialog.Open("Build package",
                          "",
                          "Package name",
                          Base.ProjectManager.Instance.ProjectMeta.Name + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss"),
-                         () => BuildPackage(inputDialog.GetValue()),
-                         () => inputDialog.Close());
+                         () => BuildPackage(InputDialog.GetValue()),
+                         () => InputDialog.Close());
     }
 
 
@@ -223,8 +254,58 @@ public class LeftMenuProject : LeftMenu
 
 
     public void AddActionPointClick() {
-        ControlBoxManager.Instance.ShowCreateGlobalActionPointDialog();
+        ShowCreateGlobalActionPointDialog();
     }
+
+    public void AddActionPointUsingRobotClick() {
+        ShowCreateGlobalActionPointUsingRobotDialog();
+    }
+
+    private void ShowCreateGlobalActionPointDialog() {
+        InputDialog.Open("Create action point",
+                         "Type action point name",
+                         "Name",
+                         ProjectManager.Instance.GetFreeAPName("global"),
+                         () => CreateGlobalActionPoint(InputDialog.GetValue()),
+                         () => InputDialog.Close());
+    }
+
+    private async void CreateGlobalActionPoint(string name) {
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
+        if (result)
+            InputDialog.Close();
+    }
+
+    private async void ShowCreateGlobalActionPointUsingRobotDialog() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to create new AP", "Only available when online");
+            return;
+        }
+        GameManager.Instance.ShowLoadingScreen("Loading robots...");
+        await AddActionPointUsingRobotDialog.Open(
+                         ProjectManager.Instance.GetFreeAPName("global"),
+                         () => CreateGlobalActionPointUsingRobot(AddActionPointUsingRobotDialog.GetName(), AddActionPointUsingRobotDialog.GetRobotId(), AddActionPointUsingRobotDialog.GetEEId()),
+                         () => AddActionPointUsingRobotDialog.Close());
+        GameManager.Instance.HideLoadingScreen();
+    }
+
+    private async void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
+            Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
+            return;
+        }
+        GameManager.Instance.ShowLoadingScreen("Adding AP...");
+        updateAPWithEE = eeId;
+        updateAPWithRobotId = robotId;
+        waitingForAPName = name;
+        bool result = await GameManager.Instance.AddActionPoint(name, "");
+        if (result)
+            AddActionPointUsingRobotDialog.Close();
+        else {
+            GameManager.Instance.HideLoadingScreen();
+        }
+    }
+
 
     public override void UpdateVisibility() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&

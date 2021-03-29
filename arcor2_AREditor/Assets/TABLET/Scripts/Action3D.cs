@@ -178,4 +178,8 @@ public class Action3D : Base.Action {
             throw;
         }
     }
+
+    public override string GetObjectTypeName() {
+        return "Action";
+    }
 }

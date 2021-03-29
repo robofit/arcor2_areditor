@@ -7,6 +7,7 @@ using System.Linq;
 using static Base.GameManager;
 using TMPro;
 using UnityEngine.Events;
+using System.Threading.Tasks;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -30,8 +31,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
 
-    private InteractiveObject lastSelectedObject = null;
-
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -47,11 +46,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private void OnLoadProjectScene(object sender, EventArgs e) {
-        UpdateFilters();
+        _ = UpdateFilters();
     }
 
-    public void UpdateFilters() {
-        ShowRobots(RobotsToggle.Toggled, false);
+    public async Task UpdateFilters() {
+        await ShowRobots(RobotsToggle.Toggled, false);
         ShowActionObjects(ObjectsToggle.Toggled, false);
         ShowActionPoints(PointsToggle.Toggled, false);
         ShowActions(ActionsToggle.Toggled, false);
@@ -419,9 +418,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         return null;
     }
 
-    public void ShowRobots(bool show, bool updateMenus) {
+    public async Task ShowRobots(bool show, bool updateMenus) {
         if (SceneManager.Instance.SceneStarted)
-            ProjectManager.Instance.EnableAllRobotsEE(show);
+            await ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
         if (updateMenus)
             ForceUpdateMenus();
@@ -459,8 +458,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             ForceUpdateMenus();
     }
 
-    public void ShowRobots(bool show) {
-        ShowRobots(show, true);
+    public async Task ShowRobots(bool show) {
+        await ShowRobots(show, true);
     }
 
     public void ShowActionObjects(bool show) {

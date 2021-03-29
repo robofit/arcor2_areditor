@@ -14,6 +14,10 @@ public class ActionObjectNoPose : ActionObject {
         return null;
     }
 
+    public override string GetObjectTypeName() {
+        return "Action object";
+    }
+
     public override Quaternion GetSceneOrientation() {
         throw new RequestFailedException("This object has no pose");
     }

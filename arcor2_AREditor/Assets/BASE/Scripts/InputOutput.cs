@@ -11,7 +11,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public class InputOutput : InteractiveObject {
+    public abstract class InputOutput : InteractiveObject {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -70,9 +70,9 @@ namespace Base {
             } else {
                 if (logicItemIds.Count == 0) {
                     if (typeof(PuckOutput) == GetType() && Action.Data.Id != "START" && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
-                        ShowOutputTypeDialog(() => CreateNewConnection());
+                        ShowOutputTypeDialog(async () => await CreateNewConnection());
                     } else {
-                        CreateNewConnection();
+                        await CreateNewConnection();
                     }
                 } else {
                     // For output:
@@ -109,7 +109,7 @@ namespace Base {
                             showNewConnectionButton = false;
                         }
                         else if(items.Count == 1 && howManyConditions == 0) { // the "any" connection already exists
-                            SelectedConnection(items.Values.First());
+                            await SelectedConnection(items.Values.First());
                             return;
                         }
                     }
@@ -136,13 +136,13 @@ namespace Base {
         }
 
 
-        public async void SelectedConnection(LogicItem logicItem) {
+        public async Task SelectedConnection(LogicItem logicItem) {
             MenuManager.Instance.ConnectionSelectorDialog.Close();
             if (logicItem == null) {
                 if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
-                    ShowOutputTypeDialog(() => CreateNewConnection());
+                    ShowOutputTypeDialog(async () => await CreateNewConnection());
                 } else {
-                    CreateNewConnection();
+                    await CreateNewConnection();
                 }
             } else {
             GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
@@ -151,9 +151,9 @@ namespace Base {
                 await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
                 ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
                 if (typeof(PuckOutput) == GetType()) {
-                    theOtherOne.GetComponent<PuckInput>().GetOutput();
+                    await theOtherOne.GetComponent<PuckInput>().GetOutput();
                 } else {
-                    theOtherOne.GetComponent<PuckOutput>().GetInput();
+                        await theOtherOne.GetComponent<PuckOutput>().GetInput();
                 }
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -184,17 +184,17 @@ namespace Base {
             MenuManager.Instance.OutputTypeDialog.Open(this, callback, true, true, true);
         }
 
-        private void CreateNewConnection() {
+        private async Task CreateNewConnection() {
             ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
             if (typeof(PuckOutput) == GetType()) {
-                GetInput();
+                await GetInput();
             } else {
-                GetOutput();
+                await GetOutput();
             }
         }
 
 
-        public async void GetInput() {
+        public async Task GetInput() {
             List<Action> actionList = ProjectManager.Instance.GetAllActions();
             actionList.Add(ProjectManager.Instance.StartAction);
             actionList.Add(ProjectManager.Instance.EndAction);
@@ -203,10 +203,10 @@ namespace Base {
                     a.Input.Disable();
                 }
             }*/
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
         }
 
-        public async void GetOutput() {
+        public async Task GetOutput() {
             List<Action> actionList = ProjectManager.Instance.GetAllActions();
             actionList.Add(ProjectManager.Instance.StartAction);
             actionList.Add(ProjectManager.Instance.EndAction);
@@ -215,7 +215,7 @@ namespace Base {
                     a.Output.Disable();
                 }
             }*/
-            GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
         }
 
         private async Task<RequestResult> ValidateInput(object selectedInput) {

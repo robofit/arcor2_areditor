@@ -55,4 +55,7 @@ public class TabletVis : InteractiveObject {
     public override void StartManipulation() {
         throw new System.NotImplementedException();
     }
+    public override string GetObjectTypeName() {
+        return GetName();
+    }
 }

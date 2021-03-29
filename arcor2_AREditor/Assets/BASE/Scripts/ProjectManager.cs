@@ -878,7 +878,7 @@ namespace Base {
         /// <summary>
         /// Disables all orientation visuals
         /// </summary>
-        public async void EnableAllRobotsEE(bool enable) {
+        public async Task EnableAllRobotsEE(bool enable) {
             foreach (IRobot robot in SceneManager.Instance.GetRobots()) {
                 foreach (RobotEE robotEE in await robot.GetAllEE()) {
                     robotEE.Enable(enable);

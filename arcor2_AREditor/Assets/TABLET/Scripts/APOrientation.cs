@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 
 
@@ -116,5 +117,9 @@ public class APOrientation : InteractiveObject {
             Notifications.Instance.ShowNotification("Failed to rename orientation", e.Message);
             throw;
         }
+    }
+
+    public override string GetObjectTypeName() {
+        return "Orientation";
     }
 }

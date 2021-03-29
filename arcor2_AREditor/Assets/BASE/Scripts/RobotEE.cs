@@ -84,4 +84,8 @@ public class RobotEE : InteractiveObject {
     public override void Rename(string name) {
         throw new System.NotImplementedException();
     }
+
+    public override string GetObjectTypeName() {
+        return "End effector";
+    }
 }

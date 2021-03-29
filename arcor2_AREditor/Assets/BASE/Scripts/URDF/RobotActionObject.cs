@@ -404,6 +404,7 @@ namespace Base {
 
                 List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 foreach (string eeId in endEffectors) {
+                    Debug.LogError("loadendeffectors");
                     RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                     ee.InitEE(this, eeId);
                     ee.gameObject.SetActive(false);
@@ -640,6 +641,10 @@ namespace Base {
         public async Task<List<RobotEE>> GetAllEE() {
             await LoadResources();
             return EndEffectors;
+        }
+
+        public override string GetObjectTypeName() {
+            return "Robot";
         }
     }
 }

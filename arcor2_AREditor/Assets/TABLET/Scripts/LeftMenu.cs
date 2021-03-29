@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
+using RuntimeGizmos;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.GameManager;
@@ -34,6 +35,11 @@ public abstract class LeftMenu : MonoBehaviour {
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        SceneManager.Instance.OnSceneStateEvent += Instance_OnSceneStateEvent;
+    }
+
+    private void Instance_OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        _ = UpdateBuildAndSaveBtns();
     }
 
     protected virtual void OnEnable() {
@@ -53,7 +59,7 @@ public abstract class LeftMenu : MonoBehaviour {
     private void OnGameStateChanged(object sender, GameStateEventArgs args) {
         if (!isVisibilityForced)
             UpdateVisibility();
-        if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor)
+        if (args != null && (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor))
             _ = UpdateBuildAndSaveBtns();
     }
 
@@ -70,7 +76,7 @@ public abstract class LeftMenu : MonoBehaviour {
             OpenMenuButton.SetInteractivity(false, "No object selected");
         } else {
             RequestResult result;
-            SelectedObjectText.text = selectedObject.GetName() + "\n" + selectedObject.GetType();
+            SelectedObjectText.text = selectedObject.GetName() + "\n" + selectedObject.GetObjectTypeName();
             result = await selectedObject.Movable();
             MoveButton.SetInteractivity(result.Success, result.Message);
             MoveButton2.SetInteractivity(result.Success, result.Message);
@@ -119,7 +125,6 @@ public abstract class LeftMenu : MonoBehaviour {
 
         if (MenuManager.Instance.CheckIsAnyRightMenuOpened()) {
             SetActiveSubmenu(LeftMenuSelection.Favorites);
-
             RobotButton.interactable = false;
             AddButton.interactable = false;
             UtilityButton.interactable = false;
@@ -130,12 +135,7 @@ public abstract class LeftMenu : MonoBehaviour {
         RobotButton.interactable = true;
         AddButton.interactable = true;
         UtilityButton.interactable = true;
-        HomeButton.interactable = true;
-
-               
-
-        if (SceneManager.Instance.SceneMeta != null)
-            EditorInfo.text = "Project: \n" + SceneManager.Instance.SceneMeta.Name;
+        HomeButton.interactable = true;        
     }
 
     public void OpenMenuButtonClick() {
@@ -273,12 +273,19 @@ public abstract class LeftMenu : MonoBehaviour {
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            TransformMenu.Instance.Hide();
+            if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
+                TransformGizmo.Instance.ClearTargets();
+            } else {
+                TransformMenu.Instance.Hide();
+            }
         } else {
             clickedButton.GetComponent<Image>().enabled = true;
-            SelectorMenu.Instance.gameObject.SetActive(false);
-            //selectedObject.StartManipulation();
-            TransformMenu.Instance.Show(selectedObject);
+            if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
+                selectedObject.StartManipulation();
+                SelectorMenu.Instance.gameObject.SetActive(false);
+            } else {
+                TransformMenu.Instance.Show(selectedObject);
+            }
         }
 
     }
@@ -415,6 +422,7 @@ public abstract class LeftMenu : MonoBehaviour {
         RobotSelectorButton.GetComponent<Image>().enabled = false;
         RobotSteppingButton.GetComponent<Image>().enabled = false;
         RobotSelector.Close(false);
+        TransformGizmo.Instance.ClearTargets();
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {

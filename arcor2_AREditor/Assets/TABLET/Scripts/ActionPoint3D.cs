@@ -295,4 +295,8 @@ public class ActionPoint3D : Base.ActionPoint {
             throw;
         }
     }
+
+    public override string GetObjectTypeName() {
+        return "Action point";
+    }
 }

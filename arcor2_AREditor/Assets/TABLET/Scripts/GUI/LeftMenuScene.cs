@@ -21,7 +21,8 @@ public class LeftMenuScene : LeftMenu
     }
     protected override void Update() {
         base.Update();
-
+        if (SceneManager.Instance.SceneMeta != null)
+            EditorInfo.text = "Scene: \n" + SceneManager.Instance.SceneMeta.Name;
     }
 
     protected override void OnEnable() {
@@ -78,6 +79,7 @@ public class LeftMenuScene : LeftMenu
     }
 
     public async void SaveScene() {
+        SaveButton.SetInteractivity(false, "Saving scene...");
         IO.Swagger.Model.SaveSceneResponse saveSceneResponse = await Base.GameManager.Instance.SaveScene();
         if (!saveSceneResponse.Result) {
             saveSceneResponse.Messages.ForEach(Debug.LogError);

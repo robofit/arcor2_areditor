@@ -295,7 +295,7 @@ namespace Base {
             
         }
 
-        private void OnSceneState(object sender, SceneStateEventArgs args) {
+        private async void OnSceneState(object sender, SceneStateEventArgs args) {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Going online...");
@@ -325,7 +325,7 @@ namespace Base {
                     }
                     string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
                     string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
-                    SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
+                    await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
@@ -339,7 +339,7 @@ namespace Base {
             OnSceneStateEvent?.Invoke(this, args);
         }
 
-        public async void SelectRobotAndEE(string robotId, string eeId) {
+        public async Task SelectRobotAndEE(string robotId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
                     SelectedRobot = GetRobot(robotId);
