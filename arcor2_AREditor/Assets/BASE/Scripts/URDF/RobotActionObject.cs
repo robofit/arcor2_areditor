@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using RosSharp.Urdf;
@@ -53,6 +54,8 @@ namespace Base {
 
         private bool jointStateSubscribeIsValid = true;
         private bool modelLoading = false;
+
+        private bool loadingEndEffectors = false;
 
         protected override void Start() {
             base.Start();
@@ -397,14 +400,36 @@ namespace Base {
             }
         }
 
+        private Task<bool> WaitUntilResourcesReady() {
+            return Task.Run(() => {
+                while (true) {
+                    if (ResourcesLoaded) {
+                        return true; 
+                    } else if (!loadingEndEffectors) {
+                        return false;
+                    } else {
+                        Thread.Sleep(10);
+                    }
+                }
+            });
+
+        }
+
         public async Task<bool> LoadEndEffectors() {
+           
+            if (loadingEndEffectors) {
+                await WaitUntilResourcesReady();
+                return true;
+            } else {
+                loadingEndEffectors = true;
+            }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
 
 
                 List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 foreach (string eeId in endEffectors) {
-                    Debug.LogError("loadendeffectors");
+                    
                     RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                     ee.InitEE(this, eeId);
                     ee.gameObject.SetActive(false);
@@ -416,6 +441,7 @@ namespace Base {
                 Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
                 return false;
             } finally {
+                loadingEndEffectors = false;
                 GameManager.Instance.HideLoadingScreen();
             }            
         }

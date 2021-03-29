@@ -28,13 +28,8 @@ public class RenameDialog : Dialog
         if (objectToRename == null)
             return;
 
-        //TODO add to InteractiveObject a method for getting human friendly name of class?
-        if (selectedObject is ActionPoint3D)
-            Title.text = "Rename Action point";
-        else if(selectedObject is Action3D)
-            Title.text = "Rename Action";
-        else
-            Title.text = "Rename Dummy box";
+        Title.text = "Rename " + selectedObject.GetObjectTypeName();
+        
 
         nameInput.SetValue(objectToRename.GetName());
         nameInput.SetLabel("Name", "New name");

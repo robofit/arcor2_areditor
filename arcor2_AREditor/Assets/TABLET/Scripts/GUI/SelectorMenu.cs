@@ -384,34 +384,18 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         
     }
 
-    public void SwitchToNoPose() {
-        
+    public void SwitchToNoPose() {        
         ContentAim.SetActive(false);
         ContentNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
-        //selectorItems = selectorItemsNoPoseMenu;
         UpdateNoPoseMenu();
     }
 
     public void SwitchToAlphabet() {
         ContentAim.SetActive(false);
         ContentNoPose.SetActive(false);
-        ContainerAlphabet.SetActive(true);
-        
+        ContainerAlphabet.SetActive(true);        
         UpdateAlphabetMenu();
-        /*if (manuallySelected) {
-            InteractiveObject selectedItem = GetSelectedObject();
-            
-            foreach (SelectorItem item in selectorItemsAlphabetMenu) {
-                if (item.InteractiveObject.GetId() == selectedItem.GetId()) {
-                    selectorItems = selectorItemsAimMenu;
-                    selectorItems = selectorItemsAlphabetMenu;
-                    SetSelectedObject(item, true);
-                    return;
-                }
-            }
-        }
-        selectorItems = selectorItemsAlphabetMenu;*/
     }
 
     public InteractiveObject GetSelectedObject() {
@@ -464,8 +448,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             ForceUpdateMenus();
     }
 
-    public async Task ShowRobots(bool show) {
-        await ShowRobots(show, true);
+    public void ShowRobots(bool show) {
+        _ = ShowRobots(show, true);
     }
 
     public void ShowActionObjects(bool show) {
