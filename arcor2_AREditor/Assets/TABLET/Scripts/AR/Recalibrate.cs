@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
-public class Recalibrate : InteractiveObject
-    {
-
+public class Recalibrate : InteractiveObject {
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
@@ -16,16 +15,6 @@ public class Recalibrate : InteractiveObject
 
     public void Calibrate() {
         CalibrationManager.Instance.Recalibrate();
-    }
-
-    private void OnEnable() {
-        Enabled = true;
-        SelectorMenu.Instance.ForceUpdateMenus();
-    }
-
-    private void OnDisable() {
-        Enabled = false;
-        SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public override void Enable(bool enable) {
@@ -57,11 +46,26 @@ public class Recalibrate : InteractiveObject
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Calibration cube could not be moved");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Calibration cube could not be moved");
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Rename(string name) {
+        throw new System.NotImplementedException();
+    }
+    public override string GetObjectTypeName() {
+        return GetName();
     }
 }

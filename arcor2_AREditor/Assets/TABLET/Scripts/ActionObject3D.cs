@@ -8,6 +8,7 @@ using IO.Swagger.Model;
 using TriLibCore;
 using System;
 using TriLibCore.General;
+using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionObject3D : ActionObject {
@@ -423,5 +424,9 @@ public class ActionObject3D : ActionObject {
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
         }
+    }
+
+    public override string GetObjectTypeName() {
+        return "Action object";
     }
 }

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 
 
@@ -21,7 +23,7 @@ public class APOrientation : InteractiveObject {
             Notifications.Instance.ShowNotification("Failed to open orientation detail", "AP is locked");
             return;
         }
-        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
+        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH)) {
             OpenMenu();
         }       
         
@@ -82,11 +84,42 @@ public class APOrientation : InteractiveObject {
         return true;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Orientation could not be moved");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, true);
+            return new RequestResult(true);
+        } catch (RequestFailedException ex) {
+            return new RequestResult(false, ex.Message);
+        }
+    }
+
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPointOrientation(OrientationId, false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove orientation", ex.Message);
+        }
+    }
+
+    public async override void Rename(string name) {
+        try {
+            await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
+            Notifications.Instance.ShowToastMessage("Orientation renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename orientation", e.Message);
+            throw;
+        }
+    }
+
+    public override string GetObjectTypeName() {
+        return "Orientation";
     }
 }

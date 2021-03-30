@@ -11,10 +11,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     [SerializeField]
     private InputDialog InputDialog;
     [SerializeField]
-    private GameObject CreateGlobalActionPointBtn, CreateGlobalActionPointUsingRobotBtn;
 
-    public Toggle MoveToggle;
-    public Toggle RotateToggle;
     public Toggle TrackablesToggle;
     public Toggle ConnectionsToggle;
     public Toggle VRModeToggle;
@@ -24,40 +21,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
 
     private ManualTooltip calibrationElementsTooltip;
 
-    private string waitingForAPName = "", updateAPWithRobotId = "", updateAPWithEE = "";
 
-    private bool useGizmoMove = false;
-    public bool UseGizmoMove {
-        get => useGizmoMove;
-        set {
-            useGizmoMove = value;
-            if (useGizmoMove) {
-                TransformGizmo.Instance.transformType = TransformType.Move;
-                useGizmoRotate = false;
-                RotateToggle.isOn = false;
-                MoveToggle.isOn = true;
-            }
-        }
-    }
-
-    private bool useGizmoRotate = false;
-    public bool UseGizmoRotate {
-        get => useGizmoRotate;
-        set {
-            useGizmoRotate = value;
-            if (useGizmoRotate) {
-                TransformGizmo.Instance.transformType = TransformType.Rotate;
-                useGizmoMove = false;
-                RotateToggle.isOn = true;
-                MoveToggle.isOn = false;
-            }
-        }
-    }
 
     private void Start() {
-        Debug.Assert(CreateGlobalActionPointBtn != null);
-        MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
-        RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
 #if UNITY_ANDROID && AR_ON
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
         CalibrationElementsToggle.interactable = false;
@@ -73,35 +39,14 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void OnEnable() {
         CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
         CalibrationManager.Instance.OnARRecalibrate += OnARRecalibrate;
-        ProjectManager.Instance.OnActionPointAddedToScene += OnActionPointAddedToScene;
     }
 
     private void OnDisable() {
         CalibrationManager.Instance.OnARCalibrated -= OnARCalibrated;
         CalibrationManager.Instance.OnARRecalibrate -= OnARRecalibrate;
-        ProjectManager.Instance.OnActionPointAddedToScene -= OnActionPointAddedToScene;
     }
 
-    private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
-        if (!string.IsNullOrEmpty(waitingForAPName) && args.ActionPoint.GetName() == waitingForAPName) {
-            try {
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
-                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
-                await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
-            } finally {
-                waitingForAPName = "";
-                updateAPWithRobotId = "";
-                updateAPWithEE = "";
-                GameManager.Instance.HideLoadingScreen();
-            }
-            
-            
-        }
-
-    }
+    
 
     /// <summary>
     /// Triggered when the system calibrates = anchor is created (either when user clicks on calibration cube or when system loads the cloud anchor).
@@ -136,25 +81,15 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
-        CreateGlobalActionPointBtn.SetActive(false);
-        CreateGlobalActionPointUsingRobotBtn.SetActive(false);
-        MoveToggle.gameObject.SetActive(false);
-        RotateToggle.gameObject.SetActive(false);
         ConnectionsToggle.gameObject.SetActive(false);
         switch (args.Data) {
 
             case GameManager.GameStateEnum.ProjectEditor:
-                CreateGlobalActionPointBtn.SetActive(true);
-                CreateGlobalActionPointUsingRobotBtn.SetActive(true);
-                MoveToggle.gameObject.SetActive(true);
-                // use move only if the gizmo was previously active (for tablet version)
-                if (UseGizmoMove || UseGizmoRotate)
-                    UseGizmoMove = true;
+                
                 ConnectionsToggle.gameObject.SetActive(true);
                 break;
             case GameManager.GameStateEnum.SceneEditor:
-                RotateToggle.gameObject.SetActive(true);
-                MoveToggle.gameObject.SetActive(true);
+                
                 break;
             case GameManager.GameStateEnum.PackageRunning:
                 ConnectionsToggle.gameObject.SetActive(true);
@@ -191,54 +126,9 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         ConnectionManagerArcoro.Instance.DisplayConnections(active);
     }
 
-    public void ShowCreateGlobalActionPointDialog() {
-        InputDialog.Open("Create action point",
-                         "Type action point name",
-                         "Name",
-                         ProjectManager.Instance.GetFreeAPName("global"),
-                         () => CreateGlobalActionPoint(InputDialog.GetValue()),
-                         () => InputDialog.Close());
-    }
-
-    public async void CreateGlobalActionPoint(string name) {
-        bool result = await GameManager.Instance.AddActionPoint(name, "");
-        if (result)
-            InputDialog.Close();
-    }
-
-    public async void ShowCreateGlobalActionPointUsingRobotDialog() {
-        if (!SceneManager.Instance.SceneStarted) {
-            Notifications.Instance.ShowNotification("Failed to create new AP", "Only available when online");
-            return;
-        }
-        GameManager.Instance.ShowLoadingScreen("Loading robots...");
-        await AddActionPointUsingRobotDialog.Open(
-                         ProjectManager.Instance.GetFreeAPName("global"),
-                         () => CreateGlobalActionPointUsingRobot(AddActionPointUsingRobotDialog.GetName(), AddActionPointUsingRobotDialog.GetRobotId(), AddActionPointUsingRobotDialog.GetEEId()),
-                         () => AddActionPointUsingRobotDialog.Close());
-        GameManager.Instance.HideLoadingScreen();
-    }
-
-    public async void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
-        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
-            Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
-            return;
-        }
-        GameManager.Instance.ShowLoadingScreen("Adding AP...");
-        updateAPWithEE = eeId;
-        updateAPWithRobotId = robotId;
-        waitingForAPName = name;
-        bool result = await GameManager.Instance.AddActionPoint(name, "");
-        if (result)
-            AddActionPointUsingRobotDialog.Close();
-        else {
-            GameManager.Instance.HideLoadingScreen();
-        }
-    }
+    
 
     private void OnDestroy() {
-        PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
-        PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);
 #if UNITY_ANDROID && AR_ON
         PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
 #endif

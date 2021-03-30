@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
@@ -44,11 +45,27 @@ public class CreateAnchor : InteractiveObject {
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Calibration cube could not be moved");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Calibration cube could not be removed");
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Rename(string name) {
+        throw new System.NotImplementedException();
+    }
+
+    public override string GetObjectTypeName() {
+        return GetName();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using RuntimeGizmos;
@@ -11,6 +12,10 @@ public class ActionObjectNoPose : ActionObject {
 
     public override GameObject GetModelCopy() {
         return null;
+    }
+
+    public override string GetObjectTypeName() {
+        return "Action object";
     }
 
     public override Quaternion GetSceneOrientation() {
@@ -73,7 +78,4 @@ public class ActionObjectNoPose : ActionObject {
         throw new RequestFailedException("This object has no pose");
     }
 
-    public override bool Movable() {
-        return false;
-    }
 }

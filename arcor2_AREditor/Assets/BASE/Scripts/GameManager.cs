@@ -123,6 +123,9 @@ namespace Base {
         /// </summary>
         public event EventHandler OnActionExecutionCanceled;
 
+        public LeftMenuScene LeftMenuScene;
+        public LeftMenuProject LeftMenuProject;
+
         /// <summary>
         /// Holds current application state (opened screen)
         /// </summary>
@@ -200,7 +203,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.12.0";
+        public const string ApiVersion = "0.13.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -213,19 +216,10 @@ namespace Base {
         /// List of scenes metadata
         /// </summary>
         public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
-
-        /// <summary>
-        /// Version info component of status panel
-        /// </summary>
-        public TMPro.TMP_Text VersionInfo;
         /// <summary>
         /// 
         /// </summary>
         public TMPro.TMP_Text MessageBox;
-        /// <summary>
-        /// Editor info component of status panel (for specifying what scene or project is opened)
-        /// </summary>
-        public TMPro.TMP_Text EditorInfo;
         /// <summary>
         /// Connection info component in main menu
         /// </summary>
@@ -471,8 +465,9 @@ namespace Base {
         /// </summary>
         /// <param name="value">New game state</param>
         public void SetGameState(GameStateEnum value) {
-            gameState = value;
+            gameState = value;            
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            
         }
 
         /// <summary>
@@ -515,7 +510,7 @@ namespace Base {
         /// <param name="message">Message displayed to the user</param>
         /// <param name="validationCallback">Action to be called when user selects object. If returns true, callback is called,
         /// otherwise waits for selection of another object</param>
-        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null) {
+        public async Task RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null, UnityAction onCancelCallback = null) {
             // only for "selection" requests
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
@@ -531,7 +526,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
@@ -540,7 +536,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
@@ -550,14 +547,16 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
@@ -572,7 +571,16 @@ namespace Base {
 
             SelectorMenu.Instance.ForceUpdateMenus();
 
-            SelectObjectInfo.Show(message, () => CancelSelection());
+            if (onCancelCallback == null) {
+                SelectObjectInfo.Show(message, () => CancelSelection());
+            } else {
+
+                SelectObjectInfo.Show(message,
+                    () => {
+                        onCancelCallback();
+                        CancelSelection();
+                    });
+            }
         }
 
         /// <summary>
@@ -597,8 +605,6 @@ namespace Base {
         /// <param name="enable"></param>
         public void EnableServiceInteractiveObjects(bool enable) {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-            if (CalibrationManager.Instance.WorldAnchorLocal != null)
-                CalibrationManager.Instance.WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(enable);
             VRModeManager.Instance.ARCameraVis.GetComponent<InteractiveObject>().Enable(enable);
 #endif
         }
@@ -680,7 +686,6 @@ namespace Base {
               }
             });*/
 #endif
-            VersionInfo.text = Application.version;
             Scene.SetActive(false);
             if (Application.isEditor || Debug.isDebugBuild) {
                 TrilleonAutomation.AutomationMaster.Initialize();
@@ -722,7 +727,7 @@ namespace Base {
         }
 #endif
 
-
+        
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
                 if (s.Id == args.Scene.Id) {
@@ -1634,7 +1639,6 @@ namespace Base {
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Closed);
-            EditorInfo.text = "";
             HideLoadingScreen();
         }
 
@@ -1651,7 +1655,6 @@ namespace Base {
             Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
-            EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1671,7 +1674,6 @@ namespace Base {
             Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
-            EditorInfo.text = "Project: " + Base.ProjectManager.Instance.ProjectMeta.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1685,7 +1687,6 @@ namespace Base {
             openPackageRunningScreenFlag = false;
             try {
                 MenuManager.Instance.MainMenu.Close();
-                EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
@@ -1731,7 +1732,6 @@ namespace Base {
             MenuManager.Instance.MainMenu.Close();
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
-            EditorInfo.text = "";
             HideLoadingScreen(true);
         }
 
@@ -1767,7 +1767,6 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                ProjectManager.Instance.SelectAPNameWhenCreated = name;
                 if (string.IsNullOrEmpty(parent)) {
                     Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
                     Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
@@ -1780,7 +1779,6 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
-                ProjectManager.Instance.SelectAPNameWhenCreated = "";
                 return false;
             }
         }
@@ -1849,6 +1847,11 @@ namespace Base {
         public RequestResult(bool success, string message) {
             this.Success = success;
             this.Message = message;
+        }
+
+        public RequestResult(bool success) {
+            this.Success = success;
+            this.Message = "";
         }
 
         public override bool Equals(object obj) {

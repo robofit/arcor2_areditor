@@ -3,15 +3,22 @@ using Base;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 public abstract class InteractiveObject : Clickable {
 
     public abstract string GetName();
     public abstract string GetId();
+
+    public abstract string GetObjectTypeName();
     public abstract void OpenMenu();
     public abstract bool HasMenu();
-    public abstract bool Movable();
+    public abstract Task<RequestResult> Movable();
     public abstract void StartManipulation();
+
+    public abstract Task<RequestResult> Removable();
+
+    public abstract void Remove();
     public virtual float GetDistance(Vector3 origin) {
         float minDist = float.MaxValue;
         foreach (Collider collider in Colliders) {
@@ -25,5 +32,5 @@ public abstract class InteractiveObject : Clickable {
 
     public List<Collider> Colliders = new List<Collider>();
 
-
+    public abstract void Rename(string name);
 }

@@ -255,9 +255,16 @@ namespace Base {
             return Data.Id;
         }
 
-        public override bool Movable() {
-            return ActionObjectMetadata.HasPose &&
-                GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor;
+        public async override Task<RequestResult> Movable() {
+            if (!ActionObjectMetadata.HasPose)
+                return new RequestResult(false, "Selected action object has no pose");
+            else if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+                return new RequestResult(false, "Action object could be moved only in scene editor");
+            else if (SceneManager.Instance.SceneStarted) {
+                return new RequestResult(false, "Scene online");
+            } else {
+                return new RequestResult(true);
+            }
         }
 
         public abstract void CreateModel(IO.Swagger.Model.CollisionModels customCollisionModels = null);
@@ -270,9 +277,41 @@ namespace Base {
         else
             return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
     }
-
+    public async override void Rename(string name) {
+        try {
+            await WebsocketManager.Instance.RenameObject(GetId(), name);
+            Notifications.Instance.ShowToastMessage("Action object renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action object", e.Message);
+            throw;
+        }
+    }
+    public async override Task<RequestResult> Removable() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
+            return new RequestResult(false, "Action object could be removed only in scene editor");
+        } else if (SceneManager.Instance.SceneStarted) {
+            return new RequestResult(false, "Scene online");
+        } else {
+            IO.Swagger.Model.RemoveFromSceneResponse response = await WebsocketManager.Instance.RemoveFromScene(GetId(), false, true);
+            if (response.Result)
+                return new RequestResult(true);
+            else
+                return new RequestResult(false, response.Messages[0]);
+        }
     }
 
-   
+    public async override void Remove() {
+        IO.Swagger.Model.RemoveFromSceneResponse response =
+            await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
+        if (!response.Result) {
+            Notifications.Instance.ShowNotification("Failed to remove object " + GetName(), response.Messages[0]);
+            return;
+        }
+    }
+    }
+
+    
+
+
 
 }
