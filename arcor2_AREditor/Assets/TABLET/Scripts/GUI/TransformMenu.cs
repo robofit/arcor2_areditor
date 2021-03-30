@@ -224,14 +224,16 @@ public class TransformMenu : Singleton<TransformMenu> {
     public void SwitchToRobot() {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Robot not ready", "Scene offline");
+            RobotTabletBtn.SetState("tablet");
             return;
         } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
             Notifications.Instance.ShowNotification("Robot not ready", "Robot or EE not selected");
+            RobotTabletBtn.SetState("tablet");
             return;
         }
-        //TransformWheel.gameObject.SetActive(false);
-        Wheel.gameObject.SetActive(false);
-        StepButtons.gameObject.SetActive(true);
+        TransformWheel.gameObject.SetActive(false);
+        //Wheel.gameObject.SetActive(false);
+        //StepButtons.gameObject.SetActive(true);
         ResetPosition();
         if (RotateTranslateBtn.CurrentState == "rotate") {
             RotateTranslateBtn.SetState("translate");
