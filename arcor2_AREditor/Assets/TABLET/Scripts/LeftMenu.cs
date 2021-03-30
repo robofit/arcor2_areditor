@@ -296,10 +296,10 @@ public abstract class LeftMenu : MonoBehaviour {
             clickedButton.GetComponent<Image>().enabled = true;
             if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
                 selectedObject.StartManipulation();
-                SelectorMenu.Instance.gameObject.SetActive(false);
             } else {
                 TransformMenu.Instance.Show(selectedObject);
             }
+            SelectorMenu.Instance.gameObject.SetActive(false);
         }
 
     }
