@@ -16,7 +16,7 @@ public class LeftMenuScene : LeftMenu
 
     public InputDialogWithToggle InputDialogWithToggle;
 
-    public Button AddMeshButton;
+    public ButtonWithTooltip AddActionObjectButton;
 
     private void Start() {
         Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
@@ -46,6 +46,7 @@ public class LeftMenuScene : LeftMenu
         } else {
 
         }
+            AddActionObjectButton.SetInteractivity(false, "Add action object (not implemented, use main menu)");
         previousUpdateDone = true;
         } finally {
             previousUpdateDone = true;
@@ -54,18 +55,18 @@ public class LeftMenuScene : LeftMenu
 
     protected override void DeactivateAllSubmenus() {
         base.DeactivateAllSubmenus();
-        AddMeshButton.GetComponent<Image>().enabled = false;
+        AddActionObjectButton.GetComponent<Image>().enabled = false;
 
         //MeshPicker.SetActive(false);
     }
 
     public void AddMeshClick() {
-        if (AddMeshButton.GetComponent<Image>().enabled) {
-            AddMeshButton.GetComponent<Image>().enabled = false;
+        if (AddActionObjectButton.GetComponent<Image>().enabled) {
+            AddActionObjectButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
             //MeshPicker.SetActive(false);
         } else {
-            AddMeshButton.GetComponent<Image>().enabled = true;
+            AddActionObjectButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
             //MeshPicker.SetActive(true);
         }

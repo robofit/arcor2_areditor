@@ -65,11 +65,6 @@ public abstract class LeftMenu : MonoBehaviour {
     protected async virtual Task UpdateBtns(InteractiveObject obj) {
         if (CanvasGroup.alpha == 0)
             return;
-        Debug.LogError(obj);
-        if (obj == null)
-            Debug.LogError(null);
-        else
-            Debug.LogError(obj.GetName());
         RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         if (requestingObject || obj == null) {
@@ -80,7 +75,6 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(false, "No object selected");
             CalibrationButton.SetInteractivity(false, "No object selected");
             OpenMenuButton.SetInteractivity(false, "No object selected");
-            Debug.Log(obj);
         } else {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
             Task<RequestResult> tMove = Task.Run(() => obj.Movable());
@@ -96,7 +90,6 @@ public abstract class LeftMenu : MonoBehaviour {
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
                 obj.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
             OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
-            Debug.Log(obj);
         }
     }
 
@@ -153,7 +146,6 @@ public abstract class LeftMenu : MonoBehaviour {
         if (CanvasGroup.alpha > 0 && selectedObjectUpdated && previousUpdateDone) {
             selectedObjectUpdated = false;
             previousUpdateDone = false;
-            Debug.LogError("update btns");
             await UpdateBtns(selectedObject);
         }
     }
@@ -444,7 +436,8 @@ public abstract class LeftMenu : MonoBehaviour {
         RobotSelectorButton.GetComponent<Image>().enabled = false;
         RobotSteppingButton.GetComponent<Image>().enabled = false;
         RobotSelector.Close(false);
-        TransformGizmo.Instance.ClearTargets();
+        if (TransformGizmo.Instance != null)
+            TransformGizmo.Instance.ClearTargets();
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {

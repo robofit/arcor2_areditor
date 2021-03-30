@@ -66,21 +66,19 @@ public class LeftMenuProject : LeftMenu
                 return;
             }
         
-        
-            Debug.LogError(selectedObjectUpdated);
             await base.UpdateBtns(obj);
             if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton2.SetInteractivity(false, "No action point is selected");
+                //AddActionButton.SetInteractivity(false, "No action point is selected");
+                //AddActionButton2.SetInteractivity(false, "No action point is selected");
                 AddConnectionButton.SetInteractivity(false, "No input / output is selected");
                 AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
                 RunButton.SetInteractivity(false, "No object is selected");
                 RunButton2.SetInteractivity(false, "No object is selected");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                //AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                //AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
                 AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
@@ -117,7 +115,10 @@ public class LeftMenuProject : LeftMenu
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
-        
+
+            AddActionButton.SetInteractivity(false, "Add action (not implemented, use AP menu)");
+            AddActionButton2.SetInteractivity(false, "Add action (not implemented, use AP menu)");
+
         } finally {
             previousUpdateDone = true;
         }

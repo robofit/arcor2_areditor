@@ -70,7 +70,7 @@ MonoBehaviour:
   CreateProjectBtn: {fileID: 5427125365718159675}
   AddNewObjectTypeButton: {fileID: 3089527997614608021}
   InputDialogWithToggle: {fileID: 0}
-  AddMeshButton: {fileID: 4430183372577106192}
+  AddActionObjectButton: {fileID: 3419814040477592579}
 --- !u!114 &3900098211642245841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -319,7 +319,7 @@ PrefabInstance:
     - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_Name
-      value: AddMeshButton
+      value: AddActionObjectButton
       objectReference: {fileID: 0}
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -505,16 +505,16 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 8664725575940332572}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4430183372577106192 stripped
+--- !u!114 &3419814040477592579 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
+  m_CorrespondingSourceObject: {fileID: 6290073754276278303, guid: a37f66d2914458b4c85e50f9fa33cf93,
     type: 3}
   m_PrefabInstance: {fileID: 8664725575940332572}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7529605367810303568}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &338099720928854576 stripped

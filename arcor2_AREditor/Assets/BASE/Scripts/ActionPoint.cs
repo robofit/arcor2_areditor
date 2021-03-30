@@ -29,11 +29,10 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
+        private bool locked;
 
         public bool Locked {
-            get {
-                return PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
-            }
+            get => locked;
 
             set {
                 Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
@@ -65,15 +64,11 @@ namespace Base {
         }
 
         
-        public virtual void UpdateId(string newId) {
-            Data.Id = newId;
-
-        }
-
         public virtual void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
+            locked = PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();

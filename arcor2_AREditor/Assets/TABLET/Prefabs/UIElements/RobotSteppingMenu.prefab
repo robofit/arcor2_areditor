@@ -4233,6 +4233,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpeedSlider
       objectReference: {fileID: 0}
+    - target: {fileID: 1417610653128598, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 114134791170064774, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_textAlignment
@@ -4252,6 +4256,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_HorizontalAlignment
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114314241091679214, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
+        type: 3}
+      propertyPath: showValue
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114481518211063104, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
+        type: 3}
+      propertyPath: m_MinValue
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 114643697887451308, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
@@ -4296,7 +4310,7 @@ PrefabInstance:
     - target: {fileID: 224482949395985790, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -6.300003
+      value: -6.3000183
       objectReference: {fileID: 0}
     - target: {fileID: 224653400139365448, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
@@ -4311,7 +4325,7 @@ PrefabInstance:
     - target: {fileID: 224653400139365448, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -5.5500336
+      value: -5.5500183
       objectReference: {fileID: 0}
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
@@ -4351,7 +4365,7 @@ PrefabInstance:
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 512.8
+      value: 565.8083
       objectReference: {fileID: 0}
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
@@ -4396,7 +4410,7 @@ PrefabInstance:
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -21
+      value: 5.5
       objectReference: {fileID: 0}
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}

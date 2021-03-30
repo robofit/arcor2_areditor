@@ -45,12 +45,22 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             }
 
             if (translate) {
-                Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).x);
-                Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).y);
-                Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position)).z);
+                Vector3 position;
+                if (world) {
+                    position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                } else {
+                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                }
+                Coordinates.X.SetValueMeters(position.x);
+                Coordinates.Y.SetValueMeters(position.y);
+                Coordinates.Z.SetValueMeters(position.z);
 
             } else {
-                Quaternion newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                Quaternion newrotation;
+                if (world)
+                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                else
+                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
                 Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
                 Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
                 Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
@@ -60,7 +70,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     public async void SetPerpendicular() {
         try {
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), 0.3m, safe);
+            
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), (decimal) SpeedSlider.value, safe);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
@@ -147,6 +158,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
+            StepuUpButton.interactable = true;
+            StepDownButton.interactable = true;
         }
         
 
