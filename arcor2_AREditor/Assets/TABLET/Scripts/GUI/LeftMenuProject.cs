@@ -16,7 +16,7 @@ public class LeftMenuProject : LeftMenu
     public GameObject ActionPicker;
     public InputDialog InputDialog;
 
-    private string waitingForAPName = "", updateAPWithRobotId = "", updateAPWithEE = "";
+    private string apNameAddedByRobot = "", updateAPWithRobotId = "", updateAPWithEE = "", selectAPNameWhenCreated = "";
 
     protected override void Update() {
         base.Update();
@@ -39,7 +39,7 @@ public class LeftMenuProject : LeftMenu
     }
 
     private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
-        if (!string.IsNullOrEmpty(waitingForAPName) && args.ActionPoint.GetName() == waitingForAPName) {
+        if (!string.IsNullOrEmpty(apNameAddedByRobot) && args.ActionPoint.GetName() == apNameAddedByRobot) {
             try {
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
                 await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
@@ -48,13 +48,19 @@ public class LeftMenuProject : LeftMenu
                 Debug.LogError(ex);
                 Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
             } finally {
-                waitingForAPName = "";
+                apNameAddedByRobot = "";
                 updateAPWithRobotId = "";
                 updateAPWithEE = "";
                 GameManager.Instance.HideLoadingScreen();
             }
 
 
+        } 
+        if (selectAPNameWhenCreated.Equals(args.ActionPoint.GetName())) {
+            SelectorMenu.Instance.ForceUpdateMenus();
+            SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
+            selectAPNameWhenCreated = "";
+            RenameClick();
         }
 
     }
@@ -267,11 +273,13 @@ public class LeftMenuProject : LeftMenu
 
 
     public void AddActionPointClick() {
-        ShowCreateGlobalActionPointDialog();
+        CreateGlobalActionPoint(ProjectManager.Instance.GetFreeAPName("global"));
     }
 
     public void AddActionPointUsingRobotClick() {
-        ShowCreateGlobalActionPointUsingRobotDialog();
+        CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
+            SceneManager.Instance.SelectedRobot.GetId(),
+            SceneManager.Instance.SelectedEndEffector.GetId());
     }
 
     private void ShowCreateGlobalActionPointDialog() {
@@ -284,9 +292,12 @@ public class LeftMenuProject : LeftMenu
     }
 
     private async void CreateGlobalActionPoint(string name) {
+        selectAPNameWhenCreated = name;
         bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             InputDialog.Close();
+        else
+            selectAPNameWhenCreated = "";
     }
 
     private void ShowCreateGlobalActionPointUsingRobotDialog() {
@@ -312,7 +323,8 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.ShowLoadingScreen("Adding AP...");
         updateAPWithEE = eeId;
         updateAPWithRobotId = robotId;
-        waitingForAPName = name;
+        apNameAddedByRobot = name;
+        selectAPNameWhenCreated = name;
         bool result = await GameManager.Instance.AddActionPoint(name, "");
         if (result)
             InputDialog.Close();

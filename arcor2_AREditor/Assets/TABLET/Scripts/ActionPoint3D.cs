@@ -282,8 +282,12 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
-    public override void Remove() {
-        throw new NotImplementedException();
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove AP " + GetName(), ex.Message);
+        }
     }
 
     public async override void Rename(string name) {

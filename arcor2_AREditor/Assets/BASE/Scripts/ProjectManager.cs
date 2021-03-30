@@ -291,11 +291,7 @@ namespace Base {
                 }
 
             }
-            if (ap != null && SelectAPNameWhenCreated.Equals(ap.GetName())) {
-                SelectorMenu.Instance.ForceUpdateMenus();
-                SelectorMenu.Instance.SetSelectedObject(ap, true);
-                SelectAPNameWhenCreated = "";
-            }
+            
             updateProject = true;
         }
 
@@ -472,10 +468,10 @@ namespace Base {
 
 
         private void Update() {
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
+            /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
                 GameManager.Instance.SceneInteractable &&
                 GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
-                if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
+                /if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
                     ActivateActionPointsForGizmo(true);
                     projectActive = true;
                 } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove)) {
@@ -487,7 +483,7 @@ namespace Base {
                     ActivateActionPointsForGizmo(false);
                     projectActive = false;
                 }
-            }
+            }*/
             if (updateProject) {
                 ProjectChanged = true;
                 updateProject = false;

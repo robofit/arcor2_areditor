@@ -83,6 +83,7 @@ public class Action3D : Base.Action {
             return false;
         }
         return true;
+
     }
 
     public override void OnClick(Click type) {
@@ -165,8 +166,12 @@ public class Action3D : Base.Action {
         }
     }
 
-    public override void Remove() {
-        throw new NotImplementedException();
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveAction(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove action " + GetName(), ex.Message);
+        }
     }
 
     public async override void Rename(string newName) {

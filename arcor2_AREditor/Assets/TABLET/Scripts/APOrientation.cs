@@ -23,7 +23,7 @@ public class APOrientation : InteractiveObject {
             Notifications.Instance.ShowNotification("Failed to open orientation detail", "AP is locked");
             return;
         }
-        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate))) {
+        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH)) {
             OpenMenu();
         }       
         

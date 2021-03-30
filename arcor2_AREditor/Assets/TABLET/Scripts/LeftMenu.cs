@@ -85,7 +85,8 @@ public abstract class LeftMenu : MonoBehaviour {
             MoveButton2.SetInteractivity(move.Success, move.Message);
             RemoveButton.SetInteractivity(remove.Success, remove.Message);
             RenameButton.SetInteractivity(obj.GetType() == typeof(ActionPoint3D) ||
-                obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted) ||
+                obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted &&
+                GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor) ||
                 obj.GetType() == typeof(APOrientation), "Selected object could not be renamed");
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
                 obj.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");

@@ -128,6 +128,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
             case SimpleSideMenu.State.Closed:
                 if (!CheckIsAnyMenuOpened()) {
                     IsAnyMenuOpened = false;
+                    SelectorMenu.Instance.ForceUpdateMenus();
                     // no menus are opened, scene should be interactable
                     // invoke an event from GameManager to let everyone know, that scene is interactable
                     GameManager.Instance.InvokeSceneInteractable(true);

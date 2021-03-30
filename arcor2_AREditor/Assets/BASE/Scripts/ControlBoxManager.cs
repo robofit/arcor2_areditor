@@ -12,8 +12,6 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private InputDialog InputDialog;
     [SerializeField]
 
-    public Toggle MoveToggle;
-    public Toggle RotateToggle;
     public Toggle TrackablesToggle;
     public Toggle ConnectionsToggle;
     public Toggle VRModeToggle;
@@ -24,37 +22,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private ManualTooltip calibrationElementsTooltip;
 
 
-    private bool useGizmoMove = false;
-    public bool UseGizmoMove {
-        get => useGizmoMove;
-        set {
-            useGizmoMove = value;
-            if (useGizmoMove) {
-                TransformGizmo.Instance.transformType = TransformType.Move;
-                useGizmoRotate = false;
-                RotateToggle.isOn = false;
-                MoveToggle.isOn = true;
-            }
-        }
-    }
-
-    private bool useGizmoRotate = false;
-    public bool UseGizmoRotate {
-        get => useGizmoRotate;
-        set {
-            useGizmoRotate = value;
-            if (useGizmoRotate) {
-                TransformGizmo.Instance.transformType = TransformType.Rotate;
-                useGizmoMove = false;
-                RotateToggle.isOn = true;
-                MoveToggle.isOn = false;
-            }
-        }
-    }
 
     private void Start() {
-        MoveToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_move", false);
-        RotateToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_gizmo_rotate", false);
 #if UNITY_ANDROID && AR_ON
         TrackablesToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_trackables", false);
         CalibrationElementsToggle.interactable = false;
@@ -112,21 +81,15 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     }
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
-        MoveToggle.gameObject.SetActive(false);
-        RotateToggle.gameObject.SetActive(false);
         ConnectionsToggle.gameObject.SetActive(false);
         switch (args.Data) {
 
             case GameManager.GameStateEnum.ProjectEditor:
-                MoveToggle.gameObject.SetActive(true);
-                // use move only if the gizmo was previously active (for tablet version)
-                if (UseGizmoMove || UseGizmoRotate)
-                    UseGizmoMove = true;
+                
                 ConnectionsToggle.gameObject.SetActive(true);
                 break;
             case GameManager.GameStateEnum.SceneEditor:
-                RotateToggle.gameObject.SetActive(true);
-                MoveToggle.gameObject.SetActive(true);
+                
                 break;
             case GameManager.GameStateEnum.PackageRunning:
                 ConnectionsToggle.gameObject.SetActive(true);
@@ -166,8 +129,6 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     
 
     private void OnDestroy() {
-        PlayerPrefsHelper.SaveBool("control_box_gizmo_move", MoveToggle.isOn);
-        PlayerPrefsHelper.SaveBool("control_box_gizmo_rotate", RotateToggle.isOn);
 #if UNITY_ANDROID && AR_ON
         PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
 #endif

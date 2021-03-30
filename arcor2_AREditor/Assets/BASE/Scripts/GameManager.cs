@@ -1767,7 +1767,6 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                ProjectManager.Instance.SelectAPNameWhenCreated = name;
                 if (string.IsNullOrEmpty(parent)) {
                     Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
                     Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
@@ -1780,7 +1779,6 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
-                ProjectManager.Instance.SelectAPNameWhenCreated = "";
                 return false;
             }
         }

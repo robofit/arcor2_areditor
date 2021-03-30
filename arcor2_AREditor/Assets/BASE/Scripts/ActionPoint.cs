@@ -36,6 +36,7 @@ namespace Base {
 
             set {
                 Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
+                locked = value;
                 PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", value);
             }
         }
@@ -73,7 +74,6 @@ namespace Base {
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
-            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove && ProjectManager.Instance.AllowEdit && !MenuManager.Instance.IsAnyMenuOpened) ? "GizmoRuntime" : "Default");
             if (Data.Actions == null)
                 Data.Actions = new List<IO.Swagger.Model.Action>();
             if (Data.Orientations == null)

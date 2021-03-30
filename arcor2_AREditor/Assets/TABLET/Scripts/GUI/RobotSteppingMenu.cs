@@ -95,10 +95,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     public void SwithToTranslate() {
         translate = true;
+        Units.gameObject.SetActive(true);
+        UnitsDegrees.gameObject.SetActive(false);
     }
 
     public void SwitchToRotate() {
         translate = false;
+        Units.gameObject.SetActive(false);
+        UnitsDegrees.gameObject.SetActive(true);
     }
 
     public async void HoldPressed() {
@@ -128,12 +132,18 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     public void RobotStepUp() {
-        RobotStep(GetPositionValue(1));
+        if (translate)
+            RobotStep(GetPositionValue(1));
+        else
+            RobotStep(GetRotationValue(0.01745329252f)); // pi/180 - rotation in radians
     }
 
 
     public void RobotStepDown() {
-        RobotStep(GetPositionValue(-1));
+        if (translate)
+            RobotStep(GetPositionValue(-1));
+        else
+            RobotStep(GetRotationValue(-0.01745329252f)); // pi/180
     }
 
     public async void RobotStep(float step) {

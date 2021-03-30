@@ -230,7 +230,7 @@ namespace Base {
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
+            /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
                 GameManager.Instance.SceneInteractable &&
                 GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
@@ -245,7 +245,7 @@ namespace Base {
                     ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
-            }
+            }*/
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
