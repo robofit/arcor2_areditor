@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using RosSharp.Urdf;
 using UnityEngine;
@@ -45,7 +46,7 @@ public class RobotEE : InteractiveObject {
         transform.position = SceneManager.Instance.SceneOrigin.transform.TransformPoint(position);
         // rotation set according to this
         // https://answers.unity.com/questions/275565/what-is-the-rotation-equivalent-of-inversetransfor.html
-        transform.rotation = SceneManager.Instance.SceneOrigin.transform.rotation * orientation;
+        transform.rotation = GameManager.Instance.Scene.transform.rotation * orientation;
     }
 
     public override string GetName() {
@@ -64,11 +65,27 @@ public class RobotEE : InteractiveObject {
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Robot EE could not be moved at the moment (will be added in next release)");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Robot EE could not be removed");
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Rename(string name) {
+        throw new System.NotImplementedException();
+    }
+
+    public override string GetObjectTypeName() {
+        return "End effector";
     }
 }

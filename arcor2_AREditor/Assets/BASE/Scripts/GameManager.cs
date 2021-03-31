@@ -8,6 +8,7 @@ using IO.Swagger.Model;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
 using System.Collections;
+using Newtonsoft.Json;
 
 namespace Base {
     /// <summary>
@@ -122,6 +123,9 @@ namespace Base {
         /// </summary>
         public event EventHandler OnActionExecutionCanceled;
 
+        public LeftMenuScene LeftMenuScene;
+        public LeftMenuProject LeftMenuProject;
+
         /// <summary>
         /// Holds current application state (opened screen)
         /// </summary>
@@ -199,7 +203,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.12.0";
+        public const string ApiVersion = "0.13.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -212,19 +216,10 @@ namespace Base {
         /// List of scenes metadata
         /// </summary>
         public List<IO.Swagger.Model.ListScenesResponseData> Scenes = new List<IO.Swagger.Model.ListScenesResponseData>();
-
-        /// <summary>
-        /// Version info component of status panel
-        /// </summary>
-        public TMPro.TMP_Text VersionInfo;
         /// <summary>
         /// 
         /// </summary>
         public TMPro.TMP_Text MessageBox;
-        /// <summary>
-        /// Editor info component of status panel (for specifying what scene or project is opened)
-        /// </summary>
-        public TMPro.TMP_Text EditorInfo;
         /// <summary>
         /// Connection info component in main menu
         /// </summary>
@@ -470,8 +465,9 @@ namespace Base {
         /// </summary>
         /// <param name="value">New game state</param>
         public void SetGameState(GameStateEnum value) {
-            gameState = value;
+            gameState = value;            
             OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
+            
         }
 
         /// <summary>
@@ -514,7 +510,7 @@ namespace Base {
         /// <param name="message">Message displayed to the user</param>
         /// <param name="validationCallback">Action to be called when user selects object. If returns true, callback is called,
         /// otherwise waits for selection of another object</param>
-        public void RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null) {
+        public async Task RequestObject(EditorStateEnum requestType, Action<object> callback, string message, Func<object, Task<RequestResult>> validationCallback = null, UnityAction onCancelCallback = null) {
             // only for "selection" requests
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
@@ -530,7 +526,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
@@ -539,7 +536,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
@@ -549,14 +547,16 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
@@ -571,7 +571,16 @@ namespace Base {
 
             SelectorMenu.Instance.ForceUpdateMenus();
 
-            SelectObjectInfo.Show(message, () => CancelSelection());
+            if (onCancelCallback == null) {
+                SelectObjectInfo.Show(message, () => CancelSelection());
+            } else {
+
+                SelectObjectInfo.Show(message,
+                    () => {
+                        onCancelCallback();
+                        CancelSelection();
+                    });
+            }
         }
 
         /// <summary>
@@ -677,7 +686,6 @@ namespace Base {
               }
             });*/
 #endif
-            VersionInfo.text = Application.version;
             Scene.SetActive(false);
             if (Application.isEditor || Debug.isDebugBuild) {
                 TrilleonAutomation.AutomationMaster.Initialize();
@@ -719,7 +727,7 @@ namespace Base {
         }
 #endif
 
-
+        
         private void OnSceneBaseUpdated(object sender, BareSceneEventArgs args) {
             foreach (ListScenesResponseData s in Scenes) {
                 if (s.Id == args.Scene.Id) {
@@ -847,9 +855,9 @@ namespace Base {
                         return;
                     }
 
-                    await LoadScenes();
-                    await LoadProjects();
-                    await LoadPackages();
+                    WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+                    WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                    WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
 
                     connectionStatus = newState;
                     break;
@@ -1187,66 +1195,46 @@ namespace Base {
             throw new RequestFailedException("No scene with name: " + name);
         }
 
-        /// <summary>
-        /// Loads list of scenes from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadScenes() {
-            try {
-                Scenes = await WebsocketManager.Instance.LoadScenes();
-                Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
-                    return y.Modified.CompareTo(x.Modified);
-                });
-                OnSceneListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
-            }
+        public void LoadScenesCb(string id, string responseData) {
+            IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
+            Scenes = response.Data;
+            Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
+                return y.Modified.CompareTo(x.Modified);
+            });
+            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Loads list of projects from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadProjects() {
-            try {
-                Projects = await WebsocketManager.Instance.LoadProjects();
-                Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
-                    return y.Modified.CompareTo(x.Modified);
-                });
-                OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                GameManager.Instance.DisconnectFromSever();
-            }
+        public void LoadProjectsCb(string id, string responseData) {
+            IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
+            Projects = response.Data;
+            Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
+                return y.Modified.CompareTo(x.Modified);
+            });
+            OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Loads list of packages from server
-        /// </summary>
-        /// <returns></returns>
-        public async Task LoadPackages() {
-            try {
-                Packages = await WebsocketManager.Instance.LoadPackages();
-                Packages.Sort(delegate(PackageSummary x, PackageSummary y) {
-                    return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
-                });
-                OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to update action objects");
-                DisconnectFromSever();
-            }
+       
+        public void LoadPackagesCb(string id, string responseData) {
+            IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
+            if (response == null)
+                Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
+            Packages = response.Data;
+            Packages.Sort(delegate (PackageSummary x, PackageSummary y) {
+                return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
+            });
+            OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Gets package by ID
-        /// </summary>
-        /// <param name="id">Id of package</param>
-        /// <returns>Package with corresponding ID</returns>
-        public PackageSummary GetPackage(string id) {
+            /// <summary>
+            /// Gets package by ID
+            /// </summary>
+            /// <param name="id">Id of package</param>
+            /// <returns>Package with corresponding ID</returns>
+            public PackageSummary GetPackage(string id) {
             foreach (PackageSummary package in Packages) {
                 if (id == package.Id)
                     return package;
@@ -1629,9 +1617,9 @@ namespace Base {
             Scene.SetActive(false);
             MenuManager.Instance.MainMenu.Close();
             if (updateResources) {
-                await LoadScenes();
-                await LoadProjects();
-                await LoadPackages();
+                WebsocketManager.Instance.LoadScenes(LoadScenesCb);
+                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
             }
             switch (what) {
                 case ShowMainScreenData.WhatEnum.PackagesList:
@@ -1651,7 +1639,6 @@ namespace Base {
             SetGameState(GameStateEnum.MainScreen);
             OnOpenMainScreen?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Closed);
-            EditorInfo.text = "";
             HideLoadingScreen();
         }
 
@@ -1668,7 +1655,6 @@ namespace Base {
             Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
-            EditorInfo.text = "Scene: " + SceneManager.Instance.SceneMeta.Name;
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1688,7 +1674,6 @@ namespace Base {
             Scene.SetActive(true);
 #endif
             MenuManager.Instance.MainMenu.Close();
-            EditorInfo.text = "Project: " + Base.ProjectManager.Instance.ProjectMeta.Name;
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1702,7 +1687,6 @@ namespace Base {
             openPackageRunningScreenFlag = false;
             try {
                 MenuManager.Instance.MainMenu.Close();
-                EditorInfo.text = "Running: " + PackageInfo.PackageId;
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
@@ -1748,7 +1732,6 @@ namespace Base {
             MenuManager.Instance.MainMenu.Close();
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
-            EditorInfo.text = "";
             HideLoadingScreen(true);
         }
 
@@ -1784,7 +1767,6 @@ namespace Base {
         /// <returns></returns>
         public async Task<bool> AddActionPoint(string name, string parent) {
             try {
-                ProjectManager.Instance.SelectAPNameWhenCreated = name;
                 if (string.IsNullOrEmpty(parent)) {
                     Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
                     Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
@@ -1797,7 +1779,6 @@ namespace Base {
                 return true;
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to add action point", e.Message);
-                ProjectManager.Instance.SelectAPNameWhenCreated = "";
                 return false;
             }
         }
@@ -1866,6 +1847,11 @@ namespace Base {
         public RequestResult(bool success, string message) {
             this.Success = success;
             this.Message = message;
+        }
+
+        public RequestResult(bool success) {
+            this.Success = success;
+            this.Message = "";
         }
 
         public override bool Equals(object obj) {

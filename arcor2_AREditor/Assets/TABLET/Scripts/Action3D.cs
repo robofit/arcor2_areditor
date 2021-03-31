@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using Newtonsoft.Json;
 using TMPro;
@@ -82,6 +83,7 @@ public class Action3D : Base.Action {
             return false;
         }
         return true;
+
     }
 
     public override void OnClick(Click type) {
@@ -149,5 +151,40 @@ public class Action3D : Base.Action {
 
     public override void StartManipulation() {
         throw new NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+            return new RequestResult(false, "Action could only be removed in project editor");
+        else {
+            try {
+                await WebsocketManager.Instance.RemoveAction(GetId(), true);
+                return new RequestResult(true);
+            } catch (RequestFailedException ex) {
+                return new RequestResult(false, ex.Message);
+            }
+        }
+    }
+
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveAction(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove action " + GetName(), ex.Message);
+        }
+    }
+
+    public async override void Rename(string newName) {
+        try {
+            await WebsocketManager.Instance.RenameAction(GetId(), newName);
+            Notifications.Instance.ShowToastMessage("Action renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action", e.Message);
+            throw;
+        }
+    }
+
+    public override string GetObjectTypeName() {
+        return "Action";
     }
 }

@@ -47,7 +47,7 @@ public class InputHandler : Singleton<InputHandler> {
         if (Input.GetMouseButtonDown(0)) {
             if (TransformGizmo.Instance.mainTargetRoot != null) {
                 if (TransformGizmo.Instance.translatingAxis == Axis.None) {
-                    TransformGizmo.Instance.ClearTargets();
+                    //TransformGizmo.Instance.ClearTargets();
                     TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
                 }
             } else {
@@ -158,7 +158,7 @@ public class InputHandler : Singleton<InputHandler> {
                     return;
                 if (TransformGizmo.Instance.mainTargetRoot != null) {
                     if (TransformGizmo.Instance.translatingAxis == Axis.None) {
-                        TransformGizmo.Instance.ClearTargets();
+                        //TransformGizmo.Instance.ClearTargets();
                     }
                 }
                 SelectorMenu.Instance.DeselectObject(true);

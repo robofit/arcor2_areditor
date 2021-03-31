@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
@@ -45,11 +46,26 @@ public class Recalibrate : InteractiveObject {
         return false;
     }
 
-    public override bool Movable() {
-        return false;
+    public async override Task<RequestResult> Movable() {
+        return new RequestResult(false, "Calibration cube could not be moved");
     }
 
     public override void StartManipulation() {
         throw new System.NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, "Calibration cube could not be moved");
+    }
+
+    public override void Remove() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Rename(string name) {
+        throw new System.NotImplementedException();
+    }
+    public override string GetObjectTypeName() {
+        return GetName();
     }
 }

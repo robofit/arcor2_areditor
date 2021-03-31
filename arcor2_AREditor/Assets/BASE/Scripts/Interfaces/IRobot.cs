@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
 
 public interface IRobot
 {
@@ -10,9 +11,9 @@ public interface IRobot
 
     Task<List<string>> GetEndEffectorIds();
 
-    RobotEE GetEE(string ee_id);
+    Task<RobotEE> GetEE(string ee_id);
 
-    List<RobotEE> GetAllEE();
+    Task<List<RobotEE>> GetAllEE();
 
     bool HasUrdf();
 
@@ -23,5 +24,7 @@ public interface IRobot
     List<IO.Swagger.Model.Joint> GetJoints();
 
     void SetGrey(bool grey);
+
+    Transform GetTransform();
 
 }

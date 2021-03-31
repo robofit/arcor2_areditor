@@ -35,6 +35,20 @@ public class MenuManager : Base.Singleton<MenuManager> {
             AddJointsMenu.CurrentState == SimpleSideMenu.State.Open ||
             OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open;
     }
+    public bool CheckIsAnyRightMenuOpened() {
+        return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
+            ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
+            PuckMenu.CurrentState == SimpleSideMenu.State.Open ||
+            NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
+            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
+            NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
+            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
+            AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open ||
+            AddJointsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open;
+    }
+
 
     public void ShowMenu(SimpleSideMenu menu) {
         Debug.Assert(menu != null); 
@@ -114,6 +128,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
             case SimpleSideMenu.State.Closed:
                 if (!CheckIsAnyMenuOpened()) {
                     IsAnyMenuOpened = false;
+                    SelectorMenu.Instance.ForceUpdateMenus();
                     // no menus are opened, scene should be interactable
                     // invoke an event from GameManager to let everyone know, that scene is interactable
                     GameManager.Instance.InvokeSceneInteractable(true);
