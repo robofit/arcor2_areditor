@@ -41,7 +41,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             if (world) {
                 gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
             } else {
-                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
+                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation;// * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
             }
 
             if (translate) {
@@ -49,7 +49,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 if (world) {
                     position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
                 } else {
-                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
                 }
                 Coordinates.X.SetValueMeters(position.x);
                 Coordinates.Y.SetValueMeters(position.y);

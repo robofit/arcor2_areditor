@@ -368,16 +368,17 @@ public class LeftMenuProject : LeftMenu
             InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
             if (selectedObject is null)
                 return;
-            if (selectedObject is Action3D) {
-                ((Action3D) selectedObject).ActionBeingExecuted = true;
+            if (selectedObject is StartAction) {
+                Debug.LogError("START");
+                RunProject();
+            } else if (selectedObject is Action3D action) {
+                action.ActionBeingExecuted = true;
                 await WebsocketManager.Instance.ExecuteAction(selectedObject.GetId(), false);
-                ((Action3D) selectedObject).ActionBeingExecuted = false;
+                action.ActionBeingExecuted = false;
             } else if (selectedObject.GetType() == typeof(APOrientation)) {
                 
                 //await WebsocketManager.Instance.MoveToActionPointOrientation(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), 0.5m, selectedObject.GetId(), false);
-            } else {
-                RunProject();
-            }
+            } 
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
             return;

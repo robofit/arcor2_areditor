@@ -347,36 +347,7 @@ public abstract class LeftMenu : MonoBehaviour {
         SetActiveSubmenu(LeftMenuSelection.None);
     }
 
-    public async void RunButtonClick() {
-        InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
-        if (selectedObject is null) {
-            GameManager.Instance.ShowLoadingScreen("Running project", true);
-            try {
-                await Base.WebsocketManager.Instance.TemporaryPackage();
-                MenuManager.Instance.MainMenu.Close();
-            } catch (RequestFailedException ex) {
-                Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
-                Debug.LogError(ex);
-                GameManager.Instance.HideLoadingScreen(true);
-            }
-        } else if (selectedObject.GetType() == typeof(Action3D)) {
-            try {
-                await WebsocketManager.Instance.ExecuteAction(selectedObject.GetId(), false);
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
-                return;
-            }
-        } else if (selectedObject.GetType() == typeof(ActionPoint3D)) {
-            string robotId = "";
-            foreach (IRobot r in SceneManager.Instance.GetRobots()) {
-                robotId = r.GetId();
-            }
-            NamedOrientation o = ((ActionPoint3D) selectedObject).GetFirstOrientation();
-            IRobot robot = SceneManager.Instance.GetRobot(robotId);
-            await WebsocketManager.Instance.MoveToActionPointOrientation(robot.GetId(), (await robot.GetEndEffectorIds())[0], 0.5m, o.Id, false);
-        }            
-        
-    }
+    
 
     #endregion
 
