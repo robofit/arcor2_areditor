@@ -203,7 +203,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.13.0";
+        public const string ApiVersion = "0.12.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
