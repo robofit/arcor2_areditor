@@ -98,9 +98,12 @@ public class VRModeManager : Singleton<VRModeManager> {
     }
 
     public void EnableVRMode() {
-        // Disable camera view
+        float cameraFoV = ARCamera.fieldOfView;
+        
+        // Disable camera view. By disabling, FoV will change back to original value 60, keep the FoV all time the same as ARCameraBackground sets it.
         arCameraBG.enabled = false;
-
+        ARCamera.fieldOfView = cameraFoV;
+        VRCamera.fieldOfView = cameraFoV;
         VRCamera.enabled = true;
 
         // Init position/rotation variables
@@ -109,7 +112,7 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.transform.rotation = ARCamera.transform.rotation;
         arCameraRotation = ARCamera.transform.eulerAngles;
         arCameraPosition = ARCamera.transform.position;
-        
+                
         CameraMoveJoystick.gameObject.SetActive(true);
         CameraMoveUpJoystick.gameObject.SetActive(true);
         CameraRotateJoystick.gameObject.SetActive(true);

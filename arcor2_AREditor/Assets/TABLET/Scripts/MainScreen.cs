@@ -346,7 +346,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void UpdateScenes(object sender, EventArgs eventArgs) {
         SceneTiles.Clear();
         foreach (Transform t in ScenesDynamicContent.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.ListScenesResponseData scene in Base.GameManager.Instance.Scenes) {
             SceneTile tile = Instantiate(SceneTilePrefab, ScenesDynamicContent.transform).GetComponent<SceneTile>();
@@ -384,7 +385,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void UpdatePackages(object sender, EventArgs eventArgs) {
         PackageTiles.Clear();
         foreach (Transform t in PackagesDynamicContent.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.PackageSummary package in Base.GameManager.Instance.Packages) {
             PackageTile tile = Instantiate(PackageTilePrefab, PackagesDynamicContent.transform).GetComponent<PackageTile>();
@@ -411,7 +413,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     public void UpdateProjects(object sender, EventArgs eventArgs) {
         ProjectTiles.Clear();
         foreach (Transform t in ProjectsDynamicContent.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();

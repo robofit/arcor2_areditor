@@ -24,7 +24,8 @@ public abstract class Dialog : MonoBehaviour
 
     protected virtual void UpdateToggleGroup(GameObject togglePrefab, GameObject toggleGroup, List<string> items) {
         foreach (Transform toggle in toggleGroup.transform) {
-            Destroy(toggle.gameObject);
+            if (toggle.gameObject.tag != "Persistent")
+                Destroy(toggle.gameObject);
         }
         foreach (string item in items) {
 

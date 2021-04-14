@@ -6,6 +6,8 @@ using System;
 using System.Linq;
 using static Base.GameManager;
 using TMPro;
+using UnityEngine.Events;
+using System.Threading.Tasks;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -15,6 +17,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
+    public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
 
     private Dictionary<string, SelectorItem> selectorItems = new Dictionary<string, SelectorItem>();
 
@@ -26,8 +29,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     private bool requestingObject = false;
 
-    public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
 
+
+    public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
+    private InteractiveObject lastSelectedObject = null;
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -43,7 +48,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     private void OnLoadProjectScene(object sender, EventArgs e) {
-        ShowRobots(RobotsToggle.Toggled, false);
+        _ = UpdateFilters();
+    }
+
+    public async Task UpdateFilters() {
+        await ShowRobots(RobotsToggle.Toggled, false);
         ShowActionObjects(ObjectsToggle.Toggled, false);
         ShowActionPoints(PointsToggle.Toggled, false);
         ShowActions(ActionsToggle.Toggled, false);
@@ -51,7 +60,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ShowOthers(OthersToggle.Toggled, false);
         ForceUpdateMenus();
     }
-
 
     private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
         editorState = args.Data;
@@ -125,7 +133,14 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private void OnSceneChanged(object sender, System.EventArgs e) {
         UpdateAlphabetMenu();
         UpdateNoPoseMenu();
-        Debug.LogError("Scene changed");
+    }
+
+    private void SelectedObjectChanged(InteractiveObject interactiveObject, bool force = false) {
+        if (force || interactiveObject != lastSelectedObject) {
+            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
+            Debug.LogWarning(interactiveObject?.GetName());
+            lastSelectedObject = interactiveObject;
+        }
     }
 
     private SelectorItem GetSelectorItem(InteractiveObject io) {
@@ -154,7 +169,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void UpdateAimMenu(Vector3? aimingPoint) {
         List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
-        
+
         if (aimingPoint.HasValue) {
             foreach (SelectorItem item in selectorItems.Values) {
                 try {
@@ -169,6 +184,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
+        } else {
+            SelectedObjectChanged(null);
         }
         if (ContentAim.activeSelf) {
             int count = 0;
@@ -239,8 +256,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ++iteration;
     }
 
-
-
     private void RemoveItem(int index, List<SelectorItem> selectorItems) {
         if (selectorItems[index].IsSelected()) {
             manuallySelected = false;
@@ -264,11 +279,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 if (selectorItem.IsSelected() && manuallySelected) {
                     selectorItem.SetSelected(false, manually);
                     manuallySelected = false;
+                    SelectedObjectChanged(null);
                     return;
                 }
             }
             DeselectObject(manually);
-            selectorItem.SetSelected(true, manually);
+            selectorItem.SetSelected(true, manually);            
+            SelectedObjectChanged(selectorItem.InteractiveObject);
             if (manually)
                 manuallySelected = true;
         }        
@@ -322,6 +339,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
            
         }
+        // force update of left menu icons
+        SelectedObjectChanged(lastSelectedObject, true);
         
     }
 
@@ -365,47 +384,33 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         
     }
 
-    public void SwitchToNoPose() {
-        
+    public void SwitchToNoPose() {        
         ContentAim.SetActive(false);
         ContentNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
-        //selectorItems = selectorItemsNoPoseMenu;
         UpdateNoPoseMenu();
     }
 
     public void SwitchToAlphabet() {
         ContentAim.SetActive(false);
         ContentNoPose.SetActive(false);
-        ContainerAlphabet.SetActive(true);
-        
+        ContainerAlphabet.SetActive(true);        
         UpdateAlphabetMenu();
-        /*if (manuallySelected) {
-            InteractiveObject selectedItem = GetSelectedObject();
-            
-            foreach (SelectorItem item in selectorItemsAlphabetMenu) {
-                if (item.InteractiveObject.GetId() == selectedItem.GetId()) {
-                    selectorItems = selectorItemsAimMenu;
-                    selectorItems = selectorItemsAlphabetMenu;
-                    SetSelectedObject(item, true);
-                    return;
-                }
-            }
-        }
-        selectorItems = selectorItemsAlphabetMenu;*/
     }
 
     public InteractiveObject GetSelectedObject() {
-        
+        /*
         foreach (SelectorItem item in selectorItems.Values.ToList()) {
             if (item.IsSelected())
                 return item.InteractiveObject;
         }
-        return null;
+        return null;*/
+        return lastSelectedObject;
     }
 
-    public void ShowRobots(bool show, bool updateMenus) {
-        ProjectManager.Instance.EnableAllRobotsEE(show);
+    public async Task ShowRobots(bool show, bool updateMenus) {
+        if (SceneManager.Instance.SceneStarted)
+            await ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
         if (updateMenus)
             ForceUpdateMenus();
@@ -444,7 +449,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void ShowRobots(bool show) {
-        ShowRobots(show, true);
+        _ = ShowRobots(show, true);
     }
 
     public void ShowActionObjects(bool show) {

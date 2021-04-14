@@ -4,7 +4,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using IO.Swagger.Model;
 using TMPro;
-using System.Runtime.InteropServices;
+using System;
+using System.Threading.Tasks;
+using NativeWebSocket;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -73,8 +75,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
-        return;
-        if (!enabled)
+        if (!enabled || !Enabled)
             return;
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
@@ -263,7 +264,6 @@ public class ActionPoint3D : Base.ActionPoint {
             try {
                 await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
                 // We have clicked with left mouse and started manipulation with object
-                Debug.LogWarning("Turning on gizmo overlay");
                 manipulationStarted = true;
                 updatePosition = false;
                 TransformGizmo.Instance.AddTarget(Sphere.transform);
@@ -272,5 +272,51 @@ public class ActionPoint3D : Base.ActionPoint {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
             }
         }
+    }
+
+    internal GameObject GetModelCopy() {
+        GameObject sphere = Instantiate(Sphere);
+        Destroy(sphere.GetComponent<SphereCollider>());
+        sphere.transform.localScale = Visual.transform.localScale;
+        sphere.transform.localPosition = Vector3.zero;
+        sphere.transform.localRotation = Quaternion.identity;
+        return sphere;
+    }
+
+    public async override Task<RequestResult> Removable() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+            return new RequestResult(false, "AP could only be removed in project editor");
+        else if (Locked) {
+            return new RequestResult(false, "AP is locked");
+        } else {
+            try {
+                await WebsocketManager.Instance.RemoveActionPoint(GetId(), true);
+                return new RequestResult(true);
+            } catch (RequestFailedException ex) {
+                return new RequestResult(false, ex.Message);
+            }
+        }
+    }
+
+    public async override void Remove() {
+        try {
+            await WebsocketManager.Instance.RemoveActionPoint(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to remove AP " + GetName(), ex.Message);
+        }
+    }
+
+    public async override void Rename(string name) {
+        try {
+            await WebsocketManager.Instance.RenameActionPoint(GetId(), name);
+            Notifications.Instance.ShowToastMessage("Action point renamed");
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
+            throw;
+        }
+    }
+
+    public override string GetObjectTypeName() {
+        return "Action point";
     }
 }

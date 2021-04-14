@@ -29,14 +29,14 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
+        private bool locked;
 
         public bool Locked {
-            get {
-                return PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
-            }
+            get => locked;
 
             set {
                 Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
+                locked = value;
                 PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", value);
             }
         }
@@ -65,20 +65,15 @@ namespace Base {
         }
 
         
-        public virtual void UpdateId(string newId) {
-            Data.Id = newId;
-
-        }
-
         public virtual void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
+            locked = PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
-            ActivateForGizmo((ControlBoxManager.Instance.UseGizmoMove && ProjectManager.Instance.AllowEdit && !MenuManager.Instance.IsAnyMenuOpened) ? "GizmoRuntime" : "Default");
             if (Data.Actions == null)
                 Data.Actions = new List<IO.Swagger.Model.Action>();
             if (Data.Orientations == null)
@@ -195,6 +190,7 @@ namespace Base {
         }
 
         /// <summary>
+        /// 
         /// Returns visual representation of orientation
         /// </summary>
         /// <param name="id">UUID of orientation</param>
@@ -202,7 +198,7 @@ namespace Base {
         public APOrientation GetOrientationVisual(string id) {
             foreach (Transform transform in orientations.transform) {
                 APOrientation orientation = transform.GetComponent<APOrientation>();
-                if (orientation.OrientationId == id) {
+                if (orientation != null && orientation.OrientationId == id) {
                     return orientation;
                 }
             }
@@ -212,7 +208,9 @@ namespace Base {
         public List<APOrientation> GetOrientationsVisuals() {
             List<APOrientation> orientationsList = new List<APOrientation>();
             foreach (Transform transform in orientations.transform) {
-                orientationsList.Add(transform.GetComponent<APOrientation>());
+                APOrientation o = transform.GetComponent<APOrientation>();
+                if (o != null)
+                    orientationsList.Add(o);
             }
             return orientationsList;
         }
@@ -609,8 +607,11 @@ namespace Base {
             transform.localRotation = GetSceneOrientation();
         }
 
-        public override bool Movable() {
-            return true;
+        public async override Task<RequestResult> Movable() {
+            if (Locked)
+                return new RequestResult(false, "Ap is locked");
+            else
+                return new RequestResult(true);
         }
 
         public override string GetId() {

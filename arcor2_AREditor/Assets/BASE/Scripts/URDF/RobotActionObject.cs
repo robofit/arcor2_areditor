@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using RosSharp.Urdf;
@@ -52,18 +53,20 @@ namespace Base {
         private Shader transparentShader;
 
         private bool jointStateSubscribeIsValid = true;
+        private bool modelLoading = false;
 
+        private bool loadingEndEffectors = false;
 
         protected override void Start() {
             base.Start();
-            if (SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
                 _ = EnableVisualisationOfEE();
             }
         }
         
         private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
-            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;            
+            SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
         }
 
         private void OnEnable() {
@@ -174,6 +177,7 @@ namespace Base {
                 } else {
                     // Robot is not loaded yet, let's wait for it to be loaded
                     UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                    modelLoading = true;
                 }
             }
 
@@ -192,6 +196,7 @@ namespace Base {
                 
                 // if robot is loaded, unsubscribe from UrdfManager event
                 UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+                modelLoading = false;
             }
         }
 
@@ -383,9 +388,7 @@ namespace Base {
 
 
         public async Task<List<string>> GetEndEffectorIds() {
-            if (!ResourcesLoaded) {
-                await LoadResources();
-            }
+            await LoadResources();
             List<string> result = new List<string>();
             foreach (RobotEE ee in EndEffectors)
                 result.Add(ee.EEId);
@@ -393,35 +396,58 @@ namespace Base {
         }
 
         public async Task<List<RobotEE>> GetEndEffectors() {
-            if (!ResourcesLoaded) {
-                await LoadEndEffectors();
-            }
+            await LoadResources();
             return EndEffectors;            
         }
 
         private async Task LoadResources() {
             if (!ResourcesLoaded) {
-                await LoadEndEffectors();
+                ResourcesLoaded = await LoadEndEffectors();
             }
-            ResourcesLoaded = true;
         }
 
-        public async Task LoadEndEffectors() {
+        private Task<bool> WaitUntilResourcesReady() {
+            return Task.Run(() => {
+                while (true) {
+                    if (ResourcesLoaded) {
+                        return true; 
+                    } else if (!loadingEndEffectors) {
+                        return false;
+                    } else {
+                        Thread.Sleep(10);
+                    }
+                }
+            });
+
+        }
+
+        public async Task<bool> LoadEndEffectors() {
+           
+            if (loadingEndEffectors) {
+                await WaitUntilResourcesReady();
+                return true;
+            } else {
+                loadingEndEffectors = true;
+            }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
 
 
                 List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 foreach (string eeId in endEffectors) {
+                    
                     RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
                     ee.InitEE(this, eeId);
                     ee.gameObject.SetActive(false);
                     EndEffectors.Add(ee);
                 }
+                return true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
                 Notifications.Instance.ShowNotification("Failed to load end effectors", ex.Message);
+                return false;
             } finally {
+                loadingEndEffectors = false;
                 GameManager.Instance.HideLoadingScreen();
             }            
         }
@@ -446,7 +472,7 @@ namespace Base {
         }
 
         public override GameObject GetModelCopy() {
-            throw new System.NotImplementedException();
+            return Instantiate(RobotModel.RobotModelGameObject);
         }
 
 
@@ -495,7 +521,10 @@ namespace Base {
             ResetPosition();
         }
 
-        public RobotEE GetEE(string ee_id) {
+        public async Task<RobotEE> GetEE(string ee_id) {
+            if (!ResourcesLoaded) {
+                await LoadResources();
+            }
             foreach (RobotEE ee in EndEffectors)
                 if (ee.EEId == ee_id)
                     return ee;
@@ -563,8 +592,14 @@ namespace Base {
         }
 
         public List<IO.Swagger.Model.Joint> GetJoints() {
-            if (RobotModel == null)
-                throw new RequestFailedException("Model not found for this robot.");
+            if (RobotModel == null) {
+                // if urdf model is still loading, return empty joint list
+                if (modelLoading) {
+                    return new List<IO.Swagger.Model.Joint>();
+                } else {
+                    throw new RequestFailedException("Model not found for this robot.");
+                }
+            }
             else
                 return RobotModel.GetJoints();
         }
@@ -572,6 +607,8 @@ namespace Base {
 	    public override void DeleteActionObject() {
             base.DeleteActionObject();
             UnloadRobotModel();
+            UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
+            modelLoading = false;
         }
 
         private void UnloadRobotModel() {
@@ -645,8 +682,13 @@ namespace Base {
             outlineOnClick.GizmoHighlight();
         }
 
-        public List<RobotEE> GetAllEE() {
+        public async Task<List<RobotEE>> GetAllEE() {
+            await LoadResources();
             return EndEffectors;
+        }
+
+        public override string GetObjectTypeName() {
+            return "Robot";
         }
     }
 }

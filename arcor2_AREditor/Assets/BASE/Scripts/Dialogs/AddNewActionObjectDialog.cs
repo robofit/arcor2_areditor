@@ -53,7 +53,8 @@ public class AddNewActionObjectDialog : Dialog {
         }
 
         foreach (Transform t in DynamicContent.transform) {
-            Destroy(t.gameObject);
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
         }
         nameInput.SetLabel("Name", "Name of the action object");
         nameInput.SetType("string");

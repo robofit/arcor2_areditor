@@ -338,6 +338,16 @@ namespace Base {
         }
     }
 
+    public class InteractiveObjectEventArgs : EventArgs {
+        public InteractiveObject InteractiveObject {
+            get; set;
+        }
+
+        public InteractiveObjectEventArgs(InteractiveObject interactiveObject) {
+            InteractiveObject = interactiveObject;
+        }
+    }
+
     public class ObjectTypeEventArgs : EventArgs {
         public ObjectTypeMeta ObjectType {
             get; set;
@@ -357,6 +367,7 @@ namespace Base {
             ObjectTypes = objectTypes;
         }
     }
+
 
 
     public class AREditorEventArgs {
@@ -388,5 +399,7 @@ namespace Base {
         public delegate void ParameterHandler(object sender, ParameterEventArgs args);
         public delegate void ObjectTypeHandler(object sender, ObjectTypeEventArgs args);
         public delegate void ObjectTypesHandler(object sender, ObjectTypesEventArgs args);
+        public delegate void GameObjectEventHandler(object sender, GameObjectEventArgs args);
+        public delegate void InteractiveObjectEventHandler(object sender, InteractiveObjectEventArgs args);
     }
 }
