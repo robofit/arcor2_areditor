@@ -127,6 +127,10 @@ namespace Base {
 
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
+        public IRobot SelectedRobot;
+
+        public RobotEE SelectedEndEffector;
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -226,7 +230,7 @@ namespace Base {
         // Update is called once per frame
         private void Update() {
             // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
+            /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
                 GameManager.Instance.SceneInteractable &&
                 GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
                 if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
@@ -241,7 +245,7 @@ namespace Base {
                     ActivateActionObjectsForGizmo(false);
                     sceneActive = false;
                 }
-            }
+            }*/
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
@@ -291,7 +295,7 @@ namespace Base {
             
         }
 
-        private void OnSceneState(object sender, SceneStateEventArgs args) {
+        private async void OnSceneState(object sender, SceneStateEventArgs args) {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Going online...");
@@ -319,15 +323,48 @@ namespace Base {
                     foreach (IRobot robot in GetRobots()) {
                         robot.SetGrey(false);
                     }
+                    string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+                    string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                    await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
                     GameManager.Instance.HideLoadingScreen();
                     break;
                 case SceneStateData.StateEnum.Stopped:
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
+                    SelectedRobot = null;
+                    SelectedEndEffector = null;
                     break;
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        public async Task SelectRobotAndEE(string robotId, string eeId) {
+            if (!string.IsNullOrEmpty(robotId)) {
+                try {
+                    SelectedRobot = GetRobot(robotId);
+                    if (!string.IsNullOrEmpty(eeId)) {
+                        try {
+                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId));
+                        } catch (ItemNotFoundException ex) {
+                            PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                            Debug.LogError(ex);
+                        }
+                    }
+                } catch (ItemNotFoundException ex) {
+                    PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                    Debug.LogError(ex);
+                }
+
+            }
+        }
+
+        public bool IsRobotSelected() {
+            return SelectedRobot != null;
+        }
+
+        public bool IsRobotAndEESelected() {
+            return IsRobotSelected() && SelectedEndEffector != null;
         }
 
         /// <summary>
@@ -370,14 +407,14 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
-        private void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
+        private async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible) {
                 return;
             }
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
                 try {
                     IRobot robot = GetRobot(args.Data.RobotId);
-                    RobotEE ee = robot.GetEE(eefPose.EndEffectorId);
+                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId);
                     ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
                         TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
                 } catch (ItemNotFoundException) {

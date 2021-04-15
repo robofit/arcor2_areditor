@@ -23,11 +23,11 @@ public class ConnectionSelectorDialog : Dialog {
         }
         foreach (KeyValuePair<string, LogicItem> c in connections) {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();
-            dialogButton.Init(c.Key, () => sender.SelectedConnection(c.Value));
+            dialogButton.Init(c.Key, async () => await sender.SelectedConnection(c.Value));
         }
         if (newConnection) {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();
-            dialogButton.Init("New connection", () => sender.SelectedConnection(null));
+            dialogButton.Init("New connection", async () => await sender.SelectedConnection(null));
         }
         Open();
     }

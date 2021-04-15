@@ -29,6 +29,7 @@ namespace Base {
 
         public TextMeshPro NameText;
 
+        public bool ActionBeingExecuted = false;
         
         public virtual void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
 
@@ -151,8 +152,8 @@ namespace Base {
             return Data.Id;
         }
 
-        public override bool Movable() {
-            return false;
+        public async override Task<RequestResult> Movable() {
+            return new RequestResult(false, "Actions could not be moved");
         }
     }
 
