@@ -143,12 +143,24 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
 
    
 
-    public void ShowNextAO() {
+    public async void ShowNextAO() {
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentObject.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock action object menu", ex.Message);
+            return;
+        }
         ActionObject nextAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(nextAO);
     }
 
-    public void ShowPreviousAO() {
+    public async void ShowPreviousAO() {
+        try {
+            await WebsocketManager.Instance.WriteUnlock(CurrentObject.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock action object menu", ex.Message);
+            return;
+        }
         ActionObject previousAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(previousAO);
     }
