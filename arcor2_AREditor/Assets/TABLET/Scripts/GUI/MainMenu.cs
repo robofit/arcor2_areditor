@@ -340,7 +340,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void CalibrateUsingServer() {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        CalibrationManager.Instance.CalibrateUsingServerAsync();
+        //CalibrationManager.Instance.CalibrateUsingServerAsync();
 #endif
     }
 

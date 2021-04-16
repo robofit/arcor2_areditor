@@ -296,7 +296,7 @@ namespace Base {
         }
 
         public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
-            LabeledInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LabeledInput>();
+            LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LinkableInput>();
             int? selectedValue = null;
             if (value != null) {
                 selectedValue = value;
@@ -304,11 +304,11 @@ namespace Base {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
             input.SetType(actionParameterMetadata.Type);
-            input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
-            input.Input.onValueChanged.AddListener((string newValue)
+            input.Input.SetValue(selectedValue != null ? selectedValue.ToString() : "0");
+            input.Input.Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, int.Parse(newValue)));
-            input.Input.onValueChanged.AddListener((string newValue)
-                => ValidateIntegerParameter(input, actionParameterMetadata, int.Parse(newValue)));
+            input.Input.Input.onValueChanged.AddListener((string newValue)
+                => ValidateIntegerParameter(input.Input, actionParameterMetadata, int.Parse(newValue)));
             return input.gameObject;
         }
 
