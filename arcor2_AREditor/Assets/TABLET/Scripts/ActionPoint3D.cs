@@ -102,7 +102,14 @@ public class ActionPoint3D : Base.ActionPoint {
 
     }
 
-    public void ShowMenu(bool enableBackButton = false) {
+    public async void ShowMenu(bool enableBackButton = false) {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to open AP menu", ex.Message);
+            return;
+        }
+
         actionPointMenu.CurrentActionPoint = this;
         actionPointMenu.EnableBackButton(enableBackButton);
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
@@ -236,14 +243,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override async void OpenMenu() {
-        try {
-            await WebsocketManager.Instance.WriteLock(GetId(), false);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to open AP menu", ex.Message);
-            return;
-        }
         ShowMenu();
-
     }
 
     public override bool HasMenu() {
