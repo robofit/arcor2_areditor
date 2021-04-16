@@ -307,14 +307,14 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     public async void Close() {
         SideMenu.Close();
-        if (CurrentActionPoint == null)
+        /*if (CurrentActionPoint == null)
             return;
         try {
             await WebsocketManager.Instance.WriteUnlock(CurrentActionPoint.GetId());
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
             return;
-        }
+        }*/
     }
 
     public void UpdateOrientationsDynamicList() {

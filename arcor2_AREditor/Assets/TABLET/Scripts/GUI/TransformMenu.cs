@@ -261,7 +261,14 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     
 
-    public void Show(InteractiveObject interactiveObject) {
+    public async void Show(InteractiveObject interactiveObject) {
+        try {
+            await WebsocketManager.Instance.WriteLock(interactiveObject.GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to open transform menu", ex.Message);
+            return;
+        }
+
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
@@ -312,7 +319,14 @@ public class TransformMenu : Singleton<TransformMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
-    public void Hide() {
+    public async void Hide() {
+        if (InteractiveObject == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(InteractiveObject.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock object", ex.Message);
+        }
         InteractiveObject = null;
         Destroy(model);
         model = null;
