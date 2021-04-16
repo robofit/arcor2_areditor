@@ -153,4 +153,8 @@ public class DropdownParameter : MonoBehaviour, IParameter {
             NoOption.color = Color.white;
         }
     }
+
+    public string GetCurrentType() {
+        throw new NotImplementedException();
+    }
 }

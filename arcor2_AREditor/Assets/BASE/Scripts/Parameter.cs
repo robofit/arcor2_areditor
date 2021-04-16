@@ -14,7 +14,7 @@ namespace Base {
     public class Parameter : IO.Swagger.Model.Parameter {
         public ParameterMetadata ParameterMetadata;
 
-        public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, bool isValueValid = true);
+        public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, string type, bool isValueValid = true);
         public delegate DropdownParameter GetDropdownParameterDelegate(string parameterId, GameObject parentParam);
 
         //public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata)
@@ -146,7 +146,7 @@ namespace Base {
                 input.GetComponent<LabeledInput>().SetType(actionParameterMetadata.Type);
                 input.GetComponent<LabeledInput>().SetValue(selectedValue);
                 input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
-                    => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
+                    => onChangeParameterHandler(actionParameterMetadata.Name, newValue, actionParameterMetadata.Type));
             }
             return input;
         }
@@ -179,23 +179,23 @@ namespace Base {
             input = GameObject.Instantiate(ActionsManager.Instance.ParameterRelPosePrefab).GetComponent<RelPoseParam>();
             input.SetValue(selectedValue);
             input.OnValueChangedEvent.AddListener((IO.Swagger.Model.Pose newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
+                => onChangeParameterHandler(actionParameterMetadata.Name, newValue, actionParameterMetadata.Type));
             return input.gameObject;
         }
 
         public static void OnChangeRelativePose(string parameterName, string newValue, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
             try {
                 IO.Swagger.Model.Pose pose = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue);
-                onChangeParameterHandler(parameterName, pose);
+                onChangeParameterHandler(parameterName, pose, "rel_pose");
             } catch (JsonReaderException) {
-                onChangeParameterHandler(parameterName, null, false);
+                onChangeParameterHandler(parameterName, null, "rel_pose", false);
             }
         }
 
         public static GameObject InitializeDropdownParameter(ParameterMetadata actionParameterMetadata, List<string> data, string selectedValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, GameObject dropdownPrefab) {
             DropdownParameter dropdownParameter = GameObject.Instantiate(dropdownPrefab).GetComponent<DropdownParameter>();
             dropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
-            DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler);
+            DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
             return dropdownParameter.gameObject;
         }
 
@@ -281,7 +281,7 @@ namespace Base {
             DropdownParameterJoints dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.ParameterDropdownJointsPrefab).GetComponent<DropdownParameterJoints>();
             dropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
             dropdownParameter.PutData(options, selectedValue,
-                (_) => onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue()));
+                (_) => onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue(), actionParameterMetadata.Type));
             if (selectedValue == "" || selectedValue == null) {
                 string v;
                 if (dropdownParameter.Dropdown.dropdownItems.Count == 0)
@@ -289,13 +289,13 @@ namespace Base {
                 else
                     v = dropdownParameter.Dropdown.selectedText.text;
 
-                onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue());
+                onChangeParameterHandler(actionParameterMetadata.Name, dropdownParameter.GetValue(), actionParameterMetadata.Type);
             }
             return dropdownParameter.gameObject;
             //return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
         }
 
-        public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
+        public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value, string type) {
             LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LinkableInput>();
             int? selectedValue = null;
             if (value != null) {
@@ -303,12 +303,15 @@ namespace Base {
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
-            input.SetType(actionParameterMetadata.Type);
-            input.Input.SetValue(selectedValue != null ? selectedValue.ToString() : "0");
-            input.Input.Input.onValueChanged.AddListener((string newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, int.Parse(newValue)));
+            input.InitDropdown(layoutGroupToBeDisabled, canvasRoot);
+            input.SetMetadataType(actionParameterMetadata.Type);
+            input.SetType(type);
+            input.SetOnValueChanged(onChangeParameterHandler);
+            input.SetValue(selectedValue != null ? selectedValue.ToString() : "0");
+            
             input.Input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateIntegerParameter(input.Input, actionParameterMetadata, int.Parse(newValue)));
+            
             return input.gameObject;
         }
 
@@ -322,7 +325,7 @@ namespace Base {
             }
             parameter.SetValue(selectedValue != null ? selectedValue : false);
             parameter.AddOnValueChangedListener((bool newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, newValue));
+                => onChangeParameterHandler(actionParameterMetadata.Name, newValue, actionParameterMetadata.Type));
             return parameter.gameObject;
         }
 
@@ -337,7 +340,7 @@ namespace Base {
             }
             input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
             input.Input.onValueChanged.AddListener((string newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue)));
+                => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue), actionParameterMetadata.Type));
             input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateDoubleParameter(input, actionParameterMetadata, ParseDouble(newValue)));
             return input.gameObject;
@@ -357,9 +360,9 @@ namespace Base {
             return result;
         }
 
-        private static void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
+        private static void DropdownParameterPutData(DropdownParameter dropdownParameter, List<string> data, string selectedValue, string parameterId, OnChangeParameterHandlerDelegate onChangeParameterHandler, string type) {
             dropdownParameter.PutData(data, selectedValue,
-                (value) => onChangeParameterHandler(parameterId, dropdownParameter.GetValue()));
+                (value) => onChangeParameterHandler(parameterId, dropdownParameter.GetValue(), type));
             if (selectedValue == "" || selectedValue == null) {
                 string value;
                 if (dropdownParameter.Dropdown.dropdownItems.Count == 0)
@@ -367,7 +370,7 @@ namespace Base {
                 else
                     value = dropdownParameter.Dropdown.selectedText.text;
 
-                onChangeParameterHandler(parameterId, dropdownParameter.GetValue());
+                onChangeParameterHandler(parameterId, dropdownParameter.GetValue(), type);
             }
         }
 
@@ -393,7 +396,7 @@ namespace Base {
                 }
             }
             values = await actionParameterMetadata.LoadDynamicValues(actionProviderId, args);
-            DropdownParameterPutData(dropdownParameter, values, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler);
+            DropdownParameterPutData(dropdownParameter, values, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
         }
 
         private static void AddOnChangeToDropdownParameter(DropdownParameter dropdownParameter, UnityAction callback) {
@@ -405,7 +408,7 @@ namespace Base {
         public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -420,7 +423,7 @@ namespace Base {
         public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (Parameter parameter in _parameters) {
-                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode);
+                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Value, darkMode);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
                     continue;
@@ -456,7 +459,7 @@ namespace Base {
                 if (value != null) {
                     value = JsonConvert.SerializeObject(value);
                 }
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, darkMode, actionProviderId);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, parameterMetadata.Type, darkMode, actionProviderId);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -497,7 +500,7 @@ namespace Base {
             List<Tuple<DropdownParameter, Parameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Parameter>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (Parameter parameter in parameters) {
-                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, darkMode, actionProviderId);
+                GameObject paramGO = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, darkMode, actionProviderId);
 
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Name);
@@ -544,7 +547,7 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, bool darkMode = false, string actionProviderId = "") {
+        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "") {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {
@@ -567,7 +570,7 @@ namespace Base {
                     parameter = InitializeIntegerEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<int?>(value));
                     break;
                 case "integer":
-                    parameter = InitializeIntegerParameter(actionParameterMetadata, handler, Parameter.GetValue<int?>(value));
+                    parameter = InitializeIntegerParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<int?>(value), type);
                     break;
                 case "double":
                     parameter = InitializeDoubleParameter(actionParameterMetadata, handler, Parameter.GetValue<double?>(value));

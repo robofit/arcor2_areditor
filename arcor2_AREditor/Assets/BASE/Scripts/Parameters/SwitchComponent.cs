@@ -71,5 +71,9 @@ public class SwitchComponent : MonoBehaviour, IParameter
 
     private void OnChange() {
         onChangeCallback.Invoke(Switch.isOn);
-    } 
+    }
+
+    public string GetCurrentType() {
+        return "boolean";
+    }
 }

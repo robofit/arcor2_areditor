@@ -150,7 +150,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                                 () => ConfirmationDialog.Close());
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
             ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
@@ -201,7 +201,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 IO.Swagger.Model.ParameterMeta metadata = CurrentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             Debug.Assert(ProjectManager.Instance.AllowEdit);
