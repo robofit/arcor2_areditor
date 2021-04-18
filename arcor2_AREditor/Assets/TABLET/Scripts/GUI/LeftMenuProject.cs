@@ -251,12 +251,18 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    public void AddConnectionClick() {
+    public async void AddConnectionClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
         if ((selectedObject.GetType() == typeof(PuckInput) ||
                 selectedObject.GetType() == typeof(PuckOutput))) {
+            try {
+                await WebsocketManager.Instance.WriteLock(((InputOutput) selectedObject).Action.GetId(), false);
+            } catch (RequestFailedException ex) {
+                Notifications.Instance.ShowNotification("Failed to add connection", ex.Message);
+                return;
+            }
             ((InputOutput) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
     }

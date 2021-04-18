@@ -23,7 +23,14 @@ public class RenameDialog : Dialog
     private UnityAction _updateVisibilityCallback;
     public Button CloseBtn;
 
-    public void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback) {
+        try {
+            await WebsocketManager.Instance.WriteLock(objectToRename.GetId(), false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock object", ex.Message);
+            return;
+        }
+
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
         if (objectToRename == null)
@@ -48,16 +55,27 @@ public class RenameDialog : Dialog
             selectedObject.Rename(name);
             SelectorMenu.Instance.ForceUpdateMenus();
             Close();
-        } catch (RequestFailedException e) {
+        } catch (RequestFailedException) {
             //notification already shown, nothing else to do
         }
     }
 
-    public override void Close() {
+    public override async void Close() {
         //LeftMenu.Instance.UpdateVisibility();
+        
+
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
+
+        if (selectedObject == null)
+            return;
+        try {
+            await WebsocketManager.Instance.WriteUnlock(selectedObject.GetId());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock object", ex.Message);
+        }
+        selectedObject = null;
     }
 }
