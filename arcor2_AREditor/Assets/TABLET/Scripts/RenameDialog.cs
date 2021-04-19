@@ -46,7 +46,7 @@ public class RenameDialog : Dialog
         string name = (string) nameInput.GetValue();
 
         try {
-            selectedObject.Rename(name);
+            await selectedObject.Rename(name);
             SelectorMenu.Instance.ForceUpdateMenus();
             Close();
         } catch (RequestFailedException) {

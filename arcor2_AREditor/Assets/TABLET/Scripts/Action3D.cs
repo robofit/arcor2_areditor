@@ -180,7 +180,7 @@ public class Action3D : Base.Action {
         }
     }
 
-    public async override void Rename(string newName) {
+    public async override Task Rename(string newName) {
         try {
             await WebsocketManager.Instance.RenameAction(GetId(), newName);
             Notifications.Instance.ShowToastMessage("Action renamed");

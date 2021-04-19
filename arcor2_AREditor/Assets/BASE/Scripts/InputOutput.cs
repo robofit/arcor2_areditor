@@ -384,7 +384,7 @@ namespace Base {
             throw new NotImplementedException();
         }
 
-        public override void Rename(string name) {
+        public override Task Rename(string name) {
             throw new NotImplementedException();
         }
     }

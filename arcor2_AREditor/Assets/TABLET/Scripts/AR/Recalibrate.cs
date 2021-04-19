@@ -62,7 +62,7 @@ public class Recalibrate : InteractiveObject {
         throw new System.NotImplementedException();
     }
 
-    public override void Rename(string name) {
+    public override Task Rename(string name) {
         throw new System.NotImplementedException();
     }
     public override string GetObjectTypeName() {
