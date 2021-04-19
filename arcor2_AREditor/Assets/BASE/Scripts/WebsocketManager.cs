@@ -974,7 +974,8 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleObjectUnlocked(string data) {
-            //todo
+            IO.Swagger.Model.ObjectUnlocked objectUnlockedEvent = JsonConvert.DeserializeObject<ObjectUnlocked>(data);
+            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectUnlockedEvent.Data.ObjectId, true, objectUnlockedEvent.Data.Owner));
         }
 
         /// <summary>
@@ -982,7 +983,8 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleObjectLocked(string data) {
-            //todo
+            ObjectLocked objectLockedEvent = JsonConvert.DeserializeObject<ObjectLocked>(data);
+            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectLockedEvent.Data.ObjectId, false, objectLockedEvent.Data.Owner));
         }
 
         /// <summary>
