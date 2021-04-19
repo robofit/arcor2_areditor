@@ -280,7 +280,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     #region Settings submenu button click methods
 
-    public void SetActionPointParentClick() {
+    public async void SetActionPointParentClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null || !(selectedObject is ActionPoint3D))
             return;
@@ -291,6 +291,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
         Action<object> action = AssignToParent;
+        await selectedActionPoint.LockAsync(true);
         GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action,
             "Select new parent (action object)", ValidateParent, UntieActionPointParent);
     }

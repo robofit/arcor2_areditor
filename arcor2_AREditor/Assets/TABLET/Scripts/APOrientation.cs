@@ -109,7 +109,7 @@ public class APOrientation : InteractiveObject {
         }
     }
 
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
             Notifications.Instance.ShowToastMessage("Orientation renamed");

@@ -282,12 +282,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     
 
     public async void Show(InteractiveObject interactiveObject) {
-        try {
-            await WebsocketManager.Instance.WriteLock(interactiveObject.GetId(), false);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to open transform menu", ex.Message);
+        if (!await interactiveObject.LockAsync(true))
             return;
-        }
 
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");

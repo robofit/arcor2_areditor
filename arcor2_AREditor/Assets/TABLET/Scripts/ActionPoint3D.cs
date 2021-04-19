@@ -308,7 +308,7 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameActionPoint(GetId(), name);
             Notifications.Instance.ShowToastMessage("Action point renamed");

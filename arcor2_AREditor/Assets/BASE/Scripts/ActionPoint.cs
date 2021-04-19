@@ -41,7 +41,8 @@ namespace Base {
             }
         }
 
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
         }
 

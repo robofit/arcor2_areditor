@@ -39,5 +39,45 @@ public abstract class InteractiveObject : Clickable {
 
     public List<Collider> Colliders = new List<Collider>();
 
-    public abstract void Rename(string name);
+    public abstract Task Rename(string name);
+
+
+    /// <summary>
+    /// Locks object. If successful - returns true, if not - shows notification and returns false.
+    /// </summary>
+    /// <param name="lockTree">Lock also all children? (including children of children etc.)</param>
+    /// <returns></returns>
+    public async Task<bool> LockAsync(bool lockTree) {
+        try {
+            await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
+            return true;
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Unlocks object. If successful - returns true, if not - shows notification and returns false.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> UnlockAsync() {
+        try {
+            await WebsocketManager.Instance.WriteUnlock(GetId());
+            return true;
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to unlock " + GetName(), ex.Message);
+            return false;
+        }
+    }
+
+    protected virtual void Start() {
+        WebsocketManager.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+    }
+
+    private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+        if (args.ObjectId != GetId())
+            return;
+        Enable(args.Locked);
+    }
 }

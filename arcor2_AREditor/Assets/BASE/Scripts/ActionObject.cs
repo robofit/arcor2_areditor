@@ -277,7 +277,7 @@ namespace Base {
         else
             return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
     }
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameObject(GetId(), name);
             Notifications.Instance.ShowToastMessage("Action object renamed");
