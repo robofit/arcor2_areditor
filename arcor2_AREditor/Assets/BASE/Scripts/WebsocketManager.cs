@@ -103,6 +103,10 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+        /// <summary>
+        /// Invoked when an object is locked or unlocked
+        /// </summary>
+        public event AREditorEventArgs.ObjectLockingEventHandler OnObjectLockingEvent;
 
         /// <summary>
         /// ARServer domain or IP address
@@ -379,6 +383,15 @@ namespace Base {
                         break;
                     case "ShowMainScreen":
                         HandleShowMainScreen(data);
+                        break;
+                    case "ObjectLocked":
+                        HandleObjectLocked(data);
+                        break;
+                    case "ObjectUnlocked":
+                        HandleObjectUnlocked(data);
+                        break;
+                    default:
+                        Debug.LogError(data);
                         break;
                 }
             }
@@ -954,6 +967,22 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleSceneSaved(string data) {
             SceneManager.Instance.SceneSaved();
+        }
+
+        /// <summary>
+        /// Invoked when an object was unlocked
+        /// </summary>
+        /// <param name="data">Message from server</param>
+        private void HandleObjectUnlocked(string data) {
+            //todo
+        }
+
+        /// <summary>
+        /// Invoked when an object was locked
+        /// </summary>
+        /// <param name="data">Message from server</param>
+        private void HandleObjectLocked(string data) {
+            //todo
         }
 
         /// <summary>
