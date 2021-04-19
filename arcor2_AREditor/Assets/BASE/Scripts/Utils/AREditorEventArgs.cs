@@ -368,6 +368,26 @@ namespace Base {
         }
     }
 
+    public class ObjectLockingEventArgs : EventArgs {
+        public string ObjectId {
+            get; set;
+        }
+
+        public bool Locked {
+            get; set;
+        }
+
+        public string Owner {
+            get;set;
+        }
+
+        public ObjectLockingEventArgs(string objectId, bool locked, string owner) {
+            ObjectId = objectId;
+            Locked = locked;
+            Owner = owner;
+        }
+    }
+
 
 
     public class AREditorEventArgs {
@@ -401,5 +421,6 @@ namespace Base {
         public delegate void ObjectTypesHandler(object sender, ObjectTypesEventArgs args);
         public delegate void GameObjectEventHandler(object sender, GameObjectEventArgs args);
         public delegate void InteractiveObjectEventHandler(object sender, InteractiveObjectEventArgs args);
+        public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
     }
 }
