@@ -7,7 +7,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
-public class ToggleIconButton : MonoBehaviour
+public class ToggleIconButton : ButtonWithTooltip
 {
 
     private void Awake() {
@@ -24,7 +24,7 @@ public class ToggleIconButton : MonoBehaviour
     public bool PersistentState = false;
     [Tooltip("If PersistentState is true, this has to be unique.")]
     public string PersistentTag = "";
-    
+    public string ToggledDescription, UntoggledDescription;
 
     public UnityEvent OnToggledOn, OnToggledOff;
 
@@ -39,10 +39,12 @@ public class ToggleIconButton : MonoBehaviour
         this.toggled = toggle;
         if (Toggled) {
             Icon.color = Color.white;
+            SetDescription(ToggledDescription);
             if (invoke)
                 OnToggledOn.Invoke();
         } else {
             Icon.color = Color.grey;
+            SetDescription(UntoggledDescription);
             if (invoke)
                 OnToggledOff.Invoke();
         }
