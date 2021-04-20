@@ -395,9 +395,16 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void Enable(bool enable) {
-        base.Enable(enable);
+        //base.Enable(enable);
+        Debug.LogError("islocked: " + IsLocked);
+        if (SelectorMenu.Instance.ObjectsToggle.Toggled && !IsLocked)
+            Enabled = true;
+        else
+            Enabled = false;
 
-        if (enable)
+        Debug.LogError("Enabled: " + Enabled);
+
+        if (Enabled)
             modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
         else
             modelMaterial.color = Color.gray;

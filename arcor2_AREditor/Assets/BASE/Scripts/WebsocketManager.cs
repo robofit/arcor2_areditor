@@ -975,7 +975,7 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleObjectUnlocked(string data) {
             IO.Swagger.Model.ObjectUnlocked objectUnlockedEvent = JsonConvert.DeserializeObject<ObjectUnlocked>(data);
-            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectUnlockedEvent.Data.ObjectId, true, objectUnlockedEvent.Data.Owner));
+            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectUnlockedEvent.Data.ObjectId, false, objectUnlockedEvent.Data.Owner));
         }
 
         /// <summary>
@@ -984,7 +984,7 @@ namespace Base {
         /// <param name="data">Message from server</param>
         private void HandleObjectLocked(string data) {
             ObjectLocked objectLockedEvent = JsonConvert.DeserializeObject<ObjectLocked>(data);
-            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectLockedEvent.Data.ObjectId, false, objectLockedEvent.Data.Owner));
+            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectLockedEvent.Data.ObjectId, true, objectLockedEvent.Data.Owner));
         }
 
         /// <summary>

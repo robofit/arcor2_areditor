@@ -44,13 +44,16 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         }
         string domain = Domain.text;
         int port = int.Parse(Port.text);
-        string username = Username.text;
         PlayerPrefs.SetString("arserver_domain", domain);
         PlayerPrefs.SetInt("arserver_port", port);
-        PlayerPrefs.SetString("arserver_username", username);
+        PlayerPrefs.SetString("arserver_username", GetUsername());
         PlayerPrefs.SetInt("arserver_keep_connected", KeepConnected.isOn ? 1 : 0);
         PlayerPrefs.Save();
         Base.GameManager.Instance.ConnectToSever(domain, port);
+    }
+
+    internal string GetUsername() {
+        return Username.text;
     }
 
     private void ConnectedToServer(object sender, EventArgs args) {

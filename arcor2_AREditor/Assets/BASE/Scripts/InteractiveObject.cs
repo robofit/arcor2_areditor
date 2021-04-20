@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 public abstract class InteractiveObject : Clickable {
 
+    public bool IsLocked { get; protected set; }
+    public string LockOwner { get; protected set; }
+
     public abstract string GetName();
     public abstract string GetId();
 
@@ -32,15 +35,20 @@ public abstract class InteractiveObject : Clickable {
 
     public List<Collider> Colliders = new List<Collider>();
 
+    
+
     public abstract Task Rename(string name);
 
 
     /// <summary>
     /// Locks object. If successful - returns true, if not - shows notification and returns false.
     /// </summary>
-    /// <param name="lockTree">Lock also all children? (including children of children etc.)</param>
+    /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
     public async Task<bool> LockAsync(bool lockTree) {
+        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) //object is already locked by this user
+            return true;
+
         try {
             await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
             return true;
@@ -68,9 +76,30 @@ public abstract class InteractiveObject : Clickable {
         WebsocketManager.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
-    private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+    protected void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         if (args.ObjectId != GetId())
             return;
-        Enable(args.Locked);
+
+        if (args.Locked) {
+            OnObjectLocked(args.Owner);
+        } else {
+            OnObjectUnlocked();
+        }
+        SelectorMenu.Instance.ForceUpdateMenus();
     }
+
+    protected void OnObjectUnlocked() {
+        IsLocked = false;
+        Enable(true);
+    }
+
+    protected void OnObjectLocked(string owner) {
+        IsLocked = true;
+        LockOwner = owner;
+
+        Enable(false);
+
+    }
+
+
 }
