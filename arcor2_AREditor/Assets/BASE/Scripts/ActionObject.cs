@@ -21,7 +21,8 @@ namespace Base {
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
 
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
 

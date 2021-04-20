@@ -19,9 +19,9 @@ public class Action3D : Base.Action {
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         GameManager.Instance.OnStopPackage += OnProjectStop;
-        
     }
 
     private void OnEnable() {
@@ -125,9 +125,14 @@ public class Action3D : Base.Action {
     }
 
     public override void Enable(bool enable) {
-        base.Enable(enable);
+        //base.Enable(enable);
+        if (SelectorMenu.Instance.ActionsToggle.Toggled && !IsLocked)
+            Enabled = true;
+        else
+            Enabled = false;
+
         foreach (Renderer renderer in outlineOnClick.Renderers)
-            if (enable)
+            if (Enabled)
                 renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
             else
                 renderer.material.color = Color.gray;

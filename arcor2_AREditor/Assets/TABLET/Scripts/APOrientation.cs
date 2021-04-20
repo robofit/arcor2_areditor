@@ -122,4 +122,11 @@ public class APOrientation : InteractiveObject {
     public override string GetObjectTypeName() {
         return "Orientation";
     }
+
+    public override void Enable(bool enable) {
+        if (SelectorMenu.Instance.PointsToggle.Toggled && !IsLocked)
+            Enabled = true;
+        else
+            Enabled = false;
+    }
 }

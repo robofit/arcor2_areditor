@@ -235,8 +235,12 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void Enable(bool enable) {
-        base.Enable(enable);
-        if (enable)
+        if (SelectorMenu.Instance.PointsToggle.Toggled && !IsLocked)
+            Enabled = true;
+        else
+            Enabled = false;
+        //base.Enable(enable);
+        if (Enabled)
             sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
         else
             sphereMaterial.color = Color.gray;
