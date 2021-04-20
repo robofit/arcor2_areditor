@@ -85,6 +85,7 @@ public class LeftMenuProject : LeftMenu
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 //AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 //AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
                 AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
