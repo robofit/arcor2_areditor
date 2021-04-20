@@ -202,6 +202,8 @@ public class TransformMenu : Singleton<TransformMenu> {
         TransformWheel.Units = Units;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        RotateTranslateBtn.SetDescription("Swith to rotate");
+
         //ResetPosition();
     }
 
@@ -211,14 +213,16 @@ public class TransformMenu : Singleton<TransformMenu> {
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
         //ResetPosition();
+        RotateTranslateBtn.SetDescription("Swith to translate");
     }
 
     public void SwitchToTablet() {
         TransformWheel.gameObject.SetActive(true);
         ResetPosition();
         Wheel.gameObject.SetActive(true);
-        StepButtons.gameObject.SetActive(false);
         RotateTranslateBtn.SetInteractivity(true);
+        RotateTranslateBtn.SetInteractivity(true);
+        RobotTabletBtn.SetDescription("Switch to robot control");
     }
 
     public void SwitchToRobot() {
@@ -240,6 +244,8 @@ public class TransformMenu : Singleton<TransformMenu> {
             SwitchToTranslate();
         }
         RotateTranslateBtn.SetInteractivity(false);
+        RotateTranslateBtn.SetInteractivity(false, "Unable to rotate with robot");
+        RobotTabletBtn.SetDescription("Switch to tablet control");
     }
 
     public void HoldPressed() {
@@ -265,8 +271,11 @@ public class TransformMenu : Singleton<TransformMenu> {
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
-        RobotTabletBtn.SetInteractivity(SceneManager.Instance.SceneStarted);
+        /*RobotTabletBtn.SetInteractivity(SceneManager.Instance.SceneStarted);
+        robotTabletBtnTooltip.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         RotateTranslateBtn.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D));
+        rotateTranslateBtnTooltip.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D), "Action point could not be translated");
+        */
         //offsetPosition = Vector3.zero;
         ResetTransformWheel();
         SwitchToTranslate();
@@ -275,7 +284,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {
             model = ((ActionPoint3D) interactiveObject).GetModelCopy();
-            RotateTranslateBtn.SetInteractivity(false);
+            RotateTranslateBtn.SetInteractivity(false, "Action point could not be rotated");
             RobotTabletBtn.SetInteractivity(true);
             model.transform.SetParent(interactiveObject.transform);
             model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
@@ -290,7 +299,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         } else if (interactiveObject.GetType() == typeof(RobotActionObject)) {
             model = ((RobotActionObject) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(true);
-            RobotTabletBtn.SetInteractivity(false);
+            RobotTabletBtn.SetInteractivity(false, "Robot position could not be set using robot");
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
             model.transform.localPosition = Vector3.zero;

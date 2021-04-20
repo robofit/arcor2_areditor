@@ -6,10 +6,11 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
-public class TwoStatesToggle : MonoBehaviour
+public class TwoStatesToggle : ButtonWithTooltip
 {
     [HideInInspector]
     public Button Button;
+    
     private void Awake() {
         Button = GetComponent<Button>();
         icon1 = BigImage.sprite;
@@ -48,8 +49,11 @@ public class TwoStatesToggle : MonoBehaviour
 
     }
 
-    public void SetInteractivity(bool interactive) {
-        Button.interactable = interactive;
+    public override void SetInteractivity(bool interactive, string alterateDescription = null) {
+        if (string.IsNullOrEmpty(alterateDescription))
+            base.SetInteractivity(interactive);
+        else
+            base.SetInteractivity(interactive, alterateDescription);
         if (!interactive) {
             BigImage.color = Color.gray;
             SmallImage.color = Color.gray;
@@ -58,4 +62,5 @@ public class TwoStatesToggle : MonoBehaviour
             SmallImage.color = Color.white;
         }
     }
+
 }

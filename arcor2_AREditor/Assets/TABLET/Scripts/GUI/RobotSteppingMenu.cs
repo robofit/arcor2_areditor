@@ -80,30 +80,36 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     public void SwitchToSafe() {
         safe = true;
+        SafeButton.SetDescription("Switch to unsafe movements");
     }
 
     public void SwithToUnsafe() {
         safe = false;
+        SafeButton.SetDescription("Switch to safe movements");
     }
 
     public void SwitchToRobot() {
         world = false;
+        SafeButton.SetDescription("Switch to world coordinate system");
     }
 
     public void SwitchToWorld() {
         world = true;
+        SafeButton.SetDescription("Switch to robot coordinate system");
     }
 
     public void SwithToTranslate() {
         translate = true;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        SafeButton.SetDescription("Switch to rotate");
     }
 
     public void SwitchToRotate() {
         translate = false;
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
+        SafeButton.SetDescription("Switch to translate");
     }
 
     public async void HoldPressed() {
