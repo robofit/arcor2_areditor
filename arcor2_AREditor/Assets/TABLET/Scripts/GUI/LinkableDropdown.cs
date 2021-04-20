@@ -5,19 +5,19 @@ using UnityEngine;
 using UnityEngine.UI;
 using static Base.Parameter;
 
-public class LinkableInput : LinkableParameter {
-   public LabeledInput Input;
+public class LinkableDropdown : LinkableParameter
+{
+    public DropdownParameter DropdownParameter;
 
-
-    public void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
+    public virtual void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
         //Parameter.GetValue<int?>();
 
         InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         ParameterMetadata = parameterMetadata;
         SetType(type);
         SetOnValueChanged(onChangeParameterHandler);
-        object v;
-        
+        /*object v;
+
         switch (type) {
             case "string":
                 if (value == null)
@@ -46,72 +46,56 @@ public class LinkableInput : LinkableParameter {
             default:
                 v = null;
                 break;
-        }
+        }*/
 
-        SetValue(v);
     }
-    
+
 
 
     public override object GetValue() {
         if (type == "link")
             return base.GetValue();
-        else 
-            return Input.GetValue();
+        else
+            return DropdownParameter.GetValue();
     }
 
-   
+
 
     public override void SetDarkMode(bool dark) {
         base.SetDarkMode(dark);
-        Input.SetDarkMode(dark);
+        DropdownParameter.SetDarkMode(dark);
     }
 
     public override void SetLabel(string label, string description) {
         base.SetLabel(label, description);
-        Input.SetLabel(label, description);
+        DropdownParameter.SetLabel(label, description);
     }
 
-    public override void SetValue(object value) {
+    /*public override void SetValue(object value) {
         base.SetValue(value);
         if (type != "link")
-            Input.SetValue(value);
-    }
+            DropdownParameter.SetValue(value);
+    }*/
 
     public void SetOnValueChanged(OnChangeParameterHandlerDelegate onChangeParameterHandler) {
         //input.Input.Input.onValueChanged.AddListener((string newValue)
         //        => onChangeParameterHandler(actionParameterMetadata.Name, newValue, type));
         this.onChangeParameterHandler = onChangeParameterHandler;
-    }    
+    }
 
     public override void SetType(string type) {
-        base.SetType(type);
-        
+        this.type = type;
         if (type == "link") {
-            Input.gameObject.SetActive(false);
-            Input.Input.onValueChanged.RemoveAllListeners();
-        }
-        else {
+            DropdownParameter.gameObject.SetActive(false);
+            //DropdownParameter.Dropdown.onValueChanged.RemoveAllListeners();
+        } else {
             RemoveLinkBtn.gameObject.SetActive(false);
             CreateLinkBtn.gameObject.SetActive(true);
             ActionsDropdown.gameObject.SetActive(false);
-            Input.gameObject.SetActive(true);
-            Input.Input.onValueChanged.RemoveAllListeners();
-            switch (ParameterMetadata.Type) {
-                case "integer":
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
-
-                    break;
-                case "double":
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), double.Parse(value), type));
-                    break;
-                case "string":
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
-                    break;
-            }
-            Input.SetType(type);
+            DropdownParameter.gameObject.SetActive(true);
+            //Input.Input.onValueChanged.RemoveAllListeners();
+            //Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
+            //Input.SetType(type);
         }
     }
-
-   
 }

@@ -141,7 +141,12 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     }
 
     public void SetValue(object value) {
-        throw new NotImplementedException();
+        for (int i = 0; i < Dropdown.dropdownItems.Count; ++i) {
+            if (Dropdown.dropdownItems[i].itemName == value.ToString()) {
+                Dropdown.selectedItemIndex = i;
+                Dropdown.selectedText.text = Dropdown.dropdownItems[i].itemName;
+            }
+        }
     }
 
     public void SetDarkMode(bool dark) {

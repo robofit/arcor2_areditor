@@ -70,7 +70,9 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
         }
         SetHeader(CurrentAction.Data.Name);
         ActionType.text = CurrentAction.ActionProvider.GetProviderName() + "/" + Base.Action.ParseActionType(CurrentAction.Data.Type).Item2;
-
+        foreach (var p in CurrentAction.Parameters.Values) {
+            Debug.LogError(p);
+        }
         actionParameters = await Base.Parameter.InitActionParameters(CurrentAction.ActionProvider.GetProviderId(), CurrentAction.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
@@ -201,7 +203,12 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 IO.Swagger.Model.ParameterMeta metadata = CurrentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
+                string value;
+                if (actionParameter.GetCurrentType() == "link")
+                    value = actionParameter.GetValue().ToString();
+                else
+                    value = JsonConvert.SerializeObject(actionParameter.GetValue());
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             Debug.Assert(ProjectManager.Instance.AllowEdit);
