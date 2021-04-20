@@ -2491,7 +2491,16 @@ namespace Base {
             }
         }
 
-
+        public async Task RegisterUser(string username) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RegisterUserRequestArgs args = new RegisterUserRequestArgs(username);
+            IO.Swagger.Model.RegisterUserRequest request = new RegisterUserRequest(r_id, "RegisterUser", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RegisterUserResponse response = await WaitForResult<IO.Swagger.Model.RegisterUserResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to register user" } : response.Messages);
+            }
+        }
 
     }
 

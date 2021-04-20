@@ -823,7 +823,8 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     IO.Swagger.Model.SystemInfoResponseData systemInfo;
                     try {
-                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
+                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+                        await WebsocketManager.Instance.RegisterUser(LandingScreen.Instance.Username.text);
                     } catch (RequestFailedException ex) {
                         DisconnectFromSever();
                         Notifications.Instance.ShowNotification("Connection failed", "");
