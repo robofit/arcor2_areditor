@@ -473,7 +473,8 @@ namespace Base {
         /// Loads selected setings from player prefs
         /// </summary>
         internal void LoadSettings() {
-            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
+            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("scene/" + SceneMeta.Id + "/AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
+            Debug.LogError("load float " + ActionObjectsVisibility);
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
@@ -568,6 +569,8 @@ namespace Base {
 
             // Add the Action Object into scene reference
             ActionObjects.Add(id, actionObject);
+            Debug.LogError(ActionObjectsVisibility);
+            actionObject.SetVisibility(ActionObjectsVisibility);
             return actionObject;
         }
 
@@ -815,6 +818,7 @@ namespace Base {
                 actionObject.SetVisibility(value);
             }
             PlayerPrefsHelper.SaveFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), value);
+            Debug.LogError("save float " + value.ToString());
             ActionObjectsVisibility = value;
         }
 

@@ -140,6 +140,7 @@ public class ActionObject3D : ActionObject {
 
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
+        Debug.LogError(value);
         base.SetVisibility(value);
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
@@ -189,6 +190,7 @@ public class ActionObject3D : ActionObject {
             }
             // Set transparent shader
             else {
+                Debug.LogError("set color");
                 if (!transparent) {
                     modelMaterial.shader = transparentShader;
                     transparent = true;
@@ -390,11 +392,13 @@ public class ActionObject3D : ActionObject {
 
     public override void Enable(bool enable) {
         base.Enable(enable);
-
+        Color color;
         if (enable)
-            modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+            color = new Color(0.89f, 0.83f, 0.44f);
         else
-            modelMaterial.color = Color.gray;
+            color = Color.gray;
+        color.a = SceneManager.Instance.ActionObjectsVisibility;
+        modelMaterial.color = color;
     }
 
     public override void OpenMenu() {
