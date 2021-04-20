@@ -60,7 +60,7 @@ public class LeftMenuProject : LeftMenu
             SelectorMenu.Instance.ForceUpdateMenus();
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
-            RenameClick();
+            RenameClick(true);
         }
 
     }

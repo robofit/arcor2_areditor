@@ -306,6 +306,10 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     public void RenameClick() {
+        RenameClick(false);   
+    }
+
+    public void RenameClick(bool removeOnCancel) {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
@@ -316,8 +320,10 @@ public abstract class LeftMenu : MonoBehaviour {
 
         UpdateVisibility(false, true);
         SelectorMenu.Instance.gameObject.SetActive(false);
-
-        RenameDialog.Init(selectedObject, UpdateVisibility);
+        if (removeOnCancel)
+            RenameDialog.Init(selectedObject, UpdateVisibility, () => selectedObject.Remove());
+        else
+            RenameDialog.Init(selectedObject, UpdateVisibility);
         RenameDialog.Open();
     }
 
