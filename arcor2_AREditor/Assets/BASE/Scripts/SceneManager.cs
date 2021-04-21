@@ -474,7 +474,7 @@ namespace Base {
         /// Loads selected setings from player prefs
         /// </summary>
         internal void LoadSettings() {
-            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("scene/" + SceneMeta.Id + "/AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
+            ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
             Debug.LogError("load float " + ActionObjectsVisibility);
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
