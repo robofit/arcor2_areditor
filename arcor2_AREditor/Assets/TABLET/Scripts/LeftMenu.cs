@@ -311,7 +311,6 @@ public abstract class LeftMenu : MonoBehaviour {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-        Debug.LogError(clickedButton.GetComponent<Image>().enabled);
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);

@@ -46,12 +46,18 @@ public class TwoStatesToggle : ButtonWithTooltip
 
     }
 
+    public override void SetInteractivity(bool interactable) {
+        base.SetInteractivity(interactable);
+        SetImagesColors(interactable);
+    }
+
     public override void SetInteractivity(bool interactive, string alterateDescription = null) {
-        if (string.IsNullOrEmpty(alterateDescription))
-            base.SetInteractivity(interactive);
-        else
-            base.SetInteractivity(interactive, alterateDescription);
-        if (!interactive) {
+        base.SetInteractivity(interactive, alterateDescription);
+        SetImagesColors(interactive);
+    }
+
+    private void SetImagesColors(bool interactable) {
+        if (!interactable) {
             BigImage.color = Color.gray;
             SmallImage.color = Color.gray;
         } else {

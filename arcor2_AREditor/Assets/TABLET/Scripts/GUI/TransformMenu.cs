@@ -222,8 +222,8 @@ public class TransformMenu : Singleton<TransformMenu> {
         TransformWheel.gameObject.SetActive(true);
         ResetPosition();
         Wheel.gameObject.SetActive(true);
-        RotateTranslateBtn.SetInteractivity(true);
-        RotateTranslateBtn.SetInteractivity(true);
+        if (InteractiveObject.GetType() != typeof(ActionPoint3D))
+            RotateTranslateBtn.SetInteractivity(true);
         RobotTabletBtn.SetDescription("Switch to robot control");
     }
 

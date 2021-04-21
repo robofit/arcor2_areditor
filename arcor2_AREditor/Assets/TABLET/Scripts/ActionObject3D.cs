@@ -189,7 +189,6 @@ public class ActionObject3D : ActionObject {
             }
             // Set transparent shader
             else {
-                Debug.LogError("set color");
                 if (!transparent) {
                     modelMaterial.shader = transparentShader;
                     transparent = true;
