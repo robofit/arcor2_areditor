@@ -178,7 +178,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
             Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
             return;
         }
-        ExecuteActionBtn.SetInteractivity(true);
+        await UpdateExecuteAndStopBtns();
     }
 
     public void StopExecution() {
@@ -211,7 +211,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
                 SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
                 parametersChanged = false;
                 if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
-                    ExecuteActionBtn.SetInteractivity(true);
+                    await UpdateExecuteAndStopBtns();
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action ", e.Message);
             }            
