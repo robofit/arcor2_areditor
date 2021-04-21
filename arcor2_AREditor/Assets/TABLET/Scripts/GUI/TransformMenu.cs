@@ -32,6 +32,8 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
+
+        Coordinates.X.Select();
     }
 
     private void Update() {
@@ -280,7 +282,6 @@ public class TransformMenu : Singleton<TransformMenu> {
         ResetTransformWheel();
         SwitchToTranslate();
         SwitchToTablet();
-        Coordinates.X.Select();
         
         if (interactiveObject.GetType() == typeof(ActionPoint3D)) {
             model = ((ActionPoint3D) interactiveObject).GetModelCopy();

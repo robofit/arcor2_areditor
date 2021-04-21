@@ -1126,14 +1126,19 @@ namespace Base {
                 if (GetGameState() != GameStateEnum.PackageRunning) {
                     try {
                         WaitUntilPackageReady(5000);
-                        
+                        if (PackageInfo == null)
+                            return;
                         if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
                             return;
                         }
+                        if (PackageInfo == null)
+                            return;
                         if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
+                        if (PackageInfo == null)
+                            return;
                         openPackageRunningScreenFlag = true;
                         if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
@@ -1696,6 +1701,9 @@ namespace Base {
 #else
                 Scene.SetActive(true);
 #endif
+
+                if (PackageInfo == null)
+                    return;
                 OnRunPackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
             } catch (TimeoutException ex) {
                 Debug.LogError(ex);
