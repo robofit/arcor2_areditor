@@ -17,11 +17,14 @@ public class EndAction : StartEndAction
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(-0.5f, 0, 0));
     }
 
-
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-        if (enable)
+    public override void UpdateColor()
+    {
+        if (Enabled) {
             foreach (Renderer renderer in outlineOnClick.Renderers)
                 renderer.material.color = Color.red;
+        } else {
+            foreach (Renderer renderer in outlineOnClick.Renderers)
+                renderer.material.color = Color.grey;
+        }
     }
 }

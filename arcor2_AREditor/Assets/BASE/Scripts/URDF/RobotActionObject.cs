@@ -690,5 +690,20 @@ namespace Base {
         public override string GetObjectTypeName() {
             return "Robot";
         }
+
+        public override void UpdateColor() {
+            //probably nothing to do here, there is SetGrey method...
+        }
+
+        public override void OnObjectLocked(string owner) {
+            base.OnObjectLocked(owner);
+            if (owner != LandingScreen.Instance.GetUsername())
+                ActionObjectName.text = GetLockedText();
+        }
+
+        public override void OnObjectUnlocked() {
+            base.OnObjectUnlocked();
+            ActionObjectName.text = GetName();
+        }
     }
 }

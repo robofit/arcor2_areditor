@@ -58,4 +58,8 @@ public class TabletVis : InteractiveObject {
     public override string GetObjectTypeName() {
         return GetName();
     }
+
+    public override void UpdateColor() {
+        //nothing to do here...
+    }
 }

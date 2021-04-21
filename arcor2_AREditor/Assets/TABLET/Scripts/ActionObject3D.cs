@@ -394,17 +394,8 @@ public class ActionObject3D : ActionObject {
         outlineOnClick.UnHighlight();
     }
 
-    public override void Enable(bool enable) {
-        //base.Enable(enable);
-        Debug.LogError("islocked: " + IsLocked);
-        if (SelectorMenu.Instance.ObjectsToggle.Toggled && !IsLocked)
-            Enabled = true;
-        else
-            Enabled = false;
-
-        Debug.LogError("Enabled: " + Enabled);
-
-        if (Enabled)
+    public override void UpdateColor() {
+        if (Enabled && !IsLocked)
             modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
         else
             modelMaterial.color = Color.gray;
@@ -453,5 +444,16 @@ public class ActionObject3D : ActionObject {
 
     public override string GetObjectTypeName() {
         return "Action object";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername())
+            ActionObjectName.text = GetLockedText();
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        ActionObjectName.text = GetName();
     }
 }

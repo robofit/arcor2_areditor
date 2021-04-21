@@ -233,13 +233,8 @@ public class ActionPoint3D : Base.ActionPoint {
         ActionPointName.text = apData.Name;
     }
 
-    public override void Enable(bool enable) {
-        if (SelectorMenu.Instance.PointsToggle.Toggled && !IsLocked)
-            Enabled = true;
-        else
-            Enabled = false;
-        //base.Enable(enable);
-        if (Enabled)
+    public override void UpdateColor() {
+        if (Enabled && !IsLocked)
             sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
         else
             sphereMaterial.color = Color.gray;
@@ -322,5 +317,16 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override string GetObjectTypeName() {
         return "Action point";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername())
+            ActionPointName.text = GetLockedText();
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        ActionPointName.text = GetName();
     }
 }
