@@ -33,27 +33,44 @@ public abstract class LeftMenu : MonoBehaviour {
     protected InteractiveObject selectedObject = null;
     protected bool selectedObjectUpdated = true, previousUpdateDone = true;
 
-    private void Awake() {
+    protected virtual void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
-        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
-        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
-        SceneManager.Instance.OnSceneStateEvent += Instance_OnSceneStateEvent;
-        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
     }
 
-    private void Instance_OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+    protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         _ = UpdateBuildAndSaveBtns();
+        if (args.Event.State == SceneStateData.StateEnum.Stopping) {
+
+            if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == "robot") {
+                MoveButton.GetComponent<Image>().enabled = false;
+                MoveButton2.GetComponent<Image>().enabled = false;
+                TransformMenu.Instance.Hide();
+                SelectorMenu.Instance.gameObject.SetActive(true);
+            }
+            if (RobotSteppingMenu.Instance.CanvasGroup.alpha == 1) {
+                Debug.LogError(RobotSteppingButton.GetComponent<Image>().enabled);
+                RobotSteppingButton.GetComponent<Image>().enabled = false;
+                Debug.LogError(RobotSteppingButton.GetComponent<Image>().enabled);
+                RobotSteppingMenu.Instance.Hide();
+                SelectorMenu.Instance.gameObject.SetActive(true);
+            }
+            if (RobotSelector.Opened()) {
+                RobotSelector.Close(false);
+                RobotSelectorButton.GetComponent<Image>().enabled = false;
+            }
+            UpdateVisibility();
+        }
     }
 
 
 
-    private void OnObjectSelectedChangedEvent(object sender, InteractiveObjectEventArgs args) {
+    protected void OnObjectSelectedChangedEvent(object sender, InteractiveObjectEventArgs args) {
         selectedObject = args.InteractiveObject;
         selectedObjectUpdated = true;
     }
 
-    private void OnGameStateChanged(object sender, GameStateEventArgs args) {
+    protected void OnGameStateChanged(object sender, GameStateEventArgs args) {
         if (!isVisibilityForced)
             UpdateVisibility();
         if (args != null) {
@@ -107,7 +124,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     protected bool requestingObject = false;
 
-    private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
+    protected void OnEditorStateChanged(object sender, EditorStateEventArgs args) {
         switch (args.Data) {
             case GameManager.EditorStateEnum.Normal:
                 requestingObject = false;
@@ -166,7 +183,6 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         selectedObject.OpenMenu();
 
-        //SetActiveSubmenu(LeftMenuSelection.None);
     }
 
     public abstract void UpdateVisibility();
@@ -286,14 +302,16 @@ public abstract class LeftMenu : MonoBehaviour {
 
         
         //was clicked the button in favorites or settings submenu?
-        Button clickedButton = MoveButton.Button;
+        Button clickedButton;
         if (currentSubmenuOpened == LeftMenuSelection.Favorites)
             clickedButton = MoveButton2.Button;
+        else
+            clickedButton = MoveButton.Button;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-
+        Debug.LogError(clickedButton.GetComponent<Image>().enabled);
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
@@ -304,6 +322,7 @@ public abstract class LeftMenu : MonoBehaviour {
             }
         } else {
             clickedButton.GetComponent<Image>().enabled = true;
+            
             if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
                 selectedObject.StartManipulation();
             } else {

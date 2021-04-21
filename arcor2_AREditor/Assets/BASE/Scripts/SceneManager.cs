@@ -396,6 +396,7 @@ namespace Base {
                 return;
             try {
                 IRobot robot = GetRobot(args.Data.RobotId);
+
                 robot.SetJointValue(args.Data.Joints);
             } catch (ItemNotFoundException) {
                 

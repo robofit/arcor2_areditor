@@ -37,36 +37,41 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     private void Update() {
-        if (CanvasGroup.alpha == 1 && gizmo != null) {
-            if (world) {
-                gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
-            } else {
-                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation;// * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
-            }
+        if (CanvasGroup.alpha == 1) {
+            
+            if (gizmo != null && SceneManager.Instance.IsRobotAndEESelected()) {
 
-            if (translate) {
-                Vector3 position;
                 if (world) {
-                    position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
                 } else {
-                    //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
-                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
+                    gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation;// * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
                 }
-                Coordinates.X.SetValueMeters(position.x);
-                Coordinates.Y.SetValueMeters(position.y);
-                Coordinates.Z.SetValueMeters(position.z);
 
-            } else {
-                Quaternion newrotation;
-                if (world)
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-                else
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
-                Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
-                Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
-                Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                if (translate) {
+                    Vector3 position;
+                    if (world) {
+                        position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    } else {
+                        //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                        position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
+                    }
+                    Coordinates.X.SetValueMeters(position.x);
+                    Coordinates.Y.SetValueMeters(position.y);
+                    Coordinates.Z.SetValueMeters(position.z);
+
+                } else {
+                    Quaternion newrotation;
+                    if (world)
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                    else
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
+                    Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
+                    Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
+                    Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                }
             }
         }
+        
     }
 
     public async void SetPerpendicular() {

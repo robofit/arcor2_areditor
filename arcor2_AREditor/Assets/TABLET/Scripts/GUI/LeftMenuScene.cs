@@ -18,13 +18,26 @@ public class LeftMenuScene : LeftMenu
 
     public ButtonWithTooltip AddActionObjectButton;
 
-    private void Start() {
+    protected override void Awake() {
+        base.Awake();
         Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
+
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+
+        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
     }
     protected override void Update() {
         base.Update();
         if (SceneManager.Instance.SceneMeta != null)
             EditorInfo.text = "Scene: \n" + SceneManager.Instance.SceneMeta.Name;
+    }
+
+    protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor)
+            base.OnSceneStateEvent(sender, args);
+
     }
 
 

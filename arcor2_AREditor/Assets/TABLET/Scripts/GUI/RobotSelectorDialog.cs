@@ -19,6 +19,7 @@ public class RobotSelectorDialog : Dialog {
             closeCallback.Invoke();
             return false;
         }
+        
         _closeCallback = closeCallback;
         robotId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotId", null);
         eeId = PlayerPrefsHelper.LoadString(SceneManager.Instance.SceneMeta.Id + "/selectedEndEffectorId", null);
@@ -60,6 +61,10 @@ public class RobotSelectorDialog : Dialog {
             return;
         }
         
+    }
+
+    public bool Opened() {
+        return windowManager.isOn;
     }
 
     public void SelectEE(string endEffectorId) {

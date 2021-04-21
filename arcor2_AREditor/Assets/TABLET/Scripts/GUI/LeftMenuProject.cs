@@ -24,9 +24,22 @@ public class LeftMenuProject : LeftMenu
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
 
-    private void Start() {
+    protected override void Awake() {
+        base.Awake();
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
+
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+
+        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+    }
+
+    protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor)
+            base.OnSceneStateEvent(sender, args);  
+
     }
 
     protected void OnEnable() {
