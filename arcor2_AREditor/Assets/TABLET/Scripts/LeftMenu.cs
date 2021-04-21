@@ -56,8 +56,17 @@ public abstract class LeftMenu : MonoBehaviour {
     private void OnGameStateChanged(object sender, GameStateEventArgs args) {
         if (!isVisibilityForced)
             UpdateVisibility();
-        if (args != null && (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor))
-            _ = UpdateBuildAndSaveBtns();
+        if (args != null) {
+            if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor) {
+                _ = UpdateBuildAndSaveBtns();
+            } else {
+                DeactivateAllSubmenus();
+                SetActiveSubmenu(LeftMenuSelection.Favorites);
+                isVisibilityForced = false;
+                UpdateVisibility();
+            }            
+        }
+
     }
 
 

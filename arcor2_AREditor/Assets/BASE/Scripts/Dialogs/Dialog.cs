@@ -9,7 +9,7 @@ public abstract class Dialog : MonoBehaviour
 {
     protected ModalWindowManager windowManager;
 
-    public virtual void Start() {
+    public virtual void Awake() {
         windowManager = GetComponent<ModalWindowManager>();
     }
 
