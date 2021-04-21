@@ -37,41 +37,47 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     private void Update() {
-        if (CanvasGroup.alpha == 1 && gizmo != null) {
-            if (world) {
-                gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
-            } else {
-                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
-            }
+        if (CanvasGroup.alpha == 1) {
+            
+            if (gizmo != null && SceneManager.Instance.IsRobotAndEESelected()) {
 
-            if (translate) {
-                Vector3 position;
                 if (world) {
-                    position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
                 } else {
-                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation;// * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
                 }
-                Coordinates.X.SetValueMeters(position.x);
-                Coordinates.Y.SetValueMeters(position.y);
-                Coordinates.Z.SetValueMeters(position.z);
 
-            } else {
-                Quaternion newrotation;
-                if (world)
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-                else
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
-                Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
-                Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
-                Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                if (translate) {
+                    Vector3 position;
+                    if (world) {
+                        position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    } else {
+                        //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                        position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
+                    }
+                    Coordinates.X.SetValueMeters(position.x);
+                    Coordinates.Y.SetValueMeters(position.y);
+                    Coordinates.Z.SetValueMeters(position.z);
+
+                } else {
+                    Quaternion newrotation;
+                    if (world)
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                    else
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
+                    Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
+                    Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
+                    Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                }
             }
         }
+        
     }
 
     public async void SetPerpendicular() {
         try {
             
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), (decimal) SpeedSlider.value, safe);
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), (decimal) SpeedSlider.value, safe);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
@@ -79,30 +85,36 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     public void SwitchToSafe() {
         safe = true;
+        SafeButton.SetDescription("Switch to unsafe movements");
     }
 
     public void SwithToUnsafe() {
         safe = false;
+        SafeButton.SetDescription("Switch to safe movements");
     }
 
     public void SwitchToRobot() {
         world = false;
+        SafeButton.SetDescription("Switch to world coordinate system");
     }
 
     public void SwitchToWorld() {
         world = true;
+        SafeButton.SetDescription("Switch to robot coordinate system");
     }
 
     public void SwithToTranslate() {
         translate = true;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        SafeButton.SetDescription("Switch to rotate");
     }
 
     public void SwitchToRotate() {
         translate = false;
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
+        SafeButton.SetDescription("Switch to translate");
     }
 
     public async void HoldPressed() {
@@ -163,7 +175,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 break;
         }
         try {
-            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {

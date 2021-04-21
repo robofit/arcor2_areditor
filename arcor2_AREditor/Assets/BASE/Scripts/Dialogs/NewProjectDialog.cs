@@ -13,9 +13,8 @@ public class NewProjectDialog : Dialog
     public GameObject TogglePrefab;
     public TMPro.TMP_InputField NewProjectName;
     public ButtonWithTooltip OKBtn;
-    public override void Start()
+    public void Start()
     {
-        base.Start();
         Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
     }
 

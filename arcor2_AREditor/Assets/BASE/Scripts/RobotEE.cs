@@ -54,7 +54,7 @@ public class RobotEE : InteractiveObject {
     }
 
     public override string GetId() {
-        return EEId;
+        return RobotId + "/" + EEId;
     }
 
     public override void OpenMenu() {

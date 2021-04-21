@@ -8,7 +8,7 @@ public class CoordinatesBtnGroup : MonoBehaviour
     private CoordBtn selectedBtn;
 
 
-    private void Awake() {
+    private void Start() {
         X.Select();
         selectedBtn = X;
     }

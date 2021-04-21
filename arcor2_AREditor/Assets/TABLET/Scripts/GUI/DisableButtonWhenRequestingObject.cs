@@ -8,9 +8,9 @@ using static Base.GameManager;
 [RequireComponent(typeof(Button))]
 public class DisableButtonWhenRequestingObject : MonoBehaviour
 {
-    private Button button;
+    private ToggleIconButton button;
     private void Awake() {
-        button = GetComponent<Button>();
+        button = GetComponent<ToggleIconButton>();
     }
     private void Start() {
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
@@ -21,7 +21,7 @@ public class DisableButtonWhenRequestingObject : MonoBehaviour
             case GameManager.EditorStateEnum.Normal:
             case GameManager.EditorStateEnum.InteractionDisabled:
             case GameManager.EditorStateEnum.Closed:
-                button.interactable = true;
+                button.SetInteractivity(true);
                 break;
             case EditorStateEnum.SelectingAction:
             case EditorStateEnum.SelectingActionInput:
@@ -29,7 +29,7 @@ public class DisableButtonWhenRequestingObject : MonoBehaviour
             case EditorStateEnum.SelectingActionOutput:
             case EditorStateEnum.SelectingActionPoint:
             case EditorStateEnum.SelectingActionPointParent:
-                button.interactable = false;
+                button.SetInteractivity(false, "Filters could not be manipulated when selecting object");
                 break;
         }
     }

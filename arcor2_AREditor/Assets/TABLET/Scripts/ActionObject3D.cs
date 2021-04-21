@@ -390,11 +390,13 @@ public class ActionObject3D : ActionObject {
 
     public override void Enable(bool enable) {
         base.Enable(enable);
-
+        Color color;
         if (enable)
-            modelMaterial.color = new Color(0.89f, 0.83f, 0.44f);
+            color = new Color(0.89f, 0.83f, 0.44f);
         else
-            modelMaterial.color = Color.gray;
+            color = Color.gray;
+        color.a = SceneManager.Instance.ActionObjectsVisibility;
+        modelMaterial.color = color;
     }
 
     public override void OpenMenu() {
