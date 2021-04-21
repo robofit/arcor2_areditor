@@ -101,6 +101,14 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(false, "No object selected");
             CalibrationButton.SetInteractivity(false, "No object selected");
             OpenMenuButton.SetInteractivity(false, "No object selected");
+        } else if (obj.IsLocked) {
+            SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
+            MoveButton.SetInteractivity(false, "Object is locked");
+            MoveButton2.SetInteractivity(false, "Object is locked");
+            RemoveButton.SetInteractivity(false, "Object is locked");
+            RenameButton.SetInteractivity(false, "Object is locked");
+            CalibrationButton.SetInteractivity(false, "Object is locked");
+            OpenMenuButton.SetInteractivity(false, "Object is locked");
         } else {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
             Task<RequestResult> tMove = Task.Run(() => obj.Movable());

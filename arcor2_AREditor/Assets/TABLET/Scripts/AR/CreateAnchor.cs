@@ -68,4 +68,8 @@ public class CreateAnchor : InteractiveObject {
     public override string GetObjectTypeName() {
         return GetName();
     }
+
+    public override void UpdateColor() {
+        //nothing to do here
+    }
 }

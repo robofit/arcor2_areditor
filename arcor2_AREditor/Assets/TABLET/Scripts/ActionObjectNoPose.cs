@@ -84,4 +84,7 @@ public class ActionObjectNoPose : ActionObject {
         throw new RequestFailedException("This object has no pose");
     }
 
+    public override void UpdateColor() {
+        //nothing to do here
+    }
 }

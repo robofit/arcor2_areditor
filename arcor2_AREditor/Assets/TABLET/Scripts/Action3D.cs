@@ -124,19 +124,14 @@ public class Action3D : Base.Action {
         NameText.gameObject.SetActive(false);
     }
 
-    public override void Enable(bool enable) {
-        //base.Enable(enable);
-        if (SelectorMenu.Instance.ActionsToggle.Toggled && !IsLocked)
-            Enabled = true;
-        else
-            Enabled = false;
-
+    public override void UpdateColor() {
+        Input.UpdateColor();
+        Output.UpdateColor();
         foreach (Renderer renderer in outlineOnClick.Renderers)
-            if (Enabled)
+            if (Enabled && !IsLocked)
                 renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
             else
                 renderer.material.color = Color.gray;
-
     }
 
     public override string GetName() {
@@ -197,5 +192,21 @@ public class Action3D : Base.Action {
 
     public override string GetObjectTypeName() {
         return "Action";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername()) {
+            NameText.text = GetLockedText();
+        }
+        Input.OnObjectLocked(owner);
+        Output.OnObjectLocked(owner);
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        NameText.text = GetName();
+        Input.OnObjectUnlocked();
+        Output.OnObjectUnlocked();
     }
 }

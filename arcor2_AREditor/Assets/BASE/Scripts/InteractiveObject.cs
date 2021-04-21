@@ -10,6 +10,10 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLocked { get; protected set; }
     public string LockOwner { get; protected set; }
 
+    protected string GetLockedText() {
+        return "LOCKED by " + LockOwner + "\n" + GetName();
+    }
+
     public abstract string GetName();
     public abstract string GetId();
 
@@ -42,7 +46,13 @@ public abstract class InteractiveObject : Clickable {
 
     public List<Collider> Colliders = new List<Collider>();
 
-    
+    public abstract void UpdateColor();
+
+    public override void Enable(bool enable) {
+        base.Enable(enable);
+        UpdateColor();
+    }
+
 
     public abstract Task Rename(string name);
 
@@ -83,7 +93,7 @@ public abstract class InteractiveObject : Clickable {
         WebsocketManager.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
-    protected void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+    protected virtual void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         if (args.ObjectId != GetId())
             return;
 
@@ -95,17 +105,16 @@ public abstract class InteractiveObject : Clickable {
         SelectorMenu.Instance.ForceUpdateMenus();
     }
 
-    protected void OnObjectUnlocked() {
+    public virtual void OnObjectUnlocked() {
         IsLocked = false;
-        Enable(true);
+        UpdateColor();
     }
 
-    protected void OnObjectLocked(string owner) {
+    public virtual void OnObjectLocked(string owner) {
         IsLocked = true;
         LockOwner = owner;
-
-        Enable(false);
-
+        if(owner != LandingScreen.Instance.GetUsername())
+            UpdateColor();
     }
 
 

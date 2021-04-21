@@ -88,4 +88,8 @@ public class RobotEE : InteractiveObject {
     public override string GetObjectTypeName() {
         return "End effector";
     }
+
+    public override void UpdateColor() {
+        //nothing to do here
+    }
 }
