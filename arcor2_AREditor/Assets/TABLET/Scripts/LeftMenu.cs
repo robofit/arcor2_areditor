@@ -152,7 +152,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (!updateButtonsInteractivity)
             return;
 
-        if (MenuManager.Instance.CheckIsAnyRightMenuOpened()) {
+        /*if (MenuManager.Instance.CheckIsAnyRightMenuOpened()) {
             SetActiveSubmenu(LeftMenuSelection.Favorites);
             RobotButton.interactable = false;
             AddButton.interactable = false;
@@ -165,8 +165,8 @@ public abstract class LeftMenu : MonoBehaviour {
         AddButton.interactable = true;
         UtilityButton.interactable = true;
         HomeButton.interactable = true;
+        */
 
-        
     }
 
     private async void LateUpdate() {
@@ -286,7 +286,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf) { //other menu/dialog opened
-            SetActiveSubmenu(LeftMenuSelection.None); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
@@ -378,7 +378,7 @@ public abstract class LeftMenu : MonoBehaviour {
             ((CreateAnchor) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
 
-        SetActiveSubmenu(LeftMenuSelection.None);
+        //SetActiveSubmenu(LeftMenuSelection.None);
     }
 
     

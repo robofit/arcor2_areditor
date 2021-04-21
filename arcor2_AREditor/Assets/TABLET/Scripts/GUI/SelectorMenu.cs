@@ -184,7 +184,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
         } else {
-            SelectedObjectChanged(null);
+            if (!manuallySelected)
+                SelectedObjectChanged(null);
         }
         if (ContentAim.activeSelf) {
             int count = 0;
