@@ -280,7 +280,7 @@ public class LeftMenuProject : LeftMenu
     public void AddActionPointUsingRobotClick() {
         CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
-            SceneManager.Instance.SelectedEndEffector.GetId());
+            SceneManager.Instance.SelectedEndEffector.GetName());
     }
 
     private void ShowCreateGlobalActionPointDialog() {
@@ -312,7 +312,7 @@ public class LeftMenuProject : LeftMenu
                          ProjectManager.Instance.GetFreeAPName("global"),
                          () => CreateGlobalActionPointUsingRobot(InputDialog.GetValue(),
                                                                  SceneManager.Instance.SelectedRobot.GetId(),
-                                                                 SceneManager.Instance.SelectedEndEffector.GetId()),
+                                                                 SceneManager.Instance.SelectedEndEffector.GetName()),
                          () => InputDialog.Close());
     }
 

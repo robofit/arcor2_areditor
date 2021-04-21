@@ -72,7 +72,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     public async void SetPerpendicular() {
         try {
             
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), (decimal) SpeedSlider.value, safe);
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), (decimal) SpeedSlider.value, safe);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
@@ -170,7 +170,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 break;
         }
         try {
-            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {
