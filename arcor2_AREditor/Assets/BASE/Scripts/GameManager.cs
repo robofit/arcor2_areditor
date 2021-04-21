@@ -123,9 +123,6 @@ namespace Base {
         /// </summary>
         public event EventHandler OnActionExecutionCanceled;
 
-        public LeftMenuScene LeftMenuScene;
-        public LeftMenuProject LeftMenuProject;
-
         /// <summary>
         /// Holds current application state (opened screen)
         /// </summary>

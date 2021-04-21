@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,14 +12,11 @@ public class ToggleIconButton : ButtonWithTooltip
 {
 
     private void Awake() {
-        Button = GetComponent<Button>();
         if (PersistentState) {
             Toggle(PlayerPrefsHelper.LoadBool("buttons/" + PersistentTag, true), false);
         }
     }
     public Image Icon;
-    [HideInInspector]
-    public Button Button;
     private bool toggled = true;
     [Tooltip("Defines if state of this button should be persistent")]
     public bool PersistentState = false;

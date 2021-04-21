@@ -8,11 +8,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public class TwoStatesToggle : ButtonWithTooltip
 {
-    [HideInInspector]
-    public Button Button;
     
     private void Awake() {
-        Button = GetComponent<Button>();
         icon1 = BigImage.sprite;
         icon2 = SmallImage.sprite;
         Toggle(false);
