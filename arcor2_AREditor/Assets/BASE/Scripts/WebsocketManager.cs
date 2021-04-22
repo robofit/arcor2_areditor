@@ -383,10 +383,10 @@ namespace Base {
                     case "ShowMainScreen":
                         HandleShowMainScreen(data);
                         break;
-                    case "ObjectLocked":
+                    case "ObjectsLocked":
                         HandleObjectLocked(data);
                         break;
-                    case "ObjectUnlocked":
+                    case "ObjectsUnlocked":
                         HandleObjectUnlocked(data);
                         break;
                     default:
@@ -973,8 +973,9 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleObjectUnlocked(string data) {
-            IO.Swagger.Model.ObjectUnlocked objectUnlockedEvent = JsonConvert.DeserializeObject<ObjectUnlocked>(data);
-            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectUnlockedEvent.Data.ObjectId, false, objectUnlockedEvent.Data.Owner));
+            IO.Swagger.Model.ObjectsUnlocked objectsUnlockedEvent = JsonConvert.DeserializeObject<ObjectsUnlocked>(data);
+            foreach(string id in objectsUnlockedEvent.Data.ObjectIds)
+                OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(id, false, objectsUnlockedEvent.Data.Owner));
         }
 
         /// <summary>
@@ -982,8 +983,9 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleObjectLocked(string data) {
-            ObjectLocked objectLockedEvent = JsonConvert.DeserializeObject<ObjectLocked>(data);
-            OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(objectLockedEvent.Data.ObjectId, true, objectLockedEvent.Data.Owner));
+            ObjectsLocked objectsLockedEvent = JsonConvert.DeserializeObject<ObjectsLocked>(data);
+            foreach(string id in objectsLockedEvent.Data.ObjectIds)
+                OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(id, true, objectsLockedEvent.Data.Owner));
         }
 
         /// <summary>
