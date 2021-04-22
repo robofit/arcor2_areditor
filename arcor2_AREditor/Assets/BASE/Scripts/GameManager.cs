@@ -827,7 +827,7 @@ namespace Base {
                         await WebsocketManager.Instance.RegisterUser(LandingScreen.Instance.Username.text);
                     } catch (RequestFailedException ex) {
                         DisconnectFromSever();
-                        Notifications.Instance.ShowNotification("Connection failed", "");
+                        Notifications.Instance.ShowNotification("Connection failed", ex.Message);
                         return;
                     }
                     if (!CheckApiVersion(systemInfo)) {

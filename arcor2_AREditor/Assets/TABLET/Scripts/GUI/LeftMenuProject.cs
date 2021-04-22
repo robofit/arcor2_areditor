@@ -209,7 +209,7 @@ public class LeftMenuProject : LeftMenu
         
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);
-            SaveButton.SetInteractivity(false, "There are no unsaved changes");
+            //SaveButton.SetInteractivity(false, "There are no unsaved changes");
             if (ProjectManager.Instance.ProjectMeta.HasLogic) {
                 RunButton.SetInteractivity(true);
                 RunButton2.SetInteractivity(true);
@@ -218,9 +218,11 @@ public class LeftMenuProject : LeftMenu
             BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton2.SetInteractivity(false, "There are unsaved changes on project");
-            SaveButton.SetInteractivity(true);
+            //SaveButton.SetInteractivity(true);
         }
         (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
+        SaveProjectResponse saveProjectResponse = await WebsocketManager.Instance.SaveProject(true);
+        SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages[0]);
         CloseButton.SetInteractivity(successForce, messageForce);        
     }
 

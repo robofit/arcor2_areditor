@@ -1019,9 +1019,9 @@ namespace Base {
         /// Asks server to save currently openned scene
         /// </summary>
         /// <returns>Response form server</returns>
-        public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
+        public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene(bool dryRun = false) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene").ToJson(), id, true);
+            SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene", dryRun: dryRun).ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveSceneResponse>(id);
         }
 
@@ -1029,9 +1029,9 @@ namespace Base {
         /// Asks server to save currently openned project
         /// </summary>
         /// <returns>Response form server</returns>
-        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
+        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject(bool dryRun = false) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject").ToJson(), id, true);
+            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
