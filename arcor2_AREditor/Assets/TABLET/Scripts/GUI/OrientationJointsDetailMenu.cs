@@ -429,6 +429,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         CurrentActionPoint = currentActionPoint;
+        if (!await currentActionPoint.GetOrientationVisual(orientation.Id).WriteLock(false)) {
+            CurrentActionPoint = null;
+            return;
+        }
+
         this.orientation = orientation;
         this.isOrientationDetail = true;
 
@@ -436,8 +441,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
-        CurrentActionPoint = currentActionPoint;
+        try {
+            await WebsocketManager.Instance.WriteLock(joints.Id, false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock joints", ex.Message);
+            Debug.LogError(ex.Message);
+            return;
+        }
 
+        CurrentActionPoint = currentActionPoint;
         this.joints = joints;
         isOrientationDetail = false;
         try {
@@ -470,6 +482,14 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void HideMenu() {
         if (CurrentActionPoint == null)
             return;
-        await CurrentActionPoint.WriteUnlock();
+        if (isOrientationDetail) {
+            await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
+        } else {
+            try {
+                await WebsocketManager.Instance.WriteUnlock(joints.Id);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex.Message);
+            }
+        }
     }
 }
