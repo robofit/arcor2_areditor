@@ -103,12 +103,8 @@ namespace Base {
                     if (eeVisible)
                         ShowRobotEE();
                     manipulationStarted = false;
-                    try {
-                        await WebsocketManager.Instance.WriteUnlock(GetId());
-                    } catch (RequestFailedException ex) {
-                        Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+                    if (!await this.WriteUnlock())
                         return;
-                    }
                 }
 
             }
@@ -646,12 +642,8 @@ namespace Base {
         }
 
         public override async void OpenMenu() {
-            try {
-                await WebsocketManager.Instance.WriteLock(GetId(), false);
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+            if (!await this.WriteLock(false))
                 return;
-            }
             TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -669,12 +661,8 @@ namespace Base {
         }
 
         public override async void StartManipulation() {
-            try {
-                await WebsocketManager.Instance.WriteLock(GetId(), true);
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to invoke manipulation of action object", ex.Message);
+            if (!await this.WriteLock(true))
                 return;
-            }
             TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();

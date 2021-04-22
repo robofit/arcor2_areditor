@@ -470,13 +470,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void HideMenu() {
         if (CurrentActionPoint == null)
             return;
-        try {
-            await WebsocketManager.Instance.WriteUnlock(CurrentActionPoint.GetId());
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
-            return;
-        }
+        await CurrentActionPoint.WriteUnlock();
     }
-
-
 }

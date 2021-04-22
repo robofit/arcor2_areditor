@@ -263,12 +263,9 @@ public class LeftMenuProject : LeftMenu
             return;
         if ((selectedObject.GetType() == typeof(PuckInput) ||
                 selectedObject.GetType() == typeof(PuckOutput))) {
-            try {
-                await WebsocketManager.Instance.WriteLock(((InputOutput) selectedObject).Action.GetId(), false);
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to add connection", ex.Message);
+            if (!await ((InputOutput) selectedObject).Action.WriteLock(false))
                 return;
-            }
+            
             ((InputOutput) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
     }

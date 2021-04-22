@@ -44,12 +44,8 @@ public class ActionPoint3D : Base.ActionPoint {
 
             } else {
                 manipulationStarted = false;
-                try {
-                    await WebsocketManager.Instance.WriteUnlock(GetId());
-                } catch (RequestFailedException ex) {
-                    Notifications.Instance.ShowNotification("Failed to revoke manipulation lock of AP", ex.Message);
+                if (!await this.WriteUnlock())
                     return;
-                }
             }
         }
             
@@ -103,12 +99,8 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async void ShowMenu(bool enableBackButton = false) {
-        try {
-            await WebsocketManager.Instance.WriteLock(GetId(), false);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to open AP menu", ex.Message);
+        if (!await this.WriteLock(false))
             return;
-        }
 
         actionPointMenu.CurrentActionPoint = this;
         actionPointMenu.EnableBackButton(enableBackButton);
@@ -250,12 +242,8 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
-        try {
-            await WebsocketManager.Instance.WriteLock(GetId(), true);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to invoke manipulation of AP", ex.Message);
+        if (!await this.WriteLock(true))
             return;
-        }
         TransformGizmo.Instance.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");

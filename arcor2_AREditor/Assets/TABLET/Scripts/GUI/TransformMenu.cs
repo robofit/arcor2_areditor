@@ -282,7 +282,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     
 
     public async void Show(InteractiveObject interactiveObject) {
-        if (!await interactiveObject.LockAsync(true))
+        if (!await interactiveObject.WriteLock(true))
             return;
 
         InteractiveObject = interactiveObject;
@@ -340,11 +340,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     public async void Hide() {
         if (InteractiveObject == null)
             return;
-        try {
-            await WebsocketManager.Instance.WriteUnlock(InteractiveObject.GetId());
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock object", ex.Message);
-        }
+        await InteractiveObject.WriteUnlock();
         InteractiveObject = null;
         Destroy(model);
         model = null;
