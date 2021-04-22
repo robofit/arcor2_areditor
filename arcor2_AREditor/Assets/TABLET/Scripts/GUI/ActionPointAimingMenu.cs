@@ -310,12 +310,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         if (!unlockAP)
             return;
 
-        try {
-            await WebsocketManager.Instance.WriteUnlock(CurrentActionPoint.GetId());
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
-            return;
-        }
+        await CurrentActionPoint.WriteUnlock();
     }
 
     public void UpdateOrientationsDynamicList() {

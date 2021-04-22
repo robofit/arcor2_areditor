@@ -153,12 +153,7 @@ public class ActionMenu : Base.Singleton<ActionMenu>, IMenu {
     internal async void HideMenu() {
         if (CurrentAction == null)
             return;
-        try {
-            await WebsocketManager.Instance.WriteUnlock(CurrentAction.GetId());
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock AP menu", ex.Message);
-            return;
-        }
+        await CurrentAction.WriteUnlock();
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {

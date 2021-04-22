@@ -23,12 +23,8 @@ public class RenameDialog : Dialog
     private UnityAction _updateVisibilityCallback;
 
     public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback) {
-        try {
-            await WebsocketManager.Instance.WriteLock(objectToRename.GetId(), false);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to lock object", ex.Message);
+        if (!await objectToRename.WriteLock(false))
             return;
-        }
 
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
@@ -65,11 +61,7 @@ public class RenameDialog : Dialog
 
         if (selectedObject == null)
             return;
-        try {
-            await WebsocketManager.Instance.WriteUnlock(selectedObject.GetId());
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock object", ex.Message);
-        }
+        await selectedObject.WriteUnlock();
         selectedObject = null;
     }
 }

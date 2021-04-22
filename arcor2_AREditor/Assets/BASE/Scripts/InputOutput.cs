@@ -204,13 +204,7 @@ namespace Base {
                 }
             }*/
             await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput,
-                "Select input of other action", ValidateInput, async() => {
-                    try {
-                        await WebsocketManager.Instance.WriteUnlock(Action.GetId());
-                    } catch (RequestFailedException ex) {
-                        Notifications.Instance.ShowNotification("Failed to unlock action", ex.Message);
-                    }
-                });
+                "Select input of other action", ValidateInput, async() => await Action.WriteUnlock());
         }
 
         public async Task GetOutput() {
