@@ -40,7 +40,7 @@ public abstract class LeftMenu : MonoBehaviour {
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SceneManager.Instance.OnSceneStateEvent += Instance_OnSceneStateEvent;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
-        WebsocketManager.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
     private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {

@@ -103,10 +103,7 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
-        /// <summary>
-        /// Invoked when an object is locked or unlocked
-        /// </summary>
-        public event AREditorEventArgs.ObjectLockingEventHandler OnObjectLockingEvent;
+
 
         /// <summary>
         /// ARServer domain or IP address
@@ -975,7 +972,7 @@ namespace Base {
         private void HandleObjectUnlocked(string data) {
             IO.Swagger.Model.ObjectsUnlocked objectsUnlockedEvent = JsonConvert.DeserializeObject<ObjectsUnlocked>(data);
             foreach(string id in objectsUnlockedEvent.Data.ObjectIds)
-                OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(id, false, objectsUnlockedEvent.Data.Owner));
+                LockingEventsCache.Instance.Add(new ObjectLockingEventArgs(id, false, objectsUnlockedEvent.Data.Owner));
         }
 
         /// <summary>
@@ -985,7 +982,7 @@ namespace Base {
         private void HandleObjectLocked(string data) {
             ObjectsLocked objectsLockedEvent = JsonConvert.DeserializeObject<ObjectsLocked>(data);
             foreach(string id in objectsLockedEvent.Data.ObjectIds)
-                OnObjectLockingEvent?.Invoke(this, new ObjectLockingEventArgs(id, true, objectsLockedEvent.Data.Owner));
+                LockingEventsCache.Instance.Add(new ObjectLockingEventArgs(id, true, objectsLockedEvent.Data.Owner));
         }
 
         /// <summary>

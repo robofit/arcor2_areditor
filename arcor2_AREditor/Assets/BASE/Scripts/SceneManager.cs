@@ -179,8 +179,8 @@ namespace Base {
 
             (bool successClose, _) = await GameManager.Instance.CloseScene(false, true);
             SceneChanged = !successClose;
-            OnLoadScene?.Invoke(this, EventArgs.Empty);
             Valid = true;
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
