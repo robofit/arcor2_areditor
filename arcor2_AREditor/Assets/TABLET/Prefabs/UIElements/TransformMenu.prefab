@@ -90,9 +90,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DefaultValue: "\xB0"
   Units:
-  - "\xB0"
   - ''''
-  - ''''''
+  - "\xB0"
+  - "10\xB0"
+  - "45\xB0"
   PrevBtn: {fileID: 4506194477855830635}
   NextBtn: {fileID: 2159440962876701810}
   Label: {fileID: 5584926698745882490}
@@ -1657,8 +1658,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
         type: 3}
+      propertyPath: Units.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
+        type: 3}
+      propertyPath: Units.Array.data[0]
+      value: 0.1mm
+      objectReference: {fileID: 0}
+    - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
+        type: 3}
+      propertyPath: Units.Array.data[2]
+      value: cm
+      objectReference: {fileID: 0}
+    - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
+        type: 3}
       propertyPath: Units.Array.data[3]
-      value: 
+      value: 5cm
+      objectReference: {fileID: 0}
+    - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
+        type: 3}
+      propertyPath: Units.Array.data[4]
+      value: dm
       objectReference: {fileID: 0}
     - target: {fileID: 6454234288915602822, guid: f11fa5015d50d5a4abb2dbc5077ca982,
         type: 3}

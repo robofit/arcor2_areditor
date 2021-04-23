@@ -498,10 +498,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DefaultValue: cm
   Units:
-  - dm
-  - cm
-  - mm
   - 0.1mm
+  - mm
+  - cm
+  - 5cm
+  - dm
   PrevBtn: {fileID: 2421083304408894093}
   NextBtn: {fileID: 2889730834451108515}
   Label: {fileID: 5968666154475887047}
@@ -571,11 +572,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e823e23a5229586429a997d9bbe95cbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultValue: cm
+  DefaultValue: "\xB0"
   Units:
-  - "\xB0"
   - ''''
-  - ''''''
+  - "\xB0"
+  - "10\xB0"
+  - "45\xB0"
   PrevBtn: {fileID: 6880822599189838013}
   NextBtn: {fileID: 1305295187983710775}
   Label: {fileID: 7970449243210786520}

@@ -191,6 +191,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         switch (Units.GetValue()) {
             case "dm":
                 return v * 0.1f;
+            case "5cm":
+                return v * 0.2f;
             case "cm":
                 return v * 0.01f;
             case "mm":
@@ -206,6 +208,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         switch (Units.GetValue()) {
             case "dm":
                 return (int) (value * 10);
+            case "5cm":
+                return (int) (value * 20);
             case "cm":
                 return (int) (value * 100);
             case "mm":
@@ -219,6 +223,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private float GetRotationValue(float v) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return v * 45;
+            case "10°":
+                return v * 10;
             case "°":
                 return v;
             case "'":
@@ -232,12 +240,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private int ComputeRotationValue(float value) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return (int) (value / 45);
+            case "10°":
+                return (int) (value / 10);
             case "°":
                 return (int) value;
             case "'":
                 return (int) (value * 60);
-            case "''":
-                return (int) (value * 3600);
             default:
                 return (int) value;
         };
