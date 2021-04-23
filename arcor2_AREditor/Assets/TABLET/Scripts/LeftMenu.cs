@@ -39,6 +39,10 @@ public abstract class LeftMenu : MonoBehaviour {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
+     private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+        UpdateBuildAndSaveBtns();
+    }
+
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         _ = UpdateBuildAndSaveBtns();
         if (args.Event.State == SceneStateData.StateEnum.Stopping) {

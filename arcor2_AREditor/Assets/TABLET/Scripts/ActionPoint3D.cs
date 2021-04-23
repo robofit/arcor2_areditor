@@ -254,9 +254,8 @@ public class ActionPoint3D : Base.ActionPoint {
                 // We have clicked with left mouse and started manipulation with object
                 manipulationStarted = true;
                 updatePosition = false;
-                //tfGizmo.AddTarget(Sphere.transform);
-                //outlineOnClick.GizmoHighlight();
-                TransformMenu.Instance.Show(this);
+                TransformGizmo.Instance.AddTarget(Sphere.transform);
+                outlineOnClick.GizmoHighlight();
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
             }

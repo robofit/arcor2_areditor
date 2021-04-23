@@ -269,8 +269,7 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if ((dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) &&
-                (dispatch?.response == null  || !dispatch.response.Contains("Remove")))
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -439,7 +438,7 @@ namespace Base {
                         if (value != null) {
                             return value;
                         } else {
-                            Thread.Sleep(2);
+                            Thread.Sleep(10);
                         }
                     }
                 }
@@ -541,6 +540,8 @@ namespace Base {
             OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
             if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
+            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToJointsEvent(string data) {
@@ -2394,7 +2395,54 @@ namespace Base {
             }
         }
 
-        public async Task HandTeachingMode(string robotId, bool enable) {
+    public async Task WriteLock(string objId, bool lockTree) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.WriteLockRequestArgs args = new WriteLockRequestArgs(lockTree: lockTree, objectId: objId);
+            
+            IO.Swagger.Model.WriteLockRequest request = new IO.Swagger.Model.WriteLockRequest(r_id, "WriteLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.WriteLockResponse response = await WaitForResult<IO.Swagger.Model.WriteLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            } 
+    }    
+
+    public async Task WriteUnlock(string objId) {
+        int r_id = Interlocked.Increment(ref requestID);
+        IO.Swagger.Model.WriteUnlockRequestArgs args = new WriteUnlockRequestArgs(objectId: objId);
+
+        IO.Swagger.Model.WriteUnlockRequest request = new IO.Swagger.Model.WriteUnlockRequest(r_id, "WriteUnlock", args: args);
+        SendDataToServer(request.ToJson(), r_id, true);
+        IO.Swagger.Model.WriteUnlockResponse response = await WaitForResult<IO.Swagger.Model.WriteUnlockResponse>(r_id);
+        if (response == null || !response.Result) {
+            throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+        }
+    }
+    public async Task ReadLock(string objId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ReadLockRequestArgs args = new ReadLockRequestArgs(objectId: objId);
+            
+            IO.Swagger.Model.ReadLockRequest request = new IO.Swagger.Model.ReadLockRequest(r_id, "ReadLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ReadLockResponse response = await WaitForResult<IO.Swagger.Model.ReadLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            } 
+    }    
+
+    public async Task ReadUnlock(string objId) {
+        int r_id = Interlocked.Increment(ref requestID);
+        IO.Swagger.Model.ReadUnlockRequestArgs args = new ReadUnlockRequestArgs(objectId: objId);
+
+        IO.Swagger.Model.ReadUnlockRequest request = new IO.Swagger.Model.ReadUnlockRequest(r_id, "ReadUnlock", args: args);
+        SendDataToServer(request.ToJson(), r_id, true);
+        IO.Swagger.Model.ReadUnlockResponse response = await WaitForResult<IO.Swagger.Model.ReadUnlockResponse>(r_id);
+        if (response == null || !response.Result) {
+            throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+        }
+    }
+
+    public async Task HandTeachingMode(string robotId, bool enable) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.HandTeachingModeRequestArgs args = new HandTeachingModeRequestArgs(enable: enable, robotId: robotId);
 
