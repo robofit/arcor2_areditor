@@ -24,9 +24,22 @@ public class LeftMenuProject : LeftMenu
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
 
-    private void Start() {
+    protected override void Awake() {
+        base.Awake();
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
+
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+
+        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
+        SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+    }
+
+    protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor)
+            base.OnSceneStateEvent(sender, args);  
+
     }
 
     protected void OnEnable() {
@@ -60,7 +73,7 @@ public class LeftMenuProject : LeftMenu
             SelectorMenu.Instance.ForceUpdateMenus();
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
-            RenameClick();
+            RenameClick(true);
         }
 
     }
@@ -85,6 +98,7 @@ public class LeftMenuProject : LeftMenu
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 //AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 //AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
                 AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
@@ -279,7 +293,7 @@ public class LeftMenuProject : LeftMenu
     public void AddActionPointUsingRobotClick() {
         CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
-            SceneManager.Instance.SelectedEndEffector.GetId());
+            SceneManager.Instance.SelectedEndEffector.GetName());
     }
 
     private void ShowCreateGlobalActionPointDialog() {
@@ -311,7 +325,7 @@ public class LeftMenuProject : LeftMenu
                          ProjectManager.Instance.GetFreeAPName("global"),
                          () => CreateGlobalActionPointUsingRobot(InputDialog.GetValue(),
                                                                  SceneManager.Instance.SelectedRobot.GetId(),
-                                                                 SceneManager.Instance.SelectedEndEffector.GetId()),
+                                                                 SceneManager.Instance.SelectedEndEffector.GetName()),
                          () => InputDialog.Close());
     }
 

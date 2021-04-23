@@ -138,7 +138,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private void SelectedObjectChanged(InteractiveObject interactiveObject, bool force = false) {
         if (force || interactiveObject != lastSelectedObject) {
             OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
-            Debug.LogWarning(interactiveObject?.GetName());
             lastSelectedObject = interactiveObject;
         }
     }
@@ -185,7 +184,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
         } else {
-            SelectedObjectChanged(null);
+            if (!manuallySelected)
+                SelectedObjectChanged(null);
         }
         if (ContentAim.activeSelf) {
             int count = 0;
@@ -317,6 +317,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             if (selectorItems.TryGetValue(io.GetId(), out SelectorItem item)) {
                 item.transform.SetParent(ContentAlphabet.transform);
                 item.transform.SetAsLastSibling();
+                item.SetText(io.GetName());
                 idsToRemove.Remove(io.GetId());
                 if (item.InteractiveObject == null)
                     item.InteractiveObject = io;

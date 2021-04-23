@@ -19,7 +19,7 @@ public class ButtonWithTooltip : MonoBehaviour {
     }
 
 
-    public void SetInteractivity(bool interactable) {
+    public virtual void SetInteractivity(bool interactable) {
         if (Button == null)
             return;
         Button.interactable = interactable;
@@ -30,7 +30,7 @@ public class ButtonWithTooltip : MonoBehaviour {
         }
     }
 
-    public void SetInteractivity(bool interactable, string alternativeDescription) {
+    public virtual void SetInteractivity(bool interactable, string alternativeDescription) {
         if (tooltip == null)
             return;
         tooltip.DescriptionAlternative = alternativeDescription;
@@ -43,6 +43,8 @@ public class ButtonWithTooltip : MonoBehaviour {
             return;
         tooltip.Description = description;
         tooltip.DisplayAlternativeDescription = false;
+        if (TooltipContent.descriptionText != null)
+            TooltipContent.descriptionText.text = description;
     }
 
     public void HideTooltip() {
