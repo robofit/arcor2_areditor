@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 {
-    public Button StepuUpButton, StepDownButton;
+    public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular;
     public Slider SpeedSlider;
     public GameObject StepButtons;
     public CoordinatesBtnGroup Coordinates;
@@ -22,17 +22,29 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private void OnEnable() {
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
+        WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
     }
 
     private void OnDisable() {
         WebsocketManager.Instance.OnRobotMoveToPoseEvent -= OnRobotMoveToPoseEvent;
+        WebsocketManager.Instance.OnRobotMoveToJointsEvent -= OnRobotMoveToJointsEvent;
+    }
+
+    private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
+        if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
+            args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Failed) {
+            SetInteractivityOfRobotBtns(true);
+        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Start) {
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
+        }
     }
 
     private void OnRobotMoveToPoseEvent(object sender, RobotMoveToPoseEventArgs args) {
         if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.End ||
             args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Failed) {
-            StepuUpButton.interactable = true;
-            StepDownButton.interactable = true;
+            SetInteractivityOfRobotBtns(true);
+        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Start) {
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
         }
     }
 
@@ -74,11 +86,18 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         
     }
 
+    private void SetInteractivityOfRobotBtns(bool interactive, string alternativeDescription = "") {
+        SetEEfPerpendicular.SetInteractivity(interactive, alternativeDescription);
+        StepuUpButton.SetInteractivity(interactive, alternativeDescription);
+        StepDownButton.SetInteractivity(interactive, alternativeDescription);
+    }
+
     public async void SetPerpendicular() {
         try {
-            
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
             await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), (decimal) SpeedSlider.value, safe);
         } catch (RequestFailedException ex) {
+            SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
     }
@@ -95,26 +114,26 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     public void SwitchToRobot() {
         world = false;
-        SafeButton.SetDescription("Switch to world coordinate system");
+        RobotWorldBtn.SetDescription("Switch to world coordinate system");
     }
 
     public void SwitchToWorld() {
         world = true;
-        SafeButton.SetDescription("Switch to robot coordinate system");
+        RobotWorldBtn.SetDescription("Switch to robot coordinate system");
     }
 
     public void SwithToTranslate() {
         translate = true;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
-        SafeButton.SetDescription("Switch to rotate");
+        RotateTranslateBtn.SetDescription("Switch to rotate");
     }
 
     public void SwitchToRotate() {
         translate = false;
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
-        SafeButton.SetDescription("Switch to translate");
+        RotateTranslateBtn.SetDescription("Switch to translate");
     }
 
     public async void HoldPressed() {
@@ -159,9 +178,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     public async void RobotStep(float step) {
-
-        StepuUpButton.interactable = false;
-        StepDownButton.interactable = false;
+        SetInteractivityOfRobotBtns(false, "Robot is already moving");
         IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
         switch (Coordinates.GetSelectedAxis()) {
             case "x":
@@ -180,8 +197,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
-            StepuUpButton.interactable = true;
-            StepDownButton.interactable = true;
+            SetInteractivityOfRobotBtns(true);
         }
         
 
