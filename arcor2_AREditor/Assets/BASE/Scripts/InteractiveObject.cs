@@ -53,9 +53,7 @@ public abstract class InteractiveObject : Clickable {
         UpdateColor();
     }
 
-
     public abstract Task Rename(string name);
-
 
     /// <summary>
     /// Locks object. If successful - returns true, if not - shows notification and returns false.
@@ -91,12 +89,14 @@ public abstract class InteractiveObject : Clickable {
     }
 
     protected virtual void Start() {
-        WebsocketManager.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
     protected virtual void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         if (args.ObjectId != GetId())
             return;
+
+        //Debug.LogError("locking event " + GetName());
 
         if (args.Locked) {
             OnObjectLocked(args.Owner);

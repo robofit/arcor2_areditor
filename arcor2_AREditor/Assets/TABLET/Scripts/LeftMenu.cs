@@ -36,6 +36,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected virtual void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
+        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {

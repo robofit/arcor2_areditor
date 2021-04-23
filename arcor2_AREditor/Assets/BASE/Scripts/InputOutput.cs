@@ -336,10 +336,11 @@ namespace Base {
                     else
                         renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
                 }
-            } else {
+            } /*else {
                 foreach (Renderer renderer in outlineOnClick.Renderers)
                     renderer.material.color = Color.gray;
-            }
+            }*/
+            //TODO FIX
         }
 
         public override string GetName() {
