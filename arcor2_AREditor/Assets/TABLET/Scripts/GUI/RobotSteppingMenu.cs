@@ -100,17 +100,26 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     private decimal GetSpeedSliderValue() {
-        double minp = SpeedSlider.minValue;
-        double maxp = SpeedSlider.maxValue;
+        double sliderMin = SpeedSlider.minValue;
+        double sliderMax = SpeedSlider.maxValue;
+        double halfSliderMax = sliderMax / 2;
+        double halfLogValue = 0.1;
+        double value = SpeedSlider.value;
+        if (value > halfSliderMax)
+            return (decimal) ((value - halfSliderMax) * (1 - halfLogValue) / (sliderMax - halfSliderMax) + halfLogValue); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
+        else
+            return (decimal) ((value) * (halfLogValue) / (halfSliderMax - 0.001) + 0.001); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
+        /*double minp = sliderMin;
+        double maxp = halfSliderMax;
 
-        // The result should be between 100 an 10000000
-        double minv = Math.Log10(0.0001);
-        double maxv = Math.Log10(1);
+        double minv = Math.Log(0.001);
+        double maxv = Math.Log(halfLogValue);
 
         // calculate adjustment factor
         double scale = (maxv - minv) / (maxp - minp);
 
-        return (decimal) Math.Exp(minv + scale * (SpeedSlider.value - minp));
+        return (decimal) Math.Exp(minv + scale * (SpeedSlider.value - minp));*/
+        
     }
 
     public void SwitchToSafe() {
