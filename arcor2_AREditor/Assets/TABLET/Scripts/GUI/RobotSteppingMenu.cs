@@ -20,15 +20,12 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private bool safe = true, world = false, translate = true;
 
-    private void OnEnable() {
+    private void Start() {
+        SpeedSlider.onValueChanged.AddListener((_) => Debug.LogError(GetSpeedSliderValue()));
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
         WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
     }
 
-    private void OnDisable() {
-        WebsocketManager.Instance.OnRobotMoveToPoseEvent -= OnRobotMoveToPoseEvent;
-        WebsocketManager.Instance.OnRobotMoveToJointsEvent -= OnRobotMoveToJointsEvent;
-    }
 
     private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
         if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
@@ -95,11 +92,25 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     public async void SetPerpendicular() {
         try {
             SetInteractivityOfRobotBtns(false, "Robot is already moving");
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), (decimal) SpeedSlider.value, safe);
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe);
         } catch (RequestFailedException ex) {
             SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
+    }
+
+    private decimal GetSpeedSliderValue() {
+        double minp = SpeedSlider.minValue;
+        double maxp = SpeedSlider.maxValue;
+
+        // The result should be between 100 an 10000000
+        double minv = Math.Log10(0.0001);
+        double maxv = Math.Log10(1);
+
+        // calculate adjustment factor
+        double scale = (maxv - minv) / (maxp - minp);
+
+        return (decimal) Math.Exp(minv + scale * (SpeedSlider.value - minp));
     }
 
     public void SwitchToSafe() {
@@ -192,7 +203,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 break;
         }
         try {
-            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {
