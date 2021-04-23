@@ -390,8 +390,7 @@ public class ActionObject3D : ActionObject {
         outlineOnClick.UnHighlight();
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
+    public override void UpdateColor() {
         Color color;
         if (Enabled && !IsLocked)
             color = new Color(0.89f, 0.83f, 0.44f);

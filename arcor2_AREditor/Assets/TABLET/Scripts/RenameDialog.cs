@@ -23,7 +23,7 @@ public class RenameDialog : Dialog
     private UnityAction _updateVisibilityCallback;
     public Button CloseBtn;
 
-    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
         if (!await objectToRename.WriteLock(false))
             return;
 
