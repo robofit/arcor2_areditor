@@ -104,6 +104,11 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
+        /// <summary>
+        /// event regarding calibration of camera or robot
+        /// </summary>
+        public event AREditorEventArgs.ProcessStateEventHandler OnProcessStateEvent;
+
 
         /// <summary>
         /// ARServer domain or IP address
@@ -385,6 +390,9 @@ namespace Base {
                         break;
                     case "ObjectsUnlocked":
                         HandleObjectUnlocked(data);
+                        break;
+                    case "ProcessState":
+                        HandleProcessState(data);
                         break;
                     default:
                         Debug.LogError(data);
@@ -983,6 +991,11 @@ namespace Base {
             ObjectsLocked objectsLockedEvent = JsonConvert.DeserializeObject<ObjectsLocked>(data);
             foreach (string id in objectsLockedEvent.Data.ObjectIds)
                 LockingEventsCache.Instance.Add(new ObjectLockingEventArgs(id, true, objectsLockedEvent.Data.Owner));
+        }
+
+        private void HandleProcessState(string data) {
+            ProcessState processState = JsonConvert.DeserializeObject<ProcessState>(data);
+            OnProcessStateEvent?.Invoke(this, new ProcessStateEventArgs(processState.Data));
         }
 
         /// <summary>

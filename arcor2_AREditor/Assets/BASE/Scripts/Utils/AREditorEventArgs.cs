@@ -388,7 +388,15 @@ namespace Base {
         }
     }
 
+    public class ProcessStateEventArgs : EventArgs {
+        public ProcessStateData Data {
+            get; set;
+        }
 
+        public ProcessStateEventArgs(ProcessStateData data) {
+            Data = data;
+        }
+    }
 
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
@@ -422,5 +430,6 @@ namespace Base {
         public delegate void GameObjectEventHandler(object sender, GameObjectEventArgs args);
         public delegate void InteractiveObjectEventHandler(object sender, InteractiveObjectEventArgs args);
         public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
+        public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
     }
 }
