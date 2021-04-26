@@ -34,12 +34,8 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     public async void ShowRenameDialog() {
-        try {
-            await WebsocketManager.Instance.ReadLock(sceneTile.SceneId);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to lock scene", ex.Message);
+        if (!await WriteLockProjectOrScene(sceneTile.SceneId))
             return;
-        }
         inputDialog.Open("Rename scene",
                          "",
                          "New name",
@@ -50,11 +46,6 @@ public class SceneOptionMenu : TileOptionMenu {
     }
 
     private async void CloseRenameDialog() {
-        try {
-            await WebsocketManager.Instance.ReadUnlock(sceneTile.SceneId);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to unlock scene", ex.Message);
-        }
         inputDialog.Close();
     }
 
@@ -78,11 +69,6 @@ public class SceneOptionMenu : TileOptionMenu {
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
         } finally {
-            try {
-                await WebsocketManager.Instance.ReadUnlock(sceneTile.SceneId);
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to unlock scene", ex.Message);
-            }
             Base.GameManager.Instance.HideLoadingScreen();
         }        
     }

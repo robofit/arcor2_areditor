@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using IO.Swagger.Model;
 using System.Collections;
+using System.Linq;
 
 namespace Base {
     public class LockingEventsCache : Singleton<LockingEventsCache> {
@@ -67,12 +68,17 @@ namespace Base {
             }
         }
 
-        public void Add(ObjectLockingEventArgs objectsUnlockedEvent) {
+        public void Add(ObjectLockingEventArgs objectsLockingEvent) {
             lock (events) {
-                events.Add(objectsUnlockedEvent);
+                if (IsSceneOrProject(objectsLockingEvent.ObjectId))
+                    OnObjectLockingEvent?.Invoke(this, objectsLockingEvent);
+                else 
+                    events.Add(objectsLockingEvent);
             }
             InvokeEvents();
         }
+
+
 
         private void InvokeEvents() {
             if (!canInvoke) {
@@ -102,6 +108,16 @@ namespace Base {
                 }
                 events.Clear();
             }
+        }
+
+        /// <summary>
+        /// if the ID belongs to a project or scene, returns true
+        /// </summary>
+        /// <param name="objectId"></param>
+        /// <returns></returns>
+        private bool IsSceneOrProject(string objectId) {
+            return GameManager.Instance.Scenes.Any(s => s.Id == objectId) ||
+                GameManager.Instance.Projects.Any(p => p.Id == objectId);
         }
     }
 }

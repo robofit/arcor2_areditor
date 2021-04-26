@@ -6,6 +6,7 @@ using IO.Swagger.Model;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 public class LeftMenuProject : LeftMenu
 {
@@ -236,7 +237,7 @@ public class LeftMenuProject : LeftMenu
         }
         (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
         SaveProjectResponse saveProjectResponse = await WebsocketManager.Instance.SaveProject(true);
-        SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages[0]);
+        SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages.FirstOrDefault());
         CloseButton.SetInteractivity(successForce, messageForce);        
     }
 
