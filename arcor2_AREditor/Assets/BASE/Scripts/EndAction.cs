@@ -14,7 +14,7 @@ public class EndAction : StartEndAction
             parameters: new List<IO.Swagger.Model.ActionParameter>(),
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, keySuffix);
-        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(-0.5f, 0, 0));
+        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.1f, 0));
     }
 
 

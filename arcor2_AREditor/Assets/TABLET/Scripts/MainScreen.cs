@@ -187,6 +187,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToProjects() {
+        GameManager.Instance.ShowLoadingScreen("Updating projects...");
+        WebsocketManager.Instance.LoadProjects(GameManager.Instance.LoadProjectsCb);
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
@@ -207,6 +209,9 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToScenes() {
+        GameManager.Instance.ShowLoadingScreen("Updating scenes..");
+        WebsocketManager.Instance.LoadScenes(GameManager.Instance.LoadScenesCb);
+        
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0, 0, 0);
         }
@@ -228,6 +233,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToPackages() {
+        GameManager.Instance.ShowLoadingScreen("Updating packages...");
+        WebsocketManager.Instance.LoadPackages(GameManager.Instance.LoadPackagesCb);
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
@@ -362,6 +369,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             SceneTiles.Add(tile);
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
         //Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         //button.onClick.AddListener(ShowNewSceneDialog);
@@ -408,6 +416,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             PackageTiles.Add(tile);
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {
@@ -437,6 +446,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             }
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
         // Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         // button.onClick.AddListener(() => NewProjectDialog.Open());

@@ -26,8 +26,6 @@ namespace Base
 
         public abstract void OnHoverEnd();
 
-        public virtual void Enable(bool enable) {
-            Enabled = enable;
-        }
+        
     }
 }

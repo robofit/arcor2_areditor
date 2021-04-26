@@ -1444,8 +1444,8 @@ MonoBehaviour:
   AddButton: {fileID: 2763608811951527231}
   UtilityButton: {fileID: 3644201669174730028}
   HomeButton: {fileID: 2693924244486803456}
-  MoveButton: {fileID: 1856692856619478144}
-  MoveButton2: {fileID: 7389839748476160574}
+  MoveButton: {fileID: 7389839748476160574}
+  MoveButton2: {fileID: 1856692856619478144}
   RemoveButton: {fileID: 1432893489912760916}
   RenameButton: {fileID: 7190731004179991628}
   CalibrationButton: {fileID: 3041667154794305572}
@@ -1834,7 +1834,7 @@ PrefabInstance:
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: Description
-      value: Add connection
+      value: Add or edit connection
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2294,7 +2294,7 @@ PrefabInstance:
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: RunButtonClick
+      value: RunClicked
       objectReference: {fileID: 0}
     - target: {fileID: 6107126954822248125, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -7405,7 +7405,7 @@ PrefabInstance:
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: Description
-      value: Add connection
+      value: Add or edit connection
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}

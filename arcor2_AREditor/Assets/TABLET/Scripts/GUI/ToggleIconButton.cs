@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,24 +8,21 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Button))]
-public class ToggleIconButton : MonoBehaviour
+public class ToggleIconButton : ButtonWithTooltip
 {
 
     private void Awake() {
-        Button = GetComponent<Button>();
         if (PersistentState) {
             Toggle(PlayerPrefsHelper.LoadBool("buttons/" + PersistentTag, true), false);
         }
     }
     public Image Icon;
-    [HideInInspector]
-    public Button Button;
     private bool toggled = true;
     [Tooltip("Defines if state of this button should be persistent")]
     public bool PersistentState = false;
     [Tooltip("If PersistentState is true, this has to be unique.")]
     public string PersistentTag = "";
-    
+    public string ToggledDescription, UntoggledDescription;
 
     public UnityEvent OnToggledOn, OnToggledOff;
 
@@ -39,10 +37,12 @@ public class ToggleIconButton : MonoBehaviour
         this.toggled = toggle;
         if (Toggled) {
             Icon.color = Color.white;
+            SetDescription(ToggledDescription);
             if (invoke)
                 OnToggledOn.Invoke();
         } else {
             Icon.color = Color.grey;
+            SetDescription(UntoggledDescription);
             if (invoke)
                 OnToggledOff.Invoke();
         }

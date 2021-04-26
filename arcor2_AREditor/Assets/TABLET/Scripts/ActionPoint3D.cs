@@ -296,7 +296,6 @@ public class ActionPoint3D : Base.ActionPoint {
             Notifications.Instance.ShowToastMessage("Action point renamed");
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to rename action point", e.Message);
-            throw;
         }
     }
 

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 {
-    public Button StepuUpButton, StepDownButton;
+    public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular;
     public Slider SpeedSlider;
     public GameObject StepButtons;
     public CoordinatesBtnGroup Coordinates;
@@ -20,89 +20,140 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private bool safe = true, world = false, translate = true;
 
-    private void OnEnable() {
+    private void Start() {
+        SpeedSlider.onValueChanged.AddListener((_) => Debug.LogError(GetSpeedSliderValue()));
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
+        WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
     }
 
-    private void OnDisable() {
-        WebsocketManager.Instance.OnRobotMoveToPoseEvent -= OnRobotMoveToPoseEvent;
+
+    private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
+        if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
+            args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Failed) {
+            SetInteractivityOfRobotBtns(true);
+        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.Start) {
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
+        }
     }
 
     private void OnRobotMoveToPoseEvent(object sender, RobotMoveToPoseEventArgs args) {
         if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.End ||
             args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Failed) {
-            StepuUpButton.interactable = true;
-            StepDownButton.interactable = true;
+            SetInteractivityOfRobotBtns(true);
+        } else if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum.Start) {
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
         }
     }
 
     private void Update() {
-        if (CanvasGroup.alpha == 1 && gizmo != null) {
-            if (world) {
-                gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
-            } else {
-                gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
-            }
+        if (CanvasGroup.alpha == 1) {
+            
+            if (gizmo != null && SceneManager.Instance.IsRobotAndEESelected()) {
 
-            if (translate) {
-                Vector3 position;
                 if (world) {
-                    position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    gizmo.transform.rotation = GameManager.Instance.Scene.transform.rotation;
                 } else {
-                    position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    gizmo.transform.rotation = SceneManager.Instance.SelectedRobot.GetTransform().rotation;// * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation);
                 }
-                Coordinates.X.SetValueMeters(position.x);
-                Coordinates.Y.SetValueMeters(position.y);
-                Coordinates.Z.SetValueMeters(position.z);
 
-            } else {
-                Quaternion newrotation;
-                if (world)
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-                else
-                    newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
-                Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
-                Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
-                Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                if (translate) {
+                    Vector3 position;
+                    if (world) {
+                        position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    } else {
+                        //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                        position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
+                    }
+                    Coordinates.X.SetValueMeters(position.x);
+                    Coordinates.Y.SetValueMeters(position.y);
+                    Coordinates.Z.SetValueMeters(position.z);
+
+                } else {
+                    Quaternion newrotation;
+                    if (world)
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
+                    else
+                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
+                    Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
+                    Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
+                    Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+                }
             }
         }
+        
+    }
+
+    private void SetInteractivityOfRobotBtns(bool interactive, string alternativeDescription = "") {
+        SetEEfPerpendicular.SetInteractivity(interactive, alternativeDescription);
+        StepuUpButton.SetInteractivity(interactive, alternativeDescription);
+        StepDownButton.SetInteractivity(interactive, alternativeDescription);
     }
 
     public async void SetPerpendicular() {
         try {
-            
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), (decimal) SpeedSlider.value, safe);
+            SetInteractivityOfRobotBtns(false, "Robot is already moving");
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe);
         } catch (RequestFailedException ex) {
+            SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
         }
     }
 
+    private decimal GetSpeedSliderValue() {
+        double sliderMin = SpeedSlider.minValue;
+        double sliderMax = SpeedSlider.maxValue;
+        double halfSliderMax = sliderMax / 2;
+        double halfLogValue = 0.1;
+        double value = SpeedSlider.value;
+        if (value > halfSliderMax)
+            return (decimal) ((value - halfSliderMax) * (1 - halfLogValue) / (sliderMax - halfSliderMax) + halfLogValue); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
+        else
+            return (decimal) ((value) * (halfLogValue) / (halfSliderMax - 0.001) + 0.001); // maps interval <0.5;1> to <0.1;1> (https://stackoverflow.com/questions/14353485/how-do-i-map-numbers-in-c-sharp-like-with-map-in-arduino)
+        /*double minp = sliderMin;
+        double maxp = halfSliderMax;
+
+        double minv = Math.Log(0.001);
+        double maxv = Math.Log(halfLogValue);
+
+        // calculate adjustment factor
+        double scale = (maxv - minv) / (maxp - minp);
+
+        return (decimal) Math.Exp(minv + scale * (SpeedSlider.value - minp));*/
+        
+    }
+
     public void SwitchToSafe() {
         safe = true;
+        SafeButton.SetDescription("Switch to unsafe movements");
     }
 
     public void SwithToUnsafe() {
         safe = false;
+        SafeButton.SetDescription("Switch to safe movements");
     }
 
     public void SwitchToRobot() {
         world = false;
+        RobotWorldBtn.SetDescription("Switch to world coordinate system");
     }
 
     public void SwitchToWorld() {
         world = true;
+        RobotWorldBtn.SetDescription("Switch to robot coordinate system");
     }
 
     public void SwithToTranslate() {
         translate = true;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        RotateTranslateBtn.SetDescription("Switch to rotate");
     }
 
     public void SwitchToRotate() {
         translate = false;
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
+        RotateTranslateBtn.SetDescription("Switch to translate");
     }
 
     public async void HoldPressed() {
@@ -147,9 +198,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
     }
 
     public async void RobotStep(float step) {
-
-        StepuUpButton.interactable = false;
-        StepDownButton.interactable = false;
+        SetInteractivityOfRobotBtns(false, "Robot is already moving");
         IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
         switch (Coordinates.GetSelectedAxis()) {
             case "x":
@@ -163,13 +212,12 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 break;
         }
         try {
-            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetId(), safe, SceneManager.Instance.SelectedRobot.GetId(), (decimal) SpeedSlider.value,
+            await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
         } catch (RequestFailedException ex ) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
-            StepuUpButton.interactable = true;
-            StepDownButton.interactable = true;
+            SetInteractivityOfRobotBtns(true);
         }
         
 
@@ -179,6 +227,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         switch (Units.GetValue()) {
             case "dm":
                 return v * 0.1f;
+            case "5cm":
+                return v * 0.2f;
             case "cm":
                 return v * 0.01f;
             case "mm":
@@ -194,6 +244,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         switch (Units.GetValue()) {
             case "dm":
                 return (int) (value * 10);
+            case "5cm":
+                return (int) (value * 20);
             case "cm":
                 return (int) (value * 100);
             case "mm":
@@ -207,6 +259,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private float GetRotationValue(float v) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return v * 45;
+            case "10°":
+                return v * 10;
             case "°":
                 return v;
             case "'":
@@ -220,12 +276,14 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private int ComputeRotationValue(float value) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return (int) (value / 45);
+            case "10°":
+                return (int) (value / 10);
             case "°":
                 return (int) value;
             case "'":
                 return (int) (value * 60);
-            case "''":
-                return (int) (value * 3600);
             default:
                 return (int) value;
         };
