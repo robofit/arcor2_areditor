@@ -261,7 +261,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.RemoveActionPointJoints(joints.Id);
             }
             ConfirmationDialog.Close();
-            Close();
+            HideMenu();
 
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed delete orientation/joints", e.Message);
@@ -411,22 +411,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         
     }
 
-    public async void Close() {
-        CurrentActionPoint.GetGameObject().SendMessage("Select", false);
-        if (isOrientationDetail) {
-
-        } else { //joints
-            DestroyJointsFields();
-        }
-
-        foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
-            await PrepareRobotModel(rv.Key, true);
-        }
-        robotVisibilityBackup.Clear();
-        SideMenu.Close();
-    }
-
-
     public async void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         CurrentActionPoint = currentActionPoint;
         if (!await currentActionPoint.GetOrientationVisual(orientation.Id).WriteLock(false)) {
@@ -465,8 +449,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         ShowMenu(currentActionPoint);
     }
 
-
-
     private void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
 
@@ -482,14 +464,26 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public async void HideMenu() {
         if (CurrentActionPoint == null)
             return;
+
+        SideMenu.Close();
+
         if (isOrientationDetail) {
             await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
-        } else {
+            CurrentActionPoint.GetOrientationVisual(orientation.Id).SendMessage("Select", false);
+        } else { //joints
+            DestroyJointsFields();
             try {
                 await WebsocketManager.Instance.WriteUnlock(joints.Id);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
             }
         }
+
+        foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
+            await PrepareRobotModel(rv.Key, true);
+        }
+        robotVisibilityBackup.Clear();
+
+        CurrentActionPoint = null;
     }
 }

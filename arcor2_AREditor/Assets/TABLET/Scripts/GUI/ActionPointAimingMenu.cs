@@ -42,8 +42,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private AddJointsMenu AddJointsMenu;
 
-    [SerializeField]
-    private OrientationJointsDetailMenu OrientationJointsDetailMenu;
+    public OrientationJointsDetailMenu OrientationJointsDetailMenu;
 
     [SerializeField]
     private PositionManualEdit PositionManualEdit;
@@ -307,10 +306,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     public async void Close(bool unlockAP = true) {
         SideMenu.Close();
-        if (!unlockAP)
-            return;
+        if (unlockAP)
+            await CurrentActionPoint.WriteUnlock();
 
-        await CurrentActionPoint.WriteUnlock();
     }
 
     public void UpdateOrientationsDynamicList() {

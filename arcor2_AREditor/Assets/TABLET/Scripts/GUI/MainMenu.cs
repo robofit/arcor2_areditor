@@ -324,12 +324,20 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.GetScene(), Base.ProjectManager.Instance.GetProject());
     }
 
-    public void StartScene() {
-        WebsocketManager.Instance.StartScene(false);
+    public async void StartScene() {
+        try {
+            await WebsocketManager.Instance.StartScene(false);
+        } catch(RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Going online failed", e.Message);
+        }
     }
 
-    public void StopScene() {
-        WebsocketManager.Instance.StopScene(false);
+    public async void StopScene() {
+        try {
+            await WebsocketManager.Instance.StopScene(false);
+        } catch (RequestFailedException e) {
+            Notifications.Instance.ShowNotification("Going offline failed", e.Message);
+        }
     }
 
     public void Recalibrate() {

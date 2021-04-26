@@ -46,11 +46,6 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
         AddNewActionDialog.Open();
     }
 
-
-    public void OpenActionPointAimingMenu(string preselectedOrientation) {
-        ActionPointAimingMenu.ShowMenu(CurrentActionPoint, preselectedOrientation);
-    }
-
     public void OpenActionPointAimingMenu() {
         ActionPointAimingMenu.ShowMenu(CurrentActionPoint);
     }

@@ -593,11 +593,8 @@ namespace Base {
             apOrientation.OrientationId = orientation.Id;
         }
 
-        internal void ShowAimingMenu(string orientationId) {
-            OpenMenu();
-            actionPointMenu.CurrentActionPoint = this;
-            actionPointMenu.ActionPointAimingMenu.CurrentActionPoint = this;
-            actionPointMenu.OpenActionPointAimingMenu(orientationId);
+        internal void ShowOrientationDetailMenu(string orientationId) {
+            actionPointMenu.ActionPointAimingMenu.OrientationJointsDetailMenu.ShowMenu(this, GetOrientation(orientationId));
         }
 
         public abstract void HighlightAP(bool highlight);
