@@ -6,6 +6,7 @@ using static Base.GameManager;
 using System.Threading.Tasks;
 using System.Collections;
 using TMPro;
+using System.Linq;
 
 public class LeftMenuScene : LeftMenu
 {
@@ -118,7 +119,12 @@ public class LeftMenuScene : LeftMenu
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
             CreateProjectBtn.SetInteractivity(true);
         } else {
-            SaveButton.SetInteractivity(true);
+            IO.Swagger.Model.SaveSceneResponse saveSceneResponse = await WebsocketManager.Instance.SaveScene(true);
+            if (saveSceneResponse.Messages != null) {
+                SaveButton.SetInteractivity(saveSceneResponse.Result, saveSceneResponse.Messages.FirstOrDefault());
+            } else {
+                SaveButton.SetInteractivity(saveSceneResponse.Result);
+            }
             CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
         }
         CloseButton.SetInteractivity(successForce, messageForce); 

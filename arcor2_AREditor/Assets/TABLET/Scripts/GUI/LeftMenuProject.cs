@@ -224,20 +224,27 @@ public class LeftMenuProject : LeftMenu
         
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);
-            //SaveButton.SetInteractivity(false, "There are no unsaved changes");
             if (ProjectManager.Instance.ProjectMeta.HasLogic) {
                 RunButton.SetInteractivity(true);
                 RunButton2.SetInteractivity(true);
             }
+            SaveButton.SetInteractivity(false, "There are no unsaved changes");
         } else {
             BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton2.SetInteractivity(false, "There are unsaved changes on project");
-            //SaveButton.SetInteractivity(true);
+
+            SaveProjectResponse saveProjectResponse = await WebsocketManager.Instance.SaveProject(true);
+            if (saveProjectResponse.Messages != null) {
+                SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages.FirstOrDefault());
+            } else {
+                SaveButton.SetInteractivity(saveProjectResponse.Result);
+            }
         }
+
         (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
-        SaveProjectResponse saveProjectResponse = await WebsocketManager.Instance.SaveProject(true);
-        SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages.FirstOrDefault());
+        
+
         CloseButton.SetInteractivity(successForce, messageForce);        
     }
 

@@ -24,22 +24,15 @@ namespace Base {
             ProjectManager.Instance.OnLoadProject += OnProjectOrSceneLoaded;
             WebsocketManager.Instance.OnDisconnectEvent += OnAppDisconnected;
             CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
-            //CalibrationManager.Instance.OnARRecalibrate += OnARRecalibrate;
 
 #if UNITY_ANDROID && AR_ON
             arOn = true;
 #endif
         }
 
-        //private void OnARRecalibrate(object sender, EventArgs args) {
-        //    Debug.LogError("ON AR RECALIBRATED");
-        //    tracking = true;
-        //    if (sceneLoaded)
-        //        StartCoroutine(Wait());
-        //}
 
         private void OnARCalibrated(object sender, GameObjectEventArgs args) {
-            Debug.LogError("ON AR CALIBRATED");
+           // Debug.LogError("ON AR CALIBRATED");
             tracking = true;
             if (sceneLoaded)
                 StartCoroutine(Wait(2));
@@ -49,17 +42,17 @@ namespace Base {
             canInvoke = false; //for situations when app is reconnected
             sceneLoaded = false;
             tracking = false;
-            Debug.LogError("VYNULOVANO");
+           // Debug.LogError("VYNULOVANO");
         }
 
-        private IEnumerator Wait(int time = 5) {
+        private IEnumerator Wait(int time = 4) {
             yield return new WaitForSeconds(time);
             canInvoke = true;
             InvokeEvents();
         }
 
         private void OnProjectOrSceneLoaded(object sender, EventArgs e) {
-            Debug.LogError("PROJ LOADED");
+            //Debug.LogError("PROJ LOADED");
             sceneLoaded = true;
             if (!arOn || !wasAppKilled)
                 StartCoroutine(Wait());
@@ -82,8 +75,12 @@ namespace Base {
 
         private void InvokeEvents() {
             if (!canInvoke) {
+                if (SceneManager.Instance.Valid || ProjectManager.Instance.Valid) { //if there is no locked object when app started, class misses onprojectloaded event
+                    OnProjectOrSceneLoaded(null, null);
+                    return;
+                }
                 if (wasAppKilled) { //check for my locks, which are needed to be unlocked, because UI was reset
-                    Debug.LogError("!caninvoke + app was killer");
+                    //Debug.LogError("!caninvoke + app was killer");
                     lock (events) {
                         if (!wasAppKilled) //check again
                             return;
@@ -103,7 +100,7 @@ namespace Base {
 
             lock (events) {
                 foreach (ObjectLockingEventArgs ev in events) {
-                    Debug.LogError("invokuju" + ev.ObjectId);
+                    //Debug.LogError("invokuju" + ev.ObjectId);
                     OnObjectLockingEvent?.Invoke(this, ev);
                 }
                 events.Clear();

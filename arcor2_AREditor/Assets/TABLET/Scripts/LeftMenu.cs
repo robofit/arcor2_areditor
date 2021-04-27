@@ -33,14 +33,17 @@ public abstract class LeftMenu : MonoBehaviour {
     protected InteractiveObject selectedObject = null;
     protected bool selectedObjectUpdated = true, previousUpdateDone = true;
 
-    protected virtual void Awake() {
-        CanvasGroup = GetComponent<CanvasGroup>();
-        MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
+    protected void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
+    protected virtual void Awake() {
+        CanvasGroup = GetComponent<CanvasGroup>();
+        MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
+    }
+
      private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
-        UpdateBuildAndSaveBtns();
+        _ = UpdateBuildAndSaveBtns();
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
