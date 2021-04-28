@@ -139,12 +139,17 @@ public class Action3D : Base.Action {
     }
 
     public override async void OpenMenu() {
-        if (!await this.WriteLock(false))
+        if (!await ActionParametersMenu.Instance.Show(this))
             return;
-        ActionMenu.Instance.CurrentAction = this;
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+        //ActionMenu.Instance.CurrentAction = this;
+        //MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         selected = true;
-        ActionPoint.HighlightAP(true);
+        ActionPoint.HighlightAP(true);        
+    }
+
+    public void CloseMenu() {
+        selected = false;
+        ActionPoint.HighlightAP(false);
     }
 
     public override bool HasMenu() {

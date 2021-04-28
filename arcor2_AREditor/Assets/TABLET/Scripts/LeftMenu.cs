@@ -132,7 +132,12 @@ public abstract class LeftMenu : MonoBehaviour {
                 obj.GetType() == typeof(APOrientation), "Selected object could not be renamed");
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
                 obj.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
-            OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
+            if (obj is Action3D action) {
+                OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Action has no parameters");
+            } else {
+                OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
+            }
+
         }
     }
 
@@ -197,7 +202,25 @@ public abstract class LeftMenu : MonoBehaviour {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
-        selectedObject.OpenMenu();
+
+        if (selectedObject is Action3D action) {
+            if (!SelectorMenu.Instance.gameObject.activeSelf && !OpenMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+                SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            }
+
+            if (OpenMenuButton.GetComponent<Image>().enabled) {
+                OpenMenuButton.GetComponent<Image>().enabled = false;
+                SelectorMenu.Instance.gameObject.SetActive(true);
+                //ActionPicker.SetActive(false);
+                ActionParametersMenu.Instance.Hide();
+            } else {
+                OpenMenuButton.GetComponent<Image>().enabled = true;
+                SelectorMenu.Instance.gameObject.SetActive(false);
+                selectedObject.OpenMenu();
+            }
+        } else {
+            selectedObject.OpenMenu();
+        }
 
     }
 
@@ -439,6 +462,8 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameDialog.Close();
         TransformMenu.Instance.Hide();
         RobotSteppingMenu.Instance.Hide();
+
+        ActionParametersMenu.Instance.Hide();
 
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);

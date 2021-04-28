@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, PuckMenu, MainMenu, NewObjectTypeMenu,
+    public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, MainMenu, NewObjectTypeMenu,
         ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu,
         AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
     SimpleSideMenu MenuOpened;
@@ -24,7 +24,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
     private bool CheckIsAnyMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
-            PuckMenu.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
@@ -38,7 +37,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public bool CheckIsAnyRightMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
-            PuckMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
@@ -68,9 +66,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (ActionPointMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointMenu.Close();
         }
-        if (PuckMenu.CurrentState == SimpleSideMenu.State.Open) {
-            PuckMenu.Close();
-        }
         if (ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointAimingMenu.Close();
         }
@@ -92,7 +87,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         MainMenu.gameObject.SetActive(false);
         ActionObjectMenuSceneEditor.gameObject.SetActive(false);
         ActionPointMenu.gameObject.SetActive(false);
-        PuckMenu.gameObject.SetActive(false);
         ActionObjectMenuProjectEditor.gameObject.SetActive(false);
         ActionPointAimingMenu.gameObject.SetActive(false);
         AddOrientationMenu.gameObject.SetActive(false);
@@ -104,7 +98,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         MainMenu.gameObject.SetActive(true);
         ActionObjectMenuSceneEditor.gameObject.SetActive(true);
         ActionPointMenu.gameObject.SetActive(true);
-        PuckMenu.gameObject.SetActive(true);
         ActionObjectMenuProjectEditor.gameObject.SetActive(true);
         ActionPointAimingMenu.gameObject.SetActive(true);
         AddOrientationMenu.gameObject.SetActive(true);
@@ -140,8 +133,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
                         menu.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
                     } else if (menu == ActionPointAimingMenu) {
                         menu.GetComponent<ActionPointAimingMenu>().Close();
-                    } else if (menu == PuckMenu) {
-                        menu.GetComponent<ActionMenu>().HideMenu();
                     } else if (menu == OrientationJointsDetailMenu) {
                         menu.GetComponent<OrientationJointsDetailMenu>().HideMenu();
                     }
