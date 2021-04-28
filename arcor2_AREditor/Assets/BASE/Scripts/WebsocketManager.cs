@@ -2380,7 +2380,7 @@ namespace Base {
             }
         }
 
-        public async Task<IO.Swagger.Model.Pose> GetCameraPose(CameraParameters cameraParams, string img) {
+        public async Task<IO.Swagger.Model.EstimatedPose> GetCameraPose(CameraParameters cameraParams, string img) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img);
 

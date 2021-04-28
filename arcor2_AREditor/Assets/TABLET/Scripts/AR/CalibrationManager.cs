@@ -502,11 +502,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public async Task GetCameraPosition(CameraParameters cameraParams, string image) {
         try {
-            IO.Swagger.Model.Pose cameraPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image);
-            Vector3 cameraPosition = TransformConvertor.ROSToUnity(new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z));
-            Quaternion cameraRotation = TransformConvertor.ROSToUnity(new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y, (float) cameraPose.Orientation.Z, (float) cameraPose.Orientation.W));
-            Vector3 cameraPositionOrig = new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z);
-            Quaternion cameraRotationOrig = new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y, (float) cameraPose.Orientation.Z, (float) cameraPose.Orientation.W);
+            IO.Swagger.Model.EstimatedPose cameraPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image);
+            Vector3 cameraPosition = TransformConvertor.ROSToUnity(new Vector3((float) cameraPose.Pose.Position.X, (float) cameraPose.Pose.Position.Y, (float) cameraPose.Pose.Position.Z));
+            Quaternion cameraRotation = TransformConvertor.ROSToUnity(new Quaternion((float) cameraPose.Pose.Orientation.X, (float) cameraPose.Pose.Orientation.Y, (float) cameraPose.Pose.Orientation.Z, (float) cameraPose.Pose.Orientation.W));
+            Vector3 cameraPositionOrig = new Vector3((float) cameraPose.Pose.Position.X, (float) cameraPose.Pose.Position.Y, (float) cameraPose.Pose.Position.Z);
+            Quaternion cameraRotationOrig = new Quaternion((float) cameraPose.Pose.Orientation.X, (float) cameraPose.Pose.Orientation.Y, (float) cameraPose.Pose.Orientation.Z, (float) cameraPose.Pose.Orientation.W);
             Debug.Log("RECEIVED camera position: " + cameraPositionOrig + " and orientation: " + cameraRotationOrig);
             Debug.Log("RECEIVED camera position transformed: " + cameraPosition + " and orientation: " + cameraRotation);
             Debug.Log("RECEIVED marker position: " + cameraPositionOrig * -1f + " and orientation: " + Quaternion.Inverse(cameraRotationOrig));
