@@ -145,21 +145,30 @@ namespace Base {
                     await CreateNewConnection();
                 }
             } else {
-            GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
+                GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
 
-            try {
-                await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
-                ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
-                if (typeof(PuckOutput) == GetType()) {
-                    await theOtherOne.GetComponent<PuckInput>().GetOutput();
-                } else {
+                try {
+                    Action otherAction;
+                    if (Action.GetId() == logicItem.Data.Start)
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.End);
+                    else
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
+
+                    await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                    if (!await otherAction.WriteLock(false)) {
+                        return;
+                    }
+                    ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                    if (typeof(PuckOutput) == GetType()) {
+                        await theOtherOne.GetComponent<PuckInput>().GetOutput();
+                    } else {
                         await theOtherOne.GetComponent<PuckOutput>().GetInput();
+                    }
+                } catch (RequestFailedException ex) {
+                    Debug.LogError(ex);
+                    Notifications.Instance.SaveLogs("Failed to remove connection");
+                    ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 }
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to remove connection");
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-            }
             }
         }
 
