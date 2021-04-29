@@ -1040,6 +1040,12 @@ namespace Base {
             return await WaitForResult<IO.Swagger.Model.SaveSceneResponse>(id);
         }
 
+        public void SaveScene(bool dryRun, UnityAction<string, string> callback) {
+            int id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(id, Tuple.Create("", callback));
+            SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene", dryRun: dryRun).ToJson(), id, false);
+        }
+
         /// <summary>
         /// Asks server to save currently openned project
         /// </summary>
@@ -1048,6 +1054,12 @@ namespace Base {
             int id = Interlocked.Increment(ref requestID);
             SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
+        }
+
+        public void SaveProject(bool dryRun, UnityAction<string, string> callback) {
+            int id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(id, Tuple.Create("", callback));
+            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id, "SaveProject", dryRun).ToJson(), id, false);
         }
 
         /// <summary>
@@ -1560,6 +1572,14 @@ namespace Base {
             IO.Swagger.Model.CloseSceneResponse response = await WaitForResult<IO.Swagger.Model.CloseSceneResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public void CloseScene(bool force, bool dryRun, UnityAction<string, string> callback) {
+            int id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(id, Tuple.Create("", callback));
+            IO.Swagger.Model.CloseSceneRequestArgs args = new IO.Swagger.Model.CloseSceneRequestArgs(force);
+            IO.Swagger.Model.CloseSceneRequest request = new IO.Swagger.Model.CloseSceneRequest(id, "CloseScene", args, dryRun);
+            SendDataToServer(request.ToJson(), id, false);
         }
 
         /// <summary>
@@ -2180,6 +2200,14 @@ namespace Base {
 
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        public void CloseProject(bool force, bool dryRun, UnityAction<string, string> callback) {
+            int id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(id, Tuple.Create("", callback));
+            IO.Swagger.Model.CloseProjectRequestArgs args = new IO.Swagger.Model.CloseProjectRequestArgs(force);
+            IO.Swagger.Model.CloseProjectRequest request = new IO.Swagger.Model.CloseProjectRequest(id, "CloseProject", args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), id, false);
         }
 
         /// <summary>

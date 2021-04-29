@@ -7,6 +7,7 @@ using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 public class LeftMenuProject : LeftMenu
 {
@@ -221,9 +222,11 @@ public class LeftMenuProject : LeftMenu
     
 
     public override async Task UpdateBuildAndSaveBtns() {
-        bool successForce;
-        string messageForce;
-        
+        if (currentSubmenuOpened != LeftMenuSelection.Home)
+            return;
+
+        WebsocketManager.Instance.CloseProject(true, true, CloseProjectCallback);
+
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);
             if (ProjectManager.Instance.ProjectMeta.HasLogic) {
@@ -232,25 +235,32 @@ public class LeftMenuProject : LeftMenu
             }
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
         } else {
+            SaveButton.SetInteractivity(false, "Checking for availability");
+            WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
+
             BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton.SetInteractivity(false, "There are unsaved changes on project");
             RunButton2.SetInteractivity(false, "There are unsaved changes on project");
-
-            SaveProjectResponse saveProjectResponse = await WebsocketManager.Instance.SaveProject(true);
-            if (saveProjectResponse.Messages != null) {
-                SaveButton.SetInteractivity(saveProjectResponse.Result, saveProjectResponse.Messages.FirstOrDefault());
-            } else {
-                SaveButton.SetInteractivity(saveProjectResponse.Result);
-            }
         }
-
-        (successForce, messageForce) = await GameManager.Instance.CloseProject(true, true);
-        
-
-        CloseButton.SetInteractivity(successForce, messageForce);        
     }
 
+    protected void SaveProjectCallback(string nothing, string data) {
+        SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
+        if (response.Messages != null) {
+            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            SaveButton.SetInteractivity(response.Result);
+        }
+    }
 
+    protected void CloseProjectCallback(string nothing, string data) {
+        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
+        }
+    }
 
     public void CopyObjectClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();

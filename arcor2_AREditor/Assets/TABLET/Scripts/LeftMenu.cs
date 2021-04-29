@@ -459,6 +459,7 @@ public abstract class LeftMenu : MonoBehaviour {
             case LeftMenuSelection.Home:
                 HomeButtons.SetActive(active);
                 HomeButton.GetComponent<Image>().enabled = active;
+                UpdateBuildAndSaveBtns();
                 break;
             case LeftMenuSelection.Robot:
                 RobotButtons.SetActive(active);

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Collections;
 using TMPro;
 using System.Linq;
+using Newtonsoft.Json;
+using IO.Swagger.Model;
 
 public class LeftMenuScene : LeftMenu
 {
@@ -112,22 +114,36 @@ public class LeftMenuScene : LeftMenu
     }
 
     public override async Task UpdateBuildAndSaveBtns() {
-        string messageForce;
-        bool successForce;
-        (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
+        if (currentSubmenuOpened != LeftMenuSelection.Home)
+            return;
+
+        WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
+
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
             CreateProjectBtn.SetInteractivity(true);
         } else {
-            IO.Swagger.Model.SaveSceneResponse saveSceneResponse = await WebsocketManager.Instance.SaveScene(true);
-            if (saveSceneResponse.Messages != null) {
-                SaveButton.SetInteractivity(saveSceneResponse.Result, saveSceneResponse.Messages.FirstOrDefault());
-            } else {
-                SaveButton.SetInteractivity(saveSceneResponse.Result);
-            }
+            WebsocketManager.Instance.SaveScene(true, SaveSceneCallback);
             CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
         }
-        CloseButton.SetInteractivity(successForce, messageForce); 
+    }
+
+    protected void SaveSceneCallback(string nothing, string data) {
+        SaveSceneResponse response = JsonConvert.DeserializeObject<SaveSceneResponse>(data);
+        if (response.Messages != null) {
+            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            SaveButton.SetInteractivity(response.Result);
+        }
+    }
+
+    protected void CloseSceneCallback(string nothing, string data) {
+        CloseSceneResponse response = JsonConvert.DeserializeObject<CloseSceneResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
+        }
     }
 
     public void ShowNewProjectDialog() {
