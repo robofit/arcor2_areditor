@@ -9,6 +9,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
 using System.Collections;
 using Newtonsoft.Json;
+using MiniJSON;
 
 namespace Base {
     /// <summary>
@@ -1258,17 +1259,26 @@ namespace Base {
         /// Asks server to save project
         /// </summary>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
-            IO.Swagger.Model.SaveProjectResponse response = await WebsocketManager.Instance.SaveProject();
-            OnSaveProject?.Invoke(this, EventArgs.Empty);
-            return response;
+        public void SaveProject() {
+            WebsocketManager.Instance.SaveProject(SaveProjectCallback);
         }
 
-        /// <summary>
-        /// Asks server to open project
-        /// </summary>
-        /// <param name="id">Project id</param>
-        public async void OpenProject(string id) {
+        public void SaveProjectCallback(string _, string response) {
+            SaveProjectResponse saveProjectResponse = JsonConvert.DeserializeObject<SaveProjectResponse>(response);
+            if (saveProjectResponse.Result) {
+                OnSaveProject?.Invoke(this, EventArgs.Empty);
+            } else {
+                saveProjectResponse.Messages.ForEach(Debug.LogError);
+                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+                return;
+            }
+        }
+            
+    /// <summary>
+    /// Asks server to open project
+    /// </summary>
+    /// <param name="id">Project id</param>
+    public async void OpenProject(string id) {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.OpenProject(id);

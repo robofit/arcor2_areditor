@@ -43,11 +43,11 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
      private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
-        _ = UpdateBuildAndSaveBtns();
+        UpdateBuildAndSaveBtns();
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        _ = UpdateBuildAndSaveBtns();
+        UpdateBuildAndSaveBtns();
         if (args.Event.State == SceneStateData.StateEnum.Stopping) {
 
             if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == "robot") {
@@ -83,7 +83,7 @@ public abstract class LeftMenu : MonoBehaviour {
             UpdateVisibility();
         if (args != null) {
             if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor || args.Data == GameStateEnum.PackageRunning) {
-                _ = UpdateBuildAndSaveBtns();
+                UpdateBuildAndSaveBtns();
             } else {
                 DeactivateAllSubmenus();
                 SetActiveSubmenu(LeftMenuSelection.Favorites);
@@ -247,7 +247,7 @@ public abstract class LeftMenu : MonoBehaviour {
         
     }
 
-    public abstract Task UpdateBuildAndSaveBtns();
+    public abstract void UpdateBuildAndSaveBtns();
 
     public void FavoritesButtonClick() {
         MenuManager.Instance.HideAllMenus();

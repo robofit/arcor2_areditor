@@ -40,9 +40,8 @@ public class LeftMenuPackage : LeftMenu {
         UpdateVisibility();
     }
 
-    public override Task UpdateBuildAndSaveBtns() {
+    public override void UpdateBuildAndSaveBtns() {
         // nothing to do here when package is running
-        return null;
     }
 
     public override void UpdateVisibility() {

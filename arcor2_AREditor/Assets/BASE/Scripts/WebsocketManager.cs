@@ -10,6 +10,7 @@ using IO.Swagger.Model;
 using UnityEditor;
 using UnityEngine.Events;
 
+
 namespace Base {
 
     public class WebsocketManager : Singleton<WebsocketManager> {
@@ -103,6 +104,7 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+
 
         /// <summary>
         /// event regarding calibration of camera or robot
@@ -234,23 +236,24 @@ namespace Base {
             if (key < 0) {
                 key = Interlocked.Increment(ref requestID);
             }
-            if (logInfo)
-                Debug.Log("Sending data to server: " + data);
+            
 
             if (storeResult) {
                 responses[key] = null;
             }
-            SendWebSocketMessage(data);
+            SendWebSocketMessage(data, logInfo);
         }
 
         /// <summary>
         /// Sends data to server
         /// </summary>
         /// <param name="data"></param>
-        private async void SendWebSocketMessage(string data) {
+        private async void SendWebSocketMessage(string data, bool logInfo) {
             try {
                 if (websocket.State == WebSocketState.Open) {
                     await websocket.SendText(data);
+                    if (logInfo)
+                        Debug.Log("Sent data to server: " + data);
                 }
             } catch (WebSocketException ex) {
                 Debug.Log("socketexception in sendwebsocketmessage: " + ex.Message);
@@ -1044,10 +1047,11 @@ namespace Base {
         /// Asks server to save currently openned project
         /// </summary>
         /// <returns>Response form server</returns>
-        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject(bool dryRun = false) {
+        public void SaveProject(UnityAction<string, string> callback, bool dryRun = false) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, true);
-            return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
+            responsesCallback.Add(id, Tuple.Create("SaveProject", callback));
+            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, false);
+            //return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
         /// <summary>
@@ -2102,7 +2106,7 @@ namespace Base {
             IO.Swagger.Model.RemoveLogicItemRequest request = new IO.Swagger.Model.RemoveLogicItemRequest(r_id, "RemoveLogicItem", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveLogicItemResponse response = await WaitForResult<IO.Swagger.Model.RemoveLogicItemResponse>(r_id);
-
+            
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
