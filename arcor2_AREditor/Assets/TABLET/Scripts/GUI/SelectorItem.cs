@@ -63,11 +63,13 @@ public class SelectorItem : MonoBehaviour
 
     public void SetSelected(bool selected, bool manually) {
         if (InteractiveObject != null) {
-            if (selected) {
+
+            Debug.LogError(this.selected.ToString() + " -> " + selected);
+            if (!this.selected && selected) {
+                Debug.LogError("on hover start");
                 InteractiveObject.SendMessage("OnHoverStart");
-            } else {
-                if (this.selected)
-                    InteractiveObject.SendMessage("OnHoverEnd");
+            } else if (this.selected && !selected) {
+                InteractiveObject.SendMessage("OnHoverEnd");
             }
         }   
         this.selected = selected;

@@ -32,7 +32,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
-    private InteractiveObject lastSelectedObject = null;
+    private SelectorItem lastSelectedItem = null;
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -135,10 +135,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         UpdateNoPoseMenu();
     }
 
-    private void SelectedObjectChanged(InteractiveObject interactiveObject, bool force = false) {
-        if (force || interactiveObject != lastSelectedObject) {
-            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(interactiveObject));
-            lastSelectedObject = interactiveObject;
+    private void SelectedObjectChanged(SelectorItem selectorItem, bool force = false) {
+        if (force || selectorItem != lastSelectedItem) {
+            OnObjectSelectedChangedEvent.Invoke(this, new InteractiveObjectEventArgs(selectorItem == null ? null : selectorItem.InteractiveObject));
+            lastSelectedItem = selectorItem;
         }
     }
 
@@ -283,9 +283,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     return;
                 }
             }
-            DeselectObject(manually);
-            selectorItem.SetSelected(true, manually);            
-            SelectedObjectChanged(selectorItem.InteractiveObject);
+            if (selectorItem != lastSelectedItem) {
+                DeselectObject(manually);
+                selectorItem.SetSelected(true, manually);
+                SelectedObjectChanged(selectorItem);
+            }            
             if (manually)
                 manuallySelected = true;
         }        
@@ -294,9 +296,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public void DeselectObject(bool manually = true) {
         if (manually)
             manuallySelected = false;
-        foreach (SelectorItem item in selectorItems.Values.ToList()) {
+        if (lastSelectedItem != null)
+            lastSelectedItem.SetSelected(false, manually);
+        /*foreach (SelectorItem item in selectorItems.Values.ToList()) {
             item.SetSelected(false, manually);
-        }
+        }*/
     }
 
     public SelectorItem CreateSelectorItem(InteractiveObject interactiveObject, Transform parent, float score) {
@@ -341,7 +345,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
            
         }
         // force update of left menu icons
-        SelectedObjectChanged(lastSelectedObject, true);
+        SelectedObjectChanged(lastSelectedItem, true);
         
     }
 
@@ -406,7 +410,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 return item.InteractiveObject;
         }
         return null;*/
-        return lastSelectedObject;
+        return lastSelectedItem.InteractiveObject;
     }
 
     public async Task ShowRobots(bool show, bool updateMenus) {
