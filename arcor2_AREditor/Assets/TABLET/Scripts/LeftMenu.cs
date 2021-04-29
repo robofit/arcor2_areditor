@@ -82,7 +82,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (!isVisibilityForced)
             UpdateVisibility();
         if (args != null) {
-            if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor) {
+            if (args.Data == GameStateEnum.SceneEditor || args.Data == GameStateEnum.ProjectEditor || args.Data == GameStateEnum.PackageRunning) {
                 _ = UpdateBuildAndSaveBtns();
             } else {
                 DeactivateAllSubmenus();
@@ -119,13 +119,14 @@ public abstract class LeftMenu : MonoBehaviour {
             OpenMenuButton.SetInteractivity(false, "Object is locked");
         } else {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
+            MoveButton.SetInteractivity(false, "Loading...");
+            MoveButton2.SetInteractivity(false, "Loading...");
+            RemoveButton.SetInteractivity(false, "Loading...");
             Task<RequestResult> tMove = Task.Run(() => obj.Movable());
             Task<RequestResult> tRemove = Task.Run(() => obj.Removable());
-            RequestResult move = await tMove;
-            RequestResult remove = await tRemove;
-            MoveButton.SetInteractivity(move.Success, move.Message);
-            MoveButton2.SetInteractivity(move.Success, move.Message);
-            RemoveButton.SetInteractivity(remove.Success, remove.Message);
+            UpdateMoveAndRemoveBtns(selectedObject.GetId(), tMove, tRemove);
+            
+            
             RenameButton.SetInteractivity(obj.GetType() == typeof(ActionPoint3D) ||
                 obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted &&
                 GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor) ||
@@ -139,6 +140,17 @@ public abstract class LeftMenu : MonoBehaviour {
             }
 
         }
+    }
+
+    private async void UpdateMoveAndRemoveBtns(string objId, Task<RequestResult> movable, Task<RequestResult> removable) {
+        RequestResult move = await movable;
+        RequestResult remove = await removable;
+
+        if (selectedObject != null && objId != selectedObject.GetId()) // selected object was updated in the meantime
+            return; 
+        MoveButton.SetInteractivity(move.Success, move.Message);
+        MoveButton2.SetInteractivity(move.Success, move.Message);
+        RemoveButton.SetInteractivity(remove.Success, remove.Message);
     }
 
     private bool updateButtonsInteractivity = false;

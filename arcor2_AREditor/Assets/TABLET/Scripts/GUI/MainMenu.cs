@@ -231,22 +231,6 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     }
 
-
-
-    public void StopProject() {
-        Base.GameManager.Instance.StopProject();
-        MenuManager.Instance.MainMenu.Close();
-    }
-
-
-    public void PauseProject() {
-        Base.GameManager.Instance.PauseProject();
-    }
-
-    public void ResumeProject() {
-        Base.GameManager.Instance.ResumeProject();
-    }
-
     public void DisconnectFromSever() {
         Base.GameManager.Instance.DisconnectFromSever();
     }
