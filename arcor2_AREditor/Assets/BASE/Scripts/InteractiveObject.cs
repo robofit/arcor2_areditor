@@ -57,7 +57,7 @@ public abstract class InteractiveObject : Clickable {
     /// </summary>
     /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
-    public async Task<bool> WriteLock(bool lockTree) {
+    public virtual async Task<bool> WriteLock(bool lockTree) {
         if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) //object is already locked by this user
             return true;
 
@@ -74,7 +74,7 @@ public abstract class InteractiveObject : Clickable {
     /// Unlocks object. If successful - returns true, if not - returns false.
     /// </summary>
     /// <returns></returns>
-    public async Task<bool> WriteUnlock() {
+    public virtual async Task<bool> WriteUnlock() {
         try {
             await WebsocketManager.Instance.WriteUnlock(GetId());
             return true;

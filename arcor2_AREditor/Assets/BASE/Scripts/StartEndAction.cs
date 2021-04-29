@@ -25,7 +25,7 @@ public abstract class StartEndAction : Action3D {
             return;
         }
         playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + actionType;
-        
+
     }
 
     private void Update() {
@@ -56,5 +56,23 @@ public abstract class StartEndAction : Action3D {
         outlineOnClick.GizmoHighlight();
     }
 
-
+    public override async Task<bool> WriteUnlock() {
+        return true;
     }
+
+    public override async Task<bool> WriteLock(bool lockTree) {
+        return true;
+    }
+
+    protected override void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+        return;
+    }
+
+    public override void OnObjectLocked(string owner) {
+        return;
+    }
+
+    public override void OnObjectUnlocked() {
+        return;
+    }
+}
