@@ -571,6 +571,8 @@ namespace Base {
         }
 
         private void HandleStateBefore(string obj) {
+            if (!ProjectManager.Instance.Valid)
+                return;
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
                 Debug.LogWarning("Project not yet loaded, ignoring current action");
@@ -604,7 +606,6 @@ namespace Base {
         private void HandleActionStateAfter(string obj) {
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
-                Debug.LogWarning("Project not yet loaded, ignoring current action");
                 return;
             }
             try {
@@ -638,6 +639,10 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleActionResult(string data) {
+
+            if (!ProjectManager.Instance.Valid) {
+                return;
+            }
             IO.Swagger.Model.ActionResult actionResult = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionResult>(data);
             GameManager.Instance.HandleActionResult(actionResult.Data);
         }

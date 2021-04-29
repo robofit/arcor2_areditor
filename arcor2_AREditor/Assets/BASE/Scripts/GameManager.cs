@@ -1347,26 +1347,30 @@ namespace Base {
         /// <summary>
         /// Asks server to stop running package
         /// </summary>
-        public async void StopProject() {
+        public async Task<bool> StopPackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.StopPackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
         /// <summary>
         /// Asks server to pause running package
         /// </summary>
-        public async void PauseProject() {
+        public async Task<bool> PausePackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.PausePackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
@@ -1374,13 +1378,15 @@ namespace Base {
         /// <summary>
         /// Asks server to resume paused package
         /// </summary>
-        public async void ResumeProject() {
+        public async Task<bool> ResumePackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.ResumePackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
