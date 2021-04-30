@@ -166,6 +166,29 @@ public class MainMenu : MonoBehaviour, IMenu {
         UpdateRemoveBtns();
 
     }
+    //TODO: remove
+    private System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+
+
+    public async void TestWebsockets() {
+        /*stopwatch.Reset();
+        stopwatch.Start();
+        await WebsocketManager.Instance.WriteLock("act_16eef51d091946cebd9025f6e8af8469", false);
+        WebsocketManager.Instance.SaveProject(SaveProjectCb, true);
+        await WebsocketManager.Instance.RemoveLogicItem("lit_6915fd7bbcb2440990036a0971945bd4ik");
+        stopwatch.Stop();
+        TimeSpan ts = stopwatch.Elapsed;
+
+        // Format and display the TimeSpan value.
+        string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            ts.Hours, ts.Minutes, ts.Seconds,
+            ts.Milliseconds / 10);
+        Debug.LogError("Done in " + elapsedTime);*/
+    }
+
+    private void SaveProjectCb(string _, string resp) {
+        Debug.LogError(resp);
+    }
     
     public void ShowRemoveActionObjectDialog(string type) {
         confirmationDialog.Open("Delete object",

@@ -45,7 +45,7 @@ public class LeftMenuScene : LeftMenu
 
 
     private void OnSceneSavedStatusChanged(object sender, EventArgs e) {
-        _ = UpdateBuildAndSaveBtns();
+        UpdateBuildAndSaveBtns();
     }
 
     protected async override Task UpdateBtns(InteractiveObject obj) {
@@ -109,16 +109,21 @@ public class LeftMenuScene : LeftMenu
             return;
         } else {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
-            _ = UpdateBuildAndSaveBtns();
+            UpdateBuildAndSaveBtns();
         }
     }
 
-    public override async Task UpdateBuildAndSaveBtns() {
+    public override async void UpdateBuildAndSaveBtns() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+            return;
         if (currentSubmenuOpened != LeftMenuSelection.Home)
             return;
 
+        CreateProjectBtn.SetInteractivity(false, "Loading...");
+        SaveButton.SetInteractivity(false, "Loading...");
+        CloseButton.SetInteractivity(false, "Loading...");
         WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
-
+        
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
             CreateProjectBtn.SetInteractivity(true);

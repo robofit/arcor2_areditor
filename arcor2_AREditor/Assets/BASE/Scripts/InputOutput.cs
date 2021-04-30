@@ -153,8 +153,9 @@ namespace Base {
                         otherAction = ProjectManager.Instance.GetAction(logicItem.Data.End);
                     else
                         otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
-
+                    GameManager.Instance.ShowLoadingScreen("Removing old connection...");
                     await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                    GameManager.Instance.HideLoadingScreen();
                     if (!await otherAction.WriteLock(false)) {
                         return;
                     }

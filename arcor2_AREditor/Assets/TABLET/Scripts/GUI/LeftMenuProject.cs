@@ -20,7 +20,6 @@ public class LeftMenuProject : LeftMenu
     public AddNewActionDialog AddNewActionDialog;
 
     private string apNameAddedByRobot = "", updateAPWithRobotId = "", updateAPWithEE = "", selectAPNameWhenCreated = "";
-
     protected override void Update() {
         base.Update();
         if (ProjectManager.Instance.ProjectMeta != null)
@@ -125,7 +124,7 @@ public class LeftMenuProject : LeftMenu
                 } else if (obj.GetType() == typeof(StartAction)) {
                     if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
                         runBtnInteractivity = "Project without logic could not be started from editor";
-                    } else if (SaveButton.IsInteractive()) {
+                    } else if (ProjectManager.Instance.ProjectChanged) {
                         runBtnInteractivity = "Project has unsaved changes";
                     }
                     RunButton.SetDescription("Run project");
@@ -172,14 +171,9 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    public async void SaveProject() {
+    public void SaveProject() {
         SaveButton.SetInteractivity(false, "Saving project...");
-        IO.Swagger.Model.SaveProjectResponse saveProjectResponse = await Base.GameManager.Instance.SaveProject();
-        if (!saveProjectResponse.Result) {
-            saveProjectResponse.Messages.ForEach(Debug.LogError);
-            Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
-            return;
-        }
+        Base.GameManager.Instance.SaveProject();        
     }
 
     public async void BuildPackage(string name) {
@@ -217,34 +211,33 @@ public class LeftMenuProject : LeftMenu
 
 
     private void OnProjectSavedStatusChanged(object sender, EventArgs e) {
-        _ = UpdateBuildAndSaveBtns();
+       UpdateBuildAndSaveBtns();
     }
     
 
-    public override async Task UpdateBuildAndSaveBtns() {
+    public override async void UpdateBuildAndSaveBtns() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+            return;
         if (currentSubmenuOpened != LeftMenuSelection.Home)
             return;
-
+        
+        BuildPackageButton.SetInteractivity(false, "Loading...");
+        SaveButton.SetInteractivity(false, "Loading...");
+        CloseButton.SetInteractivity(false, "Loading...");
         WebsocketManager.Instance.CloseProject(true, true, CloseProjectCallback);
 
         if (!ProjectManager.Instance.ProjectChanged) {
-            BuildPackageButton.SetInteractivity(true);
-            if (ProjectManager.Instance.ProjectMeta.HasLogic) {
-                RunButton.SetInteractivity(true);
-                RunButton2.SetInteractivity(true);
-            }
+            BuildPackageButton.SetInteractivity(true);            
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
         } else {
-            SaveButton.SetInteractivity(false, "Checking for availability");
             WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
-
             BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
-            RunButton.SetInteractivity(false, "There are unsaved changes on project");
-            RunButton2.SetInteractivity(false, "There are unsaved changes on project");
+            //RunButton.SetInteractivity(false, "There are unsaved changes on project");
+            //RunButton2.SetInteractivity(false, "There are unsaved changes on project");
         }
     }
 
-    protected void SaveProjectCallback(string nothing, string data) {
+    protected void SaveProjectCallback(string _, string data) {
         SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
         if (response.Messages != null) {
             SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
