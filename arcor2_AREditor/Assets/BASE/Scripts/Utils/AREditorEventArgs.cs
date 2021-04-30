@@ -369,7 +369,7 @@ namespace Base {
     }
 
     public class ObjectLockingEventArgs : EventArgs {
-        public string ObjectId {
+        public List<string> ObjectIds {
             get; set;
         }
 
@@ -381,8 +381,8 @@ namespace Base {
             get;set;
         }
 
-        public ObjectLockingEventArgs(string objectId, bool locked, string owner) {
-            ObjectId = objectId;
+        public ObjectLockingEventArgs(List<string> objectIds, bool locked, string owner) {
+            ObjectIds = objectIds;
             Locked = locked;
             Owner = owner;
         }

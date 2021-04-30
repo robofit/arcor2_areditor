@@ -42,7 +42,7 @@ public abstract class LeftMenu : MonoBehaviour {
         MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
     }
 
-     private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+    private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         UpdateBuildAndSaveBtns();
     }
 

@@ -62,11 +62,12 @@ namespace Base {
         }
 
         public void Add(ObjectLockingEventArgs objectsLockingEvent) {
-            lock (events) {
-                if (IsSceneOrProject(objectsLockingEvent.ObjectId))
-                    OnObjectLockingEvent?.Invoke(this, objectsLockingEvent);
-                else 
+            if (IsSceneOrProject(objectsLockingEvent.ObjectIds.FirstOrDefault())) { //in the list, there should be always only objects or only projects/scenes, so taking the first id should work
+                OnObjectLockingEvent?.Invoke(this, objectsLockingEvent);
+            } else {
+                lock (events) {
                     events.Add(objectsLockingEvent);
+                }
             }
             InvokeEvents();
         }
@@ -87,7 +88,8 @@ namespace Base {
                         List<ObjectLockingEventArgs> toRemove = new List<ObjectLockingEventArgs>();
                         foreach (ObjectLockingEventArgs ev in events) {
                             if (ev.Locked && ev.Owner == LandingScreen.Instance.GetUsername()) {
-                                WebsocketManager.Instance.WriteUnlock(ev.ObjectId);
+                                foreach(var id in ev.ObjectIds)
+                                    WebsocketManager.Instance.WriteUnlock(id); //if the app was killed, unlock my locks, because UI doesnt know what menu should be opened
                                 toRemove.Add(ev);
                             }
                         }

@@ -90,7 +90,7 @@ public abstract class InteractiveObject : Clickable {
     }
 
     protected virtual void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
-        if (args.ObjectId != GetId())
+        if (!args.ObjectIds.Contains(GetId()))
             return;
 
         //Debug.LogError("locking event " + GetName());
