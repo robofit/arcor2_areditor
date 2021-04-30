@@ -40,7 +40,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Modify() {
-        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, null, null, Parameter.Encode(Value.text, parameterMetadata.Type), true);
+        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, null, null, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, true);
         Input.GetComponent<IParameter>().SetLabel("", "");
         Value.gameObject.SetActive(false);
         Input.transform.SetParent(Value.transform.parent);
@@ -91,7 +91,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
 
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveBtn.SetInteractivity(false, "Parameter has invalid value");
         } else if (newValue.ToString() == Value.text) {

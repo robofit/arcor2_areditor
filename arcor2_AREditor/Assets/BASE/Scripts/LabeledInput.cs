@@ -101,4 +101,8 @@ public class LabeledInput : MonoBehaviour, IParameter
         }
         
     }
+
+    public string GetCurrentType() {
+        return ParameterType;
+    }
 }

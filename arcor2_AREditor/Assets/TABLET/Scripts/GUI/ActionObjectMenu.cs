@@ -112,7 +112,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
     protected abstract void UpdateSaveBtn();
         
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
         } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
