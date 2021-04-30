@@ -5,12 +5,15 @@ using System.Collections.Generic;
 using static Base.Parameter;
 using UnityEngine.UI;
 
-public class LinkableParameter : MonoBehaviour, IParameter {
+public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public Button CreateLinkBtn, RemoveLinkBtn;
     public DropdownParameter ActionsDropdown;
     public ParameterMetadata ParameterMetadata;
     protected OnChangeParameterHandlerDelegate onChangeParameterHandler;
     protected string type;
+
+    //!! has to be set in either start or init !! 
+    public IParameter Parameter;
 
     public virtual string GetCurrentType() {
         return type;
@@ -20,13 +23,18 @@ public class LinkableParameter : MonoBehaviour, IParameter {
         return ActionsDropdown.GetName();
     }
     public virtual object GetValue() {
-        return EncodeLinkValue((string) ActionsDropdown.GetValue());
+        if (type == "link")
+            return EncodeLinkValue((string) ActionsDropdown.GetValue());
+        else
+            return Parameter.GetValue();
     }
     public virtual void SetDarkMode(bool dark) {
         ActionsDropdown.SetDarkMode(dark);
+        Parameter.SetDarkMode(dark);
     }
     public virtual void SetLabel(string label, string description) {
         ActionsDropdown.SetLabel(label, description);
+        Parameter.SetLabel(label, description);
     }
     public virtual void SetValue(object value) {
         List<string> actions = new List<string>();
@@ -34,31 +42,40 @@ public class LinkableParameter : MonoBehaviour, IParameter {
             actions.Add(action.GetName());
         }
         ActionsDropdown.PutData(actions, DecodeLinkValue(value?.ToString()), (string v) => onChangeParameterHandler(GetName(), v, type));
+
+        if (type != "link" && value != null)
+            Parameter.SetValue(value);
     }
 
-    public void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+    public virtual void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
         ActionsDropdown.Init(layoutGroupToBeDisabled, canvasRoot);
     }
 
-    public virtual void SetType(string type) {
+    public virtual void SetType(string type, bool linkable) {
         this.type = type;
-        if (type == "link") {
+        if (!linkable) {
+            RemoveLinkBtn.gameObject.SetActive(false);
+            CreateLinkBtn.gameObject.SetActive(false);
+            ActionsDropdown.gameObject.SetActive(false);
+        } else if (type == "link") {
             RemoveLinkBtn.gameObject.SetActive(true);
             CreateLinkBtn.gameObject.SetActive(false);
             ActionsDropdown.gameObject.SetActive(true);
         } else {
             ActionsDropdown.gameObject.SetActive(false);
+            RemoveLinkBtn.gameObject.SetActive(false);
+            CreateLinkBtn.gameObject.SetActive(true);
         }
         
     }
 
     public void CreateLinkCb() {
         //TODO: switch type of input and update btns
-        SetType("link");
+        SetType("link", true);
     }
 
     public void RemoveLinkCb() {
-        SetType(ParameterMetadata.Type);
+        SetType(ParameterMetadata.Type, true);
     }
 
     private string EncodeLinkValue(string dropdownValue) {
@@ -82,5 +99,10 @@ public class LinkableParameter : MonoBehaviour, IParameter {
             return action.GetName();
         } catch (ItemNotFoundException) { }
         return null;
+    }
+    public virtual void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
+        InitDropdown(layoutGroupToBeDisabled, canvasRoot);
+        ParameterMetadata = parameterMetadata;
+        SetType(type, linkable);
     }
 }

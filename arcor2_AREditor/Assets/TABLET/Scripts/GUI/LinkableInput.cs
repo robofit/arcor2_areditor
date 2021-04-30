@@ -9,12 +9,10 @@ public class LinkableInput : LinkableParameter {
    public LabeledInput Input;
 
 
-    public void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
-        //Parameter.GetValue<int?>();
+    public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
+        Parameter = Input;
+        base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
-        InitDropdown(layoutGroupToBeDisabled, canvasRoot);
-        ParameterMetadata = parameterMetadata;
-        SetType(type);
         SetOnValueChanged(onChangeParameterHandler);
         object v;
         
@@ -23,19 +21,19 @@ public class LinkableInput : LinkableParameter {
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<string>();
                 else
-                    v = Parameter.GetValue<string>((string) value);
+                    v = Base.Parameter.GetValue<string>((string) value);
                 break;
             case "integer":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<int>();
                 else
-                    v = Parameter.GetValue<int>((string) value);
+                    v = Base.Parameter.GetValue<int>((string) value);
                 break;
             case "double":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<double>();
                 else
-                    v = Parameter.GetValue<double>((string) value);
+                    v = Base.Parameter.GetValue<double>((string) value);
                 break;
             case "link":
                 if (value == null)
@@ -53,30 +51,6 @@ public class LinkableInput : LinkableParameter {
     
 
 
-    public override object GetValue() {
-        if (type == "link")
-            return base.GetValue();
-        else 
-            return Input.GetValue();
-    }
-
-   
-
-    public override void SetDarkMode(bool dark) {
-        base.SetDarkMode(dark);
-        Input.SetDarkMode(dark);
-    }
-
-    public override void SetLabel(string label, string description) {
-        base.SetLabel(label, description);
-        Input.SetLabel(label, description);
-    }
-
-    public override void SetValue(object value) {
-        base.SetValue(value);
-        if (type != "link")
-            Input.SetValue(value);
-    }
 
     public void SetOnValueChanged(OnChangeParameterHandlerDelegate onChangeParameterHandler) {
         //input.Input.Input.onValueChanged.AddListener((string newValue)
@@ -84,17 +58,14 @@ public class LinkableInput : LinkableParameter {
         this.onChangeParameterHandler = onChangeParameterHandler;
     }    
 
-    public override void SetType(string type) {
-        base.SetType(type);
+    public override void SetType(string type, bool linkable) {
+        base.SetType(type, linkable);
         
         if (type == "link") {
             Input.gameObject.SetActive(false);
             Input.Input.onValueChanged.RemoveAllListeners();
         }
         else {
-            RemoveLinkBtn.gameObject.SetActive(false);
-            CreateLinkBtn.gameObject.SetActive(true);
-            ActionsDropdown.gameObject.SetActive(false);
             Input.gameObject.SetActive(true);
             Input.Input.onValueChanged.RemoveAllListeners();
             switch (ParameterMetadata.Type) {

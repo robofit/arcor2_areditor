@@ -823,7 +823,7 @@ namespace Base {
                     // if GetOrientation dont throw exception, correct action point was found
                     actionPoint.GetOrientation(id);
                     return actionPoint;
-                } catch (KeyNotFoundException ex) { }
+                } catch (KeyNotFoundException) { }
             }
             throw new KeyNotFoundException("Action point with orientation id " + id + " not found");
         }

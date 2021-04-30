@@ -7,14 +7,10 @@ using UnityEngine.UI;
 
 public class LinkableDropdownPoses : LinkableDropdown
 {
-    public override void SetValue(object value) {
-        base.SetValue(value);
-        if (type != "link" && value != null)
-            DropdownParameter.SetValue(value);
-    }
+    
 
-    public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler) {
-        base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+    public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
+        base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         List<string> options = new List<string>();
 
         foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
@@ -34,9 +30,9 @@ public class LinkableDropdownPoses : LinkableDropdown
 
         }
         if (type == "link")
-            SetValue(selectedValue);
-        else
-            SetValue(Parameter.GetValue<string>(selectedValue));
+            ActionsDropdown.SetValue(selectedValue);
+
+        DropdownParameter.PutData(options, type == "link" ? null : selectedValue, (v) => onChangeParameterHandler(parameterMetadata.Name, v, type));
     }
 
     public override object GetValue() {

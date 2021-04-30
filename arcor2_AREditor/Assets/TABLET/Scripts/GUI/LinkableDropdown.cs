@@ -9,13 +9,13 @@ public class LinkableDropdown : LinkableParameter
 {
     public DropdownParameter DropdownParameter;
 
-    public virtual void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
-        //Parameter.GetValue<int?>();
+    public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
+        Parameter = DropdownParameter;
 
-        InitDropdown(layoutGroupToBeDisabled, canvasRoot);
-        ParameterMetadata = parameterMetadata;
-        SetType(type);
+        base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+        
         SetOnValueChanged(onChangeParameterHandler);
+        SetValue(value);
         /*object v;
 
         switch (type) {
@@ -50,32 +50,12 @@ public class LinkableDropdown : LinkableParameter
 
     }
 
-
-
-    public override object GetValue() {
-        if (type == "link")
-            return base.GetValue();
-        else
-            return DropdownParameter.GetValue();
+   
+    public override void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+        base.InitDropdown(layoutGroupToBeDisabled, canvasRoot);
+        DropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
     }
 
-
-
-    public override void SetDarkMode(bool dark) {
-        base.SetDarkMode(dark);
-        DropdownParameter.SetDarkMode(dark);
-    }
-
-    public override void SetLabel(string label, string description) {
-        base.SetLabel(label, description);
-        DropdownParameter.SetLabel(label, description);
-    }
-
-    /*public override void SetValue(object value) {
-        base.SetValue(value);
-        if (type != "link")
-            DropdownParameter.SetValue(value);
-    }*/
 
     public void SetOnValueChanged(OnChangeParameterHandlerDelegate onChangeParameterHandler) {
         //input.Input.Input.onValueChanged.AddListener((string newValue)
@@ -83,15 +63,13 @@ public class LinkableDropdown : LinkableParameter
         this.onChangeParameterHandler = onChangeParameterHandler;
     }
 
-    public override void SetType(string type) {
+    public override void SetType(string type, bool linkable) {
+        base.SetType(type, linkable);
         this.type = type;
         if (type == "link") {
             DropdownParameter.gameObject.SetActive(false);
             //DropdownParameter.Dropdown.onValueChanged.RemoveAllListeners();
         } else {
-            RemoveLinkBtn.gameObject.SetActive(false);
-            CreateLinkBtn.gameObject.SetActive(true);
-            ActionsDropdown.gameObject.SetActive(false);
             DropdownParameter.gameObject.SetActive(true);
             //Input.Input.onValueChanged.RemoveAllListeners();
             //Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));

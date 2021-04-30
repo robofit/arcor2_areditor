@@ -46,6 +46,8 @@ public class SwitchComponent : MonoBehaviour, IParameter
     }
 
     public void SetValue(object value) {
+        if (value == null)
+            return;
         bool newValue = (bool) value;
         Switch.isOn = newValue;
         // switch gets updated upon onEnable event

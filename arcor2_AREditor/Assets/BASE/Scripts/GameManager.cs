@@ -1251,7 +1251,9 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
+            ShowLoadingScreen("Saving scene...");
             IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
+            HideLoadingScreen();
             return response;
         }
 
@@ -1260,11 +1262,18 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public void SaveProject() {
+            ShowLoadingScreen("Saving project...");
             WebsocketManager.Instance.SaveProject(false, SaveProjectCallback);
         }
 
+        /// <summary>
+        /// Callback triggered when save project is done
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="response"></param>
         public void SaveProjectCallback(string _, string response) {
             SaveProjectResponse saveProjectResponse = JsonConvert.DeserializeObject<SaveProjectResponse>(response);
+            HideLoadingScreen();
             if (saveProjectResponse.Result) {
                 OnSaveProject?.Invoke(this, EventArgs.Empty);
             } else {
@@ -1274,11 +1283,11 @@ namespace Base {
             }
         }
             
-    /// <summary>
-    /// Asks server to open project
-    /// </summary>
-    /// <param name="id">Project id</param>
-    public async void OpenProject(string id) {
+        /// <summary>
+        /// Asks server to open project
+        /// </summary>
+        /// <param name="id">Project id</param>
+        public async void OpenProject(string id) {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.OpenProject(id);

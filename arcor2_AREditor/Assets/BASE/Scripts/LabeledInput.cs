@@ -88,7 +88,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     }
 
     public void SetValue(object value) {
-        Input.text = value.ToString();
+        Input.text = value?.ToString();
     }
 
     public void SetDarkMode(bool dark) {

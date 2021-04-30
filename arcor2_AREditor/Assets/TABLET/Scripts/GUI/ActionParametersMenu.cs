@@ -45,20 +45,17 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         }
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-            //ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
         } else if (currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
                     parametersChanged = true;
                     SaveParametersBtn.SetInteractivity(true);
-                    //ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
                 }
             } catch (JsonReaderException) {
                 SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-                //ExecuteActionBtn.SetInteractivity(false, "Save parameters first");
             }
 
         }
@@ -70,7 +67,12 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 IO.Swagger.Model.ParameterMeta metadata = currentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: metadata.Type);
+                string value;
+                /*if (actionParameter.GetCurrentType() == "link")
+                    value = actionParameter.GetValue().ToString();
+                else*/
+                    value = JsonConvert.SerializeObject(actionParameter.GetValue());
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             Debug.Assert(ProjectManager.Instance.AllowEdit);

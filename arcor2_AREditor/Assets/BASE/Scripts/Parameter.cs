@@ -9,6 +9,7 @@ using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.Events;
 using MiniJSON;
+using RosSharp.Urdf;
 
 namespace Base {
     public class Parameter : IO.Swagger.Model.Parameter {
@@ -137,16 +138,16 @@ namespace Base {
             else
                 Value = JsonConvert.SerializeObject(newValue);
         }
-        public static GameObject InitializeStringParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type) {
+        public static GameObject InitializeStringParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool linkable) {
             GameObject input;
-            
+            string selectedValue = "";
+            if (value != null) {
+                selectedValue = value;
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = JsonConvert.DeserializeObject<string>(actionParameterMetadata.DefaultValue);
+            }
             if (actionParameterMetadata.DynamicValue) {
-                string selectedValue = "";
-                if (value != null) {
-                    selectedValue = value;
-                } else if (actionParameterMetadata.DefaultValue != null) {
-                    selectedValue = JsonConvert.DeserializeObject<string>(actionParameterMetadata.DefaultValue);
-                }
+                
                 input = InitializeDropdownParameter(actionParameterMetadata, new List<string>(), selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
                 input.GetComponent<DropdownParameter>().SetLoading(true);
             } else {
@@ -156,15 +157,15 @@ namespace Base {
                 input.GetComponent<LabeledInput>().SetValue(selectedValue);
                 input.GetComponent<LabeledInput>().Input.onValueChanged.AddListener((string newValue)
                     => onChangeParameterHandler(actionParameterMetadata.Name, newValue, actionParameterMetadata.Type));*/
-                input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab);
-
-                input.GetComponent<LinkableInput>().Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+                input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab);
+                
+                input.GetComponent<LinkableInput>().Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
             }
             return input;
         }
 
-        public static GameObject InitializeRelativePoseParameter(Base.ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, IO.Swagger.Model.Pose value) {
+        public static GameObject InitializeRelativePoseParameter(Base.ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, IO.Swagger.Model.Pose value, bool linkable) {
             /*GameObject input;
             string selectedValue = JsonConvert.SerializeObject(new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position()));
             if (value != null) {
@@ -212,24 +213,29 @@ namespace Base {
             return dropdownParameter.gameObject;
         }
 
-        public static GameObject InitializeStringEnumParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value) {
+        public static GameObject InitializeStringEnumParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
             string selectedValue = null;
             if (value != null) {
-                selectedValue = (string) value;
+                selectedValue = Parameter.GetValue<string>(value);
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<string>();
             }
             List<string> data = new List<string>();
             foreach (string item in ((ARServer.Models.StringEnumParameterExtra) actionParameterMetadata.ParameterExtra).AllowedValues)
                 data.Add(item);
-            return InitializeDropdownParameter(actionParameterMetadata, data, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
+            LinkableDropdown dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterDropdownPrefab).GetComponent<LinkableDropdown>();
+            dropdownParameter.Init(actionParameterMetadata, type, null, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            DropdownParameterPutData(dropdownParameter.DropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
+            return dropdownParameter.gameObject;
+
+            //return InitializeDropdownParameter(actionParameterMetadata, data, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
         }
 
-        public static GameObject InitializeIntegerEnumParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, int? value) {
+        public static GameObject InitializeIntegerEnumParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
             List<string> options = new List<string>();
             int? selectedValue = null;
             if (value != null) {
-                selectedValue = value;
+                selectedValue = Parameter.GetValue<int?>(value);
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
@@ -240,13 +246,25 @@ namespace Base {
             if (selectedValue != null) {
                 selectedValueString = selectedValue.ToString();
             }
-            return InitializeDropdownParameter(actionParameterMetadata, options, selectedValueString, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
+            LinkableDropdown dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterDropdownPrefab).GetComponent<LinkableDropdown>();
+            dropdownParameter.Init(actionParameterMetadata, type, null, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            DropdownParameterPutData(dropdownParameter.DropdownParameter, options, selectedValueString, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
+            return dropdownParameter.gameObject;
+
+
+            //return InitializeDropdownParameter(actionParameterMetadata, options, selectedValueString, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
         }
 
-        public static GameObject InitializePoseParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type) {
+        public static GameObject InitializePoseParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
 
-            LinkableDropdownPoses dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.ParameterDropdownPosesPrefab).GetComponent<LinkableDropdownPoses>();
-            dropdownParameter.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            LinkableDropdownPoses dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterDropdownPosesPrefab).GetComponent<LinkableDropdownPoses>();
+            string selectedValue = null;
+            if (value != null) {
+                selectedValue = Parameter.GetValue<string>(value);
+            } 
+            dropdownParameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            //DropdownParameterPutData(dropdownParameter.DropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
+
             //DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
             return dropdownParameter.gameObject;
 
@@ -295,32 +313,36 @@ namespace Base {
             //return InitializeDropdownParameter(actionParameterMetadata, options, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownJointsPrefab);
         }
 
-        public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, object value, string type) {
-            LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LinkableInput>();
-            
+        public static GameObject InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
+            LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
+            int? selectedValue = null;
+            if (value != null) {
+                selectedValue = Parameter.GetValue<int?>(value.ToString());
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = actionParameterMetadata.GetDefaultValue<int>();
+            }
             input.Input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateIntegerParameter(input.Input, actionParameterMetadata, int.Parse(newValue)));
-            input.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            input.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
             return input.gameObject;
         }
 
-        public static GameObject InitializeBooleanParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool? value) {
-            SwitchComponent parameter = GameObject.Instantiate(ActionsManager.Instance.ParameterBooleanPrefab).GetComponent<SwitchComponent>();
+        public static GameObject InitializeBooleanParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
+            LinkableBoolParameter parameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterBooleanPrefab).GetComponent<LinkableBoolParameter>();
             bool? selectedValue = null;
             if (value != null) {
-                selectedValue = value;
+                selectedValue = Parameter.GetValue<bool?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<bool>();
             }
-            parameter.SetValue(selectedValue != null ? selectedValue : false);
-            parameter.AddOnValueChangedListener((bool newValue)
-                => onChangeParameterHandler(actionParameterMetadata.Name, newValue, actionParameterMetadata.Type));
+            parameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            
             return parameter.gameObject;
         }
 
-        public static GameObject InitializeDoubleParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, object value, string type) {
-            LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.ParameterInputPrefab).GetComponent<LinkableInput>();
+        public static GameObject InitializeDoubleParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
+            LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
             /*input.SetType(actionParameterMetadata.Type);
             double? selectedValue = null;
             if (value != null) {
@@ -335,7 +357,7 @@ namespace Base {
             input.Input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateDoubleParameter(input.Input, actionParameterMetadata, ParseDouble(newValue)));
 
-            input.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler);
+            input.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
             return input.gameObject;
         }
 
@@ -398,10 +420,10 @@ namespace Base {
             }
         }
 
-        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
+        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
-                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type);
+                GameObject paramGO = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, darkMode, default, linkable);
                 if (paramGO == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -540,36 +562,36 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "") {
+        public static GameObject InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
             GameObject parameter = null;
 
             switch (actionParameterMetadata.Type) {
                 case "string":
-                    parameter = InitializeStringParameter(actionParameterMetadata, handler, layoutGroupToBeDisabled, canvasRoot, value, type);
+                    parameter = InitializeStringParameter(actionParameterMetadata, handler, layoutGroupToBeDisabled, canvasRoot, value, type, linkable);
                     break;
                 case "relative_pose":
-                    parameter = InitializeRelativePoseParameter(actionParameterMetadata, handler, Parameter.GetValue<IO.Swagger.Model.Pose>(value));
+                    parameter = InitializeRelativePoseParameter(actionParameterMetadata, handler, Parameter.GetValue<IO.Swagger.Model.Pose>(value), linkable);
                     break;
                 case "pose":
-                    parameter = InitializePoseParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type);
+                    parameter = InitializePoseParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
                 case "joints":
                     parameter = InitializeJointsParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value), actionProviderId);
                     break;
                 case "string_enum":
-                    parameter = InitializeStringEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value));
+                    parameter = InitializeStringEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
                 case "integer_enum":
-                    parameter = InitializeIntegerEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<int?>(value));
+                    parameter = InitializeIntegerEnumParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
                 case "integer":
-                    parameter = InitializeIntegerParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type);
+                    parameter = InitializeIntegerParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
                 case "double":
-                    parameter = InitializeDoubleParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type);
+                    parameter = InitializeDoubleParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
                 case "boolean":
-                    parameter = InitializeBooleanParameter(actionParameterMetadata, handler, Parameter.GetValue<bool?>(value));
+                    parameter = InitializeBooleanParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable);
                     break;
 
             }
