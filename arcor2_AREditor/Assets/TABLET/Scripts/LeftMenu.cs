@@ -518,18 +518,22 @@ public abstract class LeftMenu : MonoBehaviour {
         string id = "";
         id = parent.GetId();
         bool result = await Base.GameManager.Instance.UpdateActionPointParent(selectedActionPoint, id);
-        if (result) {
-            //
+        if (!result) {
+            selectedActionPoint.WriteUnlock();
         }
     }
 
     private async void UntieActionPointParent() {
         Debug.Assert(selectedActionPoint != null);
-        if (selectedActionPoint.GetParent() == null)
+        if (selectedActionPoint.GetParent() == null) {
+            selectedActionPoint.WriteUnlock();
             return;
+        }
 
         if (await Base.GameManager.Instance.UpdateActionPointParent(selectedActionPoint, "")) {
             Notifications.Instance.ShowToastMessage("Parent of action point untied");
+        } else {
+            selectedActionPoint.WriteUnlock();
         }
     }
 }

@@ -706,7 +706,7 @@ namespace Base {
                 return actionPoint;
             }
 
-            throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
+            throw new KeyNotFoundException("Action point parent " + parentId + " not found");
         }
 
         /// <summary>

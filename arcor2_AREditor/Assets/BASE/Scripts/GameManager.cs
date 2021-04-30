@@ -854,10 +854,6 @@ namespace Base {
                         return;
                     }
 
-                    WebsocketManager.Instance.LoadScenes(LoadScenesCb);
-                    WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
-                    WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
-
                     connectionStatus = newState;
                     break;
                 case ConnectionStatusEnum.Disconnected:
