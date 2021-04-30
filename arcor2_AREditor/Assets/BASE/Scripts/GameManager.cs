@@ -1260,7 +1260,7 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public void SaveProject() {
-            WebsocketManager.Instance.SaveProject(SaveProjectCallback);
+            WebsocketManager.Instance.SaveProject(false, SaveProjectCallback);
         }
 
         public void SaveProjectCallback(string _, string response) {

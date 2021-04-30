@@ -1053,13 +1053,6 @@ namespace Base {
         /// Asks server to save currently openned project
         /// </summary>
         /// <returns>Response form server</returns>
-        public void SaveProject(UnityAction<string, string> callback, bool dryRun = false) {
-            int id = Interlocked.Increment(ref requestID);
-            responsesCallback.Add(id, Tuple.Create("SaveProject", callback));
-            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, false);
-            //return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
-        }
-
         public void SaveProject(bool dryRun, UnityAction<string, string> callback) {
             int id = Interlocked.Increment(ref requestID);
             responsesCallback.Add(id, Tuple.Create("", callback));
