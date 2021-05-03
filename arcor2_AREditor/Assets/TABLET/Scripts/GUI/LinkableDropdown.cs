@@ -53,7 +53,7 @@ public class LinkableDropdown : LinkableParameter
    
     public override void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
         base.InitDropdown(layoutGroupToBeDisabled, canvasRoot);
-        DropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot);
+        DropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot, type);
     }
 
 

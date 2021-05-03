@@ -48,7 +48,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     }
 
     public virtual void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
-        ActionsDropdown.Init(layoutGroupToBeDisabled, canvasRoot);
+        ActionsDropdown.Init(layoutGroupToBeDisabled, canvasRoot, type);
     }
 
     public virtual void SetType(string type, bool linkable) {
@@ -104,5 +104,11 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         ParameterMetadata = parameterMetadata;
         SetType(type, linkable);
+    }
+
+    
+
+    public Transform GetTransform() {
+        return transform;
     }
 }
