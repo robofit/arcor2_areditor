@@ -132,7 +132,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor) ||
                 obj.GetType() == typeof(APOrientation), "Selected object could not be renamed");
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
-                obj.GetType() == typeof(CreateAnchor), "Selected object is not calibration cube");
+                obj.GetType() == typeof(CreateAnchor) || obj.GetType() == typeof(RecalibrateUsingServer), "Selected object is not calibration cube");
             if (obj is Action3D action) {
                 OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Action has no parameters");
             } else {
@@ -427,6 +427,8 @@ public abstract class LeftMenu : MonoBehaviour {
             ((Recalibrate) selectedObject).OnClick(Clickable.Click.TOUCH);
         } else if (selectedObject.GetType() == typeof(CreateAnchor)) {
             ((CreateAnchor) selectedObject).OnClick(Clickable.Click.TOUCH);
+        } else if (selectedObject.GetType() == typeof(RecalibrateUsingServer)) {
+            ((RecalibrateUsingServer) selectedObject).OnClick(Clickable.Click.TOUCH);
         }
 
         //SetActiveSubmenu(LeftMenuSelection.None);
