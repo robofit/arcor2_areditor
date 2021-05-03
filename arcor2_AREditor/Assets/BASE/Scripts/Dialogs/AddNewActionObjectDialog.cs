@@ -32,7 +32,7 @@ public class AddNewActionObjectDialog : Dialog {
     /// <param name="callback">Function to be called if adding action object was successful</param>
     public void InitFromMetadata(Base.ActionObjectMetadata metadata, System.Action callback = null) {
         InitDialog(metadata);
-        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
+        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
         nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
         this.callback = callback;
     }
@@ -60,7 +60,7 @@ public class AddNewActionObjectDialog : Dialog {
         nameInput.SetType("string");
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         // TODO: add some check and set create button interactivity
 
     }

@@ -51,7 +51,7 @@ public class AddNewActionDialog : Dialog
         nameInput.SetType("string");
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         // TODO: add some check and set create button interactivity
         
     }
@@ -66,7 +66,7 @@ public class AddNewActionDialog : Dialog
                     Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
                     return;
                 }
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             try {

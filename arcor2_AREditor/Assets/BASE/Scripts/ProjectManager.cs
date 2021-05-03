@@ -466,6 +466,16 @@ namespace Base {
             return project;
         }
 
+        public List<Action> GetActionsWithReturnType(string type) {
+            List<Action> actions = new List<Action>();
+            foreach (Action action in GetAllActions()) {
+                if (action.Metadata.Returns.Contains(type)) {
+                    actions.Add(action);
+                }
+            }
+            return actions;
+        }
+
 
         private void Update() {
             /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
@@ -813,7 +823,7 @@ namespace Base {
                     // if GetOrientation dont throw exception, correct action point was found
                     actionPoint.GetOrientation(id);
                     return actionPoint;
-                } catch (KeyNotFoundException ex) { }
+                } catch (KeyNotFoundException) { }
             }
             throw new KeyNotFoundException("Action point with orientation id " + id + " not found");
         }

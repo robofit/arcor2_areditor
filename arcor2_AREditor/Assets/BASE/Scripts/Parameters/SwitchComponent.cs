@@ -46,6 +46,8 @@ public class SwitchComponent : MonoBehaviour, IParameter
     }
 
     public void SetValue(object value) {
+        if (value == null)
+            return;
         bool newValue = (bool) value;
         Switch.isOn = newValue;
         // switch gets updated upon onEnable event
@@ -71,5 +73,13 @@ public class SwitchComponent : MonoBehaviour, IParameter
 
     private void OnChange() {
         onChangeCallback.Invoke(Switch.isOn);
-    } 
+    }
+
+    public string GetCurrentType() {
+        return "boolean";
+    }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }

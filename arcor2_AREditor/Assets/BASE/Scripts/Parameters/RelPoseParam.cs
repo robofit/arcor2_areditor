@@ -112,4 +112,12 @@ public class RelPoseParam : MonoBehaviour, IParameter {
         orZ.SetDarkMode(dark);
         orW.SetDarkMode(dark);
     }
+
+    public string GetCurrentType() {
+        return "rel_pose";
+    }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }
