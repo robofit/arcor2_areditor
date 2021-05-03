@@ -281,7 +281,10 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     
 
-    public void Show(InteractiveObject interactiveObject) {
+    public async void Show(InteractiveObject interactiveObject) {
+        if (!await interactiveObject.WriteLock(true))
+            return;
+
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
@@ -334,7 +337,10 @@ public class TransformMenu : Singleton<TransformMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
-    public void Hide() {
+    public async void Hide() {
+        if (InteractiveObject == null)
+            return;
+        await InteractiveObject.WriteUnlock();
         InteractiveObject = null;
         Destroy(model);
         model = null;

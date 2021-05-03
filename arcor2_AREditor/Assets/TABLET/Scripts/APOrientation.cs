@@ -75,8 +75,8 @@ public class APOrientation : InteractiveObject {
         return OrientationId;
     }
 
-    public override void OpenMenu() {
-        ActionPoint.ShowAimingMenu(OrientationId);
+    public override async void OpenMenu() {
+        ActionPoint.ShowOrientationDetailMenu(OrientationId);
         HighlightOrientation(true);
     }
 
@@ -109,7 +109,7 @@ public class APOrientation : InteractiveObject {
         }
     }
 
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
             Notifications.Instance.ShowToastMessage("Orientation renamed");
@@ -122,4 +122,9 @@ public class APOrientation : InteractiveObject {
     public override string GetObjectTypeName() {
         return "Orientation";
     }
+
+    public override void UpdateColor() {
+        //TODO??
+    }
+
 }

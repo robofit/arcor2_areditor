@@ -145,21 +145,31 @@ namespace Base {
                     await CreateNewConnection();
                 }
             } else {
-            GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
+                GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
 
-            try {
-                await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
-                ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
-                if (typeof(PuckOutput) == GetType()) {
-                    await theOtherOne.GetComponent<PuckInput>().GetOutput();
-                } else {
+                try {
+                    Action otherAction;
+                    if (Action.GetId() == logicItem.Data.Start)
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.End);
+                    else
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
+                    GameManager.Instance.ShowLoadingScreen("Removing old connection...");
+                    await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                    GameManager.Instance.HideLoadingScreen();
+                    if (!await otherAction.WriteLock(false)) {
+                        return;
+                    }
+                    ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                    if (typeof(PuckOutput) == GetType()) {
+                        await theOtherOne.GetComponent<PuckInput>().GetOutput();
+                    } else {
                         await theOtherOne.GetComponent<PuckOutput>().GetInput();
+                    }
+                } catch (RequestFailedException ex) {
+                    Debug.LogError(ex);
+                    Notifications.Instance.SaveLogs("Failed to remove connection");
+                    ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 }
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to remove connection");
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-            }
             }
         }
 
@@ -203,7 +213,8 @@ namespace Base {
                     a.Input.Disable();
                 }
             }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput,
+                "Select input of other action", ValidateInput, async() => await Action.WriteUnlock());
         }
 
         public async Task GetOutput() {
@@ -323,9 +334,10 @@ namespace Base {
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
         }
 
-        public override void Enable(bool enable) {
-            base.Enable(enable);
-            if (enable)
+        
+        public override void UpdateColor()
+        {
+            if (Enabled && !IsLocked) {
                 foreach (Renderer renderer in outlineOnClick.Renderers) {
                     if (Action.Data.Id == "START")
                         renderer.material.color = Color.green;
@@ -334,11 +346,11 @@ namespace Base {
                     else
                         renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
                 }
-            else {
+            } /*else {
                 foreach (Renderer renderer in outlineOnClick.Renderers)
                     renderer.material.color = Color.gray;
-            }
-                
+            }*/
+            //TODO FIX
         }
 
         public override string GetName() {
@@ -377,7 +389,7 @@ namespace Base {
             throw new NotImplementedException();
         }
 
-        public override void Rename(string name) {
+        public override Task Rename(string name) {
             throw new NotImplementedException();
         }
     }

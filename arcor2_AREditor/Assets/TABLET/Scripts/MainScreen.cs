@@ -138,7 +138,6 @@ public class MainScreen : Base.Singleton<MainScreen>
         WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
         WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
         WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
-        SwitchToScenes();
     }
 
 

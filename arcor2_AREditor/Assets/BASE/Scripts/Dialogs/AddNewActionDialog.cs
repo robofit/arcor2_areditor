@@ -20,9 +20,6 @@ public class AddNewActionDialog : Dialog
     private GameObject overlay;
 
 
-    private void Init() {
-        
-    }
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);

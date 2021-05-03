@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,7 +29,9 @@ public class ProjectOptionMenu : TileOptionMenu
         projectTile.SetStar(starred);
         Close();
     }
-    public void ShowRenameDialog() {
+    public async void ShowRenameDialog() {
+        if (!await WriteLockProjectOrScene(projectTile.ProjectId))
+            return;
         inputDialog.Open("Rename project",
                          "",
                          "New name",

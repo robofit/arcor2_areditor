@@ -46,7 +46,9 @@ public class ActionObjectNoPose : ActionObject {
         // should not do anything
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        if (!await this.WriteLock(false))
+            return;
         TransformGizmo.Instance.ClearTargets();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = this;
@@ -78,4 +80,7 @@ public class ActionObjectNoPose : ActionObject {
         throw new RequestFailedException("This object has no pose");
     }
 
+    public override void UpdateColor() {
+        //nothing to do here
+    }
 }

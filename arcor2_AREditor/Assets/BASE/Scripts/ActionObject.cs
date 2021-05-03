@@ -21,7 +21,8 @@ namespace Base {
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
 
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
 
@@ -277,7 +278,7 @@ namespace Base {
         else
             return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
     }
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameObject(GetId(), name);
             Notifications.Instance.ShowToastMessage("Action object renamed");
@@ -300,6 +301,7 @@ namespace Base {
         }
     }
 
+
     public async override void Remove() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
             await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
@@ -309,9 +311,6 @@ namespace Base {
         }
     }
     }
-
-    
-
 
 
 }

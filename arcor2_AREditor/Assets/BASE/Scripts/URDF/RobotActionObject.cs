@@ -82,7 +82,7 @@ namespace Base {
             _ = DisableVisualisationOfEE();
         }
 
-        protected override void Update() {
+        protected override async void Update() {
             if (manipulationStarted) {
                 if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
                     if (!TransformGizmo.Instance.isTransforming && updatePose) {
@@ -103,6 +103,8 @@ namespace Base {
                     if (eeVisible)
                         ShowRobotEE();
                     manipulationStarted = false;
+                    if (!await this.WriteUnlock())
+                        return;
                 }
 
             }
@@ -639,7 +641,9 @@ namespace Base {
             }
         }
 
-        public override void OpenMenu() {
+        public override async void OpenMenu() {
+            if (!await this.WriteLock(false))
+                return;
             TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -656,7 +660,9 @@ namespace Base {
             return true;
         }
 
-        public override void StartManipulation() {
+        public override async void StartManipulation() {
+            if (!await this.WriteLock(true))
+                return;
             TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
@@ -671,6 +677,21 @@ namespace Base {
 
         public override string GetObjectTypeName() {
             return "Robot";
+        }
+
+        public override void UpdateColor() {
+            //probably nothing to do here, there is SetGrey method...
+        }
+
+        public override void OnObjectLocked(string owner) {
+            base.OnObjectLocked(owner);
+            if (owner != LandingScreen.Instance.GetUsername())
+                ActionObjectName.text = GetLockedText();
+        }
+
+        public override void OnObjectUnlocked() {
+            base.OnObjectUnlocked();
+            ActionObjectName.text = GetName();
         }
     }
 }

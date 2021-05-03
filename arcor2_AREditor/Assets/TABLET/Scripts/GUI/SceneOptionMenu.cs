@@ -4,6 +4,7 @@ using System;
 using Base;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using glTFLoader2.Schema;
 
 public class SceneOptionMenu : TileOptionMenu {
 
@@ -32,14 +33,20 @@ public class SceneOptionMenu : TileOptionMenu {
         Close();
     }
 
-    public void ShowRenameDialog() {
+    public async void ShowRenameDialog() {
+        if (!await WriteLockProjectOrScene(sceneTile.SceneId))
+            return;
         inputDialog.Open("Rename scene",
                          "",
                          "New name",
                          sceneTile.GetLabel(),
                          () => RenameScene(inputDialog.GetValue()),
-                         () => inputDialog.Close(),
+                         () => CloseRenameDialog(),
                          validateInput: ValidateSceneNameAsync);
+    }
+
+    private async void CloseRenameDialog() {
+        inputDialog.Close();
     }
 
     public async Task<RequestResult> ValidateSceneNameAsync(string newName) {

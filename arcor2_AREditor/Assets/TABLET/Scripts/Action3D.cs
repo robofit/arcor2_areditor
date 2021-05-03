@@ -19,9 +19,9 @@ public class Action3D : Base.Action {
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
 
-    private void Start() {
+    protected override void Start() {
+        base.Start();
         GameManager.Instance.OnStopPackage += OnProjectStop;
-        
     }
 
     private void OnEnable() {
@@ -124,25 +124,32 @@ public class Action3D : Base.Action {
         NameText.gameObject.SetActive(false);
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
+    public override void UpdateColor() {
+        //Input.UpdateColor();
+        //Output.UpdateColor();
         foreach (Renderer renderer in outlineOnClick.Renderers)
-            if (enable)
+            if (Enabled && !IsLocked)
                 renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
             else
                 renderer.material.color = Color.gray;
-
     }
 
     public override string GetName() {
         return Data.Name;
     }
 
-    public override void OpenMenu() {
-        ActionMenu.Instance.CurrentAction = this;
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+    public override async void OpenMenu() {
+        if (!await ActionParametersMenu.Instance.Show(this))
+            return;
+        //ActionMenu.Instance.CurrentAction = this;
+        //MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         selected = true;
-        ActionPoint.HighlightAP(true);
+        ActionPoint.HighlightAP(true);        
+    }
+
+    public void CloseMenu() {
+        selected = false;
+        ActionPoint.HighlightAP(false);
     }
 
     public override bool HasMenu() {
@@ -174,7 +181,7 @@ public class Action3D : Base.Action {
         }
     }
 
-    public async override void Rename(string newName) {
+    public async override Task Rename(string newName) {
         try {
             await WebsocketManager.Instance.RenameAction(GetId(), newName);
             Notifications.Instance.ShowToastMessage("Action renamed");
@@ -186,5 +193,21 @@ public class Action3D : Base.Action {
 
     public override string GetObjectTypeName() {
         return "Action";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername()) {
+            NameText.text = GetLockedText();
+        }
+        Input.OnObjectLocked(owner);
+        Output.OnObjectLocked(owner);
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        NameText.text = GetName();
+        Input.OnObjectUnlocked();
+        Output.OnObjectUnlocked();
     }
 }

@@ -8,7 +8,7 @@ using Base;
 [RequireComponent(typeof(CanvasGroup))]
 public class LandingScreen : Base.Singleton<LandingScreen>
 {
-    public TMPro.TMP_InputField Domain, Port;
+    public TMPro.TMP_InputField Domain, Port, Username;
     public Toggle KeepConnected;
     public CanvasGroup CanvasGroup;
     [SerializeField]
@@ -25,6 +25,7 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         Base.GameManager.Instance.OnDisconnectedFromServer += DisconnectedFromServer;
         Domain.text = PlayerPrefs.GetString("arserver_domain", "");
         Port.text = PlayerPrefs.GetInt("arserver_port", 6789).ToString();
+        Username.text = PlayerPrefs.GetString("arserver_username", "user1");
         KeepConnected.isOn = keepConnected;
         Version.text = Application.version;
 
@@ -45,9 +46,14 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         int port = int.Parse(Port.text);
         PlayerPrefs.SetString("arserver_domain", domain);
         PlayerPrefs.SetInt("arserver_port", port);
+        PlayerPrefs.SetString("arserver_username", GetUsername());
         PlayerPrefs.SetInt("arserver_keep_connected", KeepConnected.isOn ? 1 : 0);
         PlayerPrefs.Save();
         Base.GameManager.Instance.ConnectToSever(domain, port);
+    }
+
+    internal string GetUsername() {
+        return Username.text;
     }
 
     private void ConnectedToServer(object sender, EventArgs args) {

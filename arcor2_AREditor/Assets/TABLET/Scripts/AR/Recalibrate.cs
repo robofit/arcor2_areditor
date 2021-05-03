@@ -62,10 +62,14 @@ public class Recalibrate : InteractiveObject {
         throw new System.NotImplementedException();
     }
 
-    public override void Rename(string name) {
+    public override Task Rename(string name) {
         throw new System.NotImplementedException();
     }
     public override string GetObjectTypeName() {
         return GetName();
+    }
+
+    public override void UpdateColor() {
+        //nothing to do here
     }
 }

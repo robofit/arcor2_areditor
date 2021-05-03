@@ -7,6 +7,7 @@ using TMPro;
 using System;
 using System.Threading.Tasks;
 using NativeWebSocket;
+using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -16,7 +17,6 @@ public class ActionPoint3D : Base.ActionPoint {
     private Material sphereMaterial;
 
     private bool manipulationStarted = false;
-    private TransformGizmo tfGizmo;
 
     private float interval = 0.1f;
     private float nextUpdate = 0;
@@ -30,20 +30,22 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
         if (manipulationStarted) {
-            if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Sphere)) {
-                if (!tfGizmo.isTransforming && updatePosition) {
+            if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, Sphere)) {
+                if (!TransformGizmo.Instance.isTransforming && updatePosition) {
                     updatePosition = false;
                     UpdatePose();
                 }
 
-                if (tfGizmo.isTransforming)
+                if (TransformGizmo.Instance.isTransforming)
                     updatePosition = true;
 
 
             } else {
                 manipulationStarted = false;
+                if (!await this.WriteUnlock())
+                    return;
             }
         }
             
@@ -85,7 +87,7 @@ public class ActionPoint3D : Base.ActionPoint {
             return;
         }
 
-        tfGizmo.ClearTargets();
+        TransformGizmo.Instance.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
@@ -96,7 +98,10 @@ public class ActionPoint3D : Base.ActionPoint {
 
     }
 
-    public void ShowMenu(bool enableBackButton = false) {
+    public async void ShowMenu(bool enableBackButton = false) {
+        if (!await this.WriteLock(false))
+            return;
+
         actionPointMenu.CurrentActionPoint = this;
         actionPointMenu.EnableBackButton(enableBackButton);
         MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
@@ -217,20 +222,18 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
-        tfGizmo = TransformGizmo.Instance;
         sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-        if (enable)
+    public override void UpdateColor() {
+        if (Enabled && !IsLocked)
             sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
         else
             sphereMaterial.color = Color.gray;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
         ShowMenu();
     }
 
@@ -239,7 +242,9 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
-        tfGizmo.ClearTargets();
+        if (!await this.WriteLock(true))
+            return;
+        TransformGizmo.Instance.ClearTargets();
         if (Locked) {
             Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
         } else {
@@ -249,9 +254,8 @@ public class ActionPoint3D : Base.ActionPoint {
                 // We have clicked with left mouse and started manipulation with object
                 manipulationStarted = true;
                 updatePosition = false;
-                //tfGizmo.AddTarget(Sphere.transform);
-                //outlineOnClick.GizmoHighlight();
-                TransformMenu.Instance.Show(this);
+                TransformGizmo.Instance.AddTarget(Sphere.transform);
+                outlineOnClick.GizmoHighlight();
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
             }
@@ -290,7 +294,7 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameActionPoint(GetId(), name);
             Notifications.Instance.ShowToastMessage("Action point renamed");
@@ -301,5 +305,16 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override string GetObjectTypeName() {
         return "Action point";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername())
+            ActionPointName.text = GetLockedText();
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        ActionPointName.text = GetName();
     }
 }

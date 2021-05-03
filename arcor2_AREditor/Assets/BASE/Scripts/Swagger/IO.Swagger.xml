@@ -768,6 +768,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadUnlockRequestAllOf">
+             <summary>
+             ReadUnlockRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.#ctor(IO.Swagger.Model.ReadUnlockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.Equals(IO.Swagger.Model.ReadUnlockRequestAllOf)">
+             <summary>
+             Returns true if ReadUnlockRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of ReadUnlockRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ShowMainScreen">
              <summary>
              ShowMainScreen(data: arcor2_arserver_data.events.common.ShowMainScreen.Data)
@@ -2851,6 +2911,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadUnlockResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.Equals(IO.Swagger.Model.ReadUnlockResponse)">
+             <summary>
+             Returns true if ReadUnlockResponse instances are equal
+             </summary>
+             <param name="input">Instance of ReadUnlockResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.RenameActionPointJointsRequestAllOf">
              <summary>
              RenameActionPointJointsRequestAllOf
@@ -3701,6 +3845,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadLockRequestArgs">
+             <summary>
+             Args(object_id: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequestArgs" /> class.
+             </summary>
+             <param name="objectId">objectId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockRequestArgs.ObjectId">
+             <summary>
+             Gets or Sets ObjectId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.Equals(IO.Swagger.Model.ReadLockRequestArgs)">
+             <summary>
+             Returns true if ReadLockRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of ReadLockRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.HandTeachingMode">
              <summary>
              HandTeachingMode(data: arcor2_arserver_data.events.robot.HandTeachingMode.Data)
@@ -3984,6 +4188,109 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.PackageStateAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ObjectsUnlocked">
+             <summary>
+             ObjectsUnlocked(data: arcor2_arserver_data.events.lock.LockData)
+             </summary>
+            </member>
+        <member name="T:IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum">
+             <summary>
+             Defines ChangeType
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum.Add">
+             <summary>
+             Enum Add for value: add
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum.Update">
+             <summary>
+             Enum Update for value: update
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum.Remove">
+             <summary>
+             Enum Remove for value: remove
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum.Updatebase">
+             <summary>
+             Enum Updatebase for value: update_base
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsUnlocked.ChangeType">
+             <summary>
+             Gets or Sets ChangeType
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsUnlocked" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.#ctor(System.Nullable{IO.Swagger.Model.ObjectsUnlocked.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.LockData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsUnlocked" /> class.
+             </summary>
+             <param name="changeType">changeType.</param>
+             <param name="_event">_event (required).</param>
+             <param name="parentId">parentId.</param>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsUnlocked.Event">
+             <summary>
+             Gets or Sets Event
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsUnlocked.ParentId">
+             <summary>
+             Gets or Sets ParentId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsUnlocked.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.Equals(IO.Swagger.Model.ObjectsUnlocked)">
+             <summary>
+             Returns true if ObjectsUnlocked instances are equal
+             </summary>
+             <param name="input">Instance of ObjectsUnlocked to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsUnlocked.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -5013,9 +5320,19 @@
              Enum Running for value: running
              </summary>
             </member>
+        <member name="F:IO.Swagger.Model.PackageStateData.StateEnum.Stopping">
+             <summary>
+             Enum Stopping for value: stopping
+             </summary>
+            </member>
         <member name="F:IO.Swagger.Model.PackageStateData.StateEnum.Stopped">
              <summary>
              Enum Stopped for value: stopped
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.PackageStateData.StateEnum.Pausing">
+             <summary>
+             Enum Pausing for value: pausing
              </summary>
             </member>
         <member name="F:IO.Swagger.Model.PackageStateData.StateEnum.Paused">
@@ -6465,6 +6782,90 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ActionStateBeforeAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.WriteUnlockResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.Equals(IO.Swagger.Model.WriteUnlockResponse)">
+             <summary>
+             Returns true if WriteUnlockResponse instances are equal
+             </summary>
+             <param name="input">Instance of WriteUnlockResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -8177,6 +8578,61 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadLockResponseAllOf">
+             <summary>
+             ReadLockResponseAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockResponseAllOf" /> class.
+             </summary>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponseAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.Equals(IO.Swagger.Model.ReadLockResponseAllOf)">
+             <summary>
+             Returns true if ReadLockResponseAllOf instances are equal
+             </summary>
+             <param name="input">Instance of ReadLockResponseAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.UpdateObjectPoseRequestArgs">
              <summary>
              Args(object_id: str, pose: arcor2.data.common.Pose)
@@ -8248,7 +8704,7 @@
              GetCameraPoseResponseAllOf
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetCameraPoseResponseAllOf.#ctor(IO.Swagger.Model.Pose)">
+        <member name="M:IO.Swagger.Model.GetCameraPoseResponseAllOf.#ctor(IO.Swagger.Model.EstimatedPose)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetCameraPoseResponseAllOf" /> class.
              </summary>
@@ -9536,6 +9992,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.AddObjectToSceneRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.RegisterUserRequestArgs">
+             <summary>
+             Args(user_name: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequestArgs" /> class.
+             </summary>
+             <param name="userName">userName (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserRequestArgs.UserName">
+             <summary>
+             Gets or Sets UserName
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.Equals(IO.Swagger.Model.RegisterUserRequestArgs)">
+             <summary>
+             Returns true if RegisterUserRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of RegisterUserRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -11781,7 +12297,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetCameraPoseRequestArgs">
              <summary>
-             Args(camera_parameters: arcor2.data.camera.CameraParameters, image: str)
+             Args(camera_parameters: arcor2.data.camera.CameraParameters, image: str, inverse: bool = False)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetCameraPoseRequestArgs.#ctor">
@@ -11789,12 +12305,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetCameraPoseRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetCameraPoseRequestArgs.#ctor(IO.Swagger.Model.CameraParameters,System.String)">
+        <member name="M:IO.Swagger.Model.GetCameraPoseRequestArgs.#ctor(IO.Swagger.Model.CameraParameters,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetCameraPoseRequestArgs" /> class.
              </summary>
              <param name="cameraParameters">cameraParameters (required).</param>
              <param name="image">Base64 encoded image. (required).</param>
+             <param name="inverse">inverse (default to false).</param>
             </member>
         <member name="P:IO.Swagger.Model.GetCameraPoseRequestArgs.CameraParameters">
              <summary>
@@ -11806,6 +12323,11 @@
              Base64 encoded image.
              </summary>
              <value>Base64 encoded image.</value>
+            </member>
+        <member name="P:IO.Swagger.Model.GetCameraPoseRequestArgs.Inverse">
+             <summary>
+             Gets or Sets Inverse
+             </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetCameraPoseRequestArgs.ToString">
              <summary>
@@ -14672,6 +15194,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteUnlockRequestArgs">
+             <summary>
+             Args(object_id: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequestArgs" /> class.
+             </summary>
+             <param name="objectId">objectId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockRequestArgs.ObjectId">
+             <summary>
+             Gets or Sets ObjectId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.Equals(IO.Swagger.Model.WriteUnlockRequestArgs)">
+             <summary>
+             Returns true if WriteUnlockRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of WriteUnlockRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.InverseKinematicsRequestAllOf">
              <summary>
              InverseKinematicsRequestAllOf
@@ -15884,6 +16466,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RegisterUserRequestAllOf">
+             <summary>
+             RegisterUserRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.#ctor(IO.Swagger.Model.RegisterUserRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.Equals(IO.Swagger.Model.RegisterUserRequestAllOf)">
+             <summary>
+             Returns true if RegisterUserRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of RegisterUserRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.OrientationChangedAllOf">
              <summary>
              OrientationChangedAllOf
@@ -15938,6 +16580,90 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.OrientationChangedAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.RegisterUserResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.Equals(IO.Swagger.Model.RegisterUserResponse)">
+             <summary>
+             Returns true if RegisterUserResponse instances are equal
+             </summary>
+             <param name="input">Instance of RegisterUserResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -16090,6 +16816,78 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ActionStateAfterData.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.RegisterUserRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.user.RegisterUser.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.RegisterUserRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.Equals(IO.Swagger.Model.RegisterUserRequest)">
+             <summary>
+             Returns true if RegisterUserRequest instances are equal
+             </summary>
+             <param name="input">Instance of RegisterUserRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -17552,6 +18350,144 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.EstimatedPose">
+             <summary>
+             EstimatedPose(pose: arcor2.data.common.Pose, quality: float)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.EstimatedPose" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.#ctor(IO.Swagger.Model.Pose,System.Decimal)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.EstimatedPose" /> class.
+             </summary>
+             <param name="pose">pose (required).</param>
+             <param name="quality">quality (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.EstimatedPose.Pose">
+             <summary>
+             Gets or Sets Pose
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.EstimatedPose.Quality">
+             <summary>
+             Gets or Sets Quality
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.Equals(IO.Swagger.Model.EstimatedPose)">
+             <summary>
+             Returns true if EstimatedPose instances are equal
+             </summary>
+             <param name="input">Instance of EstimatedPose to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.EstimatedPose.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ReadLockRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.lock.ReadLock.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.ReadLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.Equals(IO.Swagger.Model.ReadLockRequest)">
+             <summary>
+             Returns true if ReadLockRequest instances are equal
+             </summary>
+             <param name="input">Instance of ReadLockRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ListScenesRequest">
              <summary>
              Request(id: int)
@@ -18321,6 +19257,78 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteUnlockRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.lock.WriteUnlock.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.WriteUnlockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.Equals(IO.Swagger.Model.WriteUnlockRequest)">
+             <summary>
+             Returns true if WriteUnlockRequest instances are equal
+             </summary>
+             <param name="input">Instance of WriteUnlockRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.GetActionsRequest">
              <summary>
              Request(id: int, args: arcor2.data.rpc.common.TypeArgs)
@@ -18857,6 +19865,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.OpenProject.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.WriteLockRequestAllOf">
+             <summary>
+             WriteLockRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.#ctor(IO.Swagger.Model.WriteLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.Equals(IO.Swagger.Model.WriteLockRequestAllOf)">
+             <summary>
+             Returns true if WriteLockRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of WriteLockRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -21544,6 +22612,61 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.SaveProjectRequestAllOf">
+             <summary>
+             SaveProjectRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.#ctor(System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveProjectRequestAllOf" /> class.
+             </summary>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.SaveProjectRequestAllOf.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.Equals(IO.Swagger.Model.SaveProjectRequestAllOf)">
+             <summary>
+             Returns true if SaveProjectRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of SaveProjectRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveProjectRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.CameraParameters">
              <summary>
              CameraParameters(fx: float, fy: float, cx: float, cy: float, dist_coefs: List[float])
@@ -23751,6 +24874,72 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteLockRequestArgs">
+             <summary>
+             Args(object_id: str, lock_tree: bool = False)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.#ctor(System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequestArgs" /> class.
+             </summary>
+             <param name="lockTree">lockTree (default to false).</param>
+             <param name="objectId">objectId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequestArgs.LockTree">
+             <summary>
+             Gets or Sets LockTree
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequestArgs.ObjectId">
+             <summary>
+             Gets or Sets ObjectId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.Equals(IO.Swagger.Model.WriteLockRequestArgs)">
+             <summary>
+             Returns true if WriteLockRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of WriteLockRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.Corner">
              <summary>
              Corner(x: float, y: float)
@@ -24726,7 +25915,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SaveProjectRequest">
              <summary>
-             Request(id: int)
+             Request(id: int, dry_run: bool = False)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveProjectRequest.#ctor">
@@ -24734,13 +25923,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveProjectRequest" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.SaveProjectRequest.#ctor(System.Int32,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.SaveProjectRequest.#ctor(System.Int32,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveProjectRequest" /> class.
              </summary>
              <param name="id">id (required).</param>
              <param name="request">request (required).</param>
-             <param name="data">data (default to "").</param>
+             <param name="dryRun">dryRun (default to false).</param>
             </member>
         <member name="P:IO.Swagger.Model.SaveProjectRequest.Id">
              <summary>
@@ -24752,9 +25941,9 @@
              Gets or Sets Request
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.SaveProjectRequest.Data">
+        <member name="P:IO.Swagger.Model.SaveProjectRequest.DryRun">
              <summary>
-             Gets or Sets Data
+             Gets or Sets DryRun
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveProjectRequest.ToString">
@@ -24874,61 +26063,6 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ResumePackageResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
-             <summary>
-             To validate all properties of the instance
-             </summary>
-             <param name="validationContext">Validation context</param>
-             <returns>Validation Result</returns>
-            </member>
-        <member name="T:IO.Swagger.Model.StartSceneRequestAllOf">
-             <summary>
-             StartSceneRequestAllOf
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.#ctor(System.Boolean)">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.StartSceneRequestAllOf" /> class.
-             </summary>
-             <param name="dryRun">dryRun (default to false).</param>
-            </member>
-        <member name="P:IO.Swagger.Model.StartSceneRequestAllOf.DryRun">
-             <summary>
-             Gets or Sets DryRun
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.ToString">
-             <summary>
-             Returns the string presentation of the object
-             </summary>
-             <returns>String presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.ToJson">
-             <summary>
-             Returns the JSON string presentation of the object
-             </summary>
-             <returns>JSON string presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.Equals(System.Object)">
-             <summary>
-             Returns true if objects are equal
-             </summary>
-             <param name="input">Object to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.Equals(IO.Swagger.Model.StartSceneRequestAllOf)">
-             <summary>
-             Returns true if StartSceneRequestAllOf instances are equal
-             </summary>
-             <param name="input">Instance of StartSceneRequestAllOf to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.GetHashCode">
-             <summary>
-             Gets the hash code
-             </summary>
-             <returns>Hash code</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.StartSceneRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -26782,6 +27916,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteUnlockRequestAllOf">
+             <summary>
+             WriteUnlockRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.#ctor(IO.Swagger.Model.WriteUnlockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteUnlockRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteUnlockRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.Equals(IO.Swagger.Model.WriteUnlockRequestAllOf)">
+             <summary>
+             Returns true if WriteUnlockRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of WriteUnlockRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteUnlockRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.RenameProjectRequestAllOf">
              <summary>
              RenameProjectRequestAllOf
@@ -27005,6 +28199,61 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ProjectConstantChanged.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.RegisterUserResponseAllOf">
+             <summary>
+             RegisterUserResponseAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RegisterUserResponseAllOf" /> class.
+             </summary>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RegisterUserResponseAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.Equals(IO.Swagger.Model.RegisterUserResponseAllOf)">
+             <summary>
+             Returns true if RegisterUserResponseAllOf instances are equal
+             </summary>
+             <param name="input">Instance of RegisterUserResponseAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RegisterUserResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -28201,6 +29450,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ProjectRobotJoints.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ReadLockRequestAllOf">
+             <summary>
+             ReadLockRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.#ctor(IO.Swagger.Model.ReadLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.Equals(IO.Swagger.Model.ReadLockRequestAllOf)">
+             <summary>
+             Returns true if ReadLockRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of ReadLockRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -33707,6 +35016,78 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteLockRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.lock.WriteLock.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.WriteLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.Equals(IO.Swagger.Model.WriteLockRequest)">
+             <summary>
+             Returns true if WriteLockRequest instances are equal
+             </summary>
+             <param name="input">Instance of WriteLockRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.DeleteProjectResponse">
              <summary>
              Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
@@ -36085,7 +37466,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetCameraPoseResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2.data.common.Pose, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_calibration_data.EstimatedPose, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetCameraPoseResponse.#ctor">
@@ -36093,7 +37474,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetCameraPoseResponse" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetCameraPoseResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,IO.Swagger.Model.Pose)">
+        <member name="M:IO.Swagger.Model.GetCameraPoseResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,IO.Swagger.Model.EstimatedPose)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetCameraPoseResponse" /> class.
              </summary>
@@ -38581,6 +39962,72 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.LockData">
+             <summary>
+             LockData(object_ids: List[str], owner: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.LockData" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.#ctor(System.Collections.Generic.List{System.String},System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.LockData" /> class.
+             </summary>
+             <param name="objectIds">objectIds (required).</param>
+             <param name="owner">owner (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.LockData.ObjectIds">
+             <summary>
+             Gets or Sets ObjectIds
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.LockData.Owner">
+             <summary>
+             Gets or Sets Owner
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.Equals(IO.Swagger.Model.LockData)">
+             <summary>
+             Returns true if LockData instances are equal
+             </summary>
+             <param name="input">Instance of LockData to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.LockData.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.MarkerCorners">
              <summary>
              MarkerCorners(marker_id: int, corners: List[arcor2_calibration_data.Corner])
@@ -38701,6 +40148,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ProjectChangedAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ReadUnlockRequestArgs">
+             <summary>
+             Args(object_id: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequestArgs" /> class.
+             </summary>
+             <param name="objectId">objectId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockRequestArgs.ObjectId">
+             <summary>
+             Gets or Sets ObjectId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.Equals(IO.Swagger.Model.ReadUnlockRequestArgs)">
+             <summary>
+             Returns true if ReadUnlockRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of ReadUnlockRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -39310,6 +40817,78 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadUnlockRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.lock.ReadUnlock.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.ReadUnlockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadUnlockRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadUnlockRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.Equals(IO.Swagger.Model.ReadUnlockRequest)">
+             <summary>
+             Returns true if ReadUnlockRequest instances are equal
+             </summary>
+             <param name="input">Instance of ReadUnlockRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadUnlockRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.DeletePackageRequestAllOf">
              <summary>
              DeletePackageRequestAllOf
@@ -39545,6 +41124,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ReadLockResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ReadLockResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ReadLockResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.Equals(IO.Swagger.Model.ReadLockResponse)">
+             <summary>
+             Returns true if ReadLockResponse instances are equal
+             </summary>
+             <param name="input">Instance of ReadLockResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ReadLockResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.MoveToPoseRequestAllOf">
              <summary>
              MoveToPoseRequestAllOf
@@ -39599,6 +41262,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.MoveToPoseRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ObjectsLockedAllOf">
+             <summary>
+             ObjectsLockedAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsLockedAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.#ctor(IO.Swagger.Model.LockData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsLockedAllOf" /> class.
+             </summary>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsLockedAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.Equals(IO.Swagger.Model.ObjectsLockedAllOf)">
+             <summary>
+             Returns true if ObjectsLockedAllOf instances are equal
+             </summary>
+             <param name="input">Instance of ObjectsLockedAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLockedAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -39966,6 +41689,109 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.ObjectsLocked">
+             <summary>
+             ObjectsLocked(data: arcor2_arserver_data.events.lock.LockData)
+             </summary>
+            </member>
+        <member name="T:IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum">
+             <summary>
+             Defines ChangeType
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum.Add">
+             <summary>
+             Enum Add for value: add
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum.Update">
+             <summary>
+             Enum Update for value: update
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum.Remove">
+             <summary>
+             Enum Remove for value: remove
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum.Updatebase">
+             <summary>
+             Enum Updatebase for value: update_base
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsLocked.ChangeType">
+             <summary>
+             Gets or Sets ChangeType
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsLocked" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.#ctor(System.Nullable{IO.Swagger.Model.ObjectsLocked.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.LockData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectsLocked" /> class.
+             </summary>
+             <param name="changeType">changeType.</param>
+             <param name="_event">_event (required).</param>
+             <param name="parentId">parentId.</param>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsLocked.Event">
+             <summary>
+             Gets or Sets Event
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsLocked.ParentId">
+             <summary>
+             Gets or Sets ParentId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectsLocked.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.Equals(IO.Swagger.Model.ObjectsLocked)">
+             <summary>
+             Returns true if ObjectsLocked instances are equal
+             </summary>
+             <param name="input">Instance of ObjectsLocked to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ObjectsLocked.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.StepRobotEefResponse">
              <summary>
              Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
@@ -40320,6 +42146,61 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.UpdateProjectDescriptionRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.SaveSceneRequestAllOf">
+             <summary>
+             SaveSceneRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.#ctor(System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveSceneRequestAllOf" /> class.
+             </summary>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.SaveSceneRequestAllOf.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.Equals(IO.Swagger.Model.SaveSceneRequestAllOf)">
+             <summary>
+             Returns true if SaveSceneRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of SaveSceneRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.SaveSceneRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -40802,6 +42683,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.WriteLockResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.WriteLockResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.WriteLockResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.Equals(IO.Swagger.Model.WriteLockResponse)">
+             <summary>
+             Returns true if WriteLockResponse instances are equal
+             </summary>
+             <param name="input">Instance of WriteLockResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.WriteLockResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.MarkersCornersResponseAllOf">
              <summary>
              MarkersCornersResponseAllOf
@@ -41257,7 +43222,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SaveSceneRequest">
              <summary>
-             Request(id: int)
+             Request(id: int, dry_run: bool = False)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveSceneRequest.#ctor">
@@ -41265,13 +43230,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveSceneRequest" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.SaveSceneRequest.#ctor(System.Int32,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.SaveSceneRequest.#ctor(System.Int32,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SaveSceneRequest" /> class.
              </summary>
              <param name="id">id (required).</param>
              <param name="request">request (required).</param>
-             <param name="data">data (default to "").</param>
+             <param name="dryRun">dryRun (default to false).</param>
             </member>
         <member name="P:IO.Swagger.Model.SaveSceneRequest.Id">
              <summary>
@@ -41283,9 +43248,9 @@
              Gets or Sets Request
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.SaveSceneRequest.Data">
+        <member name="P:IO.Swagger.Model.SaveSceneRequest.DryRun">
              <summary>
-             Gets or Sets Data
+             Gets or Sets DryRun
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveSceneRequest.ToString">

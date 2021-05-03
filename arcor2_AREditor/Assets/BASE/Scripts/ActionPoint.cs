@@ -41,7 +41,8 @@ namespace Base {
             }
         }
 
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
         }
 
@@ -592,9 +593,8 @@ namespace Base {
             apOrientation.OrientationId = orientation.Id;
         }
 
-        internal void ShowAimingMenu(string orientationId) {
-            OpenMenu();
-            actionPointMenu.OpenActionPointAimingMenu(orientationId);
+        internal void ShowOrientationDetailMenu(string orientationId) {
+            actionPointMenu.ActionPointAimingMenu.OrientationJointsDetailMenu.ShowMenu(this, GetOrientation(orientationId));
         }
 
         public abstract void HighlightAP(bool highlight);

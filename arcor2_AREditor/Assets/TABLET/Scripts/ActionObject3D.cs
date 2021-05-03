@@ -45,7 +45,7 @@ public class ActionObject3D : ActionObject {
     }
 
 
-    protected override void Update() {
+    protected override async void Update() {
 
         if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && manipulationStarted) {
             if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
@@ -60,6 +60,8 @@ public class ActionObject3D : ActionObject {
 
             } else {
                 manipulationStarted = false;
+                if (!await this.WriteUnlock())
+                    return;
             }
 
         }
@@ -388,10 +390,9 @@ public class ActionObject3D : ActionObject {
         outlineOnClick.UnHighlight();
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
+    public override void UpdateColor() {
         Color color;
-        if (enable)
+        if (Enabled && !IsLocked)
             color = new Color(0.89f, 0.83f, 0.44f);
         else
             color = Color.gray;
@@ -399,7 +400,9 @@ public class ActionObject3D : ActionObject {
         modelMaterial.color = color;
     }
 
-    public override void OpenMenu() {
+    public override async void OpenMenu() {
+        if (!await this.WriteLock(false))
+            return;
         tfGizmo.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -417,6 +420,8 @@ public class ActionObject3D : ActionObject {
     }
 
     public async override void StartManipulation() {
+        if (!await this.WriteLock(true))
+            return;
         tfGizmo.ClearTargets();
         try {
             await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
@@ -430,5 +435,16 @@ public class ActionObject3D : ActionObject {
 
     public override string GetObjectTypeName() {
         return "Action object";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername())
+            ActionObjectName.text = GetLockedText();
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        ActionObjectName.text = GetName();
     }
 }

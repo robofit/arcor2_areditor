@@ -23,7 +23,10 @@ public class RenameDialog : Dialog
     private UnityAction _updateVisibilityCallback;
     public Button CloseBtn;
 
-    public void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
+        if (!await objectToRename.WriteLock(false))
+            return;
+
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
         if (objectToRename == null)
@@ -45,19 +48,26 @@ public class RenameDialog : Dialog
         string name = (string) nameInput.GetValue();
 
         try {
-            selectedObject.Rename(name);
+            await selectedObject.Rename(name);
             SelectorMenu.Instance.ForceUpdateMenus();
             Close();
-        } catch (RequestFailedException e) {
+        } catch (RequestFailedException) {
             //notification already shown, nothing else to do
         }
     }
 
-    public override void Close() {
+    public override async void Close() {
         //LeftMenu.Instance.UpdateVisibility();
+        
+
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
+
+        if (selectedObject == null)
+            return;
+        await selectedObject.WriteUnlock();
+        selectedObject = null;
     }
 }

@@ -10,6 +10,7 @@ using IO.Swagger.Model;
 using UnityEditor;
 using UnityEngine.Events;
 
+
 namespace Base {
 
     public class WebsocketManager : Singleton<WebsocketManager> {
@@ -103,6 +104,13 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointOrientationHandler OnRobotMoveToActionPointOrientationEvent;
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
+
+
+        /// <summary>
+        /// event regarding calibration of camera or robot
+        /// </summary>
+        public event AREditorEventArgs.ProcessStateEventHandler OnProcessStateEvent;
+
 
         /// <summary>
         /// ARServer domain or IP address
@@ -228,23 +236,24 @@ namespace Base {
             if (key < 0) {
                 key = Interlocked.Increment(ref requestID);
             }
-            if (logInfo)
-                Debug.Log("Sending data to server: " + data);
+            
 
             if (storeResult) {
                 responses[key] = null;
             }
-            SendWebSocketMessage(data);
+            SendWebSocketMessage(data, logInfo);
         }
 
         /// <summary>
         /// Sends data to server
         /// </summary>
         /// <param name="data"></param>
-        private async void SendWebSocketMessage(string data) {
+        private async void SendWebSocketMessage(string data, bool logInfo) {
             try {
                 if (websocket.State == WebSocketState.Open) {
                     await websocket.SendText(data);
+                    if (logInfo)
+                        Debug.Log("Sent data to server: " + data);
                 }
             } catch (WebSocketException ex) {
                 Debug.Log("socketexception in sendwebsocketmessage: " + ex.Message);
@@ -268,8 +277,7 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if ((dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints")) &&
-                (dispatch?.response == null  || !dispatch.response.Contains("Remove")))
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -380,6 +388,18 @@ namespace Base {
                     case "ShowMainScreen":
                         HandleShowMainScreen(data);
                         break;
+                    case "ObjectsLocked":
+                        HandleObjectLocked(data);
+                        break;
+                    case "ObjectsUnlocked":
+                        HandleObjectUnlocked(data);
+                        break;
+                    case "ProcessState":
+                        HandleProcessState(data);
+                        break;
+                    default:
+                        Debug.LogError(data);
+                        break;
                 }
             }
 
@@ -429,7 +449,7 @@ namespace Base {
                         if (value != null) {
                             return value;
                         } else {
-                            Thread.Sleep(2);
+                            Thread.Sleep(10);
                         }
                     }
                 }
@@ -531,6 +551,8 @@ namespace Base {
             OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
             if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
+            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
+                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToJointsEvent(string data) {
@@ -552,6 +574,8 @@ namespace Base {
         }
 
         private void HandleStateBefore(string obj) {
+            if (!ProjectManager.Instance.Valid)
+                return;
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
                 Debug.LogWarning("Project not yet loaded, ignoring current action");
@@ -585,7 +609,6 @@ namespace Base {
         private void HandleActionStateAfter(string obj) {
             string puck_id;
             if (!ProjectManager.Instance.Valid) {
-                Debug.LogWarning("Project not yet loaded, ignoring current action");
                 return;
             }
             try {
@@ -619,6 +642,10 @@ namespace Base {
         /// </summary>
         /// <param name="data">Message from server</param>
         private void HandleActionResult(string data) {
+
+            if (!ProjectManager.Instance.Valid) {
+                return;
+            }
             IO.Swagger.Model.ActionResult actionResult = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionResult>(data);
             GameManager.Instance.HandleActionResult(actionResult.Data);
         }
@@ -955,6 +982,31 @@ namespace Base {
         }
 
         /// <summary>
+        /// Invoked when an object was unlocked
+        /// </summary>
+        /// <param name="data">Message from server</param>
+        private void HandleObjectUnlocked(string data) {
+            IO.Swagger.Model.ObjectsUnlocked objectsUnlockedEvent = JsonConvert.DeserializeObject<ObjectsUnlocked>(data);
+            foreach (string id in objectsUnlockedEvent.Data.ObjectIds)
+                LockingEventsCache.Instance.Add(new ObjectLockingEventArgs(id, false, objectsUnlockedEvent.Data.Owner));
+        }
+
+        /// <summary>
+        /// Invoked when an object was locked
+        /// </summary>
+        /// <param name="data">Message from server</param>
+        private void HandleObjectLocked(string data) {
+            ObjectsLocked objectsLockedEvent = JsonConvert.DeserializeObject<ObjectsLocked>(data);
+            foreach (string id in objectsLockedEvent.Data.ObjectIds)
+                LockingEventsCache.Instance.Add(new ObjectLockingEventArgs(id, true, objectsLockedEvent.Data.Owner));
+        }
+
+        private void HandleProcessState(string data) {
+            ProcessState processState = JsonConvert.DeserializeObject<ProcessState>(data);
+            OnProcessStateEvent?.Invoke(this, new ProcessStateEventArgs(processState.Data));
+        }
+
+        /// <summary>
         /// Loads object types from server. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns>List of object types</returns>
@@ -985,9 +1037,9 @@ namespace Base {
         /// Asks server to save currently openned scene
         /// </summary>
         /// <returns>Response form server</returns>
-        public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
+        public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene(bool dryRun = false) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene").ToJson(), id, true);
+            SendDataToServer(new IO.Swagger.Model.SaveSceneRequest(id: id, request: "SaveScene", dryRun: dryRun).ToJson(), id, true);
             return await WaitForResult<IO.Swagger.Model.SaveSceneResponse>(id);
         }
 
@@ -995,10 +1047,11 @@ namespace Base {
         /// Asks server to save currently openned project
         /// </summary>
         /// <returns>Response form server</returns>
-        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
+        public void SaveProject(UnityAction<string, string> callback, bool dryRun = false) {
             int id = Interlocked.Increment(ref requestID);
-            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject").ToJson(), id, true);
-            return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
+            responsesCallback.Add(id, Tuple.Create("SaveProject", callback));
+            SendDataToServer(new IO.Swagger.Model.SaveProjectRequest(id: id, request: "SaveProject", dryRun: dryRun).ToJson(), id, false);
+            //return await WaitForResult<IO.Swagger.Model.SaveProjectResponse>(id);
         }
 
         /// <summary>
@@ -2053,7 +2106,7 @@ namespace Base {
             IO.Swagger.Model.RemoveLogicItemRequest request = new IO.Swagger.Model.RemoveLogicItemRequest(r_id, "RemoveLogicItem", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RemoveLogicItemResponse response = await WaitForResult<IO.Swagger.Model.RemoveLogicItemResponse>(r_id);
-
+            
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -2336,9 +2389,9 @@ namespace Base {
             }
         }
 
-        public async Task<IO.Swagger.Model.Pose> GetCameraPose(CameraParameters cameraParams, string img, bool inverse = false) {
+        public async Task<IO.Swagger.Model.EstimatedPose> GetCameraPose(CameraParameters cameraParams, string img) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img, inverse: inverse);
+            IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img);
 
             IO.Swagger.Model.GetCameraPoseRequest request = new IO.Swagger.Model.GetCameraPoseRequest(r_id, "GetCameraPose", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -2361,6 +2414,53 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
             } else {
                 return response.Data;
+            }
+        }
+
+        public async Task WriteLock(string objId, bool lockTree) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.WriteLockRequestArgs args = new WriteLockRequestArgs(lockTree: lockTree, objectId: objId);
+
+            IO.Swagger.Model.WriteLockRequest request = new IO.Swagger.Model.WriteLockRequest(r_id, "WriteLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.WriteLockResponse response = await WaitForResult<IO.Swagger.Model.WriteLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            }
+        }
+
+        public async Task WriteUnlock(string objId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.WriteUnlockRequestArgs args = new WriteUnlockRequestArgs(objectId: objId);
+
+            IO.Swagger.Model.WriteUnlockRequest request = new IO.Swagger.Model.WriteUnlockRequest(r_id, "WriteUnlock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.WriteUnlockResponse response = await WaitForResult<IO.Swagger.Model.WriteUnlockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+            }
+        }
+        public async Task ReadLock(string objId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ReadLockRequestArgs args = new ReadLockRequestArgs(objectId: objId);
+
+            IO.Swagger.Model.ReadLockRequest request = new IO.Swagger.Model.ReadLockRequest(r_id, "ReadLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ReadLockResponse response = await WaitForResult<IO.Swagger.Model.ReadLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to lock object" } : response.Messages);
+            }
+        }
+
+        public async Task ReadUnlock(string objId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ReadUnlockRequestArgs args = new ReadUnlockRequestArgs(objectId: objId);
+
+            IO.Swagger.Model.ReadUnlockRequest request = new IO.Swagger.Model.ReadUnlockRequest(r_id, "ReadUnlock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ReadUnlockResponse response = await WaitForResult<IO.Swagger.Model.ReadUnlockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
             }
         }
 
@@ -2411,9 +2511,18 @@ namespace Base {
             }
         }
 
-
-
+        public async Task RegisterUser(string username) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RegisterUserRequestArgs args = new RegisterUserRequestArgs(username);
+            IO.Swagger.Model.RegisterUserRequest request = new RegisterUserRequest(r_id, "RegisterUser", args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RegisterUserResponse response = await WaitForResult<IO.Swagger.Model.RegisterUserResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to register user" } : response.Messages);
+            }
+        }
     }
-
-
 }
+
+
+

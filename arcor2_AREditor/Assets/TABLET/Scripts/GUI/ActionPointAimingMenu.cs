@@ -42,8 +42,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private AddJointsMenu AddJointsMenu;
 
-    [SerializeField]
-    private OrientationJointsDetailMenu OrientationJointsDetailMenu;
+    public OrientationJointsDetailMenu OrientationJointsDetailMenu;
 
     [SerializeField]
     private PositionManualEdit PositionManualEdit;
@@ -164,6 +163,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateMenu() {
+        if (CurrentActionPoint == null)
+            return;
         ActionPointName.text = CurrentActionPoint.Data.Name;
 
         CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
@@ -296,14 +297,18 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         ShowMenu(actionPoint);
 
         try {
+            
             OpenDetailMenu(actionPoint.GetOrientation(preselectedOrientation));
         } catch (KeyNotFoundException ex) {
             Notifications.Instance.ShowNotification("Unable to open detail menu", ex.Message);
         }
     }
 
-    public void Close() {
+    public async void Close(bool unlockAP = true) {
         SideMenu.Close();
+        if (unlockAP)
+            await CurrentActionPoint.WriteUnlock();
+
     }
 
     public void UpdateOrientationsDynamicList() {
@@ -436,11 +441,11 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
 
-    private void OpenDetailMenu(ProjectRobotJoints joint) {
+    private async void OpenDetailMenu(ProjectRobotJoints joint) {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, joint);
     }
 
-    private void OpenDetailMenu(NamedOrientation orientation) {
+    private async void OpenDetailMenu(NamedOrientation orientation) {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, orientation);
         APOrientation orientationArrow = CurrentActionPoint.GetOrientationVisual(orientation.Id);
         SceneManager.Instance.SetSelectedObject(orientationArrow.gameObject);
@@ -475,4 +480,6 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             Notifications.Instance.ShowNotification("Failed to add new orientation", ex.Message);
         }
     }
+
+
 }

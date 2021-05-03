@@ -40,6 +40,17 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             pivots.Add(item);
         }
         PivotList.PutData(pivots, "Middle", OnPivotChanged);
+
+        WebsocketManager.Instance.OnProcessStateEvent += OnRobotCalibrationEvent;
+    }
+
+    private void OnRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
+        GameManager.Instance.HideLoadingScreen();
+        if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Finished) {
+            Notifications.Instance.ShowToastMessage("Calibration finished successfuly");
+        } else if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Failed) {
+            Notifications.Instance.ShowNotification("Calibration failed", args.Data.Message);
+        }
     }
 
     public async override void UpdateMenu() {
@@ -130,6 +141,8 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnEEChanged);
         UpdateModelOnEE();
     }
+
+    
 
     private void OnEEChanged(string eeId) {
         UpdateModelOnEE();
@@ -360,8 +373,10 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
 
     public async Task CalibrateCamera() {
         try {
+            GameManager.Instance.ShowLoadingScreen("Calibrating camera...");
             await WebsocketManager.Instance.CalibrateCamera(CurrentObject.Data.Id);
         } catch (RequestFailedException ex) {
+            GameManager.Instance.HideLoadingScreen();
             Notifications.Instance.ShowNotification("Failed to calibrate camera", ex.Message);
             ConfirmationDialog.Close();
         }
