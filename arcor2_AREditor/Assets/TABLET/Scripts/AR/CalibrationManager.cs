@@ -613,7 +613,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public async Task GetMarkerPosition(CameraParameters cameraParams, string image) {
         try {            
             // receive cameraPose from server
-            IO.Swagger.Model.Pose markerPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:true);
+            IO.Swagger.Model.EstimatedPose markerEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:true);
+            IO.Swagger.Model.Pose markerPose = markerEstimatedPose.Pose;
 
             Vector3 markerPositionReceived = new Vector3((float) markerPose.Position.X, (float) markerPose.Position.Y, (float) markerPose.Position.Z);
             Quaternion markerRotationReceived = new Quaternion((float) markerPose.Orientation.X, (float) markerPose.Orientation.Y,
@@ -683,7 +684,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public async Task GetCameraPosition(CameraParameters cameraParams, string image) {
         try {
             // receive cameraPose from server
-            IO.Swagger.Model.Pose cameraPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:false);
+            IO.Swagger.Model.EstimatedPose cameraEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:false);
+            IO.Swagger.Model.Pose cameraPose = cameraEstimatedPose.Pose;
 
             Vector3 cameraPositionReceived = new Vector3((float) cameraPose.Position.X, (float) cameraPose.Position.Y, (float) cameraPose.Position.Z);
             Quaternion cameraRotationReceived = new Quaternion((float) cameraPose.Orientation.X, (float) cameraPose.Orientation.Y,
