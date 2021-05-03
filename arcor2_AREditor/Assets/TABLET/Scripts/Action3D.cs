@@ -125,13 +125,14 @@ public class Action3D : Base.Action {
     }
 
     public override void UpdateColor() {
-        //Input.UpdateColor();
-        //Output.UpdateColor();
-        foreach (Renderer renderer in outlineOnClick.Renderers)
+        Input.UpdateColor();
+        Output.UpdateColor();
+
+        foreach (Material material in Visual.materials)
             if (Enabled && !IsLocked)
-                renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
+                material.color = new Color(0.9f, 0.84f, 0.27f);
             else
-                renderer.material.color = Color.gray;
+                material.color = Color.gray;
     }
 
     public override string GetName() {
