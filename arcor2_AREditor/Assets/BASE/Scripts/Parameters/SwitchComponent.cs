@@ -78,4 +78,8 @@ public class SwitchComponent : MonoBehaviour, IParameter
     public string GetCurrentType() {
         return "boolean";
     }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }

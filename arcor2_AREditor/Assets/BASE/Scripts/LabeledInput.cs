@@ -105,4 +105,8 @@ public class LabeledInput : MonoBehaviour, IParameter
     public string GetCurrentType() {
         return ParameterType;
     }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }

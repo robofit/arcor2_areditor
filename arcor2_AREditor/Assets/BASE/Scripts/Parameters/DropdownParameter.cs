@@ -5,6 +5,7 @@ using Michsky.UI.ModernUIPack;
 using UnityEngine.UI;
 using System;
 using UnityEngine.Events;
+using IO.Swagger.Model;
 
 public class DropdownParameter : MonoBehaviour, IParameter {
 
@@ -13,6 +14,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     public GameObject LoadingObject;
     public bool Loading;
     public VerticalLayoutGroup LayoutGroupToBeDisabled;
+    public string Type;
 
     private TooltipContent tooltipContent;
     public GameObject Trigger, CanvasRoot;
@@ -66,8 +68,8 @@ public class DropdownParameter : MonoBehaviour, IParameter {
         }
     }
 
-    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, bool enableIcons = false) {
-        
+    public void Init(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string type, bool enableIcons = false) {
+        Type = type;
         Dropdown.listParent = canvasRoot.transform;
         CanvasRoot = canvasRoot;
         Dropdown.enableIcon = enableIcons;
@@ -160,6 +162,10 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     }
 
     public string GetCurrentType() {
-        throw new NotImplementedException();
+        return Type;
+    }
+
+    public Transform GetTransform() {
+        return transform;
     }
 }

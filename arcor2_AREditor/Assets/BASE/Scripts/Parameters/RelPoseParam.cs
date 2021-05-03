@@ -116,4 +116,8 @@ public class RelPoseParam : MonoBehaviour, IParameter {
     public string GetCurrentType() {
         return "rel_pose";
     }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }
