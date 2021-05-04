@@ -342,7 +342,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
         Action<object> action = AssignToParent;
-        await selectedActionPoint.WriteLock(true);
+        await selectedActionPoint.WriteLock(false);
         GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action,
             "Select new parent (action object)", ValidateParent, UntieActionPointParent);
     }
