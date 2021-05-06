@@ -127,6 +127,10 @@ public class Action3D : Base.Action {
     public override void UpdateColor() {
         Input.UpdateColor();
         Output.UpdateColor();
+        if (Visual == null) {
+            Debug.LogError("Visual is null, cannot update color of action puck");
+            return;
+        }
 
         foreach (Material material in Visual.materials)
             if (Enabled && !IsLocked)

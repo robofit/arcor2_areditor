@@ -4,14 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Base {
-    public class PuckOutput : InputOutput
-        {
+    public class PuckOutput : InputOutput {
         public override string GetObjectTypeName() {
             return "Action output";
         }
 
         public override void UpdateColor() {
-            List<Material> materials = new List<Material>(Action.OutputArrow.GetComponent<Renderer>().materials);
+            if (Action == null) {
+                Debug.LogError("Action is null");
+                return;
+            }
+
+            Renderer renderer = Action.OutputArrow.GetComponent<Renderer>();
+            List<Material> materials = new List<Material>(renderer.materials);
 
             if (Enabled && !IsLocked) {
                 foreach (var material in materials) {
@@ -28,5 +33,4 @@ namespace Base {
             }
         }
     }
-
 }

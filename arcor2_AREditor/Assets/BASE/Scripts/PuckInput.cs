@@ -10,7 +10,13 @@ namespace Base
         }
 
         public override void UpdateColor() {
-            List<Material> materials = new List<Material>(Action.InputArrow.GetComponent<Renderer>().materials);
+            if (Action == null) {
+                Debug.LogError("Action is null");
+                return;
+            }
+
+            Renderer renderer = Action.InputArrow.GetComponent<Renderer>();
+            List<Material> materials = new List<Material>(renderer.materials);
 
             if (Enabled && !IsLocked) {
                 foreach (var material in materials) {
