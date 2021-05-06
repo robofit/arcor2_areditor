@@ -39,7 +39,7 @@ public class RenameDialog : Dialog
         nameInput.SetLabel("Name", "New name");
         nameInput.SetType("string");
         CloseBtn.onClick.RemoveAllListeners();
-        CloseBtn.onClick.AddListener(() => Close());
+        //CloseBtn.onClick.AddListener(() => Close());
         if (cancelCallback != null)
             CloseBtn.onClick.AddListener(cancelCallback);
     }
