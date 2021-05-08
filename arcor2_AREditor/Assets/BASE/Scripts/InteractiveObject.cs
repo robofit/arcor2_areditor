@@ -4,11 +4,14 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using System.Collections;
 
 public abstract class InteractiveObject : Clickable {
 
     public bool IsLocked { get; protected set; }
     public string LockOwner { get; protected set; }
+
+    private bool shouldUnlock = true; //used for delayed unlocking
 
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
@@ -58,8 +61,10 @@ public abstract class InteractiveObject : Clickable {
     /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
     public virtual async Task<bool> WriteLock(bool lockTree) {
-        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) //object is already locked by this user
+        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
+            shouldUnlock = false;
             return true;
+        }
 
         try {
             await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
@@ -71,12 +76,21 @@ public abstract class InteractiveObject : Clickable {
     }
 
     /// <summary>
-    /// Unlocks object. If successful - returns true, if not - returns false.
+    /// Unlocks object. 
+    /// If successful - returns true, if not - returns false.
     /// </summary>
+    /// <param name="delay">if delay, object will be unlocked after 1s unless locked again</param>
     /// <returns></returns>
-    public virtual async Task<bool> WriteUnlock() {
+    public virtual async Task<bool> WriteUnlock(bool delay = true) {
+        if (delay) {
+            shouldUnlock = true;
+            StartCoroutine(DelayedUnlock());
+            return true;
+        }
+
         try {
             await WebsocketManager.Instance.WriteUnlock(GetId());
+            IsLocked = false;
             return true;
         } catch (RequestFailedException ex) {
             //Notifications.Instance.ShowNotification("Failed to unlock " + GetName(), ex.Message);
@@ -115,5 +129,10 @@ public abstract class InteractiveObject : Clickable {
             UpdateColor();
     }
 
+    private IEnumerator DelayedUnlock(int time = 1) {
+        yield return new WaitForSeconds(time);
+        if (shouldUnlock)
+            WriteUnlock(false);
+    }
 
 }

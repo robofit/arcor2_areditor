@@ -96,12 +96,14 @@ public class LeftMenuProject : LeftMenu
                 AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
                 RunButton.SetInteractivity(false, "No object is selected");
                 RunButton2.SetInteractivity(false, "No object is selected");
-            } else if (obj.IsLocked) {
+            } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton2.SetInteractivity(false, "Object is locked");
                 RunButton.SetInteractivity(false, "Object is locked");
                 RunButton2.SetInteractivity(false, "Object is locked");
+                AddActionButton.SetInteractivity(false, "Object is locked");
+                AddActionButton2.SetInteractivity(false, "Object is locked");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");

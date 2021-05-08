@@ -109,7 +109,7 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(false, "No object selected");
             CalibrationButton.SetInteractivity(false, "No object selected");
             OpenMenuButton.SetInteractivity(false, "No object selected");
-        } else if (obj.IsLocked) {
+        } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
             MoveButton.SetInteractivity(false, "Object is locked");
             MoveButton2.SetInteractivity(false, "Object is locked");
@@ -231,6 +231,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 selectedObject.OpenMenu();
             }
         } else {
+            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
             selectedObject.OpenMenu();
         }
 
@@ -411,6 +412,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
+        SetActiveSubmenu(currentSubmenuOpened);
         selectedObject.Remove();
     }
 
