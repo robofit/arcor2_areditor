@@ -1669,6 +1669,22 @@ namespace Base {
         }
 
         /// <summary>
+        /// Creates global action point with orientation and joints, using robot
+        /// </summary>
+        /// <param name="name">Human readable name of action point</param>
+        /// <param name="endEffectorId">ID of end effector of robot</param>
+        /// <param name="robotId">ID of robot</param>
+        /// <param name="dryRun"></param>
+        /// <param name="callback"></param>
+        public void AddActionPointUsingRobot(string name, string endEffectorId, string robotId, bool dryRun, UnityAction<string, string> callback) {
+            int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            AddApUsingRobotRequestArgs args = new AddApUsingRobotRequestArgs(endEffectorId: endEffectorId, name: name, robotId: robotId);
+            IO.Swagger.Model.AddApUsingRobotRequest request = new IO.Swagger.Model.AddApUsingRobotRequest(r_id, "AddApUsingRobot", args, dryRun);
+            SendDataToServer(request.ToJson(), r_id, false);
+        }
+
+        /// <summary>
         /// Asks server to update action point position.
         /// Throws RequestFailedException when request failed
         /// </summary>
