@@ -13,6 +13,8 @@ public abstract class InteractiveObject : Clickable {
 
     private bool shouldUnlock = true; //used for delayed unlocking
 
+    protected bool lockedTree = false; //when object is locked, is also locked the whole tree?
+
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
     }
@@ -62,12 +64,22 @@ public abstract class InteractiveObject : Clickable {
     /// <returns></returns>
     public virtual async Task<bool> WriteLock(bool lockTree) {
         if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
-            shouldUnlock = false;
-            return true;
+            if (lockedTree != lockTree) {
+                try {
+                    shouldUnlock = false;
+                    await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT);
+                    return true;
+                } catch (RequestFailedException e) {
+                    //try lock as usual
+                }
+            } else { //same type of lock
+                return true;
+            }
         }
 
         try {
             await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
+            lockedTree = lockTree;
             return true;
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
@@ -95,6 +107,16 @@ public abstract class InteractiveObject : Clickable {
         } catch (RequestFailedException ex) {
             //Notifications.Instance.ShowNotification("Failed to unlock " + GetName(), ex.Message);
             Debug.LogError(ex.Message);
+            return false;
+        }
+    }
+
+    public virtual async Task<bool> UpdateLock(IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum newType) {
+        try {
+            await WebsocketManager.Instance.UpdateLock(GetId(), newType);
+            return true;
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
             return false;
         }
     }
@@ -129,7 +151,7 @@ public abstract class InteractiveObject : Clickable {
             UpdateColor();
     }
 
-    private IEnumerator DelayedUnlock(int time = 1) {
+    private IEnumerator DelayedUnlock(float time = 0.1f) {
         yield return new WaitForSeconds(time);
         if (shouldUnlock)
             WriteUnlock(false);

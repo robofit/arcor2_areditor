@@ -348,7 +348,7 @@ public abstract class LeftMenu : MonoBehaviour {
             "Select new parent (action object)", ValidateParent, UntieActionPointParent);
     }
 
-    public void MoveClick() {
+    public async void MoveClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
@@ -378,7 +378,12 @@ public abstract class LeftMenu : MonoBehaviour {
             if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
                 selectedObject.StartManipulation();
             } else {
-                TransformMenu.Instance.Show(selectedObject);
+                if (await selectedObject.WriteLock(true)) {
+                    TransformMenu.Instance.Show(selectedObject);
+                } else {
+                    SetActiveSubmenu(currentSubmenuOpened);
+                    return;
+                }
             }
             SelectorMenu.Instance.gameObject.SetActive(false);
         }

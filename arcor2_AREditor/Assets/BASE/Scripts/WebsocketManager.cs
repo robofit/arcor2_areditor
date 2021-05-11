@@ -1676,12 +1676,10 @@ namespace Base {
         /// <param name="position">New position of action point.</param>
         /// <returns></returns>
         public async Task UpdateActionPointPosition(string id, IO.Swagger.Model.Position position, bool dryRun = false) {
-            if (dryRun)
-                return;
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateActionPointPositionRequestArgs args = new IO.Swagger.Model.UpdateActionPointPositionRequestArgs(actionPointId: id, newPosition: position);
-            IO.Swagger.Model.UpdateActionPointPositionRequest request = new IO.Swagger.Model.UpdateActionPointPositionRequest(r_id, "UpdateActionPointPosition", args);
-            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateActionPointPositionRequest request = new IO.Swagger.Model.UpdateActionPointPositionRequest(r_id, "UpdateActionPointPosition", args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), key: r_id, true);
             IO.Swagger.Model.UpdateActionPointPositionResponse response = await WaitForResult<IO.Swagger.Model.UpdateActionPointPositionResponse>(r_id);
 
             if (response == null || !response.Result)
@@ -2480,6 +2478,18 @@ namespace Base {
             IO.Swagger.Model.ReadUnlockResponse response = await WaitForResult<IO.Swagger.Model.ReadUnlockResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to unlock object" } : response.Messages);
+            }
+        }
+
+        public async Task UpdateLock(string objId, UpdateLockRequestArgs.NewTypeEnum newType) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateLockRequestArgs args = new UpdateLockRequestArgs(objectId: objId, newType: newType);
+
+            IO.Swagger.Model.UpdateLockRequest request = new UpdateLockRequest(r_id, "UpdateLock", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateLockResponse response = await WaitForResult<IO.Swagger.Model.UpdateLockResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update lock" } : response.Messages);
             }
         }
 

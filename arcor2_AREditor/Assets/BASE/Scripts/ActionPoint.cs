@@ -29,18 +29,6 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
-        private bool locked;
-
-        public bool Locked {
-            get => locked;
-
-            set {
-                Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
-                locked = value;
-                PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", value);
-            }
-        }
-
         protected override void Start() {
             base.Start();
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
@@ -70,7 +58,6 @@ namespace Base {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
-            locked = PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
@@ -606,10 +593,18 @@ namespace Base {
         }
 
         public async override Task<RequestResult> Movable() {
-            if (Locked)
-                return new RequestResult(false, "Ap is locked");
-            else
-                return new RequestResult(true);
+
+            if (IsLocked && LockOwner != LandingScreen.Instance.GetUsername())
+                return new RequestResult(false, "Action point is locked");
+            else {
+                try {
+                    await WebsocketManager.Instance.UpdateActionPointPosition(GetId(), new Position(), true);
+                    return new RequestResult(true);
+                } catch (RequestFailedException e) {
+                    return new RequestResult(false, e.Message);
+                }
+
+            }
         }
 
         public override string GetId() {

@@ -282,9 +282,6 @@ public class TransformMenu : Singleton<TransformMenu> {
     
 
     public async void Show(InteractiveObject interactiveObject) {
-        if (!await interactiveObject.WriteLock(true))
-            return;
-
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
