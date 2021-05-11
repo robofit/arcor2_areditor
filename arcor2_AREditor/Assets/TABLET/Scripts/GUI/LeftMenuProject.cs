@@ -13,7 +13,7 @@ public class LeftMenuProject : LeftMenu
 {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
-        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton;
+        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton, AddActionPointButton2;
 
     public GameObject ActionPicker;
     public InputDialog InputDialog;
@@ -26,8 +26,11 @@ public class LeftMenuProject : LeftMenu
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
 
-    protected override void Awake() {
-        base.Awake();
+    protected override void Start() {
+#if !AR_ON
+        AddActionPointButton.SetInteractivity(true);
+        AddActionPointButton2.SetInteractivity(true);
+#endif
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
 
@@ -36,6 +39,11 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+    }
+
+    protected override void Awake() {
+        base.Awake();
+       
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -88,6 +96,19 @@ public class LeftMenuProject : LeftMenu
             }
         
             await base.UpdateBtns(obj);
+#if UNITY_ANDROID && AR_ON
+            AddActionPointButton.SetInteractivity(CalibrationManager.Instance.Calibrated && 
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
+                "AR not calibrated");
+            AddActionPointButton2.SetInteractivity(CalibrationManager.Instance.Calibrated &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
+                "AR not calibrated");
+#endif
+
             if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton.SetInteractivity(false, "No action point is selected");

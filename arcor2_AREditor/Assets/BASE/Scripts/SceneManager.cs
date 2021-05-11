@@ -170,12 +170,6 @@ namespace Base {
             
             UpdateActionObjects(scene, customCollisionModels);
             sceneChanged = scene.Modified == DateTime.MinValue;
-            try {
-                await WebsocketManager.Instance.StopScene(true);
-                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Started));
-            } catch (RequestFailedException) {
-                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
-            }
 
             (bool successClose, _) = await GameManager.Instance.CloseScene(false, true);
             SceneChanged = !successClose;
@@ -316,17 +310,7 @@ namespace Base {
                     }
                     break;
                 case SceneStateData.StateEnum.Started:
-                    SceneStarted = true;
-                    if (RobotsEEVisible)
-                        OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
-                    RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-                    foreach (IRobot robot in GetRobots()) {
-                        robot.SetGrey(false);
-                    }
-                    string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
-                    string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
-                    await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
-                    GameManager.Instance.HideLoadingScreen();
+                    StartCoroutine(WaitUntillSceneValid(OnSceneStarted));
                     break;
                 case SceneStateData.StateEnum.Stopped:
                     SceneStarted = false;
@@ -337,6 +321,25 @@ namespace Base {
             }
             // needs to be rethrown to ensure all subscribers has updated data
             OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        private IEnumerator WaitUntillSceneValid(UnityEngine.Events.UnityAction callback) {
+            yield return new WaitUntil(() => Valid);
+            callback();
+        }
+
+        private async void OnSceneStarted() {
+            SceneStarted = true;
+            if (RobotsEEVisible)
+                OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+            RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            foreach (IRobot robot in GetRobots()) {
+                robot.SetGrey(false);
+            }
+            string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+            string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
+            await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
+            GameManager.Instance.HideLoadingScreen();
         }
 
         public async Task SelectRobotAndEE(string robotId, string eeId) {
