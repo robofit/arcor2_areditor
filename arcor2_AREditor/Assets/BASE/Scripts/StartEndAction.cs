@@ -56,7 +56,7 @@ public abstract class StartEndAction : Action3D {
         outlineOnClick.GizmoHighlight();
     }
 
-    public override async Task<bool> WriteUnlock(bool delay = true) {
+    public override async Task<bool> WriteUnlock() {
         return true;
     }
 
