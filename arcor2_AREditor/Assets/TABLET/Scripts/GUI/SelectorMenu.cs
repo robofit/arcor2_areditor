@@ -118,20 +118,20 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         
     }
-
+    /*
     public void ForceUpdateMenus() {
         UpdateAlphabetMenu();
         if (ContentNoPose.activeSelf)
             UpdateNoPoseMenu();
-    }
+    }*/
 
     private void OnProjectChanged(object sender, System.EventArgs e) {
-        UpdateAlphabetMenu();
+        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
     private void OnSceneChanged(object sender, System.EventArgs e) {
-        UpdateAlphabetMenu();
+        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
@@ -293,6 +293,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }        
     }
 
+    public void UpdateSelectorItem(InteractiveObject interactiveObject) {
+        if (selectorItems.TryGetValue(interactiveObject.GetId(), out SelectorItem selectorItem)) {
+            selectorItem.Label.text = interactiveObject.GetName();
+        }
+    }
+
     public void DeselectObject(bool manually = true) {
         if (manually)
             manuallySelected = false;
@@ -311,7 +317,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         return selectorItem;
     }
 
-
+    /*
     public void UpdateAlphabetMenu() {
         //ClearMenu(selectorItemsAlphabetMenu);
         List<string> idsToRemove = selectorItems.Keys.ToList();
@@ -347,7 +353,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         // force update of left menu icons
         SelectedObjectChanged(lastSelectedItem, true);
         
-    }
+    }*/
 
 
     public void UpdateNoPoseMenu() {
