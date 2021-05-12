@@ -39,7 +39,7 @@ public class RenameDialog : Dialog
         nameInput.SetLabel("Name", "New name");
         nameInput.SetType("string");
         CloseBtn.onClick.RemoveAllListeners();
-        //CloseBtn.onClick.AddListener(() => Close());
+        CloseBtn.onClick.AddListener(() => Cancel());
         if (cancelCallback != null)
             CloseBtn.onClick.AddListener(cancelCallback);
     }
@@ -58,16 +58,20 @@ public class RenameDialog : Dialog
 
     public override async void Close() {
         //LeftMenu.Instance.UpdateVisibility();
-        
 
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
 
+        selectedObject = null;
+    }
+
+    public async void Cancel() {
         if (selectedObject == null)
             return;
+
         await selectedObject.WriteUnlock();
-        selectedObject = null;
+        Close();
     }
 }
