@@ -157,12 +157,12 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    protected override void DeactivateAllSubmenus() {
-        base.DeactivateAllSubmenus();
+    protected override void DeactivateAllSubmenus(bool unlock = true) {
+        base.DeactivateAllSubmenus(unlock);
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
-        ActionPickerMenu.Instance.Hide();
+        ActionPickerMenu.Instance.Hide(unlock);
         ActionParametersMenu.Instance.Hide();
         //ActionPicker.SetActive(false);
     }
@@ -305,7 +305,7 @@ public class LeftMenuProject : LeftMenu
         }
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (clickedButton.GetComponent<Image>().enabled) {
@@ -327,6 +327,7 @@ public class LeftMenuProject : LeftMenu
 
 
     public void AddActionPointClick() {
+        SetActiveSubmenu(currentSubmenuOpened);
         CreateGlobalActionPoint(ProjectManager.Instance.GetFreeAPName("global"));
     }
 

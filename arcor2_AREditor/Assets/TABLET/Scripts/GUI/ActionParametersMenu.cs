@@ -31,7 +31,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         return true;
     }
 
-    public async void Hide() {
+    public async void Hide(bool unlock = true) {
         foreach (RectTransform o in Content.GetComponentsInChildren<RectTransform>()) {
             if (o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
@@ -40,7 +40,8 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         if (currentAction != null) {
             currentAction.CloseMenu();
-            await currentAction.WriteUnlock();
+            if(unlock)
+                await currentAction.WriteUnlock();
             currentAction = null;
         }
     }

@@ -66,8 +66,8 @@ public abstract class InteractiveObject : Clickable {
         if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
             if (lockedTree != lockTree) {
                 try {
-                    shouldUnlock = false;
                     await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT);
+                    lockedTree = lockTree;
                     return true;
                 } catch (RequestFailedException e) {
                     //try lock as usual
@@ -91,15 +91,8 @@ public abstract class InteractiveObject : Clickable {
     /// Unlocks object. 
     /// If successful - returns true, if not - returns false.
     /// </summary>
-    /// <param name="delay">if delay, object will be unlocked after 1s unless locked again</param>
     /// <returns></returns>
-    public virtual async Task<bool> WriteUnlock(bool delay = true) {
-        if (delay) {
-            shouldUnlock = true;
-            StartCoroutine(DelayedUnlock());
-            return true;
-        }
-
+    public virtual async Task<bool> WriteUnlock() {
         try {
             await WebsocketManager.Instance.WriteUnlock(GetId());
             IsLocked = false;
@@ -129,8 +122,6 @@ public abstract class InteractiveObject : Clickable {
         if (!args.ObjectIds.Contains(GetId()))
             return;
 
-        //Debug.LogError("locking event " + GetName());
-
         if (args.Locked) {
             OnObjectLocked(args.Owner);
         } else {
@@ -150,11 +141,4 @@ public abstract class InteractiveObject : Clickable {
         if(owner != LandingScreen.Instance.GetUsername())
             UpdateColor();
     }
-
-    private IEnumerator DelayedUnlock(float time = 0.1f) {
-        yield return new WaitForSeconds(time);
-        if (shouldUnlock)
-            WriteUnlock(false);
-    }
-
 }

@@ -217,7 +217,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
         if (selectedObject is Action3D action) {
             if (!SelectorMenu.Instance.gameObject.activeSelf && !OpenMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-                SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+                SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
             }
 
             if (OpenMenuButton.GetComponent<Image>().enabled) {
@@ -231,7 +231,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 selectedObject.OpenMenu();
             }
         } else {
-            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
             selectedObject.OpenMenu();
         }
 
@@ -338,7 +338,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
@@ -362,7 +362,7 @@ public abstract class LeftMenu : MonoBehaviour {
             clickedButton = MoveButton.Button;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
@@ -400,7 +400,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf) { //other menu/dialog opened
-            SetActiveSubmenu(LeftMenuSelection.Utility); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(LeftMenuSelection.Utility, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         UpdateVisibility(false, true);
@@ -445,8 +445,8 @@ public abstract class LeftMenu : MonoBehaviour {
 
     #endregion
 
-    public void SetActiveSubmenu(LeftMenuSelection which, bool active = true) {
-        DeactivateAllSubmenus();
+    public void SetActiveSubmenu(LeftMenuSelection which, bool active = true, bool unlock = true) {
+        DeactivateAllSubmenus(unlock);
         currentSubmenuOpened = which;
         if (!active)
             return;
@@ -478,14 +478,18 @@ public abstract class LeftMenu : MonoBehaviour {
         }
     }
 
-    protected virtual void DeactivateAllSubmenus() {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="unlock">Unlock objects?</param>
+    protected virtual void DeactivateAllSubmenus(bool unlock = true) {
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (RenameDialog.isActiveAndEnabled)
             RenameDialog.Close();
-        TransformMenu.Instance.Hide();
+        TransformMenu.Instance.Hide(unlock);
         RobotSteppingMenu.Instance.Hide();
 
-        ActionParametersMenu.Instance.Hide();
+        ActionParametersMenu.Instance.Hide(unlock);
 
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);
