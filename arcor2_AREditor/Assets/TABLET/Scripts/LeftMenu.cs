@@ -305,7 +305,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
 
 
-    public void RobotSteppingButtonClick() {
+    public async void RobotSteppingButtonClick() {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
             return;
@@ -317,14 +317,19 @@ public abstract class LeftMenu : MonoBehaviour {
             SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
-        if (RobotSteppingButton.GetComponent<Image>().enabled) {
+        if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
             RobotSteppingButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSteppingMenu.Instance.Hide();
-        } else {
-            RobotSteppingButton.GetComponent<Image>().enabled = true;
-            SelectorMenu.Instance.gameObject.SetActive(false);
-            RobotSteppingMenu.Instance.Show();
+        } else { //open menu
+            try {
+                await WebsocketManager.Instance.WriteLock(SceneManager.Instance.SelectedRobot.GetId(), false);
+                RobotSteppingButton.GetComponent<Image>().enabled = true;
+                SelectorMenu.Instance.gameObject.SetActive(false);
+                RobotSteppingMenu.Instance.Show();
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to lock " + SceneManager.Instance.SelectedRobot.GetName(), e.Message);
+            }
         }
     }
 

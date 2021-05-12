@@ -65,13 +65,10 @@ public abstract class InteractiveObject : Clickable {
     public virtual async Task<bool> WriteLock(bool lockTree) {
         if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
             if (lockedTree != lockTree) {
-                try {
-                    await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT);
+                if (await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT)) {
                     lockedTree = lockTree;
                     return true;
-                } catch (RequestFailedException e) {
-                    //try lock as usual
-                }
+                } // if updateLock failed, try to lock normally
             } else { //same type of lock
                 return true;
             }
@@ -109,7 +106,8 @@ public abstract class InteractiveObject : Clickable {
             await WebsocketManager.Instance.UpdateLock(GetId(), newType);
             return true;
         } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
+            //Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
+            Debug.LogError("failed to update lock");
             return false;
         }
     }
