@@ -21,7 +21,7 @@ public class RenameDialog : Dialog
     private InteractiveObject selectedObject;
 
     private UnityAction _updateVisibilityCallback;
-    public Button CloseBtn;
+    public ButtonWithTooltip CloseBtn, ConfirmButton;
 
     public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
         if (!await objectToRename.WriteLock(false))
@@ -34,14 +34,19 @@ public class RenameDialog : Dialog
 
         Title.text = "Rename " + selectedObject.GetObjectTypeName();
 
-
         nameInput.SetValue(objectToRename.GetName());
         nameInput.SetLabel("Name", "New name");
         nameInput.SetType("string");
-        CloseBtn.onClick.RemoveAllListeners();
-        CloseBtn.onClick.AddListener(() => Cancel());
+        CloseBtn.Button.onClick.RemoveAllListeners();
+        CloseBtn.Button.onClick.AddListener(() => Cancel());
         if (cancelCallback != null)
-            CloseBtn.onClick.AddListener(cancelCallback);
+            CloseBtn.Button.onClick.AddListener(cancelCallback);
+    }
+
+    public void ValidateInput() {
+        bool valid = ((string) nameInput.GetValue()) != selectedObject.GetName();
+
+        ConfirmButton.SetInteractivity(valid, "Name has not been changed");
     }
    
     public override async void Confirm() {

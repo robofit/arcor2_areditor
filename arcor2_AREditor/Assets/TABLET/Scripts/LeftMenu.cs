@@ -35,6 +35,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        SceneManager.Instance.OnRobotSelected += OnRobotSelected;
     }
 
     protected virtual void Awake() {
@@ -44,6 +45,10 @@ public abstract class LeftMenu : MonoBehaviour {
 
     private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         UpdateBuildAndSaveBtns();
+    }
+
+    private void OnRobotSelected(object sender, EventArgs e) {
+        UpdateBtns(selectedObject);
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -99,7 +104,10 @@ public abstract class LeftMenu : MonoBehaviour {
     protected async virtual Task UpdateBtns(InteractiveObject obj) {
         if (CanvasGroup.alpha == 0)
             return;
-        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
+        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
+            SceneManager.Instance.IsRobotAndEESelected() &&
+            !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
+            SceneManager.Instance.SceneStarted ? "Robot not selected or locked" : "Scene offline");
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         if (requestingObject || obj == null) {
             SelectedObjectText.text = "";
@@ -292,13 +300,18 @@ public abstract class LeftMenu : MonoBehaviour {
             Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
             return;
         }
+
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSelectorButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(currentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
         if (RobotSelectorButton.GetComponent<Image>().enabled) {
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSelector.Close();
         } else {
-            UpdateVisibility(false, true);
             if (await RobotSelector.Open(UpdateVisibility)) {
                 SelectorMenu.Instance.gameObject.SetActive(false);
+                UpdateVisibility(false, true);
             }
         }
     }
@@ -314,7 +327,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         }
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(currentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
@@ -322,13 +335,11 @@ public abstract class LeftMenu : MonoBehaviour {
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSteppingMenu.Instance.Hide();
         } else { //open menu
-            try {
-                await WebsocketManager.Instance.WriteLock(SceneManager.Instance.SelectedRobot.GetId(), false);
+            ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
+            if (await robot.WriteLock(false)) {
                 RobotSteppingButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
                 RobotSteppingMenu.Instance.Show();
-            } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to lock " + SceneManager.Instance.SelectedRobot.GetName(), e.Message);
             }
         }
     }

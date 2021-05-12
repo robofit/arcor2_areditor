@@ -11,9 +11,10 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLocked { get; protected set; }
     public string LockOwner { get; protected set; }
 
-    private bool shouldUnlock = true; //used for delayed unlocking
-
     protected bool lockedTree = false; //when object is locked, is also locked the whole tree?
+
+    public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
+    public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
@@ -63,7 +64,7 @@ public abstract class InteractiveObject : Clickable {
     /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
     public virtual async Task<bool> WriteLock(bool lockTree) {
-        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
+        if (IsLockedByMe) { //object is already locked by this user
             if (lockedTree != lockTree) {
                 if (await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT)) {
                     lockedTree = lockTree;
@@ -90,6 +91,11 @@ public abstract class InteractiveObject : Clickable {
     /// </summary>
     /// <returns></returns>
     public virtual async Task<bool> WriteUnlock() {
+        if (!IsLocked) {
+            Debug.LogError("Trying to unlock unlocked object: " + GetId());
+            return true;
+        }
+
         try {
             await WebsocketManager.Instance.WriteUnlock(GetId());
             IsLocked = false;

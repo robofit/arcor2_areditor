@@ -287,9 +287,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         };
     }
 
-    internal void Hide() {
+    internal void Hide(bool unlock = true) {
         if (SceneManager.Instance.IsRobotAndEESelected()) {
-            WebsocketManager.Instance.WriteUnlock(SceneManager.Instance.SelectedRobot.GetId());
+            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).WriteUnlock();
         }
         if (gizmo != null)
             Destroy(gizmo);
