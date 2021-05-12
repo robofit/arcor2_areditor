@@ -49,6 +49,12 @@ public abstract class InteractiveObject : Clickable {
         foreach (Collider collider in Colliders) {
             collider.enabled = enable;
         }
+
+
+        if (enable)
+            SelectorMenu.Instance.CreateSelectorItem(this);
+        else
+            SelectorMenu.Instance.DestroySelectorItem(GetId());
     }
     
     public List<Collider> Colliders = new List<Collider>();
@@ -127,7 +133,8 @@ public abstract class InteractiveObject : Clickable {
         } else {
             OnObjectUnlocked();
         }
-        SelectorMenu.Instance.ForceUpdateMenus();
+
+        //SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public virtual void OnObjectUnlocked() {

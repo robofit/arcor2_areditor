@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Base;
 using UnityEngine;
 
 public class EndAction : StartEndAction
 {
-   
+    
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string keySuffix) {
         IO.Swagger.Model.Action prAction = new IO.Swagger.Model.Action(
@@ -17,6 +19,8 @@ public class EndAction : StartEndAction
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.1f, 0));
     }
 
+    
+
     public override void UpdateColor()
     {
         if (Enabled) {
@@ -26,5 +30,9 @@ public class EndAction : StartEndAction
             foreach (Renderer renderer in outlineOnClick.Renderers)
                 renderer.material.color = Color.grey;
         }
+    }
+
+    public override string GetObjectTypeName() {
+        return "End action";
     }
 }

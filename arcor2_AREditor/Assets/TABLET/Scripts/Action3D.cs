@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class Action3D : Base.Action {
+public class Action3D : Base.Action, ISubItem {
     public Renderer Visual;
 
     private Color32 colorDefault = new Color32(229, 215, 68, 255);
@@ -214,5 +214,9 @@ public class Action3D : Base.Action {
         NameText.text = GetName();
         Input.OnObjectUnlocked();
         Output.OnObjectUnlocked();
+    }
+
+    public InteractiveObject GetParentObject() {
+        return ActionPoint;
     }
 }

@@ -7,7 +7,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class APOrientation : InteractiveObject {
+public class APOrientation : InteractiveObject, ISubItem {
     public Base.ActionPoint ActionPoint;
     public string OrientationId;
 
@@ -123,4 +123,7 @@ public class APOrientation : InteractiveObject {
         //TODO??
     }
 
+    public InteractiveObject GetParentObject() {
+        return ActionPoint;
+    }
 }

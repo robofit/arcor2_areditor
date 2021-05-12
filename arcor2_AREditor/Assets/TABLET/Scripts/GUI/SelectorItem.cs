@@ -5,7 +5,6 @@ using IO.Swagger.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Button))]
 public class SelectorItem : MonoBehaviour
 {
     public TMPro.TMP_Text Label;
@@ -18,8 +17,12 @@ public class SelectorItem : MonoBehaviour
     private bool selected;
     public Sprite ActionPoint, ActionObject, Robot, RobotEE, Orientation, ActionInput, ActionOutput, Action, Others;
 
+    public Button CollapsableButton;
+    public GameObject CollapsableButtonIcon;
+    public bool Collapsable, Collapsed;
+    public GameObject SublistContent;
+
     private void Awake() {
-        Button = GetComponent<Button>();
     }
 
 
@@ -84,6 +87,20 @@ public class SelectorItem : MonoBehaviour
         return selected;
     }
 
-
+    public void CollapseBtnCb() {
+        Collapsed = !Collapsed;
+        //ActionPoint3D actionPoint = (ActionPoint3D) InteractiveObject;
+        if (Collapsed) {
+            CollapsableButtonIcon.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
+            //actionPoint.ActionsCollapsed = true;
+            //actionPoint.UpdatePositionsOfPucks();
+            SublistContent.SetActive(false);
+        } else {
+            CollapsableButtonIcon.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
+            //actionPoint.ActionsCollapsed = false;
+            //actionPoint.UpdatePositionsOfPucks();
+            SublistContent.SetActive(true);
+        }
+    }
 
 }

@@ -11,7 +11,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public abstract class InputOutput : InteractiveObject {
+    public abstract class InputOutput : InteractiveObject, ISubItem {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -337,15 +337,12 @@ namespace Base {
 
         public override string GetName() {
             if (typeof(PuckOutput) == GetType()) {
-                return "Output of " + Action.Data.Name;
+                return "Output";
             } else {
-                return "Input of " + Action.Data.Name;
+                return "Input";
             }
         }
 
-        public override string GetId() {
-            return GetName();
-        }
 
         public override void OpenMenu() {
             throw new NotImplementedException();
@@ -373,6 +370,9 @@ namespace Base {
 
         public override Task Rename(string name) {
             throw new NotImplementedException();
+        }
+        public InteractiveObject GetParentObject() {
+            return Action;
         }
     }
 

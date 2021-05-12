@@ -9,6 +9,10 @@ namespace Base {
             return "Action output";
         }
 
+
+        public override string GetId() {
+            return Action.GetId() + "output";
+        }
         public override void UpdateColor() {
             if (Action == null) {
                 Debug.LogError("Action is null");
