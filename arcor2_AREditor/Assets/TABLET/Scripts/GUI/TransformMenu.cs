@@ -334,10 +334,12 @@ public class TransformMenu : Singleton<TransformMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
-    public async void Hide() {
+    public async void Hide(bool unlock = true) {
         if (InteractiveObject == null)
             return;
-        await InteractiveObject.WriteUnlock();
+        if(unlock)
+            await InteractiveObject.WriteUnlock();
+
         InteractiveObject = null;
         Destroy(model);
         model = null;

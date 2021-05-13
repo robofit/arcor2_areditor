@@ -11,9 +11,10 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLocked { get; protected set; }
     public string LockOwner { get; protected set; }
 
-    private bool shouldUnlock = true; //used for delayed unlocking
-
     protected bool lockedTree = false; //when object is locked, is also locked the whole tree?
+
+    public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
+    public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
@@ -63,15 +64,12 @@ public abstract class InteractiveObject : Clickable {
     /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
     public virtual async Task<bool> WriteLock(bool lockTree) {
-        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
+        if (IsLockedByMe) { //object is already locked by this user
             if (lockedTree != lockTree) {
-                try {
-                    shouldUnlock = false;
-                    await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT);
+                if (await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT)) {
+                    lockedTree = lockTree;
                     return true;
-                } catch (RequestFailedException e) {
-                    //try lock as usual
-                }
+                } // if updateLock failed, try to lock normally
             } else { //same type of lock
                 return true;
             }
@@ -91,12 +89,10 @@ public abstract class InteractiveObject : Clickable {
     /// Unlocks object. 
     /// If successful - returns true, if not - returns false.
     /// </summary>
-    /// <param name="delay">if delay, object will be unlocked after 1s unless locked again</param>
     /// <returns></returns>
-    public virtual async Task<bool> WriteUnlock(bool delay = true) {
-        if (delay) {
-            shouldUnlock = true;
-            StartCoroutine(DelayedUnlock());
+    public virtual async Task<bool> WriteUnlock() {
+        if (!IsLocked) {
+            Debug.LogError("Trying to unlock unlocked object: " + GetId());
             return true;
         }
 
@@ -116,7 +112,8 @@ public abstract class InteractiveObject : Clickable {
             await WebsocketManager.Instance.UpdateLock(GetId(), newType);
             return true;
         } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
+            //Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
+            Debug.LogError("failed to update lock");
             return false;
         }
     }
@@ -128,8 +125,6 @@ public abstract class InteractiveObject : Clickable {
     protected virtual void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
         if (!args.ObjectIds.Contains(GetId()))
             return;
-
-        //Debug.LogError("locking event " + GetName());
 
         if (args.Locked) {
             OnObjectLocked(args.Owner);
@@ -150,11 +145,4 @@ public abstract class InteractiveObject : Clickable {
         if(owner != LandingScreen.Instance.GetUsername())
             UpdateColor();
     }
-
-    private IEnumerator DelayedUnlock(float time = 0.1f) {
-        yield return new WaitForSeconds(time);
-        if (shouldUnlock)
-            WriteUnlock(false);
-    }
-
 }

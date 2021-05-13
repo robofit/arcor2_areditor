@@ -69,8 +69,8 @@ public class LeftMenuScene : LeftMenu
         }
     }
 
-    protected override void DeactivateAllSubmenus() {
-        base.DeactivateAllSubmenus();
+    protected override void DeactivateAllSubmenus(bool unlock = true) {
+        base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
 
         //MeshPicker.SetActive(false);

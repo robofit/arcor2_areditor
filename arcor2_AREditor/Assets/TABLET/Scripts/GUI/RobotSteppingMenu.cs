@@ -5,8 +5,7 @@ using Base;
 using System;
 using UnityEngine.UI;
 
-public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
-{
+public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular;
     public Slider SpeedSlider;
     public GameObject StepButtons;
@@ -47,7 +46,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
 
     private void Update() {
         if (CanvasGroup.alpha == 1) {
-            
+
             if (gizmo != null && SceneManager.Instance.IsRobotAndEESelected()) {
 
                 if (world) {
@@ -80,7 +79,6 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
                 }
             }
         }
-        
     }
 
     private void SetInteractivityOfRobotBtns(bool interactive, string alternativeDescription = "") {
@@ -119,7 +117,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         double scale = (maxv - minv) / (maxp - minp);
 
         return (decimal) Math.Exp(minv + scale * (SpeedSlider.value - minp));*/
-        
+
     }
 
     public void SwitchToSafe() {
@@ -161,7 +159,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to enable hand teaching mode", ex.Message);
-        }      
+        }
     }
 
     public async void HoldReleased() {
@@ -215,11 +213,11 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
             await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
             world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
-        } catch (RequestFailedException ex ) {
+        } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
             SetInteractivityOfRobotBtns(true);
         }
-        
+
 
     }
 
@@ -289,9 +287,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu>
         };
     }
 
-    internal void Hide() {
+    internal void Hide(bool unlock = true) {
+        if (SceneManager.Instance.IsRobotAndEESelected()) {
+            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).WriteUnlock();
+        }
         if (gizmo != null)
             Destroy(gizmo);
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
     }
 }
+

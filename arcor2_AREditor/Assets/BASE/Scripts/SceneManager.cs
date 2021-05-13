@@ -43,6 +43,10 @@ namespace Base {
         /// </summary>
         public event EventHandler OnHideRobotsEE;
         /// <summary>
+        /// Invoked when robot and EE are selected (can be opened robot stepping menu)
+        /// </summary>
+        public event EventHandler OnRobotSelected;
+        /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
         /// </summary>
         public Scene SceneMeta = null;
@@ -358,8 +362,8 @@ namespace Base {
                     PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
                     Debug.LogError(ex);
                 }
-
             }
+            OnRobotSelected(this, EventArgs.Empty);
         }
 
         public bool IsRobotSelected() {
