@@ -580,7 +580,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: cm
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -644,7 +644,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &8318629153475307391
@@ -1551,6 +1551,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: TransformWheel
       objectReference: {fileID: 0}
+    - target: {fileID: 2960143139211563131, guid: f11fa5015d50d5a4abb2dbc5077ca982,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 4578473760381368178, guid: f11fa5015d50d5a4abb2dbc5077ca982,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1736,11 +1741,21 @@ PrefabInstance:
       propertyPath: Axis
       value: y
       objectReference: {fileID: 0}
+    - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 1356350685588514456, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: m_text
       value: Y
       objectReference: {fileID: 0}
+    - target: {fileID: 1356350685588514456, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 1501507206361781252, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: m_Name
@@ -2139,11 +2154,21 @@ PrefabInstance:
       propertyPath: Axis
       value: z
       objectReference: {fileID: 0}
+    - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 1356350685588514456, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: m_text
       value: Z
       objectReference: {fileID: 0}
+    - target: {fileID: 1356350685588514456, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 1501507206361781252, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: m_Name
@@ -2490,6 +2515,16 @@ PrefabInstance:
       propertyPath: Axis
       value: x
       objectReference: {fileID: 0}
+    - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
+    - target: {fileID: 1356350685588514456, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
     - target: {fileID: 1501507206361781252, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: m_Name

@@ -33,7 +33,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected InteractiveObject selectedObject = null;
     protected bool selectedObjectUpdated = true, previousUpdateDone = true;
 
-    protected void Start() {
+    protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
@@ -109,7 +109,7 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(false, "No object selected");
             CalibrationButton.SetInteractivity(false, "No object selected");
             OpenMenuButton.SetInteractivity(false, "No object selected");
-        } else if (obj.IsLocked) {
+        } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
             MoveButton.SetInteractivity(false, "Object is locked");
             MoveButton2.SetInteractivity(false, "Object is locked");
@@ -231,6 +231,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 selectedObject.OpenMenu();
             }
         } else {
+            SetActiveSubmenu(currentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
             selectedObject.OpenMenu();
         }
 
@@ -342,12 +343,12 @@ public abstract class LeftMenu : MonoBehaviour {
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
         Action<object> action = AssignToParent;
-        await selectedActionPoint.WriteLock(true);
+        await selectedActionPoint.WriteLock(false);
         GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPointParent, action,
             "Select new parent (action object)", ValidateParent, UntieActionPointParent);
     }
 
-    public void MoveClick() {
+    public async void MoveClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
@@ -377,7 +378,12 @@ public abstract class LeftMenu : MonoBehaviour {
             if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
                 selectedObject.StartManipulation();
             } else {
-                TransformMenu.Instance.Show(selectedObject);
+                if (await selectedObject.WriteLock(true)) {
+                    TransformMenu.Instance.Show(selectedObject);
+                } else {
+                    SetActiveSubmenu(currentSubmenuOpened);
+                    return;
+                }
             }
             SelectorMenu.Instance.gameObject.SetActive(false);
         }
@@ -411,6 +417,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
+        SetActiveSubmenu(currentSubmenuOpened);
         selectedObject.Remove();
     }
 

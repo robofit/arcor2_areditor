@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class ConnectionSelectorDialog : Dialog {
 
@@ -11,12 +12,19 @@ public class ConnectionSelectorDialog : Dialog {
     [SerializeField]
     private GameObject content;
 
+    private UnityAction OnCancelCallback;
 
     public override void Confirm() {
         throw new System.NotImplementedException();
     }
 
-    public void Open(Dictionary<string, LogicItem> connections, bool newConnection, InputOutput sender) {
+    public void OnCancel() {
+        Debug.LogError("oncancel called");
+        OnCancelCallback?.Invoke();
+    }
+
+    public void Open(Dictionary<string, LogicItem> connections, bool newConnection, InputOutput sender, UnityAction onCancel = null) {
+        Debug.LogError("open called");
         foreach (Transform t in content.transform) {
             if (t.gameObject.tag != "Persistent")
                 Destroy(t.gameObject);
@@ -29,6 +37,7 @@ public class ConnectionSelectorDialog : Dialog {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();
             dialogButton.Init("New connection", async () => await sender.SelectedConnection(null));
         }
+        OnCancelCallback = onCancel;
         Open();
     }
 

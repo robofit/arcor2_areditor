@@ -90,7 +90,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             case "dm":
                 return v * 0.1f;
             case "5cm":
-                return v * 0.2f;
+                return v * 0.05f;
             case "cm":
                 return v * 0.01f;
             case "mm":
@@ -282,9 +282,6 @@ public class TransformMenu : Singleton<TransformMenu> {
     
 
     public async void Show(InteractiveObject interactiveObject) {
-        if (!await interactiveObject.WriteLock(true))
-            return;
-
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");

@@ -19,10 +19,6 @@ public class APOrientation : InteractiveObject {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;
         }
-        if (ActionPoint.Locked) {
-            Notifications.Instance.ShowNotification("Failed to open orientation detail", "AP is locked");
-            return;
-        }
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH)) {
             OpenMenu();
         }       

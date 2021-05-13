@@ -20,7 +20,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public ConfirmationDialog ConfirmationDialog;
 
     [SerializeField]
-    private Button LockedBtn, UnlockedBtn, BackBtn;
+    private Button BackBtn;
 
     [SerializeField]
     private ButtonWithTooltip CollapseBtn, ExpandBtn, AimingBtn;
@@ -77,13 +77,9 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
             ActionObjectType.text = "Global action point";
 
         
-        
-        UpdateLockedBtns(CurrentActionPoint.Locked);
-        
-        
         ExpandBtn.gameObject.SetActive(CurrentActionPoint.ActionsCollapsed);
         CollapseBtn.gameObject.SetActive(!CurrentActionPoint.ActionsCollapsed);
-        
+        AimingBtn.SetInteractivity(true);
     }
 
     
@@ -105,19 +101,6 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     public void SetHeader(string header) {
         actionPointName.text = header;
     }
-
-    public void UpdateLockedBtns(bool locked) {
-        LockedBtn.gameObject.SetActive(locked);
-        UnlockedBtn.gameObject.SetActive(!locked);
-        AimingBtn.SetInteractivity(!locked);
-    }
-
-    public void SetLocked(bool locked) {
-        CurrentActionPoint.Locked = locked;
-        UpdateLockedBtns(locked);
-    }
-
-   
 
     public void EnableBackButton(bool enable) {
         BackBtn.gameObject.SetActive(enable);

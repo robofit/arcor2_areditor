@@ -113,7 +113,7 @@ namespace Base {
                             return;
                         }
                     }
-                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this);
+                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this, () => Action.WriteUnlock());
 
                     /*GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItems().GetConnection(), gameObject);
                         
@@ -226,7 +226,8 @@ namespace Base {
                     a.Output.Disable();
                 }
             }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput,
+                "Select output of other action", ValidateOutput, async () => await Action.WriteUnlock());
         }
 
         private async Task<RequestResult> ValidateInput(object selectedInput) {
@@ -332,25 +333,6 @@ namespace Base {
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
-        }
-
-        
-        public override void UpdateColor()
-        {
-            if (Enabled && !IsLocked) {
-                foreach (Renderer renderer in outlineOnClick.Renderers) {
-                    if (Action.Data.Id == "START")
-                        renderer.material.color = Color.green;
-                    else if (Action.Data.Id == "END")
-                        renderer.material.color = Color.red;
-                    else
-                        renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
-                }
-            } /*else {
-                foreach (Renderer renderer in outlineOnClick.Renderers)
-                    renderer.material.color = Color.gray;
-            }*/
-            //TODO FIX
         }
 
         public override string GetName() {

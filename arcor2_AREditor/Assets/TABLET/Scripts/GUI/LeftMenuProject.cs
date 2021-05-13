@@ -13,7 +13,7 @@ public class LeftMenuProject : LeftMenu
 {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
-        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton;
+        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton, AddActionPointButton2;
 
     public GameObject ActionPicker;
     public InputDialog InputDialog;
@@ -26,8 +26,11 @@ public class LeftMenuProject : LeftMenu
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
 
-    protected override void Awake() {
-        base.Awake();
+    protected override void Start() {
+#if !AR_ON
+        AddActionPointButton.SetInteractivity(true);
+        AddActionPointButton2.SetInteractivity(true);
+#endif
         Base.ProjectManager.Instance.OnProjectSavedSatusChanged += OnProjectSavedStatusChanged;
         Base.GameManager.Instance.OnOpenProjectEditor += OnOpenProjectEditor;
 
@@ -36,6 +39,11 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+    }
+
+    protected override void Awake() {
+        base.Awake();
+       
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -53,32 +61,15 @@ public class LeftMenuProject : LeftMenu
         ProjectManager.Instance.OnActionPointAddedToScene -= OnActionPointAddedToScene;
     }
 
-    private async void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
-        if (!string.IsNullOrEmpty(apNameAddedByRobot) && args.ActionPoint.GetName() == apNameAddedByRobot) {
-            try {
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE);
-                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(args.ActionPoint.GetId(), updateAPWithRobotId, updateAPWithEE, "default");
-                await WebsocketManager.Instance.AddActionPointJoints(args.ActionPoint.GetId(), updateAPWithRobotId, "default");
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.ShowNotification("Failed to initialize AP", "Position, orientation or joints were not loaded for selected robot");
-            } finally {
-                apNameAddedByRobot = "";
-                updateAPWithRobotId = "";
-                updateAPWithEE = "";
-                GameManager.Instance.HideLoadingScreen();
-            }
-
-
-        } 
+    private void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
         if (selectAPNameWhenCreated.Equals(args.ActionPoint.GetName())) {
             SelectorMenu.Instance.ForceUpdateMenus();
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
             RenameClick(true);
         }
-
     }
+
 
     protected async override Task UpdateBtns(InteractiveObject obj) {
         try {
@@ -88,6 +79,19 @@ public class LeftMenuProject : LeftMenu
             }
         
             await base.UpdateBtns(obj);
+#if UNITY_ANDROID && AR_ON
+            AddActionPointButton.SetInteractivity(CalibrationManager.Instance.Calibrated && 
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
+                "AR not calibrated");
+            AddActionPointButton2.SetInteractivity(CalibrationManager.Instance.Calibrated &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
+                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
+                "AR not calibrated");
+#endif
+
             if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton.SetInteractivity(false, "No action point is selected");
@@ -96,12 +100,14 @@ public class LeftMenuProject : LeftMenu
                 AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
                 RunButton.SetInteractivity(false, "No object is selected");
                 RunButton2.SetInteractivity(false, "No object is selected");
-            } else if (obj.IsLocked) {
+            } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton2.SetInteractivity(false, "Object is locked");
                 RunButton.SetInteractivity(false, "Object is locked");
                 RunButton2.SetInteractivity(false, "Object is locked");
+                AddActionButton.SetInteractivity(false, "Object is locked");
+                AddActionButton2.SetInteractivity(false, "Object is locked");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
@@ -363,21 +369,26 @@ public class LeftMenuProject : LeftMenu
                          () => InputDialog.Close());
     }
 
-    private async void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
+    private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
             Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
             return;
         }
+
         GameManager.Instance.ShowLoadingScreen("Adding AP...");
-        updateAPWithEE = eeId;
-        updateAPWithRobotId = robotId;
-        apNameAddedByRobot = name;
+
+        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback);
         selectAPNameWhenCreated = name;
-        bool result = await GameManager.Instance.AddActionPoint(name, "");
-        if (result)
-            InputDialog.Close();
-        else {
-            GameManager.Instance.HideLoadingScreen();
+    }
+
+
+    protected void AddActionPointUsingRobotCallback(string nothing, string data) {
+        AddApUsingRobotResponse response = JsonConvert.DeserializeObject<AddApUsingRobotResponse>(data);
+        GameManager.Instance.HideLoadingScreen();
+        if (response.Result) {
+            Notifications.Instance.ShowToastMessage("Action point created");
+        } else {
+            Notifications.Instance.ShowNotification("Failed to add action point", response.Messages.FirstOrDefault());
         }
     }
 

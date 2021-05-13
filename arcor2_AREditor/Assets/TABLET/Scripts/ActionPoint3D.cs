@@ -148,10 +148,8 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void ActivateForGizmo(string layer) {
-        if (!Locked) {
-            base.ActivateForGizmo(layer);
-            Sphere.layer = LayerMask.NameToLayer(layer);
-        }
+        base.ActivateForGizmo(layer);
+        Sphere.layer = LayerMask.NameToLayer(layer);
     }
 
     /// <summary>
@@ -204,8 +202,6 @@ public class ActionPoint3D : Base.ActionPoint {
         
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
-        if (Locked)
-            Lock.SetActive(true);
     }
 
     public override void OnHoverEnd() {
@@ -245,20 +241,15 @@ public class ActionPoint3D : Base.ActionPoint {
         if (!await this.WriteLock(true))
             return;
         TransformGizmo.Instance.ClearTargets();
-        if (Locked) {
-            Notifications.Instance.ShowNotification("Locked", "This action point is locked and can't be manipulated");
-        } else {
-
-            try {
-                await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
-                // We have clicked with left mouse and started manipulation with object
-                manipulationStarted = true;
-                updatePosition = false;
-                TransformGizmo.Instance.AddTarget(Sphere.transform);
-                outlineOnClick.GizmoHighlight();
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
-            }
+        try {
+            await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
+            // We have clicked with left mouse and started manipulation with object
+            manipulationStarted = true;
+            updatePosition = false;
+            TransformGizmo.Instance.AddTarget(Sphere.transform);
+            outlineOnClick.GizmoHighlight();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
         }
     }
 
@@ -272,10 +263,8 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override Task<RequestResult> Removable() {
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             return new RequestResult(false, "AP could only be removed in project editor");
-        else if (Locked) {
-            return new RequestResult(false, "AP is locked");
         } else {
             try {
                 await WebsocketManager.Instance.RemoveActionPoint(GetId(), true);

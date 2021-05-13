@@ -4,11 +4,16 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using System.Collections;
 
 public abstract class InteractiveObject : Clickable {
 
     public bool IsLocked { get; protected set; }
     public string LockOwner { get; protected set; }
+
+    private bool shouldUnlock = true; //used for delayed unlocking
+
+    protected bool lockedTree = false; //when object is locked, is also locked the whole tree?
 
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
@@ -58,11 +63,23 @@ public abstract class InteractiveObject : Clickable {
     /// <param name="lockTree">Lock also tree? (all levels of parents and children)</param>
     /// <returns></returns>
     public virtual async Task<bool> WriteLock(bool lockTree) {
-        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) //object is already locked by this user
-            return true;
+        if (IsLocked && LandingScreen.Instance.GetUsername() == LockOwner) { //object is already locked by this user
+            if (lockedTree != lockTree) {
+                try {
+                    shouldUnlock = false;
+                    await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT);
+                    return true;
+                } catch (RequestFailedException e) {
+                    //try lock as usual
+                }
+            } else { //same type of lock
+                return true;
+            }
+        }
 
         try {
             await WebsocketManager.Instance.WriteLock(GetId(), lockTree);
+            lockedTree = lockTree;
             return true;
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
@@ -71,16 +88,35 @@ public abstract class InteractiveObject : Clickable {
     }
 
     /// <summary>
-    /// Unlocks object. If successful - returns true, if not - returns false.
+    /// Unlocks object. 
+    /// If successful - returns true, if not - returns false.
     /// </summary>
+    /// <param name="delay">if delay, object will be unlocked after 1s unless locked again</param>
     /// <returns></returns>
-    public virtual async Task<bool> WriteUnlock() {
+    public virtual async Task<bool> WriteUnlock(bool delay = true) {
+        if (delay) {
+            shouldUnlock = true;
+            StartCoroutine(DelayedUnlock());
+            return true;
+        }
+
         try {
             await WebsocketManager.Instance.WriteUnlock(GetId());
+            IsLocked = false;
             return true;
         } catch (RequestFailedException ex) {
             //Notifications.Instance.ShowNotification("Failed to unlock " + GetName(), ex.Message);
             Debug.LogError(ex.Message);
+            return false;
+        }
+    }
+
+    public virtual async Task<bool> UpdateLock(IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum newType) {
+        try {
+            await WebsocketManager.Instance.UpdateLock(GetId(), newType);
+            return true;
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
             return false;
         }
     }
@@ -115,5 +151,10 @@ public abstract class InteractiveObject : Clickable {
             UpdateColor();
     }
 
+    private IEnumerator DelayedUnlock(float time = 0.1f) {
+        yield return new WaitForSeconds(time);
+        if (shouldUnlock)
+            WriteUnlock(false);
+    }
 
 }

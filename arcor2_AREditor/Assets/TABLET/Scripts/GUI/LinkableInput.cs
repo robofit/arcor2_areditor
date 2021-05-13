@@ -20,20 +20,22 @@ public class LinkableInput : LinkableParameter {
             case "string":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<string>();
-                else
-                    v = Base.Parameter.GetValue<string>((string) value);
+                else {
+                    Debug.LogError(value);
+                    v = (string) value;
+                }
                 break;
             case "integer":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<int>();
                 else
-                    v = Base.Parameter.GetValue<int>((string) value);
+                    v = (int) value;
                 break;
             case "double":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<double>();
                 else
-                    v = Base.Parameter.GetValue<double>((string) value);
+                    v = (double) value;
                 break;
             case "link":
                 if (value == null)
