@@ -33,7 +33,7 @@ namespace Base {
 
         private void Update() {
             //if (SelectorMenu.Instance.Active) {
-            if (SelectorMenu.Instance.CanvasGroup.alpha == 0 || !SelectorMenu.Instance.gameObject.activeSelf) {
+            if (SelectorMenu.Instance.CanvasGroup.alpha > 0 && SelectorMenu.Instance.gameObject.activeSelf) {
             
             //if (Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0)), out hit, Mathf.Infinity)) {
                 Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
@@ -89,7 +89,7 @@ namespace Base {
                             }
 
 
-                            if (item.InteractiveObject is ActionObjectNoPose || (item.InteractiveObject.GetType() != typeof(Action3D) && item.Collapsed && dist > 0.2)) { // add objects max 20cm away from point of impact 
+                            if (item.InteractiveObject is ActionObjectNoPose || dist > 0.2) { // add objects max 20cm away from point of impact 
 
                                 Debug.DrawLine(ray.origin, hitinfo.point);
                                 continue;

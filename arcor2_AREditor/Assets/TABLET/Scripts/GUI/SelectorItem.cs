@@ -22,20 +22,7 @@ public class SelectorItem : MonoBehaviour
     public bool Collapsable, Collapsed;
     public GameObject SublistContent;
 
-    private int deep;
-
-
-    public int Deep {
-        get => deep;
-        set {
-            deep = value;
-            RectTransform r = (RectTransform) transform;
-            r.rect.Set(r.rect.x, r.rect.y, 550 - deep * 25, r.rect.height);
-        }
-    }
-
-    private void Awake() {
-    }
+    public List<SelectorItem> Childs = new List<SelectorItem>();
 
 
     public void SetText(string text) {
@@ -105,7 +92,11 @@ public class SelectorItem : MonoBehaviour
     }
 
     public void CollapseBtnCb() {
-        Collapsed = !Collapsed;
+        SetCollapsedState(!Collapsed);
+    }
+
+    public void SetCollapsedState(bool collapsed) {
+        Collapsed = collapsed;
         //ActionPoint3D actionPoint = (ActionPoint3D) InteractiveObject;
         if (Collapsed) {
             CollapsableButtonIcon.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
@@ -122,7 +113,22 @@ public class SelectorItem : MonoBehaviour
         }
     }
 
-   
+    public bool AnyVisibleSubitem() {
+        // TODO: replace with list of childerns
+        foreach (SelectorItem item in Childs) {
+            if (item.gameObject.activeSelf)
+                return true;
+        }
+        return false;
+    }
+
+    public void HideAllSubitems(bool includingSelf) {
+        foreach (SelectorItem item in Childs) {
+            item.HideAllSubitems(true);            
+        }
+        if (includingSelf)
+            gameObject.SetActive(false);
+    }
 
 
 }
