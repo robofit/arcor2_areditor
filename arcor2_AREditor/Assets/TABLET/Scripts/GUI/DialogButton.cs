@@ -63,4 +63,8 @@ public class DialogButton : MonoBehaviour {
     public void SetInteractivity(bool interactable, string alternativeDescription) {
         buttonWithTooltip.SetInteractivity(interactable, alternativeDescription);
     }
+
+    private void OnDestroy() {
+        Base.LockingEventsCache.Instance.OnObjectLockingEvent -= OnObjectLockingEvent;
+    }
 }
