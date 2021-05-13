@@ -51,11 +51,7 @@ public abstract class InteractiveObject : Clickable {
             collider.enabled = enable;
         }
 
-
-        if (enable)
-            SelectorMenu.Instance.CreateSelectorItem(this);
-        else
-            SelectorMenu.Instance.DestroySelectorItem(GetId());
+        SelectorMenu.Instance.EnableItem(this, enable);
     }
     
     public List<Collider> Colliders = new List<Collider>();
@@ -151,5 +147,10 @@ public abstract class InteractiveObject : Clickable {
         LockOwner = owner;
         if(owner != LandingScreen.Instance.GetUsername())
             UpdateColor();
+    }
+
+
+    protected virtual void OnDestroy() {
+        SelectorMenu.Instance.DestroySelectorItem(this);
     }
 }

@@ -652,7 +652,8 @@ namespace Base {
                             if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
                                 parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
                             }
-                            //TODO: update spawn action point to not need action object
+
+
                             actionPoint = SpawnActionPoint(projectActionPoint, parent);
 
                         }
@@ -739,9 +740,11 @@ namespace Base {
         /// </summary>
         /// <param name="Id"></param>
         public void RemoveActionPoint(string Id) {
-            // Call function in corresponding action point that will delete it and properly remove all references and connections.
-            // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[Id].DeleteAP();
+            if (ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
+                // Call function in corresponding action point that will delete it and properly remove all references and connections.
+                // We don't want to update project, because we are calling this method only upon received update from server.
+                actionPoint.DeleteAP();
+            }
         }
 
         /// <summary>
@@ -972,7 +975,6 @@ namespace Base {
 
             // Add new action into scene reference
             ActionPoints[ap.Data.Id].Actions.Add(action.Data.Id, action);
-
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
 

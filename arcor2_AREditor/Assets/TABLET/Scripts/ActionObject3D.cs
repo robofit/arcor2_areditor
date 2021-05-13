@@ -124,8 +124,8 @@ public class ActionObject3D : ActionObject {
 
     }
 
-    public override void UpdateUserId(string newUserId) {
-        base.UpdateUserId(newUserId);
+    public override void UpdateObjectName(string newUserId) {
+        base.UpdateObjectName(newUserId);
         ActionObjectName.text = newUserId;
     }
 

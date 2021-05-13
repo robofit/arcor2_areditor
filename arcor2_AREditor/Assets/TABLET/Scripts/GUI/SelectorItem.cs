@@ -22,6 +22,18 @@ public class SelectorItem : MonoBehaviour
     public bool Collapsable, Collapsed;
     public GameObject SublistContent;
 
+    private int deep;
+
+
+    public int Deep {
+        get => deep;
+        set {
+            deep = value;
+            RectTransform r = (RectTransform) transform;
+            r.rect.Set(r.rect.x, r.rect.y, 550 - deep * 25, r.rect.height);
+        }
+    }
+
     private void Awake() {
     }
 
@@ -31,6 +43,7 @@ public class SelectorItem : MonoBehaviour
     }
     public void SetObject(InteractiveObject interactiveObject, float score, long currentIteration) {
         InteractiveObject = interactiveObject;
+        Collapsable = false;
         Score = score;
         Button.onClick.AddListener(() => SelectorMenu.Instance.SetSelectedObject(this, true));
         lastUpdate = currentIteration;
@@ -43,8 +56,10 @@ public class SelectorItem : MonoBehaviour
         } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
             Icon.sprite = ActionOutput;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
+            Collapsable = true;
             Icon.sprite = Action;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
+            Collapsable = true;
             Icon.sprite = ActionPoint;
         } else if (interactiveObject.GetType() == typeof(RobotEE)) {
             Icon.sprite = RobotEE;
@@ -53,6 +68,8 @@ public class SelectorItem : MonoBehaviour
         } else {
             Icon.sprite = Others;
         }
+        if (!Collapsable)
+            CollapsableButton.gameObject.SetActive(false);
     }
 
     public void UpdateScore(float score, long currentIteration) {
@@ -99,8 +116,13 @@ public class SelectorItem : MonoBehaviour
             CollapsableButtonIcon.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
             //actionPoint.ActionsCollapsed = false;
             //actionPoint.UpdatePositionsOfPucks();
+
             SublistContent.SetActive(true);
+            ///StartCoroutine(UpdateSubitem()); // HACK
         }
     }
+
+   
+
 
 }

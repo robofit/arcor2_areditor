@@ -8,6 +8,7 @@ using static Base.GameManager;
 using TMPro;
 using UnityEngine.Events;
 using System.Threading.Tasks;
+using TriLibCore.Extensions;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -20,6 +21,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
 
     public Dictionary<string, SelectorItem> SelectorItems = new Dictionary<string, SelectorItem>();
+
 
     public bool ManuallySelected {
         get;
@@ -186,7 +188,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                         if (selectorItem.InteractiveObject.GetType() != typeof(Action3D))
                             AddItemToAimingList(selectorItem);
                     } else {
-                        if (selectorItem.transform.parent.parent != ContentAim.transform) {
+                        if (selectorItem.transform.parent != ContentAim.transform) {
                             if (selectorItem.InteractiveObject.GetType() != typeof(Action3D))
                                 AddItemToAimingList(selectorItem);
                         }
@@ -218,7 +220,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
                 if ((iteration - selectorItemsAimMenu[i].GetLastUpdate()) > 5 ||
                     selectorItemsAimMenu.Count > itemsWithoutActions) {
-                    selectorItemsAimMenu[i].transform.parent.SetParent(ContentAlphabet.transform);
+                    selectorItemsAimMenu[i].transform.SetParent(ContentAlphabet.transform);
                     selectorItemsAimMenu.RemoveAt(i);
                 }
             }
@@ -341,7 +343,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void AddItemToAimingList(SelectorItem selectorItem) {
-        selectorItem.transform.parent.SetParent(ContentAim.transform);
+        selectorItem.transform.SetParent(ContentAim.transform);
     }
 
     private void RemoveItem(int index, List<SelectorItem> selectorItems) {
@@ -406,18 +408,26 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItem.SublistContent.SetActive(false);
         if (interactiveObject is ISubItem subItem) {
             if (SelectorItems.TryGetValue(subItem.GetParentObject().GetId(), out SelectorItem selectorItemAP)) {
-                selectorItem.transform.parent.SetParent(selectorItemAP.SublistContent.transform);
+                selectorItem.transform.SetParent(selectorItemAP.SublistContent.transform);
             } else {
                 throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
         } else {
-            selectorItem.transform.parent.SetParent(ContentAlphabet.transform);
+            selectorItem.transform.SetParent(ContentAlphabet.transform);
         }
         //selectorItem.gameObject.SetActive(false);
         selectorItem.SetText(interactiveObject.GetName());
         selectorItem.SetObject(interactiveObject, 0, iteration);
         SelectorItems.Add(interactiveObject.GetId(), selectorItem);
     }
+
+    public void EnableItem(InteractiveObject interactiveObject, bool enable) {
+        if (SelectorItems.TryGetValue(interactiveObject.GetId(), out SelectorItem selectorItem)) {
+            selectorItem.gameObject.SetActive(enable);
+        }
+    }
+
+    
 
     public void DestroySelectorItem(string id) {
         if (SelectorItems.TryGetValue(id, out SelectorItem selectorItem)) {
@@ -426,7 +436,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             if (selectorItem.IsSelected()) {
                 DeselectObject(true);
             }
-            Destroy(selectorItem.transform.parent.gameObject);
+            Destroy(selectorItem.transform.gameObject);
             SelectorItems.Remove(id);
         }
     }
@@ -535,8 +545,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAlphabet.SetActive(true);        
         UpdateAlphabetMenu();*/
         foreach (SelectorItem item in SelectorItems.Values) {
-            if ((!(item.InteractiveObject is ISubItem)) && item.transform.parent.parent != ContentAlphabet.transform) {
-                item.transform.parent.SetParent(ContentAlphabet.transform);
+            if ((!(item.InteractiveObject is ISubItem)) && item.transform.parent != ContentAlphabet.transform) {
+                item.transform.SetParent(ContentAlphabet.transform);
             }
         }
         selectorItemsAimMenu.Clear();

@@ -558,8 +558,8 @@ namespace Base {
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
-        public ActionObject SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
-            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
+        public ActionObject SpawnActionObject(IO.Swagger.Model.SceneObject sceneObject, CollisionModels customCollisionModels = null) {
+            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
                 return null;
             }
             GameObject obj;
@@ -573,10 +573,10 @@ namespace Base {
                 obj = Instantiate(ActionObjectNoPosePrefab, ActionObjectsSpawn.transform);
             }
             ActionObject actionObject = obj.GetComponent<ActionObject>();
-            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom, customCollisionModels);
-
+            actionObject.InitActionObject(sceneObject, obj.transform.localPosition, obj.transform.localRotation, aom, customCollisionModels);
+            
             // Add the Action Object into scene reference
-            ActionObjects.Add(id, actionObject);
+            ActionObjects.Add(sceneObject.Id, actionObject);
             actionObject.SetVisibility(ActionObjectsVisibility);
             return actionObject;
         }
@@ -723,8 +723,7 @@ namespace Base {
         /// <param name="sceneObject">Description of action object</param>
         /// <returns></returns>
         public void SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
-            actionObject.ActionObjectUpdate(sceneObject);
+            ActionObject actionObject = SpawnActionObject(sceneObject);            
             updateScene = true;
         }
 
@@ -753,7 +752,7 @@ namespace Base {
         public void UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
-                ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
+                ActionObject actionObject = SpawnActionObject(aoSwagger, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger);
                 currentAO.Add(aoSwagger.Id);
             }

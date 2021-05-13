@@ -45,9 +45,12 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
     }
 
     public async void Hide(bool unlock = true) {
-        foreach (RectTransform o in Content.GetComponentsInChildren<RectTransform>()) {
-            if (o.gameObject.tag != "Persistent") {
-                Destroy(o.gameObject);
+        RectTransform[] transforms = Content.GetComponentsInChildren<RectTransform>();
+        if (transforms != null) {
+            foreach (RectTransform o in transforms) {
+                if (o.gameObject.tag != "Persistent") {
+                    Destroy(o.gameObject);
+                }
             }
         }
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);

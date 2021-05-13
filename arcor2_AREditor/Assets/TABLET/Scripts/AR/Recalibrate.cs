@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class Recalibrate : InteractiveObject {
 
+    protected override void Start() {
+        base.Start();
+        SelectorMenu.Instance.CreateSelectorItem(this);
+    }
+
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;

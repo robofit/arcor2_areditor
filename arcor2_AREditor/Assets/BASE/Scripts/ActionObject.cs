@@ -29,21 +29,17 @@ namespace Base {
 
         }
 
-        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
-            Data.Id = id;
-            Data.Type = type;
+        public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
+            Data = sceneObject;
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
-            } else {
-                
             }
-            Data.Id = uuid;
-            
+            ActionObjectUpdate(sceneObject);
             CreateModel(customCollisionModels);
             enabled = true;
-            
+            SelectorMenu.Instance.CreateSelectorItem(this);
             if (VRModeManager.Instance.VRModeON) {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
             } else {
@@ -51,7 +47,7 @@ namespace Base {
             }
         }
         
-        public virtual void UpdateUserId(string newUserId) {
+        public virtual void UpdateObjectName(string newUserId) {
             Data.Name = newUserId;
         }
 
@@ -63,7 +59,7 @@ namespace Base {
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
-                UpdateUserId(actionObjectSwagger.Name);
+                UpdateObjectName(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
             foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
 
@@ -239,6 +235,7 @@ namespace Base {
         public Base.ActionObject GetActionObject() {
             return this;
         }
+
 
         public Transform GetTransform() {
             return transform;

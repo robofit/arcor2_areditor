@@ -161,11 +161,11 @@ namespace Base {
         }
         
 
-        public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
-            base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
+        public async override void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
+            base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
             
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Id, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 // Get the robot model, if it returns null, the robot will be loading itself
                 RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
                 if (RobotModel != null) {
@@ -506,8 +506,8 @@ namespace Base {
             outlineOnClick.UnHighlight();
         }
 
-        public override void UpdateUserId(string newUserId) {
-            base.UpdateUserId(newUserId);
+        public override void UpdateObjectName(string newUserId) {
+            base.UpdateObjectName(newUserId);
             ActionObjectName.text = newUserId;
         }
 

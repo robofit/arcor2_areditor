@@ -47,7 +47,10 @@ namespace Base {
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();
-            
+
+            SelectorMenu.Instance.CreateSelectorItem(this);
+            SelectorMenu.Instance.CreateSelectorItem(Input);
+            SelectorMenu.Instance.CreateSelectorItem(Output);
         }
 
         public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {
@@ -154,6 +157,12 @@ namespace Base {
 
         public async override Task<RequestResult> Movable() {
             return new RequestResult(false, "Actions could not be moved");
+        }
+
+        protected override void OnDestroy() {
+            SelectorMenu.Instance.DestroySelectorItem(Input);
+            SelectorMenu.Instance.DestroySelectorItem(Output);
+            base.OnDestroy();
         }
     }
 
