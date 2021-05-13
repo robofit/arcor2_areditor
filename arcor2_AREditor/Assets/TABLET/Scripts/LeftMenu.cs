@@ -53,6 +53,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         UpdateBuildAndSaveBtns();
+        UpdateBtns(selectedObject);
         if (args.Event.State == SceneStateData.StateEnum.Stopping) {
 
             if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == "robot") {
