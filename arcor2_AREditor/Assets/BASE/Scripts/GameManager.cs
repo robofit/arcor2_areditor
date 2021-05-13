@@ -567,7 +567,6 @@ namespace Base {
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,
 
-            SelectorMenu.Instance.ForceUpdateMenus();
 
             if (onCancelCallback == null) {
                 SelectObjectInfo.Show(message, () => CancelSelection());
@@ -594,7 +593,6 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
-            SelectorMenu.Instance.ForceUpdateMenus();
         }
 
         /// <summary>
@@ -626,7 +624,6 @@ namespace Base {
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
-            SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
                 ObjectCallback.Invoke(selectedObject);
@@ -1768,7 +1765,6 @@ namespace Base {
         /// <param name="active"></param>
         public void SceneSetActive(bool active) {
             Scene.SetActive(active);
-            SelectorMenu.Instance.ForceUpdateMenus();
         }
 
         /// <summary>

@@ -63,7 +63,6 @@ public class LeftMenuProject : LeftMenu
 
     private void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
         if (selectAPNameWhenCreated.Equals(args.ActionPoint.GetName())) {
-            SelectorMenu.Instance.ForceUpdateMenus();
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
             RenameClick(true);

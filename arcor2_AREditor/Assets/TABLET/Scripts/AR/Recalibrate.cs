@@ -19,7 +19,6 @@ public class Recalibrate : InteractiveObject {
 
     public override void Enable(bool enable) {
         base.Enable(enable);
-        SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public override void OnHoverStart() {

@@ -9,6 +9,11 @@ namespace Base
             return "Action input";
         }
 
+
+        public override string GetId() {
+            return Action.GetId() + "input";
+        }
+
         public override void UpdateColor() {
             if (Action == null) {
                 Debug.LogError("Action is null");

@@ -26,4 +26,8 @@ public class StartAction : StartEndAction
             foreach (Renderer renderer in outlineOnClick.Renderers)
                 renderer.material.color = Color.green;
     }
+
+    public override string GetObjectTypeName() {
+        return "Start action";
+    }
 }

@@ -46,7 +46,6 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
         bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id);
         if (result)
             InputDialog.Close();
-        SelectorMenu.Instance.ForceUpdateMenus();
         UpdateMenu();
     }
 
