@@ -166,9 +166,11 @@ namespace Base {
                         await theOtherOne.GetComponent<PuckOutput>().GetInput();
                     }
                 } catch (RequestFailedException ex) {
-                    Debug.LogError(ex);
-                    Notifications.Instance.SaveLogs("Failed to remove connection");
-                    ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
+                    GameManager.Instance.HideLoadingScreen();
+                    Notifications.Instance.ShowNotification("Failed to remove connection", ex.Message);
+                    //Debug.LogError(ex);
+                    //Notifications.Instance.SaveLogs("Failed to remove connection");
+                    //ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 }
             }
         }

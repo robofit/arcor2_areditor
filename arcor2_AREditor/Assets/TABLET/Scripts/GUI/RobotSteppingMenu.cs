@@ -4,14 +4,16 @@ using UnityEngine;
 using Base;
 using System;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
-    public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular;
+    public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular, HandTeachingModeButton;
     public Slider SpeedSlider;
     public GameObject StepButtons;
     public CoordinatesBtnGroup Coordinates;
     public TranformWheelUnits Units, UnitsDegrees;
     public TwoStatesToggle RobotWorldBtn, RotateTranslateBtn, SafeButton;
+    public Image HandBtnRedBackground;
 
     public CanvasGroup CanvasGroup;
 
@@ -155,6 +157,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
     public async void HoldPressed() {
+        if (!HandTeachingModeButton.IsInteractive())
+            return;
+        HandBtnRedBackground.enabled = true;
         try {
             await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
         } catch (RequestFailedException ex) {
@@ -163,6 +168,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
     public async void HoldReleased() {
+        if (!HandTeachingModeButton.IsInteractive())
+            return;
+        HandBtnRedBackground.enabled = false;
         try {
             await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false);
         } catch (RequestFailedException ex) {
@@ -178,6 +186,17 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
         gizmo.transform.localPosition = Vector3.zero;
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+
+        SetHandTeachingButtonInteractivity();
+    }
+
+    private void SetHandTeachingButtonInteractivity() {
+        ActionObject ao = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
+        bool success = ActionsManager.Instance.RobotsMeta.TryGetValue(ao.ActionObjectMetadata.Type, out IO.Swagger.Model.RobotMeta robotMeta);
+        if(success)
+            HandTeachingModeButton.SetInteractivity(robotMeta.Features.HandTeaching, "Robot does not support hand teaching mode");
+        else
+            HandTeachingModeButton.SetInteractivity(true); //actually this should never happen
     }
 
     public void RobotStepUp() {
