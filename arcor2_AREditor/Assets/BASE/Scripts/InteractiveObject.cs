@@ -16,6 +16,14 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
     public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
+    protected virtual void Start() {
+        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+    }
+
+    protected virtual void OnDestroy() {
+        LockingEventsCache.Instance.OnObjectLockingEvent -= OnObjectLockingEvent;
+    }
+
     protected string GetLockedText() {
         return "LOCKED by " + LockOwner + "\n" + GetName();
     }
@@ -120,10 +128,6 @@ public abstract class InteractiveObject : Clickable {
             Debug.LogError("failed to update lock");
             return false;
         }
-    }
-
-    protected virtual void Start() {
-        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
     }
 
     protected virtual void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {

@@ -19,19 +19,16 @@ public class ConnectionSelectorDialog : Dialog {
     }
 
     public void OnCancel() {
-        Debug.LogError("oncancel called");
+        Close();
         OnCancelCallback?.Invoke();
     }
 
     public void Open(Dictionary<string, LogicItem> connections, bool newConnection, InputOutput sender, UnityAction onCancel = null) {
-        Debug.LogError("open called");
-        foreach (Transform t in content.transform) {
-            if (t.gameObject.tag != "Persistent")
-                Destroy(t.gameObject);
-        }
+        DestroyButtons();
         foreach (KeyValuePair<string, LogicItem> c in connections) {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();
-            dialogButton.Init(c.Key, async () => await sender.SelectedConnection(c.Value));
+            dialogButton.Init(c.Key, async () => await sender.SelectedConnection(c.Value),
+                new List<InteractiveObject> { ProjectManager.Instance.GetAction(c.Value.Data.Start), ProjectManager.Instance.GetAction(c.Value.Data.End) });
         }
         if (newConnection) {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();
@@ -41,4 +38,15 @@ public class ConnectionSelectorDialog : Dialog {
         Open();
     }
 
+    private void DestroyButtons() {
+        foreach (Transform t in content.transform) {
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
+        }
+    }
+
+    public override void Close() {
+        DestroyButtons();
+        base.Close();
+    }
 }
