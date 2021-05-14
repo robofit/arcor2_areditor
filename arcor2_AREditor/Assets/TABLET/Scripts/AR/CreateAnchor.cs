@@ -13,7 +13,7 @@ public class CreateAnchor : InteractiveObject {
 
     private void OnEnable() {
         Enabled = true;
-        SelectorMenu.Instance.CreateSelectorItem(this);
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     private void OnDisable() {

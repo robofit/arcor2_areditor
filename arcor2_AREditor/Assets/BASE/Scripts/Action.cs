@@ -48,9 +48,9 @@ namespace Base {
             if (actionProvider != null)
                 UpdateType();
 
-            SelectorMenu.Instance.CreateSelectorItem(this);
-            SelectorMenu.Instance.CreateSelectorItem(Input);
-            SelectorMenu.Instance.CreateSelectorItem(Output);
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+            Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
+            Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
         }
 
         public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {

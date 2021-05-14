@@ -8,7 +8,7 @@ public class Recalibrate : InteractiveObject {
 
     protected override void Start() {
         base.Start();
-        SelectorMenu.Instance.CreateSelectorItem(this);
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     public override void OnClick(Click type) {

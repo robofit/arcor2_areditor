@@ -72,6 +72,8 @@ namespace Base {
                     List<Tuple<float, InteractiveObject>> items = new List<Tuple<float, InteractiveObject>>();
                     bool h = false;
                     foreach (SelectorItem item in SelectorMenu.Instance.SelectorItems.Values) {
+                        if (!item.InteractiveObject.Enabled)
+                            continue;
                         try {
                             if (item.InteractiveObject == null) {
                                 continue;

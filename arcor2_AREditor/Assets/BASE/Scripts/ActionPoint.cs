@@ -59,7 +59,7 @@ namespace Base {
             SetParent(parent);
             Data = apData;
 
-            SelectorMenu.Instance.CreateSelectorItem(this);
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
@@ -580,7 +580,7 @@ namespace Base {
             apOrientation.ActionPoint = this;
             apOrientation.SetOrientation(orientation.Orientation);
             apOrientation.OrientationId = orientation.Id;
-            SelectorMenu.Instance.CreateSelectorItem(apOrientation);
+            apOrientation.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(apOrientation);
         }
 
         internal void ShowOrientationDetailMenu(string orientationId) {

@@ -39,7 +39,7 @@ namespace Base {
             ActionObjectUpdate(sceneObject);
             CreateModel(customCollisionModels);
             enabled = true;
-            SelectorMenu.Instance.CreateSelectorItem(this);
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             if (VRModeManager.Instance.VRModeON) {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
             } else {

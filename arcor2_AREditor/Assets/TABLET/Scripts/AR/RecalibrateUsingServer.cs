@@ -8,7 +8,7 @@ public class RecalibrateUsingServer : InteractiveObject {
 
     protected override void Start() {
         base.Start();
-        SelectorMenu.Instance.CreateSelectorItem(this);
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {

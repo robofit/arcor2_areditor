@@ -21,12 +21,19 @@ public class SelectorItem : MonoBehaviour
     public GameObject CollapsableButtonIcon;
     public bool Collapsable, Collapsed;
     public GameObject SublistContent;
+    private string name;
+
+    public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     public List<SelectorItem> Childs = new List<SelectorItem>();
+    public List<SelectorItem> VisibleChilds = new List<SelectorItem>();
 
-
+    private void Start() {
+        Removed = false;
+    }
     public void SetText(string text) {
         Label.text = text;
+        name = text;
     }
     public void SetObject(InteractiveObject interactiveObject, float score, long currentIteration) {
         InteractiveObject = interactiveObject;
@@ -62,6 +69,7 @@ public class SelectorItem : MonoBehaviour
     public void UpdateScore(float score, long currentIteration) {
         lastUpdate = currentIteration;
         Score = score;
+        //Label.text = $"{name}: {lastUpdate}, {VisibleChilds.Count}, {score}";
     }
 
     public long GetLastUpdate() {
@@ -96,6 +104,8 @@ public class SelectorItem : MonoBehaviour
     }
 
     public void SetCollapsedState(bool collapsed) {
+        if (!Collapsable)
+            return;
         Collapsed = collapsed;
         //ActionPoint3D actionPoint = (ActionPoint3D) InteractiveObject;
         if (Collapsed) {
@@ -113,22 +123,6 @@ public class SelectorItem : MonoBehaviour
         }
     }
 
-    public bool AnyVisibleSubitem() {
-        // TODO: replace with list of childerns
-        foreach (SelectorItem item in Childs) {
-            if (item.gameObject.activeSelf)
-                return true;
-        }
-        return false;
-    }
-
-    public void HideAllSubitems(bool includingSelf) {
-        foreach (SelectorItem item in Childs) {
-            item.HideAllSubitems(true);            
-        }
-        if (includingSelf)
-            gameObject.SetActive(false);
-    }
 
 
 }
