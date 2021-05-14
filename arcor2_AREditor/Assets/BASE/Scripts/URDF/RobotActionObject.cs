@@ -468,9 +468,11 @@ namespace Base {
         }
 
         public override GameObject GetModelCopy() {
-            return Instantiate(RobotModel.RobotModelGameObject);
+            if (RobotModel?.RobotModelGameObject != null)
+                return Instantiate(RobotModel.RobotModelGameObject);
+            else
+                return Instantiate(RobotPlaceholder);
         }
-
 
         public bool HasUrdf() {
             if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
