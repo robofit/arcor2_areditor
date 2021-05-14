@@ -49,6 +49,7 @@ namespace Base {
         
         public virtual void UpdateObjectName(string newUserId) {
             Data.Name = newUserId;
+            SelectorItem.SetText(newUserId);
         }
 
         protected virtual void Update() {

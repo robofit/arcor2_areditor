@@ -55,6 +55,7 @@ namespace Base {
 
         public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {
             Data.Name = action.Name;
+            SelectorItem.SetText(action.Name);
         }
 
         public virtual void ActionUpdate(IO.Swagger.Model.Action action, bool updateConnections = false) {

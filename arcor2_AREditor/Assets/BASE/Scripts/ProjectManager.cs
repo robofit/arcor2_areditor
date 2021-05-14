@@ -211,6 +211,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.BaseUpdateOrientation(args.Data);
+
                 updateProject = true;
                 OnActionPointOrientationBaseUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {

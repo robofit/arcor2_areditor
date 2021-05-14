@@ -336,15 +336,6 @@ public class LeftMenuProject : LeftMenu
             SceneManager.Instance.SelectedEndEffector.GetName());
     }
 
-    private void ShowCreateGlobalActionPointDialog() {
-        InputDialog.Open("Create action point",
-                         "Type action point name",
-                         "Name",
-                         ProjectManager.Instance.GetFreeAPName("global"),
-                         () => CreateGlobalActionPoint(InputDialog.GetValue()),
-                         () => InputDialog.Close());
-    }
-
     private async void CreateGlobalActionPoint(string name) {
         selectAPNameWhenCreated = name;
         bool result = await GameManager.Instance.AddActionPoint(name, "");
@@ -352,21 +343,6 @@ public class LeftMenuProject : LeftMenu
             InputDialog.Close();
         else
             selectAPNameWhenCreated = "";
-    }
-
-    private void ShowCreateGlobalActionPointUsingRobotDialog() {
-        if (!SceneManager.Instance.SceneStarted) {
-            Notifications.Instance.ShowNotification("Failed to create new AP", "Only available when online");
-            return;
-        }
-        InputDialog.Open("Create action point using robot",
-                         SceneManager.Instance.SelectedRobot.GetName() + "/" + SceneManager.Instance.SelectedEndEffector.GetName(),
-                         "Name",
-                         ProjectManager.Instance.GetFreeAPName("global"),
-                         () => CreateGlobalActionPointUsingRobot(InputDialog.GetValue(),
-                                                                 SceneManager.Instance.SelectedRobot.GetId(),
-                                                                 SceneManager.Instance.SelectedEndEffector.GetName()),
-                         () => InputDialog.Close());
     }
 
     private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {

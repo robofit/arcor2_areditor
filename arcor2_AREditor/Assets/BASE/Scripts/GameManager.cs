@@ -516,7 +516,7 @@ namespace Base {
             MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
-            switch (requestType) {
+            /*switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
@@ -562,7 +562,7 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
 
-            }
+            }*/
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,

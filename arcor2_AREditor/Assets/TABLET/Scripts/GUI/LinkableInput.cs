@@ -14,34 +14,24 @@ public class LinkableInput : LinkableParameter {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
         SetOnValueChanged(onChangeParameterHandler);
-        object v;
+        object v = value;
         
         switch (type) {
             case "string":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<string>();
-                else {
-                    Debug.LogError(value);
-                    v = (string) value;
-                }
                 break;
             case "integer":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<int>();
-                else
-                    v = (int) value;
                 break;
             case "double":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<double>();
-                else
-                    v = (double) value;
                 break;
             case "link":
                 if (value == null)
                     v = null;
-                else
-                    v = (string) value;
                 break;
             default:
                 v = null;
@@ -75,7 +65,7 @@ public class LinkableInput : LinkableParameter {
                     Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
 
                     break;
-                case "double":
+                case "double":                    
                     Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), double.Parse(value), type));
                     break;
                 case "string":
