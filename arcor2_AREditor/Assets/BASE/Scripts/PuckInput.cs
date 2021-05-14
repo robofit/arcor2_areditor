@@ -10,11 +10,6 @@ namespace Base
         }
 
         public override void UpdateColor() {
-            if (Action == null) {
-                Debug.LogError("Action is null");
-                return;
-            }
-
             Renderer renderer = Action.InputArrow.GetComponent<Renderer>();
             List<Material> materials = new List<Material>(renderer.materials);
 
