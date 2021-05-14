@@ -423,7 +423,7 @@ public abstract class LeftMenu : MonoBehaviour {
         UpdateVisibility(false, true);
         SelectorMenu.Instance.gameObject.SetActive(false);
         if (removeOnCancel)
-            RenameDialog.Init(selectedObject, UpdateVisibility, () => selectedObject.Remove());
+            RenameDialog.Init(selectedObject, UpdateVisibility, true, () => selectedObject.Remove());
         else
             RenameDialog.Init(selectedObject, UpdateVisibility);
         RenameDialog.Open();
