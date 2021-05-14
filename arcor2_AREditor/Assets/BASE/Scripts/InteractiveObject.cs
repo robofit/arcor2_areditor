@@ -21,6 +21,7 @@ public abstract class InteractiveObject : Clickable {
     }
 
     protected virtual void OnDestroy() {
+        SelectorMenu.Instance.DestroySelectorItem(this);
         LockingEventsCache.Instance.OnObjectLockingEvent -= OnObjectLockingEvent;
     }
 
@@ -156,7 +157,4 @@ public abstract class InteractiveObject : Clickable {
     }
 
 
-    protected virtual void OnDestroy() {
-        SelectorMenu.Instance.DestroySelectorItem(this);
-    }
 }
