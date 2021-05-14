@@ -578,6 +578,7 @@ namespace Base {
             // Add the Action Object into scene reference
             ActionObjects.Add(sceneObject.Id, actionObject);
             actionObject.SetVisibility(ActionObjectsVisibility);
+            actionObject.ActionObjectUpdate(sceneObject);
             return actionObject;
         }
 

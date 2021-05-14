@@ -163,9 +163,9 @@ namespace Base {
 
         public async override void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
             base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
-            
+
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Id, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 // Get the robot model, if it returns null, the robot will be loading itself
                 RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
                 if (RobotModel != null) {

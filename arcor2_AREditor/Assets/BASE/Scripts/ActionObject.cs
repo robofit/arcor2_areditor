@@ -30,13 +30,13 @@ namespace Base {
         }
 
         public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
-            Data = sceneObject;
+            Data.Id = sceneObject.Id;
+            Data.Type = sceneObject.Type;
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
             }
-            ActionObjectUpdate(sceneObject);
             CreateModel(customCollisionModels);
             enabled = true;
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
