@@ -141,7 +141,7 @@ namespace Base {
         public static IParameter InitializeStringParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate onChangeParameterHandler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool linkable) {
             string selectedValue = "";
             if (value != null) {
-                selectedValue = value;
+                selectedValue = Parameter.GetValue<string>(value);
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = JsonConvert.DeserializeObject<string>(actionParameterMetadata.DefaultValue);
             }
