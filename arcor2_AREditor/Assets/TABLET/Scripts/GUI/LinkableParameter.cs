@@ -51,7 +51,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         ActionsDropdown.Init(layoutGroupToBeDisabled, canvasRoot, type);
     }
 
-    public virtual void SetType(string type, bool linkable) {
+    public virtual void SetType(string type, bool linkable, bool switchBtnClicked) {
         this.type = type;
         if (!linkable) {
             RemoveLinkBtn.gameObject.SetActive(false);
@@ -61,6 +61,9 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             RemoveLinkBtn.gameObject.SetActive(true);
             CreateLinkBtn.gameObject.SetActive(false);
             ActionsDropdown.gameObject.SetActive(true);
+            if (ActionsDropdown.Dropdown.dropdownItems.Count > 0) {
+                ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke();
+            }
         } else {
             ActionsDropdown.gameObject.SetActive(false);
             RemoveLinkBtn.gameObject.SetActive(false);
@@ -71,11 +74,11 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     public void CreateLinkCb() {
         //TODO: switch type of input and update btns
-        SetType("link", true);
+        SetType("link", true, true);
     }
 
     public void RemoveLinkCb() {
-        SetType(ParameterMetadata.Type, true);
+        SetType(ParameterMetadata.Type, true, true);
     }
 
     private string EncodeLinkValue(string dropdownValue) {
@@ -103,7 +106,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public virtual void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
         InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         ParameterMetadata = parameterMetadata;
-        SetType(type, linkable);
+        SetType(type, linkable, false);
     }
 
     

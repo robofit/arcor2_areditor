@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.Parameter;
 
 public class LinkableInput : LinkableParameter {
-   public LabeledInput Input;
+    public LabeledInput Input;
 
+    private object defaultValue;
 
     public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
         Parameter = Input;
@@ -15,8 +17,7 @@ public class LinkableInput : LinkableParameter {
 
         SetOnValueChanged(onChangeParameterHandler);
         object v = value;
-        
-        switch (type) {
+        /*switch (type) {
             case "string":
                 if (value == null)
                     v = parameterMetadata.GetDefaultValue<string>();
@@ -36,8 +37,7 @@ public class LinkableInput : LinkableParameter {
             default:
                 v = null;
                 break;
-        }
-
+        }*/
         SetValue(v);
     }
     
@@ -48,31 +48,48 @@ public class LinkableInput : LinkableParameter {
         //input.Input.Input.onValueChanged.AddListener((string newValue)
         //        => onChangeParameterHandler(actionParameterMetadata.Name, newValue, type));
         this.onChangeParameterHandler = onChangeParameterHandler;
-    }    
+    }
 
-    public override void SetType(string type, bool linkable) {
-        base.SetType(type, linkable);
-        
+    public override void SetType(string type, bool linkable, bool switchBtnClicked) {
+        base.SetType(type, linkable, switchBtnClicked);
+
         if (type == "link") {
             Input.gameObject.SetActive(false);
             Input.Input.onValueChanged.RemoveAllListeners();
         }
         else {
+            
             Input.gameObject.SetActive(true);
             Input.Input.onValueChanged.RemoveAllListeners();
             switch (ParameterMetadata.Type) {
                 case "integer":
+                    if (string.IsNullOrEmpty(Input.Input.text)) {
+                        Input.SetValue(ParameterMetadata.GetDefaultValue<int>());
+                    }
+                    
                     Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
-
+                    if (switchBtnClicked)
+                        Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
-                case "double":                    
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), double.Parse(value), type));
+                case "double":
+                    if (string.IsNullOrEmpty(Input.Input.text)) {
+                        Input.SetValue(ParameterMetadata.GetDefaultValue<double>());
+                    }
+                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), double.Parse(value, CultureInfo.InvariantCulture), type));
+                    if (switchBtnClicked)
+                        Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
                 case "string":
+                    if (string.IsNullOrEmpty(Input.Input.text)) {
+                        Input.SetValue(ParameterMetadata.GetDefaultValue<string>());
+                    }
                     Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
+                    if (switchBtnClicked)
+                        Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
             }
             Input.SetType(type);
+            
         }
     }
 

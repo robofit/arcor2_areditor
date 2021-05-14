@@ -14,8 +14,8 @@ public class LinkableBoolParameter : LinkableParameter
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         SetValue(value);
     }
-    public override void SetType(string type, bool linkable) {
-        base.SetType(type, linkable);
+    public override void SetType(string type, bool linkable, bool switchBtnClicked) {
+        base.SetType(type, linkable, switchBtnClicked);
         this.type = type;
         if (type == "link") {
             SwitchComponent.gameObject.SetActive(false);

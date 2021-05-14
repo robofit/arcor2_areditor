@@ -99,7 +99,7 @@ namespace Base {
                 case "string":
                     return JsonConvert.SerializeObject(value);                    
                 case "double":
-                    return JsonConvert.SerializeObject(double.Parse(value));
+                    return JsonConvert.SerializeObject(double.Parse(value, CultureInfo.InvariantCulture));
                 case "boolean":
                     return JsonConvert.SerializeObject(bool.Parse(value));
             }
