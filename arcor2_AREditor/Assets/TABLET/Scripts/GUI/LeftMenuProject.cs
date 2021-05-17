@@ -338,7 +338,9 @@ public class LeftMenuProject : LeftMenu
     public void AddActionPointClick() {
         SetActiveSubmenu(currentSubmenuOpened);
         if (selectedObject is IActionPointParent parent) {
-            CreateActionPoint(ProjectManager.Instance.GetFreeAPName(parent.GetName()), parent.GetId());
+            CreateActionPoint(ProjectManager.Instance.GetFreeAPName(parent.GetName()), parent);
+        } else {
+            CreateActionPoint(ProjectManager.Instance.GetFreeAPName("global"), default);
         }
     }
 
@@ -352,8 +354,8 @@ public class LeftMenuProject : LeftMenu
     /// Creates new action point
     /// </summary>
     /// <param name="name">Name of the new action point</param>
-    /// <param name="parentId">Id of AP parent. If empty </param>
-    private async void CreateActionPoint(string name, string parentId = "") {
+    /// <param name="parentId">Id of AP parent. Global if null </param>
+    private async void CreateActionPoint(string name, IActionPointParent parentId = null) {
         Debug.Assert(!string.IsNullOrEmpty(name));
         Debug.Assert(parentId != null);
         selectAPNameWhenCreated = name;

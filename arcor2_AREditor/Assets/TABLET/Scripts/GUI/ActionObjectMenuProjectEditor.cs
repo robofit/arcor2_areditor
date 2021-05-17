@@ -43,7 +43,7 @@ public class ActionObjectMenuProjectEditor : ActionObjectMenu {
 
     public async void CreateNewAP(string name) {
         Debug.Assert(CurrentObject != null);
-        bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject.Data.Id);
+        bool result = await GameManager.Instance.AddActionPoint(name, CurrentObject);
         if (result)
             InputDialog.Close();
         UpdateMenu();
