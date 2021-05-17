@@ -323,8 +323,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     return;
                 }
             }
-            DeselectObject(manually);
-            selectorItem.SetSelected(true, manually);
+            if (!selectorItem.IsSelected()) {
+                DeselectObject(manually);
+                selectorItem.SetSelected(true, manually);
+            }                
             if (manually) {
                 ManuallySelected = true;
             }

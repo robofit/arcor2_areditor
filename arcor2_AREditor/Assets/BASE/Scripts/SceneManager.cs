@@ -190,6 +190,7 @@ namespace Base {
             SceneStarted = false;
             Valid = false;
             RemoveActionObjects();
+            SelectorMenu.Instance.SelectorItems.Clear();
             SceneMeta = null;
             return true;
         }
@@ -482,7 +483,6 @@ namespace Base {
         /// </summary>
         internal void LoadSettings() {
             ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
-            Debug.LogError("load float " + ActionObjectsVisibility);
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }

@@ -39,25 +39,6 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     }
 
 
-
-    public void ShowAddActionPointDialog() {
-        inputDialog.Open("Create action point",
-                         "Type action point name",
-                         "Name",
-                         ProjectManager.Instance.GetFreeAPName(CurrentActionPoint.Data.Name),
-                         () => AddAP(inputDialog.GetValue()),
-                         () => inputDialog.Close());
-    }
-
-    public async void AddAP(string name) {
-        Debug.Assert(CurrentActionPoint != null);
-        bool result = await GameManager.Instance.AddActionPoint(name, CurrentActionPoint.Data.Id);
-        if (result)
-            inputDialog.Close();
-        UpdateMenu();
-    }
-
-
     public async void UpdateMenu() {
         scrollableContent.GetComponent<VerticalLayoutGroup>().enabled = true;
 

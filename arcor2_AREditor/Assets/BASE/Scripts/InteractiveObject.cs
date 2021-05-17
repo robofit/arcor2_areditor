@@ -61,8 +61,7 @@ public abstract class InteractiveObject : Clickable {
         foreach (Collider collider in Colliders) {
             collider.enabled = enable;
         }
-
-        SelectorMenu.Instance.EnableItem(this, enable);
+        SelectorItem.gameObject.SetActive(enable);
     }
     
     public List<Collider> Colliders = new List<Collider>();

@@ -1785,19 +1785,20 @@ namespace Base {
         /// Adds action point to the project
         /// </summary>
         /// <param name="name">Name of new action point</param>
-        /// <param name="parent">ID of parent object (empty string if global action point)</param>
-        /// <param name="position">Relative offset from parent object (or from scene origin if global AP)</param>
+        /// <param name="parent">Parent object (global AP if parent is null)</param>
         /// <returns></returns>
-        public async Task<bool> AddActionPoint(string name, string parent) {
+        public async Task<bool> AddActionPoint(string name, IActionPointParent parent) {
             try {
-                if (string.IsNullOrEmpty(parent)) {
-                    Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-                    Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                    Position position = DataHelper.Vector3ToPosition(point);
-                    await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                Vector3 point;
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                if (parent == null) {
+                    point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
                 } else {
-                    await WebsocketManager.Instance.AddActionPoint(name, parent, new Position());
-                }
+                    point = TransformConvertor.UnityToROS(parent.GetTransform().InverseTransformPoint(ray.GetPoint(0.5f)));
+                }                
+                Position position = DataHelper.Vector3ToPosition(point);
+                await WebsocketManager.Instance.AddActionPoint(name, parent == null ? "" : parent.GetId(), position);
+                
                 
                 return true;
             } catch (RequestFailedException e) {
