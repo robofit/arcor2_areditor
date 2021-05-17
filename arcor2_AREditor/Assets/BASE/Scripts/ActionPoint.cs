@@ -375,13 +375,13 @@ namespace Base {
             }        
 
 
-            if (Parent != null) {
+           /* if (Parent != null) {
 
                 if (ConnectionToParent != null)
                     ConnectionToParent.UpdateLine();
                 else
                     SetConnectionToParent(Parent);
-            }
+            }*/
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
                 actionPointMenu.UpdateMenu();
@@ -397,15 +397,19 @@ namespace Base {
                 transform.parent = ProjectManager.Instance.ActionPointsOrigin.transform;
                 transform.localRotation = Quaternion.identity;
                 return;
+            } else {
+                try {
+                    IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
+                    Parent = actionPointParent;
+                    Data.Parent = parentId;
+                    transform.parent = actionPointParent.GetTransform();
+                    RemoveConnectionToParent();
+                    SetConnectionToParent(Parent);
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
             }
-            try {
-                IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
-                Parent = actionPointParent;
-                Data.Parent = parentId;
-                transform.parent = actionPointParent.GetTransform();
-            } catch (KeyNotFoundException ex) {
-                Debug.LogError(ex);
-            }
+            
             
             
         }
