@@ -99,6 +99,10 @@ public class LeftMenuProject : LeftMenu
                 AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
                 RunButton.SetInteractivity(false, "No object is selected");
                 RunButton2.SetInteractivity(false, "No object is selected");
+                AddActionPointButton.SetInteractivity(true);
+                AddActionPointButton2.SetInteractivity(true);
+                AddActionPointButton.SetDescription("Add global action point");
+                AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton.SetInteractivity(false, "Object is locked");
@@ -111,7 +115,15 @@ public class LeftMenuProject : LeftMenu
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                
+                if (obj is IActionPointParent) {
+                    AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
+                    AddActionPointButton.SetInteractivity(true);
+                } else {
+                    AddActionPointButton.SetInteractivity(false, "Selected object could not be parent of AP");
+                }
+                AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
+                AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
+
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
                 AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
@@ -156,7 +168,7 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    protected override void DeactivateAllSubmenus(bool unlock = true) {
+    public override void DeactivateAllSubmenus(bool unlock = true) {
         base.DeactivateAllSubmenus(unlock);
 
         AddActionButton.GetComponent<Image>().enabled = false;
@@ -323,11 +335,11 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-
-
     public void AddActionPointClick() {
         SetActiveSubmenu(currentSubmenuOpened);
-        CreateGlobalActionPoint(ProjectManager.Instance.GetFreeAPName("global"));
+        if (selectedObject is IActionPointParent parent) {
+            CreateActionPoint(ProjectManager.Instance.GetFreeAPName(parent.GetName()), parent.GetId());
+        }
     }
 
     public void AddActionPointUsingRobotClick() {
@@ -336,14 +348,22 @@ public class LeftMenuProject : LeftMenu
             SceneManager.Instance.SelectedEndEffector.GetName());
     }
 
-    private async void CreateGlobalActionPoint(string name) {
+    /// <summary>
+    /// Creates new action point
+    /// </summary>
+    /// <param name="name">Name of the new action point</param>
+    /// <param name="parentId">Id of AP parent. If empty </param>
+    private async void CreateActionPoint(string name, string parentId = "") {
+        Debug.Assert(!string.IsNullOrEmpty(name));
+        Debug.Assert(parentId != null);
         selectAPNameWhenCreated = name;
-        bool result = await GameManager.Instance.AddActionPoint(name, "");
+        bool result = await GameManager.Instance.AddActionPoint(name, parentId);
         if (result)
             InputDialog.Close();
         else
             selectAPNameWhenCreated = "";
     }
+
 
     private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {

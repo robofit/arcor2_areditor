@@ -499,7 +499,7 @@ public abstract class LeftMenu : MonoBehaviour {
     /// 
     /// </summary>
     /// <param name="unlock">Unlock objects?</param>
-    protected virtual void DeactivateAllSubmenus(bool unlock = true) {
+    public virtual void DeactivateAllSubmenus(bool unlock = true) {
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (RenameDialog.isActiveAndEnabled)
             RenameDialog.Close();
