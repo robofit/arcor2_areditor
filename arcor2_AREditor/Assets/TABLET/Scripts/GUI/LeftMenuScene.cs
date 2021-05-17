@@ -69,7 +69,7 @@ public class LeftMenuScene : LeftMenu
         }
     }
 
-    protected override void DeactivateAllSubmenus(bool unlock = true) {
+    public override void DeactivateAllSubmenus(bool unlock = true) {
         base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
 

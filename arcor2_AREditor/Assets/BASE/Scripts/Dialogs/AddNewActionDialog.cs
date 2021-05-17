@@ -17,8 +17,7 @@ public class AddNewActionDialog : Dialog
     private IActionProvider actionProvider;
     [SerializeField]
     private LabeledInput nameInput;
-    private GameObject overlay;
-
+    public LeftMenuProject LeftMenuProject;
 
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
@@ -72,7 +71,9 @@ public class AddNewActionDialog : Dialog
             try {
                 await Base.WebsocketManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(
                     actionProvider.GetProviderId(), actionMetadata.Name), newActionName, actionMetadata.GetFlows(newActionName));
+                
                 Close();
+                LeftMenuProject.DeactivateAllSubmenus();
             } catch (Base.RequestFailedException e) {
                 Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
             }
