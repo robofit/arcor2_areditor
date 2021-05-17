@@ -59,7 +59,7 @@ public class RenameDialog : Dialog
     public override async void Confirm() {
         string name = (string) nameInput.GetValue();
         if (name == selectedObject.GetName()) { //for new objects, without changing name
-            Close();
+            Cancel();
             return;
         }
 
