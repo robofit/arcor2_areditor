@@ -97,8 +97,8 @@ public class LeftMenuProject : LeftMenu
                 AddActionButton2.SetInteractivity(false, "No action point is selected");
                 AddConnectionButton.SetInteractivity(false, "No input / output is selected");
                 AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
-                RunButton.SetInteractivity(false, "No object is selected");
-                RunButton2.SetInteractivity(false, "No object is selected");
+                RunButton.SetInteractivity(false, "Select action to execute it or START to run project");
+                RunButton2.SetInteractivity(false, RunButton.GetAlternativeDescription());
                 AddActionPointButton.SetInteractivity(true);
                 AddActionPointButton2.SetInteractivity(true);
                 AddActionPointButton.SetDescription("Add global action point");
@@ -147,7 +147,7 @@ public class LeftMenuProject : LeftMenu
                     RunButton.SetDescription("Run project");
                     RunButton2.SetDescription("Run project");
                 } else {
-                    runBtnInteractivity = "Selected object is not action or START";
+                    runBtnInteractivity = "Select action to execute it or START to run project";
                 }
 
                 RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
