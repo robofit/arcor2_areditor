@@ -1,8 +1,14 @@
+using System;
 using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
 public class CreateAnchor : InteractiveObject {
+    private string ID = Guid.NewGuid().ToString();
+
+    private void Awake() {
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+    }
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal ||
@@ -12,13 +18,11 @@ public class CreateAnchor : InteractiveObject {
     }
 
     private void OnEnable() {
-        Enabled = true;
-        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+        Enable(true);
     }
 
     private void OnDisable() {
-        Enabled = false;
-        SelectorMenu.Instance.DestroySelectorItem(GetId());
+        Enable(false);
     }
 
     public override void OnHoverStart() {
@@ -34,7 +38,7 @@ public class CreateAnchor : InteractiveObject {
     }
 
     public override string GetId() {
-        return "Calibration cube";
+        return ID;
     }
 
     public override void OpenMenu() {
