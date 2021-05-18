@@ -435,7 +435,7 @@ namespace Base {
             ProjectMeta.Id = project.Id;
             ProjectMeta.SceneId = project.SceneId;
             ProjectMeta.HasLogic = project.HasLogic;
-            ProjectMeta.Desc = project.Desc;
+            ProjectMeta.Description = project.Description;
             ProjectMeta.IntModified = project.IntModified;
             ProjectMeta.Modified = project.Modified;
             ProjectMeta.Name = project.Name;

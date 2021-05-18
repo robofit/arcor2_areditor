@@ -204,7 +204,7 @@ namespace Base {
                 SceneMeta = new Scene(id: "", name: "");
             }
             SceneMeta.Id = scene.Id;
-            SceneMeta.Desc = scene.Desc;
+            SceneMeta.Description = scene.Description;
             SceneMeta.IntModified = scene.IntModified;
             SceneMeta.Modified = scene.Modified;
             SceneMeta.Name = scene.Name;
