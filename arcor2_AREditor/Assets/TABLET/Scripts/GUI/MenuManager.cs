@@ -124,18 +124,20 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     // no menus are opened, scene should be interactable
                     // invoke an event from GameManager to let everyone know, that scene is interactable
                     GameManager.Instance.InvokeSceneInteractable(true);
-                    if (menu == ActionPointMenu) {
-                        menu.GetComponent<ActionPointMenu>().HideMenu();
-                    } else if (menu == ActionObjectMenuSceneEditor) {
-                        menu.GetComponent<ActionObjectMenuSceneEditor>().HideMenu();
-                    } else if (menu == ActionObjectMenuProjectEditor) {
-                        menu.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
-                    } else if (menu == ActionPointAimingMenu) {
-                        menu.GetComponent<ActionPointAimingMenu>().Close();
-                    } else if (menu == OrientationJointsDetailMenu) {
-                        menu.GetComponent<OrientationJointsDetailMenu>().HideMenu();
-                    }
                 }
+
+                if (menu == ActionPointMenu) {
+                    menu.GetComponent<ActionPointMenu>().HideMenu();
+                } else if (menu == ActionObjectMenuSceneEditor) {
+                    menu.GetComponent<ActionObjectMenuSceneEditor>().HideMenu();
+                } else if (menu == ActionObjectMenuProjectEditor) {
+                    menu.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
+                } else if (menu == ActionPointAimingMenu) {
+                    menu.GetComponent<ActionPointAimingMenu>().Close();
+                } else if (menu == OrientationJointsDetailMenu) {
+                    menu.GetComponent<OrientationJointsDetailMenu>().HideMenu();
+                }
+
                 break;
         }
     }

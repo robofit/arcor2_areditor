@@ -298,6 +298,7 @@ namespace Base {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Going online...");
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Stopping:
                     SceneStarted = false;
@@ -313,19 +314,19 @@ namespace Base {
                                 robot.SetJointValue(joint.Name, 0f);
                             }
                     }
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Started:
-                    StartCoroutine(WaitUntillSceneValid(OnSceneStarted));
+                    StartCoroutine(WaitUntillSceneValid(() => OnSceneStarted(args)));
                     break;
                 case SceneStateData.StateEnum.Stopped:
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
                     SelectedRobot = null;
                     SelectedEndEffector = null;
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
             }
-            // needs to be rethrown to ensure all subscribers has updated data
-            OnSceneStateEvent?.Invoke(this, args);
         }
 
         private IEnumerator WaitUntillSceneValid(UnityEngine.Events.UnityAction callback) {
@@ -333,7 +334,7 @@ namespace Base {
             callback();
         }
 
-        private async void OnSceneStarted() {
+        private async void OnSceneStarted(SceneStateEventArgs args) {
             SceneStarted = true;
             if (RobotsEEVisible)
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
@@ -345,6 +346,7 @@ namespace Base {
             string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
             await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
             GameManager.Instance.HideLoadingScreen();
+            OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
         }
 
         public async Task SelectRobotAndEE(string robotId, string eeId) {

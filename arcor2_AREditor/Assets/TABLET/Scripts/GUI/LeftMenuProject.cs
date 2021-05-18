@@ -19,7 +19,7 @@ public class LeftMenuProject : LeftMenu
     public InputDialog InputDialog;
     public AddNewActionDialog AddNewActionDialog;
 
-    private string apNameAddedByRobot = "", updateAPWithRobotId = "", updateAPWithEE = "", selectAPNameWhenCreated = "";
+    private string selectAPNameWhenCreated = "";
     protected override void Update() {
         base.Update();
         if (ProjectManager.Instance.ProjectMeta != null)
@@ -175,17 +175,10 @@ public class LeftMenuProject : LeftMenu
         AddActionButton2.GetComponent<Image>().enabled = false;
         ActionPickerMenu.Instance.Hide(unlock);
         ActionParametersMenu.Instance.Hide();
-        //ActionPicker.SetActive(false);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
-        if (ProjectManager.Instance.ProjectMeta.HasLogic) {
-            RunButton.SetInteractivity(true);
-            RunButton2.SetInteractivity(true);
-        } else {
-            RunButton.SetInteractivity(false, "Project without defined logic could not be run from editor");
-            RunButton2.SetInteractivity(false, "Project without defined logic could not be run from editor");
-        }
+        UpdateBtns(selectedObject);
     }
 
     public void SaveProject() {
