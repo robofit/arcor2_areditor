@@ -304,7 +304,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void Close(bool unlockAP = true) {
+    public async void Close(bool unlockAP = false) {
         SideMenu.Close();
         if (unlockAP)
             await CurrentActionPoint.WriteUnlock();

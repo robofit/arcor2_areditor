@@ -52,8 +52,6 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        UpdateBuildAndSaveBtns();
-        UpdateBtns(selectedObject);
         if (args.Event.State == SceneStateData.StateEnum.Stopping) {
 
             if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == "robot") {
@@ -74,6 +72,9 @@ public abstract class LeftMenu : MonoBehaviour {
                 RobotSelectorButton.GetComponent<Image>().enabled = false;
             }
             UpdateVisibility();
+        } else if (args.Event.State == SceneStateData.StateEnum.Started || args.Event.State == SceneStateData.StateEnum.Stopped) {
+            UpdateBuildAndSaveBtns();
+            UpdateRobotSelectorAndSteppingButtons();
         }
     }
 
@@ -105,11 +106,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected async virtual Task UpdateBtns(InteractiveObject obj) {
         if (CanvasGroup.alpha == 0)
             return;
-        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
-            SceneManager.Instance.IsRobotAndEESelected() &&
-            !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
-            SceneManager.Instance.SceneStarted ? "Robot not selected or locked" : "Scene offline");
-        RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
+        UpdateRobotSelectorAndSteppingButtons();
         if (requestingObject || obj == null) {
             SelectedObjectText.text = "";
             MoveButton.SetInteractivity(false, "No object selected");
@@ -134,8 +131,7 @@ public abstract class LeftMenu : MonoBehaviour {
             Task<RequestResult> tMove = Task.Run(() => obj.Movable());
             Task<RequestResult> tRemove = Task.Run(() => obj.Removable());
             UpdateMoveAndRemoveBtns(selectedObject.GetId(), tMove, tRemove);
-            
-            
+
             RenameButton.SetInteractivity(obj.GetType() == typeof(ActionPoint3D) ||
                 obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted &&
                 GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor) ||
@@ -147,8 +143,15 @@ public abstract class LeftMenu : MonoBehaviour {
             } else {
                 OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
             }
-
         }
+    }
+
+    private void UpdateRobotSelectorAndSteppingButtons() {
+        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
+                    SceneManager.Instance.IsRobotAndEESelected() &&
+                    !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
+                    SceneManager.Instance.SceneStarted ? "Robot not selected or locked" : "Scene offline");
+        RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
     }
 
     private async void UpdateMoveAndRemoveBtns(string objId, Task<RequestResult> movable, Task<RequestResult> removable) {
