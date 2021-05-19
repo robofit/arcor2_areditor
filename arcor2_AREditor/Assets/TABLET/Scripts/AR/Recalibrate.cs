@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -6,9 +7,14 @@ using UnityEngine;
 
 public class Recalibrate : InteractiveObject {
 
+    private string ID = Guid.NewGuid().ToString();
+
+    private void Awake() {
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+    }
+
     protected override void Start() {
         base.Start();
-        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     public override void OnClick(Click type) {
@@ -39,7 +45,7 @@ public class Recalibrate : InteractiveObject {
     }
 
     public override string GetId() {
-        return "ReCalibration cube";
+        return ID;
     }
 
     public override void OpenMenu() {

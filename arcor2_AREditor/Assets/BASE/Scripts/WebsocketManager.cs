@@ -1489,7 +1489,7 @@ namespace Base {
         /// <returns></returns>
         public async Task CreateScene(string name, string description) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.NewSceneRequestArgs args = new IO.Swagger.Model.NewSceneRequestArgs(name: name, desc: description);
+            IO.Swagger.Model.NewSceneRequestArgs args = new IO.Swagger.Model.NewSceneRequestArgs(name: name, description: description);
             IO.Swagger.Model.NewSceneRequest request = new IO.Swagger.Model.NewSceneRequest(r_id, "NewScene", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewSceneResponse response = await WaitForResult<IO.Swagger.Model.NewSceneResponse>(r_id);
@@ -1606,7 +1606,7 @@ namespace Base {
         /// <returns></returns>
         public async Task CreateProject(string name, string sceneId, string description, bool hasLogic, bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, desc: description, hasLogic: hasLogic);
+            IO.Swagger.Model.NewProjectRequestArgs args = new IO.Swagger.Model.NewProjectRequestArgs(name: name, sceneId: sceneId, description: description, hasLogic: hasLogic);
             IO.Swagger.Model.NewProjectRequest request = new IO.Swagger.Model.NewProjectRequest(r_id, "NewProject", args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.NewProjectResponse response = await WaitForResult<IO.Swagger.Model.NewProjectResponse>(r_id);

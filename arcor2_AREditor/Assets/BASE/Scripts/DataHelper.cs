@@ -46,12 +46,12 @@ public static class DataHelper {
     }
 
     public static IO.Swagger.Model.BareProject ProjectToBareProject(IO.Swagger.Model.Project project) {
-        return new IO.Swagger.Model.BareProject(desc: project.Desc, hasLogic: project.HasLogic, id: project.Id,
+        return new IO.Swagger.Model.BareProject(description: project.Description, hasLogic: project.HasLogic, id: project.Id,
             intModified: project.IntModified, modified: project.Modified, name: project.Name, sceneId: project.SceneId);
     }
 
     public static IO.Swagger.Model.BareScene SceneToBareScene(IO.Swagger.Model.Scene scene) {
-        return new IO.Swagger.Model.BareScene(desc: scene.Desc, id: scene.Id, intModified: scene.IntModified,
+        return new IO.Swagger.Model.BareScene(description: scene.Description, id: scene.Id, intModified: scene.IntModified,
             modified: scene.Modified, name: scene.Name);
     }
 

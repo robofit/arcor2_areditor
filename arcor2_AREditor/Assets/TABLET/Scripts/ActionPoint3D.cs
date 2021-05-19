@@ -110,6 +110,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
+        
     }
 
     public override void SetScenePosition(Vector3 position) {
