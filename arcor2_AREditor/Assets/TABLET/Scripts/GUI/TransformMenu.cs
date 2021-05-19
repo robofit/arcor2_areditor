@@ -353,11 +353,12 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public async void SubmitPosition() {
-        if (InteractiveObject.GetType() == typeof(ActionPoint3D)) {
-            try {               
-                if (RobotTabletBtn.CurrentState == "tablet")
-                    await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
-                else {
+        if (InteractiveObject is ActionPoint3D actionPoint) {
+            try {
+                if (RobotTabletBtn.CurrentState == "tablet") {
+                    //await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
+                    await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
+                } else {
                     await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName());
                 }
                 ResetPosition();
