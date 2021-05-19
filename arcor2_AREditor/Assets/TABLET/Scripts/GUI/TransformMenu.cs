@@ -17,6 +17,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     public TranformWheelUnits Units, UnitsDegrees;
     private GameObject model;
     public TwoStatesToggle RobotTabletBtn, RotateTranslateBtn;
+    public ButtonWithTooltip SubmitButton, ResetButton;
     private float prevValue;
 
     private Vector3 cameraPrev = new Vector3();
@@ -28,6 +29,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
 
     private GameObject gizmo;
+    private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
 
 
     private void Awake() {
@@ -37,6 +39,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     private void Update() {
+        SubmitButton.SetInteractivity(IsPositionChanged);
+        ResetButton.SetInteractivity(IsPositionChanged);
         if (model == null)
             return;
         if (RobotTabletBtn.CurrentState == "robot") {
@@ -177,7 +181,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     private void UpdateRotate(float wheelValue) {
-        if (handHolding) {
+        if (    handHolding) {
             
         } else {
 
@@ -387,5 +391,4 @@ public class TransformMenu : Singleton<TransformMenu> {
         model.transform.localRotation = Quaternion.identity;
         ResetTransformWheel();
     }
-        
 }
