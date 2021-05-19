@@ -116,7 +116,7 @@ public class LeftMenuScene : LeftMenu
     public override async void UpdateBuildAndSaveBtns() {
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
             return;
-        if (currentSubmenuOpened != LeftMenuSelection.Home)
+        if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
 
         CreateProjectBtn.SetInteractivity(false, "Loading...");

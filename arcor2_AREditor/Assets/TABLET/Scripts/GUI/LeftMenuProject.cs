@@ -228,7 +228,7 @@ public class LeftMenuProject : LeftMenu
     public override async void UpdateBuildAndSaveBtns() {
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
             return;
-        if (currentSubmenuOpened != LeftMenuSelection.Home)
+        if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
         
         BuildPackageButton.SetInteractivity(false, "Loading...");
@@ -304,12 +304,12 @@ public class LeftMenuProject : LeftMenu
     public async void AddActionClick() {
         //was clicked the button in favorites or settings submenu?
         Button clickedButton = AddActionButton.Button;
-        if (currentSubmenuOpened == LeftMenuSelection.Favorites) {
+        if (CurrentSubmenuOpened == LeftMenuSelection.Favorites) {
             clickedButton = AddActionButton2.Button;
         }
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (clickedButton.GetComponent<Image>().enabled) {
@@ -329,7 +329,7 @@ public class LeftMenuProject : LeftMenu
     }
 
     public void AddActionPointClick() {
-        SetActiveSubmenu(currentSubmenuOpened);
+        SetActiveSubmenu(CurrentSubmenuOpened);
         if (selectedObject is IActionPointParent parent) {
             CreateActionPoint(ProjectManager.Instance.GetFreeAPName(parent.GetName()), parent);
         } else {

@@ -73,7 +73,7 @@ public class AddNewActionDialog : Dialog
                     actionProvider.GetProviderId(), actionMetadata.Name), newActionName, actionMetadata.GetFlows(newActionName));
                 
                 Close();
-                LeftMenuProject.DeactivateAllSubmenus();
+                LeftMenuProject.SetActiveSubmenu(LeftMenuProject.CurrentSubmenuOpened);
             } catch (Base.RequestFailedException e) {
                 Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
             }
