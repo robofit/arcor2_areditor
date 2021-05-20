@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
@@ -57,13 +58,31 @@ namespace Base {
 
         private bool loadingEndEffectors = false;
 
+        private GameObject LockIcon;
+        private bool isGreyColorForced;
+
         protected override void Start() {
             base.Start();
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
                 _ = EnableVisualisationOfEE();
             }
+            SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+            LockIcon = Instantiate(SceneManager.Instance.LockIcon, gameObject.transform);
+            LockIcon.SetActive(false);
         }
-        
+
+        protected override void OnDestroy() {
+            base.OnDestroy();
+            SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+        }
+
+        private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+            UpdateColor();
+            if (HasUrdf() && RobotModel != null)
+                SetDefaultJoints();
+        }
+
+
         private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
@@ -221,7 +240,7 @@ namespace Base {
             outlineOnClick.InitGizmoMaterials();
 
             SetVisibility(visibility, forceShaderChange: true);
-            SetGrey(!SceneManager.Instance.SceneStarted);
+            UpdateColor();
 
             SetDefaultJoints();
 
@@ -261,7 +280,7 @@ namespace Base {
         public override void Show() {
             robotVisible = true;
             SetVisibility(1);
-            SetGrey(!SceneManager.Instance.SceneStarted);
+            UpdateColor();
         }
 
         public override void Hide() {
@@ -626,7 +645,13 @@ namespace Base {
         /// Sets grey color of robot model (indicates that model is not in position of real robot)
         /// </summary>
         /// <param name="grey">True for setting grey, false for standard state.</param>
-        public void SetGrey(bool grey) {
+        public void SetGrey(bool grey, bool force = false) {
+            isGreyColorForced = force && grey;
+            if (force) {
+                UpdateColor();
+                return;
+            }
+
             if (grey) {
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
@@ -682,18 +707,24 @@ namespace Base {
         }
 
         public override void UpdateColor() {
-            //probably nothing to do here, there is SetGrey method...
+            if (!HasUrdf())
+                return;
+
+            SetGrey(!SceneManager.Instance.SceneStarted || IsLockedByOtherUser || isGreyColorForced);
         }
 
         public override void OnObjectLocked(string owner) {
             base.OnObjectLocked(owner);
-            if (owner != LandingScreen.Instance.GetUsername())
+            if (IsLockedByOtherUser) {
                 ActionObjectName.text = GetLockedText();
+                LockIcon.SetActive(true);
+            }
         }
 
         public override void OnObjectUnlocked() {
             base.OnObjectUnlocked();
             ActionObjectName.text = GetName();
+            LockIcon.SetActive(false);
         }
     }
 }
