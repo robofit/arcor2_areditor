@@ -535,13 +535,12 @@ public abstract class LeftMenu : MonoBehaviour {
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {
         IActionPointParent parent = (IActionPointParent) selectedParent;
-        RequestResult result = new RequestResult(true, "");
-        if (parent.GetId() == selectedActionPoint.GetId()) {
-            result.Success = false;
-            result.Message = "Action point cannot be its own parent!";
+        try {
+            await WebsocketManager.Instance.UpdateActionPointParent(selectedActionPoint.GetId(), parent.GetId(), true);
+            return new RequestResult(true, "");
+        } catch(RequestFailedException e) {
+            return new RequestResult(false, e.Message);
         }
-
-        return result;
     }
     private async void AssignToParent(object selectedObject) {
         IActionPointParent parent = (IActionPointParent) selectedObject;

@@ -91,10 +91,6 @@ namespace Base {
         /// </summary>
         public GameObject RobotEEPrefab;
         /// <summary>
-        /// Prefab for lock icon shown when an object is locked
-        /// </summary>
-        public GameObject LockIcon;
-        /// <summary>
         /// Indicates whether or not scene was changed since last save
         /// </summary>
         private bool sceneChanged = false;
@@ -311,7 +307,6 @@ namespace Base {
                     if (!args.Event.Message.IsNullOrEmpty()) {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
-                    OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Started:

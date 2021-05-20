@@ -15,6 +15,7 @@ namespace Base {
         
         public TextMeshPro ActionObjectName;
         public GameObject RobotPlaceholderPrefab;
+        public GameObject LockIcon;
 
         private OutlineOnClick outlineOnClick;
 
@@ -58,7 +59,6 @@ namespace Base {
 
         private bool loadingEndEffectors = false;
 
-        private GameObject LockIcon;
         private bool isGreyColorForced;
 
         protected override void Start() {
@@ -67,8 +67,6 @@ namespace Base {
                 _ = EnableVisualisationOfEE();
             }
             SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
-            LockIcon = Instantiate(SceneManager.Instance.LockIcon, gameObject.transform);
-            LockIcon.SetActive(false);
         }
 
         protected override void OnDestroy() {
@@ -80,6 +78,10 @@ namespace Base {
             UpdateColor();
             if (HasUrdf() && RobotModel != null)
                 SetDefaultJoints();
+
+            if (args.Event.State == SceneStateData.StateEnum.Stopped) {
+                HideRobotEE();
+            }
         }
 
 
