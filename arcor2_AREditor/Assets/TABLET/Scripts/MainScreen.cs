@@ -427,22 +427,30 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            try {
-                string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
-                tile.InitTile(project.Name,
-                              () => GameManager.Instance.OpenProject(project.Id),
-                              () => ProjectOptionMenu.Open(tile),
-                              starred,
-                              project.Modified,
-                              project.Modified,
-                              project.Id,
-                              project.SceneId,
-                              sceneName); 
-                ProjectTiles.Add(tile);
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to load scene name.");
-            }
+            if (project.Valid) {                
+                try {
+                    string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                    tile.InitTile(project.Name,
+                                  () => GameManager.Instance.OpenProject(project.Id),
+                                  () => ProjectOptionMenu.Open(tile),
+                                  starred,
+                                  project.Created,
+                                  project.Modified,
+                                  project.Id,
+                                  project.SceneId,
+                                  sceneName);
+                    ProjectTiles.Add(tile);
+                } catch (ItemNotFoundException ex) {
+                    Debug.LogError(ex);
+                    tile.InitInvalidProject(project.Id, project.Name, project.Created, project.Modified, starred);
+                }
+            } else {
+                string sceneName = "unknown";
+                try {
+                    sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                } catch (ItemNotFoundException) { }
+                tile.InitInvalidProject(project.Id, project.Name, project.Created, project.Modified, starred, sceneName);
+            }            
         }
         SortCurrentList();
         GameManager.Instance.HideLoadingScreen();
