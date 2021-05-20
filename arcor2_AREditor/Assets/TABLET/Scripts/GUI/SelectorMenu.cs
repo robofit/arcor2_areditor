@@ -371,7 +371,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItem.SetText(interactiveObject.GetName());
         selectorItem.SetObject(interactiveObject, 0, iteration);
         SelectorItems.Add(interactiveObject.GetId(), selectorItem);
-        if (ContentAlphabet.activeSelf)
+        Debug.LogError(GameManager.Instance.GetGameState());
+        Debug.LogError(SceneManager.Instance.Valid);
+        Debug.LogError(ProjectManager.Instance.Valid);
+        if (ContentAlphabet.activeSelf && ((GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor && SceneManager.Instance.Valid) ||
+                                           (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor && ProjectManager.Instance.Valid))) // only sort when project / scene is fully loaded
             SwitchToAlphabet(false);
         return selectorItem;
     }
