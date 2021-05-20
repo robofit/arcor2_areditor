@@ -17,7 +17,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject SelectorItemPrefab;
 
     public CanvasGroup CanvasGroup;
-    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim;
+    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim, ContainerNoPose;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
@@ -477,7 +477,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     public void UpdateNoPoseMenu() {
-        if (!ContentNoPose.activeSelf || !GameManager.Instance.Scene.activeSelf)
+        if (!ContainerNoPose.activeSelf || !GameManager.Instance.Scene.activeSelf)
             return;
         selectorItemsNoPoseMenu.Clear();
         foreach (ActionObject actionObject in SceneManager.Instance.GetAllActionObjectsWithoutPose()) {
@@ -498,7 +498,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void SwitchToAim() {
         ContainerAim.SetActive(true);
-        ContentNoPose.SetActive(false);
+        ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(false);
         foreach (SelectorItem item in SelectorItems.Values) {
             if (!IsRootItem(item)) {
@@ -510,7 +510,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void SwitchToNoPose() {
         ContainerAim.SetActive(false);
-        ContentNoPose.SetActive(true);
+        ContainerNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
         UpdateNoPoseMenu();
     }
@@ -535,7 +535,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItemsAimMenu.Clear();
         selectorItemsNoPoseMenu.Clear();
         ContainerAim.SetActive(false);
-        ContentNoPose.SetActive(false);
+        ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(true);
     }
 
