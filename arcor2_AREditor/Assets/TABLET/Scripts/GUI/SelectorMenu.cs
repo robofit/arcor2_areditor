@@ -387,25 +387,29 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void DestroySelectorItem(string id) {
         if (SelectorItems.TryGetValue(id, out SelectorItem selectorItem)) {
-            TryRemoveFromList(selectorItem.InteractiveObject, selectorItemsAimMenu);
-            TryRemoveFromList(selectorItem.InteractiveObject, selectorItemsNoPoseMenu);
-            if (selectorItem.IsSelected()) {
-                DeselectObject(true);
-            }
-            if (selectorItem.InteractiveObject is ISubItem subItem) {
-                InteractiveObject parentObject = subItem.GetParentObject();
-                if (parentObject != null)
-                    if (SelectorItems.TryGetValue(parentObject.GetId(), out SelectorItem parentSelectorItem)) {
-                        parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
-                    }
-            }
-            Destroy(selectorItem.transform.gameObject);
-            SelectorItems.Remove(id);
+            DestroySelectorItem(selectorItem);
         }
     }
 
     public void DestroySelectorItem(InteractiveObject interactiveObject) {
         DestroySelectorItem(interactiveObject.GetId());
+    }
+
+    public void DestroySelectorItem(SelectorItem selectorItem) {
+        TryRemoveFromList(selectorItem.InteractiveObject, selectorItemsAimMenu);
+        TryRemoveFromList(selectorItem.InteractiveObject, selectorItemsNoPoseMenu);
+        if (selectorItem.IsSelected()) {
+            DeselectObject(true);
+        }
+        if (selectorItem.InteractiveObject is ISubItem subItem) {
+            InteractiveObject parentObject = subItem.GetParentObject();
+            if (parentObject != null)
+                if (SelectorItems.TryGetValue(parentObject.GetId(), out SelectorItem parentSelectorItem)) {
+                    parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
+                }
+        }
+        Destroy(selectorItem.transform.gameObject);
+        SelectorItems.Remove(selectorItem.InteractiveObject.GetId());
     }
 
     public void Clear() {

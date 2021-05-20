@@ -168,7 +168,7 @@ namespace Base {
             
             if (SceneMeta != null)
                 return false;
-            SelectorMenu.Instance.Clear();
+            //SelectorMenu.Instance.Clear();
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
