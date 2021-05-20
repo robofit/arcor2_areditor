@@ -40,42 +40,50 @@ public class UrdfManager : Singleton<UrdfManager> {
 
         //Debug.Log("URDF: download started");
         string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
-        using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
-                // Request and wait for the desired page.
-            yield return www.Send();
-            if (www.isNetworkError || www.isHttpError) {
-                Debug.LogError(www.error + " (" + uri + ")");
-                Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
-            } else {
-                string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
-                Directory.CreateDirectory(robotDictionary);
-                string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
-                System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-                string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
-                try {
-                    Directory.Delete(urdfDictionary, true);
-                } catch (DirectoryNotFoundException) {
-                    // ok, nothing to delete..
-                }
-                try {
-                    ZipFile.ExtractToDirectory(savePath, urdfDictionary);
-                    //Debug.Log("URDF: zip extracted");
-                    // Set to false to indicate that download is not in progress.
-                    RobotModelsSources[fileName] = false;
-                    OnUrdfDownloaded(urdfDictionary, robotType);
-                } catch (Exception ex) when (ex is ArgumentException ||
-                                                ex is ArgumentNullException ||
-                                                ex is DirectoryNotFoundException ||
-                                                ex is PathTooLongException ||
-                                                ex is IOException ||
-                                                ex is FileNotFoundException ||
-                                                ex is InvalidDataException ||
-                                                ex is UnauthorizedAccessException) {
-                    Debug.LogError(ex);
-                    Notifications.Instance.ShowNotification("Failed to extract URDF", "");
-                }
+        UnityWebRequest www;
+        try {
+            www = UnityWebRequest.Get(uri);
+        } catch (WebException ex) {
+            Notifications.Instance.ShowNotification("Failed to load robot model", ex.Message);
+            yield break;
+        }
+        // Request and wait for the desired page.
+        yield return www.SendWebRequest();
+        if (www.isNetworkError || www.isHttpError) {
+            Debug.LogError(www.error + " (" + uri + ")");
+            Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
+        } else {
+            string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
+            Directory.CreateDirectory(robotDictionary);
+            string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
+            System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+            string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
+            try {
+                Directory.Delete(urdfDictionary, true);
+            } catch (DirectoryNotFoundException) {
+                // ok, nothing to delete..
+            }
+            try {
+                ZipFile.ExtractToDirectory(savePath, urdfDictionary);
+                //Debug.Log("URDF: zip extracted");
+                // Set to false to indicate that download is not in progress.
+                RobotModelsSources[fileName] = false;
+                OnUrdfDownloaded(urdfDictionary, robotType);
+            } catch (Exception ex) when (ex is ArgumentException ||
+                                            ex is ArgumentNullException ||
+                                            ex is DirectoryNotFoundException ||
+                                            ex is PathTooLongException ||
+                                            ex is IOException ||
+                                            ex is FileNotFoundException ||
+                                            ex is InvalidDataException ||
+                                            ex is UnauthorizedAccessException) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to extract URDF", "");
             }
         }
+            
+        
+        
         
         
     }

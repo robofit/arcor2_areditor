@@ -534,12 +534,27 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {
-        IActionPointParent parent = (IActionPointParent) selectedParent;
-        RequestResult result = new RequestResult(true, "");
-        if (parent.GetId() == selectedActionPoint.GetId()) {
-            result.Success = false;
-            result.Message = "Action point cannot be its own parent!";
+        RequestResult result;
+        
+        if (selectedParent is IActionPointParent parent) {
+            result = new RequestResult(true, "");
+            if (selectedActionPoint.GetId() == parent.GetId()) {
+                result.Success = false;
+                result.Message = "AP could not be its own parent.";
+            } else {
+                try {
+                    GameManager.Instance.ShowLoadingScreen("Checking hierarchy...");
+                    await WebsocketManager.Instance.UpdateActionPointParent(selectedActionPoint.GetId(), parent.GetId(), true);
+                    GameManager.Instance.HideLoadingScreen();
+                } catch (RequestFailedException ex) {
+                    result.Success = false;
+                    result.Message = ex.Message;
+                }
+            }            
+        } else {
+            result = new RequestResult(false, "This object could not be parent of AP");
         }
+        
 
         return result;
     }
