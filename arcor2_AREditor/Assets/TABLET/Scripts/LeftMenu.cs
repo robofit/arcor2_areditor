@@ -26,7 +26,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     private bool isVisibilityForced = false;
     protected ActionPoint3D selectedActionPoint;
-    protected LeftMenuSelection currentSubmenuOpened;
+    public LeftMenuSelection CurrentSubmenuOpened;
 
     public ConfirmationDialog ConfirmationDialog;
 
@@ -229,7 +229,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
         if (selectedObject is Action3D action) {
             if (!SelectorMenu.Instance.gameObject.activeSelf && !OpenMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-                SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+                SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
             }
 
             if (OpenMenuButton.GetComponent<Image>().enabled) {
@@ -243,7 +243,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 selectedObject.OpenMenu();
             }
         } else {
-            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
             selectedObject.OpenMenu();
         }
 
@@ -306,7 +306,7 @@ public abstract class LeftMenu : MonoBehaviour {
         }
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSelectorButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (RobotSelectorButton.GetComponent<Image>().enabled) {
@@ -331,7 +331,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         }
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
@@ -358,7 +358,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         selectedActionPoint = (ActionPoint3D) selectedObject;
@@ -376,13 +376,13 @@ public abstract class LeftMenu : MonoBehaviour {
         
         //was clicked the button in favorites or settings submenu?
         Button clickedButton;
-        if (currentSubmenuOpened == LeftMenuSelection.Favorites)
+        if (CurrentSubmenuOpened == LeftMenuSelection.Favorites)
             clickedButton = MoveButton2.Button;
         else
             clickedButton = MoveButton.Button;
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(currentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
@@ -401,7 +401,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 if (await selectedObject.WriteLock(true)) {
                     TransformMenu.Instance.Show(selectedObject);
                 } else {
-                    SetActiveSubmenu(currentSubmenuOpened);
+                    SetActiveSubmenu(CurrentSubmenuOpened);
                     return;
                 }
             }
@@ -437,7 +437,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
-        SetActiveSubmenu(currentSubmenuOpened);
+        SetActiveSubmenu(CurrentSubmenuOpened);
         selectedObject.Remove();
     }
 
@@ -467,7 +467,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public void SetActiveSubmenu(LeftMenuSelection which, bool active = true, bool unlock = true) {
         DeactivateAllSubmenus(unlock);
-        currentSubmenuOpened = which;
+        CurrentSubmenuOpened = which;
         if (!active)
             return;
         switch (which) {
@@ -534,12 +534,27 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {
-        IActionPointParent parent = (IActionPointParent) selectedParent;
-        RequestResult result = new RequestResult(true, "");
-        if (parent.GetId() == selectedActionPoint.GetId()) {
-            result.Success = false;
-            result.Message = "Action point cannot be its own parent!";
+        RequestResult result;
+        
+        if (selectedParent is IActionPointParent parent) {
+            result = new RequestResult(true, "");
+            if (selectedActionPoint.GetId() == parent.GetId()) {
+                result.Success = false;
+                result.Message = "AP could not be its own parent.";
+            } else {
+                try {
+                    GameManager.Instance.ShowLoadingScreen("Checking hierarchy...");
+                    await WebsocketManager.Instance.UpdateActionPointParent(selectedActionPoint.GetId(), parent.GetId(), true);
+                    GameManager.Instance.HideLoadingScreen();
+                } catch (RequestFailedException ex) {
+                    result.Success = false;
+                    result.Message = ex.Message;
+                }
+            }            
+        } else {
+            result = new RequestResult(false, "This object could not be parent of AP");
         }
+        
 
         return result;
     }

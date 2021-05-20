@@ -168,6 +168,7 @@ namespace Base {
             
             if (SceneMeta != null)
                 return false;
+            //SelectorMenu.Instance.Clear();
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
@@ -306,14 +307,6 @@ namespace Base {
                     if (!args.Event.Message.IsNullOrEmpty()) {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
-                    OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
-                    foreach (IRobot robot in GetRobots()) {
-                        robot.SetGrey(true);
-                        if (robot.HasUrdf())
-                            foreach (var joint in robot.GetJoints()) { //set default angles of joints
-                                robot.SetJointValue(joint.Name, 0f);
-                            }
-                    }
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Started:
@@ -339,9 +332,6 @@ namespace Base {
             if (RobotsEEVisible)
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-            foreach (IRobot robot in GetRobots()) {
-                robot.SetGrey(false);
-            }
             string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
             string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
             await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);

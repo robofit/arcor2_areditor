@@ -620,9 +620,6 @@ namespace Base {
             return Data.Id;
         }
 
-        private void OnDestroy() {
-            SelectorMenu.Instance.DestroySelectorItem(this);
-        }
 
     }
 }

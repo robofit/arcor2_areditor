@@ -401,7 +401,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         if (SceneManager.Instance.SceneStarted) {
             await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot, true);
             SceneManager.Instance.GetActionObject(robotID).SetInteractivity(shadowRealRobot);
         } else { //is possible only for joints, not orientation
             foreach (IO.Swagger.Model.Joint joint in joints.Joints) { //set default angles of joints

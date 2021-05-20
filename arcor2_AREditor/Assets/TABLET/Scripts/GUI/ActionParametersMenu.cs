@@ -49,6 +49,10 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         }
     }
 
+    public bool IsVisible() {
+        return CanvasGroup.alpha > 0;
+    }
+
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
