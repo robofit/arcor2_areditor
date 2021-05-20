@@ -338,11 +338,9 @@ namespace Base {
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
 
-            projectChanged = project.Modified == DateTime.MinValue;
+            ProjectChanged = project.IntModified != null;
             Valid = true;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);            
-            (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
-            ProjectChanged = !successClose;
+            OnLoadProject?.Invoke(this, EventArgs.Empty);     
             return true;
         }
 

@@ -174,10 +174,7 @@ namespace Base {
             LoadSettings();
             
             UpdateActionObjects(scene, customCollisionModels);
-            sceneChanged = scene.Modified == DateTime.MinValue;
-
-            (bool successClose, _) = await GameManager.Instance.CloseScene(false, true);
-            SceneChanged = !successClose;
+            SceneChanged = scene.IntModified != null;
             Valid = true;
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
