@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
+using IO.Swagger.Model;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,12 @@ public class Action3D : Base.Action, ISubItem {
     private bool selected = false;
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
+
+    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
+        base.Init(projectAction, metadata, ap, actionProvider);
+        Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
+        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
+    }
 
     protected override void Start() {
         base.Start();

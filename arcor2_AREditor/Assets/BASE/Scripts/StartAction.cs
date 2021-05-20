@@ -18,6 +18,7 @@ public class StartAction : StartEndAction
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, actionType);
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, 0));
+        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
 

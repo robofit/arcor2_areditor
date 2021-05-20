@@ -61,6 +61,10 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
         }
     }
 
+    public bool IsVisible() {
+        return CanvasGroup.alpha > 0;
+    }
+
     private static void CreateTooltip(string text, ActionButton btn) {
         TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
         btnTooltip.enabled = true;

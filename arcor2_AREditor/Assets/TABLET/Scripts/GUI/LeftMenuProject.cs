@@ -173,8 +173,10 @@ public class LeftMenuProject : LeftMenu
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
-        ActionPickerMenu.Instance.Hide(unlock);
-        ActionParametersMenu.Instance.Hide();
+        if (ActionPickerMenu.Instance.IsVisible())
+            ActionPickerMenu.Instance.Hide(unlock);
+        if (ActionParametersMenu.Instance.IsVisible())
+            ActionParametersMenu.Instance.Hide();
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {

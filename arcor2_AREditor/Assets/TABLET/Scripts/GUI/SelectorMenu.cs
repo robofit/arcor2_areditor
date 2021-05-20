@@ -17,7 +17,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject SelectorItemPrefab;
 
     public CanvasGroup CanvasGroup;
-    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim;
+    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim, ContainerNoPose;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
@@ -59,7 +59,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public async Task UpdateFilters() {
-        await ShowRobots(RobotsToggle.Toggled);
+        await ShowRobotsAsync(RobotsToggle.Toggled);
         ShowActionObjects(ObjectsToggle.Toggled);
         ShowActionPoints(PointsToggle.Toggled);
         ShowActions(ActionsToggle.Toggled);
@@ -359,17 +359,24 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         if (interactiveObject is ISubItem subItem) {
             if (SelectorItems.TryGetValue(subItem.GetParentObject().GetId(), out SelectorItem selectorItemParent)) {
                 selectorItem.transform.SetParent(selectorItemParent.SublistContent.transform);
-                selectorItemParent.Childs.Add(selectorItem);
+                selectorItemParent.AddChild(selectorItem, ContainerAlphabet.activeSelf);
             } else {
                 throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
         } else {
             selectorItem.transform.SetParent(ContentAlphabet.transform);
         }
+        selectorItem.CollapsableButton.interactable = false;
         //selectorItem.gameObject.SetActive(false);
         selectorItem.SetText(interactiveObject.GetName());
         selectorItem.SetObject(interactiveObject, 0, iteration);
         SelectorItems.Add(interactiveObject.GetId(), selectorItem);
+        Debug.LogError(GameManager.Instance.GetGameState());
+        Debug.LogError(SceneManager.Instance.Valid);
+        Debug.LogError(ProjectManager.Instance.Valid);
+        if (ContentAlphabet.activeSelf && ((GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor && SceneManager.Instance.Valid) ||
+                                           (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor && ProjectManager.Instance.Valid))) // only sort when project / scene is fully loaded
+            SwitchToAlphabet(false);
         return selectorItem;
     }
 
@@ -392,7 +399,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 InteractiveObject parentObject = subItem.GetParentObject();
                 if (parentObject != null)
                     if (SelectorItems.TryGetValue(parentObject.GetId(), out SelectorItem parentSelectorItem)) {
-                        parentSelectorItem.Childs.Remove(selectorItem);
+                        parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
                     }
             }
             Destroy(selectorItem.transform.gameObject);
@@ -402,6 +409,27 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void DestroySelectorItem(InteractiveObject interactiveObject) {
         DestroySelectorItem(interactiveObject.GetId());
+    }
+
+    public void Clear() {
+        foreach (SelectorItem item in SelectorItems.Values) {
+            DestroySelectorItem(item.InteractiveObject.GetId());
+        }
+        SelectorItems.Clear();
+        selectorItemsAimMenu.Clear();
+        selectorItemsNoPoseMenu.Clear();
+        foreach (Transform t in ContentAim.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
+        foreach (Transform t in ContentAlphabet.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
+        foreach (Transform t in ContentNoPose.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
     }
 
     private void TryRemoveFromList(InteractiveObject io, List<SelectorItem> selectorItems) {
@@ -453,7 +481,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     public void UpdateNoPoseMenu() {
-        if (!ContentNoPose.activeSelf || !GameManager.Instance.Scene.activeSelf)
+        if (!ContainerNoPose.activeSelf || !GameManager.Instance.Scene.activeSelf)
             return;
         selectorItemsNoPoseMenu.Clear();
         foreach (ActionObject actionObject in SceneManager.Instance.GetAllActionObjectsWithoutPose()) {
@@ -474,35 +502,44 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void SwitchToAim() {
         ContainerAim.SetActive(true);
-        ContentNoPose.SetActive(false);
+        ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(false);
         foreach (SelectorItem item in SelectorItems.Values) {
             if (!IsRootItem(item)) {
                 item.gameObject.SetActive(false);
             }
+            item.CollapsableButton.interactable = false;
         }
     }
 
     public void SwitchToNoPose() {
         ContainerAim.SetActive(false);
-        ContentNoPose.SetActive(true);
+        ContainerNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
         UpdateNoPoseMenu();
     }
 
     public void SwitchToAlphabet() {
+        SwitchToAlphabet(true);
+    }
+
+    public void SwitchToAlphabet(bool updateCollapsedState) {
         foreach (SelectorItem item in SelectorItems.Values.OrderBy(item => item.InteractiveObject.GetName())) {
             if (IsRootItem(item)) {
                 item.transform.SetParent(ContentAlphabet.transform);
+                item.transform.SetAsLastSibling();
             } else {
                 item.gameObject.SetActive(item.InteractiveObject.Enabled);
+                item.transform.SetAsLastSibling();
             }
-            item.SetCollapsedState(true);
+            if (updateCollapsedState)
+                item.SetCollapsedState(true);
+            item.CollapsableButton.interactable = item.HasChilds();
         }
         selectorItemsAimMenu.Clear();
         selectorItemsNoPoseMenu.Clear();
         ContainerAim.SetActive(false);
-        ContentNoPose.SetActive(false);
+        ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(true);
     }
 
@@ -516,7 +553,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         return lastSelectedItem.InteractiveObject;
     }
 
-    public async Task ShowRobots(bool show) {
+    public async void ShowRobots(bool show) {
+        if (SceneManager.Instance.SceneStarted)
+            await ProjectManager.Instance.EnableAllRobotsEE(show);
+        SceneManager.Instance.EnableAllRobots(show);
+    }
+
+    public async Task ShowRobotsAsync(bool show) {
         if (SceneManager.Instance.SceneStarted)
             await ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
