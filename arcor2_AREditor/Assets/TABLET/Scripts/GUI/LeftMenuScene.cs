@@ -119,17 +119,14 @@ public class LeftMenuScene : LeftMenu
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
 
-        CreateProjectBtn.SetInteractivity(false, "Loading...");
         SaveButton.SetInteractivity(false, "Loading...");
         CloseButton.SetInteractivity(false, "Loading...");
         WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
         
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
-            CreateProjectBtn.SetInteractivity(true);
         } else {
             WebsocketManager.Instance.SaveScene(true, SaveSceneCallback);
-            CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
         }
     }
 
