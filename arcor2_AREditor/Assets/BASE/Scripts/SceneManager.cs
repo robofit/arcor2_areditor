@@ -310,10 +310,14 @@ namespace Base {
                     OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     foreach (IRobot robot in GetRobots()) {
                         robot.SetGrey(true);
-                        if (robot.HasUrdf())
-                            foreach (var joint in robot.GetJoints()) { //set default angles of joints
-                                robot.SetJointValue(joint.Name, 0f);
-                            }
+                        try {
+                            if (robot.HasUrdf())
+                                foreach (IO.Swagger.Model.Joint joint in robot.GetJoints()) { //set default angles of joints
+                                    robot.SetJointValue(joint.Name, 0f);
+                                }
+                        } catch (RequestFailedException ex) {
+                            Debug.LogError(ex.Message);
+                        }                
                     }
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;

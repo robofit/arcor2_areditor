@@ -59,7 +59,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public async Task UpdateFilters() {
-        await ShowRobots(RobotsToggle.Toggled);
+        await ShowRobotsAsync(RobotsToggle.Toggled);
         ShowActionObjects(ObjectsToggle.Toggled);
         ShowActionPoints(PointsToggle.Toggled);
         ShowActions(ActionsToggle.Toggled);
@@ -553,7 +553,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         return lastSelectedItem.InteractiveObject;
     }
 
-    public async Task ShowRobots(bool show) {
+    public async void ShowRobots(bool show) {
+        if (SceneManager.Instance.SceneStarted)
+            await ProjectManager.Instance.EnableAllRobotsEE(show);
+        SceneManager.Instance.EnableAllRobots(show);
+    }
+
+    public async Task ShowRobotsAsync(bool show) {
         if (SceneManager.Instance.SceneStarted)
             await ProjectManager.Instance.EnableAllRobotsEE(show);
         SceneManager.Instance.EnableAllRobots(show);
