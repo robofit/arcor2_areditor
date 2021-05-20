@@ -53,7 +53,7 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="args"></param>
-    private void OnARCalibrated(object sender, GameObjectEventArgs args) {
+    private void OnARCalibrated(object sender, CalibrationEventArgs args) {
 #if UNITY_ANDROID && AR_ON
         // Activate toggle to enable hiding/displaying calibration cube
         CalibrationElementsToggle.interactable = true;

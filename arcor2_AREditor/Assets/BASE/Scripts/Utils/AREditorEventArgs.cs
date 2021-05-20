@@ -398,6 +398,22 @@ namespace Base {
         }
     }
 
+    public class CalibrationEventArgs : EventArgs {
+
+        public bool Calibrated {
+            get; set;
+        }
+
+        public GameObject Anchor {
+            get; set;
+        }
+
+        public CalibrationEventArgs(bool calibrated, GameObject anchor) {
+            Calibrated = calibrated;
+            Anchor = anchor;
+        }
+    }
+
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void StringListEventHandler(object sender, StringListEventArgs args);
@@ -431,5 +447,6 @@ namespace Base {
         public delegate void InteractiveObjectEventHandler(object sender, InteractiveObjectEventArgs args);
         public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
         public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
+        public delegate void CalibrationEventHandler(object sender, CalibrationEventArgs args);
     }
 }

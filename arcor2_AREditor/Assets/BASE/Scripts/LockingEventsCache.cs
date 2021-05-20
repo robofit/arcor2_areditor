@@ -31,7 +31,7 @@ namespace Base {
         }
 
 
-        private void OnARCalibrated(object sender, GameObjectEventArgs args) {
+        private void OnARCalibrated(object sender, CalibrationEventArgs args) {
            // Debug.LogError("ON AR CALIBRATED");
             tracking = true;
             if (sceneLoaded)

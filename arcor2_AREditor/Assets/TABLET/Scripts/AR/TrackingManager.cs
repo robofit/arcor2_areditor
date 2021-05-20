@@ -76,6 +76,8 @@ public class TrackingManager : Singleton<TrackingManager> {
         GameManager.Instance.OnCloseScene += StopTrackingNotifications;
         GameManager.Instance.OnStopPackage += StopTrackingNotifications;
 
+        CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
+
         ARPlaneManager.planesChanged += OnPlanesChanged;
         ARPointCloudManager.pointCloudsChanged += OnPointCloudChanged;
         
@@ -87,6 +89,10 @@ public class TrackingManager : Singleton<TrackingManager> {
 #endif       
     }
 
+    private void OnARCalibrated(object sender, CalibrationEventArgs args) {
+        anchorTrackingStatus = args.Calibrated ? anchorTrackingStatus : AnchorTrackingStatus.NotCalibrated;
+    }
+
     /// <summary>
     /// Called when anchors of the ARAnchorManager are changed (not tracking, tracking, added, etc.)
     /// </summary>
@@ -96,7 +102,7 @@ public class TrackingManager : Singleton<TrackingManager> {
         if (CalibrationManager.Instance.Calibrated) {
             if (!CalibrationManager.Instance.UsingCloudAnchors) {
                 //if (obj.updated[obj.updated.IndexOf(CalibrationManager.Instance.WorldAnchorLocal)].trackingState == TrackingState.Tracking) {
-                switch(CalibrationManager.Instance.WorldAnchorLocal.trackingState) {
+                switch (CalibrationManager.Instance.WorldAnchorLocal.trackingState) {
                     case TrackingState.Tracking:
                         if (anchorTrackingStatus != AnchorTrackingStatus.Tracking) {
                             // cancel previously invoked tracking failure notification
@@ -127,14 +133,16 @@ public class TrackingManager : Singleton<TrackingManager> {
                             trackingAnchorFailureNotify = null;
                         }
 
-                        trackingAnchorFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Locate the calibration marker.", 9f, anchorTrackingFailure:true));
+                        trackingAnchorFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Locate the calibration marker.", 9f, anchorTrackingFailure: true));
                         TrackingLostAnimation.PlayVideo();
                         anchorTrackingStatus = AnchorTrackingStatus.NotTracking;
                         GameManager.Instance.SceneSetActive(false);
                         break;
                 }
             }
-        }        
+        } else {
+            anchorTrackingStatus = AnchorTrackingStatus.NotCalibrated;
+        }
     }
 
     //private void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs obj) {

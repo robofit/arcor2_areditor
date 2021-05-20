@@ -25,7 +25,7 @@ public class Recalibrate : InteractiveObject {
     }
 
     public void Calibrate() {
-        CalibrationManager.Instance.Recalibrate();
+        CalibrationManager.Instance.RecalibrateUsingARFoundation();
     }
 
     public override void Enable(bool enable) {
