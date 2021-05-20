@@ -21,7 +21,7 @@ public abstract class InteractiveObject : Clickable {
     }
 
     protected virtual void OnDestroy() {
-        SelectorMenu.Instance.DestroySelectorItem(this);
+        SelectorMenu.Instance.DestroySelectorItem(GetId());
         LockingEventsCache.Instance.OnObjectLockingEvent -= OnObjectLockingEvent;
     }
 

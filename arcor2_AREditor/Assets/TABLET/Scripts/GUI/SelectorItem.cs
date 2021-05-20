@@ -25,8 +25,8 @@ public class SelectorItem : MonoBehaviour
 
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
-    public List<SelectorItem> Childs = new List<SelectorItem>();
-    public List<SelectorItem> VisibleChilds = new List<SelectorItem>();
+    private List<SelectorItem> childs = new List<SelectorItem>();
+    //public List<SelectorItem> VisibleChilds = new List<SelectorItem>();
 
     private void Start() {
         Removed = false;
@@ -35,6 +35,23 @@ public class SelectorItem : MonoBehaviour
         Label.text = text;
         name = text;
     }
+
+    public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+        childs.Add(selectorItem);
+        if (updateCollapsableInteractivity)
+            CollapsableButton.interactable = true;
+    }
+
+    public void RemoveChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+        childs.Remove(selectorItem);
+        if (updateCollapsableInteractivity)
+            CollapsableButton.interactable = HasChilds();
+    }
+
+    public bool HasChilds() {
+        return childs.Count > 0;
+    }
+
     public void SetObject(InteractiveObject interactiveObject, float score, long currentIteration) {
         InteractiveObject = interactiveObject;
         Collapsable = false;

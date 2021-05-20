@@ -359,17 +359,20 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         if (interactiveObject is ISubItem subItem) {
             if (SelectorItems.TryGetValue(subItem.GetParentObject().GetId(), out SelectorItem selectorItemParent)) {
                 selectorItem.transform.SetParent(selectorItemParent.SublistContent.transform);
-                selectorItemParent.Childs.Add(selectorItem);
+                selectorItemParent.AddChild(selectorItem, ContainerAlphabet.activeSelf);
             } else {
                 throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
         } else {
             selectorItem.transform.SetParent(ContentAlphabet.transform);
         }
+        selectorItem.CollapsableButton.interactable = false;
         //selectorItem.gameObject.SetActive(false);
         selectorItem.SetText(interactiveObject.GetName());
         selectorItem.SetObject(interactiveObject, 0, iteration);
         SelectorItems.Add(interactiveObject.GetId(), selectorItem);
+        if (ContentAlphabet.activeSelf)
+            SwitchToAlphabet(false);
         return selectorItem;
     }
 
@@ -392,7 +395,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 InteractiveObject parentObject = subItem.GetParentObject();
                 if (parentObject != null)
                     if (SelectorItems.TryGetValue(parentObject.GetId(), out SelectorItem parentSelectorItem)) {
-                        parentSelectorItem.Childs.Remove(selectorItem);
+                        parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
                     }
             }
             Destroy(selectorItem.transform.gameObject);
@@ -402,6 +405,27 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void DestroySelectorItem(InteractiveObject interactiveObject) {
         DestroySelectorItem(interactiveObject.GetId());
+    }
+
+    public void Clear() {
+        foreach (SelectorItem item in SelectorItems.Values) {
+            DestroySelectorItem(item.InteractiveObject.GetId());
+        }
+        SelectorItems.Clear();
+        selectorItemsAimMenu.Clear();
+        selectorItemsNoPoseMenu.Clear();
+        foreach (Transform t in ContentAim.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
+        foreach (Transform t in ContentAlphabet.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
+        foreach (Transform t in ContentNoPose.transform) {
+            if (t != ContentAim.transform)
+                Destroy(t.gameObject);
+        }
     }
 
     private void TryRemoveFromList(InteractiveObject io, List<SelectorItem> selectorItems) {
@@ -480,6 +504,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             if (!IsRootItem(item)) {
                 item.gameObject.SetActive(false);
             }
+            item.CollapsableButton.interactable = false;
         }
     }
 
@@ -491,13 +516,21 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void SwitchToAlphabet() {
+        SwitchToAlphabet(true);
+    }
+
+    public void SwitchToAlphabet(bool updateCollapsedState) {
         foreach (SelectorItem item in SelectorItems.Values.OrderBy(item => item.InteractiveObject.GetName())) {
             if (IsRootItem(item)) {
                 item.transform.SetParent(ContentAlphabet.transform);
+                item.transform.SetAsLastSibling();
             } else {
                 item.gameObject.SetActive(item.InteractiveObject.Enabled);
+                item.transform.SetAsLastSibling();
             }
-            item.SetCollapsedState(true);
+            if (updateCollapsedState)
+                item.SetCollapsedState(true);
+            item.CollapsableButton.interactable = item.HasChilds();
         }
         selectorItemsAimMenu.Clear();
         selectorItemsNoPoseMenu.Clear();
