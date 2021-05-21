@@ -80,6 +80,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private float anchorQuality = 0f;
     private float recalibrateTime = 120f;
 
+    private bool AutoRecalibration = true;
+
     private void Awake() {
         UsingServerCalibration = PlayerPrefsHelper.LoadBool("UseServerCalibration", true);
     }
@@ -133,7 +135,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public void Recalibrate() {
         if (UsingServerCalibration) {
-            RecalibrateUsingServer();
+            RecalibrateUsingServer(inverse:true);
         } else {
             RecalibrateUsingARFoundation();
         }
@@ -143,10 +145,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void RunLocalARFoundationCalibration() {
         // If we used server calibration before, remove all server anchors and prepare for local calibration
-        if (Calibrated && UsingServerCalibration) {
+        if (UsingServerCalibration) {
+            //Debug.Log("Local: Was using server calibration");
             Calibrated = false;
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
             if (autoCalibration != null) {
+                //Debug.Log("Local: Stopping autoCalib");
                 StopCoroutine(autoCalibration);
                 autoCalibration = null;
             }
@@ -157,14 +161,21 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         ARTrackedImageManager.enabled = true;
 
         if (!Calibrated) {
+            //Debug.Log("Local: not calibrated");
             // stop previously running calibration coroutine
             if (localCalibration != null) {
+                //Debug.Log("Local: Stopping localCalib");
                 StopCoroutine(localCalibration);
             }
             localCalibration = StartCoroutine(Calibrate());
         }
         
         UsingServerCalibration = false; 
+    }
+
+    public void EnableAutoReCalibration(bool active) {
+        AutoRecalibration = active;
+        Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
     }
 
     private IEnumerator Calibrate() {
@@ -439,10 +450,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private void RunServerAutoCalibration() {
         // If we used local calibration before, remove all local anchors and prepare for server calibration
-        if (Calibrated && !UsingServerCalibration) {
+        if (!UsingServerCalibration) {
+            //Debug.Log("Server: Was using local calibration");
             Calibrated = false;
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
             if (localCalibration != null) {
+                //Debug.Log("Server: Stopping local calibration coroutine");
                 StopCoroutine(localCalibration);
                 localCalibration = null;
             }
@@ -453,8 +466,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         ARTrackedImageManager.enabled = false;
 
         if (!Calibrated) {
+            //Debug.Log("Server: not calibrated");
             // stop previously running calibration coroutine
             if (autoCalibration != null) {
+                //Debug.Log("Server: Stopping autocalib");
                 StopCoroutine(autoCalibration);
             }
             autoCalibration = StartCoroutine(AutoCalibrate());
@@ -469,17 +484,19 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                                          GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor ||
                                          GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning);
 
-        Notifications.Instance.ShowNotification("Calibrating", "Move the device around your workspace");
-        TrackingLostAnimation.PlayVideo();
-        //yield return new WaitForSeconds(10f);
+        if (!Calibrated) {
+            Notifications.Instance.ShowNotification("Calibrating", "Move the device around your workspace");
+            TrackingLostAnimation.PlayVideo();
+            //yield return new WaitForSeconds(10f);
 
-        // Check how many features and planes the tracking has detected
-        yield return new WaitUntil(() => TrackingManager.Instance.GetTrackingQuality() == TrackingManager.TrackingQuality.GOOD_QUALITY);
-        TrackingLostAnimation.StopVideo();
+            // Check how many features and planes the tracking has detected
+            yield return new WaitUntil(() => TrackingManager.Instance.GetTrackingQuality() == TrackingManager.TrackingQuality.GOOD_QUALITY);
+            TrackingLostAnimation.StopVideo();
 
-        Calibrated = false;
-        OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
-        Notifications.Instance.ShowNotification("Locate as much markers as possible", "Calibration will be done automatically");
+            Calibrated = false;
+            OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
+            Notifications.Instance.ShowNotification("Locate as much markers as possible", "Calibration will be done automatically");
+        }
 
         while (!Calibrated) {
             
@@ -488,7 +505,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             yield return CalibrateUsingServerAsync(success => {
                 calibrated = success;
                 markerDetectionState = success ? MarkerDetectionState.Success : MarkerDetectionState.Failure;
-            }, inverse: true);
+            }, inverse: true, force:true);
 
             Calibrated = calibrated;
 
@@ -503,23 +520,25 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                                              GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor ||
                                              GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning);
 
-            markerDetectionState = MarkerDetectionState.Processing;
-            yield return CalibrateUsingServerAsync(success => {
-                if (success) {
-                    markerDetectionState = MarkerDetectionState.Success;
-                    recalibrateTime = 120f;
-                } else {
-                    markerDetectionState = MarkerDetectionState.Failure;
-                    if (anchorQuality > 0) {
-                        anchorQuality -= 0.05f;
+            if (AutoRecalibration) {
+                markerDetectionState = MarkerDetectionState.Processing;
+                yield return CalibrateUsingServerAsync(success => {
+                    if (success) {
+                        markerDetectionState = MarkerDetectionState.Success;
+                        recalibrateTime = 120f;
+                    } else {
+                        markerDetectionState = MarkerDetectionState.Failure;
+                        if (anchorQuality > 0) {
+                            anchorQuality -= 0.05f;
+                        }
+                        if (recalibrateTime > 1f) {
+                            recalibrateTime -= 10f;
+                        }
                     }
-                    if (recalibrateTime > 1f) {
-                        recalibrateTime -= 10f;
-                    }
-                }
-            }, inverse: true, autoCalibrate: true);
-            
-            //Debug.Log("Current quality: " + anchorQuality);
+                }, inverse: true, autoCalibrate: true);
+
+                //Debug.Log("Current quality: " + anchorQuality);
+            }
 
             yield return new WaitForSeconds(recalibrateTime);
         }
@@ -539,7 +558,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    public IEnumerator CalibrateUsingServerAsync(Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false) {
+    public IEnumerator CalibrateUsingServerAsync(Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false, bool force = false) {
         if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics)) {
             //Debug.LogError("Did not get the intrinsics");
             callback?.Invoke(false);
@@ -553,7 +572,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             //StartCoroutine(ProcessImage(image, cameraIntrinsics, inverse));
             yield return ProcessImage(image, cameraIntrinsics, success => {
                 callback?.Invoke(success);
-            }, inverse, autoCalibrate);
+            }, inverse, autoCalibrate, force:force);
 
             // It's safe to dispose the image before the async operation completes.
             image.Dispose();
@@ -562,7 +581,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    private IEnumerator ProcessImage(XRCpuImage image, XRCameraIntrinsics cameraIntrinsics, Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false) {
+    private IEnumerator ProcessImage(XRCpuImage image, XRCameraIntrinsics cameraIntrinsics, Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false, bool force = false) {
         // Get ARCamera Transform Matrix
         ARCameraTransformMatrix = Matrix4x4.TRS(ARCamera.position, ARCamera.rotation, ARCamera.localScale);
 
@@ -632,7 +651,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         //Debug.Log(cameraParams.ToString());
 
         if (inverse) {
-            GetMarkerPosition(cameraParams, imageString, autoCalibrate);            
+            GetMarkerPosition(cameraParams, imageString, autoCalibrate, force);            
         } else {
             //GetCameraPosition(cameraParams, imageString, autoCalibrate);
         }
@@ -666,12 +685,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    public async void GetMarkerPosition(CameraParameters cameraParams, string image, bool autoCalibrate = false) {
+    public async void GetMarkerPosition(CameraParameters cameraParams, string image, bool autoCalibrate = false, bool force = false) {
         try {
             // receive cameraPose from server
             IO.Swagger.Model.EstimatedPose markerEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:true);
 
-            if ((float)markerEstimatedPose.Quality > anchorQuality) {
+            if ((float)markerEstimatedPose.Quality > anchorQuality || force) {
                 anchorQuality = (float)markerEstimatedPose.Quality;
 
                 
@@ -841,7 +860,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         Calibrated = false;
         OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
         OnARRecalibrate(this, new EventArgs());
-        StartCoroutine(CalibrateUsingServerAsync(inverse: inverse));
+        StartCoroutine(CalibrateUsingServerAsync(inverse: inverse, force:true));
 #endif
     }
 

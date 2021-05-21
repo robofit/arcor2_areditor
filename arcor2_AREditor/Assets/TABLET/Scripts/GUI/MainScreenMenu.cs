@@ -11,6 +11,8 @@ public class MainScreenMenu : MonoBehaviour
     public Toggle CloudAnchorToggle;
     public Toggle ServerCalibrationToggle;
 
+    public Toggle ControlBoxAutoCalibToggle;
+
     private void Start() {
         Debug.Assert(ConnectionString != null);
         CloudAnchorToggle.isOn = Settings.Instance.UseCloudAnchors;
@@ -32,7 +34,8 @@ public class MainScreenMenu : MonoBehaviour
     }
 
     public void UseServerCalibration(bool useServer) {
-        CalibrationManager.Instance.UseServerCalibration(useServer);        
+        CalibrationManager.Instance.UseServerCalibration(useServer);
+        ControlBoxAutoCalibToggle.gameObject.SetActive(useServer);
     }
 
     private void OnDestroy() {

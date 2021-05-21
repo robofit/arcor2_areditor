@@ -25,7 +25,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     }
 
     public void Calibrate() {
-        CalibrationManager.Instance.RecalibrateUsingServer();
+        CalibrationManager.Instance.RecalibrateUsingServer(inverse:true);
     }
 
     public override void Enable(bool enable) {

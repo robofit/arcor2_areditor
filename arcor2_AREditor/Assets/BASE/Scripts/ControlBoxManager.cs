@@ -16,10 +16,12 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     public Toggle ConnectionsToggle;
     public Toggle VRModeToggle;
     public Toggle CalibrationElementsToggle;
+    public Toggle AutoCalibToggle;
 
     public AddActionPointUsingRobotDialog AddActionPointUsingRobotDialog;
 
     private ManualTooltip calibrationElementsTooltip;
+    private ManualTooltip autoCalibTooltip;
 
 
 
@@ -30,6 +32,22 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         CalibrationElementsToggle.isOn = true;
         calibrationElementsTooltip = CalibrationElementsToggle.GetComponent<ManualTooltip>();
         calibrationElementsTooltip.DisplayAlternativeDescription = true;
+
+
+        bool useAutoCalib = PlayerPrefsHelper.LoadBool("control_box_autoCalib", true);
+
+        autoCalibTooltip = AutoCalibToggle.GetComponent<ManualTooltip>();
+        autoCalibTooltip.DisplayAlternativeDescription = useAutoCalib;
+
+        // If the toggle is unchanged, we need to manually call the EnableAutoReCalibration function.
+        // If the toggle has changed, the function will be called automatically. So we need to avoid calling it twice.
+        if ((AutoCalibToggle.isOn && useAutoCalib) || (!AutoCalibToggle.isOn && !useAutoCalib)) {
+            AutoCalibToggle.isOn = useAutoCalib;
+            EnableAutoReCalibration(useAutoCalib);
+        } else {
+            AutoCalibToggle.isOn = useAutoCalib;
+        }
+
 #endif
         ConnectionsToggle.isOn = PlayerPrefsHelper.LoadBool("control_box_display_connections", true);
         GameManager.Instance.OnGameStateChanged += GameStateChanged;
@@ -126,11 +144,17 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         ConnectionManagerArcoro.Instance.DisplayConnections(active);
     }
 
-    
+    public void EnableAutoReCalibration(bool active) {
+#if UNITY_ANDROID && AR_ON
+        autoCalibTooltip.DisplayAlternativeDescription = active;
+        CalibrationManager.Instance.EnableAutoReCalibration(active);
+#endif
+    }
 
     private void OnDestroy() {
 #if UNITY_ANDROID && AR_ON
         PlayerPrefsHelper.SaveBool("control_box_display_trackables", TrackablesToggle.isOn);
+        PlayerPrefsHelper.SaveBool("control_box_autoCalib", AutoCalibToggle.isOn);
 #endif
         PlayerPrefsHelper.SaveBool("control_box_display_connections", ConnectionsToggle.isOn);
     }
