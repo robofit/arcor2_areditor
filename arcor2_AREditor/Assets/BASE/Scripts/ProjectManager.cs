@@ -337,9 +337,9 @@ namespace Base {
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
-            if (project.Modified == null) { //new project, never saved
+            if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
-            } else if (project.IntModified == null) {
+            } else if (project.IntModified == System.DateTime.MinValue) {
                 ProjectChanged = false;
             } else {
                 ProjectChanged = project.IntModified > project.Modified;
