@@ -174,7 +174,11 @@ namespace Base {
             LoadSettings();
             
             UpdateActionObjects(scene, customCollisionModels);
-            SceneChanged = scene.IntModified != null;
+            if (scene.IntModified == null) {
+                sceneChanged = false;
+            } else {
+                sceneChanged = scene.IntModified > scene.Modified;
+            }
             Valid = true;
             OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
