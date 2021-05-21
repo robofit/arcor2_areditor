@@ -2427,7 +2427,7 @@ namespace Base {
             IO.Swagger.Model.GetCameraPoseRequestArgs args = new GetCameraPoseRequestArgs(cameraParameters: cameraParams, image: img, inverse: inverse);
 
             IO.Swagger.Model.GetCameraPoseRequest request = new IO.Swagger.Model.GetCameraPoseRequest(r_id, "GetCameraPose", args: args);
-            SendDataToServer(request.ToJson(), r_id, true);
+            SendDataToServer(request.ToJson(), r_id, true, false);
             IO.Swagger.Model.GetCameraPoseResponse response = await WaitForResult<IO.Swagger.Model.GetCameraPoseResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to get camera pose" } : response.Messages);
@@ -2441,7 +2441,7 @@ namespace Base {
             IO.Swagger.Model.MarkersCornersRequestArgs args = new MarkersCornersRequestArgs(cameraParameters: cameraParams, image: img);
 
             IO.Swagger.Model.MarkersCornersRequest request = new IO.Swagger.Model.MarkersCornersRequest(r_id, "MarkersCorners", args: args);
-            SendDataToServer(request.ToJson(), r_id, true);
+            SendDataToServer(request.ToJson(), r_id, true, false);
             IO.Swagger.Model.MarkersCornersResponse response = await WaitForResult<IO.Swagger.Model.MarkersCornersResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);

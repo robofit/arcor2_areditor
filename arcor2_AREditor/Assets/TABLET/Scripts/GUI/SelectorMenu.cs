@@ -64,7 +64,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ShowActionPoints(PointsToggle.Toggled);
         ShowActions(ActionsToggle.Toggled);
         ShowIO(IOToggle.Toggled);
-        ShowOthers(OthersToggle.Toggled);
+        //ShowOthers(OthersToggle.Toggled);
     }
 
     private void OnEditorStateChanged(object sender, EditorStateEventArgs args) {

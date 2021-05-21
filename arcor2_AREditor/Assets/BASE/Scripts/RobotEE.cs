@@ -5,7 +5,7 @@ using Base;
 using RosSharp.Urdf;
 using UnityEngine;
 
-public class RobotEE : InteractiveObject {
+public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
@@ -17,6 +17,7 @@ public class RobotEE : InteractiveObject {
         RobotId = robot.GetId();
         EEId = eeId;
         SetLabel(robot.GetName(), eeId);
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     public void SetLabel(string robotName, string eeName) {
@@ -91,5 +92,9 @@ public class RobotEE : InteractiveObject {
 
     public override void UpdateColor() {
         //nothing to do here
+    }
+
+    public InteractiveObject GetParentObject() {
+        return SceneManager.Instance.GetActionObject(RobotId);
     }
 }

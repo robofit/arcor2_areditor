@@ -59,6 +59,7 @@ public class SelectorItem : MonoBehaviour
         Button.onClick.AddListener(() => SelectorMenu.Instance.SetSelectedObject(this, true));
         lastUpdate = currentIteration;
         if (interactiveObject.GetType() == typeof(RobotActionObject)) {
+            Collapsable = true;
             Icon.sprite = Robot;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
             Icon.sprite = ActionObject;
