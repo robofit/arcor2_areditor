@@ -175,9 +175,9 @@ namespace Base {
             
             UpdateActionObjects(scene, customCollisionModels);
 
-            if (scene.Modified == null) { //new scene, never saved
+            if (scene.Modified == System.DateTime.MinValue) { //new scene, never saved
                 sceneChanged = true;
-            } else if (scene.IntModified == null) {
+            } else if (scene.IntModified == System.DateTime.MinValue) {
                 sceneChanged = false;
             } else {
                 sceneChanged = scene.IntModified > scene.Modified;
