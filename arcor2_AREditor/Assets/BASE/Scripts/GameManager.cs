@@ -9,6 +9,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.Events;
 using System.Collections;
 using Newtonsoft.Json;
+using MiniJSON;
 
 namespace Base {
     /// <summary>
@@ -200,7 +201,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.13.0";
+        public const string ApiVersion = "0.14.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -515,7 +516,7 @@ namespace Base {
             MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
-            switch (requestType) {
+            /*switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
@@ -561,12 +562,11 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
 
-            }
+            }*/
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,
 
-            SelectorMenu.Instance.ForceUpdateMenus();
 
             if (onCancelCallback == null) {
                 SelectObjectInfo.Show(message, () => CancelSelection());
@@ -593,7 +593,6 @@ namespace Base {
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
-            SelectorMenu.Instance.ForceUpdateMenus();
         }
 
         /// <summary>
@@ -625,7 +624,6 @@ namespace Base {
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
-            SelectorMenu.Instance.ForceUpdateMenus();
             // invoke selection callback
             if (ObjectCallback != null)
                 ObjectCallback.Invoke(selectedObject);
@@ -820,10 +818,11 @@ namespace Base {
                 case ConnectionStatusEnum.Connected:
                     IO.Swagger.Model.SystemInfoResponseData systemInfo;
                     try {
-                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();                        
+                        systemInfo = await WebsocketManager.Instance.GetSystemInfo();
+                        await WebsocketManager.Instance.RegisterUser(LandingScreen.Instance.Username.text);
                     } catch (RequestFailedException ex) {
                         DisconnectFromSever();
-                        Notifications.Instance.ShowNotification("Connection failed", "");
+                        Notifications.Instance.ShowNotification("Connection failed", ex.Message);
                         return;
                     }
                     if (!CheckApiVersion(systemInfo)) {
@@ -851,10 +850,6 @@ namespace Base {
                         DisconnectFromSever();
                         return;
                     }
-
-                    WebsocketManager.Instance.LoadScenes(LoadScenesCb);
-                    WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
-                    WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
 
                     connectionStatus = newState;
                     break;
@@ -1249,7 +1244,9 @@ namespace Base {
         /// </summary>
         /// <returns></returns>
         public async Task<IO.Swagger.Model.SaveSceneResponse> SaveScene() {
+            ShowLoadingScreen("Saving scene...");
             IO.Swagger.Model.SaveSceneResponse response = await WebsocketManager.Instance.SaveScene();
+            HideLoadingScreen();
             return response;
         }
 
@@ -1257,12 +1254,28 @@ namespace Base {
         /// Asks server to save project
         /// </summary>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.SaveProjectResponse> SaveProject() {
-            IO.Swagger.Model.SaveProjectResponse response = await WebsocketManager.Instance.SaveProject();
-            OnSaveProject?.Invoke(this, EventArgs.Empty);
-            return response;
+        public void SaveProject() {
+            ShowLoadingScreen("Saving project...");
+            WebsocketManager.Instance.SaveProject(false, SaveProjectCallback);
         }
 
+        /// <summary>
+        /// Callback triggered when save project is done
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="response"></param>
+        public void SaveProjectCallback(string _, string response) {
+            SaveProjectResponse saveProjectResponse = JsonConvert.DeserializeObject<SaveProjectResponse>(response);
+            HideLoadingScreen();
+            if (saveProjectResponse.Result) {
+                OnSaveProject?.Invoke(this, EventArgs.Empty);
+            } else {
+                saveProjectResponse.Messages.ForEach(Debug.LogError);
+                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+                return;
+            }
+        }
+            
         /// <summary>
         /// Asks server to open project
         /// </summary>
@@ -1346,26 +1359,30 @@ namespace Base {
         /// <summary>
         /// Asks server to stop running package
         /// </summary>
-        public async void StopProject() {
+        public async Task<bool> StopPackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.StopPackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
         /// <summary>
         /// Asks server to pause running package
         /// </summary>
-        public async void PauseProject() {
+        public async Task<bool> PausePackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.PausePackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to pause project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
@@ -1373,13 +1390,15 @@ namespace Base {
         /// <summary>
         /// Asks server to resume paused package
         /// </summary>
-        public async void ResumeProject() {
+        public async Task<bool> ResumePackage() {
             ShowLoadingScreen();
             try {
                 await WebsocketManager.Instance.ResumePackage();
+                return true;
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to resume project", ex.Message);
                 HideLoadingScreen();
+                return false;
             }
         }
 
@@ -1746,7 +1765,6 @@ namespace Base {
         /// <param name="active"></param>
         public void SceneSetActive(bool active) {
             Scene.SetActive(active);
-            SelectorMenu.Instance.ForceUpdateMenus();
         }
 
         /// <summary>
@@ -1767,19 +1785,20 @@ namespace Base {
         /// Adds action point to the project
         /// </summary>
         /// <param name="name">Name of new action point</param>
-        /// <param name="parent">ID of parent object (empty string if global action point)</param>
-        /// <param name="position">Relative offset from parent object (or from scene origin if global AP)</param>
+        /// <param name="parent">Parent object (global AP if parent is null)</param>
         /// <returns></returns>
-        public async Task<bool> AddActionPoint(string name, string parent) {
+        public async Task<bool> AddActionPoint(string name, IActionPointParent parent) {
             try {
-                if (string.IsNullOrEmpty(parent)) {
-                    Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-                    Vector3 point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
-                    Position position = DataHelper.Vector3ToPosition(point);
-                    await WebsocketManager.Instance.AddActionPoint(name, parent, position);
+                Vector3 point;
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                if (parent == null) {
+                    point = TransformConvertor.UnityToROS(Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
                 } else {
-                    await WebsocketManager.Instance.AddActionPoint(name, parent, new Position());
-                }
+                    point = TransformConvertor.UnityToROS(parent.GetTransform().InverseTransformPoint(ray.GetPoint(0.5f)));
+                }                
+                Position position = DataHelper.Vector3ToPosition(point);
+                await WebsocketManager.Instance.AddActionPoint(name, parent == null ? "" : parent.GetId(), position);
+                
                 
                 return true;
             } catch (RequestFailedException e) {

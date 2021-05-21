@@ -88,7 +88,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     }
 
     public void SetValue(object value) {
-        Input.text = value.ToString();
+        Input.text = value?.ToString();
     }
 
     public void SetDarkMode(bool dark) {
@@ -100,5 +100,13 @@ public class LabeledInput : MonoBehaviour, IParameter
             Label.color = Color.white;
         }
         
+    }
+
+    public string GetCurrentType() {
+        return ParameterType;
+    }
+
+    public Transform GetTransform() {
+        return transform;
     }
 }

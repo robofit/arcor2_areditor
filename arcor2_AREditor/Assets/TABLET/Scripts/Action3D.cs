@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
+using IO.Swagger.Model;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class Action3D : Base.Action {
+public class Action3D : Base.Action, ISubItem {
     public Renderer Visual;
 
     private Color32 colorDefault = new Color32(229, 215, 68, 255);
@@ -19,9 +20,15 @@ public class Action3D : Base.Action {
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
 
-    private void Start() {
+    public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
+        base.Init(projectAction, metadata, ap, actionProvider);
+        Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
+        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
+    }
+
+    protected override void Start() {
+        base.Start();
         GameManager.Instance.OnStopPackage += OnProjectStop;
-        
     }
 
     private void OnEnable() {
@@ -124,25 +131,33 @@ public class Action3D : Base.Action {
         NameText.gameObject.SetActive(false);
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-        foreach (Renderer renderer in outlineOnClick.Renderers)
-            if (enable)
-                renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
-            else
-                renderer.material.color = Color.gray;
+    public override void UpdateColor() {
+        Input.UpdateColor();
+        Output.UpdateColor();
 
+        foreach (Material material in Visual.materials)
+            if (Enabled && !IsLocked)
+                material.color = new Color(0.9f, 0.84f, 0.27f);
+            else
+                material.color = Color.gray;
     }
 
     public override string GetName() {
         return Data.Name;
     }
 
-    public override void OpenMenu() {
-        ActionMenu.Instance.CurrentAction = this;
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
+    public override async void OpenMenu() {
+        if (!await ActionParametersMenu.Instance.Show(this))
+            return;
+        //ActionMenu.Instance.CurrentAction = this;
+        //MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
         selected = true;
-        ActionPoint.HighlightAP(true);
+        ActionPoint.HighlightAP(true);        
+    }
+
+    public void CloseMenu() {
+        selected = false;
+        ActionPoint.HighlightAP(false);
     }
 
     public override bool HasMenu() {
@@ -174,7 +189,7 @@ public class Action3D : Base.Action {
         }
     }
 
-    public async override void Rename(string newName) {
+    public async override Task Rename(string newName) {
         try {
             await WebsocketManager.Instance.RenameAction(GetId(), newName);
             Notifications.Instance.ShowToastMessage("Action renamed");
@@ -186,5 +201,25 @@ public class Action3D : Base.Action {
 
     public override string GetObjectTypeName() {
         return "Action";
+    }
+
+    public override void OnObjectLocked(string owner) {
+        base.OnObjectLocked(owner);
+        if (owner != LandingScreen.Instance.GetUsername()) {
+            NameText.text = GetLockedText();
+        }
+        Input.OnObjectLocked(owner);
+        Output.OnObjectLocked(owner);
+    }
+
+    public override void OnObjectUnlocked() {
+        base.OnObjectUnlocked();
+        NameText.text = GetName();
+        Input.OnObjectUnlocked();
+        Output.OnObjectUnlocked();
+    }
+
+    public InteractiveObject GetParentObject() {
+        return ActionPoint;
     }
 }

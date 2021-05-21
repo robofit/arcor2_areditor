@@ -208,10 +208,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             }
             objectModel.Type = modelType;
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId, objectModel: objectModel,
-                _base: (string) ParentsList.GetValue(), hasPose: true);
+                _base: (string) ParentsList.GetValue(), hasPose: true, modified: DateTime.Now);
         } else {
             objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: objectId,
-                _base: (string) ParentsList.GetValue(), hasPose: false);
+                _base: (string) ParentsList.GetValue(), hasPose: false, modified: DateTime.Now);
         }
 
         return objectTypeMeta;

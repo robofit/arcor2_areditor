@@ -34,4 +34,12 @@ public class BooleanParameter : MonoBehaviour, IParameter {
     public void SetDarkMode(bool dark) {
         throw new System.NotImplementedException();
     }
+
+    public string GetCurrentType() {
+        return "boolean";
+    }
+
+    public Transform GetTransform() {
+        return transform;
+    }
 }

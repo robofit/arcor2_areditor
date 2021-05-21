@@ -18,13 +18,17 @@ public class StartAction : StartEndAction
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, actionType);
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, 0));
+        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-        if (enable)
+    public override void UpdateColor() {
+        if (Enabled)
             foreach (Renderer renderer in outlineOnClick.Renderers)
                 renderer.material.color = Color.green;
+    }
+
+    public override string GetObjectTypeName() {
+        return "Start action";
     }
 }

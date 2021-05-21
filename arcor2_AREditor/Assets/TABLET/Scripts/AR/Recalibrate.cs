@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -5,6 +6,16 @@ using Base;
 using UnityEngine;
 
 public class Recalibrate : InteractiveObject {
+
+    private string ID = Guid.NewGuid().ToString();
+
+    private void Awake() {
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+    }
+
+    protected override void Start() {
+        base.Start();
+    }
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
@@ -14,12 +25,11 @@ public class Recalibrate : InteractiveObject {
     }
 
     public void Calibrate() {
-        CalibrationManager.Instance.Recalibrate();
+        CalibrationManager.Instance.RecalibrateUsingARFoundation();
     }
 
     public override void Enable(bool enable) {
         base.Enable(enable);
-        SelectorMenu.Instance.ForceUpdateMenus();
     }
 
     public override void OnHoverStart() {
@@ -35,7 +45,7 @@ public class Recalibrate : InteractiveObject {
     }
 
     public override string GetId() {
-        return "ReCalibration cube";
+        return ID;
     }
 
     public override void OpenMenu() {
@@ -62,10 +72,14 @@ public class Recalibrate : InteractiveObject {
         throw new System.NotImplementedException();
     }
 
-    public override void Rename(string name) {
+    public override Task Rename(string name) {
         throw new System.NotImplementedException();
     }
     public override string GetObjectTypeName() {
         return GetName();
+    }
+
+    public override void UpdateColor() {
+        //nothing to do here
     }
 }

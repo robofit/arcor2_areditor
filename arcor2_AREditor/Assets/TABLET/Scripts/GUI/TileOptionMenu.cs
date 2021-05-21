@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Base;
 using UnityEngine;
 
 public abstract class TileOptionMenu : OptionMenu {
@@ -25,5 +27,15 @@ public abstract class TileOptionMenu : OptionMenu {
         tile.SetStar(starred);
         MainScreen.Instance.FilterTile(tile);
         Close();
+    }
+
+    protected async Task<bool> WriteLockProjectOrScene(string id) {
+        try {
+            await WebsocketManager.Instance.WriteLock(id, false);
+            return true;
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock " + GetLabel(), ex.Message);
+            return false;
+        }
     }
 }

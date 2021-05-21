@@ -26,9 +26,10 @@ public class CalibrateRobotDialog : Dialog {
         string cameraName = (string) Dropdown.GetValue();
         if (SceneManager.Instance.TryGetActionObjectByName(cameraName, out ActionObject camera)) {
             try {
+                GameManager.Instance.ShowLoadingScreen("Calibrating robot...");
                 await WebsocketManager.Instance.CalibrateRobot(robotId, camera.Data.Id, (bool) Switch.GetValue());
-                ToastMessage.Instance.ShowMessage("Robot calibrated", 5);
             } catch (RequestFailedException ex) {
+                GameManager.Instance.HideLoadingScreen();
                 Notifications.Instance.ShowNotification("Failed to calibrate robot", ex.Message);
             } finally {
                 Close();

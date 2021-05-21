@@ -4,13 +4,14 @@ using UnityEngine;
 using RuntimeGizmos;
 using System.Threading.Tasks;
 
-public abstract class StartEndAction : Action3D {
+public abstract class StartEndAction : Base.Action {
+    public Renderer Visual;
 
     protected string playerPrefsKey;
+    [SerializeField]
+    protected OutlineOnClick outlineOnClick;
 
     public override void OnClick(Click type) {
-        if (!CheckClick())
-            return;
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
             // We have clicked with left mouse and started manipulation with object
             StartManipulation();
@@ -25,7 +26,7 @@ public abstract class StartEndAction : Action3D {
             return;
         }
         playerPrefsKey = "project/" + ProjectManager.Instance.ProjectMeta.Id + "/" + actionType;
-        
+
     }
 
     private void Update() {
@@ -36,11 +37,26 @@ public abstract class StartEndAction : Action3D {
     }
 
     public override void OnHoverStart() {
-        base.OnHoverStart();
+        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
+            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
+            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
+                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                    return;
+            } else {
+                return;
+            }
+        }
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
+            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
+            return;
+        }
+        outlineOnClick.Highlight();
+        NameText.gameObject.SetActive(true);
     }
 
     public override void OnHoverEnd() {
-        base.OnHoverEnd();
+        outlineOnClick.UnHighlight();
+        NameText.gameObject.SetActive(false);
     }
 
     public async override Task<RequestResult> Movable() {
@@ -56,5 +72,43 @@ public abstract class StartEndAction : Action3D {
         outlineOnClick.GizmoHighlight();
     }
 
-
+    public override async Task<bool> WriteUnlock() {
+        return true;
     }
+
+    public override async Task<bool> WriteLock(bool lockTree) {
+        return true;
+    }
+
+    protected override void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+        return;
+    }
+
+    public override void OnObjectLocked(string owner) {
+        return;
+    }
+
+    public override void OnObjectUnlocked() {
+        return;
+    }
+
+    public override string GetName() {
+        return Data.Name;
+    }    
+
+    public override void OpenMenu() {
+        throw new NotImplementedException();
+    }
+
+    public async override Task<RequestResult> Removable() {
+        return new RequestResult(false, GetObjectTypeName() + " could not be removed");
+    }
+
+    public override void Remove() {
+        throw new NotImplementedException();
+    }
+
+    public override Task Rename(string name) {
+        throw new NotImplementedException();
+    }
+}

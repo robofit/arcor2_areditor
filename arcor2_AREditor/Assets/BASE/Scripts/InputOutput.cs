@@ -11,7 +11,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
-    public abstract class InputOutput : InteractiveObject {
+    public abstract class InputOutput : InteractiveObject, ISubItem {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -113,7 +113,7 @@ namespace Base {
                             return;
                         }
                     }
-                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this);
+                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this, () => Action.WriteUnlock());
 
                     /*GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItems().GetConnection(), gameObject);
                         
@@ -145,21 +145,33 @@ namespace Base {
                     await CreateNewConnection();
                 }
             } else {
-            GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
+                GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
 
-            try {
-                await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
-                ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
-                if (typeof(PuckOutput) == GetType()) {
-                    await theOtherOne.GetComponent<PuckInput>().GetOutput();
-                } else {
+                try {
+                    Action otherAction;
+                    if (Action.GetId() == logicItem.Data.Start)
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.End);
+                    else
+                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
+                    GameManager.Instance.ShowLoadingScreen("Removing old connection...");
+                    await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
+                    GameManager.Instance.HideLoadingScreen();
+                    if (!await otherAction.WriteLock(false)) {
+                        return;
+                    }
+                    ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
+                    if (typeof(PuckOutput) == GetType()) {
+                        await theOtherOne.GetComponent<PuckInput>().GetOutput();
+                    } else {
                         await theOtherOne.GetComponent<PuckOutput>().GetInput();
+                    }
+                } catch (RequestFailedException ex) {
+                    GameManager.Instance.HideLoadingScreen();
+                    Notifications.Instance.ShowNotification("Failed to remove connection", ex.Message);
+                    //Debug.LogError(ex);
+                    //Notifications.Instance.SaveLogs("Failed to remove connection");
+                    //ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
                 }
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to remove connection");
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-            }
             }
         }
 
@@ -203,7 +215,8 @@ namespace Base {
                     a.Input.Disable();
                 }
             }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput, "Select input of other action", ValidateInput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput,
+                "Select input of other action", ValidateInput, async() => await Action.WriteUnlock());
         }
 
         public async Task GetOutput() {
@@ -215,7 +228,8 @@ namespace Base {
                     a.Output.Disable();
                 }
             }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput, "Select output of other action", ValidateOutput);
+            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput,
+                "Select output of other action", ValidateOutput, async () => await Action.WriteUnlock());
         }
 
         private async Task<RequestResult> ValidateInput(object selectedInput) {
@@ -323,35 +337,14 @@ namespace Base {
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();
         }
 
-        public override void Enable(bool enable) {
-            base.Enable(enable);
-            if (enable)
-                foreach (Renderer renderer in outlineOnClick.Renderers) {
-                    if (Action.Data.Id == "START")
-                        renderer.material.color = Color.green;
-                    else if (Action.Data.Id == "END")
-                        renderer.material.color = Color.red;
-                    else
-                        renderer.material.color = new Color(0.9f, 0.84f, 0.27f);
-                }
-            else {
-                foreach (Renderer renderer in outlineOnClick.Renderers)
-                    renderer.material.color = Color.gray;
-            }
-                
-        }
-
         public override string GetName() {
             if (typeof(PuckOutput) == GetType()) {
-                return "Output of " + Action.Data.Name;
+                return "Output";
             } else {
-                return "Input of " + Action.Data.Name;
+                return "Input";
             }
         }
 
-        public override string GetId() {
-            return GetName();
-        }
 
         public override void OpenMenu() {
             throw new NotImplementedException();
@@ -377,8 +370,11 @@ namespace Base {
             throw new NotImplementedException();
         }
 
-        public override void Rename(string name) {
+        public override Task Rename(string name) {
             throw new NotImplementedException();
+        }
+        public InteractiveObject GetParentObject() {
+            return Action;
         }
     }
 

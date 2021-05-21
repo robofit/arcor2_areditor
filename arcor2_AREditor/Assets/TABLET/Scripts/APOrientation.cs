@@ -7,7 +7,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(OutlineOnClick))]
-public class APOrientation : InteractiveObject {
+public class APOrientation : InteractiveObject, ISubItem {
     public Base.ActionPoint ActionPoint;
     public string OrientationId;
 
@@ -17,10 +17,6 @@ public class APOrientation : InteractiveObject {
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        if (ActionPoint.Locked) {
-            Notifications.Instance.ShowNotification("Failed to open orientation detail", "AP is locked");
             return;
         }
         if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH)) {
@@ -75,8 +71,8 @@ public class APOrientation : InteractiveObject {
         return OrientationId;
     }
 
-    public override void OpenMenu() {
-        ActionPoint.ShowAimingMenu(OrientationId);
+    public override async void OpenMenu() {
+        ActionPoint.ShowOrientationDetailMenu(OrientationId);
         HighlightOrientation(true);
     }
 
@@ -109,7 +105,7 @@ public class APOrientation : InteractiveObject {
         }
     }
 
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameActionPointOrientation(GetId(), name);
             Notifications.Instance.ShowToastMessage("Orientation renamed");
@@ -121,5 +117,13 @@ public class APOrientation : InteractiveObject {
 
     public override string GetObjectTypeName() {
         return "Orientation";
+    }
+
+    public override void UpdateColor() {
+        //TODO??
+    }
+
+    public InteractiveObject GetParentObject() {
+        return ActionPoint;
     }
 }

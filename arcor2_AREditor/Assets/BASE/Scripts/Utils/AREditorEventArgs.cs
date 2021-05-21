@@ -368,7 +368,51 @@ namespace Base {
         }
     }
 
+    public class ObjectLockingEventArgs : EventArgs {
+        public List<string> ObjectIds {
+            get; set;
+        }
 
+        public bool Locked {
+            get; set;
+        }
+
+        public string Owner {
+            get;set;
+        }
+
+        public ObjectLockingEventArgs(List<string> objectIds, bool locked, string owner) {
+            ObjectIds = objectIds;
+            Locked = locked;
+            Owner = owner;
+        }
+    }
+
+    public class ProcessStateEventArgs : EventArgs {
+        public ProcessStateData Data {
+            get; set;
+        }
+
+        public ProcessStateEventArgs(ProcessStateData data) {
+            Data = data;
+        }
+    }
+
+    public class CalibrationEventArgs : EventArgs {
+
+        public bool Calibrated {
+            get; set;
+        }
+
+        public GameObject Anchor {
+            get; set;
+        }
+
+        public CalibrationEventArgs(bool calibrated, GameObject anchor) {
+            Calibrated = calibrated;
+            Anchor = anchor;
+        }
+    }
 
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
@@ -401,5 +445,8 @@ namespace Base {
         public delegate void ObjectTypesHandler(object sender, ObjectTypesEventArgs args);
         public delegate void GameObjectEventHandler(object sender, GameObjectEventArgs args);
         public delegate void InteractiveObjectEventHandler(object sender, InteractiveObjectEventArgs args);
+        public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
+        public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
+        public delegate void CalibrationEventHandler(object sender, CalibrationEventArgs args);
     }
 }

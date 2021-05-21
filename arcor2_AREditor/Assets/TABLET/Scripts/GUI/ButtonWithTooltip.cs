@@ -59,4 +59,12 @@ public class ButtonWithTooltip : MonoBehaviour {
         return Button.interactable;
     }
 
+    public string GetDescription() {
+        return tooltip.Description;
+    }
+
+    public string GetAlternativeDescription() {
+        return tooltip.DescriptionAlternative;
+    }
+
 }

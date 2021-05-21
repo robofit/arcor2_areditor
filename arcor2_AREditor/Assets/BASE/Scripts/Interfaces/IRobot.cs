@@ -23,7 +23,7 @@ public interface IRobot
 
     List<IO.Swagger.Model.Joint> GetJoints();
 
-    void SetGrey(bool grey);
+    void SetGrey(bool grey, bool force = false);
 
     Transform GetTransform();
 

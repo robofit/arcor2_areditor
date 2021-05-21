@@ -47,11 +47,13 @@ namespace Base {
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();
-            
+
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
         }
 
         public virtual void ActionUpdateBaseData(IO.Swagger.Model.BareAction action) {
             Data.Name = action.Name;
+            SelectorItem.SetText(action.Name);
         }
 
         public virtual void ActionUpdate(IO.Swagger.Model.Action action, bool updateConnections = false) {
@@ -68,7 +70,7 @@ namespace Base {
                         // Loads metadata of specified action parameter - projectActionParameter. Action.Metadata is created when creating Action.
                         IO.Swagger.Model.ParameterMeta actionParameterMetadata = Metadata.GetParamMetadata(projectActionParameter.Name);
 
-                        actionParameter = new Parameter(actionParameterMetadata, projectActionParameter.Value);
+                        actionParameter = new Parameter(actionParameterMetadata, projectActionParameter.Type, projectActionParameter.Value);
                         Parameters.Add(actionParameter.Name, actionParameter);
                     }
                 } catch (ItemNotFoundException ex) {
@@ -154,6 +156,12 @@ namespace Base {
 
         public async override Task<RequestResult> Movable() {
             return new RequestResult(false, "Actions could not be moved");
+        }
+
+        protected override void OnDestroy() {
+            SelectorMenu.Instance.DestroySelectorItem(Input);
+            SelectorMenu.Instance.DestroySelectorItem(Output);
+            base.OnDestroy();
         }
     }
 

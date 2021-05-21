@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Base {
         
         public TextMeshPro ActionObjectName;
         public GameObject RobotPlaceholderPrefab;
+        public GameObject LockIcon;
 
         private OutlineOnClick outlineOnClick;
 
@@ -57,13 +59,32 @@ namespace Base {
 
         private bool loadingEndEffectors = false;
 
+        private bool isGreyColorForced;
+
         protected override void Start() {
             base.Start();
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
                 _ = EnableVisualisationOfEE();
             }
+            SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         }
-        
+
+        protected override void OnDestroy() {
+            base.OnDestroy();
+            SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+        }
+
+        private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+            UpdateColor();
+            if (HasUrdf() && RobotModel != null)
+                SetDefaultJoints();
+
+            if (args.Event.State == SceneStateData.StateEnum.Stopped) {
+                HideRobotEE();
+            }
+        }
+
+
         private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
@@ -82,7 +103,7 @@ namespace Base {
             _ = DisableVisualisationOfEE();
         }
 
-        protected override void Update() {
+        protected override async void Update() {
             if (manipulationStarted) {
                 if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
                     if (!TransformGizmo.Instance.isTransforming && updatePose) {
@@ -103,6 +124,8 @@ namespace Base {
                     if (eeVisible)
                         ShowRobotEE();
                     manipulationStarted = false;
+                    if (!await this.WriteUnlock())
+                        return;
                 }
 
             }
@@ -159,11 +182,11 @@ namespace Base {
         }
         
 
-        public async override void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
-            base.InitActionObject(id, type, position, orientation, uuid, actionObjectMetadata);
-            
+        public async override void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResources = true) {
+            base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
+
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
                 // Get the robot model, if it returns null, the robot will be loading itself
                 RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
                 if (RobotModel != null) {
@@ -219,7 +242,7 @@ namespace Base {
             outlineOnClick.InitGizmoMaterials();
 
             SetVisibility(visibility, forceShaderChange: true);
-            SetGrey(!SceneManager.Instance.SceneStarted);
+            UpdateColor();
 
             SetDefaultJoints();
 
@@ -259,7 +282,7 @@ namespace Base {
         public override void Show() {
             robotVisible = true;
             SetVisibility(1);
-            SetGrey(!SceneManager.Instance.SceneStarted);
+            UpdateColor();
         }
 
         public override void Hide() {
@@ -416,7 +439,8 @@ namespace Base {
         }
 
         public async Task<bool> LoadEndEffectors() {
-           
+            if (!SceneManager.Instance.Valid || !ProjectManager.Instance.Valid)
+                return false;
             if (loadingEndEffectors) {
                 await WaitUntilResourcesReady();
                 return true;
@@ -466,9 +490,11 @@ namespace Base {
         }
 
         public override GameObject GetModelCopy() {
-            return Instantiate(RobotModel.RobotModelGameObject);
+            if (RobotModel?.RobotModelGameObject != null)
+                return Instantiate(RobotModel.RobotModelGameObject);
+            else
+                return Instantiate(RobotPlaceholder);
         }
-
 
         public bool HasUrdf() {
             if (Base.ActionsManager.Instance.RobotsMeta.TryGetValue(Data.Type, out RobotMeta robotMeta)) {
@@ -504,8 +530,8 @@ namespace Base {
             outlineOnClick.UnHighlight();
         }
 
-        public override void UpdateUserId(string newUserId) {
-            base.UpdateUserId(newUserId);
+        public override void UpdateObjectName(string newUserId) {
+            base.UpdateObjectName(newUserId);
             ActionObjectName.text = newUserId;
         }
 
@@ -622,7 +648,13 @@ namespace Base {
         /// Sets grey color of robot model (indicates that model is not in position of real robot)
         /// </summary>
         /// <param name="grey">True for setting grey, false for standard state.</param>
-        public void SetGrey(bool grey) {
+        public void SetGrey(bool grey, bool force = false) {
+            isGreyColorForced = force && grey;
+            if (force) {
+                UpdateColor();
+                return;
+            }
+
             if (grey) {
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
@@ -639,7 +671,9 @@ namespace Base {
             }
         }
 
-        public override void OpenMenu() {
+        public override async void OpenMenu() {
+            if (!await this.WriteLock(false))
+                return;
             TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
@@ -656,7 +690,9 @@ namespace Base {
             return true;
         }
 
-        public override void StartManipulation() {
+        public override async void StartManipulation() {
+            if (!await this.WriteLock(true))
+                return;
             TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
@@ -671,6 +707,27 @@ namespace Base {
 
         public override string GetObjectTypeName() {
             return "Robot";
+        }
+
+        public override void UpdateColor() {
+            if (!HasUrdf())
+                return;
+
+            SetGrey(!SceneManager.Instance.SceneStarted || IsLockedByOtherUser || isGreyColorForced);
+        }
+
+        public override void OnObjectLocked(string owner) {
+            base.OnObjectLocked(owner);
+            if (IsLockedByOtherUser) {
+                ActionObjectName.text = GetLockedText();
+                LockIcon.SetActive(true);
+            }
+        }
+
+        public override void OnObjectUnlocked() {
+            base.OnObjectUnlocked();
+            ActionObjectName.text = GetName();
+            LockIcon.SetActive(false);
         }
     }
 }

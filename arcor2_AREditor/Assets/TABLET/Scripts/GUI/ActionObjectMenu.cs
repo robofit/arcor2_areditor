@@ -50,6 +50,12 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
             UpdateMenu();
     }
 
+    internal async void HideMenu() {
+        if (CurrentObject == null)
+            return;
+        await CurrentObject.WriteUnlock();
+    }
+
 
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
@@ -106,7 +112,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
     protected abstract void UpdateSaveBtn();
         
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
         } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
@@ -132,12 +138,17 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
 
    
 
-    public void ShowNextAO() {
+    public async void ShowNextAO() {
+        if (!await CurrentObject.WriteUnlock())
+            return;
+
         ActionObject nextAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(nextAO);
     }
 
-    public void ShowPreviousAO() {
+    public async void ShowPreviousAO() {
+        if (!await CurrentObject.WriteUnlock())
+            return;
         ActionObject previousAO = SceneManager.Instance.GetNextActionObject(CurrentObject.Data.Id);
         ShowActionObject(previousAO);
     }

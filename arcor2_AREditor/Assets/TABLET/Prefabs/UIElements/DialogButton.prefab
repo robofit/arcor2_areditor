@@ -490,6 +490,9 @@ GameObject:
   - component: {fileID: 7691753423736068143}
   - component: {fileID: 5627882340735067703}
   - component: {fileID: 1313868375269721986}
+  - component: {fileID: 4910700887299453699}
+  - component: {fileID: 3768191390430880511}
+  - component: {fileID: 5909750900626947197}
   m_Layer: 5
   m_Name: DialogButton
   m_TagString: Untagged
@@ -662,6 +665,54 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normal: {fileID: 5246012763160016189}
   highlighted: {fileID: 76337347140480980}
+  btn: {fileID: 0}
+--- !u!114 &4910700887299453699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801865176160156992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  tooltipAnimator: {fileID: 0}
+--- !u!114 &3768191390430880511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801865176160156992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 4910700887299453699}
+  Description: 
+  DescriptionAlternative: 
+  displayAlternativeDescription: 0
+--- !u!114 &5909750900626947197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801865176160156992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltip: {fileID: 3768191390430880511}
+  Button: {fileID: 5577888779386298058}
+  TooltipContent: {fileID: 4910700887299453699}
 --- !u!1 &6039958311727725536
 GameObject:
   m_ObjectHideFlags: 0

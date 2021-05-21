@@ -21,9 +21,14 @@ public class RenameDialog : Dialog
     private InteractiveObject selectedObject;
 
     private UnityAction _updateVisibilityCallback;
-    public Button CloseBtn;
+    private bool isNewObject;
+    public ButtonWithTooltip CloseBtn, ConfirmButton;
 
-    public void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, UnityAction cancelCallback = null) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null) {
+        if (!await objectToRename.WriteLock(false))
+            return;
+
+        this.isNewObject = isNewObject;
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
         if (objectToRename == null)
@@ -31,33 +36,57 @@ public class RenameDialog : Dialog
 
         Title.text = "Rename " + selectedObject.GetObjectTypeName();
 
-
         nameInput.SetValue(objectToRename.GetName());
         nameInput.SetLabel("Name", "New name");
         nameInput.SetType("string");
-        CloseBtn.onClick.RemoveAllListeners();
-        CloseBtn.onClick.AddListener(() => Close());
+        CloseBtn.Button.onClick.RemoveAllListeners();
+        CloseBtn.Button.onClick.AddListener(() => Cancel());
         if (cancelCallback != null)
-            CloseBtn.onClick.AddListener(cancelCallback);
+            CloseBtn.Button.onClick.AddListener(cancelCallback);
+    }
+
+    public void ValidateInput() {
+        if (isNewObject) {
+            ConfirmButton.SetInteractivity(true);
+            return;
+        }
+
+        bool valid = ((string) nameInput.GetValue()) != selectedObject.GetName();
+
+        ConfirmButton.SetInteractivity(valid, "Name has not been changed");
     }
    
     public override async void Confirm() {
         string name = (string) nameInput.GetValue();
+        if (name == selectedObject.GetName()) { //for new objects, without changing name
+            Cancel();
+            return;
+        }
 
-        try {
-            selectedObject.Rename(name);
-            SelectorMenu.Instance.ForceUpdateMenus();
+            try {
+            await selectedObject.Rename(name);
             Close();
-        } catch (RequestFailedException e) {
+        } catch (RequestFailedException) {
             //notification already shown, nothing else to do
         }
     }
 
-    public override void Close() {
+    public override async void Close() {
         //LeftMenu.Instance.UpdateVisibility();
+
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
+
+        selectedObject = null;
+    }
+
+    public async void Cancel() {
+        if (selectedObject == null)
+            return;
+
+        await selectedObject.WriteUnlock();
+        Close();
     }
 }

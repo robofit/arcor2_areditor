@@ -9,9 +9,9 @@ public class Tile : MonoBehaviour
     [SerializeField]
     private TMPro.TMP_Text Label;
     [SerializeField]
-    private Button MainButton, OptionButton;
+    protected Button MainButton, OptionButton;
     [SerializeField]
-    private Image Background;
+    protected Image Background, Outline;
     [SerializeField]
     private GameObject star;
     public Image TopImage;

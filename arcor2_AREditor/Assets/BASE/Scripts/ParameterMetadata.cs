@@ -38,6 +38,8 @@ namespace Base {
         }
 
         public T GetDefaultValue<T>() {
+            if (DefaultValue == null)
+                return default;
             return JsonConvert.DeserializeObject<T>(DefaultValue);
         } 
 

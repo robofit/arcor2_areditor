@@ -12,4 +12,8 @@ public interface IParameter
     void SetValue(object value);
 
     void SetDarkMode(bool dark);
+
+    string GetCurrentType();
+
+    Transform GetTransform();
 }

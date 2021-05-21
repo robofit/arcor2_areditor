@@ -6,6 +6,9 @@ using static Base.GameManager;
 using System.Threading.Tasks;
 using System.Collections;
 using TMPro;
+using System.Linq;
+using Newtonsoft.Json;
+using IO.Swagger.Model;
 
 public class LeftMenuScene : LeftMenu
 {
@@ -42,7 +45,7 @@ public class LeftMenuScene : LeftMenu
 
 
     private void OnSceneSavedStatusChanged(object sender, EventArgs e) {
-        _ = UpdateBuildAndSaveBtns();
+        UpdateBuildAndSaveBtns();
     }
 
     protected async override Task UpdateBtns(InteractiveObject obj) {
@@ -66,8 +69,8 @@ public class LeftMenuScene : LeftMenu
         }
     }
 
-    protected override void DeactivateAllSubmenus() {
-        base.DeactivateAllSubmenus();
+    public override void DeactivateAllSubmenus(bool unlock = true) {
+        base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
 
         //MeshPicker.SetActive(false);
@@ -106,22 +109,43 @@ public class LeftMenuScene : LeftMenu
             return;
         } else {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
-            _ = UpdateBuildAndSaveBtns();
+            UpdateBuildAndSaveBtns();
         }
     }
 
-    public override async Task UpdateBuildAndSaveBtns() {
-        string messageForce;
-        bool successForce;
-        (successForce, messageForce) = await GameManager.Instance.CloseScene(true, true);
+    public override async void UpdateBuildAndSaveBtns() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+            return;
+        if (CurrentSubmenuOpened != LeftMenuSelection.Home)
+            return;
+
+        SaveButton.SetInteractivity(false, "Loading...");
+        CloseButton.SetInteractivity(false, "Loading...");
+        WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
+        
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
-            CreateProjectBtn.SetInteractivity(true);
         } else {
-            SaveButton.SetInteractivity(true);
-            CreateProjectBtn.SetInteractivity(false, "There are unsaved changes");
+            WebsocketManager.Instance.SaveScene(true, SaveSceneCallback);
         }
-        CloseButton.SetInteractivity(successForce, messageForce); 
+    }
+
+    protected void SaveSceneCallback(string nothing, string data) {
+        SaveSceneResponse response = JsonConvert.DeserializeObject<SaveSceneResponse>(data);
+        if (response.Messages != null) {
+            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            SaveButton.SetInteractivity(response.Result);
+        }
+    }
+
+    protected void CloseSceneCallback(string nothing, string data) {
+        CloseSceneResponse response = JsonConvert.DeserializeObject<CloseSceneResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
+        }
     }
 
     public void ShowNewProjectDialog() {

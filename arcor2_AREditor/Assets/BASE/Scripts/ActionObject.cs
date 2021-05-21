@@ -21,28 +21,25 @@ namespace Base {
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
 
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
             actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
 
 
         }
 
-        public virtual void InitActionObject(string id, string type, Vector3 position, Quaternion orientation, string uuid, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
-            Data.Id = id;
-            Data.Type = type;
+        public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
+            Data.Id = sceneObject.Id;
+            Data.Type = sceneObject.Type;
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
                 SetSceneOrientation(orientation);
-            } else {
-                
             }
-            Data.Id = uuid;
-            
             CreateModel(customCollisionModels);
             enabled = true;
-            
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             if (VRModeManager.Instance.VRModeON) {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityVR", 1f));
             } else {
@@ -50,8 +47,9 @@ namespace Base {
             }
         }
         
-        public virtual void UpdateUserId(string newUserId) {
+        public virtual void UpdateObjectName(string newUserId) {
             Data.Name = newUserId;
+            SelectorItem.SetText(newUserId);
         }
 
         protected virtual void Update() {
@@ -62,7 +60,7 @@ namespace Base {
 
         public virtual void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             if (Data != null & Data.Name != actionObjectSwagger.Name)
-                UpdateUserId(actionObjectSwagger.Name);
+                UpdateObjectName(actionObjectSwagger.Name);
             Data = actionObjectSwagger;
             foreach (IO.Swagger.Model.Parameter p in Data.Parameters) {
 
@@ -239,6 +237,7 @@ namespace Base {
             return this;
         }
 
+
         public Transform GetTransform() {
             return transform;
         }
@@ -277,7 +276,7 @@ namespace Base {
         else
             return new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(), new IO.Swagger.Model.Position());
     }
-    public async override void Rename(string name) {
+    public async override Task Rename(string name) {
         try {
             await WebsocketManager.Instance.RenameObject(GetId(), name);
             Notifications.Instance.ShowToastMessage("Action object renamed");
@@ -300,6 +299,7 @@ namespace Base {
         }
     }
 
+
     public async override void Remove() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
             await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
@@ -309,9 +309,6 @@ namespace Base {
         }
     }
     }
-
-    
-
 
 
 }

@@ -17,6 +17,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     public TranformWheelUnits Units, UnitsDegrees;
     private GameObject model;
     public TwoStatesToggle RobotTabletBtn, RotateTranslateBtn;
+    public ButtonWithTooltip SubmitButton, ResetButton;
     private float prevValue;
 
     private Vector3 cameraPrev = new Vector3();
@@ -28,6 +29,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
 
     private GameObject gizmo;
+    private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
 
 
     private void Awake() {
@@ -37,6 +39,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     private void Update() {
+        SubmitButton.SetInteractivity(IsPositionChanged);
+        ResetButton.SetInteractivity(IsPositionChanged);
         if (model == null)
             return;
         if (RobotTabletBtn.CurrentState == "robot") {
@@ -87,14 +91,16 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private float GetPositionValue(float v) {
         switch (Units.GetValue()) {
-            case "m":
-                return v;
+            case "dm":
+                return v * 0.1f;
+            case "5cm":
+                return v * 0.05f;
             case "cm":
                 return v * 0.01f;
             case "mm":
                 return v * 0.001f;
-            case "μm":
-                return v * 0.000001f;
+            case "0.1mm":
+                return v * 0.0001f;
             default:
                 return v;
         };
@@ -102,12 +108,16 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private int ComputePositionValue(float value) {
         switch (Units.GetValue()) {
+            case "dm":
+                return (int) (value * 10);
+            case "5cm":
+                return (int) (value * 20);
             case "cm":
                 return (int) (value * 100);
             case "mm":
                 return (int) (value * 1000);
-            case "μm":
-                return (int) (value * 1000000);
+            case "0.1mm":
+                return (int) (value * 10000);
             default:
                 return (int) value;
         };
@@ -115,6 +125,10 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private float GetRotationValue(float v) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return v * 45;
+            case "10°":
+                return v * 10;
             case "°":
                 return v;
             case "'":
@@ -128,12 +142,14 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private int ComputeRotationValue(float value) {
         switch (UnitsDegrees.GetValue()) {
+            case "45°":
+                return (int) (value / 45);
+            case "10°":
+                return (int) (value / 10);
             case "°":
                 return (int) value;
             case "'":
                 return (int) (value * 60);
-            case "''":
-                return (int) (value * 3600);
             default:
                 return (int) value;
         };
@@ -165,7 +181,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     private void UpdateRotate(float wheelValue) {
-        if (handHolding) {
+        if (    handHolding) {
             
         } else {
 
@@ -269,7 +285,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     
 
-    public void Show(InteractiveObject interactiveObject) {
+    public async void Show(InteractiveObject interactiveObject) {
         InteractiveObject = interactiveObject;
         RobotTabletBtn.SetState("tablet");
         RotateTranslateBtn.SetState("translate");
@@ -315,6 +331,8 @@ public class TransformMenu : Singleton<TransformMenu> {
 
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
         gizmo.transform.SetParent(model.transform);
+        // 0.1 is default scale for our gizmo
+        gizmo.transform.localScale = new Vector3(0.1f / model.transform.localScale.x, 0.1f / model.transform.localScale.y, 0.1f / model.transform.localScale.z);
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.SetActive(true);
@@ -322,7 +340,12 @@ public class TransformMenu : Singleton<TransformMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
-    public void Hide() {
+    public async void Hide(bool unlock = true) {
+        if (InteractiveObject == null)
+            return;
+        if(unlock)
+            await InteractiveObject.WriteUnlock();
+
         InteractiveObject = null;
         Destroy(model);
         model = null;
@@ -336,11 +359,12 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public async void SubmitPosition() {
-        if (InteractiveObject.GetType() == typeof(ActionPoint3D)) {
-            try {               
-                if (RobotTabletBtn.CurrentState == "tablet")
-                    await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
-                else {
+        if (InteractiveObject is ActionPoint3D actionPoint) {
+            try {
+                if (RobotTabletBtn.CurrentState == "tablet") {
+                    //await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
+                    await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
+                } else {
                     await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName());
                 }
                 ResetPosition();
@@ -351,7 +375,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             try {
                 if (RobotTabletBtn.CurrentState == "tablet")
                     await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
-                                                                                                                                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(model.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation)   /*InteractiveObject.transform.localRotation * model.transform.localRotation*/))));
+                                                                                                                                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * model.transform.rotation   /*InteractiveObject.transform.localRotation * model.transform.localRotation*/))));
                 else {
                     await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top);
                 }
@@ -369,5 +393,4 @@ public class TransformMenu : Singleton<TransformMenu> {
         model.transform.localRotation = Quaternion.identity;
         ResetTransformWheel();
     }
-        
 }

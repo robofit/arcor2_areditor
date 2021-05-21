@@ -261,7 +261,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.RemoveActionPointJoints(joints.Id);
             }
             ConfirmationDialog.Close();
-            Close();
+            HideMenu();
 
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed delete orientation/joints", e.Message);
@@ -401,7 +401,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         if (SceneManager.Instance.SceneStarted) {
             await WebsocketManager.Instance.RegisterForRobotEvent(robotID, shadowRealRobot, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot);
+            SceneManager.Instance.GetRobot(robotID).SetGrey(!shadowRealRobot, true);
             SceneManager.Instance.GetActionObject(robotID).SetInteractivity(shadowRealRobot);
         } else { //is possible only for joints, not orientation
             foreach (IO.Swagger.Model.Joint joint in joints.Joints) { //set default angles of joints
@@ -411,23 +411,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         
     }
 
-    public async void Close() {
-        CurrentActionPoint.GetGameObject().SendMessage("Select", false);
-        if (isOrientationDetail) {
-
-        } else { //joints
-            DestroyJointsFields();
+    public async void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
+        CurrentActionPoint = currentActionPoint;
+        if (!await currentActionPoint.GetOrientationVisual(orientation.Id).WriteLock(false)) {
+            CurrentActionPoint = null;
+            return;
         }
 
-        foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
-            await PrepareRobotModel(rv.Key, true);
-        }
-        robotVisibilityBackup.Clear();
-        SideMenu.Close();
-    }
-
-
-    public void ShowMenu(Base.ActionPoint currentActionPoint, NamedOrientation orientation) {
         this.orientation = orientation;
         this.isOrientationDetail = true;
 
@@ -435,6 +425,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
+        try {
+            await WebsocketManager.Instance.WriteLock(joints.Id, false);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to lock joints", ex.Message);
+            Debug.LogError(ex.Message);
+            return;
+        }
+
+        CurrentActionPoint = currentActionPoint;
         this.joints = joints;
         isOrientationDetail = false;
         try {
@@ -450,8 +449,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         ShowMenu(currentActionPoint);
     }
 
-
-
     private void ShowMenu(Base.ActionPoint actionPoint) {
         CurrentActionPoint = actionPoint;
 
@@ -462,5 +459,31 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         UpdateMenu();
         SideMenu.Open();
+    }
+
+    public async void HideMenu() {
+        if (CurrentActionPoint == null)
+            return;
+
+        SideMenu.Close();
+
+        if (isOrientationDetail) {
+            await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
+            CurrentActionPoint.GetOrientationVisual(orientation.Id).SendMessage("Select", false);
+        } else { //joints
+            DestroyJointsFields();
+            try {
+                await WebsocketManager.Instance.WriteUnlock(joints.Id);
+            } catch (RequestFailedException ex) {
+                Debug.LogError(ex.Message);
+            }
+        }
+
+        foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
+            await PrepareRobotModel(rv.Key, true);
+        }
+        robotVisibilityBackup.Clear();
+
+        CurrentActionPoint = null;
     }
 }

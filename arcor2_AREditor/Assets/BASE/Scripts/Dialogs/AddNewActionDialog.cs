@@ -17,12 +17,8 @@ public class AddNewActionDialog : Dialog
     private IActionProvider actionProvider;
     [SerializeField]
     private LabeledInput nameInput;
-    private GameObject overlay;
+    public LeftMenuProject LeftMenuProject;
 
-
-    private void Init() {
-        
-    }
 
     public async void InitFromMetadata(IActionProvider actionProvider, Base.ActionMetadata actionMetadata, Base.ActionPoint actionPoint) {
         InitDialog(actionProvider, actionMetadata, actionPoint);
@@ -54,7 +50,7 @@ public class AddNewActionDialog : Dialog
         nameInput.SetType("string");
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         // TODO: add some check and set create button interactivity
         
     }
@@ -69,13 +65,15 @@ public class AddNewActionDialog : Dialog
                     Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
                     return;
                 }
-                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
             try {
                 await Base.WebsocketManager.Instance.AddAction(CurrentActionPoint.Data.Id, parameters, Base.Action.BuildActionType(
                     actionProvider.GetProviderId(), actionMetadata.Name), newActionName, actionMetadata.GetFlows(newActionName));
+                
                 Close();
+                LeftMenuProject.SetActiveSubmenu(LeftMenuProject.CurrentSubmenuOpened);
             } catch (Base.RequestFailedException e) {
                 Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
             }

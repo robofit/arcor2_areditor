@@ -211,6 +211,7 @@ namespace Base {
             try {
                 ActionPoint actionPoint = ProjectManager.Instance.GetActionPointWithOrientation(args.Data.Id);
                 actionPoint.BaseUpdateOrientation(args.Data);
+
                 updateProject = true;
                 OnActionPointOrientationBaseUpdated?.Invoke(this, args);
             } catch (KeyNotFoundException ex) {
@@ -336,12 +337,15 @@ namespace Base {
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
-
-            projectChanged = project.Modified == DateTime.MinValue;
+            if (project.Modified == null) { //new project, never saved
+                projectChanged = true;
+            } else if (project.IntModified == null) {
+                ProjectChanged = false;
+            } else {
+                ProjectChanged = project.IntModified > project.Modified;
+            }
             Valid = true;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);            
-            (bool successClose, _) = await GameManager.Instance.CloseProject(false, true);
-            ProjectChanged = !successClose;
+            OnLoadProject?.Invoke(this, EventArgs.Empty);     
             return true;
         }
 
@@ -434,7 +438,7 @@ namespace Base {
             ProjectMeta.Id = project.Id;
             ProjectMeta.SceneId = project.SceneId;
             ProjectMeta.HasLogic = project.HasLogic;
-            ProjectMeta.Desc = project.Desc;
+            ProjectMeta.Description = project.Description;
             ProjectMeta.IntModified = project.IntModified;
             ProjectMeta.Modified = project.Modified;
             ProjectMeta.Name = project.Name;
@@ -464,6 +468,16 @@ namespace Base {
                 project.ActionPoints.Add(projectActionPoint);
             }
             return project;
+        }
+
+        public List<Action> GetActionsWithReturnType(string type) {
+            List<Action> actions = new List<Action>();
+            foreach (Action action in GetAllActions()) {
+                if (action.Metadata.Returns.Contains(type)) {
+                    actions.Add(action);
+                }
+            }
+            return actions;
         }
 
 
@@ -642,7 +656,8 @@ namespace Base {
                             if (!string.IsNullOrEmpty(projectActionPoint.Parent)) {
                                 parent = ProjectManager.Instance.GetActionPointParent(projectActionPoint.Parent);
                             }
-                            //TODO: update spawn action point to not need action object
+
+
                             actionPoint = SpawnActionPoint(projectActionPoint, parent);
 
                         }
@@ -706,7 +721,7 @@ namespace Base {
                 return actionPoint;
             }
 
-            throw new KeyNotFoundException("Action point parrent " + parentId + " not found");
+            throw new KeyNotFoundException("Action point parent " + parentId + " not found");
         }
 
         /// <summary>
@@ -729,9 +744,11 @@ namespace Base {
         /// </summary>
         /// <param name="Id"></param>
         public void RemoveActionPoint(string Id) {
-            // Call function in corresponding action point that will delete it and properly remove all references and connections.
-            // We don't want to update project, because we are calling this method only upon received update from server.
-            ActionPoints[Id].DeleteAP();
+            if (ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
+                // Call function in corresponding action point that will delete it and properly remove all references and connections.
+                // We don't want to update project, because we are calling this method only upon received update from server.
+                actionPoint.DeleteAP();
+            }
         }
 
         /// <summary>
@@ -813,7 +830,7 @@ namespace Base {
                     // if GetOrientation dont throw exception, correct action point was found
                     actionPoint.GetOrientation(id);
                     return actionPoint;
-                } catch (KeyNotFoundException ex) { }
+                } catch (KeyNotFoundException) { }
             }
             throw new KeyNotFoundException("Action point with orientation id " + id + " not found");
         }
@@ -962,7 +979,6 @@ namespace Base {
 
             // Add new action into scene reference
             ActionPoints[ap.Data.Id].Actions.Add(action.Data.Id, action);
-
             ap.UpdatePositionsOfPucks();
             puck.SetActive(true);
 

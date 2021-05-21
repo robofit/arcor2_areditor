@@ -40,42 +40,50 @@ public class UrdfManager : Singleton<UrdfManager> {
 
         //Debug.Log("URDF: download started");
         string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
-        using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
-                // Request and wait for the desired page.
-            yield return www.Send();
-            if (www.isNetworkError || www.isHttpError) {
-                Debug.LogError(www.error + " (" + uri + ")");
-                Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
-            } else {
-                string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
-                Directory.CreateDirectory(robotDictionary);
-                string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
-                System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-                string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
-                try {
-                    Directory.Delete(urdfDictionary, true);
-                } catch (DirectoryNotFoundException) {
-                    // ok, nothing to delete..
-                }
-                try {
-                    ZipFile.ExtractToDirectory(savePath, urdfDictionary);
-                    //Debug.Log("URDF: zip extracted");
-                    // Set to false to indicate that download is not in progress.
-                    RobotModelsSources[fileName] = false;
-                    OnUrdfDownloaded(urdfDictionary, robotType);
-                } catch (Exception ex) when (ex is ArgumentException ||
-                                                ex is ArgumentNullException ||
-                                                ex is DirectoryNotFoundException ||
-                                                ex is PathTooLongException ||
-                                                ex is IOException ||
-                                                ex is FileNotFoundException ||
-                                                ex is InvalidDataException ||
-                                                ex is UnauthorizedAccessException) {
-                    Debug.LogError(ex);
-                    Notifications.Instance.ShowNotification("Failed to extract URDF", "");
-                }
+        UnityWebRequest www;
+        try {
+            www = UnityWebRequest.Get(uri);
+        } catch (WebException ex) {
+            Notifications.Instance.ShowNotification("Failed to load robot model", ex.Message);
+            yield break;
+        }
+        // Request and wait for the desired page.
+        yield return www.SendWebRequest();
+        if (www.isNetworkError || www.isHttpError) {
+            Debug.LogError(www.error + " (" + uri + ")");
+            Notifications.Instance.ShowNotification("Failed to download URDF", www.error);
+        } else {
+            string robotDictionary = string.Format("{0}/urdf/{1}/", Application.persistentDataPath, robotType);
+            Directory.CreateDirectory(robotDictionary);
+            string savePath = string.Format("{0}/{1}", robotDictionary, fileName);
+            System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+            string urdfDictionary = string.Format("{0}/{1}", robotDictionary, "urdf");
+            try {
+                Directory.Delete(urdfDictionary, true);
+            } catch (DirectoryNotFoundException) {
+                // ok, nothing to delete..
+            }
+            try {
+                ZipFile.ExtractToDirectory(savePath, urdfDictionary);
+                //Debug.Log("URDF: zip extracted");
+                // Set to false to indicate that download is not in progress.
+                RobotModelsSources[fileName] = false;
+                OnUrdfDownloaded(urdfDictionary, robotType);
+            } catch (Exception ex) when (ex is ArgumentException ||
+                                            ex is ArgumentNullException ||
+                                            ex is DirectoryNotFoundException ||
+                                            ex is PathTooLongException ||
+                                            ex is IOException ||
+                                            ex is FileNotFoundException ||
+                                            ex is InvalidDataException ||
+                                            ex is UnauthorizedAccessException) {
+                Debug.LogError(ex);
+                Notifications.Instance.ShowNotification("Failed to extract URDF", "");
             }
         }
+            
+        
+        
         
         
     }
@@ -234,22 +242,28 @@ public class UrdfManager : Singleton<UrdfManager> {
             return CanIDownload(fileName);
         }
         string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        try {
+            HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+            HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
 
-        HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
-        HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-
-        // t1 is earlier than t2 --> newer version of urdf is present on the server
-        if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
-            //Debug.Log("URDF: Newer version is present on the server.");
-            httpWebResponse.Close();
-            // Check whether downloading can be started and start it, if so.
-            return CanIDownload(fileName);
-        } else {
-            // There is no need to download anything, lets return false
-            //Debug.Log("URDF: Downloaded version is already the latest one.");
-            httpWebResponse.Close();
+            // t1 is earlier than t2 --> newer version of urdf is present on the server
+            if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
+                //Debug.Log("URDF: Newer version is present on the server.");
+                httpWebResponse.Close();
+                // Check whether downloading can be started and start it, if so.
+                return CanIDownload(fileName);
+            } else {
+                // There is no need to download anything, lets return false
+                //Debug.Log("URDF: Downloaded version is already the latest one.");
+                httpWebResponse.Close();
+                return false;
+            }
+        } catch (WebException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to get robot model", ex.Message);
             return false;
         }
+        
     }
 
     /// <summary>

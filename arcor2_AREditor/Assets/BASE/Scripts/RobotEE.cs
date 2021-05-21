@@ -5,7 +5,7 @@ using Base;
 using RosSharp.Urdf;
 using UnityEngine;
 
-public class RobotEE : InteractiveObject {
+public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
@@ -17,6 +17,8 @@ public class RobotEE : InteractiveObject {
         RobotId = robot.GetId();
         EEId = eeId;
         SetLabel(robot.GetName(), eeId);
+        Debug.LogError(GetParentObject().SelectorItem);
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     public void SetLabel(string robotName, string eeName) {
@@ -81,11 +83,23 @@ public class RobotEE : InteractiveObject {
         throw new System.NotImplementedException();
     }
 
-    public override void Rename(string name) {
+    public override Task Rename(string name) {
         throw new System.NotImplementedException();
     }
 
     public override string GetObjectTypeName() {
         return "End effector";
+    }
+
+    public override void UpdateColor() {
+        //nothing to do here
+    }
+
+    public InteractiveObject GetParentObject() {
+        try {
+            return SceneManager.Instance.GetActionObject(RobotId);
+        } catch (KeyNotFoundException) {
+            return null;
+        }
     }
 }

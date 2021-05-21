@@ -19,9 +19,9 @@ namespace Base {
         public event EventHandler OnServiceMetadataUpdated, OnActionsLoaded;
 
         
-        public GameObject ParameterInputPrefab, ParameterDropdownPrefab, ParameterDropdownPosesPrefab,
+        public GameObject LinkableParameterInputPrefab, LinkableParameterDropdownPrefab, LinkableParameterDropdownPosesPrefab,
             ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
-            ParameterBooleanPrefab;
+            LinkableParameterBooleanPrefab, ParameterDropdownPrefab;
 
         public GameObject InteractiveObjects;
 
@@ -45,9 +45,9 @@ namespace Base {
         }
 
         private void Start() {
-            Debug.Assert(ParameterInputPrefab != null);
-            Debug.Assert(ParameterDropdownPrefab != null);
-            Debug.Assert(ParameterDropdownPosesPrefab != null);
+            Debug.Assert(LinkableParameterInputPrefab != null);
+            Debug.Assert(LinkableParameterDropdownPrefab != null);
+            Debug.Assert(LinkableParameterDropdownPosesPrefab != null);
             Debug.Assert(ParameterDropdownJointsPrefab != null);
             Debug.Assert(ParameterRelPosePrefab != null);
             Debug.Assert(InteractiveObjects != null);

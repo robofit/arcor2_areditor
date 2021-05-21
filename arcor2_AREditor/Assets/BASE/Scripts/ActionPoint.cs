@@ -29,19 +29,8 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
-        private bool locked;
-
-        public bool Locked {
-            get => locked;
-
-            set {
-                Debug.Assert(Base.ProjectManager.Instance.ProjectMeta != null);
-                locked = value;
-                PlayerPrefsHelper.SaveBool("project/" + Base.ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", value);
-            }
-        }
-
-        protected virtual void Start() {
+        protected override void Start() {
+            base.Start();
             actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
         }
 
@@ -55,7 +44,8 @@ namespace Base {
         public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
-            
+
+            SelectorItem.SetText(apData.Name);
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
@@ -69,7 +59,8 @@ namespace Base {
             Debug.Assert(apData != null);
             SetParent(parent);
             Data = apData;
-            locked = PlayerPrefsHelper.LoadBool("project/" + ProjectManager.Instance.ProjectMeta.Id + "/AP/" + Data.Id + "/locked", false);
+
+            SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
             transform.localPosition = GetScenePosition();
@@ -384,13 +375,13 @@ namespace Base {
             }        
 
 
-            if (Parent != null) {
+           /* if (Parent != null) {
 
                 if (ConnectionToParent != null)
                     ConnectionToParent.UpdateLine();
                 else
                     SetConnectionToParent(Parent);
-            }
+            }*/
 
             if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
                 actionPointMenu.UpdateMenu();
@@ -406,15 +397,19 @@ namespace Base {
                 transform.parent = ProjectManager.Instance.ActionPointsOrigin.transform;
                 transform.localRotation = Quaternion.identity;
                 return;
+            } else {
+                try {
+                    IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
+                    Parent = actionPointParent;
+                    Data.Parent = parentId;
+                    transform.parent = actionPointParent.GetTransform();
+                    RemoveConnectionToParent();
+                    SetConnectionToParent(Parent);
+                } catch (KeyNotFoundException ex) {
+                    Debug.LogError(ex);
+                }
             }
-            try {
-                IActionPointParent actionPointParent = ProjectManager.Instance.GetActionPointParent(parentId);
-                Parent = actionPointParent;
-                Data.Parent = parentId;
-                transform.parent = actionPointParent.GetTransform();
-            } catch (KeyNotFoundException ex) {
-                Debug.LogError(ex);
-            }
+            
             
             
         }
@@ -512,6 +507,7 @@ namespace Base {
         public void BaseUpdateOrientation(NamedOrientation orientation) {
             NamedOrientation originalOrientation = GetOrientation(orientation.Id);
             BaseUpdateOrientation(originalOrientation, orientation);
+            GetOrientationVisual(orientation.Id).SelectorItem.SetText(orientation.Name);
         }
 
         public void BaseUpdateOrientation(NamedOrientation originalOrientation, NamedOrientation orientation) {
@@ -590,11 +586,11 @@ namespace Base {
             apOrientation.ActionPoint = this;
             apOrientation.SetOrientation(orientation.Orientation);
             apOrientation.OrientationId = orientation.Id;
+            apOrientation.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(apOrientation);
         }
 
-        internal void ShowAimingMenu(string orientationId) {
-            OpenMenu();
-            actionPointMenu.OpenActionPointAimingMenu(orientationId);
+        internal void ShowOrientationDetailMenu(string orientationId) {
+            actionPointMenu.ActionPointAimingMenu.OrientationJointsDetailMenu.ShowMenu(this, GetOrientation(orientationId));
         }
 
         public abstract void HighlightAP(bool highlight);
@@ -606,15 +602,24 @@ namespace Base {
         }
 
         public async override Task<RequestResult> Movable() {
-            if (Locked)
-                return new RequestResult(false, "Ap is locked");
-            else
-                return new RequestResult(true);
+
+            if (IsLocked && LockOwner != LandingScreen.Instance.GetUsername())
+                return new RequestResult(false, "Action point is locked");
+            else {
+                try {
+                    await WebsocketManager.Instance.UpdateActionPointPosition(GetId(), new Position(), true);
+                    return new RequestResult(true);
+                } catch (RequestFailedException e) {
+                    return new RequestResult(false, e.Message);
+                }
+
+            }
         }
 
         public override string GetId() {
             return Data.Id;
         }
+
 
     }
 }

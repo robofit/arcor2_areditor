@@ -15,12 +15,6 @@ public class VirtualConnectionOnTouch : Base.VirtualConnection {
         if (!Base.GameManager.Instance.SceneInteractable)
             return;
         
-        if (Input.GetMouseButtonUp(1)) {            
-            if (DrawVirtualConnection) {
-                Base.GameManager.Instance.CancelSelection();
-                //TODO - implement using RPC
-            }
-        } 
 
         if (DrawVirtualConnection) {
 #if UNITY_EDITOR || UNITY_STANDALONE

@@ -138,7 +138,6 @@ public class MainScreen : Base.Singleton<MainScreen>
         WebsocketManager.Instance.OnProjectBaseUpdated += OnProjectBaseUpdated;
         WebsocketManager.Instance.OnSceneRemoved += OnSceneRemoved;
         WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
-        SwitchToScenes();
     }
 
 
@@ -187,6 +186,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToProjects() {
+        GameManager.Instance.ShowLoadingScreen("Updating projects...");
+        WebsocketManager.Instance.LoadProjects(GameManager.Instance.LoadProjectsCb);
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
@@ -207,6 +208,9 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToScenes() {
+        GameManager.Instance.ShowLoadingScreen("Updating scenes..");
+        WebsocketManager.Instance.LoadScenes(GameManager.Instance.LoadScenesCb);
+        
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0, 0, 0);
         }
@@ -228,6 +232,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     }
 
     public void SwitchToPackages() {
+        GameManager.Instance.ShowLoadingScreen("Updating packages...");
+        WebsocketManager.Instance.LoadPackages(GameManager.Instance.LoadPackagesCb);
         foreach (TMPro.TMP_Text btn in ScenesBtns) {
             btn.color = new Color(0.687f, 0.687f, 0.687f);
         }
@@ -362,6 +368,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             SceneTiles.Add(tile);
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
         //Button button = Instantiate(TileNewPrefab, ScenesDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         //button.onClick.AddListener(ShowNewSceneDialog);
@@ -408,6 +415,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             PackageTiles.Add(tile);
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
     }
 
     public void UpdateProjects(object sender, EventArgs eventArgs) {
@@ -419,24 +427,33 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            try {
-                string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
-                tile.InitTile(project.Name,
-                              () => GameManager.Instance.OpenProject(project.Id),
-                              () => ProjectOptionMenu.Open(tile),
-                              starred,
-                              project.Modified,
-                              project.Modified,
-                              project.Id,
-                              project.SceneId,
-                              sceneName); 
-                ProjectTiles.Add(tile);
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to load scene name.");
-            }
+            if (project.Valid) {                
+                try {
+                    string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                    tile.InitTile(project.Name,
+                                  () => GameManager.Instance.OpenProject(project.Id),
+                                  () => ProjectOptionMenu.Open(tile),
+                                  starred,
+                                  project.Created,
+                                  project.Modified,
+                                  project.Id,
+                                  project.SceneId,
+                                  sceneName);
+                    ProjectTiles.Add(tile);
+                } catch (ItemNotFoundException ex) {
+                    Debug.LogError(ex);
+                    tile.InitInvalidProject(project.Id, project.Name, project.Created, project.Modified, starred);
+                }
+            } else {
+                string sceneName = "unknown";
+                try {
+                    sceneName = GameManager.Instance.GetSceneName(project.SceneId);
+                } catch (ItemNotFoundException) { }
+                tile.InitInvalidProject(project.Id, project.Name, project.Created, project.Modified, starred, sceneName);
+            }            
         }
         SortCurrentList();
+        GameManager.Instance.HideLoadingScreen();
         // Button button = Instantiate(TileNewPrefab, ProjectsDynamicContent.transform).GetComponent<Button>();
         // TODO new scene
         // button.onClick.AddListener(() => NewProjectDialog.Open());

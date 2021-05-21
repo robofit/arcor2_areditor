@@ -43,6 +43,10 @@ namespace Base {
         /// </summary>
         public event EventHandler OnHideRobotsEE;
         /// <summary>
+        /// Invoked when robot and EE are selected (can be opened robot stepping menu)
+        /// </summary>
+        public event EventHandler OnRobotSelected;
+        /// <summary>
         /// Contains metainfo about scene (id, name, modified etc) without info about objects and services
         /// </summary>
         public Scene SceneMeta = null;
@@ -164,23 +168,22 @@ namespace Base {
             
             if (SceneMeta != null)
                 return false;
+            SelectorMenu.Instance.Clear();
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
             
             UpdateActionObjects(scene, customCollisionModels);
-            sceneChanged = scene.Modified == DateTime.MinValue;
-            try {
-                await WebsocketManager.Instance.StopScene(true);
-                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Started));
-            } catch (RequestFailedException) {
-                WebsocketManager.Instance.InvokeSceneStateEvent(new SceneStateData(message: "", state: SceneStateData.StateEnum.Stopped));
-            }
 
-            (bool successClose, _) = await GameManager.Instance.CloseScene(false, true);
-            SceneChanged = !successClose;
-            OnLoadScene?.Invoke(this, EventArgs.Empty);
+            if (scene.Modified == null) { //new scene, never saved
+                sceneChanged = true;
+            } else if (scene.IntModified == null) {
+                sceneChanged = false;
+            } else {
+                sceneChanged = scene.IntModified > scene.Modified;
+            }
             Valid = true;
+            OnLoadScene?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -192,6 +195,7 @@ namespace Base {
             SceneStarted = false;
             Valid = false;
             RemoveActionObjects();
+            SelectorMenu.Instance.SelectorItems.Clear();
             SceneMeta = null;
             return true;
         }
@@ -205,7 +209,7 @@ namespace Base {
                 SceneMeta = new Scene(id: "", name: "");
             }
             SceneMeta.Id = scene.Id;
-            SceneMeta.Desc = scene.Desc;
+            SceneMeta.Description = scene.Description;
             SceneMeta.IntModified = scene.IntModified;
             SceneMeta.Modified = scene.Modified;
             SceneMeta.Name = scene.Name;
@@ -299,6 +303,7 @@ namespace Base {
             switch (args.Event.State) {
                 case SceneStateData.StateEnum.Starting:
                     GameManager.Instance.ShowLoadingScreen("Going online...");
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Stopping:
                     SceneStarted = false;
@@ -306,37 +311,36 @@ namespace Base {
                     if (!args.Event.Message.IsNullOrEmpty()) {
                         Notifications.Instance.ShowNotification("Scene service failed", args.Event.Message);
                     }
-                    OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
-                    foreach (IRobot robot in GetRobots()) {
-                        robot.SetGrey(true);
-                        if (robot.HasUrdf())
-                            foreach (var joint in robot.GetJoints()) { //set default angles of joints
-                                robot.SetJointValue(joint.Name, 0f);
-                            }
-                    }
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
                 case SceneStateData.StateEnum.Started:
-                    SceneStarted = true;
-                    if (RobotsEEVisible)
-                        OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
-                    RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
-                    foreach (IRobot robot in GetRobots()) {
-                        robot.SetGrey(false);
-                    }
-                    string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
-                    string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
-                    await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
-                    GameManager.Instance.HideLoadingScreen();
+                    StartCoroutine(WaitUntillSceneValid(() => OnSceneStarted(args)));
                     break;
                 case SceneStateData.StateEnum.Stopped:
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
                     SelectedRobot = null;
                     SelectedEndEffector = null;
+                    OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
             }
-            // needs to be rethrown to ensure all subscribers has updated data
-            OnSceneStateEvent?.Invoke(this, args);
+        }
+
+        private IEnumerator WaitUntillSceneValid(UnityEngine.Events.UnityAction callback) {
+            yield return new WaitUntil(() => Valid);
+            callback();
+        }
+
+        private async void OnSceneStarted(SceneStateEventArgs args) {
+            SceneStarted = true;
+            if (RobotsEEVisible)
+                OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
+            RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+            string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
+            await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
+            GameManager.Instance.HideLoadingScreen();
+            OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
         }
 
         public async Task SelectRobotAndEE(string robotId, string eeId) {
@@ -355,8 +359,8 @@ namespace Base {
                     PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
                     Debug.LogError(ex);
                 }
-
             }
+            OnRobotSelected(this, EventArgs.Empty);
         }
 
         public bool IsRobotSelected() {
@@ -475,7 +479,6 @@ namespace Base {
         /// </summary>
         internal void LoadSettings() {
             ActionObjectsVisibility = PlayerPrefsHelper.LoadFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), (VRModeManager.Instance.VRModeON ? 1f : 0f));
-            Debug.LogError("load float " + ActionObjectsVisibility);
             ActionObjectsInteractive = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/AOInteractivity", true);
             RobotsEEVisible = PlayerPrefsHelper.LoadBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", true);
         }
@@ -551,8 +554,8 @@ namespace Base {
         /// <param name="type">Action object type</param>
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
-        public ActionObject SpawnActionObject(string id, string type, CollisionModels customCollisionModels = null) {
-            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata aom)) {
+        public ActionObject SpawnActionObject(IO.Swagger.Model.SceneObject sceneObject, CollisionModels customCollisionModels = null) {
+            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
                 return null;
             }
             GameObject obj;
@@ -566,11 +569,12 @@ namespace Base {
                 obj = Instantiate(ActionObjectNoPosePrefab, ActionObjectsSpawn.transform);
             }
             ActionObject actionObject = obj.GetComponent<ActionObject>();
-            actionObject.InitActionObject(id, type, obj.transform.localPosition, obj.transform.localRotation, id, aom, customCollisionModels);
-
+            actionObject.InitActionObject(sceneObject, obj.transform.localPosition, obj.transform.localRotation, aom, customCollisionModels);
+            
             // Add the Action Object into scene reference
-            ActionObjects.Add(id, actionObject);
+            ActionObjects.Add(sceneObject.Id, actionObject);
             actionObject.SetVisibility(ActionObjectsVisibility);
+            actionObject.ActionObjectUpdate(sceneObject);
             return actionObject;
         }
 
@@ -716,8 +720,7 @@ namespace Base {
         /// <param name="sceneObject">Description of action object</param>
         /// <returns></returns>
         public void SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = SpawnActionObject(sceneObject.Id, sceneObject.Type);
-            actionObject.ActionObjectUpdate(sceneObject);
+            ActionObject actionObject = SpawnActionObject(sceneObject);            
             updateScene = true;
         }
 
@@ -746,7 +749,7 @@ namespace Base {
         public void UpdateActionObjects(Scene scene, CollisionModels customCollisionModels = null) {
             List<string> currentAO = new List<string>();
             foreach (IO.Swagger.Model.SceneObject aoSwagger in scene.Objects) {
-                ActionObject actionObject = SpawnActionObject(aoSwagger.Id, aoSwagger.Type, customCollisionModels);
+                ActionObject actionObject = SpawnActionObject(aoSwagger, customCollisionModels);
                 actionObject.ActionObjectUpdate(aoSwagger);
                 currentAO.Add(aoSwagger.Id);
             }

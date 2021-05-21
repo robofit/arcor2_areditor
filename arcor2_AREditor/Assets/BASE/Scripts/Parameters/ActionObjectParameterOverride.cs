@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Base;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ActionObjectParameterOverride : MonoBehaviour
 {
@@ -16,9 +17,13 @@ public class ActionObjectParameterOverride : MonoBehaviour
 
     private ParameterMetadata parameterMetadata;
 
-    private GameObject Input;
+    private IParameter Input;
 
     private bool overridden;
+
+    public VerticalLayoutGroup LayoutGroupToBeDisabled;
+
+    public GameObject CanvasRoot;
 
     public void SetValue(string value, bool overridden) {
         Name.text = parameterMetadata.Name + (overridden ? " (overridden)" : "");
@@ -27,8 +32,9 @@ public class ActionObjectParameterOverride : MonoBehaviour
         this.overridden = overridden;
     }
 
-    public void Init(string value, bool overriden, ParameterMetadata parameterMetadata, string objectId, bool updateEnabled) {
-        
+    public void Init(string value, bool overriden, ParameterMetadata parameterMetadata, string objectId, bool updateEnabled, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
+        LayoutGroupToBeDisabled = layoutGroupToBeDisabled;
+        CanvasRoot = canvasRoot;
         SaveBtn.gameObject.SetActive(false);
         this.parameterMetadata = parameterMetadata;
         this.objectId = objectId;
@@ -40,11 +46,11 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Modify() {
-        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, null, null, Parameter.Encode(Value.text, parameterMetadata.Type), true);
-        Input.GetComponent<IParameter>().SetLabel("", "");
+        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, LayoutGroupToBeDisabled, CanvasRoot, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, true, default, false);
+        Input.SetLabel("", "");
         Value.gameObject.SetActive(false);
-        Input.transform.SetParent(Value.transform.parent);
-        Input.transform.SetAsFirstSibling();
+        Input.GetTransform().SetParent(Value.transform.parent);
+        Input.GetTransform().SetAsFirstSibling();
         
         SaveBtn.gameObject.SetActive(true);
         ModifyBtn.gameObject.SetActive(false);
@@ -62,7 +68,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Cancel() {
-        Destroy(Input.gameObject);
+        Destroy(Input.GetTransform().gameObject);
         Value.gameObject.SetActive(true);
         SaveBtn.gameObject.SetActive(false);
         ModifyBtn.gameObject.SetActive(true);
@@ -71,13 +77,13 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public async void Save() {
-        Parameter parameter = new Parameter(parameterMetadata, Input.GetComponent<IParameter>().GetValue());
+        Parameter parameter = new Parameter(parameterMetadata, Input.GetValue());
         try {
             if (overridden)
                 await WebsocketManager.Instance.UpdateOverride(objectId, parameter, false);
             else
                 await WebsocketManager.Instance.AddOverride(objectId, parameter, false);
-            Destroy(Input.gameObject);
+            Destroy(Input.GetTransform().gameObject);
             Value.gameObject.SetActive(true);
             SaveBtn.gameObject.SetActive(false);
             ModifyBtn.gameObject.SetActive(true);
@@ -91,7 +97,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
 
     }
 
-    public void OnChangeParameterHandler(string parameterId, object newValue, bool isValueValid = true) {
+    public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveBtn.SetInteractivity(false, "Parameter has invalid value");
         } else if (newValue.ToString() == Value.text) {
