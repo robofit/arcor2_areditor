@@ -242,22 +242,28 @@ public class UrdfManager : Singleton<UrdfManager> {
             return CanIDownload(fileName);
         }
         string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        try {
+            HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+            HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
 
-        HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
-        HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-
-        // t1 is earlier than t2 --> newer version of urdf is present on the server
-        if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
-            //Debug.Log("URDF: Newer version is present on the server.");
-            httpWebResponse.Close();
-            // Check whether downloading can be started and start it, if so.
-            return CanIDownload(fileName);
-        } else {
-            // There is no need to download anything, lets return false
-            //Debug.Log("URDF: Downloaded version is already the latest one.");
-            httpWebResponse.Close();
+            // t1 is earlier than t2 --> newer version of urdf is present on the server
+            if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
+                //Debug.Log("URDF: Newer version is present on the server.");
+                httpWebResponse.Close();
+                // Check whether downloading can be started and start it, if so.
+                return CanIDownload(fileName);
+            } else {
+                // There is no need to download anything, lets return false
+                //Debug.Log("URDF: Downloaded version is already the latest one.");
+                httpWebResponse.Close();
+                return false;
+            }
+        } catch (WebException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to get robot model", ex.Message);
             return false;
         }
+        
     }
 
     /// <summary>

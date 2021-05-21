@@ -324,9 +324,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
             }
             if (!selectorItem.IsSelected()) {
-                DeselectObject(manually);
-                selectorItem.SetSelected(true, manually);
-            }                
+                DeselectObject(manually);                
+            }
+            selectorItem.SetSelected(true, manually);
             if (manually) {
                 ManuallySelected = true;
             }
@@ -371,7 +371,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItem.SetText(interactiveObject.GetName());
         selectorItem.SetObject(interactiveObject, 0, iteration);
         SelectorItems.Add(interactiveObject.GetId(), selectorItem);
-        if (ContentAlphabet.activeSelf && ((GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor && SceneManager.Instance.Valid) ||
+        if (ContainerAlphabet.activeSelf && ((GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor && SceneManager.Instance.Valid) ||
                                            (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor && ProjectManager.Instance.Valid))) // only sort when project / scene is fully loaded
             SwitchToAlphabet(false);
         return selectorItem;
