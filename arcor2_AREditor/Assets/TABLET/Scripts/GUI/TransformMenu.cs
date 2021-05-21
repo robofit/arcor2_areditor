@@ -331,6 +331,8 @@ public class TransformMenu : Singleton<TransformMenu> {
 
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
         gizmo.transform.SetParent(model.transform);
+        // 0.1 is default scale for our gizmo
+        gizmo.transform.localScale = new Vector3(0.1f / model.transform.localScale.x, 0.1f / model.transform.localScale.y, 0.1f / model.transform.localScale.z);
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.SetActive(true);
