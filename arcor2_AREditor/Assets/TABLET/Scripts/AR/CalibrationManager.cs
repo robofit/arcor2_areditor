@@ -22,8 +22,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         Failure,
         Processing
     }
-
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
     public ARCoreExtensions ARCoreExt;
+#endif
     public ARSessionOrigin ARSessionOrigin;
     public ARAnchorManager ARAnchorManager;
     public ARPlaneManager ARPlaneManager;
@@ -141,9 +142,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    #region Calibration using ARFoundation
+#region Calibration using ARFoundation
 
     private void RunLocalARFoundationCalibration() {
+        #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // If we used server calibration before, remove all server anchors and prepare for local calibration
         if (UsingServerCalibration) {
             //Debug.Log("Local: Was using server calibration");
@@ -170,7 +172,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             localCalibration = StartCoroutine(Calibrate());
         }
         
-        UsingServerCalibration = false; 
+        UsingServerCalibration = false;
+#endif
     }
 
     public void EnableAutoReCalibration(bool active) {
@@ -179,6 +182,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private IEnumerator Calibrate() {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // Do nothing while in the MainScreen (just track feature points, planes, etc. as user moves unintentionally with the device)
         yield return new WaitUntil(() => GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor ||
                                          GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor ||
@@ -232,7 +236,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
             ActivateTrackableMarkers(true);
         }
-
+#endif
         yield return null;
     }
 
@@ -441,14 +445,15 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 #endif
 
-    #endregion
+#endregion
 
 
 
 
-    #region Calibration using ARServer
+#region Calibration using ARServer
 
     private void RunServerAutoCalibration() {
+        #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // If we used local calibration before, remove all local anchors and prepare for server calibration
         if (!UsingServerCalibration) {
             //Debug.Log("Server: Was using local calibration");
@@ -476,6 +481,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
 
         UsingServerCalibration = true;
+#endif
     }
 
     private IEnumerator AutoCalibrate() {
