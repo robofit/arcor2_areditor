@@ -51,7 +51,6 @@ public class LeftMenuPackage : LeftMenu {
     }
 
     public override void UpdateVisibility() {
-        Debug.LogError(GameManager.Instance.GetGameState());
         UpdateVisibility(GameManager.Instance.GetGameState());
     }
 
