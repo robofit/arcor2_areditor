@@ -11,7 +11,12 @@ public class LeftMenuPackage : LeftMenu {
         Base.GameManager.Instance.OnRunPackage += OnOpenProjectRunning;
         Base.GameManager.Instance.OnPausePackage += OnPausePackage;
         Base.GameManager.Instance.OnResumePackage += OnResumePackage;
+        Base.GameManager.Instance.OnStopPackage += OnStopPackage;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+    }
+
+    private void OnStopPackage(object sender, System.EventArgs e) {
+        UpdateVisibility(GameManager.GameStateEnum.ProjectEditor);
     }
 
     private void OnResumePackage(object sender, ProjectMetaEventArgs args) {
@@ -31,6 +36,7 @@ public class LeftMenuPackage : LeftMenu {
         Debug.LogError("open package running");
         ResumeBtn.gameObject.SetActive(false);
         PauseBtn.gameObject.SetActive(true);
+        CloseButton.SetInteractivity(true);
         PauseBtn.SetInteractivity(true);
         EditorInfo.text = "Package: " + args.Name;
         UpdateVisibility();
@@ -45,7 +51,13 @@ public class LeftMenuPackage : LeftMenu {
     }
 
     public override void UpdateVisibility() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning &&
+        Debug.LogError(GameManager.Instance.GetGameState());
+        UpdateVisibility(GameManager.Instance.GetGameState());
+    }
+
+    public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
+        
+        if (newGameState == GameManager.GameStateEnum.PackageRunning &&
             MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);
         } else {
@@ -64,21 +76,21 @@ public class LeftMenuPackage : LeftMenu {
 
     public async void StopPackage() {
         CloseButton.SetInteractivity(false, "Stopping package");
-        if (!await GameManager.Instance.StopPackage()) {
+        if (await GameManager.Instance.StopPackage()) {
             CloseButton.SetInteractivity(true);
         }
     }
 
     public async void PausePackage() {
         PauseBtn.SetInteractivity(false, "Pausing package");
-        if (!await GameManager.Instance.PausePackage()) {
+        if (await GameManager.Instance.PausePackage()) {
             PauseBtn.SetInteractivity(true);
         }
     }
 
     public async void ResumePackage() {
         ResumeBtn.SetInteractivity(false, "Resuming package");
-        if (!await GameManager.Instance.ResumePackage()) {
+        if (await GameManager.Instance.ResumePackage()) {
             ResumeBtn.SetInteractivity(true);
         }
     }
