@@ -174,7 +174,10 @@ namespace Base {
             LoadSettings();
             
             UpdateActionObjects(scene, customCollisionModels);
-            if (scene.IntModified == null) {
+
+            if (scene.Modified == null) { //new scene, never saved
+                sceneChanged = true;
+            } else if (scene.IntModified == null) {
                 sceneChanged = false;
             } else {
                 sceneChanged = scene.IntModified > scene.Modified;
