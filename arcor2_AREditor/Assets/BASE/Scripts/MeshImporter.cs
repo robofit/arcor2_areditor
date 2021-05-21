@@ -169,20 +169,23 @@ public class MeshImporter : Singleton<MeshImporter> {
         }
 
         DateTime downloadedZipLastModified = meshFileInfo.LastWriteTime;
-
-        HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
-        HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-
-        // t1 is earlier than t2 --> newer version of urdf is present on the server
-        if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
-            Debug.LogError("mesh: Newer version is present on the server.");
-            httpWebResponse.Close();
-            // Check whether downloading can be started and start it, if so.
-            return CanIDownload(meshId);
-        } else {
-            // There is no need to download anything, lets return false
-            Debug.LogError("mesh: Downloaded version is already the latest one.");
-            httpWebResponse.Close();
+        try {
+            HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+            HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+            if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
+                Debug.LogError("mesh: Newer version is present on the server.");
+                httpWebResponse.Close();
+                // Check whether downloading can be started and start it, if so.
+                return CanIDownload(meshId);
+            } else {
+                // There is no need to download anything, lets return false
+                Debug.LogError("mesh: Downloaded version is already the latest one.");
+                httpWebResponse.Close();
+                return false;
+            }
+        } catch (WebException ex) {
+            Debug.LogError(ex);
+            Notifications.Instance.ShowNotification("Failed to get robot model", ex.Message);
             return false;
         }
     }
