@@ -2430,7 +2430,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.GetCameraPoseResponse response = await WaitForResult<IO.Swagger.Model.GetCameraPoseResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate tablet" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get camera pose" } : response.Messages);
             } else {
                 return response.Data;
             }

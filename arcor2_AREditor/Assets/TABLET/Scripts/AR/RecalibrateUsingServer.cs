@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -6,10 +7,16 @@ using UnityEngine;
 
 public class RecalibrateUsingServer : InteractiveObject {
 
-    protected override void Start() {
-        base.Start();
+    private string ID = Guid.NewGuid().ToString();
+
+    private void Awake() {
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
+
+    protected override void Start() {
+        base.Start();
+    }
+
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
             return;
@@ -18,7 +25,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     }
 
     public void Calibrate() {
-        CalibrationManager.Instance.RecalibrateUsingServer();
+        CalibrationManager.Instance.RecalibrateUsingServer(inverse:true);
     }
 
     public override void Enable(bool enable) {
@@ -39,7 +46,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     }
 
     public override string GetId() {
-        return "Calibration cube";
+        return ID;
     }
 
     public override void OpenMenu() {
@@ -71,7 +78,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     }
 
     public override void UpdateColor() {
-        throw new System.NotImplementedException();
+        //nothing to do here
     }
 
     public override Task Rename(string name) {
