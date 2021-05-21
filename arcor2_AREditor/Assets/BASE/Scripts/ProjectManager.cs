@@ -338,7 +338,11 @@ namespace Base {
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
 
-            ProjectChanged = project.IntModified != null;
+            if (project.IntModified == null) {
+                ProjectChanged = false;
+            } else {
+                ProjectChanged = project.IntModified > project.Modified;
+            }
             Valid = true;
             OnLoadProject?.Invoke(this, EventArgs.Empty);     
             return true;
