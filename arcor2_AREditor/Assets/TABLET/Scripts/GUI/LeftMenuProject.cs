@@ -13,7 +13,8 @@ public class LeftMenuProject : LeftMenu
 {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
-        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton, AddActionPointButton2;
+        AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
+        AddActionPointButton2, CopyButton;
 
     public GameObject ActionPicker;
     public InputDialog InputDialog;
@@ -103,6 +104,7 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton2.SetInteractivity(true);
                 AddActionPointButton.SetDescription("Add global action point");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
+                CopyButton.SetInteractivity(false, "No object to duplicate selected");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton.SetInteractivity(false, "Object is locked");
@@ -111,6 +113,7 @@ public class LeftMenuProject : LeftMenu
                 RunButton2.SetInteractivity(false, "Object is locked");
                 AddActionButton.SetInteractivity(false, "Object is locked");
                 AddActionButton2.SetInteractivity(false, "Object is locked");
+                CopyButton.SetInteractivity(false, "Object is locked");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
@@ -123,6 +126,7 @@ public class LeftMenuProject : LeftMenu
                 }
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
+                CopyButton.SetInteractivity(obj is Base.Action || obj is ActionPoint3D, "Selected object cannot be duplicated");
 
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
