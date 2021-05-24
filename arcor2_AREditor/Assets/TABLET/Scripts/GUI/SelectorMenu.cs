@@ -357,9 +357,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         SelectorItem selectorItem = Instantiate(SelectorItemPrefab).GetComponentInChildren<SelectorItem>();
         selectorItem.SublistContent.SetActive(false);
         if (interactiveObject is ISubItem subItem) {
-            if (SelectorItems.TryGetValue(subItem.GetParentObject().GetId(), out SelectorItem selectorItemParent)) {
-                selectorItem.transform.SetParent(selectorItemParent.SublistContent.transform);
-                selectorItemParent.AddChild(selectorItem, ContainerAlphabet.activeSelf);
+            InteractiveObject parent = subItem.GetParentObject();
+            if (parent != null && parent.SelectorItem != null) {
+                selectorItem.transform.SetParent(parent.SelectorItem.SublistContent.transform);
+                parent.SelectorItem.AddChild(selectorItem, ContainerAlphabet.activeSelf);
             } else {
                 throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
@@ -408,7 +409,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
                 }
         }
-        Destroy(selectorItem.transform.gameObject);
+        if (selectorItem != null && selectorItem.gameObject != null)
+            Destroy(selectorItem.gameObject);
         SelectorItems.Remove(selectorItem.InteractiveObject.GetId());
     }
 

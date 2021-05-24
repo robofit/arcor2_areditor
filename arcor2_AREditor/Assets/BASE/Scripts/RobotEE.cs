@@ -17,6 +17,7 @@ public class RobotEE : InteractiveObject, ISubItem {
         RobotId = robot.GetId();
         EEId = eeId;
         SetLabel(robot.GetName(), eeId);
+        Debug.LogError(GetParentObject().SelectorItem);
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
@@ -95,6 +96,10 @@ public class RobotEE : InteractiveObject, ISubItem {
     }
 
     public InteractiveObject GetParentObject() {
-        return SceneManager.Instance.GetActionObject(RobotId);
+        try {
+            return SceneManager.Instance.GetActionObject(RobotId);
+        } catch (KeyNotFoundException) {
+            return null;
+        }
     }
 }

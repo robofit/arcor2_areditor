@@ -439,7 +439,8 @@ namespace Base {
         }
 
         public async Task<bool> LoadEndEffectors() {
-           
+            if (!SceneManager.Instance.Valid || !ProjectManager.Instance.Valid)
+                return false;
             if (loadingEndEffectors) {
                 await WaitUntilResourcesReady();
                 return true;
