@@ -126,7 +126,7 @@ public class LeftMenuProject : LeftMenu
                 }
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity(obj is Base.Action || obj is ActionPoint3D, "Selected object cannot be duplicated");
+                CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, "Selected object cannot be duplicated");
 
                 AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
                     obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
