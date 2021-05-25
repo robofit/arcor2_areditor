@@ -118,6 +118,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                             if (deviceTrackingStatus == DeviceTrackingStatus.WaitingForAnchor) {
                                 Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
                                 GameManager.Instance.SceneSetActive(true);
+                                deviceTrackingStatus = DeviceTrackingStatus.Tracking;
                             }
                         }
                         break;
@@ -381,4 +382,7 @@ public class TrackingManager : Singleton<TrackingManager> {
         }
     }
 
+    public bool IsDeviceTracking() {
+        return (deviceTrackingStatus == DeviceTrackingStatus.Tracking) && (anchorTrackingStatus == AnchorTrackingStatus.Tracking);
+    }
 }

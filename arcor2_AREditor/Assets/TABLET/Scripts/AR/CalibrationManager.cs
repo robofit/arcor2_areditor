@@ -22,9 +22,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         Failure,
         Processing
     }
-#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-    public ARCoreExtensions ARCoreExt;
-#endif
+//#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+//    public ARCoreExtensions ARCoreExt;
+//#endif
     public ARSessionOrigin ARSessionOrigin;
     public ARAnchorManager ARAnchorManager;
     public ARPlaneManager ARPlaneManager;
@@ -79,12 +79,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private MarkerDetectionState markerDetectionState;
 
     private float anchorQuality = 0f;
-    private float recalibrateTime = 120f;
+    private float recalibrateTime = 2f;
+    private int imageNum = 1;
 
     private bool AutoRecalibration = true;
 
+    private Texture2D m_Texture;
+
+    public float AutoRecalibrateTime = 120f;
+
     private void Awake() {
         UsingServerCalibration = PlayerPrefsHelper.LoadBool("UseServerCalibration", true);
+        UpdateAutoCalibTime(float.Parse(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120")));
     }
 
     public void UseServerCalibration(bool useServer) {
@@ -95,15 +101,17 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-#if UNITY_STANDALONE || !AR_ON
+
     private void Start() {
+#if UNITY_STANDALONE || !AR_ON
         Calibrated = true;
         OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
-    }
 #endif
+    }
+
 
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-    private void OnEnable() {
+        private void OnEnable() {
         //GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         ARTrackedImageManager.trackedImagesChanged += OnTrackedImageChanged;
         ARCameraManager.frameReceived += FrameReceived;
@@ -178,6 +186,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public void EnableAutoReCalibration(bool active) {
         AutoRecalibration = active;
+        if (autoCalibration != null) {
+            StopCoroutine(autoCalibration);
+        }
+        autoCalibration = StartCoroutine(AutoCalibrate());
         Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
     }
 
@@ -445,12 +457,16 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 #endif
 
-#endregion
+    #endregion
 
 
 
 
-#region Calibration using ARServer
+    #region Calibration using ARServer
+
+    public void UpdateAutoCalibTime(float time) {
+        AutoRecalibrateTime = time;
+    }
 
     private void RunServerAutoCalibration() {
         #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
@@ -522,31 +538,32 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         // Main autocalibration loop
         while (Application.isFocused) {
             // Do nothing while in the MainScreen (just track feature points, planes, etc. as user moves unintentionally with the device)
-            yield return new WaitUntil(() => GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor ||
+            yield return new WaitUntil(() => (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor ||
                                              GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor ||
-                                             GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning);
+                                             GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning) &&
+                                             TrackingManager.Instance.IsDeviceTracking());
 
             if (AutoRecalibration) {
                 markerDetectionState = MarkerDetectionState.Processing;
                 yield return CalibrateUsingServerAsync(success => {
                     if (success) {
                         markerDetectionState = MarkerDetectionState.Success;
-                        recalibrateTime = 120f;
+                        recalibrateTime = 2f;
                     } else {
                         markerDetectionState = MarkerDetectionState.Failure;
                         if (anchorQuality > 0) {
                             anchorQuality -= 0.05f;
                         }
-                        if (recalibrateTime > 1f) {
-                            recalibrateTime -= 10f;
-                        }
+                        //if (recalibrateTime > 1f) {
+                        //    recalibrateTime -= 10f;
+                        //}
                     }
                 }, inverse: true, autoCalibrate: true);
 
-                //Debug.Log("Current quality: " + anchorQuality);
+            //Debug.Log("Current quality: " + anchorQuality);
             }
 
-            yield return new WaitForSeconds(recalibrateTime);
+            yield return new WaitForSeconds(AutoRecalibrateTime);
         }
     }
 
@@ -565,6 +582,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public IEnumerator CalibrateUsingServerAsync(Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false, bool force = false) {
+        Debug.Log("Calibrating using server");
+
         if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics)) {
             //Debug.LogError("Did not get the intrinsics");
             callback?.Invoke(false);
@@ -626,7 +645,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         var rawData = request.GetData<byte>();
 
         // Create a texture if necessary.
-        Texture2D m_Texture = new Texture2D(
+        //Texture2D
+            m_Texture = new Texture2D(
                 request.conversionParams.outputDimensions.x,
                 request.conversionParams.outputDimensions.y,
                 request.conversionParams.outputFormat,
@@ -642,7 +662,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         string imageString = System.Text.Encoding.GetEncoding("iso-8859-1").GetString(m_Texture.EncodeToJPG());
 
-        System.IO.File.WriteAllBytes(Application.persistentDataPath + "/image.jpg", m_Texture.EncodeToJPG());
+        //System.IO.File.WriteAllBytes(Application.persistentDataPath + "/image" + imageNum + ".jpg", m_Texture.EncodeToJPG());
+        //imageNum++;
 
         //Debug.Log("Image size: " + request.conversionParams.outputDimensions.x + " x " + request.conversionParams.outputDimensions.y);
         //Debug.Log("Camera Resolution: " + cameraConfiguration.Value);
@@ -720,6 +741,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 marker.transform.localScale = new Vector3(1f, 1f, 1f);
 
                 CreateLocalAnchor(marker);
+
+
+                //System.IO.File.WriteAllBytes(Application.persistentDataPath + "/image" + imageNum + ".jpg", m_Texture.EncodeToJPG());
+                //imageNum++;
 
                 // Transformation Inversion to get Camera Position
                 //markerMatrix = Matrix4x4.TRS(markerPosition, markerRotation, Vector3.one); // create translation, rotation and scaling matrix

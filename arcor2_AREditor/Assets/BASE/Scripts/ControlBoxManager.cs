@@ -136,8 +136,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         }
     }
 
-    public void ShowActionObjectSettingsMenu() {
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
+    public void ShowEditorSettingsMenu() {
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.EditorSettingsMenu);
     }
 
     public void DisplayConnections(bool active) {
