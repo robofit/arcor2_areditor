@@ -72,7 +72,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     private Matrix4x4 ARCameraTransformMatrix;
 
-    private bool UsingServerCalibration = false;
+    public bool UsingServerCalibration {
+        get;
+        private set;
+    }
     private Coroutine localCalibration = null;
     private Coroutine autoCalibration = null;
 

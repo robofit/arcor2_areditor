@@ -94,7 +94,11 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     /// </summary>
     public void OnCalibrationElementsToggleClick() {
         if (!CalibrationManager.Instance.Calibrated) {
-            Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker, wait for the calibration cube to show up and click on it, in order to calibrate the system");
+            if (CalibrationManager.Instance.UsingServerCalibration) {
+                Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker and wait for the calibration to complete automatically.");
+            } else {
+                Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker, wait for the calibration cube to show up and click on it, in order to calibrate the system.");
+            }
         }
     }
 
