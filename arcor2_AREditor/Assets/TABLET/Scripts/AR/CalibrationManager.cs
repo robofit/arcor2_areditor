@@ -774,9 +774,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         } catch (RequestFailedException ex) {
             markerDetectionState = MarkerDetectionState.Failure;
             Debug.Log("No markers visible");
-            if (autoCalibrate) {
-                Notifications.Instance.ShowNotification("No markers visible", ex.Message);
-            }
+            //if (autoCalibrate) {
+            //    Notifications.Instance.ShowNotification("No markers visible", ex.Message);
+            //}
         }
     }
 
