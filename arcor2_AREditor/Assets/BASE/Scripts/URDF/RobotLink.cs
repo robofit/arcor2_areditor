@@ -69,6 +69,10 @@ public class RobotLink {
         Visuals[urdfVisual] = true;
     }
 
+    public void SetLinkScale(float scale) {
+        LinkScale = scale;
+    }
+
     public void SetCollisionLoaded(UrdfCollision urdfCollision) {
         Collisions[urdfCollision] = true;
     }

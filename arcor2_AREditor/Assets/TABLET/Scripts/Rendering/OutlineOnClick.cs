@@ -70,7 +70,6 @@ public class OutlineOnClick : Clickable {
     private bool localMaterialsInstantiated = false;
 
     private void Start() {
-        Debug.LogError("Outline on click start");
 
         if (!localMaterialsInstantiated) {
             InitMaterials();
