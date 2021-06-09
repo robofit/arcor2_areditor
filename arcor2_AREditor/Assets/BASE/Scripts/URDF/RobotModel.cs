@@ -46,12 +46,14 @@ public class RobotModel {
             // Get all UrdfVisuals of each UrdfLink
             GameObject visualsGameObject = link.gameObject.GetComponentInChildren<UrdfVisuals>().gameObject;
             Dictionary<UrdfVisual, bool> visuals = new Dictionary<UrdfVisual, bool>();
+            float scale = 1f;
             // Traverse each UrdfVisual and set a boolean indicating whether its visual is already loaded (is of some basic type - box, cylinder, capsule)
             // or is going to be loaded by ColladaImporter (in case its type of mesh)
             foreach (UrdfVisual visual in visualsGameObject.GetComponentsInChildren<UrdfVisual>()) {
                 visuals.Add(visual, copyOfRobotModel ? true : (visual.GeometryType == GeometryTypes.Mesh ? false : true));
                 // hide visual if it is mesh.. mesh will be displayed when fully loaded
                 visual.gameObject.SetActive(copyOfRobotModel ? true : (visual.GeometryType == GeometryTypes.Mesh ? false : true));
+                scale = visual.gameObject.transform.localScale.x;
             }
 
             UrdfJoint urdfJoint = link.GetComponent<UrdfJoint>();
@@ -64,7 +66,7 @@ public class RobotModel {
                 }
                 jointReader = urdfJoint.transform.AddComponentIfNotExists<JointStateReader>();
             }
-            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink));
+            Links.Add(link.gameObject.name, new RobotLink(link.gameObject.name, urdfJoint, jointWriter, jointReader, visuals_gameObject:visuals, is_base_link: link.IsBaseLink, scale:scale));
         }
     }
 

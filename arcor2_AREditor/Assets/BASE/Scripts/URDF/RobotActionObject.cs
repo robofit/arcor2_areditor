@@ -239,7 +239,10 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>(true));
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            outlineOnClick.InitMaterials();
+
             outlineOnClick.InitGizmoMaterials();
+            SetOutlineSizeBasedOnScale();
 
             SetVisibility(visibility, forceShaderChange: true);
             UpdateColor();
@@ -255,6 +258,17 @@ namespace Base {
             }
             */
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        }
+
+        private void SetOutlineSizeBasedOnScale() {
+            float robotScale = 0f;
+            foreach (RobotLink link in RobotModel.Links.Values) {
+                robotScale = link.LinkScale;
+                if (!link.IsBaseLink) {
+                    break;
+                }
+            }            
+            outlineOnClick.CompensateOutlineByModelScale(robotScale);
         }
 
         private void SetDefaultJoints() {
