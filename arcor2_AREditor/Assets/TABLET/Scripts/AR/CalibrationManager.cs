@@ -145,9 +145,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    public void Recalibrate() {
+    public void Recalibrate(bool startAutoCalibrationProcess = false) {
         if (UsingServerCalibration) {
-            RecalibrateUsingServer(inverse:true);
+            if (startAutoCalibrationProcess) {
+                RecalibrateUsingServerAuto();
+            } else {
+                RecalibrateUsingServer(inverse: true);
+            }
         } else {
             RecalibrateUsingARFoundation();
         }
@@ -315,7 +319,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         ActivateTrackableMarkers(true);
         Calibrated = false;
         OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
-        OnARRecalibrate(this, new EventArgs());
+        OnARRecalibrate?.Invoke(this, new EventArgs());
         GameManager.Instance.SceneSetActive(false);
 #endif
     }
@@ -893,8 +897,22 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         Calibrated = false;
         OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
-        OnARRecalibrate(this, new EventArgs());
+        OnARRecalibrate?.Invoke(this, new EventArgs());
         StartCoroutine(CalibrateUsingServerAsync(inverse: inverse, force:true));
+#endif
+    }
+
+    public void RecalibrateUsingServerAuto() {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+        Calibrated = false;
+        OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
+        OnARRecalibrate?.Invoke(this, new EventArgs());
+
+        if (autoCalibration != null) {
+            //Debug.Log("Server: Stopping autocalib");
+            StopCoroutine(autoCalibration);
+        }
+        autoCalibration = StartCoroutine(AutoCalibrate());
 #endif
     }
 

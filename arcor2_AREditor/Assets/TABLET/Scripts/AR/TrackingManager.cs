@@ -32,6 +32,9 @@ public class TrackingManager : Singleton<TrackingManager> {
 
     private int i = 0;
 
+    public float AnchorTrackingLostTimeout = 20f;
+    private Coroutine trackingAnchorFailureTimeout;
+
     /// <summary>
     /// Info about the device tracking status.
     /// </summary>
@@ -106,14 +109,9 @@ public class TrackingManager : Singleton<TrackingManager> {
                     case TrackingState.Tracking:
                         if (anchorTrackingStatus != AnchorTrackingStatus.Tracking) {
                             // cancel previously invoked tracking failure notification
-                            if (trackingAnchorFailureNotify != null) {
-                                StopCoroutine(trackingAnchorFailureNotify);
-                                // stop the video only if device is tracking and isn't in any state that demands playing the video (insufficient features and excessive motion)
-                                if (!(deviceTrackingStatus == DeviceTrackingStatus.InsufficientFeatures || deviceTrackingStatus == DeviceTrackingStatus.ExcessiveMotion)) {
-                                    TrackingLostAnimation.StopVideo();
-                                }
-                                trackingAnchorFailureNotify = null;
-                            }
+                            StopTrackingFailureNotifications();
+                            StopTrackingFailureTimeout();
+
                             anchorTrackingStatus = AnchorTrackingStatus.Tracking;
                             if (deviceTrackingStatus == DeviceTrackingStatus.WaitingForAnchor) {
                                 Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
@@ -125,24 +123,39 @@ public class TrackingManager : Singleton<TrackingManager> {
                     case TrackingState.Limited:
                     case TrackingState.None:
                         // cancel previously invoked tracking failure notification
-                        if (trackingAnchorFailureNotify != null) {
-                            StopCoroutine(trackingAnchorFailureNotify);
-                            // stop the video only if device is tracking and isn't in any state that demands playing the video (insufficient features and excessive motion)
-                            if (!(deviceTrackingStatus == DeviceTrackingStatus.InsufficientFeatures || deviceTrackingStatus == DeviceTrackingStatus.ExcessiveMotion)) {
-                                TrackingLostAnimation.StopVideo();
-                            }
-                            trackingAnchorFailureNotify = null;
-                        }
+                        StopTrackingFailureNotifications();
 
                         trackingAnchorFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Locate the calibration marker.", 9f, anchorTrackingFailure: true));
                         TrackingLostAnimation.PlayVideo();
                         anchorTrackingStatus = AnchorTrackingStatus.NotTracking;
                         GameManager.Instance.SceneSetActive(false);
+                        if (trackingAnchorFailureTimeout == null) {
+                            trackingAnchorFailureTimeout = StartCoroutine(TrackingFailureTimeout(AnchorTrackingLostTimeout));
+                        }
                         break;
                 }
             }
         } else {
             anchorTrackingStatus = AnchorTrackingStatus.NotCalibrated;
+        }
+    }
+
+    private void StopTrackingFailureNotifications() {
+        // cancel previously invoked tracking failure notification
+        if (trackingAnchorFailureNotify != null) {
+            StopCoroutine(trackingAnchorFailureNotify);
+            // stop the video only if device is tracking and isn't in any state that demands playing the video (insufficient features and excessive motion)
+            if (!(deviceTrackingStatus == DeviceTrackingStatus.InsufficientFeatures || deviceTrackingStatus == DeviceTrackingStatus.ExcessiveMotion)) {
+                TrackingLostAnimation.StopVideo();
+            }
+            trackingAnchorFailureNotify = null;
+        }
+    }
+
+    private void StopTrackingFailureTimeout() {
+        if (trackingAnchorFailureTimeout != null) {
+            StopCoroutine(trackingAnchorFailureTimeout);
+            trackingAnchorFailureTimeout = null;
         }
     }
 
@@ -306,6 +319,21 @@ public class TrackingManager : Singleton<TrackingManager> {
             }
             yield return new WaitForSeconds(repeatRate);
         }
+    }
+
+    /// <summary>
+    /// Starts the timeout for the system to recover. If it wont recover within the given timeout, recalibration will be requested.
+    /// </summary>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    private IEnumerator TrackingFailureTimeout(float timeout) {
+        yield return new WaitForSeconds(timeout);
+        StopTrackingFailureNotifications();
+
+        Notifications.Instance.ShowNotification("Tracking lost timeout!", "System will be calibrated.");
+
+        // Make request for recalibration
+        CalibrationManager.Instance.Recalibrate(startAutoCalibrationProcess:true);
     }
 
     public TrackingQuality GetTrackingQuality() {
