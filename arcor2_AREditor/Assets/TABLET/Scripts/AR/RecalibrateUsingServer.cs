@@ -10,7 +10,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     private string ID = Guid.NewGuid().ToString();
 
     private void Awake() {
-        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+        CreateSelectorItem();
     }
 
     protected override void Start() {
@@ -22,6 +22,10 @@ public class RecalibrateUsingServer : InteractiveObject {
             return;
         }
         Calibrate();
+    }
+
+    public void CreateSelectorItem() {
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     public void Calibrate() {

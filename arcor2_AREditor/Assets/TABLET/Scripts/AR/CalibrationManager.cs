@@ -113,15 +113,43 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
 
+
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        private void OnEnable() {
+    private void OnEnable() {
         //GameManager.Instance.OnConnectedToServer += ConnectedToServer;
         ARTrackedImageManager.trackedImagesChanged += OnTrackedImageChanged;
         ARCameraManager.frameReceived += FrameReceived;
+
+        GameManager.Instance.OnOpenSceneEditor += OnOpenAR;
+        GameManager.Instance.OnOpenProjectEditor += OnOpenAR;
+        GameManager.Instance.OnRunPackage += OnOpenAR;
     }
 
     private void OnDisable() {
         ARCameraManager.frameReceived -= FrameReceived;
+
+        GameManager.Instance.OnOpenSceneEditor -= OnOpenAR;
+        GameManager.Instance.OnOpenProjectEditor -= OnOpenAR;
+        GameManager.Instance.OnRunPackage -= OnOpenAR;
+    }
+
+    private void OnOpenAR(object sender, EventArgs e) {
+        if (Calibrated) {
+            if (UsingServerCalibration) {
+                WorldAnchorLocal.GetComponent<RecalibrateUsingServer>().CreateSelectorItem();
+            } else {
+                WorldAnchorLocal.GetComponent<Recalibrate>().CreateSelectorItem();
+            }
+        } else {
+            if (!UsingServerCalibration) {
+                foreach (ARTrackedImage anchorCube in ARTrackedImageManager.trackables) {
+                    CreateAnchor anchor = anchorCube.GetComponent<CreateAnchor>();
+                    if (anchor != null) {
+                        anchor.CreateSelectorItem();
+                    }
+                }
+            }
+        }
     }
 
     private void OnTrackedImageChanged(ARTrackedImagesChangedEventArgs obj) {
@@ -193,11 +221,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public void EnableAutoReCalibration(bool active) {
         AutoRecalibration = active;
-        if (autoCalibration != null) {
-            StopCoroutine(autoCalibration);
+        if (UsingServerCalibration) {
+            if (autoCalibration != null) {
+                StopCoroutine(autoCalibration);
+            }
+            autoCalibration = StartCoroutine(AutoCalibrate());
+            Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
         }
-        autoCalibration = StartCoroutine(AutoCalibrate());
-        Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
     }
 
     private IEnumerator Calibrate() {
