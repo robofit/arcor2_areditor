@@ -115,13 +115,18 @@ public class OutlineOnClick : Clickable {
     }
 
     public void InitMaterials() {
-        localOutlineClickFirstPass = new Material(OutlineClickFirstPass);
-        localOutlineClickSecondPass = new Material(OutlineClickSecondPass);
-        localOutlineHoverFirstPass = new Material(OutlineHoverFirstPass);
-        localOutlineHoverSecondPass = new Material(OutlineHoverSecondPass);
+        if (OutlineClickFirstPass != null || OutlineClickSecondPass != null
+            || OutlineHoverFirstPass != null || OutlineHoverSecondPass != null) {
+            localOutlineClickFirstPass = new Material(OutlineClickFirstPass);
+            localOutlineClickSecondPass = new Material(OutlineClickSecondPass);
+            localOutlineHoverFirstPass = new Material(OutlineHoverFirstPass);
+            localOutlineHoverSecondPass = new Material(OutlineHoverSecondPass);
+        }
 
-        localOutlineClickMaterial = new Material(OutlineClickMaterial);
-        localOutlineHoverMaterial = new Material(OutlineHoverMaterial);
+        if (OutlineClickMaterial != null || OutlineHoverMaterial != null) {
+            localOutlineClickMaterial = new Material(OutlineClickMaterial);
+            localOutlineHoverMaterial = new Material(OutlineHoverMaterial);
+        }
 
         localMaterialsInstantiated = true;
     }
