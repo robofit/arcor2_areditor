@@ -245,7 +245,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             case "dm":
                 return v * 0.1f;
             case "5cm":
-                return v * 0.2f;
+                return v * 0.05f;
             case "cm":
                 return v * 0.01f;
             case "mm":
@@ -262,7 +262,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             case "dm":
                 return (int) (value * 10);
             case "5cm":
-                return (int) (value * 20);
+                return (int) (value * 50);
             case "cm":
                 return (int) (value * 100);
             case "mm":
