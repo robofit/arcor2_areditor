@@ -38,7 +38,7 @@ public class TrackingManager : Singleton<TrackingManager> {
     /// <summary>
     /// Info about the device tracking status.
     /// </summary>
-    public DeviceTrackingStatus deviceTrackingStatus;
+    private DeviceTrackingStatus deviceTrackingStatus;
 
     /// <summary>
     /// Info about the world anchor tracking status.

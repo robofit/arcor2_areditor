@@ -49,7 +49,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 #endif
 
     [HideInInspector]
-    public bool Calibrated = false;
+    public bool Calibrated {
+        private set;
+        get;
+    }
 
     public event CalibrationEventHandler OnARCalibrated;
 
