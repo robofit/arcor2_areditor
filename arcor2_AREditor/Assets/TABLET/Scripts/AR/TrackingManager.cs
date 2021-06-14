@@ -125,7 +125,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                         // cancel previously invoked tracking failure notification
                         StopTrackingFailureNotifications();
 
-                        trackingAnchorFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Locate the calibration marker.", 9f, anchorTrackingFailure: true));
+                        trackingAnchorFailureNotify = StartCoroutine(TrackingFailureNotify("Tracking lost!", "Look around your workspace.", 9f, anchorTrackingFailure: true));
                         TrackingLostAnimation.PlayVideo();
                         anchorTrackingStatus = AnchorTrackingStatus.NotTracking;
                         GameManager.Instance.SceneSetActive(false);
