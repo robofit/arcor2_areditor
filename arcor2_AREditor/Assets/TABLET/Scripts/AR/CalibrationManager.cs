@@ -493,6 +493,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         if (worldAnchorVis != null) {
             worldAnchorVis.SetActive(active);
             WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(active);
+
+            // If calib cube should be hidden, check if it is not selected, otherwise deselect it from selector menu
+            if (!active) {
+                if (WorldAnchorLocal.GetComponent<InteractiveObject>() == SelectorMenu.Instance.GetSelectedObject()) {
+                    SelectorMenu.Instance.DeselectObject();
+                }
+            }
         }
     }
 #endif
@@ -928,18 +935,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
     public void RecalibrateUsingServer(bool inverse = false) {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        Calibrated = false;
-        OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
-        OnARRecalibrate?.Invoke(this, new EventArgs());
+        //Calibrated = false;
+        //OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
+        //OnARRecalibrate?.Invoke(this, new EventArgs());
         StartCoroutine(CalibrateUsingServerAsync(inverse: inverse, force:true));
 #endif
     }
 
     public void RecalibrateUsingServerAuto() {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        Calibrated = false;
-        OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
-        OnARRecalibrate?.Invoke(this, new EventArgs());
+        //Calibrated = false;
+        //OnARCalibrated?.Invoke(this, new CalibrationEventArgs(false, null));
+        //OnARRecalibrate?.Invoke(this, new EventArgs());
 
         if (autoCalibration != null) {
             //Debug.Log("Server: Stopping autocalib");
