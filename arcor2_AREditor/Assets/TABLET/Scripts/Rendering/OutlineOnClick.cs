@@ -69,8 +69,7 @@ public class OutlineOnClick : Clickable {
 
     private bool localMaterialsInstantiated = false;
 
-    private void Start() {
-
+    private void Awake() {
         if (!localMaterialsInstantiated) {
             InitMaterials();
         }
