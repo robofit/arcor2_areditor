@@ -117,6 +117,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                                 Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
                                 GameManager.Instance.SceneSetActive(true);
                                 deviceTrackingStatus = DeviceTrackingStatus.Tracking;
+                                StopTrackingFailureNotifications(stopVideoOverride: true);
                             }
                         }
                         break;
@@ -291,6 +292,7 @@ public class TrackingManager : Singleton<TrackingManager> {
                     Notifications.Instance.ShowNotification("Tracking state", "Session Tracking");
                     deviceTrackingStatus = DeviceTrackingStatus.Tracking;
                     GameManager.Instance.SceneSetActive(true);
+                    StopTrackingFailureNotifications(stopVideoOverride: true);
                 } else {
                     deviceTrackingStatus = DeviceTrackingStatus.WaitingForAnchor;
                 }
