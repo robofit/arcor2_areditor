@@ -96,15 +96,22 @@ public class LeftMenuPackage : LeftMenu {
 
     protected async override Task UpdateBtns(InteractiveObject obj) {
         try {
+            if (CanvasGroup.alpha == 0) {
+                return;
+            }
 
             if (requestingObject || obj == null) {
                 SelectedObjectText.text = "";
                 OpenMenuButton.SetInteractivity(false, "No object selected");
+                CalibrationButton.SetInteractivity(false, "No object selected");
             } else if (obj.IsLocked) {
                 SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
                 OpenMenuButton.SetInteractivity(false, "Object is locked");
+                CalibrationButton.SetInteractivity(false, "Object is locked");
             } else {
                 SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
+                CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
+                    obj.GetType() == typeof(CreateAnchor) || obj.GetType() == typeof(RecalibrateUsingServer), "Selected object is not calibration cube");
                 if (obj is Action3D action) {
                     OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Action has no parameters");
                 } else {

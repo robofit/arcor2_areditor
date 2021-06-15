@@ -337,9 +337,9 @@ namespace Base {
             UpdateActionPoints(project);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
-            if (project.Modified == null) { //new project, never saved
+            if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
-            } else if (project.IntModified == null) {
+            } else if (project.IntModified == System.DateTime.MinValue) {
                 ProjectChanged = false;
             } else {
                 ProjectChanged = project.IntModified > project.Modified;
@@ -745,6 +745,13 @@ namespace Base {
         /// <param name="Id"></param>
         public void RemoveActionPoint(string Id) {
             if (ActionPoints.TryGetValue(Id, out ActionPoint actionPoint)) {
+
+                // If deleted AP is selected in SelectorMenu (which most of the times should be),
+                // deselect it, in order to update buttons, references, etc.
+                if (actionPoint == SelectorMenu.Instance.GetSelectedObject()) {
+                    SelectorMenu.Instance.DeselectObject();
+                }
+
                 // Call function in corresponding action point that will delete it and properly remove all references and connections.
                 // We don't want to update project, because we are calling this method only upon received update from server.
                 actionPoint.DeleteAP();

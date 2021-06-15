@@ -19,7 +19,7 @@ public class LogicItem
     public void Remove() {
         input.RemoveLogicItem(Data.Id);
         output.RemoveLogicItem(Data.Id);
-        UnityEngine.Object.Destroy(connection.gameObject);
+        ConnectionManagerArcoro.Instance.DestroyConnection(connection);
         connection = null;
     }
 

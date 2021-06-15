@@ -33,7 +33,13 @@ public class RobotLink {
     private JointStateWriter jointWriter;
     private JointStateReader jointReader;
 
-    public RobotLink(string link_name, UrdfJoint urdf_joint, JointStateWriter joint_writer, JointStateReader joint_reader, Dictionary<UrdfVisual, bool> visuals_gameObject = null, Dictionary<UrdfCollision, bool> collisions_gameObject = null, bool is_base_link = false) {
+    public float LinkScale {
+        get;
+        private set;
+    }
+
+
+    public RobotLink(string link_name, UrdfJoint urdf_joint, JointStateWriter joint_writer, JointStateReader joint_reader, Dictionary<UrdfVisual, bool> visuals_gameObject = null, Dictionary<UrdfCollision, bool> collisions_gameObject = null, bool is_base_link = false, float scale = 1f) {
         LinkName = link_name;
         UrdfJoint = urdf_joint;
         jointWriter = joint_writer;
@@ -41,6 +47,7 @@ public class RobotLink {
         Visuals = visuals_gameObject ?? new Dictionary<UrdfVisual, bool>();
         Collisions = collisions_gameObject ?? new Dictionary<UrdfCollision, bool>();
         IsBaseLink = is_base_link;
+        LinkScale = scale;
     }
 
     public void SetJointAngle(float angle) {
@@ -60,6 +67,10 @@ public class RobotLink {
 
     public void SetVisualLoaded(UrdfVisual urdfVisual) {
         Visuals[urdfVisual] = true;
+    }
+
+    public void SetLinkScale(float scale) {
+        LinkScale = scale;
     }
 
     public void SetCollisionLoaded(UrdfCollision urdfCollision) {

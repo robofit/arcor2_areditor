@@ -7,7 +7,7 @@ public class CreateAnchor : InteractiveObject {
     private string ID = Guid.NewGuid().ToString();
 
     private void Awake() {
-        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+        CreateSelectorItem();
     }
 
     public override void OnClick(Click type) {
@@ -15,6 +15,10 @@ public class CreateAnchor : InteractiveObject {
             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
             CalibrationManager.Instance.CreateAnchor(transform);
         }
+    }
+
+    public void CreateSelectorItem() {
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
     private void OnEnable() {

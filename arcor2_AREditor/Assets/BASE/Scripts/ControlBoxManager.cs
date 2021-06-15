@@ -74,8 +74,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     private void OnARCalibrated(object sender, CalibrationEventArgs args) {
 #if UNITY_ANDROID && AR_ON
         // Activate toggle to enable hiding/displaying calibration cube
-        CalibrationElementsToggle.interactable = true;
-        calibrationElementsTooltip.DisplayAlternativeDescription = false;
+        CalibrationElementsToggle.interactable = args.Calibrated;
+        calibrationElementsTooltip.DisplayAlternativeDescription = !args.Calibrated;
 #endif
     }
 
@@ -94,7 +94,11 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
     /// </summary>
     public void OnCalibrationElementsToggleClick() {
         if (!CalibrationManager.Instance.Calibrated) {
-            Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker, wait for the calibration cube to show up and click on it, in order to calibrate the system");
+            if (CalibrationManager.Instance.UsingServerCalibration) {
+                Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker and wait for the calibration to complete automatically.");
+            } else {
+                Notifications.Instance.ShowNotification("System is not calibrated", "Please locate the visual marker, wait for the calibration cube to show up and click on it, in order to calibrate the system.");
+            }
         }
     }
 
@@ -136,8 +140,8 @@ public class ControlBoxManager : Singleton<ControlBoxManager> {
         }
     }
 
-    public void ShowActionObjectSettingsMenu() {
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectSettingsMenu);
+    public void ShowEditorSettingsMenu() {
+        MenuManager.Instance.ShowMenu(MenuManager.Instance.EditorSettingsMenu);
     }
 
     public void DisplayConnections(bool active) {

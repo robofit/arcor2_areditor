@@ -7,14 +7,24 @@ using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
     public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, MainMenu, NewObjectTypeMenu,
-        ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu,
+        ActionObjectMenuProjectEditor, EditorSettingsMenu, ActionPointAimingMenu, NotificationMenu,
         AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
     public OutputTypeDialog OutputTypeDialog;
     public ConnectionSelectorDialog ConnectionSelectorDialog;
+    public Dialog InputDialog, ConfirmationDialog, InputDialogWithToggle;
 
+
+    private void Start() {
+        GameManager.Instance.OnCloseProject += OnCloseSceneOrProject;
+        GameManager.Instance.OnCloseScene += OnCloseSceneOrProject;
+    }
+
+    private void OnCloseSceneOrProject(object sender, EventArgs e) {
+        HideAllMenus();
+    }
 
     public bool IsAnyMenuOpened {
         get;
@@ -26,7 +36,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
@@ -38,7 +48,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
@@ -81,6 +91,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
             MainMenu.Close();
         }
+        ConfirmationDialog.Close();
+        InputDialog.Close();
+        InputDialogWithToggle.Close();
     }
 
     public void DisableAllMenus() {
