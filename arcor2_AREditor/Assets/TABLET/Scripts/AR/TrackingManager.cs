@@ -140,12 +140,13 @@ public class TrackingManager : Singleton<TrackingManager> {
         }
     }
 
-    private void StopTrackingFailureNotifications() {
+    private void StopTrackingFailureNotifications(bool stopVideoOverride = false) {
         // cancel previously invoked tracking failure notification
         if (trackingAnchorFailureNotify != null) {
             StopCoroutine(trackingAnchorFailureNotify);
             // stop the video only if device is tracking and isn't in any state that demands playing the video (insufficient features and excessive motion)
-            if (!(deviceTrackingStatus == DeviceTrackingStatus.InsufficientFeatures || deviceTrackingStatus == DeviceTrackingStatus.ExcessiveMotion)) {
+            if (!(deviceTrackingStatus == DeviceTrackingStatus.InsufficientFeatures || deviceTrackingStatus == DeviceTrackingStatus.ExcessiveMotion)
+                || stopVideoOverride) {
                 TrackingLostAnimation.StopVideo();
             }
             trackingAnchorFailureNotify = null;
@@ -328,7 +329,7 @@ public class TrackingManager : Singleton<TrackingManager> {
     /// <returns></returns>
     private IEnumerator TrackingFailureTimeout(float timeout) {
         yield return new WaitForSeconds(timeout);
-        StopTrackingFailureNotifications();
+        StopTrackingFailureNotifications(stopVideoOverride:true);
 
         Notifications.Instance.ShowNotification("Tracking lost timeout!", "System will be calibrated.");
 
