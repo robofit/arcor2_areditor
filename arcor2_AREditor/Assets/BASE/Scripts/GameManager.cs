@@ -945,34 +945,7 @@ namespace Base {
             ActionsManager.Instance.UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
         }
 
-        /// <summary>
-        /// Sends request to the server to create a new Action Object of user specified type and id. Id has to be generated here in the client.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public async Task<bool> AddObjectToScene(string type, string name) {
-            try {
-                IO.Swagger.Model.Pose pose = null;
-                if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
-                    if (actionObjectMetadata.HasPose) {
-                        Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, actionObjectMetadata.GetModelBB(), SceneManager.Instance.SceneOrigin.transform.localRotation);
-                        IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
-                        pose = new IO.Swagger.Model.Pose(position: offset, orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-                    }
-                    await WebsocketManager.Instance.AddObjectToScene(name, type, pose, null);
-                } else {
-                    throw new RequestFailedException("Object type " + type + " does not exists");
-                }                
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.ShowNotification("Failed to add object to scene", ex.Message);
-                return false;
-            }
-            return true;
-        }
-     
-
+      
         /// <summary>
         /// When package runs failed with exception, show notification to the user
         /// </summary>

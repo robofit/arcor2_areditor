@@ -377,6 +377,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         if (ContainerAlphabet.activeSelf && ((GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor && SceneManager.Instance.Valid) ||
                                            (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor && ProjectManager.Instance.Valid))) // only sort when project / scene is fully loaded
             SwitchToAlphabet(false);
+
+        selectorItem.transform.localScale = Vector3.one;
         return selectorItem;
     }
 

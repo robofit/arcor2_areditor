@@ -101,7 +101,9 @@ public abstract class LeftMenu : MonoBehaviour {
 
     }
 
-
+    public void UpdateBtns() {
+        _ = UpdateBtns(selectedObject);
+    }
 
     protected async virtual Task UpdateBtns(InteractiveObject obj) {
         if (CanvasGroup.alpha == 0)
@@ -257,7 +259,8 @@ public abstract class LeftMenu : MonoBehaviour {
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;
-        
+        if (visible)
+            UpdateBtns();
     }
 
     public abstract void UpdateBuildAndSaveBtns();
