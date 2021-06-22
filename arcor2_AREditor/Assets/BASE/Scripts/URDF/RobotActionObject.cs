@@ -454,9 +454,9 @@ namespace Base {
 
         public async Task<bool> LoadEndEffectors() {
             // TODO: maybe wrong condition
-            if (((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) && !SceneManager.Instance.Valid)
-                || ((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) && !ProjectManager.Instance.Valid)) {
-                Debug.LogError("SceneManager or ProjectManager instance not valid");
+            Debug.LogError(GameManager.Instance.GetGameState());
+            if (!SceneManager.Instance.Valid) {
+                Debug.LogError("SceneManager instance not valid");
                 return false;
             }
             if (loadingEndEffectors) {
