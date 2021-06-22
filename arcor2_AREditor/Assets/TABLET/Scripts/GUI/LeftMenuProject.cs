@@ -161,6 +161,8 @@ public class LeftMenuProject : LeftMenu
                 RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
                 RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
             }
+
+            Debug.LogError(SceneManager.Instance.SceneStarted);
             if (!SceneManager.Instance.SceneStarted) {
                 AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
             } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
@@ -191,9 +193,7 @@ public class LeftMenuProject : LeftMenu
         UpdateBtns();
     }
 
-    public void UpdateBtns() {
-        _ = UpdateBtns(selectedObject);
-    }
+    
 
     public void SaveProject() {
         SaveButton.SetInteractivity(false, "Saving project...");

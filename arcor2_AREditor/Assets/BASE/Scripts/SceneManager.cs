@@ -135,6 +135,8 @@ namespace Base {
 
         public RobotEE SelectedEndEffector;
 
+        public string SelectCreatedActionObject;
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -720,7 +722,11 @@ namespace Base {
         /// <param name="sceneObject">Description of action object</param>
         /// <returns></returns>
         public void SceneObjectAdded(SceneObject sceneObject) {
-            ActionObject actionObject = SpawnActionObject(sceneObject);            
+            ActionObject actionObject = SpawnActionObject(sceneObject);
+            if (!string.IsNullOrEmpty(SelectCreatedActionObject) && sceneObject.Name.Contains(SelectCreatedActionObject)) {
+                SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
+            }
+            SelectCreatedActionObject = "";
             updateScene = true;
         }
 

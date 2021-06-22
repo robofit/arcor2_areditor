@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine.UI;
 using Newtonsoft.Json;
 using Base;
+using IO.Swagger.Model;
 
 public class AddNewActionObjectDialog : Dialog {
     public GameObject DynamicContent, CanvasRoot;
@@ -32,7 +33,7 @@ public class AddNewActionObjectDialog : Dialog {
     /// <param name="callback">Function to be called if adding action object was successful</param>
     public void InitFromMetadata(Base.ActionObjectMetadata metadata, System.Action callback = null) {
         InitDialog(metadata);
-        actionParameters = Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
+        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
         nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
         this.callback = callback;
     }
@@ -79,12 +80,10 @@ public class AddNewActionObjectDialog : Dialog {
                 parameters.Add(DataHelper.ActionParameterToParameter(ap));
             }
             try {
-                IO.Swagger.Model.Pose pose = null;
-                if (actionObjectMetadata.HasPose) {
-                    Vector3 abovePoint = SceneManager.Instance.GetCollisionFreePointAbove(SceneManager.Instance.SceneOrigin.transform, actionObjectMetadata.GetModelBB(), SceneManager.Instance.SceneOrigin.transform.localRotation);
-                    IO.Swagger.Model.Position offset = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(abovePoint));
-                    pose = new IO.Swagger.Model.Pose(position: offset, orientation: new IO.Swagger.Model.Orientation(1, 0, 0, 0));
-                }
+                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)));
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(GameManager.Instance.Scene.transform.rotation));
+                SceneManager.Instance.SelectCreatedActionObject = newActionObjectName;
                 await Base.WebsocketManager.Instance.AddObjectToScene(newActionObjectName, actionObjectMetadata.Type, pose, parameters);
                 callback?.Invoke();
                 Close();
