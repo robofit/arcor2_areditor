@@ -49,7 +49,6 @@ public class ActionObjectNoPose : ActionObject {
     public override async void OpenMenu() {
         if (!await this.WriteLock(false))
             return;
-        TransformGizmo.Instance.ClearTargets();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = this;
             MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);

@@ -690,7 +690,6 @@ namespace Base {
         public override async void OpenMenu() {
             if (!await this.WriteLock(false))
                 return;
-            TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
@@ -709,7 +708,6 @@ namespace Base {
         public override async void StartManipulation() {
             if (!await this.WriteLock(true))
                 return;
-            TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
             TransformGizmo.Instance.AddTarget(transform);
