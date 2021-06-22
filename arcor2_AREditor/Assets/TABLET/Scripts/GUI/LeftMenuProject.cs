@@ -162,7 +162,6 @@ public class LeftMenuProject : LeftMenu
                 RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
             }
 
-            Debug.LogError(SceneManager.Instance.SceneStarted);
             if (!SceneManager.Instance.SceneStarted) {
                 AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
             } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
@@ -170,9 +169,6 @@ public class LeftMenuProject : LeftMenu
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
-
-           
-
         } finally {
             previousUpdateDone = true;
         }

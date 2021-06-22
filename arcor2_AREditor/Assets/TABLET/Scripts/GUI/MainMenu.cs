@@ -352,7 +352,7 @@ public class MainMenu : MonoBehaviour, IMenu {
 
     public void Recalibrate() {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        CalibrationManager.Instance.Recalibrate();
+        CalibrationManager.Instance.Recalibrate(showNotification:true);
 #endif
     }
 
