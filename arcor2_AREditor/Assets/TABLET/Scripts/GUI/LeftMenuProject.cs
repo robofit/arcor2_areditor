@@ -65,7 +65,7 @@ public class LeftMenuProject : LeftMenu
     }
 
     private void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
-        if (selectAPNameWhenCreated.Equals(args.ActionPoint.GetName())) {
+        if (!string.IsNullOrEmpty(selectAPNameWhenCreated) && args.ActionPoint.GetName().Contains(selectAPNameWhenCreated)) {
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
             RenameClick(true);
@@ -284,7 +284,7 @@ public class LeftMenuProject : LeftMenu
         if (selectedObject is null)
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
-            ProjectManager.Instance.SelectAPNameWhenCreated = "copy_of_" + selectedObject.GetName();
+            selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
             WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null);
         } else if (selectedObject is Base.Action action) {
             //
