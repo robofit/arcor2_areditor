@@ -18,14 +18,6 @@ public class ActionObject3D : ActionObject {
     public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
 
     private bool transparent = false;
-
-    private bool manipulationStarted = false;
-    private TransformGizmo tfGizmo;
-
-    private float interval = 0.1f;
-    private float nextUpdate = 0;
-
-    private bool updatePose = false;
     private Renderer modelRenderer;
     private Material modelMaterial;
     [SerializeField]
@@ -40,44 +32,10 @@ public class ActionObject3D : ActionObject {
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
-        tfGizmo = TransformGizmo.Instance;
 
     }
 
-
-    protected override async void Update() {
-
-        if (ActionObjectMetadata != null && ActionObjectMetadata.HasPose && manipulationStarted) {
-            if (tfGizmo.mainTargetRoot != null && GameObject.ReferenceEquals(tfGizmo.mainTargetRoot.gameObject, Model)) {
-                if (!tfGizmo.isTransforming && updatePose) {
-                    updatePose = false;
-
-                    UpdatePose();
-                }
-
-                if (tfGizmo.isTransforming)
-                    updatePose = true;
-
-            } else {
-                manipulationStarted = false;
-                if (!await this.WriteUnlock())
-                    return;
-            }
-
-        }
-
-        base.Update();
-    }
-
-    private async void UpdatePose() {
-        try {
-            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, GetPose());
-        } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to update action object pose", e.Message);
-            ResetPosition();
-        }
-    }
-
+    
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
     }
@@ -109,7 +67,6 @@ public class ActionObject3D : ActionObject {
             return;
         }
 
-        tfGizmo.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         // HANDLE MOUSE
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
@@ -403,7 +360,6 @@ public class ActionObject3D : ActionObject {
     public override async void OpenMenu() {
         if (!await this.WriteLock(false))
             return;
-        tfGizmo.ClearTargets();
         outlineOnClick.GizmoUnHighlight();
         if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
             actionObjectMenu.CurrentObject = this;
@@ -419,19 +375,6 @@ public class ActionObject3D : ActionObject {
         return true;
     }
 
-    public async override void StartManipulation() {
-        if (!await this.WriteLock(true))
-            return;
-        tfGizmo.ClearTargets();
-        try {
-            await WebsocketManager.Instance.UpdateActionObjectPose(Data.Id, new IO.Swagger.Model.Pose(new Orientation(), new Position()), true);
-            manipulationStarted = true;
-            tfGizmo.AddTarget(Model.transform);
-            outlineOnClick.GizmoHighlight();            
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Object pose could not be changed", ex.Message);
-        }
-    }
 
     public override string GetObjectTypeName() {
         return "Action object";
@@ -446,5 +389,9 @@ public class ActionObject3D : ActionObject {
     public override void OnObjectUnlocked() {
         base.OnObjectUnlocked();
         ActionObjectName.text = GetName();
+    }
+
+    public override void StartManipulation() {
+        throw new NotImplementedException();
     }
 }
