@@ -16,9 +16,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
 
     private void Start() {
         virtualPointer = VirtualConnectionOnTouch.Instance.VirtualPointer;
-
     }
-
 
     public Connection CreateConnection(GameObject o1, GameObject o2) {
         Connection c = Instantiate(ConnectionPrefab).GetComponent<Connection>();
@@ -40,16 +38,23 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
     }
 
     public void CreateConnectionToPointer(GameObject o) {
-        if (virtualConnectionToMouse != null)
+        if (virtualConnectionToMouse != null) {
+            Connections.Remove(virtualConnectionToMouse);
             Destroy(virtualConnectionToMouse.gameObject);
+        }
         VirtualConnectionOnTouch.Instance.DrawVirtualConnection = true;
         virtualConnectionToMouse = CreateConnection(o, virtualPointer);
     }
 
     public void DestroyConnectionToMouse() {
-        Destroy(virtualConnectionToMouse.gameObject);
         Connections.Remove(virtualConnectionToMouse);
+        Destroy(virtualConnectionToMouse.gameObject);
         VirtualConnectionOnTouch.Instance.DrawVirtualConnection = false;
+    }
+
+    public void DestroyConnection(Connection connection) {
+        Connections.Remove(connection);
+        Destroy(connection.gameObject);
     }
 
     public bool IsConnecting() {

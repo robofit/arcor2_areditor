@@ -15,7 +15,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private Slider APSizeSlider, ActionObjectsVisibilitySlider;
     [SerializeField]
-    private LabeledInput markerOffsetX, markerOffsetY, markerOffsetZ;
+    private LabeledInput markerOffsetX, markerOffsetY, markerOffsetZ, recalibrationTime;
 
     private void Start() {
         Debug.Assert(ActionPointsScrollable != null);
@@ -84,6 +84,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         markerOffsetX.SetValue(offset.x);
         markerOffsetY.SetValue(offset.y);
         markerOffsetZ.SetValue(offset.z);
+        recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
     }
 
     public void SetVisibilityActionObjects() {
@@ -202,7 +203,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     private void ShowActionPoint(ActionPoint actionPoint) {
-        MenuManager.Instance.ActionObjectSettingsMenu.Close();
+        MenuManager.Instance.EditorSettingsMenu.Close();
         actionPoint.OpenMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionPoint.gameObject);
         // Select(force = true) to force selection and not losing AP highlight upon EditorSettingsMenu closing 
@@ -210,7 +211,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     private void ShowActionObject(Base.ActionObject actionObject) {
-        MenuManager.Instance.ActionObjectSettingsMenu.Close();
+        MenuManager.Instance.EditorSettingsMenu.Close();
         actionObject.OpenMenu();
         Base.SceneManager.Instance.SetSelectedObject(actionObject.gameObject);
         actionObject.SendMessage("Select", true);
@@ -220,7 +221,8 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         ProjectManager.Instance.SetAPSize(value);
     }
 
-
-
-
+    public void OnAutoCalibTimeChange(string value) {
+        PlayerPrefsHelper.SaveString("/autoCalib/recalibrationTime", value);
+        CalibrationManager.Instance.UpdateAutoCalibTime(float.Parse(value));
+    }
 }

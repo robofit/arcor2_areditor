@@ -98,9 +98,9 @@ public class SelectorItem : MonoBehaviour
         if (InteractiveObject != null) {
 
             if (!this.selected && selected) {
-                InteractiveObject.SendMessage("OnHoverStart");
+                InteractiveObject.SendMessage("OnHoverStart", SendMessageOptions.DontRequireReceiver);
             } else if (this.selected && !selected) {
-                InteractiveObject.SendMessage("OnHoverEnd");
+                InteractiveObject.SendMessage("OnHoverEnd", SendMessageOptions.DontRequireReceiver);
             }
         }   
         this.selected = selected;

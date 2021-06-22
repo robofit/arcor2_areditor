@@ -17,7 +17,6 @@ public class RobotEE : InteractiveObject, ISubItem {
         RobotId = robot.GetId();
         EEId = eeId;
         SetLabel(robot.GetName(), eeId);
-        Debug.LogError(GetParentObject().SelectorItem);
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 

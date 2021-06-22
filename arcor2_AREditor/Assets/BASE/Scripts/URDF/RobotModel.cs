@@ -46,6 +46,7 @@ public class RobotModel {
             // Get all UrdfVisuals of each UrdfLink
             GameObject visualsGameObject = link.gameObject.GetComponentInChildren<UrdfVisuals>().gameObject;
             Dictionary<UrdfVisual, bool> visuals = new Dictionary<UrdfVisual, bool>();
+            
             // Traverse each UrdfVisual and set a boolean indicating whether its visual is already loaded (is of some basic type - box, cylinder, capsule)
             // or is going to be loaded by ColladaImporter (in case its type of mesh)
             foreach (UrdfVisual visual in visualsGameObject.GetComponentsInChildren<UrdfVisual>()) {
@@ -76,6 +77,14 @@ public class RobotModel {
     public void SetLinkVisualLoaded(string linkName, UrdfVisual urdfVisual) {
         Links.TryGetValue(linkName, out RobotLink link);
         link?.SetVisualLoaded(urdfVisual);
+
+        float scale = 1f;
+        // get scale of urdfVisual and each of its child
+        foreach (Transform child in urdfVisual.GetComponentsInChildren<Transform>()) {
+            scale *= child.localScale.x;
+        }
+
+        link?.SetLinkScale(scale);
 
         IsRobotLoaded();
 

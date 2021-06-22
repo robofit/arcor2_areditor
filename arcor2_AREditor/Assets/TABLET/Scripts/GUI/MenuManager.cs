@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
     public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, MainMenu, NewObjectTypeMenu,
-        ActionObjectMenuProjectEditor, ActionObjectSettingsMenu, ActionPointAimingMenu, NotificationMenu,
+        ActionObjectMenuProjectEditor, EditorSettingsMenu, ActionPointAimingMenu, NotificationMenu,
         AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
@@ -36,7 +36,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
@@ -48,7 +48,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
+            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||

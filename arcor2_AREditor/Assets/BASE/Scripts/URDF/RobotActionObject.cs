@@ -239,7 +239,10 @@ namespace Base {
             robotColliders.AddRange(RobotModel.RobotModelGameObject.GetComponentsInChildren<Collider>(true));
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            outlineOnClick.InitMaterials();
+
             outlineOnClick.InitGizmoMaterials();
+            SetOutlineSizeBasedOnScale();
 
             SetVisibility(visibility, forceShaderChange: true);
             UpdateColor();
@@ -255,6 +258,17 @@ namespace Base {
             }
             */
             await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+        }
+
+        private void SetOutlineSizeBasedOnScale() {
+            float robotScale = 0f;
+            foreach (RobotLink link in RobotModel.Links.Values) {
+                robotScale = link.LinkScale;
+                if (!link.IsBaseLink) {
+                    break;
+                }
+            }            
+            outlineOnClick.CompensateOutlineByModelScale(robotScale);
         }
 
         private void SetDefaultJoints() {
@@ -439,8 +453,12 @@ namespace Base {
         }
 
         public async Task<bool> LoadEndEffectors() {
-            if (!SceneManager.Instance.Valid || !ProjectManager.Instance.Valid)
+            // TODO: maybe wrong condition
+            if (((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) && !SceneManager.Instance.Valid)
+                || ((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) && !ProjectManager.Instance.Valid)) {
+                Debug.LogError("SceneManager or ProjectManager instance not valid");
                 return false;
+            }
             if (loadingEndEffectors) {
                 await WaitUntilResourcesReady();
                 return true;
@@ -449,8 +467,6 @@ namespace Base {
             }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
-
-
                 List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 foreach (string eeId in endEffectors) {
                     

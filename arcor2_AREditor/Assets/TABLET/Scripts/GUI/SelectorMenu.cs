@@ -39,7 +39,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
 
     public ToggleIconButton RobotsToggle, ObjectsToggle, PointsToggle, ActionsToggle, IOToggle, OthersToggle;
-    private SelectorItem lastSelectedItem = null;
+    public SelectorItem lastSelectedItem = null;
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseProjectScene;
@@ -343,8 +343,10 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public void DeselectObject(bool manually = true) {
         if (manually)
             ManuallySelected = false;
-        if (lastSelectedItem != null)
+        if (lastSelectedItem != null) {
             lastSelectedItem.SetSelected(false, manually);
+            SelectedObjectChanged(null);
+        }
         /*foreach (SelectorItem item in selectorItems.Values.ToList()) {
             item.SetSelected(false, manually);
         }*/
@@ -553,7 +555,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 return item.InteractiveObject;
         }
         return null;*/
-        return lastSelectedItem.InteractiveObject;
+        return lastSelectedItem?.InteractiveObject;
     }
 
     public async void ShowRobots(bool show) {

@@ -80,19 +80,21 @@ public class LeftMenuProject : LeftMenu
         
             await base.UpdateBtns(obj);
 #if UNITY_ANDROID && AR_ON
-            AddActionPointButton.SetInteractivity(CalibrationManager.Instance.Calibrated && 
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
-                "AR not calibrated");
-            AddActionPointButton2.SetInteractivity(CalibrationManager.Instance.Calibrated &&
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.ExcessiveMotion &&
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientLight &&
-                TrackingManager.Instance.deviceTrackingStatus != TrackingManager.DeviceTrackingStatus.InsufficientFeatures,
-                "AR not calibrated");
-#endif
 
-            if (requestingObject || obj == null) {
+#endif
+            if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
+                SetActionPointParentButton.SetInteractivity(false, "AR not calibrated");
+                AddActionButton.SetInteractivity(false, "AR not calibrated");
+                AddActionButton2.SetInteractivity(false, "AR not calibrated");
+                AddConnectionButton.SetInteractivity(false, "AR not calibrated");
+                AddConnectionButton2.SetInteractivity(false, "AR not calibrated");
+                RunButton.SetInteractivity(false, "AR not calibrated");
+                RunButton2.SetInteractivity(false, "AR not calibrated");
+                AddActionPointButton.SetInteractivity(false, "AR not calibrated");
+                AddActionPointButton2.SetInteractivity(false, "AR not calibrated");
+                CopyButton.SetInteractivity(false, "AR not calibrated");
+            }
+            else if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton2.SetInteractivity(false, "No action point is selected");
