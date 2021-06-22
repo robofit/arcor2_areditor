@@ -48,8 +48,10 @@ public class LeftMenuProject : LeftMenu
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor)
-            base.OnSceneStateEvent(sender, args);  
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+            base.OnSceneStateEvent(sender, args);
+            UpdateBtns();
+        }
 
     }
 
@@ -186,7 +188,11 @@ public class LeftMenuProject : LeftMenu
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
-        UpdateBtns(selectedObject);
+        UpdateBtns();
+    }
+
+    public void UpdateBtns() {
+        _ = UpdateBtns(selectedObject);
     }
 
     public void SaveProject() {

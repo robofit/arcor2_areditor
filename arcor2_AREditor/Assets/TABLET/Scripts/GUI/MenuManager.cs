@@ -16,6 +16,8 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public ConnectionSelectorDialog ConnectionSelectorDialog;
     public Dialog InputDialog, ConfirmationDialog, InputDialogWithToggle;
 
+    public LeftMenuProject LeftMenuProject;
+
 
     private void Start() {
         GameManager.Instance.OnCloseProject += OnCloseSceneOrProject;
