@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -67,7 +68,7 @@ public class LinkableInput : LinkableParameter {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<int>());
                     }
                     
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
+                    Input.Input.onValueChanged.AddListener((string value) => OnChangeInt(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
@@ -75,7 +76,7 @@ public class LinkableInput : LinkableParameter {
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<double>());
                     }
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), double.Parse(value, CultureInfo.InvariantCulture), type));
+                    Input.Input.onValueChanged.AddListener((string value) => OnChangeDouble(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
@@ -90,6 +91,26 @@ public class LinkableInput : LinkableParameter {
             }
             Input.SetType(type);
             
+        }
+    }
+
+    private void OnChangeDouble(string value, string type) {
+        double dValue;
+        try {
+            dValue = double.Parse(value, CultureInfo.InvariantCulture);
+            onChangeParameterHandler(Input.GetName(), dValue, type);
+        } catch (FormatException) {
+            return;
+        }
+    }
+
+    private void OnChangeInt(string value, string type) {
+        int iValue;
+        try {
+            iValue = int.Parse(value);
+            onChangeParameterHandler(Input.GetName(), iValue, type);
+        } catch (FormatException) {
+            return;
         }
     }
 
