@@ -14,7 +14,17 @@ public class MenuManager : Base.Singleton<MenuManager> {
 
     public OutputTypeDialog OutputTypeDialog;
     public ConnectionSelectorDialog ConnectionSelectorDialog;
+    public Dialog InputDialog, ConfirmationDialog, InputDialogWithToggle;
 
+
+    private void Start() {
+        GameManager.Instance.OnCloseProject += OnCloseSceneOrProject;
+        GameManager.Instance.OnCloseScene += OnCloseSceneOrProject;
+    }
+
+    private void OnCloseSceneOrProject(object sender, EventArgs e) {
+        HideAllMenus();
+    }
 
     public bool IsAnyMenuOpened {
         get;
@@ -81,6 +91,9 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
             MainMenu.Close();
         }
+        ConfirmationDialog.Close();
+        InputDialog.Close();
+        InputDialogWithToggle.Close();
     }
 
     public void DisableAllMenus() {

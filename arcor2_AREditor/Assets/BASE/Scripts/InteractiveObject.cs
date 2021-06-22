@@ -106,7 +106,6 @@ public abstract class InteractiveObject : Clickable {
     /// <returns></returns>
     public virtual async Task<bool> WriteUnlock() {
         if (!IsLocked) {
-            Debug.LogError("Trying to unlock unlocked object: " + GetId());
             return true;
         }
 
@@ -115,7 +114,6 @@ public abstract class InteractiveObject : Clickable {
             IsLocked = false;
             return true;
         } catch (RequestFailedException ex) {
-            //Notifications.Instance.ShowNotification("Failed to unlock " + GetName(), ex.Message);
             Debug.LogError(ex.Message);
             return false;
         }
@@ -126,7 +124,6 @@ public abstract class InteractiveObject : Clickable {
             await WebsocketManager.Instance.UpdateLock(GetId(), newType);
             return true;
         } catch (RequestFailedException ex) {
-            //Notifications.Instance.ShowNotification("Failed to lock " + GetName(), ex.Message);
             Debug.LogError("failed to update lock");
             return false;
         }
