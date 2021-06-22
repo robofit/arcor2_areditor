@@ -87,10 +87,6 @@ namespace Base {
             } 
         }
 
-        public string SelectAPNameWhenCreated {
-            get;
-            internal set;
-        }
 
         /// <summary>
         /// Invoked when some of the action point weas updated. Contains action point description

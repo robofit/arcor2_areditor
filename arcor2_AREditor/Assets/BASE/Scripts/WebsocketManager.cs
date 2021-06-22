@@ -2297,14 +2297,12 @@ namespace Base {
             }
         }
 
-        public async Task StopScene(bool dryRun) {
-            int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.StopSceneRequest request = new IO.Swagger.Model.StopSceneRequest(r_id, "StopScene", dryRun: dryRun);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.StopSceneResponse response = await WaitForResult<IO.Swagger.Model.StopSceneResponse>(r_id);
-            if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to stop scene" } : response.Messages);
-            }
+        public void StopScene(bool dryRun, UnityAction<string, string> callback) {
+            int id = Interlocked.Increment(ref requestID);
+            if (callback != null)
+                responsesCallback.Add(id, Tuple.Create("", callback));
+            IO.Swagger.Model.StopSceneRequest request = new IO.Swagger.Model.StopSceneRequest(id, "StopScene", dryRun: dryRun);
+            SendDataToServer(request.ToJson(), id, false);
         }
 
         public async Task UpdateObjectParameters(string id, List<IO.Swagger.Model.Parameter> parameters, bool dryRun) {

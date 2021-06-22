@@ -454,9 +454,9 @@ namespace Base {
 
         public async Task<bool> LoadEndEffectors() {
             // TODO: maybe wrong condition
-            if (((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) && !SceneManager.Instance.Valid)
-                || ((GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) && !ProjectManager.Instance.Valid)) {
-                Debug.LogError("SceneManager or ProjectManager instance not valid");
+            Debug.LogError(GameManager.Instance.GetGameState());
+            if (!SceneManager.Instance.Valid) {
+                Debug.LogError("SceneManager instance not valid");
                 return false;
             }
             if (loadingEndEffectors) {
@@ -690,7 +690,6 @@ namespace Base {
         public override async void OpenMenu() {
             if (!await this.WriteLock(false))
                 return;
-            TransformGizmo.Instance.ClearTargets();
             outlineOnClick.GizmoUnHighlight();
             if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
                 actionObjectMenu.CurrentObject = this;
@@ -709,7 +708,6 @@ namespace Base {
         public override async void StartManipulation() {
             if (!await this.WriteLock(true))
                 return;
-            TransformGizmo.Instance.ClearTargets();
             manipulationStarted = true;
             HideRobotEE();
             TransformGizmo.Instance.AddTarget(transform);

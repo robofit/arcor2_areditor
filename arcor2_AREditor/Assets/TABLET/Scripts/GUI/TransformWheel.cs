@@ -19,7 +19,7 @@ public class TransformWheel : MonoBehaviour
                 GameObject.Destroy(child.gameObject);
         }
         TransformWheelItem newItem = Instantiate(ItemPrefab, List.transform).GetComponent<TransformWheelItem>();
-        newItem.SetValue(0);
+        newItem.SetValue(0, ConvertToUnit(0));
         TransformWheelItems.Add(newItem);
         while (TransformWheelItems.Count < 12) {
             GenerateNewItem();
@@ -28,7 +28,7 @@ public class TransformWheel : MonoBehaviour
         SetValue(value);
     }
 
-    public void SetValue(int value) {        
+    public void SetValue(int value) {
         List.transform.localPosition = new Vector2(0, 0 - value * 80);
     }
 
@@ -65,15 +65,28 @@ public class TransformWheel : MonoBehaviour
         }
     }
 
-
+    private float ConvertToUnit(float value) {
+        switch (Units.GetValue()) {
+            case "5cm":
+                return value * 5f;
+            case "0.1mm":
+                return  value * 0.1f;
+            case "45°":
+                return value * 45f;
+            case "10°":
+                return value * 10f;
+            default:
+                return value;
+        };
+    }
 
 
     private void GenerateNewItem() {
         TransformWheelItem newFirst = Instantiate(ItemPrefab, List.transform).GetComponent<TransformWheelItem>();
         TransformWheelItem newLast = Instantiate(ItemPrefab, List.transform).GetComponent<TransformWheelItem>();
         newFirst.transform.SetAsFirstSibling();
-        newFirst.SetValue(TransformWheelItems.First().Value + 1);
-        newLast.SetValue(TransformWheelItems.Last().Value - 1);
+        newFirst.SetValue(TransformWheelItems.First().Value + 1, ConvertToUnit(TransformWheelItems.First().Value + 1));
+        newLast.SetValue(TransformWheelItems.Last().Value - 1, ConvertToUnit(TransformWheelItems.Last().Value - 1));
         TransformWheelItems.Insert(0, newFirst);
         TransformWheelItems.Add(newLast);
     }

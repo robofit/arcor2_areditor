@@ -657,7 +657,7 @@ namespace TrilleonAutomation
         [DependencyTest(10)]
         [Automation("Action point aiming menu tests")]
         public IEnumerator AimingMenuNoRobotExpertModeTest() {
-            WebsocketManager.Instance.StopScene(false);
+            //WebsocketManager.Instance.StopScene(false);
             yield return new WaitForSeconds(apiWaitingTime);
             GameManager.Instance.CloseProject(true);
             yield return new WaitForSeconds(4); //wait for project to close

@@ -125,7 +125,7 @@ public class RobotModel {
     private void OnRobotLoaded() {
         //Debug.Log("URDF: robot is fully loaded");
 
-        SetActiveAllVisuals(true);
+        SetActiveAllVisuals(false);
 
         AddOnClickScriptToColliders(RobotModelGameObject);
 

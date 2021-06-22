@@ -6,8 +6,6 @@ using IO.Swagger.Model;
 using TMPro;
 using System;
 using System.Threading.Tasks;
-using NativeWebSocket;
-using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class ActionPoint3D : Base.ActionPoint {
@@ -15,13 +13,6 @@ public class ActionPoint3D : Base.ActionPoint {
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
     private Material sphereMaterial;
-
-    private bool manipulationStarted = false;
-
-    private float interval = 0.1f;
-    private float nextUpdate = 0;
-
-    private bool updatePosition = false;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
@@ -30,28 +21,6 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
 
-    protected override async void Update() {
-        if (manipulationStarted) {
-            if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, Sphere)) {
-                if (!TransformGizmo.Instance.isTransforming && updatePosition) {
-                    updatePosition = false;
-                    UpdatePose();
-                }
-
-                if (TransformGizmo.Instance.isTransforming)
-                    updatePosition = true;
-
-
-            } else {
-                manipulationStarted = false;
-                if (!await this.WriteUnlock())
-                    return;
-            }
-        }
-            
-        //TODO shouldn't this be called first?
-        base.Update();
-    }
 
     private async void UpdatePose() {
         try {
@@ -71,32 +40,6 @@ public class ActionPoint3D : Base.ActionPoint {
             orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
-    public override void OnClick(Click type) {
-        if (!enabled || !Enabled)
-            return;
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPoint ||
-            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
-            GameManager.Instance.ObjectSelected(this);
-            return;
-        }
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-            Notifications.Instance.ShowNotification("Not allowed", "Editation of action point only allowed in project editor");
-            return;
-        }
-
-        TransformGizmo.Instance.ClearTargets();
-        outlineOnClick.GizmoUnHighlight();
-        // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-            StartManipulation();            
-        } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            outlineOnClick.GizmoUnHighlight();
-        }
-
-    }
 
     public async void ShowMenu(bool enableBackButton = false) {
         if (!await this.WriteLock(false))
@@ -239,19 +182,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public async override void StartManipulation() {
-        if (!await this.WriteLock(true))
-            return;
-        TransformGizmo.Instance.ClearTargets();
-        try {
-            await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, new Position(), true);
-            // We have clicked with left mouse and started manipulation with object
-            manipulationStarted = true;
-            updatePosition = false;
-            TransformGizmo.Instance.AddTarget(Sphere.transform);
-            outlineOnClick.GizmoHighlight();
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Action point pose could not be changed", ex.Message);
-        }
+        throw new NotImplementedException();
     }
 
     internal GameObject GetModelCopy() {
@@ -306,5 +237,9 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void OnObjectUnlocked() {
         base.OnObjectUnlocked();
         ActionPointName.text = GetName();
+    }
+
+    public override void OnClick(Click type) {
+        throw new NotImplementedException();
     }
 }

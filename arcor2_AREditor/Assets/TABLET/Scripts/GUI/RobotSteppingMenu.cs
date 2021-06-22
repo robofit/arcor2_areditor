@@ -257,22 +257,6 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         };
     }
 
-    private int ComputePositionValue(float value) {
-        switch (Units.GetValue()) {
-            case "dm":
-                return (int) (value * 10);
-            case "5cm":
-                return (int) (value * 50);
-            case "cm":
-                return (int) (value * 100);
-            case "mm":
-                return (int) (value * 1000);
-            case "0.1mm":
-                return (int) (value * 10000);
-            default:
-                return (int) value;
-        };
-    }
 
     private float GetRotationValue(float v) {
         switch (UnitsDegrees.GetValue()) {
@@ -291,20 +275,6 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         };
     }
 
-    private int ComputeRotationValue(float value) {
-        switch (UnitsDegrees.GetValue()) {
-            case "45°":
-                return (int) (value / 45);
-            case "10°":
-                return (int) (value / 10);
-            case "°":
-                return (int) value;
-            case "'":
-                return (int) (value * 60);
-            default:
-                return (int) value;
-        };
-    }
 
     internal void Hide(bool unlock = true) {
         if (SceneManager.Instance.IsRobotAndEESelected()) {

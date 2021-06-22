@@ -339,17 +339,20 @@ public class MainMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void StopScene() {
-        try {
-            await WebsocketManager.Instance.StopScene(false);
-        } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Going offline failed", e.Message);
-        }
+    private void StopSceneCallback(string _, string data) {
+        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
+        if (!response.Result)
+            Notifications.Instance.ShowNotification("Going offline failed", response.Messages.FirstOrDefault());
     }
+
+    public void StopScene() {
+        WebsocketManager.Instance.StopScene(false, StopSceneCallback);
+    }
+
 
     public void Recalibrate() {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-        CalibrationManager.Instance.Recalibrate();
+        CalibrationManager.Instance.Recalibrate(showNotification:true);
 #endif
     }
 

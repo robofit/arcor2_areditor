@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 
 public class TransformWheelList : EventTrigger {
     private Vector2 _curPosition;
-    private Vector2 _velocity;
+    public Vector2 Velocity;
     private bool _underInertia;
     private bool _finishing;
     private bool _dragging = false;
@@ -21,7 +21,7 @@ public class TransformWheelList : EventTrigger {
         _finishing = false;
         _time = 0;
         _finishY = 0;
-        _velocity = Vector2.zero;
+        Velocity = Vector2.zero;
     }
 
     public void Update() {
@@ -29,17 +29,17 @@ public class TransformWheelList : EventTrigger {
         if (_dragging) {
             Vector2 prevPosition = _curPosition;
             _curPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-            _velocity = _curPosition - prevPosition;
+            Velocity = _curPosition - prevPosition;
             transform.localPosition = new Vector2(transform.localPosition.x, transform.localPosition.y)
-                + new Vector2(0, _velocity.y);
+                + new Vector2(0, Velocity.y);
             return;
         }
         if (_underInertia) {
-            if (_time <= _smoothTime && Mathf.Abs(_velocity.y) > 0.1f) {
+            if (_time <= _smoothTime && Mathf.Abs(Velocity.y) > 0.1f) {
                 transform.localPosition = new Vector2(transform.localPosition.x, transform.localPosition.y)
-                    + new Vector2(0, _velocity.y);
-                _velocity = Vector2.Lerp(_velocity, Vector2.zero, _time);
-                
+                    + new Vector2(0, Velocity.y);
+                Velocity = Vector2.Lerp(Velocity, Vector2.zero, _time);
+
                 _time += Time.smoothDeltaTime;
             } else {
                 _underInertia = false;
@@ -58,9 +58,10 @@ public class TransformWheelList : EventTrigger {
             } else {
                 _time = 0.0f;
                 _finishing = false;
+                Velocity = Vector2.zero;
             }
         }
-        
+
     }
 
     private int ClosestInteger(int n, int m) {
@@ -85,6 +86,8 @@ public class TransformWheelList : EventTrigger {
         _underInertia = false;
         _dragging = true;
         _time = 0.0f;
+        Velocity = Vector2.zero;
+        _finishing = false;
     }
 
     public override void OnPointerUp(PointerEventData eventData) {

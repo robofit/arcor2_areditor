@@ -48,8 +48,10 @@ public class LeftMenuProject : LeftMenu
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor)
-            base.OnSceneStateEvent(sender, args);  
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+            base.OnSceneStateEvent(sender, args);
+            UpdateBtns();
+        }
 
     }
 
@@ -63,7 +65,7 @@ public class LeftMenuProject : LeftMenu
     }
 
     private void OnActionPointAddedToScene(object sender, ActionPointEventArgs args) {
-        if (selectAPNameWhenCreated.Equals(args.ActionPoint.GetName())) {
+        if (!string.IsNullOrEmpty(selectAPNameWhenCreated) && args.ActionPoint.GetName().Contains(selectAPNameWhenCreated)) {
             SelectorMenu.Instance.SetSelectedObject(args.ActionPoint, true);
             selectAPNameWhenCreated = "";
             RenameClick(true);
@@ -159,6 +161,7 @@ public class LeftMenuProject : LeftMenu
                 RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
                 RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
             }
+
             if (!SceneManager.Instance.SceneStarted) {
                 AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
             } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
@@ -166,9 +169,6 @@ public class LeftMenuProject : LeftMenu
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
-
-           
-
         } finally {
             previousUpdateDone = true;
         }
@@ -186,8 +186,10 @@ public class LeftMenuProject : LeftMenu
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
-        UpdateBtns(selectedObject);
+        UpdateBtns();
     }
+
+    
 
     public void SaveProject() {
         SaveButton.SetInteractivity(false, "Saving project...");
@@ -242,7 +244,11 @@ public class LeftMenuProject : LeftMenu
         BuildPackageButton.SetInteractivity(false, "Loading...");
         SaveButton.SetInteractivity(false, "Loading...");
         CloseButton.SetInteractivity(false, "Loading...");
-        WebsocketManager.Instance.CloseProject(true, true, CloseProjectCallback);
+        if (SceneManager.Instance.SceneStarted) {
+            WebsocketManager.Instance.StopScene(true, StopSceneCallback);
+        } else {
+            CloseButton.SetInteractivity(true);
+        }
 
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);            
@@ -255,16 +261,7 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    protected void SaveProjectCallback(string _, string data) {
-        SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
-        if (response.Messages != null) {
-            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
-        } else {
-            SaveButton.SetInteractivity(response.Result);
-        }
-    }
-
-    protected void CloseProjectCallback(string nothing, string data) {
+    private void StopSceneCallback(string _, string data) {
         CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
         if (response.Messages != null) {
             CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
@@ -273,12 +270,30 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
+    protected void SaveProjectCallback(string _, string data) {
+        SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
+        if (response.Messages != null) {
+            SaveButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            SaveButton.SetInteractivity(response.Result);
+        }
+    }
+    /*
+    protected void CloseProjectCallback(string nothing, string data) {
+        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
+        }
+    }*/
+
     public void CopyObjectClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
-            ProjectManager.Instance.SelectAPNameWhenCreated = "copy_of_" + selectedObject.GetName();
+            selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
             WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null);
         } else if (selectedObject is Base.Action action) {
             //
@@ -406,7 +421,7 @@ public class LeftMenuProject : LeftMenu
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
             ConfirmationDialog.Open("Close project",
-                         "Are you sure you want to close current project? Unsaved changes will be lost.",
+                         "Are you sure you want to close current project? Unsaved changes will be lost and system will go offline (if online).",
                          () => CloseProject(),
                          () => ConfirmationDialog.Close());
         }
@@ -414,6 +429,8 @@ public class LeftMenuProject : LeftMenu
     }
 
     public async void CloseProject() {
+        if (SceneManager.Instance.SceneStarted)
+            WebsocketManager.Instance.StopScene(false, null);
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         ConfirmationDialog.Close();
