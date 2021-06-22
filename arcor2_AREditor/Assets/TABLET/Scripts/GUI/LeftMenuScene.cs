@@ -121,12 +121,26 @@ public class LeftMenuScene : LeftMenu
 
         SaveButton.SetInteractivity(false, "Loading...");
         CloseButton.SetInteractivity(false, "Loading...");
-        WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
-        
+        //WebsocketManager.Instance.CloseScene(true, true, CloseSceneCallback);
+        if (SceneManager.Instance.SceneStarted) {
+            WebsocketManager.Instance.StopScene(true, StopSceneCallback);
+        } else {
+            CloseButton.SetInteractivity(true);
+        }
+
         if (!SceneManager.Instance.SceneChanged) {
             SaveButton.SetInteractivity(false, "There are no unsaved changes");
         } else {
             WebsocketManager.Instance.SaveScene(true, SaveSceneCallback);
+        }
+    }
+
+    private void StopSceneCallback(string _, string data) {
+        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
         }
     }
 
@@ -138,7 +152,7 @@ public class LeftMenuScene : LeftMenu
             SaveButton.SetInteractivity(response.Result);
         }
     }
-
+    /*
     protected void CloseSceneCallback(string nothing, string data) {
         CloseSceneResponse response = JsonConvert.DeserializeObject<CloseSceneResponse>(data);
         if (response.Messages != null) {
@@ -146,7 +160,7 @@ public class LeftMenuScene : LeftMenu
         } else {
             CloseButton.SetInteractivity(response.Result);
         }
-    }
+    }*/
 
     public void ShowNewProjectDialog() {
         InputDialogWithToggle.Open("New project",
@@ -199,7 +213,7 @@ public class LeftMenuScene : LeftMenu
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
             ConfirmationDialog.Open("Close scene",
-                         "Are you sure you want to close current scene? Unsaved changes will be lost.",
+                         "Are you sure you want to close current scene? Unsaved changes will be lost and system will go offline (if online)..",
                          () => CloseScene(),
                          () => ConfirmationDialog.Close());
         }
@@ -207,6 +221,8 @@ public class LeftMenuScene : LeftMenu
 
 
     public async void CloseScene() {
+        if (SceneManager.Instance.SceneStarted)
+            WebsocketManager.Instance.StopScene(false, null);
         (bool success, string message) = await Base.GameManager.Instance.CloseScene(true);
         if (success) {
 

@@ -248,7 +248,11 @@ public class LeftMenuProject : LeftMenu
         BuildPackageButton.SetInteractivity(false, "Loading...");
         SaveButton.SetInteractivity(false, "Loading...");
         CloseButton.SetInteractivity(false, "Loading...");
-        WebsocketManager.Instance.CloseProject(true, true, CloseProjectCallback);
+        if (SceneManager.Instance.SceneStarted) {
+            WebsocketManager.Instance.StopScene(true, StopSceneCallback);
+        } else {
+            CloseButton.SetInteractivity(true);
+        }
 
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);            
@@ -261,6 +265,15 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
+    private void StopSceneCallback(string _, string data) {
+        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
+        if (response.Messages != null) {
+            CloseButton.SetInteractivity(response.Result, response.Messages.FirstOrDefault());
+        } else {
+            CloseButton.SetInteractivity(response.Result);
+        }
+    }
+
     protected void SaveProjectCallback(string _, string data) {
         SaveProjectResponse response = JsonConvert.DeserializeObject<SaveProjectResponse>(data);
         if (response.Messages != null) {
@@ -269,7 +282,7 @@ public class LeftMenuProject : LeftMenu
             SaveButton.SetInteractivity(response.Result);
         }
     }
-
+    /*
     protected void CloseProjectCallback(string nothing, string data) {
         CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
         if (response.Messages != null) {
@@ -277,7 +290,7 @@ public class LeftMenuProject : LeftMenu
         } else {
             CloseButton.SetInteractivity(response.Result);
         }
-    }
+    }*/
 
     public void CopyObjectClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
@@ -412,7 +425,7 @@ public class LeftMenuProject : LeftMenu
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
             ConfirmationDialog.Open("Close project",
-                         "Are you sure you want to close current project? Unsaved changes will be lost.",
+                         "Are you sure you want to close current project? Unsaved changes will be lost and system will go offline (if online).",
                          () => CloseProject(),
                          () => ConfirmationDialog.Close());
         }
@@ -420,6 +433,8 @@ public class LeftMenuProject : LeftMenu
     }
 
     public async void CloseProject() {
+        if (SceneManager.Instance.SceneStarted)
+            WebsocketManager.Instance.StopScene(false, null);
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         ConfirmationDialog.Close();
