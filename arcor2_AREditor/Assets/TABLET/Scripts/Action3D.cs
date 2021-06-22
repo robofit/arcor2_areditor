@@ -109,6 +109,7 @@ public class Action3D : Base.Action, ISubItem {
     }
 
     public override void OnHoverStart() {
+        Debug.LogError("on hover start");
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
             GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingAction) {
             if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {

@@ -108,6 +108,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 7592340303395121290}
   Action: {fileID: -4901143462678197493}
@@ -125,6 +126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
@@ -427,6 +430,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 5362052914937072908}
   Action: {fileID: -4901143462678197493}
@@ -444,6 +448,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
@@ -472,7 +478,6 @@ GameObject:
   - component: {fileID: 6417292780173919764}
   - component: {fileID: 6417292780173919765}
   - component: {fileID: 6417292780173919763}
-  - component: {fileID: 8409126376922550219}
   - component: {fileID: 7467850720681680514}
   m_Layer: 0
   m_Name: Cylinder
@@ -556,19 +561,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   Target: {fileID: 6417292780430755493}
---- !u!114 &8409126376922550219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6417292780173919761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9673c2375ff70d043956c1eebf26e270, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Target: {fileID: 6417292780430755493}
 --- !u!64 &7467850720681680514
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -630,6 +622,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 7467850720681680514}
   Input: {fileID: 4512397415820150178}
@@ -654,6 +647,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
