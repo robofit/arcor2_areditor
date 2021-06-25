@@ -1242,7 +1242,7 @@ namespace Base {
                 OnSaveProject?.Invoke(this, EventArgs.Empty);
             } else {
                 saveProjectResponse.Messages.ForEach(Debug.LogError);
-                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? saveProjectResponse.Messages[0] : ""));
                 return;
             }
         }

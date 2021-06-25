@@ -18,7 +18,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
     public ButtonWithTooltip MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton,
-        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton; //Buttons with number 2 are duplicates in favorites submenu
+        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton, MainSettingsButton; //Buttons with number 2 are duplicates in favorites submenu
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
@@ -464,7 +464,23 @@ public abstract class LeftMenu : MonoBehaviour {
         //SetActiveSubmenu(LeftMenuSelection.None);
     }
 
-    
+    public void MainSettingsButtonClick() {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !MainSettingsButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
+        if (MainSettingsButton.GetComponent<Image>().enabled) {
+            MainSettingsButton.GetComponent<Image>().enabled = false;
+            MainSettingsMenu.Instance.Hide();
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            //ActionPicker.SetActive(false);
+        } else {
+            MainSettingsButton.GetComponent<Image>().enabled = true;
+            SelectorMenu.Instance.gameObject.SetActive(false);
+            MainSettingsMenu.Instance.Show();
+
+        }
+    }
 
     #endregion
 
@@ -514,6 +530,8 @@ public abstract class LeftMenu : MonoBehaviour {
 
         ActionParametersMenu.Instance.Hide(unlock);
 
+        MainSettingsMenu.Instance.Hide();
+
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);
         UtilityButtons.SetActive(false);
@@ -526,6 +544,7 @@ public abstract class LeftMenu : MonoBehaviour {
         UtilityButton.GetComponent<Image>().enabled = false;
         HomeButton.GetComponent<Image>().enabled = false;
 
+        MainSettingsButton.GetComponent<Image>().enabled = false;
         MoveButton.GetComponent<Image>().enabled = false;
         MoveButton2.GetComponent<Image>().enabled = false;
         OpenMenuButton.GetComponent<Image>().enabled = false;

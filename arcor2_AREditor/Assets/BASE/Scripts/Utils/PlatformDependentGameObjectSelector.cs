@@ -37,7 +37,8 @@ public class PlatformDependentGameObjectSelector : MonoBehaviour {
         }
 #elif UNITY_STANDALONE || !AR_ON
         foreach (GameObject obj in GameObjectsForANDROIDOnly) {
-            obj.SetActive(false);
+            if (obj != null)
+                obj.SetActive(false);
         }
         foreach (GameObject obj in GameObjectsForIOSOnly) {
             obj.SetActive(false);

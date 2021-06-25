@@ -8,23 +8,13 @@ using Base;
 using UnityEngine.EventSystems;
 
 public class EditorSettingsMenu : MonoBehaviour, IMenu {
-    public SwitchComponent Interactibility, APOrientationsVisibility, RobotsEEVisible;
     public GameObject ActionObjectsList, ActionPointsList;
-    [SerializeField]
-    private GameObject ActionPointsScrollable, ActionObjectsScrollable;
-    [SerializeField]
-    private Slider APSizeSlider, ActionObjectsVisibilitySlider;
+    
     [SerializeField]
     private LabeledInput markerOffsetX, markerOffsetY, markerOffsetZ, recalibrationTime;
 
     private void Start() {
-        Debug.Assert(ActionPointsScrollable != null);
-        Debug.Assert(ActionObjectsScrollable != null);
-        Debug.Assert(APSizeSlider != null);
-        Debug.Assert(Interactibility != null);
-        Debug.Assert(APOrientationsVisibility != null);
-        Debug.Assert(RobotsEEVisible != null);
-        Debug.Assert(ActionObjectsVisibilitySlider != null);
+
         Base.SceneManager.Instance.OnLoadScene += OnSceneOrProjectLoaded;
         Base.ProjectManager.Instance.OnLoadProject += OnSceneOrProjectLoaded;
         Base.GameManager.Instance.OnSceneChanged += OnSceneChanged;
@@ -32,7 +22,9 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         Base.WebsocketManager.Instance.OnActionPointRemoved += OnActionPointRemoved;
         Base.WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
         Base.GameManager.Instance.OnGameStateChanged += GameStateChanged;
-        Interactibility.SetValue(false);
+        //Interactibility.SetValue(false);
+
+
     }
 
     private void OnActionPointRemoved(object sender, StringEventArgs args) {
@@ -59,7 +51,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     private void GameStateChanged(object sender, GameStateEventArgs args) {
-        ActionPointsScrollable.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor);
+        //ActionPointsScrollable.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor);
         if (args.Data == GameManager.GameStateEnum.MainScreen || args.Data == GameManager.GameStateEnum.Disconnected ||
             args.Data == GameManager.GameStateEnum.PackageRunning)
             ClearMenu();
@@ -75,11 +67,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
     }
 
     public void UpdateMenu() {
-        APSizeSlider.value = ProjectManager.Instance.APSize;
-        Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
-        APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
-        RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
-        ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
+        
         Vector3 offset = TransformConvertor.UnityToROS(PlayerPrefsHelper.LoadVector3("/marker_offset", Vector3.zero));
         markerOffsetX.SetValue(offset.x);
         markerOffsetY.SetValue(offset.y);
@@ -87,43 +75,7 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
     }
 
-    public void SetVisibilityActionObjects() {
-        SceneManager.Instance.SetVisibilityActionObjects(ActionObjectsVisibilitySlider.value / 100f);
-    }
-
-    public void ShowAPOrientations() {
-        Base.ProjectManager.Instance.ShowAPOrientations();
-    }
-
-    public void HideAPOrientations() {
-         Base.ProjectManager.Instance.HideAPOrientations();
-    }
-
-    public void InteractivityOn() {
-        Base.SceneManager.Instance.SetActionObjectsInteractivity(true);
-    }
-
-    public void InteractivityOff() {
-         Base.SceneManager.Instance.SetActionObjectsInteractivity(false);
-    }
-
-    public void ShowRobotsEE() {
-        if (!SceneManager.Instance.ShowRobotsEE()) {
-            RobotsEEVisible.SetValue(false);
-        }
-    }
-
-    public void HideRobotsEE() {
-        SceneManager.Instance.HideRobotsEE();
-    }
-
-    public void SwitchOnExpertMode() {
-        GameManager.Instance.ExpertMode = true;
-    }
-
-    public void SwitchOffExpertMode() {
-        GameManager.Instance.ExpertMode = false;
-    }
+    
 
     public void OnSceneOrProjectLoaded(object sender, EventArgs eventArgs) {
     }
@@ -217,12 +169,5 @@ public class EditorSettingsMenu : MonoBehaviour, IMenu {
         actionObject.SendMessage("Select", true);
     }
 
-    public void OnAPSizeChange(float value) {
-        ProjectManager.Instance.SetAPSize(value);
-    }
-
-    public void OnAutoCalibTimeChange(string value) {
-        PlayerPrefsHelper.SaveString("/autoCalib/recalibrationTime", value);
-        CalibrationManager.Instance.UpdateAutoCalibTime(float.Parse(value));
-    }
+    
 }
