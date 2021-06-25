@@ -1034,9 +1034,7 @@ namespace Base {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
                 HideLoadingScreen();
-            } catch (Exception ex) {
-                throw ex;
-            }
+            } 
             
 
         }

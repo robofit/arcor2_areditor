@@ -37,10 +37,13 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     // Start is called before the first frame update
     private void Start() {
         //TODO: find out why start is called twice
-        Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesAdded += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesRemoved += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesUpdated += UpdateObjectsList;
         buttonTooltip.descriptionText = TooltipRef.Instance.Text;
         buttonTooltip.tooltipRect = TooltipRef.Instance.Tooltip;
     }
+
 
     // Update is called once per frame
     private void Update() {
@@ -49,6 +52,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     public void UpdateMenu() {
         CreateNewObjectBtn.interactable = false;
+        UpdateObjectsList();
         UpdateModelsMenu();
         ValidateFields();
     }
@@ -81,6 +85,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     }
 
     public void UpdateObjectsList(object sender, Base.StringListEventArgs eventArgs) {
+        UpdateObjectsList();        
+    }
+
+    private void UpdateObjectsList() {
         string originalValue = "";
         if (ParentsList.Dropdown.dropdownItems.Count > 0)
             originalValue = (string) ParentsList.GetValue();
@@ -90,7 +98,6 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
             values.Add(actionObjectMetadata.Type);
         }
         ParentsList.PutData(values, originalValue, (_) => UpdateModelsMenu());
-        
     }
 
     public async void ValidateFields() {

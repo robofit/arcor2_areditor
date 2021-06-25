@@ -25,7 +25,7 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event AREditorEventArgs.StringListEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringListEventHandler OnObjectTypesAdded, OnObjectTypesRemoved, OnObjectTypesUpdated;
 
         public bool ActionsReady, ActionObjectsLoaded;
 
@@ -118,13 +118,15 @@ namespace Base {
 
 
         public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
+            List<string> removed = new List<string>();
             foreach (string item in type.Data) {
                 if (actionObjectsMetadata.ContainsKey(item)) {
                     actionObjectsMetadata.Remove(item);
+                    removed.Add(item);
                 }
             }
             if (type.Data.Count > 0)
-                OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(new List<string>()));
+                OnObjectTypesRemoved?.Invoke(this, new StringListEventArgs(new List<string>(removed)));
 
         }
 
@@ -141,7 +143,7 @@ namespace Base {
                 added.Add(obj.Type);
             }
             
-            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(added));
+            OnObjectTypesAdded?.Invoke(this, new StringListEventArgs(added));
         }
 
         public void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
@@ -157,7 +159,8 @@ namespace Base {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
                 }
             }
-            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(updated));
+
+            OnObjectTypesUpdated?.Invoke(this, new StringListEventArgs(updated));
         }
         
 
@@ -192,24 +195,6 @@ namespace Base {
             Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
             foreach (IO.Swagger.Model.ObjectAction action in actions) {
                 ActionMetadata a = new ActionMetadata(action);
-                /*
-                foreach (IO.Swagger.Model.ActionParameterMeta arg in action.Parameters) {
-                    switch (arg.Type) {
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Double, 0d);
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
-                            break;
-                    }
-
-            }*/
                 metadata[a.Name] = a;
             }
             return metadata;
@@ -233,7 +218,6 @@ namespace Base {
             enabled = true;
 
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, new Base.StringListEventArgs(new List<string>()));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {

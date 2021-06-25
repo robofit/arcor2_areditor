@@ -48,6 +48,7 @@ namespace Base {
                 } else {
                     RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.03f, 0.03f, 0.0001f), ray.direction, Camera.main.transform.rotation);
                     if (hits.Length > 0) {
+                        
                         float minDist = float.MaxValue;
                         foreach (RaycastHit h in hits) {
                             Vector3 dir = ray.direction;

@@ -62,7 +62,7 @@ public class LeftMenuScene : LeftMenu
         } else {
 
         }
-            AddActionObjectButton.SetInteractivity(false, "Add action object (not implemented, use main menu)");
+            
         previousUpdateDone = true;
         } finally {
             previousUpdateDone = true;
@@ -73,18 +73,22 @@ public class LeftMenuScene : LeftMenu
         base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
 
+        ActionObjectPickerMenu.Instance.Hide();
         //MeshPicker.SetActive(false);
     }
 
     public void AddMeshClick() {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !AddActionObjectButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
         if (AddActionObjectButton.GetComponent<Image>().enabled) {
             AddActionObjectButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            //MeshPicker.SetActive(false);
+            ActionObjectPickerMenu.Instance.Hide();
         } else {
             AddActionObjectButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
-            //MeshPicker.SetActive(true);
+            ActionObjectPickerMenu.Instance.Show();
         }
 
     }

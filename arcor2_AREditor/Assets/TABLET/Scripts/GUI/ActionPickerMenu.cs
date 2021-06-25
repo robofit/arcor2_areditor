@@ -26,9 +26,10 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
             collapsableMenu.Collapsed = true;
 
             foreach (Base.ActionMetadata am in keyval.Value) {
-                ActionButton btn = Instantiate(ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButton>();
+                ActionButtonWithIcon btn = Instantiate(ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButtonWithIcon>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.SetLabel(am.Name);
+                btn.Icon.sprite = AREditorResources.Instance.Action;
                 if (am.Disabled) {
                     CreateTooltip(am.Problem, btn);
                     btn.Button.interactable = false;
