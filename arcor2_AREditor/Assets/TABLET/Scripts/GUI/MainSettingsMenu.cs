@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
+using IO.Swagger.Model;
+using Newtonsoft.Json;
 
 public class MainSettingsMenu : Singleton<MainSettingsMenu>
 {
-    public GameObject ContainerEditor, ContainerConstants, ContentEditor, ContentConstants, ContainerAR, ContentAR;
+    public GameObject ContainerEditor, ContainerConstants, ContentEditor, ContentConstants, ContainerAR, ContentAR, ConstantButtonPrefab;
 
     public List<GameObject> ProjectRelatedSettings = new List<GameObject>();
 
@@ -23,8 +26,14 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     public ManualTooltip CalibrationElementsTooltip;
     public ManualTooltip AutoCalibTooltip;
 
+    //for constants
+    private EditConstantDialog EditConstantDialog;
+    private Action3D currentAction;
+
+
     private void Start() {
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        EditConstantDialog = (EditConstantDialog) MenuManager.Instance.EditConstantDialog;
 
 #if UNITY_ANDROID && AR_ON
         recalibrationTime.SetValue(CalibrationManager.Instance.AutoRecalibrateTime);
@@ -93,11 +102,20 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
+
+        GenerateConstantButtons();
+        WebsocketManager.Instance.OnProjectConstantAdded += OnConstantAdded;
+        WebsocketManager.Instance.OnProjectConstantRemoved += OnConstantRemoved;
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
     public void Hide() {
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+
+        DestroyConstantButtons();
+        WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
+        WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
     }
 
     public void SetVisibilityActionObjects() {
@@ -224,5 +242,109 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 #endif
         PlayerPrefsHelper.SaveBool("control_box_display_connections", (bool) ConnectionsSwitch.GetValue());
     }
+
+
+
+    #region Project constants (parameters)
+
+    private void OnConstantRemoved(object sender, ProjectConstantEventArgs args) {
+        ProjectConstantButton[] btns = ContentConstants.GetComponentsInChildren<ProjectConstantButton>();
+        if (btns != null) {
+            foreach (ProjectConstantButton btn in btns.Where(o => o.Id == args.ProjectConstant.Id)) {
+                Destroy(btn.gameObject);
+                return;
+            }
+        }
+    }
+
+    private void OnConstantAdded(object sender, ProjectConstantEventArgs args) {
+        GenerateConstantButton(args.ProjectConstant);
+    }
+
+    private void GenerateConstantButtons() {
+        foreach (var constant in ProjectManager.Instance.ProjectConstants) {
+            GenerateConstantButton(constant);
+        }
+    }
+
+    private ProjectConstantButton GenerateConstantButton(ProjectParameter constant) {
+        ProjectConstantButton btn = Instantiate(ConstantButtonPrefab, ContentConstants.transform).GetComponent<ProjectConstantButton>();
+        btn.Id = constant.Id;
+        btn.SetName(constant.Name);
+        btn.SetValue(Base.Parameter.GetValue<string>(constant.Value)); //TODO fix other types than string
+        btn.Button.onClick.AddListener(async () => {
+            if (!await EditConstantDialog.Init(Show, constant))
+                return;
+            Hide();
+            EditConstantDialog.Open();
+        });
+        return btn;
+    }
+
+
+    //public async void Hide(bool unlock = true) {
+    //    DestroyConstantButtons();
+
+    //    EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    //    if (currentAction != null) {
+    //        currentAction.CloseMenu();
+    //        if (unlock)
+    //            await currentAction.WriteUnlock();
+    //        currentAction = null;
+    //    }
+
+    //    WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
+    //    WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
+
+    //    isMenuOpened = false;
+    //}
+
+    private void DestroyConstantButtons() {
+        RectTransform[] transforms = ContentConstants.GetComponentsInChildren<RectTransform>();
+        if (transforms != null) {
+            foreach (RectTransform o in transforms) {
+                if (o.gameObject.tag != "Persistent") {
+                    Destroy(o.gameObject);
+                }
+            }
+        }
+    }
+
+    public bool IsVisible() {
+        return CanvasGroup.alpha > 0;
+    }
+
+    public async void ShowNewConstantDialog() {
+        Hide();
+        if (!await EditConstantDialog.Init(Show))
+            return;
+        Hide();
+        EditConstantDialog.Open();
+    }
+
+    public static ProjectConstantTypes ConvertStringConstantToEnum(string type) {
+        return (ProjectConstantTypes) Enum.Parse(typeof(ProjectConstantTypes), type);
+    }
+
+    public static object GetValue(string value, ProjectConstantTypes type) {
+        object toReturn = null;
+        switch (type) {
+            case ProjectConstantTypes.integer:
+                toReturn = JsonConvert.DeserializeObject<int>(value);
+                break;
+            case ProjectConstantTypes.@string:
+                toReturn = JsonConvert.DeserializeObject<string>(value);
+                break;
+            case ProjectConstantTypes.boolean:
+                toReturn = JsonConvert.DeserializeObject<bool>(value);
+                break;
+            case ProjectConstantTypes.@double:
+                toReturn = JsonConvert.DeserializeObject<double>(value);
+                break;
+        }
+        return toReturn;
+    }
+
+    #endregion
 
 }

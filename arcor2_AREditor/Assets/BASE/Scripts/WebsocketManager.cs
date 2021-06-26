@@ -105,6 +105,9 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
+        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantAdded;
+        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantUpdated;
+        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantRemoved;
 
         /// <summary>
         /// event regarding calibration of camera or robot
@@ -396,6 +399,9 @@ namespace Base {
                         break;
                     case "ProcessState":
                         HandleProcessState(data);
+                        break;
+                    case "ProjectConstantChanged":
+                        HandleProjectConstantChanged(data);
                         break;
                     default:
                         Debug.LogError(data);
@@ -1002,6 +1008,26 @@ namespace Base {
         private void HandleProcessState(string data) {
             ProcessState processState = JsonConvert.DeserializeObject<ProcessState>(data);
             OnProcessStateEvent?.Invoke(this, new ProcessStateEventArgs(processState.Data));
+        }
+
+        private void HandleProjectConstantChanged(string data) {
+            IO.Swagger.Model.ProjectConstantChanged constantChanged = JsonConvert.DeserializeObject<ProjectConstantChanged>(data);
+            switch (constantChanged.ChangeType) {
+                case ProjectConstantChanged.ChangeTypeEnum.Add:
+                    OnProjectConstantAdded?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    break;
+                case ProjectConstantChanged.ChangeTypeEnum.Update:
+                    OnProjectConstantUpdated?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    break;
+                case ProjectConstantChanged.ChangeTypeEnum.Remove:
+                    OnProjectConstantRemoved?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    break;
+                case ProjectConstantChanged.ChangeTypeEnum.Updatebase:
+                    OnProjectConstantUpdated?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -2562,6 +2588,64 @@ namespace Base {
             IO.Swagger.Model.RegisterUserResponse response = await WaitForResult<IO.Swagger.Model.RegisterUserResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to register user" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Add project constant
+        /// </summary>
+        /// <param name="name">Name of the project constant</param>
+        /// <param name="type">Type of the constant. As of now, 4 types are supported: str, int, bool, float</param>
+        /// <param name="value">Value of the constant. It needs to be formatted as JSON</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task AddConstant(string name, string type, string value, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddConstantRequestArgs args = new AddConstantRequestArgs(name, type, value);
+
+            IO.Swagger.Model.AddConstantRequest request = new IO.Swagger.Model.AddConstantRequest(r_id, "AddConstant", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddConstantResponse response = await WaitForResult<IO.Swagger.Model.AddConstantResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to add constant" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Updates constant (type cannot be changed)
+        /// </summary>
+        /// <param name="id">ID of constant</param>
+        /// <param name="name">New name of constant</param>
+        /// <param name="value">New value of constant in JSON format</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task UpdateConstant(string id, string name, string value, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateConstantRequestArgs args = new UpdateConstantRequestArgs(id, name, value);
+
+            IO.Swagger.Model.UpdateConstantRequest request = new IO.Swagger.Model.UpdateConstantRequest(r_id, "UpdateConstant", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateConstantResponse response = await WaitForResult<IO.Swagger.Model.UpdateConstantResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update constant" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Removes constant
+        /// </summary>
+        /// <param name="id">ID of constant to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task RemoveConstant(string id, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveConstantRequestArgs args = new RemoveConstantRequestArgs(id);
+
+            IO.Swagger.Model.RemoveConstantRequest request = new IO.Swagger.Model.RemoveConstantRequest(r_id, "RemoveConstant", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveConstantResponse response = await WaitForResult<IO.Swagger.Model.RemoveConstantResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove constant" } : response.Messages);
             }
         }
     }
