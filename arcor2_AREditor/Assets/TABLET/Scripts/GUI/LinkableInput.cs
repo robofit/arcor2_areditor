@@ -114,5 +114,12 @@ public class LinkableInput : LinkableParameter {
         }
     }
 
+    public void ShowConstantPicker() {
+        MenuManager.Instance.ProjectConstantPicker.Show(ParameterMetadata.Type, ConstantPickedCallback);
+    }
+
+    public void ConstantPickedCallback(object value) {
+        SetValue(value);
+    }
    
 }

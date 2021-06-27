@@ -34,7 +34,7 @@ public class ProjectConstantButton : MonoBehaviour
             return;
 
         SetName(args.ProjectConstant.Name);
-        SetValue(ProjectConstantsMenu.GetValue(args.ProjectConstant.Value, ProjectConstantsMenu.ConvertStringConstantToEnum(args.ProjectConstant.Type)));
+        SetValue(ProjectConstantPicker.GetValue(args.ProjectConstant.Value, ProjectConstantPicker.ConvertStringConstantToEnum(args.ProjectConstant.Type)));
     }
 
     private void OnDestroy() {

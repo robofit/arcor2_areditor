@@ -17,6 +17,7 @@ public class MenuManager : Base.Singleton<MenuManager> {
     public Dialog InputDialog, ConfirmationDialog, InputDialogWithToggle, EditConstantDialog;
 
     public LeftMenuProject LeftMenuProject;
+    public ProjectConstantPicker ProjectConstantPicker;
 
 
     private void Start() {

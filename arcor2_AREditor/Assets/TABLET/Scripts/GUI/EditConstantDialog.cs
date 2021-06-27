@@ -70,7 +70,7 @@ public class EditConstantDialog : Dialog
                 dropdown.Dropdown.SetupDropdown();
                 dropdown.Dropdown.GetComponent<Button>().interactable = false;
 
-                object value = ProjectConstantsMenu.GetValue(constant.Value, selectedType);
+                object value = ProjectConstantPicker.GetValue(constant.Value, selectedType);
                 if (selectedType == ProjectConstantTypes.boolean) {
                     trueToggle.isOn = (bool) value;
                 } else {
@@ -113,7 +113,7 @@ public class EditConstantDialog : Dialog
     }
 
     private void OnTypeSelected(string type) {
-        ProjectConstantTypes typeEnum = ProjectConstantsMenu.ConvertStringConstantToEnum(type);
+        ProjectConstantTypes typeEnum = ProjectConstantPicker.ConvertStringConstantToEnum(type);
         OnTypeSelected(typeEnum);
     }
 
