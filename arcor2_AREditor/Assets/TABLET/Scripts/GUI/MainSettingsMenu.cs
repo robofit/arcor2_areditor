@@ -167,7 +167,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     public void EnableAutoReCalibration(bool active) {
 #if UNITY_ANDROID && AR_ON
-        autoCalibTooltip.DisplayAlternativeDescription = active;
+        AutoCalibTooltip.DisplayAlternativeDescription = active;
         CalibrationManager.Instance.EnableAutoReCalibration(active);
 #endif
     }
