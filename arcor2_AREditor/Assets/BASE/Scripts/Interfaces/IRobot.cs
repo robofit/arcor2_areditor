@@ -11,6 +11,8 @@ public interface IRobot
 
     Task<List<string>> GetEndEffectorIds();
 
+    Task<List<string>> GetArmsIds();
+
     Task<RobotEE> GetEE(string ee_id);
 
     Task<List<RobotEE>> GetAllEE();
