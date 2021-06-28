@@ -145,10 +145,6 @@ namespace Base {
         /// </summary>
         public CanvasGroup MainMenuBtnCG;
         /// <summary>
-        /// Canvas group of status panel
-        /// </summary>
-        public CanvasGroup StatusPanelCG;
-        /// <summary>
         /// Standard button prefab
         /// </summary>
         public GameObject ButtonPrefab;
@@ -480,12 +476,10 @@ namespace Base {
                 // when normal state, enable main menu button and status panel
                 case EditorStateEnum.Normal:
                     EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
-                    EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                     break;
                 // otherwise, disable main menu button and status panel
                 default:
                     EditorHelper.EnableCanvasGroup(MainMenuBtnCG, false);
-                    EditorHelper.EnableCanvasGroup(StatusPanelCG, false);
                     MenuManager.Instance.HideAllMenus();
                     break;
             }
@@ -1682,7 +1676,6 @@ namespace Base {
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
-                EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
                 ARSession.enabled = true;
                 if (CalibrationManager.Instance.Calibrated) {

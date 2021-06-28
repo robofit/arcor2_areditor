@@ -44,7 +44,7 @@ namespace Base {
 
         protected bool CheckClickType(Click type) {
            
-            if (!ControlBoxManager.Instance.ConnectionsToggle.isOn) {
+            if (!(bool) MainSettingsMenu.Instance.ConnectionsSwitch.GetValue()) {
                 return false;
             }
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
