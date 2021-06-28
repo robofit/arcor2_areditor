@@ -1717,7 +1717,7 @@
             </member>
         <member name="T:IO.Swagger.Model.BareProject">
              <summary>
-             BareProject(name: 'str', scene_id: 'str', desc: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '')
+             BareProject(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.BareProject.#ctor">
@@ -1725,11 +1725,12 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareProject" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.BareProject.#ctor(System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.BareProject.#ctor(System.DateTime,System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareProject" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="created">created.</param>
+             <param name="description">description (default to "").</param>
              <param name="hasLogic">hasLogic (default to true).</param>
              <param name="id">id (default to "").</param>
              <param name="intModified">intModified.</param>
@@ -1737,9 +1738,14 @@
              <param name="name">name (required).</param>
              <param name="sceneId">sceneId (required).</param>
             </member>
-        <member name="P:IO.Swagger.Model.BareProject.Desc">
+        <member name="P:IO.Swagger.Model.BareProject.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.BareProject.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.BareProject.HasLogic">
@@ -1871,6 +1877,72 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.Range">
+             <summary>
+             Range(min: 'float', max: 'float')
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.Range" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.#ctor(System.Decimal,System.Decimal)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.Range" /> class.
+             </summary>
+             <param name="max">max (required).</param>
+             <param name="min">min (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.Range.Max">
+             <summary>
+             Gets or Sets Max
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.Range.Min">
+             <summary>
+             Gets or Sets Min
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.Equals(IO.Swagger.Model.Range)">
+             <summary>
+             Returns true if Range instances are equal
+             </summary>
+             <param name="input">Instance of Range to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.Range.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -5239,6 +5311,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.AddApUsingRobotResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.Equals(IO.Swagger.Model.AddApUsingRobotResponse)">
+             <summary>
+             Returns true if AddApUsingRobotResponse instances are equal
+             </summary>
+             <param name="input">Instance of AddApUsingRobotResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ExecuteActionRequestAllOf">
              <summary>
              ExecuteActionRequestAllOf
@@ -5629,6 +5785,84 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.FocusObjectStartRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.AddApUsingRobotRequestArgs">
+             <summary>
+             Args(robot_id: str, end_effector_id: str, name: str, arm_id: Union[str, NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.#ctor(System.String,System.String,System.String,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequestArgs" /> class.
+             </summary>
+             <param name="armId">armId.</param>
+             <param name="endEffectorId">endEffectorId (required).</param>
+             <param name="name">name (required).</param>
+             <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestArgs.EndEffectorId">
+             <summary>
+             Gets or Sets EndEffectorId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestArgs.Name">
+             <summary>
+             Gets or Sets Name
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestArgs.RobotId">
+             <summary>
+             Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.Equals(IO.Swagger.Model.AddApUsingRobotRequestArgs)">
+             <summary>
+             Returns true if AddApUsingRobotRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of AddApUsingRobotRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -8970,6 +9204,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.UpdateLockRequestAllOf">
+             <summary>
+             UpdateLockRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.#ctor(IO.Swagger.Model.UpdateLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.Equals(IO.Swagger.Model.UpdateLockRequestAllOf)">
+             <summary>
+             Returns true if UpdateLockRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of UpdateLockRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.CloseSceneRequestAllOf">
              <summary>
              CloseSceneRequestAllOf
@@ -10559,7 +10853,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Scene">
              <summary>
-             Scene(name: 'str', desc: 'str' = &lt;factory&gt;, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', objects: 'List[SceneObject]' = &lt;factory&gt;)
+             Scene(name: 'str', description: 'str' = &lt;factory&gt;, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', objects: 'List[SceneObject]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Scene.#ctor">
@@ -10567,20 +10861,26 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Scene" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.Scene.#ctor(System.String,System.String,System.DateTime,System.DateTime,System.String,System.Collections.Generic.List{IO.Swagger.Model.SceneObject})">
+        <member name="M:IO.Swagger.Model.Scene.#ctor(System.DateTime,System.String,System.String,System.DateTime,System.DateTime,System.String,System.Collections.Generic.List{IO.Swagger.Model.SceneObject})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Scene" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="created">created.</param>
+             <param name="description">description (default to "").</param>
              <param name="id">id (default to "").</param>
              <param name="intModified">intModified.</param>
              <param name="modified">modified.</param>
              <param name="name">name (required).</param>
              <param name="objects">objects.</param>
             </member>
-        <member name="P:IO.Swagger.Model.Scene.Desc">
+        <member name="P:IO.Swagger.Model.Scene.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.Scene.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.Scene.Id">
@@ -11675,14 +11975,20 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf.#ctor(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf.#ctor(System.String,System.String,System.String,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="message">message.</param>
              <param name="orientationId">orientationId (required).</param>
              <param name="safe">safe (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointOrientationDataAllOf.EndEffectorId">
              <summary>
@@ -11889,7 +12195,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetSuctionsRequestArgs">
              <summary>
-             Args(robot_id: str)
+             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetSuctionsRequestArgs.#ctor">
@@ -11897,11 +12203,17 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSuctionsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetSuctionsRequestArgs.#ctor(System.String)">
+        <member name="M:IO.Swagger.Model.GetSuctionsRequestArgs.#ctor(System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSuctionsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSuctionsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.GetSuctionsRequestArgs.RobotId">
              <summary>
@@ -12087,7 +12399,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorsRequestArgs">
              <summary>
-             Args(robot_id: str)
+             Args(robot_id: str, arm_id: Union[str, NoneType])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorsRequestArgs.#ctor">
@@ -12095,11 +12407,17 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetEndEffectorsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetEndEffectorsRequestArgs.#ctor(System.String)">
+        <member name="M:IO.Swagger.Model.GetEndEffectorsRequestArgs.#ctor(System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetEndEffectorsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetEndEffectorsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.GetEndEffectorsRequestArgs.RobotId">
              <summary>
@@ -12759,19 +13077,12 @@
              ListProjectsResponseDataAllOf
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ListProjectsResponseDataAllOf.#ctor">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListProjectsResponseDataAllOf" /> class.
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ListProjectsResponseDataAllOf.#ctor(System.Boolean,System.DateTime,System.Collections.Generic.List{System.String},System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.ListProjectsResponseDataAllOf.#ctor(System.Boolean,System.Collections.Generic.List{System.String},System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListProjectsResponseDataAllOf" /> class.
              </summary>
              <param name="executable">Logic is defined and valid. (default to false).</param>
-             <param name="modified">modified.</param>
              <param name="problems">problems.</param>
-             <param name="sceneId">sceneId (required).</param>
              <param name="valid">Objects and their actions exists. (default to false).</param>
             </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseDataAllOf.Executable">
@@ -12780,19 +13091,9 @@
              </summary>
              <value>Logic is defined and valid.</value>
             </member>
-        <member name="P:IO.Swagger.Model.ListProjectsResponseDataAllOf.Modified">
-             <summary>
-             Gets or Sets Modified
-             </summary>
-            </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseDataAllOf.Problems">
              <summary>
              Gets or Sets Problems
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ListProjectsResponseDataAllOf.SceneId">
-             <summary>
-             Gets or Sets SceneId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseDataAllOf.Valid">
@@ -15112,7 +15413,7 @@
             </member>
         <member name="T:IO.Swagger.Model.InverseKinematicsRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, pose: arcor2.data.common.Pose, start_joints: Union[List[arcor2.data.common.Joint], NoneType] = None, avoid_collisions: bool = True)
+             Args(robot_id: str, end_effector_id: str, pose: arcor2.data.common.Pose, start_joints: Union[List[arcor2.data.common.Joint], NoneType] = None, avoid_collisions: bool = True, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.InverseKinematicsRequestArgs.#ctor">
@@ -15120,15 +15421,21 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.InverseKinematicsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.InverseKinematicsRequestArgs.#ctor(System.Boolean,System.String,IO.Swagger.Model.Pose,System.String,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
+        <member name="M:IO.Swagger.Model.InverseKinematicsRequestArgs.#ctor(System.String,System.Boolean,System.String,IO.Swagger.Model.Pose,System.String,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.InverseKinematicsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="avoidCollisions">avoidCollisions (default to true).</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="pose">pose (required).</param>
              <param name="robotId">robotId (required).</param>
              <param name="startJoints">startJoints.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.InverseKinematicsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.InverseKinematicsRequestArgs.AvoidCollisions">
              <summary>
@@ -15188,6 +15495,84 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.InverseKinematicsRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.AddApUsingRobotRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.project.AddApUsingRobot.Request.Args, dry_run: bool = False)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.AddApUsingRobotRequestArgs,System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequest.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.Equals(IO.Swagger.Model.AddApUsingRobotRequest)">
+             <summary>
+             Returns true if AddApUsingRobotRequest instances are equal
+             </summary>
+             <param name="input">Instance of AddApUsingRobotRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -15552,7 +15937,7 @@
             </member>
         <member name="T:IO.Swagger.Model.NewSceneRequestArgs">
              <summary>
-             Args(name: str, desc: str = &lt;factory&gt;)
+             Args(name: str, description: str = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.NewSceneRequestArgs.#ctor">
@@ -15564,12 +15949,12 @@
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.NewSceneRequestArgs" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="description">description (default to "").</param>
              <param name="name">name (required).</param>
             </member>
-        <member name="P:IO.Swagger.Model.NewSceneRequestArgs.Desc">
+        <member name="P:IO.Swagger.Model.NewSceneRequestArgs.Description">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.NewSceneRequestArgs.Name">
@@ -16253,61 +16638,6 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.DeletePackageRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
-             <summary>
-             To validate all properties of the instance
-             </summary>
-             <param name="validationContext">Validation context</param>
-             <returns>Validation Result</returns>
-            </member>
-        <member name="T:IO.Swagger.Model.RunPackageRequestArgsAllOf">
-             <summary>
-             RunPackageRequestArgsAllOf
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.#ctor(System.Boolean)">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RunPackageRequestArgsAllOf" /> class.
-             </summary>
-             <param name="cleanupAfterRun">cleanupAfterRun (default to true).</param>
-            </member>
-        <member name="P:IO.Swagger.Model.RunPackageRequestArgsAllOf.CleanupAfterRun">
-             <summary>
-             Gets or Sets CleanupAfterRun
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.ToString">
-             <summary>
-             Returns the string presentation of the object
-             </summary>
-             <returns>String presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.ToJson">
-             <summary>
-             Returns the JSON string presentation of the object
-             </summary>
-             <returns>JSON string presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.Equals(System.Object)">
-             <summary>
-             Returns true if objects are equal
-             </summary>
-             <param name="input">Object to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.Equals(IO.Swagger.Model.RunPackageRequestArgsAllOf)">
-             <summary>
-             Returns true if RunPackageRequestArgsAllOf instances are equal
-             </summary>
-             <param name="input">Instance of RunPackageRequestArgsAllOf to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.GetHashCode">
-             <summary>
-             Gets the hash code
-             </summary>
-             <returns>Hash code</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgsAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -17417,6 +17747,87 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.UpdateLockRequestArgs">
+             <summary>
+             Args(object_id: str, new_type: arcor2_arserver_data.rpc.lock.UpdateType)
+             </summary>
+            </member>
+        <member name="T:IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum">
+             <summary>
+             Defines NewType
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE">
+             <summary>
+             Enum TREE for value: TREE
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT">
+             <summary>
+             Enum OBJECT for value: OBJECT
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequestArgs.NewType">
+             <summary>
+             Gets or Sets NewType
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.#ctor(IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequestArgs" /> class.
+             </summary>
+             <param name="newType">newType (required).</param>
+             <param name="objectId">objectId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequestArgs.ObjectId">
+             <summary>
+             Gets or Sets ObjectId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.Equals(IO.Swagger.Model.UpdateLockRequestArgs)">
+             <summary>
+             Returns true if UpdateLockRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of UpdateLockRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.CalibrateCameraRequestAllOf">
              <summary>
              CalibrateCameraRequestAllOf
@@ -17479,7 +17890,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorPoseRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str)
+             Args(robot_id: str, end_effector_id: str, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.#ctor">
@@ -17487,12 +17898,18 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetEndEffectorPoseRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.#ctor(System.String,System.String)">
+        <member name="M:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.#ctor(System.String,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetEndEffectorPoseRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.EndEffectorId">
              <summary>
@@ -19463,7 +19880,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StepRobotEefRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, axis: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Axis, what: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.What, mode: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Mode, step: float, safe: bool = True, pose: Union[arcor2.data.common.Pose, NoneType] = None, speed: float = 0.25)
+             Args(robot_id: str, end_effector_id: str, axis: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Axis, what: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.What, mode: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Mode, step: float, safe: bool = True, pose: Union[arcor2.data.common.Pose, NoneType] = None, speed: float = 0.25, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum">
@@ -19546,10 +19963,11 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.StepRobotEefRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.StepRobotEefRequestArgs.#ctor(IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum,System.String,IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum,IO.Swagger.Model.Pose,System.String,System.Boolean,System.Decimal,System.Decimal,IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum)">
+        <member name="M:IO.Swagger.Model.StepRobotEefRequestArgs.#ctor(System.String,IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum,System.String,IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum,IO.Swagger.Model.Pose,System.String,System.Boolean,System.Decimal,System.Decimal,IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.StepRobotEefRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="axis">axis (required).</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="mode">mode (required).</param>
@@ -19559,6 +19977,11 @@
              <param name="speed">speed (default to 0.25M).</param>
              <param name="step">step (required).</param>
              <param name="what">what (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.StepRobotEefRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.StepRobotEefRequestArgs.EndEffectorId">
              <summary>
@@ -20380,7 +20803,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs">
              <summary>
-             Args(action_point_id: str, robot_id: str, name: str = 'default')
+             Args(action_point_id: str, robot_id: str, name: str = 'default', arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.#ctor">
@@ -20388,17 +20811,23 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.#ctor(System.String,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.#ctor(System.String,System.String,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs" /> class.
              </summary>
              <param name="actionPointId">actionPointId (required).</param>
+             <param name="armId">armId.</param>
              <param name="name">name (default to "default").</param>
              <param name="robotId">robotId (required).</param>
             </member>
         <member name="P:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.ActionPointId">
              <summary>
              Gets or Sets ActionPointId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.Name">
@@ -20485,11 +20914,12 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMeta" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMeta.#ctor(IO.Swagger.Model.RobotFeatures,IO.Swagger.Model.RobotMeta.RobotTypeEnum,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.RobotMeta.#ctor(IO.Swagger.Model.RobotFeatures,System.Boolean,IO.Swagger.Model.RobotMeta.RobotTypeEnum,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMeta" /> class.
              </summary>
              <param name="features">features.</param>
+             <param name="multiArm">multiArm (default to false).</param>
              <param name="robotType">robotType (required).</param>
              <param name="type">type (required).</param>
              <param name="urdfPackageFilename">urdfPackageFilename.</param>
@@ -20497,6 +20927,11 @@
         <member name="P:IO.Swagger.Model.RobotMeta.Features">
              <summary>
              Gets or Sets Features
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMeta.MultiArm">
+             <summary>
+             Gets or Sets MultiArm
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMeta.Type">
@@ -21233,6 +21668,78 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.BuildProjectRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.UpdateLockRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.lock.UpdateLock.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.UpdateLockRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.Equals(IO.Swagger.Model.UpdateLockRequest)">
+             <summary>
+             Returns true if UpdateLockRequest instances are equal
+             </summary>
+             <param name="input">Instance of UpdateLockRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -21981,7 +22488,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ForwardKinematicsRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, joints: List[arcor2.data.common.Joint])
+             Args(robot_id: str, end_effector_id: str, joints: List[arcor2.data.common.Joint], arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ForwardKinematicsRequestArgs.#ctor">
@@ -21989,13 +22496,19 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ForwardKinematicsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ForwardKinematicsRequestArgs.#ctor(System.String,System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String)">
+        <member name="M:IO.Swagger.Model.ForwardKinematicsRequestArgs.#ctor(System.String,System.String,System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ForwardKinematicsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="joints">joints (required).</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ForwardKinematicsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.ForwardKinematicsRequestArgs.EndEffectorId">
              <summary>
@@ -22612,6 +23125,66 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetRobotArmsRequestArgs">
+             <summary>
+             Args(robot_id: str)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequestArgs" /> class.
+             </summary>
+             <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsRequestArgs.RobotId">
+             <summary>
+             Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.Equals(IO.Swagger.Model.GetRobotArmsRequestArgs)">
+             <summary>
+             Returns true if GetRobotArmsRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of GetRobotArmsRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.SaveProjectRequestAllOf">
              <summary>
              SaveProjectRequestAllOf
@@ -22753,7 +23326,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListScenesResponseData">
              <summary>
-             Data(id: 'str', name: 'str', desc: 'Optional[str]', modified: Union[datetime.datetime, NoneType] = None)
+             Data(id: 'str', name: 'str', created: 'datetime', modified: 'datetime', description: 'Optional[str]' = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListScenesResponseData.#ctor">
@@ -22761,18 +23334,25 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListScenesResponseData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseData.#ctor(System.String,System.String,System.String,System.DateTime)">
+        <member name="M:IO.Swagger.Model.ListScenesResponseData.#ctor(System.DateTime,System.String,System.String,System.DateTime,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListScenesResponseData" /> class.
              </summary>
-             <param name="desc">desc.</param>
+             <param name="created">created (required).</param>
+             <param name="description">description.</param>
              <param name="id">id (required).</param>
+             <param name="modified">modified (required).</param>
              <param name="name">name (required).</param>
-             <param name="modified">modified.</param>
+             <param name="data">data (default to "").</param>
             </member>
-        <member name="P:IO.Swagger.Model.ListScenesResponseData.Desc">
+        <member name="P:IO.Swagger.Model.ListScenesResponseData.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ListScenesResponseData.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ListScenesResponseData.Id">
@@ -22780,14 +23360,19 @@
              Gets or Sets Id
              </summary>
             </member>
+        <member name="P:IO.Swagger.Model.ListScenesResponseData.Modified">
+             <summary>
+             Gets or Sets Modified
+             </summary>
+            </member>
         <member name="P:IO.Swagger.Model.ListScenesResponseData.Name">
              <summary>
              Gets or Sets Name
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.ListScenesResponseData.Modified">
+        <member name="P:IO.Swagger.Model.ListScenesResponseData.Data">
              <summary>
-             Gets or Sets Modified
+             Gets or Sets Data
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListScenesResponseData.ToString">
@@ -23315,24 +23900,19 @@
              ProjectAllOf
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ProjectAllOf.#ctor(System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectConstant},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride})">
+        <member name="M:IO.Swagger.Model.ProjectAllOf.#ctor(System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectAllOf" /> class.
              </summary>
              <param name="actionPoints">actionPoints.</param>
-             <param name="constants">constants.</param>
              <param name="functions">functions.</param>
              <param name="logic">logic.</param>
              <param name="objectOverrides">objectOverrides.</param>
+             <param name="parameters">parameters.</param>
             </member>
         <member name="P:IO.Swagger.Model.ProjectAllOf.ActionPoints">
              <summary>
              Gets or Sets ActionPoints
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ProjectAllOf.Constants">
-             <summary>
-             Gets or Sets Constants
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ProjectAllOf.Functions">
@@ -23348,6 +23928,11 @@
         <member name="P:IO.Swagger.Model.ProjectAllOf.ObjectOverrides">
              <summary>
              Gets or Sets ObjectOverrides
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectAllOf.Parameters">
+             <summary>
+             Gets or Sets Parameters
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectAllOf.ToString">
@@ -23567,7 +24152,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectTypeMeta" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ObjectTypeMeta.#ctor(System.Boolean,System.String,System.Boolean,System.String,System.Boolean,System.Boolean,System.String,IO.Swagger.Model.ObjectModel,System.String,System.Collections.Generic.List{IO.Swagger.Model.ParameterMeta},System.String)">
+        <member name="M:IO.Swagger.Model.ObjectTypeMeta.#ctor(System.Boolean,System.String,System.Boolean,System.String,System.Boolean,System.Boolean,System.DateTime,System.String,IO.Swagger.Model.ObjectModel,System.String,System.Collections.Generic.List{IO.Swagger.Model.ParameterMeta},System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ObjectTypeMeta" /> class.
              </summary>
@@ -23577,6 +24162,7 @@
              <param name="description">description (default to "").</param>
              <param name="disabled">disabled (default to false).</param>
              <param name="hasPose">hasPose (default to false).</param>
+             <param name="modified">modified.</param>
              <param name="needsParentType">needsParentType.</param>
              <param name="objectModel">objectModel.</param>
              <param name="problem">problem.</param>
@@ -23611,6 +24197,11 @@
         <member name="P:IO.Swagger.Model.ObjectTypeMeta.HasPose">
              <summary>
              Gets or Sets HasPose
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ObjectTypeMeta.Modified">
+             <summary>
+             Gets or Sets Modified
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ObjectTypeMeta.NeedsParentType">
@@ -23757,7 +24348,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListProjectsResponseData">
              <summary>
-             Data(id: 'str', name: 'str', desc: 'Optional[str]', scene_id: str, valid: bool = False, executable: bool = False, problems: List[str] = &lt;factory&gt;, modified: Union[datetime.datetime, NoneType] = None)
+             Data(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', valid: bool = False, executable: bool = False, problems: List[str] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListProjectsResponseData.#ctor">
@@ -23765,22 +24356,35 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListProjectsResponseData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ListProjectsResponseData.#ctor(System.String,System.String,System.String,System.Boolean,System.DateTime,System.Collections.Generic.List{System.String},System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.ListProjectsResponseData.#ctor(System.DateTime,System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListProjectsResponseData" /> class.
              </summary>
-             <param name="desc">desc.</param>
-             <param name="id">id (required).</param>
-             <param name="name">name (required).</param>
-             <param name="executable">Logic is defined and valid. (default to false).</param>
+             <param name="created">created.</param>
+             <param name="description">description (default to "").</param>
+             <param name="hasLogic">hasLogic (default to true).</param>
+             <param name="id">id (default to "").</param>
+             <param name="intModified">intModified.</param>
              <param name="modified">modified.</param>
-             <param name="problems">problems.</param>
+             <param name="name">name (required).</param>
              <param name="sceneId">sceneId (required).</param>
+             <param name="executable">Logic is defined and valid. (default to false).</param>
+             <param name="problems">problems.</param>
              <param name="valid">Objects and their actions exists. (default to false).</param>
             </member>
-        <member name="P:IO.Swagger.Model.ListProjectsResponseData.Desc">
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.Description">
+             <summary>
+             Gets or Sets Description
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.HasLogic">
+             <summary>
+             Gets or Sets HasLogic
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseData.Id">
@@ -23788,9 +24392,24 @@
              Gets or Sets Id
              </summary>
             </member>
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.IntModified">
+             <summary>
+             Gets or Sets IntModified
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.Modified">
+             <summary>
+             Gets or Sets Modified
+             </summary>
+            </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseData.Name">
              <summary>
              Gets or Sets Name
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ListProjectsResponseData.SceneId">
+             <summary>
+             Gets or Sets SceneId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseData.Executable">
@@ -23799,19 +24418,9 @@
              </summary>
              <value>Logic is defined and valid.</value>
             </member>
-        <member name="P:IO.Swagger.Model.ListProjectsResponseData.Modified">
-             <summary>
-             Gets or Sets Modified
-             </summary>
-            </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseData.Problems">
              <summary>
              Gets or Sets Problems
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ListProjectsResponseData.SceneId">
-             <summary>
-             Gets or Sets SceneId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ListProjectsResponseData.Valid">
@@ -24155,7 +24764,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToPoseRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, speed: float, position: Union[arcor2.data.common.Position, NoneType], orientation: Union[arcor2.data.common.Orientation, NoneType], safe: bool = True)
+             Args(robot_id: str, end_effector_id: str, speed: float, position: Union[arcor2.data.common.Position, NoneType], orientation: Union[arcor2.data.common.Orientation, NoneType], safe: bool = True, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToPoseRequestArgs.#ctor">
@@ -24163,16 +24772,22 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToPoseRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.MoveToPoseRequestArgs.#ctor(System.String,IO.Swagger.Model.Orientation,IO.Swagger.Model.Position,System.String,System.Boolean,System.Decimal)">
+        <member name="M:IO.Swagger.Model.MoveToPoseRequestArgs.#ctor(System.String,System.String,IO.Swagger.Model.Orientation,IO.Swagger.Model.Position,System.String,System.Boolean,System.Decimal)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToPoseRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="orientation">orientation.</param>
              <param name="position">position.</param>
              <param name="robotId">robotId (required).</param>
              <param name="safe">safe (default to true).</param>
              <param name="speed">speed (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.MoveToPoseRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.MoveToPoseRequestArgs.EndEffectorId">
              <summary>
@@ -25432,6 +26047,150 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ExecuteActionResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.GetRobotArmsResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Collections.Generic.List{System.String})">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.Equals(IO.Swagger.Model.GetRobotArmsResponse)">
+             <summary>
+             Returns true if GetRobotArmsResponse instances are equal
+             </summary>
+             <param name="input">Instance of GetRobotArmsResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.GetRobotArmsRequestAllOf">
+             <summary>
+             GetRobotArmsRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.#ctor(IO.Swagger.Model.GetRobotArmsRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.Equals(IO.Swagger.Model.GetRobotArmsRequestAllOf)">
+             <summary>
+             Returns true if GetRobotArmsRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of GetRobotArmsRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -27592,7 +28351,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToJointsData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, target_joints: List[arcor2.data.common.Joint], safe: bool, message: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, target_joints: List[arcor2.data.common.Joint], safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum">
@@ -27625,12 +28384,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToJointsData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToJointsData.#ctor(IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum,System.String,System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
+        <member name="M:IO.Swagger.Model.RobotMoveToJointsData.#ctor(IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum,System.String,System.String,System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToJointsData" /> class.
              </summary>
              <param name="moveEventType">moveEventType (required).</param>
              <param name="robotId">robotId (required).</param>
+             <param name="armId">armId.</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
              <param name="targetJoints">targetJoints (required).</param>
@@ -27638,6 +28398,11 @@
         <member name="P:IO.Swagger.Model.RobotMoveToJointsData.RobotId">
              <summary>
              Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToJointsData.ArmId">
+             <summary>
+             Gets or Sets ArmId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToJointsData.Message">
@@ -27840,7 +28605,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToJointsRequestArgs">
              <summary>
-             Args(robot_id: str, speed: float, joints: List[arcor2.data.common.Joint], safe: bool = True)
+             Args(robot_id: str, speed: float, joints: List[arcor2.data.common.Joint], safe: bool = True, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToJointsRequestArgs.#ctor">
@@ -27848,14 +28613,20 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToJointsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.MoveToJointsRequestArgs.#ctor(System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String,System.Boolean,System.Decimal)">
+        <member name="M:IO.Swagger.Model.MoveToJointsRequestArgs.#ctor(System.String,System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String,System.Boolean,System.Decimal)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToJointsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="joints">joints (required).</param>
              <param name="robotId">robotId (required).</param>
              <param name="safe">safe (default to true).</param>
              <param name="speed">speed (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.MoveToJointsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.MoveToJointsRequestArgs.Joints">
              <summary>
@@ -28104,7 +28875,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProjectConstantChanged">
              <summary>
-             ProjectConstantChanged(data: arcor2.data.common.ProjectConstant)
+             ProjectConstantChanged(data: arcor2.data.common.ProjectParameter)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.ProjectConstantChanged.ChangeTypeEnum">
@@ -28142,7 +28913,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstantChanged" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ProjectConstantChanged.#ctor(System.Nullable{IO.Swagger.Model.ProjectConstantChanged.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.ProjectConstant)">
+        <member name="M:IO.Swagger.Model.ProjectConstantChanged.#ctor(System.Nullable{IO.Swagger.Model.ProjectConstantChanged.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.ProjectParameter)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstantChanged" /> class.
              </summary>
@@ -28388,7 +29159,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RunPackageRequestArgs">
              <summary>
-             Args(id: str, cleanup_after_run: bool = True)
+             Args(id: str)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RunPackageRequestArgs.#ctor">
@@ -28396,21 +29167,21 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RunPackageRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RunPackageRequestArgs.#ctor(System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.RunPackageRequestArgs.#ctor(System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RunPackageRequestArgs" /> class.
              </summary>
              <param name="id">id (required).</param>
-             <param name="cleanupAfterRun">cleanupAfterRun (default to true).</param>
+             <param name="data">data (default to "").</param>
             </member>
         <member name="P:IO.Swagger.Model.RunPackageRequestArgs.Id">
              <summary>
              Gets or Sets Id
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.RunPackageRequestArgs.CleanupAfterRun">
+        <member name="P:IO.Swagger.Model.RunPackageRequestArgs.Data">
              <summary>
-             Gets or Sets CleanupAfterRun
+             Gets or Sets Data
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RunPackageRequestArgs.ToString">
@@ -29374,7 +30145,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProjectRobotJoints">
              <summary>
-             ProjectRobotJoints(name: 'str', robot_id: 'str', joints: 'List[Joint]', is_valid: 'bool' = False, id: 'str' = '')
+             ProjectRobotJoints(name: 'str', robot_id: 'str', joints: 'List[Joint]', is_valid: 'bool' = False, arm_id: 'Optional[str]' = None, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectRobotJoints.#ctor">
@@ -29382,15 +30153,21 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectRobotJoints" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ProjectRobotJoints.#ctor(System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String,System.String)">
+        <member name="M:IO.Swagger.Model.ProjectRobotJoints.#ctor(System.String,System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectRobotJoints" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="id">id (default to "").</param>
              <param name="isValid">isValid (default to false).</param>
              <param name="joints">joints (required).</param>
              <param name="name">name (required).</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectRobotJoints.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.ProjectRobotJoints.Id">
              <summary>
@@ -29734,7 +30511,7 @@
             </member>
         <member name="T:IO.Swagger.Model.NewProjectRequestArgs">
              <summary>
-             Args(scene_id: str, name: str, desc: str = &lt;factory&gt;, has_logic: bool = True)
+             Args(scene_id: str, name: str, description: str = &lt;factory&gt;, has_logic: bool = True)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.NewProjectRequestArgs.#ctor">
@@ -29746,14 +30523,14 @@
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.NewProjectRequestArgs" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="description">description (default to "").</param>
              <param name="hasLogic">hasLogic (default to true).</param>
              <param name="name">name (required).</param>
              <param name="sceneId">sceneId (required).</param>
             </member>
-        <member name="P:IO.Swagger.Model.NewProjectRequestArgs.Desc">
+        <member name="P:IO.Swagger.Model.NewProjectRequestArgs.Description">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.NewProjectRequestArgs.HasLogic">
@@ -29890,7 +30667,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetGrippersRequestArgs">
              <summary>
-             Args(robot_id: str)
+             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetGrippersRequestArgs.#ctor">
@@ -29898,11 +30675,17 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetGrippersRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetGrippersRequestArgs.#ctor(System.String)">
+        <member name="M:IO.Swagger.Model.GetGrippersRequestArgs.#ctor(System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetGrippersRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetGrippersRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.GetGrippersRequestArgs.RobotId">
              <summary>
@@ -30020,84 +30803,6 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
-        <member name="T:IO.Swagger.Model.ProjectConstant">
-             <summary>
-             ProjectConstant(name: 'str', type: 'str', value: 'str', id: 'str' = '')
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.#ctor">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstant" /> class.
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.#ctor(System.String,System.String,System.String,System.String)">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstant" /> class.
-             </summary>
-             <param name="id">id (default to "").</param>
-             <param name="name">name (required).</param>
-             <param name="type">type (required).</param>
-             <param name="value">value (required).</param>
-            </member>
-        <member name="P:IO.Swagger.Model.ProjectConstant.Id">
-             <summary>
-             Gets or Sets Id
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ProjectConstant.Name">
-             <summary>
-             Gets or Sets Name
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ProjectConstant.Type">
-             <summary>
-             Gets or Sets Type
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ProjectConstant.Value">
-             <summary>
-             Gets or Sets Value
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.ToString">
-             <summary>
-             Returns the string presentation of the object
-             </summary>
-             <returns>String presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.ToJson">
-             <summary>
-             Returns the JSON string presentation of the object
-             </summary>
-             <returns>JSON string presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.Equals(System.Object)">
-             <summary>
-             Returns true if objects are equal
-             </summary>
-             <param name="input">Object to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.Equals(IO.Swagger.Model.ProjectConstant)">
-             <summary>
-             Returns true if ProjectConstant instances are equal
-             </summary>
-             <param name="input">Instance of ProjectConstant to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.GetHashCode">
-             <summary>
-             Gets the hash code
-             </summary>
-             <returns>Hash code</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ProjectConstant.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
-             <summary>
-             To validate all properties of the instance
-             </summary>
-             <param name="validationContext">Validation context</param>
-             <returns>Validation Result</returns>
-            </member>
         <member name="T:IO.Swagger.Model.ActionStateBeforeData">
              <summary>
              Data(action_id: str, parameters: List[str])
@@ -30166,7 +30871,7 @@
             </member>
         <member name="T:IO.Swagger.Model.HandTeachingModeRequestArgs">
              <summary>
-             Args(robot_id: str, enable: bool)
+             Args(robot_id: str, enable: bool, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.HandTeachingModeRequestArgs.#ctor">
@@ -30174,12 +30879,18 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.HandTeachingModeRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.HandTeachingModeRequestArgs.#ctor(System.Boolean,System.String)">
+        <member name="M:IO.Swagger.Model.HandTeachingModeRequestArgs.#ctor(System.String,System.Boolean,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.HandTeachingModeRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="enable">enable (required).</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.HandTeachingModeRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.HandTeachingModeRequestArgs.Enable">
              <summary>
@@ -30232,7 +30943,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToActionPointRequestArgs">
              <summary>
-             Args(robot_id: str, speed: float, end_effector_id: Union[str, NoneType] = None, orientation_id: Union[str, NoneType] = None, joints_id: Union[str, NoneType] = None, safe: bool = True)
+             Args(robot_id: str, speed: float, end_effector_id: Union[str, NoneType] = None, orientation_id: Union[str, NoneType] = None, joints_id: Union[str, NoneType] = None, safe: bool = True, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToActionPointRequestArgs.#ctor">
@@ -30240,16 +30951,22 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToActionPointRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.MoveToActionPointRequestArgs.#ctor(System.String,System.String,System.String,System.String,System.Boolean,System.Decimal)">
+        <member name="M:IO.Swagger.Model.MoveToActionPointRequestArgs.#ctor(System.String,System.String,System.String,System.String,System.String,System.Boolean,System.Decimal)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.MoveToActionPointRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId.</param>
              <param name="jointsId">jointsId.</param>
              <param name="orientationId">orientationId.</param>
              <param name="robotId">robotId (required).</param>
              <param name="safe">safe (default to true).</param>
              <param name="speed">speed (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.MoveToActionPointRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.MoveToActionPointRequestArgs.EndEffectorId">
              <summary>
@@ -30322,7 +31039,7 @@
             </member>
         <member name="T:IO.Swagger.Model.BareScene">
              <summary>
-             BareScene(name: 'str', desc: 'str' = &lt;factory&gt;, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '')
+             BareScene(name: 'str', description: 'str' = &lt;factory&gt;, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.BareScene.#ctor">
@@ -30330,19 +31047,25 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareScene" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.BareScene.#ctor(System.String,System.String,System.DateTime,System.DateTime,System.String)">
+        <member name="M:IO.Swagger.Model.BareScene.#ctor(System.DateTime,System.String,System.String,System.DateTime,System.DateTime,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareScene" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="created">created.</param>
+             <param name="description">description (default to "").</param>
              <param name="id">id (default to "").</param>
              <param name="intModified">intModified.</param>
              <param name="modified">modified.</param>
              <param name="name">name (required).</param>
             </member>
-        <member name="P:IO.Swagger.Model.BareScene.Desc">
+        <member name="P:IO.Swagger.Model.BareScene.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.BareScene.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.BareScene.Id">
@@ -30406,7 +31129,7 @@
             </member>
         <member name="T:IO.Swagger.Model.IdDesc">
              <summary>
-             IdDesc(id: 'str', name: 'str', desc: 'Optional[str]')
+             IdDesc(id: 'str', name: 'str', created: 'datetime', modified: 'datetime', description: 'Optional[str]' = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.IdDesc.#ctor">
@@ -30414,22 +31137,34 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.IdDesc" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.IdDesc.#ctor(System.String,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.IdDesc.#ctor(System.DateTime,System.String,System.String,System.DateTime,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.IdDesc" /> class.
              </summary>
-             <param name="desc">desc.</param>
+             <param name="created">created (required).</param>
+             <param name="description">description.</param>
              <param name="id">id (required).</param>
+             <param name="modified">modified (required).</param>
              <param name="name">name (required).</param>
             </member>
-        <member name="P:IO.Swagger.Model.IdDesc.Desc">
+        <member name="P:IO.Swagger.Model.IdDesc.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.IdDesc.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.IdDesc.Id">
              <summary>
              Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.IdDesc.Modified">
+             <summary>
+             Gets or Sets Modified
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.IdDesc.Name">
@@ -31114,13 +31849,19 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf.#ctor(System.String,System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf.#ctor(System.String,System.String,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="jointsId">jointsId (required).</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointJointsDataAllOf.JointsId">
              <summary>
@@ -31829,7 +32570,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotArg">
              <summary>
-             RobotArg(robot_id: str, end_effector: str)
+             RobotArg(robot_id: str, end_effector: str, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RobotArg.#ctor">
@@ -31837,12 +32578,18 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotArg" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotArg.#ctor(System.String,System.String)">
+        <member name="M:IO.Swagger.Model.RobotArg.#ctor(System.String,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotArg" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffector">endEffector (required).</param>
              <param name="robotId">Object id of the robot or robot_id within the robot service. (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotArg.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotArg.EndEffector">
              <summary>
@@ -31904,14 +32651,20 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToPoseDataAllOf" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToPoseDataAllOf.#ctor(System.String,System.String,System.Boolean,IO.Swagger.Model.Pose)">
+        <member name="M:IO.Swagger.Model.RobotMoveToPoseDataAllOf.#ctor(System.String,System.String,System.String,System.Boolean,IO.Swagger.Model.Pose)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToPoseDataAllOf" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
              <param name="targetPose">targetPose (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToPoseDataAllOf.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToPoseDataAllOf.EndEffectorId">
              <summary>
@@ -31974,7 +32727,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, safe: bool = True, speed: float = 0.25)
+             Args(robot_id: str, end_effector_id: str, safe: bool = True, speed: float = 0.25, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.#ctor">
@@ -31982,14 +32735,20 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.#ctor(System.String,System.String,System.Boolean,System.Decimal)">
+        <member name="M:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.#ctor(System.String,System.String,System.String,System.Boolean,System.Decimal)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="robotId">robotId (required).</param>
              <param name="safe">safe (default to true).</param>
              <param name="speed">speed (default to 0.25M).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.EndEffectorId">
              <summary>
@@ -32286,7 +33045,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotEefDataEefPose">
              <summary>
-             EefPose(end_effector_id: str, pose: arcor2.data.common.Pose)
+             EefPose(end_effector_id: str, pose: arcor2.data.common.Pose, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RobotEefDataEefPose.#ctor">
@@ -32294,12 +33053,18 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefDataEefPose" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.#ctor(System.String,IO.Swagger.Model.Pose)">
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.#ctor(System.String,System.String,IO.Swagger.Model.Pose)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefDataEefPose" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="pose">pose (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefDataEefPose.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotEefDataEefPose.EndEffectorId">
              <summary>
@@ -32907,7 +33672,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToPoseData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, target_pose: arcor2.data.common.Pose, safe: bool, message: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, target_pose: arcor2.data.common.Pose, safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum">
@@ -32940,12 +33705,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToPoseData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToPoseData.#ctor(IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum,System.String,System.String,System.String,System.Boolean,IO.Swagger.Model.Pose)">
+        <member name="M:IO.Swagger.Model.RobotMoveToPoseData.#ctor(IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum,System.String,System.String,System.String,System.String,System.Boolean,IO.Swagger.Model.Pose)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToPoseData" /> class.
              </summary>
              <param name="moveEventType">moveEventType (required).</param>
              <param name="robotId">robotId (required).</param>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
@@ -32954,6 +33720,11 @@
         <member name="P:IO.Swagger.Model.RobotMoveToPoseData.RobotId">
              <summary>
              Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToPoseData.ArmId">
+             <summary>
+             Gets or Sets ArmId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToPoseData.EndEffectorId">
@@ -34961,61 +35732,6 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
-        <member name="T:IO.Swagger.Model.ListScenesResponseDataAllOf">
-             <summary>
-             ListScenesResponseDataAllOf
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.#ctor(System.DateTime)">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ListScenesResponseDataAllOf" /> class.
-             </summary>
-             <param name="modified">modified.</param>
-            </member>
-        <member name="P:IO.Swagger.Model.ListScenesResponseDataAllOf.Modified">
-             <summary>
-             Gets or Sets Modified
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.ToString">
-             <summary>
-             Returns the string presentation of the object
-             </summary>
-             <returns>String presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.ToJson">
-             <summary>
-             Returns the JSON string presentation of the object
-             </summary>
-             <returns>JSON string presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.Equals(System.Object)">
-             <summary>
-             Returns true if objects are equal
-             </summary>
-             <param name="input">Object to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.Equals(IO.Swagger.Model.ListScenesResponseDataAllOf)">
-             <summary>
-             Returns true if ListScenesResponseDataAllOf instances are equal
-             </summary>
-             <param name="input">Instance of ListScenesResponseDataAllOf to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.GetHashCode">
-             <summary>
-             Gets the hash code
-             </summary>
-             <returns>Hash code</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.ListScenesResponseDataAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
-             <summary>
-             To validate all properties of the instance
-             </summary>
-             <param name="validationContext">Validation context</param>
-             <returns>Validation Result</returns>
-            </member>
         <member name="T:IO.Swagger.Model.WriteLockRequest">
              <summary>
              Request(id: int, args: arcor2_arserver_data.rpc.lock.WriteLock.Request.Args)
@@ -35182,7 +35898,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstantChangedAllOf" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ProjectConstantChangedAllOf.#ctor(IO.Swagger.Model.ProjectConstant)">
+        <member name="M:IO.Swagger.Model.ProjectConstantChangedAllOf.#ctor(IO.Swagger.Model.ProjectParameter)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectConstantChangedAllOf" /> class.
              </summary>
@@ -35318,7 +36034,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, orientation_id: str, safe: bool, message: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, orientation_id: str, safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData.MoveEventTypeEnum">
@@ -35351,12 +36067,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToActionPointOrientationData.#ctor(IO.Swagger.Model.RobotMoveToActionPointOrientationData.MoveEventTypeEnum,System.String,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.RobotMoveToActionPointOrientationData.#ctor(IO.Swagger.Model.RobotMoveToActionPointOrientationData.MoveEventTypeEnum,System.String,System.String,System.String,System.String,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData" /> class.
              </summary>
              <param name="moveEventType">moveEventType (required).</param>
              <param name="robotId">robotId (required).</param>
+             <param name="armId">armId.</param>
              <param name="endEffectorId">endEffectorId (required).</param>
              <param name="message">message.</param>
              <param name="orientationId">orientationId (required).</param>
@@ -35365,6 +36082,11 @@
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointOrientationData.RobotId">
              <summary>
              Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToActionPointOrientationData.ArmId">
+             <summary>
+             Gets or Sets ArmId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointOrientationData.EndEffectorId">
@@ -35656,7 +36378,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetRobotJointsRequestArgs">
              <summary>
-             Args(robot_id: str)
+             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotJointsRequestArgs.#ctor">
@@ -35664,11 +36386,17 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotJointsRequestArgs" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.GetRobotJointsRequestArgs.#ctor(System.String)">
+        <member name="M:IO.Swagger.Model.GetRobotJointsRequestArgs.#ctor(System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotJointsRequestArgs" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotJointsRequestArgs.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.GetRobotJointsRequestArgs.RobotId">
              <summary>
@@ -38632,7 +39360,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Project">
              <summary>
-             Project(name: 'str', scene_id: 'str', desc: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'List[ActionPoint]' = &lt;factory&gt;, constants: 'List[ProjectConstant]' = &lt;factory&gt;, functions: 'List[ProjectFunction]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, object_overrides: 'List[SceneObjectOverride]' = &lt;factory&gt;)
+             Project(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'List[ActionPoint]' = &lt;factory&gt;, parameters: 'List[ProjectParameter]' = &lt;factory&gt;, functions: 'List[ProjectFunction]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, object_overrides: 'List[SceneObjectOverride]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Project.#ctor">
@@ -38640,11 +39368,12 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Project" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.Project.#ctor(System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String,System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectConstant},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride})">
+        <member name="M:IO.Swagger.Model.Project.#ctor(System.DateTime,System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String,System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Project" /> class.
              </summary>
-             <param name="desc">desc (default to "").</param>
+             <param name="created">created.</param>
+             <param name="description">description (default to "").</param>
              <param name="hasLogic">hasLogic (default to true).</param>
              <param name="id">id (default to "").</param>
              <param name="intModified">intModified.</param>
@@ -38652,14 +39381,19 @@
              <param name="name">name (required).</param>
              <param name="sceneId">sceneId (required).</param>
              <param name="actionPoints">actionPoints.</param>
-             <param name="constants">constants.</param>
              <param name="functions">functions.</param>
              <param name="logic">logic.</param>
              <param name="objectOverrides">objectOverrides.</param>
+             <param name="parameters">parameters.</param>
             </member>
-        <member name="P:IO.Swagger.Model.Project.Desc">
+        <member name="P:IO.Swagger.Model.Project.Created">
              <summary>
-             Gets or Sets Desc
+             Gets or Sets Created
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.Project.Description">
+             <summary>
+             Gets or Sets Description
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.Project.HasLogic">
@@ -38697,11 +39431,6 @@
              Gets or Sets ActionPoints
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.Project.Constants">
-             <summary>
-             Gets or Sets Constants
-             </summary>
-            </member>
         <member name="P:IO.Swagger.Model.Project.Functions">
              <summary>
              Gets or Sets Functions
@@ -38715,6 +39444,11 @@
         <member name="P:IO.Swagger.Model.Project.ObjectOverrides">
              <summary>
              Gets or Sets ObjectOverrides
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.Project.Parameters">
+             <summary>
+             Gets or Sets Parameters
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Project.ToString">
@@ -39616,6 +40350,78 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.TemporaryPackageResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.GetRobotArmsRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.robot.GetRobotArms.Request.Args)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.GetRobotArmsRequestArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetRobotArmsRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetRobotArmsRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.Equals(IO.Swagger.Model.GetRobotArmsRequest)">
+             <summary>
+             Returns true if GetRobotArmsRequest instances are equal
+             </summary>
+             <param name="input">Instance of GetRobotArmsRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetRobotArmsRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -41398,13 +42204,19 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToJointsDataAllOf" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToJointsDataAllOf.#ctor(System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
+        <member name="M:IO.Swagger.Model.RobotMoveToJointsDataAllOf.#ctor(System.String,System.String,System.Boolean,System.Collections.Generic.List{IO.Swagger.Model.Joint})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToJointsDataAllOf" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
              <param name="targetJoints">targetJoints (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToJointsDataAllOf.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToJointsDataAllOf.Message">
              <summary>
@@ -41792,6 +42604,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.UpdateLockResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.UpdateLockResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.UpdateLockResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.Equals(IO.Swagger.Model.UpdateLockResponse)">
+             <summary>
+             Returns true if UpdateLockResponse instances are equal
+             </summary>
+             <param name="input">Instance of UpdateLockResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.UpdateLockResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.StepRobotEefResponse">
              <summary>
              Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
@@ -41870,6 +42766,102 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.StepRobotEefResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.ProjectParameter">
+             <summary>
+             ProjectParameter(name: 'str', type: 'str', value: 'str', range: 'Optional[Range]' = None, display_name: 'Optional[str]' = None, description: 'Optional[str]' = None, id: 'str' = '')
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectParameter" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.#ctor(System.String,System.String,System.String,System.String,IO.Swagger.Model.Range,System.String,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectParameter" /> class.
+             </summary>
+             <param name="description">description.</param>
+             <param name="displayName">displayName.</param>
+             <param name="id">id (default to "").</param>
+             <param name="name">name (required).</param>
+             <param name="range">range.</param>
+             <param name="type">type (required).</param>
+             <param name="value">value (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Description">
+             <summary>
+             Gets or Sets Description
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.DisplayName">
+             <summary>
+             Gets or Sets DisplayName
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Name">
+             <summary>
+             Gets or Sets Name
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Range">
+             <summary>
+             Gets or Sets Range
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Type">
+             <summary>
+             Gets or Sets Type
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectParameter.Value">
+             <summary>
+             Gets or Sets Value
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.Equals(IO.Swagger.Model.ProjectParameter)">
+             <summary>
+             Returns true if ProjectParameter instances are equal
+             </summary>
+             <param name="input">Instance of ProjectParameter to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.ProjectParameter.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -42968,7 +43960,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointJointsData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, joints_id: str, safe: bool, message: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, joints_id: str, safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointJointsData.MoveEventTypeEnum">
@@ -43001,12 +43993,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointJointsData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.RobotMoveToActionPointJointsData.#ctor(IO.Swagger.Model.RobotMoveToActionPointJointsData.MoveEventTypeEnum,System.String,System.String,System.String,System.Boolean)">
+        <member name="M:IO.Swagger.Model.RobotMoveToActionPointJointsData.#ctor(IO.Swagger.Model.RobotMoveToActionPointJointsData.MoveEventTypeEnum,System.String,System.String,System.String,System.String,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotMoveToActionPointJointsData" /> class.
              </summary>
              <param name="moveEventType">moveEventType (required).</param>
              <param name="robotId">robotId (required).</param>
+             <param name="armId">armId.</param>
              <param name="jointsId">jointsId (required).</param>
              <param name="message">message.</param>
              <param name="safe">safe (required).</param>
@@ -43014,6 +44007,11 @@
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointJointsData.RobotId">
              <summary>
              Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotMoveToActionPointJointsData.ArmId">
+             <summary>
+             Gets or Sets ArmId
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.RobotMoveToActionPointJointsData.JointsId">
@@ -43072,7 +44070,7 @@
             </member>
         <member name="T:IO.Swagger.Model.HandTeachingModeData">
              <summary>
-             Data(robot_id: str, enabled: bool)
+             Data(robot_id: str, enabled: bool, arm_id: Union[str, NoneType] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.HandTeachingModeData.#ctor">
@@ -43080,12 +44078,18 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.HandTeachingModeData" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.HandTeachingModeData.#ctor(System.Boolean,System.String)">
+        <member name="M:IO.Swagger.Model.HandTeachingModeData.#ctor(System.String,System.Boolean,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.HandTeachingModeData" /> class.
              </summary>
+             <param name="armId">armId.</param>
              <param name="enabled">enabled (required).</param>
              <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.HandTeachingModeData.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.HandTeachingModeData.Enabled">
              <summary>
@@ -43461,6 +44465,72 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.CameraColorParametersRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.AddApUsingRobotRequestAllOf">
+             <summary>
+             AddApUsingRobotRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.#ctor(IO.Swagger.Model.AddApUsingRobotRequestArgs,System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddApUsingRobotRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddApUsingRobotRequestAllOf.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.Equals(IO.Swagger.Model.AddApUsingRobotRequestAllOf)">
+             <summary>
+             Returns true if AddApUsingRobotRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of AddApUsingRobotRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddApUsingRobotRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
