@@ -9,7 +9,8 @@ public class RobotSelectorDialog : Dialog {
 
     public DropdownRobots DropdownRobots;
     public DropdownEndEffectors DropdownEndEffectors;
-    private string robotId, eeId;
+    public DropdownArms DropdownArms;
+    private string robotId, eeId, armId;
 
     private UnityAction _closeCallback;
 
@@ -52,15 +53,37 @@ public class RobotSelectorDialog : Dialog {
         try {
             IRobot robot = SceneManager.Instance.GetRobotByName(robotName);
             robotId = robot.GetId();
-            await DropdownEndEffectors.Init(robot.GetId(), SelectEE);
             if (!string.IsNullOrEmpty(DropdownEndEffectors.Dropdown.GetValue().ToString())) {
                 SelectEE(DropdownEndEffectors.Dropdown.GetValue().ToString());
             }
+            await DropdownArms.Init(robotId, SelectArm);
+            SelectArm(DropdownArms.Dropdown.GetValue().ToString());
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to select robot", "Robot " + robotName + " does not exists.");
             return;
         }
         
+    }
+
+    public async void SelectArm(string arm_id) {
+
+        string robotId;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(DropdownRobots.Dropdown.GetValue().ToString());
+            if (string.IsNullOrEmpty(robotId)) {
+                Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + DropdownRobots.Dropdown.GetValue().ToString() + "does not exists");
+                return;
+            }
+            armId = arm_id;
+            await DropdownEndEffectors.Init(robotId, arm_id, SelectEE);
+            SelectEE(DropdownEndEffectors.Dropdown.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+
+        }
+        
+
     }
 
     public bool Opened() {
@@ -73,8 +96,9 @@ public class RobotSelectorDialog : Dialog {
 
     public async override void Confirm() {
         PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotId", robotId);
+        PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotArmId", armId);
         PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedEndEffectorId", eeId);
-        await SceneManager.Instance.SelectRobotAndEE(robotId, eeId);
+        await SceneManager.Instance.SelectRobotAndEE(robotId, armId, eeId);
         Close();
     }
 

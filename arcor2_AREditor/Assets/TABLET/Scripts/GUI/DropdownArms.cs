@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
@@ -6,11 +5,12 @@ using Base;
 using UnityEngine.Events;
 using System.Threading.Tasks;
 
-public class DropdownEndEffectors : MonoBehaviour {
+public class DropdownArms : MonoBehaviour
+{
     public DropdownParameter Dropdown;
 
 
-    public async Task Init(string robotId, string arm_id, UnityAction<string> onChangeCallback) {
+    public async Task Init(string robotId, UnityAction<string> onChangeCallback) {
         if (!SceneManager.Instance.SceneStarted || string.IsNullOrEmpty(robotId)) {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
@@ -19,13 +19,18 @@ public class DropdownEndEffectors : MonoBehaviour {
         try {
             IRobot robot = SceneManager.Instance.GetRobot(robotId);
             Dropdown.Dropdown.dropdownItems.Clear();
-            PutData(await robot.GetEndEffectorIds(arm_id), onChangeCallback);
+            List<string> arms = await robot.GetArmsIds();
+            PutData(arms, onChangeCallback);
+            if (arms.Count == 1)
+                gameObject.SetActive(false);
+            else
+                gameObject.SetActive(true);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");
         }
-        
-        
+
+
     }
 
     public void PutData(List<string> data, UnityAction<string> onChangeCallback) {

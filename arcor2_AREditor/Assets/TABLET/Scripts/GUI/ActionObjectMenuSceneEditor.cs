@@ -13,6 +13,7 @@ using System.IO;
 public class ActionObjectMenuSceneEditor : ActionObjectMenu
 {
     public DropdownParameter RobotsList, EndEffectorList, PivotList;
+    public DropdownArms DropdownArms;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
@@ -126,7 +127,6 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
     /// </summary>
     /// <param name="robot_name"></param>
     private async void OnRobotChanged(string robot_name) {
-        EndEffectorList.Dropdown.dropdownItems.Clear();
         string robotId = null;
         try {
             robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
@@ -136,9 +136,26 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         }
         if (string.IsNullOrEmpty(robotId)) {
             Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-
+            return;
         }
-        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnEEChanged);
+        await DropdownArms.Init(robotId, OnRobotArmChanged);
+        OnRobotArmChanged(DropdownArms.Dropdown.GetValue().ToString());
+    }
+
+    private async void OnRobotArmChanged(string arm_id) {
+        string robotId = null;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+            
+        }
+        if (string.IsNullOrEmpty(robotId)) {
+            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+            return;
+        }
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, OnEEChanged);
         UpdateModelOnEE();
     }
 
@@ -160,8 +177,15 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         }
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
         IRobot robot = SceneManager.Instance.GetRobotByName((string) RobotsList.GetValue());
-        await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
-                robot.GetId(), (string) EndEffectorList.GetValue(), pivot);
+        string armId = null;
+        if (robot.MultiArm())
+            armId = DropdownArms.Dropdown.GetValue().ToString();
+        try {
+            await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(CurrentObject.Data.Id,
+                    robot.GetId(), (string) EndEffectorList.GetValue(), pivot, armId);
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to update object position", ex.Message);
+        }
 
     }
 
@@ -188,9 +212,14 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             return;
         }
         try {
+            IRobot robot = SceneManager.Instance.GetRobot((string) RobotsList.GetValue());
+            string armId = null;
+            if (robot.MultiArm())
+                armId = DropdownArms.Dropdown.GetValue().ToString();
             await WebsocketManager.Instance.StartObjectFocusing(CurrentObject.Data.Id,
                 (string) RobotsList.GetValue(),
-                (string) EndEffectorList.GetValue());
+                (string) EndEffectorList.GetValue(),
+                armId);
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;

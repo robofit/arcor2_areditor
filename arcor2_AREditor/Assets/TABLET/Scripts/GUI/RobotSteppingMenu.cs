@@ -92,7 +92,11 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public async void SetPerpendicular() {
         try {
             SetInteractivityOfRobotBtns(false, "Robot is already moving");
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe, armId);
         } catch (RequestFailedException ex) {
             SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
@@ -161,7 +165,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             return;
         HandBtnRedBackground.enabled = true;
         try {
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to enable hand teaching mode", ex.Message);
         }
@@ -172,7 +179,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             return;
         HandBtnRedBackground.enabled = false;
         try {
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to disable hand teaching mode", ex.Message);
         }
@@ -229,9 +239,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
                 break;
         }
         try {
+
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
             await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
-            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
+            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
             SetInteractivityOfRobotBtns(true);

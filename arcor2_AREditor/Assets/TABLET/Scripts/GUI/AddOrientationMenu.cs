@@ -11,6 +11,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
 
     public TMPro.TMP_InputField NameInput;// QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
     public DropdownParameter RobotsList, EndEffectorList;
+    public DropdownArms DropdownArms;
     public GameObject LiteModeBlock, ManualModeBlock;
     public bool ManualMode;
 
@@ -47,19 +48,34 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     /// </summary>
     /// <param name="robot_name">Newly selected robot's name</param>
     private async void OnRobotChanged(string robot_name) {
-        EndEffectorList.Dropdown.dropdownItems.Clear();
-
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            await DropdownArms.Init(robotId, OnRobotArmChanged);
+            OnRobotArmChanged(DropdownArms.Dropdown.GetValue().ToString());
         }
         catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
+            Notifications.Instance.ShowNotification("Failed to load robot arms", ex.Message);
         }
 
     }
-    
+
+    private async void OnRobotArmChanged(string arm_id) {
+        string robotId;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+
+        }
+        if (string.IsNullOrEmpty(robotId)) {
+            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+            return;
+        }
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, null);
+    }
+
     public async void ValidateFields() {
         bool interactable = true;
         name = NameInput.text;
@@ -106,7 +122,11 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
             } else { //using robot
 
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name);
+                IRobot robot = SceneManager.Instance.GetRobot(robotId);
+                string armId = null;
+                if (robot.MultiArm())
+                    armId = DropdownArms.Dropdown.GetValue().ToString();
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name, armId);
             }
             Close(); //close add menu
             Notifications.Instance.ShowToastMessage("Orientation added successfully");

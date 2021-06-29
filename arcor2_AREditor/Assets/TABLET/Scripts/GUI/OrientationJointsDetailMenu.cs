@@ -34,6 +34,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     public DropdownParameter RobotsList, EndEffectorList; //only for orientation
+    public DropdownArms DropdownArms;
 
     public GameObject JointsDynamicList;
 
@@ -139,12 +140,28 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
-
+            await DropdownArms.Init(robotId, OnRobotArmChanged);
+            OnRobotArmChanged(DropdownArms.Dropdown.GetValue().ToString());
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
+    }
+
+    private async void OnRobotArmChanged(string arm_id) {
+        string robotId;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+
+        }
+        if (string.IsNullOrEmpty(robotId)) {
+            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+            return;
+        }
+        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, null);
     }
 
     /// <summary>
@@ -231,7 +248,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         {
             try {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id);
+                IRobot robot = SceneManager.Instance.GetRobot(robotId);
+                string armId = null;
+                if (robot.MultiArm())
+                    armId = DropdownArms.Dropdown.GetValue().ToString();
+                await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(robotId, (string) EndEffectorList.GetValue(), orientation.Id, armId);
                 Notifications.Instance.ShowToastMessage("Orientation updated successfully");
             } catch (ItemNotFoundException ex) {
                 Debug.LogError(ex);
@@ -321,9 +342,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         try {
             if (isOrientationDetail) {
                 string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id, (bool) SafeMove.GetValue());
+                IRobot robot = SceneManager.Instance.GetRobot(robotId);
+                string armId = null;
+                if (robot.MultiArm())
+                    armId = DropdownArms.Dropdown.GetValue().ToString();
+                await WebsocketManager.Instance.MoveToActionPointOrientation(robotId, (string) EndEffectorList.GetValue(), (decimal) SpeedSlider.value, orientation.Id, (bool) SafeMove.GetValue(), armId);
             } else {
-                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id, (bool) SafeMove.GetValue());
+                await WebsocketManager.Instance.MoveToActionPointJoints(joints.RobotId, (decimal) SpeedSlider.value, joints.Id, (bool) SafeMove.GetValue(), joints.ArmId);
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);

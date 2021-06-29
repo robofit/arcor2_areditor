@@ -9,7 +9,9 @@ public interface IRobot
 
     string GetId();
 
-    Task<List<string>> GetEndEffectorIds();
+    Task<List<string>> GetEndEffectorIds(string arm_id = null);
+
+    Task<List<string>> GetArmsIds();
 
     Task<RobotEE> GetEE(string ee_id);
 
@@ -26,5 +28,7 @@ public interface IRobot
     void SetGrey(bool grey, bool force = false);
 
     Transform GetTransform();
+
+    bool MultiArm();
 
 }

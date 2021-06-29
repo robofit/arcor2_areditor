@@ -271,16 +271,22 @@ public class TransformMenu : Singleton<TransformMenu> {
             cameraPrev = Camera.main.transform.position;
             handHolding = true;
         } else {
-            WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            _ = WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true, armId);
         }
     }
 
     public void HoldReleased() {
         if (RobotTabletBtn.CurrentState == "tablet") {
             handHolding = false;
+        } else {
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            _ = WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false, armId);
         }
-        else
-            WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false);
     }
 
     
@@ -359,13 +365,17 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public async void SubmitPosition() {
+        IRobot robot = SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
+        string armId = null;
+        if (robot.MultiArm())
+            armId = SceneManager.Instance.SelectedArmId;
         if (InteractiveObject is ActionPoint3D actionPoint) {
             try {
                 if (RobotTabletBtn.CurrentState == "tablet") {
                     //await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
                     await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
                 } else {
-                    await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName());
+                    await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
                 }
                 ResetPosition();
             } catch (RequestFailedException e) {
@@ -377,7 +387,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                     await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
                                                                                                                                 orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * model.transform.rotation   /*InteractiveObject.transform.localRotation * model.transform.localRotation*/))));
                 else {
-                    await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top);
+                    await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top, armId);
                 }
                 ResetPosition();
             } catch (RequestFailedException e) {

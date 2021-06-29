@@ -361,9 +361,13 @@ public class LeftMenuProject : LeftMenu
     }
 
     public void AddActionPointUsingRobotClick() {
+        string armId = null;
+        if (SceneManager.Instance.SelectedRobot.MultiArm())
+            armId = SceneManager.Instance.SelectedArmId;
         CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
-            SceneManager.Instance.SelectedEndEffector.GetName());
+            SceneManager.Instance.SelectedEndEffector.GetName(),
+            armId);
     }
 
     /// <summary>
@@ -383,7 +387,7 @@ public class LeftMenuProject : LeftMenu
     }
 
 
-    private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
+    private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId, string armId) {
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
             Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
             return;
@@ -391,7 +395,7 @@ public class LeftMenuProject : LeftMenu
 
         GameManager.Instance.ShowLoadingScreen("Adding AP...");
 
-        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback);
+        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback, armId);
         selectAPNameWhenCreated = name;
     }
 

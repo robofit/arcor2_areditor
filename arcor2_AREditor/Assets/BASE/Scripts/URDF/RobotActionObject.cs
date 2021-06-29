@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
@@ -40,7 +41,7 @@ namespace Base {
 
         private bool robotVisible = false;
 
-        private List<RobotEE> EndEffectors = new List<RobotEE>();
+        private Dictionary<string, List<RobotEE>> EndEffectors = new Dictionary<string, List<RobotEE>>();
         
         private GameObject RobotPlaceholder;
 
@@ -60,6 +61,8 @@ namespace Base {
         private bool loadingEndEffectors = false;
 
         private bool isGreyColorForced;
+
+        public RobotMeta RobotMeta;
 
         protected override void Start() {
             base.Start();
@@ -143,19 +146,23 @@ namespace Base {
         }
 
         public void ShowRobotEE() {
-            foreach (RobotEE ee in EndEffectors) {
-                ee.gameObject.SetActive(true);
-            }            
+            foreach (List<RobotEE> eeList in EndEffectors.Values)
+                foreach (RobotEE ee in eeList) {
+                    ee.gameObject.SetActive(true);
+                }            
         }
 
         public void HideRobotEE() {
-            foreach (RobotEE ee in EndEffectors) {
-                try {
-                    ee.gameObject.SetActive(false);
-                } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException)  {
-                    continue;
-                }                    
-            }            
+            foreach (List<RobotEE> eeList in EndEffectors.Values) {
+                foreach (RobotEE ee in eeList) {
+                    try {
+                        ee.gameObject.SetActive(false);
+                    } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException) {
+                        continue;
+                    }
+                }
+                               
+            }           
         }
 
         public async Task DisableVisualisationOfEE() {
@@ -186,19 +193,24 @@ namespace Base {
             base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
 
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                // Get the robot model, if it returns null, the robot will be loading itself
-                RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
-                if (RobotModel != null) {
-                    RobotModelLoaded();
-                } else {
-                    // Robot is not loaded yet, let's wait for it to be loaded
-                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                    modelLoading = true;
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta)) {
+                RobotMeta = robotMeta;
+                if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+                    // Get the robot model, if it returns null, the robot will be loading itself
+                    RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
+                
+                    if (RobotModel != null) {
+                        RobotModelLoaded();
+                    } else {
+                        // Robot is not loaded yet, let's wait for it to be loaded
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        modelLoading = true;
+                    }
                 }
             }
 
             ResourcesLoaded = false;
+            
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
@@ -418,22 +430,29 @@ namespace Base {
         }
 
 
-        public async Task<List<string>> GetEndEffectorIds() {
+        public async Task<List<string>> GetEndEffectorIds(string arm_id = null) {
             await LoadResources();
             List<string> result = new List<string>();
-            foreach (RobotEE ee in EndEffectors)
-                result.Add(ee.EEId);
+            if (string.IsNullOrEmpty(arm_id)) {
+                foreach (List<RobotEE> eeList in EndEffectors.Values) {
+                    foreach (RobotEE ee in eeList) {
+                        result.Add(ee.EEId);
+                    }
+                }
+            } else if (EndEffectors.ContainsKey(arm_id)) {
+                foreach (RobotEE ee in EndEffectors[arm_id]) {
+                    result.Add(ee.EEId);
+                }
+            } else {
+                throw new KeyNotFoundException($"Robot {GetName()} does not contain arm {arm_id}");
+            }
+            
             return result;
-        }
-
-        public async Task<List<RobotEE>> GetEndEffectors() {
-            await LoadResources();
-            return EndEffectors;            
         }
 
         private async Task LoadResources() {
             if (!ResourcesLoaded) {
-                ResourcesLoaded = await LoadEndEffectors();
+                ResourcesLoaded = await LoadEndEffectorsAndArms();
             }
         }
 
@@ -452,9 +471,8 @@ namespace Base {
 
         }
 
-        public async Task<bool> LoadEndEffectors() {
+        public async Task<bool> LoadEndEffectorsAndArms() {
             // TODO: maybe wrong condition
-            Debug.LogError(GameManager.Instance.GetGameState());
             if (!SceneManager.Instance.Valid) {
                 Debug.LogError("SceneManager instance not valid");
                 return false;
@@ -467,14 +485,29 @@ namespace Base {
             }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
-                List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
-                foreach (string eeId in endEffectors) {
-                    
-                    RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                    ee.InitEE(this, eeId);
-                    ee.gameObject.SetActive(false);
-                    EndEffectors.Add(ee);
+                Dictionary<string, List<string>> endEffectors = new Dictionary<string, List<string>>();
+                
+                if (RobotMeta.MultiArm) {
+                    List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
+                    foreach (string arm in arms) {
+                        endEffectors[arm] = await WebsocketManager.Instance.GetEndEffectors(Data.Id, arm);
+                    }
+                } else {
+                    endEffectors["default"] = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 }
+                foreach (KeyValuePair<string, List<string>> eeList in endEffectors) {
+                    foreach (string eeId in eeList.Value) {
+
+                        RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                        ee.InitEE(this, eeId);
+                        ee.gameObject.SetActive(false);
+                        if (!EndEffectors.ContainsKey(eeList.Key)) {
+                            EndEffectors.Add(eeList.Key, new List<RobotEE>());
+                        }
+                        EndEffectors[eeList.Key].Add(ee);
+                    }
+                }
+                
                 return true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
@@ -561,9 +594,10 @@ namespace Base {
             if (!ResourcesLoaded) {
                 await LoadResources();
             }
-            foreach (RobotEE ee in EndEffectors)
-                if (ee.EEId == ee_id)
-                    return ee;
+            foreach (List<RobotEE> eeList in EndEffectors.Values)
+                foreach (RobotEE ee in eeList)
+                    if (ee.EEId == ee_id)
+                        return ee;
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
@@ -716,7 +750,10 @@ namespace Base {
 
         public async Task<List<RobotEE>> GetAllEE() {
             await LoadResources();
-            return EndEffectors;
+            List<RobotEE> eeList = new List<RobotEE>();
+            foreach (List<RobotEE> ee in EndEffectors.Values)
+                eeList.AddRange(ee);
+            return eeList;
         }
 
         public override string GetObjectTypeName() {
@@ -742,6 +779,15 @@ namespace Base {
             base.OnObjectUnlocked();
             ActionObjectName.text = GetName();
             LockIcon.SetActive(false);
+        }
+
+        public async Task<List<string>> GetArmsIds() {
+            await LoadResources();
+            return EndEffectors.Keys.ToList();
+        }
+
+        public bool MultiArm() {
+            return RobotMeta.MultiArm;
         }
     }
 }
