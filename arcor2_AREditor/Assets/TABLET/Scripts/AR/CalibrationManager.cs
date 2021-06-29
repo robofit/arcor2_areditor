@@ -338,7 +338,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
         }
 
         GameManager.Instance.SceneSetActive(true);
@@ -382,7 +382,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             UsingCloudAnchors = true;
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
             GameManager.Instance.SceneSetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
@@ -931,7 +931,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             //Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
         }
 
         GameManager.Instance.SceneSetActive(true);
