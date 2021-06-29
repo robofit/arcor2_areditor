@@ -133,6 +133,8 @@ namespace Base {
 
         public IRobot SelectedRobot;
 
+        public string SelectedArmId;
+
         public RobotEE SelectedEndEffector;
 
         public string SelectCreatedActionObject;
@@ -322,6 +324,7 @@ namespace Base {
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
                     SelectedRobot = null;
+                    SelectedArmId = null;
                     SelectedEndEffector = null;
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
                     break;
@@ -339,21 +342,24 @@ namespace Base {
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
             string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+            SelectedArmId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotArmId", null);
             string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
-            await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
+            await SelectRobotAndEE(selectedRobotID, SelectedArmId, selectedEndEffectorId);
             GameManager.Instance.HideLoadingScreen();
             OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
         }
 
-        public async Task SelectRobotAndEE(string robotId, string eeId) {
+        public async Task SelectRobotAndEE(string robotId, string armId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
+                    SelectedArmId = armId;
                     SelectedRobot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
                             SelectedEndEffector = await(SelectedRobot.GetEE(eeId));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                            PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
                             Debug.LogError(ex);
                         }
                     }
@@ -370,7 +376,7 @@ namespace Base {
         }
 
         public bool IsRobotAndEESelected() {
-            return IsRobotSelected() && SelectedEndEffector != null;
+            return IsRobotSelected() && SelectedEndEffector != null && !string.IsNullOrEmpty(SelectedArmId);
         }
 
         /// <summary>

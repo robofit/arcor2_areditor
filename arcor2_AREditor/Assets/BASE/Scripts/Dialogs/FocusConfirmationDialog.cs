@@ -6,7 +6,7 @@ using Base;
 
 public class FocusConfirmationDialog : MonoBehaviour
 {
-    public string RobotName, EndEffectorId, OrientationId, JointsId, OrientationName, ActionPointId, ActionPointName;
+    public string RobotName, ArmId, EndEffectorId, OrientationId, JointsId, OrientationName, ActionPointId, ActionPointName;
     public bool UpdatePosition;
     public TMPro.TMP_Text SettingsText;
     public ModalWindowManager WindowManager;
@@ -23,6 +23,7 @@ public class FocusConfirmationDialog : MonoBehaviour
         }
 
         SettingsText.text = "Robot: " + RobotName +
+            "\nArm: " + ArmId +
             "\nEnd effector: " + EndEffectorId +
             "\nOrientation: " + OrientationName +
             "\nAction point: " + ActionPointName +
@@ -32,10 +33,13 @@ public class FocusConfirmationDialog : MonoBehaviour
 
     public async void UpdatePositionOrientation() {
         try {
-           if (UpdatePosition)
-                Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId);
-
-            await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(RobotId, EndEffectorId, OrientationId);
+            IRobot robot = SceneManager.Instance.GetRobot(RobotId);
+            if (!robot.MultiArm())
+                ArmId = null;
+            if (UpdatePosition)
+                Base.GameManager.Instance.UpdateActionPointPositionUsingRobot(ActionPointId, RobotId, EndEffectorId, ArmId);
+            
+            await WebsocketManager.Instance.UpdateActionPointOrientationUsingRobot(RobotId, EndEffectorId, OrientationId, ArmId);
             await WebsocketManager.Instance.UpdateActionPointJointsUsingRobot(JointsId);
             
             GetComponent<ModalWindowManager>().CloseWindow();

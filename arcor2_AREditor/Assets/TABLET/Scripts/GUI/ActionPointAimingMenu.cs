@@ -31,6 +31,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
 
+    public DropdownArms PositionDropdownArms, JointsDropdownArms;
+
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
     public ConfirmationDialog ConfirmationDialog => confirmationDialog;
@@ -240,17 +242,34 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private async void OnRobotChanged(string robot_name) {
-        PositionEndEffectorList.Dropdown.dropdownItems.Clear();
-
+        
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
+            //await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnRobotArmChanged);
+            await PositionDropdownArms.Init(robotId, OnRobotArmChanged);
 
+            OnRobotArmChanged(PositionDropdownArms.Dropdown.GetValue().ToString());
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
         }
 
+    }
+
+    private async void OnRobotArmChanged(string arm_id) {
+        string robotId = null;
+        try {
+            robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.GetValue().ToString());
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+            robotId = null;
+
+        }
+        if (string.IsNullOrEmpty(robotId)) {
+            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + PositionRobotsList.GetValue().ToString() + "does not exists");
+            return;
+        }
+        await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, OnRobotArmChanged);
     }
 
     public void ShowUpdatePositionConfirmationDialog() {
@@ -271,8 +290,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             } else {
                 string robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.Dropdown.selectedText.text);
                 string endEffectorId = PositionEndEffectorList.Dropdown.selectedText.text;
+                IRobot robot = SceneManager.Instance.GetRobot(robotId);
+                string armId = null;
+                if (robot.MultiArm())
+                    armId = PositionDropdownArms.Dropdown.GetValue().ToString();
 
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId, armId);
                 confirmationDialog.Close();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
@@ -416,7 +439,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateJointsDynamicList(string robotName) {
+    public async void UpdateJointsDynamicList(string robotName) {
         if (robotName == null)
             return;
 
@@ -433,6 +456,8 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
                 CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint), joint.IsValid);
             }
+            await JointsDropdownArms.Init(robotId, null);
+            OnRobotArmChanged(JointsDropdownArms.Dropdown.GetValue().ToString());
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to get robot's ID", "");

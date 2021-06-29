@@ -1390,10 +1390,10 @@ namespace Base {
         /// </summary>
         public void ExitApp() => Application.Quit();
 
-        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string endEffectorId) {
+        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string arm_id, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId, arm_id);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }

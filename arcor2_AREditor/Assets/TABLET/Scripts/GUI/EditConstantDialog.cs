@@ -189,7 +189,7 @@ public class EditConstantDialog : Dialog
 
     public override async void Close() {
         base.Close();
-        MenuManager.Instance.LeftMenuProject.UpdateVisibility(true);
+        MenuManager.Instance.LeftMenuProject.UpdateVisibility();
         dropdown.Dropdown.dropdownItems.Clear();
         constant = null;
         onCloseCallback?.Invoke();

@@ -62,6 +62,8 @@ namespace Base {
 
         private bool isGreyColorForced;
 
+        public RobotMeta RobotMeta;
+
         protected override void Start() {
             base.Start();
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
@@ -191,19 +193,24 @@ namespace Base {
             base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
 
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                // Get the robot model, if it returns null, the robot will be loading itself
-                RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
-                if (RobotModel != null) {
-                    RobotModelLoaded();
-                } else {
-                    // Robot is not loaded yet, let's wait for it to be loaded
-                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                    modelLoading = true;
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta)) {
+                RobotMeta = robotMeta;
+                if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+                    // Get the robot model, if it returns null, the robot will be loading itself
+                    RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
+                
+                    if (RobotModel != null) {
+                        RobotModelLoaded();
+                    } else {
+                        // Robot is not loaded yet, let's wait for it to be loaded
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        modelLoading = true;
+                    }
                 }
             }
 
             ResourcesLoaded = false;
+            
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
@@ -423,14 +430,23 @@ namespace Base {
         }
 
 
-        public async Task<List<string>> GetEndEffectorIds() {
+        public async Task<List<string>> GetEndEffectorIds(string arm_id = null) {
             await LoadResources();
             List<string> result = new List<string>();
-            foreach (List<RobotEE> eeList in EndEffectors.Values) {
-                foreach (RobotEE ee in eeList) {
+            if (string.IsNullOrEmpty(arm_id)) {
+                foreach (List<RobotEE> eeList in EndEffectors.Values) {
+                    foreach (RobotEE ee in eeList) {
+                        result.Add(ee.EEId);
+                    }
+                }
+            } else if (EndEffectors.ContainsKey(arm_id)) {
+                foreach (RobotEE ee in EndEffectors[arm_id]) {
                     result.Add(ee.EEId);
                 }
+            } else {
+                throw new KeyNotFoundException($"Robot {GetName()} does not contain arm {arm_id}");
             }
+            
             return result;
         }
 
@@ -471,7 +487,7 @@ namespace Base {
             try {
                 Dictionary<string, List<string>> endEffectors = new Dictionary<string, List<string>>();
                 List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
-                if (arms.Count > 0) {
+                if (RobotMeta.MultiArm) {
                     foreach (string arm in arms) {
                         endEffectors[arm] = await WebsocketManager.Instance.GetEndEffectors(Data.Id, arm);
                     }
@@ -767,6 +783,10 @@ namespace Base {
         public async Task<List<string>> GetArmsIds() {
             await LoadResources();
             return EndEffectors.Keys.ToList();
+        }
+
+        public bool MultiArm() {
+            return RobotMeta.MultiArm;
         }
     }
 }

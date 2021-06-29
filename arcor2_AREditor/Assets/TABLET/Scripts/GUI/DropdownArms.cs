@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
@@ -6,7 +5,8 @@ using Base;
 using UnityEngine.Events;
 using System.Threading.Tasks;
 
-public class DropdonwArms : MonoBehaviour {
+public class DropdownArms : MonoBehaviour
+{
     public DropdownParameter Dropdown;
 
 
@@ -23,6 +23,8 @@ public class DropdonwArms : MonoBehaviour {
             PutData(arms, onChangeCallback);
             if (arms.Count == 1)
                 gameObject.SetActive(false);
+            else
+                gameObject.SetActive(true);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");

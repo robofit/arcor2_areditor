@@ -12,6 +12,7 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
     public TMPro.TMP_InputField NameInput;
     public DropdownParameter RobotsList;
+    public DropdownArms DropdownArms;
 
 
     [SerializeField]
@@ -32,9 +33,26 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
 
-        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init((string x) =>{ }, false);
-
+        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
+        OnRobotChanged(RobotsList.GetValue().ToString());
         ValidateFields();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="robot_name"></param>
+    private async void OnRobotChanged(string robot_name) {
+        try {
+            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
+            if (string.IsNullOrEmpty(robotId)) {
+                Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
+                return;
+            }
+            await DropdownArms.Init(robotId, null);
+        } catch (ItemNotFoundException ex) {
+            Debug.LogError(ex);
+        }
     }
 
     public async void ValidateFields() {
@@ -74,7 +92,10 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
         Debug.Assert(CurrentActionPoint != null);
         try {
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
+            string armId = null;
+            if (robot.MultiArm())
+                armId = DropdownArms.Dropdown.GetValue().ToString();
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name, armId);
             Notifications.Instance.ShowToastMessage("Joints added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);

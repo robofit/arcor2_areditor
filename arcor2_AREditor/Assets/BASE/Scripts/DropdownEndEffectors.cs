@@ -10,7 +10,7 @@ public class DropdownEndEffectors : MonoBehaviour {
     public DropdownParameter Dropdown;
 
 
-    public async Task Init(string robotId, UnityAction<string> onChangeCallback) {
+    public async Task Init(string robotId, string arm_id, UnityAction<string> onChangeCallback) {
         if (!SceneManager.Instance.SceneStarted || string.IsNullOrEmpty(robotId)) {
             Dropdown.Dropdown.dropdownItems.Clear();
             gameObject.SetActive(false);
@@ -19,7 +19,7 @@ public class DropdownEndEffectors : MonoBehaviour {
         try {
             IRobot robot = SceneManager.Instance.GetRobot(robotId);
             Dropdown.Dropdown.dropdownItems.Clear();
-            PutData(await robot.GetEndEffectorIds(), onChangeCallback);
+            PutData(await robot.GetEndEffectorIds(arm_id), onChangeCallback);
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");
