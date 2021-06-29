@@ -338,7 +338,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
         }
 
         GameManager.Instance.SceneSetActive(true);
@@ -382,7 +382,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             UsingCloudAnchors = true;
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
             GameManager.Instance.SceneSetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
@@ -480,24 +480,26 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-    public void ActivateCalibrationElements(bool active) {        
-        if (worldAnchorVis == null) {
-            foreach (Transform child in WorldAnchorLocal.transform) {
-                if (child.tag == "world_anchor") {
-                    worldAnchorVis = child.gameObject;
-                    break;
+    public void ActivateCalibrationElements(bool active) {
+        if (Calibrated) {
+            if (worldAnchorVis == null) {
+                foreach (Transform child in WorldAnchorLocal.transform) {
+                    if (child.tag == "world_anchor") {
+                        worldAnchorVis = child.gameObject;
+                        break;
+                    }
                 }
             }
-        }
-        
-        if (worldAnchorVis != null) {
-            worldAnchorVis.SetActive(active);
-            WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(active);
 
-            // If calib cube should be hidden, check if it is not selected, otherwise deselect it from selector menu
-            if (!active) {
-                if (WorldAnchorLocal.GetComponent<InteractiveObject>() == SelectorMenu.Instance.GetSelectedObject()) {
-                    SelectorMenu.Instance.DeselectObject();
+            if (worldAnchorVis != null) {
+                worldAnchorVis.SetActive(active);
+                WorldAnchorLocal.GetComponent<InteractiveObject>().Enable(active);
+
+                // If calib cube should be hidden, check if it is not selected, otherwise deselect it from selector menu
+                if (!active) {
+                    if (WorldAnchorLocal.GetComponent<InteractiveObject>() == SelectorMenu.Instance.GetSelectedObject()) {
+                        SelectorMenu.Instance.DeselectObject();
+                    }
                 }
             }
         }
@@ -931,7 +933,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             //Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(ControlBoxManager.Instance.CalibrationElementsToggle.isOn);
+            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
         }
 
         GameManager.Instance.SceneSetActive(true);

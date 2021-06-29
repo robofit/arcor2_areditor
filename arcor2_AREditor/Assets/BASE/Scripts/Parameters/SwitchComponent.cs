@@ -53,6 +53,13 @@ public class SwitchComponent : MonoBehaviour, IParameter
         // switch gets updated upon onEnable event
         Switch.gameObject.SetActive(false);
         Switch.gameObject.SetActive(true);
+
+        // manually invoke switch methods, because they wont be invoked just by itself
+        if (Switch.isOn) {
+            Switch.OnEvents.Invoke();
+        } else {
+            Switch.OffEvents.Invoke();
+        }
     }
 
     public void SetDarkMode(bool dark) {

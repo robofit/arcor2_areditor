@@ -827,7 +827,6 @@ namespace Base {
                 actionObject.SetVisibility(value);
             }
             PlayerPrefsHelper.SaveFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), value);
-            Debug.LogError("save float " + value.ToString());
             ActionObjectsVisibility = value;
         }
 
