@@ -255,8 +255,6 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public void UpdateVisibility(bool visible, bool force = false) {
         isVisibilityForced = force;
-
-        Debug.LogError($"update visibility left menu project {visible}, {force}");
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;

@@ -486,8 +486,9 @@ namespace Base {
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
                 Dictionary<string, List<string>> endEffectors = new Dictionary<string, List<string>>();
-                List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
+                
                 if (RobotMeta.MultiArm) {
+                    List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
                     foreach (string arm in arms) {
                         endEffectors[arm] = await WebsocketManager.Instance.GetEndEffectors(Data.Id, arm);
                     }

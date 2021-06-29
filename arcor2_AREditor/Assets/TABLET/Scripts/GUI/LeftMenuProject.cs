@@ -412,13 +412,10 @@ public class LeftMenuProject : LeftMenu
 
 
     public override void UpdateVisibility() {
-        Debug.LogError("update visibility left menu project");
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
             MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            Debug.LogError("true");
             UpdateVisibility(true);
         } else {
-            Debug.LogError("false");
             UpdateVisibility(false);
         }
     }
