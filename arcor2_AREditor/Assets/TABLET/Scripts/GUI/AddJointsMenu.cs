@@ -6,8 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(SimpleSideMenu))]
-public class AddJointsMenu : MonoBehaviour, IMenu {
+public class AddJointsMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;
@@ -20,14 +19,6 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
 
     [SerializeField]
     private TooltipContent buttonTooltip;
-
-    private SimpleSideMenu SideMenu;
-
-
-    private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
-    }
-
 
     public async void UpdateMenu() {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
@@ -114,10 +105,10 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
 
         UpdateMenu();
-        SideMenu.Open();
+        gameObject.SetActive(true);
     }
 
     public void Close() {
-        SideMenu.Close();
+        gameObject.SetActive(false);
     }
 }

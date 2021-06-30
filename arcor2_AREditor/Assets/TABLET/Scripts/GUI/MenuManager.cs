@@ -7,8 +7,7 @@ using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
     public SimpleSideMenu ActionObjectMenuSceneEditor, ActionPointMenu, MainMenu, NewObjectTypeMenu,
-        ActionObjectMenuProjectEditor, EditorSettingsMenu, ActionPointAimingMenu, NotificationMenu,
-        AddOrientationMenu, AddJointsMenu, OrientationJointsDetailMenu;
+        ActionObjectMenuProjectEditor, NotificationMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
@@ -39,25 +38,15 @@ public class MenuManager : Base.Singleton<MenuManager> {
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
-            NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
-            AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open ||
-            AddJointsMenu.CurrentState == SimpleSideMenu.State.Open ||
-            OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open;
+            NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }
     public bool CheckIsAnyRightMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             ActionPointMenu.CurrentState == SimpleSideMenu.State.Open ||
             NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
-            EditorSettingsMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
-            NotificationMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open ||
-            AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open ||
-            AddJointsMenu.CurrentState == SimpleSideMenu.State.Open ||
-            OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open;
+            NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }
 
 
@@ -79,18 +68,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         if (ActionPointMenu.CurrentState == SimpleSideMenu.State.Open) {
             ActionPointMenu.Close();
         }
-        if (ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open) {
-            ActionPointAimingMenu.Close();
-        }
-        if (AddOrientationMenu.CurrentState == SimpleSideMenu.State.Open) {
-            AddOrientationMenu.Close();
-        }
-        if (AddJointsMenu.CurrentState == SimpleSideMenu.State.Open) {
-            AddJointsMenu.Close();
-        }
-        if (OrientationJointsDetailMenu.CurrentState == SimpleSideMenu.State.Open) {
-            OrientationJointsDetailMenu.Close();
-        }
         if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
             MainMenu.Close();
         }
@@ -105,10 +82,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         ActionObjectMenuSceneEditor.gameObject.SetActive(false);
         ActionPointMenu.gameObject.SetActive(false);
         ActionObjectMenuProjectEditor.gameObject.SetActive(false);
-        ActionPointAimingMenu.gameObject.SetActive(false);
-        AddOrientationMenu.gameObject.SetActive(false);
-        AddJointsMenu.gameObject.SetActive(false);
-        OrientationJointsDetailMenu.gameObject.SetActive(false);
     }
 
     public void EnableAllWindows() {
@@ -116,10 +89,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
         ActionObjectMenuSceneEditor.gameObject.SetActive(true);
         ActionPointMenu.gameObject.SetActive(true);
         ActionObjectMenuProjectEditor.gameObject.SetActive(true);
-        ActionPointAimingMenu.gameObject.SetActive(true);
-        AddOrientationMenu.gameObject.SetActive(true);
-        AddJointsMenu.gameObject.SetActive(true);
-        OrientationJointsDetailMenu.gameObject.SetActive(true);
     }
 
     public void HideMenu() {
@@ -149,10 +118,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     menu.GetComponent<ActionObjectMenuSceneEditor>().HideMenu();
                 } else if (menu == ActionObjectMenuProjectEditor) {
                     menu.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
-                } else if (menu == ActionPointAimingMenu) {
-                    menu.GetComponent<ActionPointAimingMenu>().Close();
-                } else if (menu == OrientationJointsDetailMenu) {
-                    menu.GetComponent<OrientationJointsDetailMenu>().HideMenu();
                 }
 
                 break;

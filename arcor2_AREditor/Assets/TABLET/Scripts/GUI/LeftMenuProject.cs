@@ -14,7 +14,7 @@ public class LeftMenuProject : LeftMenu
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
-        AddActionPointButton2, CopyButton;
+        AddActionPointButton2, CopyButton, ActionPointAimingMenuButton;
 
     public GameObject ActionPicker;
     public InputDialog InputDialog;
@@ -95,6 +95,7 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton.SetInteractivity(false, "AR not calibrated");
                 AddActionPointButton2.SetInteractivity(false, "AR not calibrated");
                 CopyButton.SetInteractivity(false, "AR not calibrated");
+                ActionPointAimingMenuButton.SetInteractivity(false, "AR not calibrated");
             }
             else if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
@@ -109,6 +110,7 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton.SetDescription("Add global action point");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
                 CopyButton.SetInteractivity(false, "No object to duplicate selected");
+                ActionPointAimingMenuButton.SetInteractivity(false, "No action point selected");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, "Object is locked");
                 AddConnectionButton.SetInteractivity(false, "Object is locked");
@@ -118,10 +120,12 @@ public class LeftMenuProject : LeftMenu
                 AddActionButton.SetInteractivity(false, "Object is locked");
                 AddActionButton2.SetInteractivity(false, "Object is locked");
                 CopyButton.SetInteractivity(false, "Object is locked");
+                ActionPointAimingMenuButton.SetInteractivity(false, "Object is locked");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
                     AddActionPointButton.SetInteractivity(true);
@@ -179,10 +183,13 @@ public class LeftMenuProject : LeftMenu
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
+        ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
         if (ActionPickerMenu.Instance.IsVisible())
             ActionPickerMenu.Instance.Hide(unlock);
         if (ActionParametersMenu.Instance.IsVisible())
             ActionParametersMenu.Instance.Hide();
+        if (ActionPointAimingMenu.Instance.IsVisible())
+            _ = ActionPointAimingMenu.Instance.Hide(unlock);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
@@ -407,6 +414,26 @@ public class LeftMenuProject : LeftMenu
             Notifications.Instance.ShowToastMessage("Action point created");
         } else {
             Notifications.Instance.ShowNotification("Failed to add action point", response.Messages.FirstOrDefault());
+        }
+    }
+
+    public void ActionPointAimingClick() {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionPointAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
+        if (ActionPointAimingMenuButton.GetComponent<Image>().enabled) {
+            ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            _ = ActionPointAimingMenu.Instance.Hide(true);
+        } else {
+            if (ActionPointAimingMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
+                ActionPointAimingMenuButton.GetComponent<Image>().enabled = true;
+                SelectorMenu.Instance.gameObject.SetActive(false);
+            } else {
+                Notifications.Instance.ShowNotification("Failed to open action picker", "Could not lock action point");
+            }
+
         }
     }
 

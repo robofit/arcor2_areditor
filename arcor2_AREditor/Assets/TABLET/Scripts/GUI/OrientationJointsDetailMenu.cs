@@ -8,8 +8,6 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
-
-[RequireComponent(typeof(SimpleSideMenu))]
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
@@ -39,8 +37,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public GameObject JointsDynamicList;
 
     public ConfirmationDialog ConfirmationDialog;
-
-    private SimpleSideMenu SideMenu;
     private NamedOrientation orientation;
     private ProjectRobotJoints joints;
     private bool isOrientationDetail; //true for orientation, false for joints
@@ -50,13 +46,12 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
 
     private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
         WebsocketManager.Instance.OnActionPointOrientationUpdated += OnActionPointOrientationUpdated;
         WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
-        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!gameObject.activeInHierarchy)
             return;
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
@@ -66,7 +61,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointOrientationUpdated(object sender, ActionPointOrientationEventArgs args) {
-        if (MenuManager.Instance.OrientationJointsDetailMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!gameObject.activeInHierarchy)
             return;
         if (orientation != null && orientation.Id == args.Data.Id) {
             orientation = args.Data;
@@ -483,14 +478,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         JointsExpertModeBlock.SetActive(!isOrientationDetail && GameManager.Instance.ExpertMode);
 
         UpdateMenu();
-        SideMenu.Open();
+        gameObject.SetActive(true);
     }
 
     public async void HideMenu() {
         if (CurrentActionPoint == null)
             return;
-
-        SideMenu.Close();
+        gameObject.SetActive(false);
 
         if (isOrientationDetail) {
             await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
@@ -510,5 +504,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         robotVisibilityBackup.Clear();
 
         CurrentActionPoint = null;
+    }
+
+    public bool IsVisible() {
+        return gameObject.activeInHierarchy;
     }
 }
