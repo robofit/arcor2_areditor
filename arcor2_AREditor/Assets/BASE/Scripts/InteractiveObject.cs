@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections;
 
+
 public abstract class InteractiveObject : Clickable {
 
     public bool IsLocked { get; protected set; }
@@ -16,8 +17,20 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
     public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
+    public SelectorItem SelectorItem;
+    public List<Collider> Colliders = new List<Collider>();
+
+    protected Target offscreenIndicator;
+
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        offscreenIndicator = gameObject.GetComponent<Target>();
+        DisplayOffscreenIndicator(false);
+    }
+
+    public virtual void DisplayOffscreenIndicator(bool active) {
+        if (offscreenIndicator)
+            offscreenIndicator.enabled = active;
     }
 
     protected virtual void OnDestroy() {
@@ -41,7 +54,6 @@ public abstract class InteractiveObject : Clickable {
 
     public abstract Task<RequestResult> Removable();
 
-    public SelectorItem SelectorItem;
 
     public abstract void Remove();
     public virtual float GetDistance(Vector3 origin) {
@@ -65,8 +77,6 @@ public abstract class InteractiveObject : Clickable {
         if (SelectorItem != null)
             SelectorItem.gameObject.SetActive(enable);
     }
-    
-    public List<Collider> Colliders = new List<Collider>();
 
     public abstract void UpdateColor();
 
@@ -153,6 +163,5 @@ public abstract class InteractiveObject : Clickable {
         if(owner != LandingScreen.Instance.GetUsername())
             UpdateColor();
     }
-
 
 }

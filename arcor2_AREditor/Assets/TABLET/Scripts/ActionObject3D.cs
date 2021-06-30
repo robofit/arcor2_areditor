@@ -11,6 +11,7 @@ using TriLibCore.General;
 using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class ActionObject3D : ActionObject {
     public TextMeshPro ActionObjectName;
     public GameObject Visual, Model;
@@ -340,11 +341,13 @@ public class ActionObject3D : ActionObject {
             ActionObjectName.gameObject.SetActive(true);
         }
         outlineOnClick.Highlight();
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         ActionObjectName.gameObject.SetActive(false);
         outlineOnClick.UnHighlight();
+        DisplayOffscreenIndicator(false);
     }
 
     public override void UpdateColor() {

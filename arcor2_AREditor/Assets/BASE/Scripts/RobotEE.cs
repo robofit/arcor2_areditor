@@ -5,6 +5,7 @@ using Base;
 using RosSharp.Urdf;
 using UnityEngine;
 
+[RequireComponent(typeof(Target))]
 public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
@@ -32,10 +33,12 @@ public class RobotEE : InteractiveObject, ISubItem {
 
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         eeName.gameObject.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
     /// <summary>

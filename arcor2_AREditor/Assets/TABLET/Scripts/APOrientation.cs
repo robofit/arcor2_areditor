@@ -7,6 +7,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class APOrientation : InteractiveObject, ISubItem {
     public Base.ActionPoint ActionPoint;
     public string OrientationId;
@@ -44,10 +45,12 @@ public class APOrientation : InteractiveObject, ISubItem {
         }
 
         HighlightOrientation(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         HighlightOrientation(false);
+        DisplayOffscreenIndicator(false);
     }
 
     public void HighlightOrientation(bool highlight) {

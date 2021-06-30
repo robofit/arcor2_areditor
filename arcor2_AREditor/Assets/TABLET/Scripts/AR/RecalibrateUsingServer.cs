@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 
+[RequireComponent(typeof(Target))]
 public class RecalibrateUsingServer : InteractiveObject {
 
     private string ID = Guid.NewGuid().ToString();
@@ -38,11 +39,11 @@ public class RecalibrateUsingServer : InteractiveObject {
 
 
     public override void OnHoverStart() {
-
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
-
+        DisplayOffscreenIndicator(false);
     }
 
     public override string GetName() {

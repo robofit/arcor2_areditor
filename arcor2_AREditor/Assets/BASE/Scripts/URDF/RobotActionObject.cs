@@ -12,6 +12,9 @@ using TMPro;
 using UnityEngine;
 
 namespace Base {
+
+    [RequireComponent(typeof(OutlineOnClick))]
+    [RequireComponent(typeof(Target))]
     public class RobotActionObject : ActionObject, IRobot {
         
         public TextMeshPro ActionObjectName;
@@ -572,11 +575,13 @@ namespace Base {
             }
             ActionObjectName.gameObject.SetActive(true);
             outlineOnClick.Highlight();
+            DisplayOffscreenIndicator(true);
         }
 
         public override void OnHoverEnd() {
             ActionObjectName.gameObject.SetActive(false);
             outlineOnClick.UnHighlight();
+            DisplayOffscreenIndicator(false);
         }
 
         public override void UpdateObjectName(string newUserId) {
