@@ -25,6 +25,7 @@ GameObject:
   - component: {fileID: 7799093808951836667}
   - component: {fileID: 3102614408150888594}
   - component: {fileID: 2419119033604782728}
+  - component: {fileID: -8625929120649407953}
   m_Layer: 0
   m_Name: RobotEE
   m_TagString: Untagged
@@ -80,6 +81,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 0}
   OutlineClickSecondPass: {fileID: 0}
@@ -92,6 +95,23 @@ MonoBehaviour:
   Renderers:
   - {fileID: 5195496566737001950}
   HoverOnly: 1
+--- !u!114 &-8625929120649407953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5107269571740474112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5dd462da48ed9b49a885f1a9cf94fe1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetColor: {r: 1, g: 1, b: 0, a: 1}
+  needBoxIndicator: 0
+  needArrowIndicator: 1
+  needDistanceText: 0
+  indicator: {fileID: 0}
 --- !u!1 &5484956194713478415
 GameObject:
   m_ObjectHideFlags: 0

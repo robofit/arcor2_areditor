@@ -56,6 +56,7 @@ GameObject:
   - component: {fileID: 1588651741921227701}
   - component: {fileID: 6166935187496861294}
   - component: {fileID: -1650496585027917520}
+  - component: {fileID: -8478417672923398066}
   m_Layer: 0
   m_Name: world_originOpenCV
   m_TagString: world_anchor
@@ -140,6 +141,23 @@ MonoBehaviour:
   SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 5238588306685580776}
+--- !u!114 &-8478417672923398066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244592743491135387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5dd462da48ed9b49a885f1a9cf94fe1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetColor: {r: 1, g: 1, b: 0, a: 1}
+  needBoxIndicator: 0
+  needArrowIndicator: 1
+  needDistanceText: 0
+  indicator: {fileID: 0}
 --- !u!114 &7532927752396446884
 MonoBehaviour:
   m_ObjectHideFlags: 0

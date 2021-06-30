@@ -8,6 +8,7 @@ using System;
 using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
@@ -146,12 +147,14 @@ public class ActionPoint3D : Base.ActionPoint {
         
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         HighlightAP(false);
         ActionPointName.gameObject.SetActive(false);
         Lock.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
 

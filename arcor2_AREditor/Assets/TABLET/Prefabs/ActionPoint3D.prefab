@@ -469,6 +469,7 @@ GameObject:
   - component: {fileID: 6849433418117681114}
   - component: {fileID: 5547556670204946479}
   - component: {fileID: 8058654341286488384}
+  - component: {fileID: 5651232739737246683}
   m_Layer: 0
   m_Name: ActionPoint3D
   m_TagString: ActionPoint
@@ -506,6 +507,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 2135223395522982168}
   ActionsSpawn: {fileID: 1416551817558692293}
@@ -545,6 +547,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
@@ -561,6 +565,23 @@ MonoBehaviour:
   Renderers:
   - {fileID: 4618120162863866931}
   HoverOnly: 0
+--- !u!114 &5651232739737246683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740470206176205867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5dd462da48ed9b49a885f1a9cf94fe1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetColor: {r: 1, g: 1, b: 0, a: 1}
+  needBoxIndicator: 0
+  needArrowIndicator: 1
+  needDistanceText: 0
+  indicator: {fileID: 0}
 --- !u!1 &4798958649888534245
 GameObject:
   m_ObjectHideFlags: 0

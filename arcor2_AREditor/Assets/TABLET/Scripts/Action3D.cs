@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class Action3D : Base.Action, ISubItem {
     public Renderer Visual;
 
@@ -124,11 +125,13 @@ public class Action3D : Base.Action, ISubItem {
         }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         outlineOnClick.UnHighlight();
         NameText.gameObject.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
     public override void UpdateColor() {

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders: []
   ActionPointsSpawn: {fileID: 0}
   Collider: {fileID: 0}
@@ -35,6 +36,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -50,6 +56,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -61,16 +72,6 @@ PrefabInstance:
     - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4117692875275004883, guid: 522945abebfaa8142ab815d2254efe6b,
@@ -92,6 +93,7 @@ PrefabInstance:
     - {fileID: 4556946370656040535, guid: 522945abebfaa8142ab815d2254efe6b, type: 3}
     - {fileID: 3050534694925757164, guid: 522945abebfaa8142ab815d2254efe6b, type: 3}
     - {fileID: 1852372384386817337, guid: 522945abebfaa8142ab815d2254efe6b, type: 3}
+    - {fileID: -5701379311286429356, guid: 522945abebfaa8142ab815d2254efe6b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 522945abebfaa8142ab815d2254efe6b, type: 3}
 --- !u!1 &6773313040803907359 stripped
 GameObject:

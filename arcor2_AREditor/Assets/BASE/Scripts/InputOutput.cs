@@ -11,6 +11,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Nav;
 
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
+    [RequireComponent(typeof(Target))]
     public abstract class InputOutput : InteractiveObject, ISubItem {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
@@ -315,6 +316,8 @@ namespace Base {
             }
             outlineOnClick.Highlight();
             Action.NameText.gameObject.SetActive(true);
+            DisplayOffscreenIndicator(true);
+
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             InputOutput theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedToPointer().GetComponent<InputOutput>();
@@ -326,12 +329,13 @@ namespace Base {
             }
             if (!result)
                 ConnectionManagerArcoro.Instance.DisableConnectionToMouse();
-                
         }
 
         public override void OnHoverEnd() {
             outlineOnClick.UnHighlight();
             Action.NameText.gameObject.SetActive(false);
+            DisplayOffscreenIndicator(false);
+
             if (!ConnectionManagerArcoro.Instance.IsConnecting())
                 return;
             ConnectionManagerArcoro.Instance.EnableConnectionToMouse();

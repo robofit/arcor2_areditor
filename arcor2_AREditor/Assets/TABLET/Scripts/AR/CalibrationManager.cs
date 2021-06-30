@@ -229,7 +229,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 StopCoroutine(autoCalibration);
             }
             autoCalibration = StartCoroutine(AutoCalibrate());
-            Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
+            //Debug.Log("AUTO RECALIBRATION " + AutoRecalibration);
         }
     }
 
@@ -338,7 +338,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
         }
 
         GameManager.Instance.SceneSetActive(true);
@@ -382,7 +382,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             UsingCloudAnchors = true;
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorCloud.gameObject));
             Notifications.Instance.ShowNotification("Calibration successful", "");
-            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
             GameManager.Instance.SceneSetActive(true);
         } else {
             Notifications.Instance.ShowNotification("Cloud anchor error", WorldAnchorCloud.cloudAnchorState.ToString());
@@ -933,7 +933,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             OnARCalibrated?.Invoke(this, new CalibrationEventArgs(true, WorldAnchorLocal.gameObject));
             //Notifications.Instance.ShowNotification("Calibration successful", "");
             worldAnchorVis = null;
-            ActivateCalibrationElements(MainSettingsMenu.Instance.CalibrationElements.Switch.isOn);
+            ActivateCalibrationElements((bool) MainSettingsMenu.Instance.CalibrationElements.GetValue());
         }
 
         GameManager.Instance.SceneSetActive(true);
