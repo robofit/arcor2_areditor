@@ -12,34 +12,14 @@ using Newtonsoft.Json;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
-
-    //[SerializeField]
-    //private ButtonWithTooltip StartSceneBtn, StopSceneBtn;
-
-    private GameObject debugTools;
-
-    [SerializeField]
-    private InputDialog inputDialog;
-
-    [SerializeField]
-    private InputDialogWithToggle inputDialogWithToggle;
-
-    
+    private GameObject debugTools;   
 
     private SimpleSideMenu menu;
-
-    [SerializeField]
-    private GameObject loadingScreen;
 
 
     // Start is called before the first frame update
     private void Start() {
         menu = GetComponent<SimpleSideMenu>();
-        Debug.Assert(inputDialog != null);
-        
-        Debug.Assert(loadingScreen != null);
-
-        
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
