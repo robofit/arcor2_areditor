@@ -35,7 +35,7 @@ public class ActionPointMenu : MonoBehaviour, IMenu {
     
 
     public void OpenActionPointAimingMenu() {
-        ActionPointAimingMenu.ShowMenu(CurrentActionPoint);
+        ActionPointAimingMenu.Show(CurrentActionPoint);
     }
 
 

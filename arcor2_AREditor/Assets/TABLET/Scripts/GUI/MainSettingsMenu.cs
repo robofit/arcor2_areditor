@@ -108,6 +108,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         WebsocketManager.Instance.OnProjectConstantRemoved += OnConstantRemoved;
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+        recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
     }
 
     public void Hide() {

@@ -12,35 +12,14 @@ using Newtonsoft.Json;
 
 [RequireComponent(typeof(SimpleSideMenu))]
 public class MainMenu : MonoBehaviour, IMenu {
-
-    [SerializeField]
-    private ButtonWithTooltip StartSceneBtn, StopSceneBtn;
-
-    private GameObject debugTools;
-
-    [SerializeField]
-    private InputDialog inputDialog;
-
-    [SerializeField]
-    private InputDialogWithToggle inputDialogWithToggle;
-
-    
+    private GameObject debugTools;   
 
     private SimpleSideMenu menu;
-
-    [SerializeField]
-    private GameObject loadingScreen;
 
 
     // Start is called before the first frame update
     private void Start() {
         menu = GetComponent<SimpleSideMenu>();
-        Debug.Assert(inputDialog != null);
-        Debug.Assert(StartSceneBtn != null);
-        Debug.Assert(StopSceneBtn != null);
-        Debug.Assert(loadingScreen != null);
-
-        Base.SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         MenuManager.Instance.ShowMenu(MenuManager.Instance.MainMenu);
 
         debugTools = GameObject.FindGameObjectWithTag("debug_tools");
@@ -48,10 +27,7 @@ public class MainMenu : MonoBehaviour, IMenu {
             debugTools.SetActive(false);
     }
 
-    private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        StartSceneBtn.gameObject.SetActive(!(args.Event.State == SceneStateData.StateEnum.Started));
-        StopSceneBtn.gameObject.SetActive(args.Event.State == SceneStateData.StateEnum.Started);
-    }
+    
 
     public void DisconnectFromSever() {
         Base.GameManager.Instance.DisconnectFromSever();
@@ -75,11 +51,8 @@ public class MainMenu : MonoBehaviour, IMenu {
             menu.Close();
             return;
         } else {
-            loadingScreen.SetActive(true);
             menu.Open();
         }
-
-        loadingScreen.SetActive(false);
     }
 
     public void SetHeader(string header) {
@@ -90,23 +63,7 @@ public class MainMenu : MonoBehaviour, IMenu {
         Base.Notifications.Instance.SaveLogs(Base.SceneManager.Instance.GetScene(), Base.ProjectManager.Instance.GetProject());
     }
 
-    public async void StartScene() {
-        try {
-            await WebsocketManager.Instance.StartScene(false);
-        } catch(RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Going online failed", e.Message);
-        }
-    }
-
-    private void StopSceneCallback(string _, string data) {
-        CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
-        if (!response.Result)
-            Notifications.Instance.ShowNotification("Going offline failed", response.Messages.FirstOrDefault());
-    }
-
-    public void StopScene() {
-        WebsocketManager.Instance.StopScene(false, StopSceneCallback);
-    }
+    
 
 
     public void Recalibrate() {

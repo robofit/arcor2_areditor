@@ -327,6 +327,8 @@ namespace Base {
                     SelectedArmId = null;
                     SelectedEndEffector = null;
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
+                    if (RobotsEEVisible)
+                        OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     break;
             }
         }
@@ -462,7 +464,6 @@ namespace Base {
         /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
         public bool ShowRobotsEE() {
             RobotsEEVisible = true;
-
             if (SceneStarted) {
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             } else {
@@ -477,6 +478,7 @@ namespace Base {
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
         public void HideRobotsEE() {
+            Debug.LogError("hide");
             RobotsEEVisible = false;
             OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);

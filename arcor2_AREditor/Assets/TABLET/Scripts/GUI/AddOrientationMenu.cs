@@ -5,8 +5,7 @@ using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(SimpleSideMenu))]
-public class AddOrientationMenu : MonoBehaviour, IMenu {
+public class AddOrientationMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;// QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
@@ -23,13 +22,6 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
-    private SimpleSideMenu SideMenu;
-
-    private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
-    }
-
-  
 
     public async void UpdateMenu() {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
@@ -145,18 +137,12 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         LiteModeBlock.SetActive(!ManualMode);
 
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
-        /*
-        QuaternionX.text = "0";
-        QuaternionY.text = "0";
-        QuaternionZ.text = "0";
-        QuaternionW.text = "1";
-        */
         OrientationManualEdit.SetOrientation(new Orientation());
         UpdateMenu();
-        SideMenu.Open();
+        gameObject.SetActive(true);
     }
 
     public void Close() {
-        SideMenu.Close();
+        gameObject.SetActive(false);
     }
 }
