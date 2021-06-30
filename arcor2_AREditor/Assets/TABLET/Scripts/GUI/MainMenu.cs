@@ -67,7 +67,12 @@ public class MainMenu : MonoBehaviour, IMenu {
     }
 
     public async void UpdateMenu() {
-        
+        if (menu.CurrentState == SimpleSideMenu.State.Open) {
+            menu.Close();
+            return;
+        } else {
+            menu.Open();
+        }
     }
 
     public void SetHeader(string header) {
