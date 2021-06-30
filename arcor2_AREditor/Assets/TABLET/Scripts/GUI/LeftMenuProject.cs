@@ -417,7 +417,7 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    public void ActionPointAimingClick() {
+    public async void ActionPointAimingClick() {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionPointAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
@@ -427,7 +427,7 @@ public class LeftMenuProject : LeftMenu
             SelectorMenu.Instance.gameObject.SetActive(true);
             _ = ActionPointAimingMenu.Instance.Hide(true);
         } else {
-            if (ActionPointAimingMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
+            if (await ActionPointAimingMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
                 ActionPointAimingMenuButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
             } else {

@@ -246,7 +246,24 @@ namespace Base {
             }
             return joints;
         }
-        
+
+        public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetJointsOfArm(string robot_id, string arm_id, bool uniqueOnly = false) {
+            Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> joints = new Dictionary<string, IO.Swagger.Model.ProjectRobotJoints>();
+            Dictionary<string, IO.Swagger.Model.Pose> poses = new Dictionary<string, IO.Swagger.Model.Pose>();
+            if (uniqueOnly) {
+                poses = GetPoses();
+            }
+            foreach (IO.Swagger.Model.ProjectRobotJoints robotJoint in Data.RobotJoints) {
+                if (uniqueOnly && poses.ContainsKey(robotJoint.Id)) {
+                    continue;
+                }
+                if (robot_id == robotJoint.RobotId && arm_id == robotJoint.ArmId)
+                    joints.Add(robotJoint.Id, robotJoint);
+            }
+            return joints;
+        }
+
+
 
 
         public void DeleteAP(bool removeFromList = true) {
