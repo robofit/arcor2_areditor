@@ -130,6 +130,7 @@ public class AddOrientationMenu : MonoBehaviour {
     }
 
     public void ShowMenu(Base.ActionPoint actionPoint, bool manualMode) {
+        Debug.LogError(CurrentActionPoint);
         ManualMode = manualMode;
         CurrentActionPoint = actionPoint;
 
@@ -140,9 +141,10 @@ public class AddOrientationMenu : MonoBehaviour {
         OrientationManualEdit.SetOrientation(new Orientation());
         UpdateMenu();
         gameObject.SetActive(true);
+        Debug.LogError(CurrentActionPoint);
     }
 
     public void Close() {
-        gameObject.SetActive(false);
+        ActionPointAimingMenu.Instance.SwitchToOrientations();
     }
 }

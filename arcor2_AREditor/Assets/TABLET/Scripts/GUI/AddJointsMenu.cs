@@ -20,6 +20,8 @@ public class AddJointsMenu : MonoBehaviour {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
+    private string jointsName;
+
     public async void UpdateMenu() {
         CustomDropdown robotsListDropdown = RobotsList.Dropdown;
         robotsListDropdown.dropdownItems.Clear();
@@ -48,13 +50,13 @@ public class AddJointsMenu : MonoBehaviour {
 
     public async void ValidateFields() {
         bool interactable = true;
-        name = NameInput.text;
+        jointsName = NameInput.text;
 
-        if (string.IsNullOrEmpty(name)) {
+        if (string.IsNullOrEmpty(jointsName)) {
             buttonTooltip.description = "Name is required parameter";
             interactable = false;
-        } else if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
-            buttonTooltip.description = "There already exists orientation or joints with name " + name;
+        } else if (CurrentActionPoint.OrientationNameExist(jointsName) || CurrentActionPoint.JointsNameExist(jointsName)) {
+            buttonTooltip.description = "There already exists orientation or joints with name " + jointsName;
             interactable = false;
         }
 
@@ -86,7 +88,8 @@ public class AddJointsMenu : MonoBehaviour {
             string armId = null;
             if (robot.MultiArm())
                 armId = DropdownArms.Dropdown.GetValue().ToString();
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name, armId);
+            jointsName = NameInput.text;
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), jointsName, armId);
             Notifications.Instance.ShowToastMessage("Joints added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);
@@ -109,6 +112,6 @@ public class AddJointsMenu : MonoBehaviour {
     }
 
     public void Close() {
-        gameObject.SetActive(false);
+        ActionPointAimingMenu.Instance.SwitchToJoints();
     }
 }

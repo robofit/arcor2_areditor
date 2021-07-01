@@ -82,7 +82,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public async Task<bool> Show(Base.ActionPoint actionPoint) {
 
         CurrentActionPoint = actionPoint;
-        if (! await actionPoint.WriteLock(false))
+        if (!await actionPoint.WriteLock(false))
             return false;
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
         UpdateMenu();
@@ -90,7 +90,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         return true;
     }
     public async Task<bool> Show(Base.ActionPoint actionPoint, string preselectedOrientation) {
-        if (! await Show(actionPoint))
+        if (!await Show(actionPoint))
             return false;
 
         try {
@@ -151,8 +151,9 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
+            Debug.LogError(btn.GetLabel());
             btn.GetComponent<TooltipContent>().enabled = !args.Data.IsValid;
-            btn.GetComponentInParent<ServiceButton>().State = args.Data.IsValid;
+            btn.transform.parent.GetComponent<ServiceButton>().State = args.Data.IsValid;
 
         } catch (ItemNotFoundException) {
             // not currently opened action point
@@ -265,9 +266,15 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotJointsChanged, false);
         if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
             JointsRobotsList.gameObject.SetActive(true);
-            JointsDropdownArms.gameObject.SetActive(true);
             JointsDynamicList.SetActive(true);
-            UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
+            if (SceneManager.Instance.SceneStarted) {
+                OnRobotJointsChanged((string) JointsRobotsList.GetValue());
+                JointsDropdownArms.gameObject.SetActive(true);
+            } else {
+                JointsDropdownArms.gameObject.SetActive(false);
+                UpdateJointsDynamicList((string) JointsRobotsList.GetValue(), null);
+            }            
+            
         } else {
             JointsRobotsList.gameObject.SetActive(false);
             JointsDropdownArms.gameObject.SetActive(false);
@@ -316,7 +323,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private async void OnRobotChanged(string robot_name) {
-        
+
         try {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
             //await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnRobotArmChanged);
@@ -343,7 +350,6 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + PositionRobotsList.GetValue().ToString() + "does not exists");
             return;
         }
-        Debug.LogError("wtf");
         await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, null);
     }
 
@@ -385,7 +391,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
 
-   
+
 
 
     public void UpdateOrientationsDynamicList() {
@@ -498,8 +504,11 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             string robotId = SceneManager.Instance.RobotNameToId(robot_name);
             //await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnRobotArmChanged);
             await JointsDropdownArms.Init(robotId, UpdateJointsDynamicList);
-
-            UpdateJointsDynamicList(PositionDropdownArms.Dropdown.GetValue().ToString());
+            object arm_id = JointsDropdownArms.Dropdown.GetValue();
+            if (arm_id == null)
+                UpdateJointsDynamicList(robotId, null);
+            else
+                UpdateJointsDynamicList(arm_id.ToString());
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to load end effectors", "");
@@ -507,12 +516,17 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
 
     }
 
-
     public async void UpdateJointsDynamicList(string arm_id) {
+        IRobot robot = SceneManager.Instance.GetRobotByName(JointsRobotsList.GetValue().ToString());
+        UpdateJointsDynamicList(robot.GetId(), robot.MultiArm() ? arm_id : "");
+    }
+
+
+    public async void UpdateJointsDynamicList(string robot_id, string arm_id) {
         
 
         try {
-            string robotId = SceneManager.Instance.RobotNameToId(JointsRobotsList.GetValue().ToString());
+            //string robotId = SceneManager.Instance.RobotNameToId(JointsRobotsList.GetValue().ToString());
 
             foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
                 if (o.gameObject.tag != "Persistent") {
@@ -520,7 +534,11 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
                 }
             }
 
-            System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetJointsOfArm(robotId, arm_id, true).Values.ToList();
+            System.Collections.Generic.List<ProjectRobotJoints> joints;
+            if (string.IsNullOrEmpty(arm_id))
+                joints = CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList();
+            else
+                joints = CurrentActionPoint.GetJointsOfArm(robot_id, arm_id, true).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
                 CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint), joint.IsValid);
             }
