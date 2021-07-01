@@ -22,8 +22,7 @@ namespace Base {
 
         [System.NonSerialized]
         public IO.Swagger.Model.ActionPoint Data = new IO.Swagger.Model.ActionPoint(id: "", robotJoints: new List<IO.Swagger.Model.ProjectRobotJoints>(), orientations: new List<IO.Swagger.Model.NamedOrientation>(), position: new IO.Swagger.Model.Position(), actions: new List<IO.Swagger.Model.Action>(), name: "");
-        protected ActionPointMenu actionPointMenu;
-
+        
         [SerializeField]
         protected GameObject orientations;
 
@@ -31,7 +30,6 @@ namespace Base {
 
         protected override void Start() {
             base.Start();
-            actionPointMenu = MenuManager.Instance.ActionPointMenu.gameObject.GetComponent<ActionPointMenu>();
         }
 
         protected virtual void Update() {
@@ -392,17 +390,7 @@ namespace Base {
             }        
 
 
-           /* if (Parent != null) {
-
-                if (ConnectionToParent != null)
-                    ConnectionToParent.UpdateLine();
-                else
-                    SetConnectionToParent(Parent);
-            }*/
-
-            if (actionPointMenu != null && actionPointMenu.CurrentActionPoint == this) {
-                actionPointMenu.UpdateMenu();
-            }
+ 
             return (currentA, connections);
         }
 
@@ -606,8 +594,9 @@ namespace Base {
             apOrientation.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(apOrientation);
         }
 
-        internal void ShowOrientationDetailMenu(string orientationId) {
-            actionPointMenu.ActionPointAimingMenu.OrientationJointsDetailMenu.ShowMenu(this, GetOrientation(orientationId));
+        internal async void ShowOrientationDetailMenu(string orientationId) {
+            if (await ActionPointAimingMenu.Instance.Show(this))
+                ActionPointAimingMenu.Instance.OpenDetailMenu(GetOrientation(orientationId));
         }
 
         public abstract void HighlightAP(bool highlight);

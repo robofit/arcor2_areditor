@@ -551,7 +551,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
 
-    private async void OpenDetailMenu(ProjectRobotJoints joint) {
+    public async void OpenDetailMenu(ProjectRobotJoints joint) {
         AddOrientationContainer.SetActive(false);
         AddJointsContainer.SetActive(false);
         if (OrientationJointsDetailMenu.IsVisible())
@@ -562,7 +562,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, joint);
     }
 
-    private async void OpenDetailMenu(NamedOrientation orientation) {
+    public async void OpenDetailMenu(NamedOrientation orientation) {
         AddOrientationContainer.SetActive(false);
         AddJointsContainer.SetActive(false);
         if (OrientationJointsDetailMenu.IsVisible())

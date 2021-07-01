@@ -43,12 +43,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
 
     public async void ShowMenu(bool enableBackButton = false) {
-        if (!await this.WriteLock(false))
-            return;
-
-        actionPointMenu.CurrentActionPoint = this;
-        actionPointMenu.EnableBackButton(enableBackButton);
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+        throw new NotImplementedException();
     }
 
 
@@ -181,7 +176,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override bool HasMenu() {
-        return true;
+        return false;
     }
 
     public async override void StartManipulation() {
