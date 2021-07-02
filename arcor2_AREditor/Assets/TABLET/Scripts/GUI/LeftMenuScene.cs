@@ -9,7 +9,6 @@ using TMPro;
 using System.Linq;
 using Newtonsoft.Json;
 using IO.Swagger.Model;
-using UnityEditorInternal;
 
 public class LeftMenuScene : LeftMenu
 {
