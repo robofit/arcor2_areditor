@@ -72,9 +72,10 @@ public class LeftMenuScene : LeftMenu
     public override void DeactivateAllSubmenus(bool unlock = true) {
         base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
+        AddNewObjectTypeButton.GetComponent<Image>().enabled = false;
 
         ActionObjectPickerMenu.Instance.Hide();
-        //MeshPicker.SetActive(false);
+        NewObjectTypeMenu.Instance.Hide();
     }
 
     public void AddMeshClick() {
@@ -236,8 +237,19 @@ public class LeftMenuScene : LeftMenu
     }
 
 
-    public void ShowNewObjectTypeMenu() {
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.NewObjectTypeMenu);
+    public void ShowNewObjectTypeMenu() {        
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !AddNewObjectTypeButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+        if (AddNewObjectTypeButton.GetComponent<Image>().enabled) {
+            AddNewObjectTypeButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            NewObjectTypeMenu.Instance.Hide();
+        } else {
+            NewObjectTypeMenu.Instance.Show(() => DeactivateAllSubmenus(false));
+            AddNewObjectTypeButton.GetComponent<Image>().enabled = true;
+            SelectorMenu.Instance.gameObject.SetActive(false);
+        }
     }
 
 

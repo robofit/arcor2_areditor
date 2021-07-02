@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public SimpleSideMenu ActionObjectMenuSceneEditor, MainMenu, NewObjectTypeMenu,
+    public SimpleSideMenu ActionObjectMenuSceneEditor, MainMenu,
         ActionObjectMenuProjectEditor, NotificationMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
@@ -36,13 +36,11 @@ public class MenuManager : Base.Singleton<MenuManager> {
     private bool CheckIsAnyMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
             MainMenu.CurrentState == SimpleSideMenu.State.Open ||
-            NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }
     public bool CheckIsAnyRightMenuOpened() {
         return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
-            NewObjectTypeMenu.CurrentState == SimpleSideMenu.State.Open ||
             ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }

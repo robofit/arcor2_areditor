@@ -239,7 +239,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public async void UpdateMenu() {
         if (CurrentActionPoint == null)
             return;
-
+        CloseAnySubmenu();
         CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
         positionRobotsListDropdown.dropdownItems.Clear();
         await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
@@ -614,8 +614,14 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     public void CloseOrientationJointsDetailMenu() {
+        CloseAnySubmenu();
+    }
+
+    public void CloseAnySubmenu() {
         if (OrientationJointsDetailMenu.IsVisible())
             OrientationJointsDetailMenu.HideMenu();
+        AddOrientationMenu.gameObject.SetActive(false);
+        AddJointsMenu.gameObject.SetActive(false);
         switch (State) {
             case StateEnum.Joints:
                 SwitchToJoints();

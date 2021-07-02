@@ -7,8 +7,9 @@ using System;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Base;
+using UnityEngine.Events;
 
-public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
+public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     [SerializeField]
     private GameObject BoxMenu, CylinderMenu, SphereMenu, MeshMenu;
     [SerializeField]
@@ -20,6 +21,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     [SerializeField]
     private TooltipContent buttonTooltip;
+
+    public CanvasGroup CanvasGroup;
+
+    private UnityAction closeCallback;
 
 
 
@@ -48,6 +53,16 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     // Update is called once per frame
     private void Update() {
 
+    }
+
+    public void Show(UnityAction closeCallback) {
+        this.closeCallback = closeCallback;
+        UpdateMenu();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+    }
+
+    public void Hide() {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
     }
 
     public void UpdateMenu() {
@@ -166,7 +181,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         
         bool success = await Base.GameManager.Instance.CreateNewObjectType(CreateObjectTypeMeta());
         if (success) {
-            MenuManager.Instance.NewObjectTypeMenu.Close();
+            closeCallback?.Invoke();
         }
         CreateNewObjectBtn.interactable = true;
     }
