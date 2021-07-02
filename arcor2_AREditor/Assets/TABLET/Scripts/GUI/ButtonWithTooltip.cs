@@ -12,6 +12,7 @@ public class ButtonWithTooltip : MonoBehaviour {
     public Button Button;
     [SerializeField]
     private TooltipContent TooltipContent;
+    [SerializeField]
 
     private void Awake() {
         Button = gameObject.GetComponent<Button>();
@@ -66,5 +67,6 @@ public class ButtonWithTooltip : MonoBehaviour {
     public string GetAlternativeDescription() {
         return tooltip.DescriptionAlternative;
     }
+
 
 }

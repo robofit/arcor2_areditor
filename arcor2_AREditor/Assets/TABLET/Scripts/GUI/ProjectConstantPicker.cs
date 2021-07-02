@@ -24,7 +24,7 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
     private string filterType = null;
 
     private void Start() {
-        EditConstantDialog = (EditConstantDialog) MenuManager.Instance.EditConstantDialog;
+        EditConstantDialog = AREditorResources.Instance.EditConstantDialog;
     }
 
     public void Show(string type = null, Action<object> constantPickedCallback = null) {
@@ -32,7 +32,7 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
             Hide();
             return;
         }
-        MenuManager.Instance.LeftMenuProject.UpdateVisibility(false);
+        AREditorResources.Instance.LeftMenuProject.UpdateVisibility(false);
 
         this.constantPickedCallback = constantPickedCallback;
         filterType = type;
@@ -110,7 +110,7 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
         WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
         WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
 
-        MenuManager.Instance.LeftMenuProject.UpdateVisibility();
+        AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         isMenuOpened = false;
     }
 

@@ -95,7 +95,7 @@ public class ActionObject3D : ActionObject {
 
 
     public override bool SceneInteractable() {
-        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
+        return base.SceneInteractable() && GameManager.Instance.SceneInteractable;
     }
 
 

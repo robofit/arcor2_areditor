@@ -57,7 +57,7 @@ public class LeftMenuPackage : LeftMenu {
     public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
         
         if (newGameState == GameManager.GameStateEnum.PackageRunning &&
-            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);
         } else {
             UpdateVisibility(false);

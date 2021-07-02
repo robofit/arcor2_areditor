@@ -219,7 +219,7 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);
@@ -440,7 +440,7 @@ public class LeftMenuProject : LeftMenu
 
     public override void UpdateVisibility() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
-            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
             UpdateVisibility(true);
         } else {
             UpdateVisibility(false);
@@ -465,7 +465,7 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         ConfirmationDialog.Close();
-        MenuManager.Instance.MainMenu.Close();
+        MainMenu.Instance.Close();
         GameManager.Instance.HideLoadingScreen();
     }
 

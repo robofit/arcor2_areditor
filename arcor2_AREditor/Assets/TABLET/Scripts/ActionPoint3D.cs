@@ -84,7 +84,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
     
     public override bool ProjectInteractable() {
-        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
+        return base.ProjectInteractable() && GameManager.Instance.SceneInteractable;
     }
 
     public override void ActivateForGizmo(string layer) {

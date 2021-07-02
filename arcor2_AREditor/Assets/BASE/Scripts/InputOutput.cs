@@ -114,7 +114,7 @@ namespace Base {
                             return;
                         }
                     }
-                    MenuManager.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this, () => Action.WriteUnlock());
+                    AREditorResources.Instance.ConnectionSelectorDialog.Open(items, showNewConnectionButton, this, () => Action.WriteUnlock());
 
                     /*GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(GetLogicItems().GetConnection(), gameObject);
                         
@@ -138,7 +138,7 @@ namespace Base {
 
 
         public async Task SelectedConnection(LogicItem logicItem) {
-            MenuManager.Instance.ConnectionSelectorDialog.Close();
+            AREditorResources.Instance.ConnectionSelectorDialog.Close();
             if (logicItem == null) {
                 if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
                     ShowOutputTypeDialog(async () => await CreateNewConnection());
@@ -190,11 +190,11 @@ namespace Base {
                     return;
                 } else {
                     bool condition = JsonConvert.DeserializeObject<bool>(item.Data.Condition.Value);
-                    MenuManager.Instance.OutputTypeDialog.Open(this, callback, false, !condition, condition);                
+                    AREditorResources.Instance.OutputTypeDialog.Open(this, callback, false, !condition, condition);                
                     return;
                 }
             }
-            MenuManager.Instance.OutputTypeDialog.Open(this, callback, true, true, true);
+            AREditorResources.Instance.OutputTypeDialog.Open(this, callback, true, true, true);
         }
 
         private async Task CreateNewConnection() {

@@ -108,8 +108,7 @@ public class EditConstantDialog : Dialog
 
     public override void Open() {
         base.Open();
-        MenuManager.Instance.LeftMenuProject.UpdateVisibility(false, true);
-
+        AREditorResources.Instance.LeftMenuProject.UpdateVisibility(false, true);
     }
 
     private void OnTypeSelected(string type) {
@@ -189,7 +188,7 @@ public class EditConstantDialog : Dialog
 
     public override async void Close() {
         base.Close();
-        MenuManager.Instance.LeftMenuProject.UpdateVisibility();
+        AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         dropdown.Dropdown.dropdownItems.Clear();
         constant = null;
         onCloseCallback?.Invoke();

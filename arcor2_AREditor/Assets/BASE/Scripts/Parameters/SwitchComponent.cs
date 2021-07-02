@@ -11,21 +11,17 @@ public class SwitchComponent : MonoBehaviour, IParameter
     public SwitchManager Switch;
     public TMPro.TMP_Text Label;
 
-    private Button switchButton;
+    public Button SwitchButton;
 
     private bool interactable;
 
     private UnityAction<bool> onChangeCallback;
 
-    private void Start() {
-        switchButton = Switch.gameObject.GetComponent<Button>();
-    }
-
     public bool Interactable {
         get => interactable;
         set {
             interactable = value;
-            switchButton.interactable = value;
+            SwitchButton.interactable = value;
         }
     }
 

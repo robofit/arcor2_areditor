@@ -104,7 +104,7 @@ public class RobotSelectorDialog : Dialog {
 
     public override void Close() {
         Close(true);
-        MenuManager.Instance.LeftMenuProject.UpdateBtns();
+        AREditorResources.Instance.LeftMenuProject.UpdateBtns();
     }
 
     public void Close(bool closeCallbackCall) {

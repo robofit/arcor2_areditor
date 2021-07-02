@@ -40,7 +40,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     protected virtual void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
-        MenuManager.Instance.MainMenu.onStateChanged.AddListener(() => OnGameStateChanged(this, null));
+        MainMenu.Instance.AddListener(() => OnGameStateChanged(this, null));
     }
 
     private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
@@ -260,7 +260,6 @@ public abstract class LeftMenu : MonoBehaviour {
     public abstract void UpdateBuildAndSaveBtns();
 
     public void FavoritesButtonClick() {
-        MenuManager.Instance.HideAllMenus();
         SetActiveSubmenu(LeftMenuSelection.Favorites);
 
     }

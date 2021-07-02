@@ -280,11 +280,13 @@ namespace Base {
 
         private bool openPackageRunningScreenFlag = false;
 
+
+        /// TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! is this still neccassarry? How to use it when there is no menumanager anymore?
         /// <summary>
         /// Checks whether scene is interactable
         /// </summary>
         public bool SceneInteractable {
-            get => !MenuManager.Instance.IsAnyMenuOpened;
+            get => true;
         }
 
 
@@ -480,7 +482,6 @@ namespace Base {
                 // otherwise, disable main menu button and status panel
                 default:
                     EditorHelper.EnableCanvasGroup(MainMenuBtnCG, false);
-                    MenuManager.Instance.HideAllMenus();
                     break;
             }
         }
@@ -507,7 +508,6 @@ namespace Base {
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
-            MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
             /*switch (requestType) {
@@ -828,9 +828,9 @@ namespace Base {
                     ServerVersion.text = "Editor version: " + Application.version +
                         "\nServer version: " + systemInfo.Version;
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
-                    MenuManager.Instance.DisableAllMenus();
-                    
-                    
+                    MainMenu.Instance.gameObject.SetActive(false);
+
+
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
 
                     await UpdateActionObjects();
@@ -910,7 +910,7 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnActionsLoaded(object sender, EventArgs e) {
-            MenuManager.Instance.EnableAllWindows();
+            MainMenu.Instance.gameObject.SetActive(true);
         }
 
         /// <summary>
@@ -1601,7 +1601,7 @@ namespace Base {
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             if (updateResources) {
                 WebsocketManager.Instance.LoadScenes(LoadScenesCb);
                 WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
@@ -1640,7 +1640,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1659,7 +1659,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1672,7 +1672,7 @@ namespace Base {
         public async void OpenPackageRunningScreen() {
             openPackageRunningScreenFlag = false;
             try {
-                MenuManager.Instance.MainMenu.Close();
+                MainMenu.Instance.Close();
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
@@ -1717,7 +1717,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             HideLoadingScreen(true);
