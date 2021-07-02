@@ -158,9 +158,10 @@ public class Action3D : Base.Action, ISubItem {
         ActionPoint.HighlightAP(true);        
     }
 
-    public void CloseMenu() {
+    public override void CloseMenu() {
         selected = false;
         ActionPoint.HighlightAP(false);
+        ActionParametersMenu.Instance.Hide();
     }
 
     public override bool HasMenu() {
@@ -225,4 +226,5 @@ public class Action3D : Base.Action, ISubItem {
     public InteractiveObject GetParentObject() {
         return ActionPoint;
     }
+
 }

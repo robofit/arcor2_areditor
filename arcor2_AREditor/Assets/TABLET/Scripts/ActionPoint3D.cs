@@ -172,7 +172,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override async void OpenMenu() {
-        ShowMenu();
+        throw new NotImplementedException();
     }
 
     public override bool HasMenu() {
@@ -238,6 +238,10 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        throw new NotImplementedException();
+    }
+
+    public override void CloseMenu() {
         throw new NotImplementedException();
     }
 }

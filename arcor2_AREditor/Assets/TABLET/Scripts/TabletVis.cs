@@ -62,4 +62,8 @@ public class TabletVis : InteractiveObject {
     public override void UpdateColor() {
         //nothing to do here...
     }
+
+    public override void CloseMenu() {
+        throw new System.NotImplementedException();
+    }
 }

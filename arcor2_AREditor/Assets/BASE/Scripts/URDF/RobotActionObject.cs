@@ -726,18 +726,8 @@ namespace Base {
             }
         }
 
-        public override async void OpenMenu() {
-            if (!await this.WriteLock(false))
-                return;
-            outlineOnClick.GizmoUnHighlight();
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
+        public override void OpenMenu() {
+            ActionObjectMenu.Instance.Show(this);
         }
 
         public override bool HasMenu() {
@@ -793,6 +783,10 @@ namespace Base {
 
         public bool MultiArm() {
             return RobotMeta.MultiArm;
+        }
+
+        public override void CloseMenu() {
+            ActionObjectMenu.Instance.Hide();
         }
     }
 }

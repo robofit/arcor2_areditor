@@ -48,6 +48,8 @@ public abstract class InteractiveObject : Clickable {
 
     public abstract string GetObjectTypeName();
     public abstract void OpenMenu();
+
+    public abstract void CloseMenu();
     public abstract bool HasMenu();
     public abstract Task<RequestResult> Movable();
     public abstract void StartManipulation();

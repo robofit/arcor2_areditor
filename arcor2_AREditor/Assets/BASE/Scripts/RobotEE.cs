@@ -104,4 +104,8 @@ public class RobotEE : InteractiveObject, ISubItem {
             return null;
         }
     }
+
+    public override void CloseMenu() {
+        throw new System.NotImplementedException();
+    }
 }

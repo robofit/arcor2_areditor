@@ -6,8 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : Base.Singleton<MenuManager> {
-    public SimpleSideMenu ActionObjectMenuSceneEditor, MainMenu,
-        ActionObjectMenuProjectEditor, NotificationMenu;
+    public SimpleSideMenu MainMenu, NotificationMenu;
     SimpleSideMenu MenuOpened;
     public GameObject ActionPointMenuPrefab, ButtonPrefab;
 
@@ -34,15 +33,11 @@ public class MenuManager : Base.Singleton<MenuManager> {
     } = false;
 
     private bool CheckIsAnyMenuOpened() {
-        return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
-            MainMenu.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
+        return MainMenu.CurrentState == SimpleSideMenu.State.Open ||
             NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }
     public bool CheckIsAnyRightMenuOpened() {
-        return ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open ||
-            ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open ||
-            NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
+        return NotificationMenu.CurrentState == SimpleSideMenu.State.Open;
     }
 
 
@@ -55,12 +50,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
     }
 
     public void HideAllMenus() {
-        if (ActionObjectMenuSceneEditor.CurrentState == SimpleSideMenu.State.Open) {
-            ActionObjectMenuSceneEditor.Close();
-        }
-        if (ActionObjectMenuProjectEditor.CurrentState == SimpleSideMenu.State.Open) {
-            ActionObjectMenuProjectEditor.Close();
-        }
         if (MainMenu.CurrentState == SimpleSideMenu.State.Open) {
             MainMenu.Close();
         }
@@ -72,14 +61,10 @@ public class MenuManager : Base.Singleton<MenuManager> {
 
     public void DisableAllMenus() {
         MainMenu.gameObject.SetActive(false);
-        ActionObjectMenuSceneEditor.gameObject.SetActive(false);
-        ActionObjectMenuProjectEditor.gameObject.SetActive(false);
     }
 
     public void EnableAllWindows() {
         MainMenu.gameObject.SetActive(true);
-        ActionObjectMenuSceneEditor.gameObject.SetActive(true);
-        ActionObjectMenuProjectEditor.gameObject.SetActive(true);
     }
 
     public void HideMenu() {
@@ -103,11 +88,6 @@ public class MenuManager : Base.Singleton<MenuManager> {
                     GameManager.Instance.InvokeSceneInteractable(true);
                 }
 
-                if (menu == ActionObjectMenuSceneEditor) {
-                    menu.GetComponent<ActionObjectMenuSceneEditor>().HideMenu();
-                } else if (menu == ActionObjectMenuProjectEditor) {
-                    menu.GetComponent<ActionObjectMenuProjectEditor>().HideMenu();
-                }
 
                 break;
         }

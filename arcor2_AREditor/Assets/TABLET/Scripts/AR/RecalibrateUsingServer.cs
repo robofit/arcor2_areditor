@@ -89,4 +89,8 @@ public class RecalibrateUsingServer : InteractiveObject {
     public override Task Rename(string name) {
         throw new System.NotImplementedException();
     }
+
+    public override void CloseMenu() {
+        throw new NotImplementedException();
+    }
 }

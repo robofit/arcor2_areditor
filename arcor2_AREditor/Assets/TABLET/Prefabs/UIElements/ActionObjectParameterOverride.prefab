@@ -87,6 +87,8 @@ MonoBehaviour:
   RestoreBtn: {fileID: 2434310256402541026}
   SaveBtn: {fileID: 6135147559524142437}
   CancelBtn: {fileID: 5279677034566260176}
+  LayoutGroupToBeDisabled: {fileID: 0}
+  CanvasRoot: {fileID: 0}
 --- !u!114 &3512119021894322716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,7 +279,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 560, y: -45}
+  m_AnchoredPosition: {x: 400, y: -45}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1291352523171789958
@@ -307,7 +309,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ff4b8373ae850a748a645cc324b7b998, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5ebf21558a8195e4cb513b68d5374c59, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -513,7 +515,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -661,7 +663,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8a7ff07c2a567bb4b9e26bc9049d69bc, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 6d697281b9f81144e80cac4d9a2d5f2d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1015,7 +1017,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4563f1bd094198844a2c58d8a8892764, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 57c269401f8d03645b97755f331e729d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1185,7 +1187,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 560, y: -45}
+  m_AnchoredPosition: {x: 480, y: -45}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1881434958340944639
@@ -1215,7 +1217,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 673095b7340d58244bc22a1d428e481a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 61d8fe2446aad494ba60c362fedb5279, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

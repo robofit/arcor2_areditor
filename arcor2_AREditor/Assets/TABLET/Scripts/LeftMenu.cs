@@ -229,25 +229,20 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
-        if (selectedObject is Action3D action) {
-            if (!SelectorMenu.Instance.gameObject.activeSelf && !OpenMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-                SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
-            }
-
-            if (OpenMenuButton.GetComponent<Image>().enabled) {
-                OpenMenuButton.GetComponent<Image>().enabled = false;
-                SelectorMenu.Instance.gameObject.SetActive(true);
-                //ActionPicker.SetActive(false);
-                ActionParametersMenu.Instance.Hide();
-            } else {
-                OpenMenuButton.GetComponent<Image>().enabled = true;
-                SelectorMenu.Instance.gameObject.SetActive(false);
-                selectedObject.OpenMenu();
-            }
-        } else {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !OpenMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
+        if (OpenMenuButton.GetComponent<Image>().enabled) {
+            OpenMenuButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            selectedObject.CloseMenu();
+        } else {
+            OpenMenuButton.GetComponent<Image>().enabled = true;
+            SelectorMenu.Instance.gameObject.SetActive(false);
             selectedObject.OpenMenu();
         }
+        
 
     }
 
@@ -530,6 +525,7 @@ public abstract class LeftMenu : MonoBehaviour {
         ActionParametersMenu.Instance.Hide(unlock);
 
         MainSettingsMenu.Instance.Hide();
+        ActionObjectMenu.Instance.Hide();
 
         FavoritesButtons.SetActive(false);
         HomeButtons.SetActive(false);

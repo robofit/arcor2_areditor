@@ -36,4 +36,8 @@ public class EndAction : StartEndAction
     public override string GetObjectTypeName() {
         return "End action";
     }
+
+    public override void CloseMenu() {
+        throw new NotImplementedException();
+    }
 }

@@ -31,5 +31,9 @@ namespace Base {
                     material.color = Color.gray;
             }
         }
+
+        public override void CloseMenu() {
+            throw new System.NotImplementedException();
+        }
     }
 }

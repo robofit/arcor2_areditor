@@ -129,4 +129,8 @@ public class APOrientation : InteractiveObject, ISubItem {
     public InteractiveObject GetParentObject() {
         return ActionPoint;
     }
+
+    public override void CloseMenu() {
+        throw new System.NotImplementedException();
+    }
 }

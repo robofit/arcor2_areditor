@@ -19,11 +19,11 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
     public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public SwitchComponent ShowModelSwitch;
     private int currentFocusPoint = -1;
-    public GameObject ObjectHasNoParameterLabel;
     public CalibrateRobotDialog CalibrateRobotDialog;
     private GameObject model;
     public ButtonWithTooltip CalibrateBtn;
 
+    /*
     private void Start() {
         Debug.Assert(RobotsList != null);
         Debug.Assert(EndEffectorList != null);
@@ -57,13 +57,7 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
     public async override void UpdateMenu() {
         base.UpdateMenu();
         CalibrateBtn.gameObject.SetActive(false);
-        if (CurrentObject.ObjectParameters.Count > 0) {
-            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, true);   
-        }
-        SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
-        ObjectHasNoParameterLabel.SetActive(CurrentObject.ObjectParameters.Count == 0);
-        parametersChanged = false;
-        UpdateSaveBtn();
+        
 
         if (!SceneManager.Instance.SceneStarted) {
             UpdatePositionBlockVO.SetActive(false);
@@ -349,45 +343,8 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
         }
     }
 
-    protected override void UpdateSaveBtn() {
-        if (SceneManager.Instance.SceneStarted) {
-            SaveParametersBtn.SetInteractivity(false, "Parameters could be updated only when offline.");
-            return;
-        }
-        if (!parametersChanged) {
-            SaveParametersBtn.SetInteractivity(false, "No parameter changed");
-            return;
-        }
-        // TODO: add dry run save
-        SaveParametersBtn.SetInteractivity(true);
 
-    }
-
-    public async void SaveParameters() {
-        if (Base.Parameter.CheckIfAllValuesValid(objectParameters)) {
-            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
-            foreach (IParameter p in objectParameters) {
-                if (CurrentObject.TryGetParameterMetadata(p.GetName(), out IO.Swagger.Model.ParameterMeta parameterMeta)) {
-                    IO.Swagger.Model.ParameterMeta metadata = parameterMeta;
-                    IO.Swagger.Model.Parameter ap = new IO.Swagger.Model.Parameter(name: p.GetName(), value: JsonConvert.SerializeObject(p.GetValue()), type: metadata.Type);
-                    parameters.Add(ap);
-                } else {
-                    Notifications.Instance.ShowNotification("Failed to save parameters!", "");
-
-                }
-
-            }
-
-            try {
-                await WebsocketManager.Instance.UpdateObjectParameters(CurrentObject.Data.Id, parameters, false);
-                Base.Notifications.Instance.ShowToastMessage("Parameters saved");
-                parametersChanged = false;
-                UpdateSaveBtn();
-            } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to update object parameters ", e.Message);
-            }
-        }
-    }
+    
 
     public void ShowCalibrateRobotDialog() {
         CalibrateRobotDialog.Init(SceneManager.Instance.GetCamerasNames(), CurrentObject.Data.Id);
@@ -409,6 +366,6 @@ public class ActionObjectMenuSceneEditor : ActionObjectMenu
             Notifications.Instance.ShowNotification("Failed to calibrate camera", ex.Message);
             ConfirmationDialog.Close();
         }
-    }
+    }*/
 
 }
