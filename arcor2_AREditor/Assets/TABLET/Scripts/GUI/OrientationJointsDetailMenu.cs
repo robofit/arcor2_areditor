@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
+
 public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public Base.ActionPoint CurrentActionPoint;
 
@@ -26,7 +28,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TMPro.TMP_InputField DetailName; //name of current orientation/joints
     [SerializeField]
-    private TMPro.TMP_Text RobotName; //name of robot - only for joints
+    private TMPro.TMP_Text RobotName, ArmName; //name of robot and arm - only for joints
 
     public SwitchComponent SafeMove;
 
@@ -172,6 +174,11 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             NumberFormatInfo numberFormatInfo = new NumberFormatInfo();
             numberFormatInfo.NumberDecimalSeparator = ".";
             labeledInput.SetValue(joint.Value.ToString(numberFormatInfo));
+            //labeledInput.Input.placeholder.color = Color.white;
+            // text object of TMP input cannot be accessed directly
+            //labeledInput.Input.GetComponentsInChildren<TMPro.TextMeshProUGUI>()
+            //      .First(c => c.gameObject.name == "Text").color = Color.white;
+            labeledInput.SetDarkMode(false);
         }
     }
 
@@ -458,6 +465,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         isOrientationDetail = false;
         try {
             RobotName.text = SceneManager.Instance.GetRobot(joints.RobotId).GetName();
+            ArmName.text = joints.ArmId;
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification(ex.Message, "");
         }

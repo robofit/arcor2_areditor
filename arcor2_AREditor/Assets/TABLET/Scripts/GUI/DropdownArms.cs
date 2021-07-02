@@ -47,6 +47,9 @@ public class DropdownArms : MonoBehaviour
             Dropdown.Dropdown.dropdownItems.Add(item);
         }
         if (Dropdown.Dropdown.dropdownItems.Count > 0) {
+            if (Dropdown.Dropdown.selectedItemIndex >= Dropdown.Dropdown.dropdownItems.Count) {
+                Dropdown.Dropdown.selectedItemIndex = 0;
+            }
             Dropdown.Dropdown.SetupDropdown();
             gameObject.SetActive(true);
         } else {
