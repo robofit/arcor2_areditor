@@ -136,7 +136,10 @@ namespace Base {
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
-                UpdateActionsOfActionObject(m);
+                if (!m.Abstract && !m.BuiltIn)
+                    UpdateActionsOfActionObject(m);
+                else
+                    m.ActionsLoaded = true;
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
                 actionObjectsMetadata.Add(obj.Type, m);
@@ -153,7 +156,10 @@ namespace Base {
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
                     actionObjectMetadata.Update(obj);
-                    UpdateActionsOfActionObject(actionObjectMetadata);
+                    if (!actionObjectMetadata.Abstract && !actionObjectMetadata.BuiltIn)
+                        UpdateActionsOfActionObject(actionObjectMetadata);
+                    else
+                        actionObjectMetadata.ActionsLoaded = true;
                     updated.Add(obj.Type);
                 } else {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
@@ -208,7 +214,10 @@ namespace Base {
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
-                UpdateActionsOfActionObject(m);
+                if (!m.Abstract && !m.BuiltIn)
+                    UpdateActionsOfActionObject(m);
+                else
+                    m.ActionsLoaded = true;
                 actionObjectsMetadata.Add(metadata.Type, m);
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {

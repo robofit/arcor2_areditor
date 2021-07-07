@@ -34,7 +34,7 @@ public class PackageOptionMenu : TileOptionMenu {
         GameManager.Instance.ShowLoadingScreen();
         try {
             await WebsocketManager.Instance.RemovePackage(packageTile.PackageId);
-            WebsocketManager.Instance.LoadPackages(GameManager.Instance.LoadPackagesCb);
+            WebsocketManager.Instance.LoadPackages(MainScreen.Instance.LoadPackagesCb);
             confirmationDialog.Close();
             Close();
         } catch (RequestFailedException e) {

@@ -82,7 +82,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public async Task<bool> Show(Base.ActionPoint actionPoint) {
 
         CurrentActionPoint = actionPoint;
-        if (!await actionPoint.WriteLock(false))
+        if (!await actionPoint.WriteLock(true))
             return false;
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
         UpdateMenu();

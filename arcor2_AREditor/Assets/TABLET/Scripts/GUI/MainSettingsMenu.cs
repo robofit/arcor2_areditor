@@ -97,9 +97,17 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     public void Show() {
-        APSizeSlider.value = ProjectManager.Instance.APSize;
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+            APSizeSlider.gameObject.SetActive(true);
+            APOrientationsVisibility.gameObject.SetActive(true);
+            APSizeSlider.value = ProjectManager.Instance.APSize;
+            APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
+        } else {
+            APSizeSlider.gameObject.SetActive(false);
+            APOrientationsVisibility.gameObject.SetActive(false);
+        }
+
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
-        APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
 

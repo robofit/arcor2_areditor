@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using RuntimeGizmos;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.GameManager;
@@ -458,10 +459,11 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     public void MainSettingsButtonClick() {
+        Debug.LogError(MainSettingsButton);
         if (!SelectorMenu.Instance.gameObject.activeSelf && !MainSettingsButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-
+        Selection.activeGameObject = MainSettingsButton.gameObject;
         if (MainSettingsButton.GetComponent<Image>().enabled) {
             MainSettingsButton.GetComponent<Image>().enabled = false;
             MainSettingsMenu.Instance.Hide();

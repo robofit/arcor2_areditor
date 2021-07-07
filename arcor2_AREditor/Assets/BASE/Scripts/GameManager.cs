@@ -62,7 +62,7 @@ namespace Base {
         /// <summary>
         /// Called when list of scenes is changed (new, removed, renamed)
         /// </summary>
-        public event EventHandler OnSceneListChanged;
+        public event EventHandler OnScenesListChanged;
         /// <summary>
         /// Called when editor connected to server. Contains server URI
         /// </summary>
@@ -1157,46 +1157,24 @@ namespace Base {
             throw new RequestFailedException("No scene with name: " + name);
         }
 
-        public void LoadScenesCb(string id, string responseData) {
-            IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
-            Scenes = response.Data;
-            Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
-                return y.Modified.CompareTo(x.Modified);
-            });
-            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
+        public void InvokeScenesListChanged() {
+            OnScenesListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void LoadProjectsCb(string id, string responseData) {
-            IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
-            Projects = response.Data;
-            Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
-                return y.Modified.CompareTo(x.Modified);
-            });
+        public void InvokeProjectsListChanged() {
             OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-       
-        public void LoadPackagesCb(string id, string responseData) {
-            IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
-            Packages = response.Data;
-            Packages.Sort(delegate (PackageSummary x, PackageSummary y) {
-                return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
-            });
+        public void InvokePackagesListChanged() {
             OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
         }
-
-            /// <summary>
-            /// Gets package by ID
-            /// </summary>
-            /// <param name="id">Id of package</param>
-            /// <returns>Package with corresponding ID</returns>
-            public PackageSummary GetPackage(string id) {
+             
+        /// <summary>
+        /// Gets package by ID
+        /// </summary>
+        /// <param name="id">Id of package</param>
+        /// <returns>Package with corresponding ID</returns>
+        public PackageSummary GetPackage(string id) {
             foreach (PackageSummary package in Packages) {
                 if (id == package.Id)
                     return package;
@@ -1593,20 +1571,14 @@ namespace Base {
         /// </summary>
         /// <param name="what">Defines what list should be displayed (scenes/projects/packages)</param>
         /// <param name="highlight">ID of element to highlight (e.g. when scene is closed, it is highlighted for a few seconds</param>
-        /// <param name="updateResources">Whether or not update lists of scenes/packages/projects</param>
         /// <returns></returns>
-        public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight, bool updateResources = true) {
+        public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight) {
 
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
             MainMenu.Instance.Close();
-            if (updateResources) {
-                WebsocketManager.Instance.LoadScenes(LoadScenesCb);
-                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
-                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
-            }
             switch (what) {
                 case ShowMainScreenData.WhatEnum.PackagesList:
                     MainScreen.Instance.SwitchToPackages();

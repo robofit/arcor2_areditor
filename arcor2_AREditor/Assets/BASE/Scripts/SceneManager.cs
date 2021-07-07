@@ -843,7 +843,8 @@ namespace Base {
         /// </summary>
         public void SetActionObjectsInteractivity(bool interactivity) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.SetInteractivity(interactivity);
+                if (actionObject != null)
+                    actionObject.SetInteractivity(interactivity);
             }
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOInteractivity", interactivity);
             ActionObjectsInteractive = interactivity;

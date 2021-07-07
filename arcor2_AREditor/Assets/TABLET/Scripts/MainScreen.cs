@@ -6,6 +6,10 @@ using System;
 using UnityEngine.Playables;
 using Base;
 using System.Linq;
+using Newtonsoft.Json;
+using IO.Swagger.Model;
+using System.Threading.Tasks;
+using System.Threading;
 
 public class MainScreen : Base.Singleton<MainScreen>
 {
@@ -43,6 +47,8 @@ public class MainScreen : Base.Singleton<MainScreen>
     [SerializeField]
     private GameObject ButtonsPortrait, ButtonsLandscape;
 
+    private bool scenesLoaded, projectsLoaded, packagesLoaded, scenesUpdating, projectsUpdating, packagesUpdating;
+
     private List<SceneTile> sceneTiles = new List<SceneTile>();
     private List<ProjectTile> projectTiles = new List<ProjectTile>();
     private List<PackageTile> packageTiles = new List<PackageTile>();
@@ -53,6 +59,10 @@ public class MainScreen : Base.Singleton<MainScreen>
     private string orderBy = "modified";
 
     private bool ascendingOrder = false;
+
+    private void Awake() {
+        scenesLoaded = projectsLoaded = scenesUpdating = projectsUpdating = packagesLoaded = packagesUpdating = false;
+    }
 
 
     private void ShowSceneProjectManagerScreen(object sender, EventArgs args) {
@@ -131,7 +141,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         Base.GameManager.Instance.OnOpenSceneEditor += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideSceneProjectManagerScreen;
         Base.GameManager.Instance.OnRunPackage += HideSceneProjectManagerScreen;
-        Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
+        Base.GameManager.Instance.OnScenesListChanged += UpdateScenes;
         Base.GameManager.Instance.OnProjectsListChanged += UpdateProjects;
         Base.GameManager.Instance.OnPackagesListChanged += UpdatePackages;
         WebsocketManager.Instance.OnProjectRemoved += OnProjectRemoved;
@@ -185,70 +195,212 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
     }
 
-    public void SwitchToProjects() {
+    private void WaitUntilScenesLoaded() {
+        Task.Run(() => {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
+            while (true) {
+                if (sw.ElapsedMilliseconds > 5000)
+                    throw new TimeoutException("Failed to load scenes");
+                if (scenesLoaded) {
+                    return true;
+                } else {
+                    Thread.Sleep(10);
+                }
+            }
+        });
+    }
+
+    private void WaitUntilProjectsLoaded() {
+        Task.Run(() => {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
+            while (true) {
+                if (sw.ElapsedMilliseconds > 5000)
+                    throw new TimeoutException("Failed to load projects");
+                if (projectsLoaded) {
+                    return true;
+                } else {
+                    Thread.Sleep(10);
+                }
+            }
+        });
+
+    }
+
+    private void WaitUntilPackagesLoaded() {
+        Task.Run(() => {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
+            while (true) {
+                if (sw.ElapsedMilliseconds > 5000)
+                    throw new TimeoutException("Failed to load packages");
+                if (packagesLoaded) {
+                    return true;
+                } else {
+                    Thread.Sleep(10);
+                }
+            }
+        });
+
+    }
+
+
+    public async void SwitchToProjects() {
         GameManager.Instance.ShowLoadingScreen("Updating projects...");
-        WebsocketManager.Instance.LoadProjects(GameManager.Instance.LoadProjectsCb);
-        foreach (TMPro.TMP_Text btn in ScenesBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        if (!scenesUpdating) {
+            scenesUpdating = true;
+            scenesLoaded = false;
+            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
-        foreach (TMPro.TMP_Text btn in PackagesBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        try {
+            WaitUntilScenesLoaded();
+            if (!projectsUpdating) {
+                projectsUpdating = true;
+                projectsLoaded = false;
+                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+            }
+            WaitUntilProjectsLoaded();
+            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+                btn.color = new Color(0, 0, 0);
+            }
+            ProjectsList.gameObject.SetActive(true);
+            ScenesList.gameObject.SetActive(false);
+            PackageList.gameObject.SetActive(false);
+            AddNewBtn.gameObject.SetActive(true);
+            AddNewBtn.SetDescription("Add project");
+            FilterProjectsBySceneId(null);
+            FilterLists();
+            SortCurrentList();
+        } catch (TimeoutException ex) {
+            GameManager.Instance.HideLoadingScreen();
+            Notifications.Instance.ShowNotification("Failed to switch to projects", ex.Message);
         }
-        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
-            btn.color = new Color(0, 0, 0);
-        }
-        ProjectsList.gameObject.SetActive(true);
-        ScenesList.gameObject.SetActive(false);
-        PackageList.gameObject.SetActive(false);
-        AddNewBtn.gameObject.SetActive(true);
-        AddNewBtn.SetDescription("Add project");
-        FilterProjectsBySceneId(null);
-        FilterLists();
-        SortCurrentList();
+        
     }
 
     public void SwitchToScenes() {
         GameManager.Instance.ShowLoadingScreen("Updating scenes..");
-        WebsocketManager.Instance.LoadScenes(GameManager.Instance.LoadScenesCb);
-        
-        foreach (TMPro.TMP_Text btn in ScenesBtns) {
-            btn.color = new Color(0, 0, 0);
+        if (!scenesUpdating) {
+            scenesUpdating = true;
+            scenesLoaded = false;
+            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
-        foreach (TMPro.TMP_Text btn in PackagesBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        try {
+            WaitUntilScenesLoaded();
+
+
+            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+                btn.color = new Color(0, 0, 0);
+            }
+            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+
+            ProjectsList.gameObject.SetActive(false);
+            PackageList.gameObject.SetActive(false);
+            ScenesList.gameObject.SetActive(true);
+            AddNewBtn.gameObject.SetActive(true);
+            AddNewBtn.SetDescription("Add scene");
+            FilterScenesById(null);
+            FilterLists();
+            SortCurrentList();
+        } catch (TimeoutException ex) {
+            GameManager.Instance.HideLoadingScreen();
+            Notifications.Instance.ShowNotification("Failed to switch to scenes", ex.Message);
         }
-        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
-        }
-        
-        ProjectsList.gameObject.SetActive(false);
-        PackageList.gameObject.SetActive(false);
-        ScenesList.gameObject.SetActive(true);
-        AddNewBtn.gameObject.SetActive(true);
-        AddNewBtn.SetDescription("Add scene");
-        FilterScenesById(null);
-        FilterLists();
-        SortCurrentList();
     }
 
     public void SwitchToPackages() {
         GameManager.Instance.ShowLoadingScreen("Updating packages...");
-        WebsocketManager.Instance.LoadPackages(GameManager.Instance.LoadPackagesCb);
-        foreach (TMPro.TMP_Text btn in ScenesBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
+        if (!scenesUpdating) {
+            scenesUpdating = true;
+            scenesLoaded = false;
+            WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
-        foreach (TMPro.TMP_Text btn in PackagesBtns) {
-            btn.color = new Color(0, 0, 0);
+        try {
+            WaitUntilScenesLoaded();
+            if (!projectsUpdating) {
+                projectsUpdating = true;
+                projectsLoaded = false;
+                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
+            }
+            WaitUntilProjectsLoaded();
+            if (!packagesUpdating) {
+                packagesUpdating = true;
+                packagesLoaded = false;
+                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
+            }
+            WaitUntilPackagesLoaded();
+            foreach (TMPro.TMP_Text btn in ScenesBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+            foreach (TMPro.TMP_Text btn in PackagesBtns) {
+                btn.color = new Color(0, 0, 0);
+            }
+            foreach (TMPro.TMP_Text btn in ProjectsBtns) {
+                btn.color = new Color(0.687f, 0.687f, 0.687f);
+            }
+            ProjectsList.gameObject.SetActive(false);
+            ScenesList.gameObject.SetActive(false);
+            PackageList.gameObject.SetActive(true);
+            AddNewBtn.gameObject.SetActive(false);
+            FilterLists();
+            SortCurrentList();
+        } catch (TimeoutException ex) {
+            GameManager.Instance.HideLoadingScreen();
+            Notifications.Instance.ShowNotification("Failed to switch to packages", ex.Message);
         }
-        foreach (TMPro.TMP_Text btn in ProjectsBtns) {
-            btn.color = new Color(0.687f, 0.687f, 0.687f);
-        }
-        ProjectsList.gameObject.SetActive(false);
-        ScenesList.gameObject.SetActive(false);
-        PackageList.gameObject.SetActive(true);
-        AddNewBtn.gameObject.SetActive(false);
-        FilterLists();
-        SortCurrentList();
+    }
+
+    public void LoadScenesCb(string id, string responseData) {
+        IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
+        if (response == null)
+            Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
+        GameManager.Instance.Scenes = response.Data;
+        GameManager.Instance.Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
+            return y.Modified.CompareTo(x.Modified);
+        });
+        scenesUpdating = false;
+        scenesLoaded = true;
+        GameManager.Instance.InvokeScenesListChanged();
+    }
+
+    public void LoadProjectsCb(string id, string responseData) {
+        IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
+        if (response == null)
+            Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
+        GameManager.Instance.Projects = response.Data;
+        GameManager.Instance.Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
+            return y.Modified.CompareTo(x.Modified);
+        });
+        projectsUpdating = false;
+        projectsLoaded = true;
+        GameManager.Instance.InvokeProjectsListChanged();
+    }
+    public void LoadPackagesCb(string id, string responseData) {
+        IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
+        if (response == null)
+            Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
+        GameManager.Instance.Packages = response.Data;
+        GameManager.Instance.Packages.Sort(delegate (PackageSummary x, PackageSummary y) {
+            return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
+        });
+        packagesUpdating = false;
+        packagesLoaded = true;
+        GameManager.Instance.InvokePackagesListChanged();
     }
 
     public void HighlightTile(string tileId) {

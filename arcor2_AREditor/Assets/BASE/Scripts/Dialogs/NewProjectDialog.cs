@@ -15,7 +15,7 @@ public class NewProjectDialog : Dialog
     public ButtonWithTooltip OKBtn;
     public void Start()
     {
-        Base.GameManager.Instance.OnSceneListChanged += UpdateScenes;
+        Base.GameManager.Instance.OnScenesListChanged += UpdateScenes;
     }
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
