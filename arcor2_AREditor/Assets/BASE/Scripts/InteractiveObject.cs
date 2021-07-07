@@ -78,6 +78,9 @@ public abstract class InteractiveObject : Clickable {
         }
         if (SelectorItem != null)
             SelectorItem.gameObject.SetActive(enable);
+        if (!enable && SelectorMenu.Instance.GetSelectedObject() == this) {
+            SelectorMenu.Instance.DeselectObject(true);
+        }
     }
 
     public abstract void UpdateColor();

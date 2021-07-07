@@ -56,9 +56,12 @@ public class LeftMenuScene : LeftMenu
             }
 
             await base.UpdateBtns(obj);
+#if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, "AR is not calibrated");
-            } else if (requestingObject || obj == null) {
+            } else
+#endif
+            if (requestingObject || obj == null) {
                 SelectedObjectText.text = "";
                 ActionObjectAimingMenuButton.SetInteractivity(false, "No object selected");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
