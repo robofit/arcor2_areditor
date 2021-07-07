@@ -130,9 +130,10 @@ namespace Base {
 
         }
 
-        public void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
+        public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
+            bool robotAdded = false;
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
@@ -143,19 +144,26 @@ namespace Base {
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
                 actionObjectsMetadata.Add(obj.Type, m);
+                if (m.Robot)
+                    robotAdded = true;
                 added.Add(obj.Type);
             }
-            
+            if (robotAdded)
+                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
+
             OnObjectTypesAdded?.Invoke(this, new StringListEventArgs(added));
         }
 
-        public void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
+        public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
+            bool updatedRobot = false;
             List<string> updated = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
                     actionObjectMetadata.Update(obj);
+                    if (actionObjectMetadata.Robot)
+                        updatedRobot = true;
                     if (!actionObjectMetadata.Abstract && !actionObjectMetadata.BuiltIn)
                         UpdateActionsOfActionObject(actionObjectMetadata);
                     else
@@ -165,7 +173,8 @@ namespace Base {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
                 }
             }
-
+            if (updatedRobot)
+                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
             OnObjectTypesUpdated?.Invoke(this, new StringListEventArgs(updated));
         }
         
