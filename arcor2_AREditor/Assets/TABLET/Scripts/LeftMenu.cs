@@ -1,13 +1,8 @@
 using System;
-using System.CodeDom;
-using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using RuntimeGizmos;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.GameManager;
@@ -463,7 +458,6 @@ public abstract class LeftMenu : MonoBehaviour {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !MainSettingsButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-        Selection.activeGameObject = MainSettingsButton.gameObject;
         if (MainSettingsButton.GetComponent<Image>().enabled) {
             MainSettingsButton.GetComponent<Image>().enabled = false;
             MainSettingsMenu.Instance.Hide();
