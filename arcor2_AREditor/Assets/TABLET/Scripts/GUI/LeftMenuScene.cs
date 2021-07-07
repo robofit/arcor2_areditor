@@ -56,9 +56,12 @@ public class LeftMenuScene : LeftMenu
             }
 
             await base.UpdateBtns(obj);
+
+            AddActionObjectButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Only available when online");
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, "AR is not calibrated");
+                AddActionObjectButton.SetInteractivity(false, "AR is not calibrated");
             } else
 #endif
             if (requestingObject || obj == null) {
@@ -72,6 +75,8 @@ public class LeftMenuScene : LeftMenu
                         ActionObjectAimingMenuButton.SetInteractivity(false, "Only available when online");
                     } else if (!actionObject.ActionObjectMetadata.HasPose) {
                         ActionObjectAimingMenuButton.SetInteractivity(false, "Not available for objects without pose");
+                    } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+                        ActionObjectAimingMenuButton.SetInteractivity(false, "End effector not selected");
                     } else {
                         ActionObjectAimingMenuButton.SetInteractivity(true);
                     }

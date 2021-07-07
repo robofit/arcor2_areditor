@@ -24,7 +24,8 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
     }
 
     private void OnSceneChanged(object sender, System.EventArgs e) {
-        UpdateRemoveBtns();
+        if (CanvasGroup.alpha > 0)
+            UpdateRemoveBtns();
     }
 
     private void OnObjectTypesRemoved(object sender, StringListEventArgs args) {

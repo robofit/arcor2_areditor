@@ -8,11 +8,10 @@ using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
 public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 {
-    public DropdownParameter RobotsList, EndEffectorList, PivotList;
-    public DropdownArms DropdownArms;
+    public DropdownParameter PivotList;
     public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
     public TMPro.TMP_Text CurrentPointLabel;
-    public GameObject RobotsListsBlock, UpdatePositionBlockMesh, UpdatePositionBlockVO;
+    public GameObject UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public SwitchComponent ShowModelSwitch;
     private int currentFocusPoint = -1;
     public CalibrateRobotDialog CalibrateRobotDialog;
@@ -30,15 +29,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
 
     private void Start() {
-        Debug.Assert(RobotsList != null);
-        Debug.Assert(EndEffectorList != null);
         Debug.Assert(NextButton != null);
         Debug.Assert(PreviousButton != null);
         Debug.Assert(FocusObjectDoneButton != null);
         Debug.Assert(StartObjectFocusingButton != null);
         Debug.Assert(SavePositionButton != null);
         Debug.Assert(CurrentPointLabel != null);
-        Debug.Assert(RobotsListsBlock != null);
         Debug.Assert(UpdatePositionBlockMesh != null);
         Debug.Assert(UpdatePositionBlockVO != null);
         List<string> pivots = new List<string>();
@@ -48,6 +44,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         PivotList.PutData(pivots, "Middle", OnPivotChanged);
         Focusing = false;
         WebsocketManager.Instance.OnProcessStateEvent += OnRobotCalibrationEvent;
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+    }
+
+    private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        Hide(false);
+        
     }
 
     public async void Show(ActionObject actionObject) {
@@ -84,7 +86,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         if (!SceneManager.Instance.SceneStarted) {
             UpdatePositionBlockVO.SetActive(false);
             UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(false);
             Hide();
             return;
         }
@@ -104,17 +105,13 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         if (currentFocusPoint >= 0)
             return;
         if (SceneManager.Instance.RobotInScene()) {
-            await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-            OnRobotChanged(RobotsList.GetValue().ToString());
 
             if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
-                RobotsListsBlock.SetActive(true);
             } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
                 UpdatePositionBlockMesh.SetActive(false);
-                RobotsListsBlock.SetActive(true);
                 ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
                 if (ShowModelSwitch.Interactable && ShowModelSwitch.Switch.isOn) {
                     ShowModelOnEE();
@@ -122,13 +119,11 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             } else {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(false);
-                RobotsListsBlock.SetActive(false);
             }
 
         } else {
             UpdatePositionBlockVO.SetActive(false);
             UpdatePositionBlockMesh.SetActive(false);
-            RobotsListsBlock.SetActive(false);
         }
 
 
@@ -138,45 +133,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
 
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="robot_name"></param>
-    private async void OnRobotChanged(string robot_name) {
-        string robotId = null;
-        try {
-            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            robotId = null;
-        }
-        if (string.IsNullOrEmpty(robotId)) {
-            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-            return;
-        }
-        await DropdownArms.Init(robotId, OnRobotArmChanged);
-        OnRobotArmChanged(DropdownArms.Dropdown.GetValue().ToString());
-    }
-
-    private async void OnRobotArmChanged(string arm_id) {
-        string robotId = null;
-        try {
-            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            robotId = null;
-
-        }
-        if (string.IsNullOrEmpty(robotId)) {
-            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-            return;
-        }
-        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, OnEEChanged);
-        UpdateModelOnEE();
-    }
-
-
 
     private void OnEEChanged(string eeId) {
         UpdateModelOnEE();
@@ -188,18 +144,17 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
 
     public async void UpdateObjectPosition() {
-        if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
+        if (!SceneManager.Instance.IsRobotAndEESelected()) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         PivotEnum pivot = (PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue());
-        IRobot robot = SceneManager.Instance.GetRobotByName((string) RobotsList.GetValue());
         string armId = null;
-        if (robot.MultiArm())
-            armId = DropdownArms.Dropdown.GetValue().ToString();
+        if (SceneManager.Instance.SelectedRobot.MultiArm())
+            armId = SceneManager.Instance.SelectedArmId;
         try {
             await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(currentObject.Data.Id,
-                    robot.GetId(), (string) EndEffectorList.GetValue(), pivot, armId);
+                    SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), pivot, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to update object position", ex.Message);
         }
@@ -224,19 +179,18 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     public async void StartObjectFocusing() {
-        if (RobotsList.Dropdown.dropdownItems.Count == 0 || EndEffectorList.Dropdown.dropdownItems.Count == 0) {
+        if (!SceneManager.Instance.IsRobotAndEESelected()) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
         try {
             Focusing = true;
-            IRobot robot = SceneManager.Instance.GetRobot((string) RobotsList.GetValue());
             string armId = null;
-            if (robot.MultiArm())
-                armId = DropdownArms.Dropdown.GetValue().ToString();
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
             await WebsocketManager.Instance.StartObjectFocusing(currentObject.Data.Id,
-                (string) RobotsList.GetValue(),
-                (string) EndEffectorList.GetValue(),
+                SceneManager.Instance.SelectedRobot.GetId(),
+                SceneManager.Instance.SelectedEndEffector.GetName(),
                 armId);
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
@@ -325,18 +279,15 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         UpdateModelOnEE();
     }
 
-    private async void UpdateModelOnEE() {
+    private void UpdateModelOnEE() {
         if (model == null)
             return;
-        string robotName = (string) RobotsList.GetValue(), eeId = (string) EndEffectorList.GetValue();
-        if (string.IsNullOrEmpty(robotName) || string.IsNullOrEmpty(eeId)) {
+        if (!SceneManager.Instance.IsRobotAndEESelected()) {
             throw new RequestFailedException("Robot or end effector not selected!");
         }
 
         try {
-            string robotId = SceneManager.Instance.RobotNameToId(robotName);
-            RobotEE ee = await (SceneManager.Instance.GetRobot(robotId).GetEE(eeId));
-            model.transform.parent = ee.gameObject.transform;
+            model.transform.parent = SceneManager.Instance.SelectedEndEffector.gameObject.transform;
 
             switch ((PivotEnum) Enum.Parse(typeof(PivotEnum), (string) PivotList.GetValue())) {
                 case PivotEnum.Top:

@@ -10,9 +10,6 @@ public class AddJointsMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;
-    public DropdownParameter RobotsList;
-    public DropdownArms DropdownArms;
-
 
     [SerializeField]
     private Button CreateNewJoints;
@@ -22,31 +19,10 @@ public class AddJointsMenu : MonoBehaviour {
 
     private string jointsName;
 
-    public async void UpdateMenu() {
-        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
-        robotsListDropdown.dropdownItems.Clear();
-
-        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, false);
-        OnRobotChanged(RobotsList.GetValue().ToString());
+    public async void UpdateMenu() {        
         ValidateFields();
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="robot_name"></param>
-    private async void OnRobotChanged(string robot_name) {
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            if (string.IsNullOrEmpty(robotId)) {
-                Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-                return;
-            }
-            await DropdownArms.Init(robotId, null);
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-        }
-    }
 
     public async void ValidateFields() {
         bool interactable = true;
@@ -61,9 +37,9 @@ public class AddJointsMenu : MonoBehaviour {
         }
 
         if (interactable) {
-            if (RobotsList.Dropdown.dropdownItems.Count == 0) {
+            if (!SceneManager.Instance.IsRobotSelected()) {
                 interactable = false;
-                buttonTooltip.description = "There is no robot to be used";
+                buttonTooltip.description = "Robot is not selected";
             }
         }
         
@@ -72,24 +48,14 @@ public class AddJointsMenu : MonoBehaviour {
     }
 
     public async void AddJoints() {
-        string robotName = (string) RobotsList.GetValue();
-
-        IRobot robot;
-        try {
-            robot = SceneManager.Instance.GetRobotByName(robotName);
-        } catch (ItemNotFoundException ex) {
-            Notifications.Instance.ShowNotification("Failed to add joints", "Could not found robot called: " + robotName);
-            Debug.LogError(ex);
-            return;
-        }
-
+        
         Debug.Assert(CurrentActionPoint != null);
         try {
             string armId = null;
-            if (robot.MultiArm())
-                armId = DropdownArms.Dropdown.GetValue().ToString();
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
             jointsName = NameInput.text;
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), jointsName, armId);
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, armId);
             Notifications.Instance.ShowToastMessage("Joints added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);

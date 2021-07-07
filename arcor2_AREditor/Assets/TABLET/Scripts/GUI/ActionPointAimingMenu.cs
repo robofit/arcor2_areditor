@@ -7,6 +7,7 @@ using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
+using RuntimeInspectorNamespace;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -25,14 +26,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     private ActionButton OrientationManualDefaultButton;
 
     [SerializeField]
-    private Button AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
-
-    [SerializeField]
-    private TooltipContent UpdatePositionUsingRobotTooltip, AddOrientationUsingRobotTooltip, AddJointsTooltip;
-
-    public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
-
-    public DropdownArms PositionDropdownArms, JointsDropdownArms;
+    private ButtonWithTooltip AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -166,7 +160,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
-        UpdateJointsDynamicList((string) JointsRobotsList.GetValue());  //because of possible invalidation of joints
+        UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedArmId);  //because of possible invalidation of joints
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -196,7 +190,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
         if (!IsVisible() || args.ActionPointId != CurrentActionPoint.GetId())
             return;
-        if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
+        if (args.Data.RobotId == SceneManager.Instance.SelectedRobot.GetId()) {
             ServiceButton btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
             btn.GetComponentInChildren<ActionButton>().Highlight(2f);
         }
@@ -239,118 +233,56 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public async void UpdateMenu() {
         if (CurrentActionPoint == null)
             return;
-        CloseAnySubmenu();
-        CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
-        positionRobotsListDropdown.dropdownItems.Clear();
-        await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        if (!SceneManager.Instance.SceneStarted || positionRobotsListDropdown.dropdownItems.Count == 0) {
-            PositionRobotsList.gameObject.SetActive(false);
-            PositionDropdownArms.gameObject.SetActive(false);
-            PositionEndEffectorList.gameObject.SetActive(false);
-            UpdatePositionUsingRobotBtn.interactable = false;
-            AddOrientationUsingRobotButton.interactable = false;
-        } else {
-            PositionRobotsList.gameObject.SetActive(true);
-            PositionDropdownArms.gameObject.SetActive(false);
-            PositionEndEffectorList.gameObject.SetActive(true);
-            UpdatePositionUsingRobotBtn.interactable = true;
-            AddOrientationUsingRobotButton.interactable = true;
-            OnRobotChanged((string) PositionRobotsList.GetValue());
-        }
-
+        CloseAnySubmenu();        
+         
         PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
-
-        JointsRobotsList.Dropdown.dropdownItems.Clear();
-        await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotJointsChanged, false);
-        if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
-            JointsRobotsList.gameObject.SetActive(true);
+        if (SceneManager.Instance.IsRobotSelected()) {
             JointsDynamicList.SetActive(true);
-            if (SceneManager.Instance.SceneStarted) {
-                OnRobotJointsChanged((string) JointsRobotsList.GetValue());
-                JointsDropdownArms.gameObject.SetActive(true);
+            if (SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected()) {
+                UpdateJointsDynamicList(SceneManager.Instance.SelectedArmId);
             } else {
-                JointsDropdownArms.gameObject.SetActive(false);
-                UpdateJointsDynamicList((string) JointsRobotsList.GetValue(), null);
-            }            
-            
+                UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), null);
+            }
         } else {
-            JointsRobotsList.gameObject.SetActive(false);
-            JointsDropdownArms.gameObject.SetActive(false);
             JointsDynamicList.SetActive(false);
         }
-        if (SceneManager.Instance.SceneStarted) {
-            AddJointsButton.interactable = true;
-        } else {
-            AddJointsButton.interactable = false;
-        }
+        
 
         UpdateOrientationsDynamicList();
-        this.gameObject.SetActive(true); //so the couroutine can be started for sure
-        StartCoroutine(UpdateTooltips());
-    }
-
-
-    private IEnumerator UpdateTooltips() {
-        yield return new WaitForSeconds(0.1f); //fixes a bug, when after the first collapsing of collapsable menu there is no tooltip
 
         const string noRobot = "There is no robot in the scene";
         const string sceneNotStarted = "To add using robot, go online";
+        const string eeNotSelected = "End effector is not selected";
+        UpdatePositionUsingRobotBtn.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
+        AddOrientationUsingRobotButton.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
+        AddJointsButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene not started");
 
         if (!SceneManager.Instance.RobotInScene()) {
-            UpdatePositionUsingRobotTooltip.description = noRobot;
-            AddOrientationUsingRobotTooltip.description = noRobot;
-            AddJointsTooltip.description = noRobot;
-            UpdatePositionUsingRobotTooltip.enabled = true;
-            AddOrientationUsingRobotTooltip.enabled = true;
-            AddJointsTooltip.enabled = true;
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, noRobot);
+            AddOrientationUsingRobotButton.SetInteractivity(false, noRobot);
+            AddJointsButton.SetInteractivity(false, noRobot);
             JointsListLabel.text = "To show joints list, add a robot to the scene";
         } else if (!SceneManager.Instance.SceneStarted) {
-            UpdatePositionUsingRobotTooltip.description = "To update using robot, go online";
-            AddOrientationUsingRobotTooltip.description = sceneNotStarted;
-            AddJointsTooltip.description = sceneNotStarted;
-            UpdatePositionUsingRobotTooltip.enabled = true;
-            AddOrientationUsingRobotTooltip.enabled = true;
-            AddJointsTooltip.enabled = true;
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, "To update using robot, go online");
+            AddOrientationUsingRobotButton.SetInteractivity(false, sceneNotStarted);
+            AddJointsButton.SetInteractivity(false, sceneNotStarted);
             JointsListLabel.text = "List of joints:";
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, eeNotSelected);
+            AddOrientationUsingRobotButton.SetInteractivity(false, eeNotSelected);
+            AddJointsButton.SetInteractivity(SceneManager.Instance.IsRobotSelected(), "Robot is not selected");
+            if (SceneManager.Instance.IsRobotSelected())
+                JointsListLabel.text = "List of joints:";
+            else
+                JointsListLabel.text = "To show joints list, select robot";
         } else {
-            UpdatePositionUsingRobotTooltip.enabled = false;
-            AddOrientationUsingRobotTooltip.enabled = false;
-            AddJointsTooltip.enabled = false;
+            UpdatePositionUsingRobotBtn.SetInteractivity(true);
+            AddOrientationUsingRobotButton.SetInteractivity(true);
+            AddJointsButton.SetInteractivity(true);
             JointsListLabel.text = "List of joints:";
         }
-    }
-
-    private async void OnRobotChanged(string robot_name) {
-
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            //await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnRobotArmChanged);
-            await PositionDropdownArms.Init(robotId, OnRobotArmChanged);
-
-            OnRobotArmChanged(PositionDropdownArms.Dropdown.GetValue().ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
-        }
-
-    }
-
-    private async void OnRobotArmChanged(string arm_id) {
-        string robotId = null;
-        try {
-            robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.GetValue().ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            robotId = null;
-
-        }
-        if (string.IsNullOrEmpty(robotId)) {
-            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + PositionRobotsList.GetValue().ToString() + "does not exists");
-            return;
-        }
-        await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, null);
     }
 
     public void ShowUpdatePositionConfirmationDialog() {
@@ -369,14 +301,11 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             if (position != null) {
                 await WebsocketManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetId(), position);
             } else {
-                string robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.Dropdown.selectedText.text);
-                string endEffectorId = PositionEndEffectorList.GetValue().ToString();
-                IRobot robot = SceneManager.Instance.GetRobot(robotId);
                 string armId = null;
-                if (robot.MultiArm())
-                    armId = PositionDropdownArms.Dropdown.GetValue().ToString();
+                if (SceneManager.Instance.SelectedRobot.MultiArm())
+                    armId = SceneManager.Instance.SelectedArmId;
 
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId, armId);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
                 confirmationDialog.Close();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
@@ -498,31 +427,13 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         }
     }
 
-    private async void OnRobotJointsChanged(string robot_name) {
 
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            //await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, OnRobotArmChanged);
-            await JointsDropdownArms.Init(robotId, UpdateJointsDynamicList);
-            object arm_id = JointsDropdownArms.Dropdown.GetValue();
-            if (arm_id == null)
-                UpdateJointsDynamicList(robotId, null);
-            else
-                UpdateJointsDynamicList(arm_id.ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
-        }
-
-    }
-
-    public async void UpdateJointsDynamicList(string arm_id) {
-        IRobot robot = SceneManager.Instance.GetRobotByName(JointsRobotsList.GetValue().ToString());
-        UpdateJointsDynamicList(robot.GetId(), robot.MultiArm() ? arm_id : "");
+    public void UpdateJointsDynamicList(string arm_id) {
+        UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedRobot.MultiArm() ? arm_id : "");
     }
 
 
-    public async void UpdateJointsDynamicList(string robot_id, string arm_id) {
+    public void UpdateJointsDynamicList(string robot_id, string arm_id) {
         
 
         try {

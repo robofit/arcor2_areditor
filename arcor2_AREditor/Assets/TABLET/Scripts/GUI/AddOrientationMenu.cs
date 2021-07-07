@@ -9,9 +9,7 @@ public class AddOrientationMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;// QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
-    public DropdownParameter RobotsList, EndEffectorList;
-    public DropdownArms DropdownArms;
-    public GameObject LiteModeBlock, ManualModeBlock;
+    public GameObject ManualModeBlock;
     public bool ManualMode;
 
     public OrientationManualEdit OrientationManualEdit;
@@ -24,48 +22,8 @@ public class AddOrientationMenu : MonoBehaviour {
 
 
     public async void UpdateMenu() {
-        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
-        robotsListDropdown.dropdownItems.Clear();
-
-        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        if (robotsListDropdown.dropdownItems.Count > 0) {
-            OnRobotChanged((string) RobotsList.GetValue());
-        }
-
+        
         ValidateFields();
-    }
-
-    /// <summary>
-    /// updates EndEffectorList on selected robot change
-    /// </summary>
-    /// <param name="robot_name">Newly selected robot's name</param>
-    private async void OnRobotChanged(string robot_name) {
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await DropdownArms.Init(robotId, OnRobotArmChanged);
-            OnRobotArmChanged(DropdownArms.Dropdown.GetValue().ToString());
-        }
-        catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load robot arms", ex.Message);
-        }
-
-    }
-
-    private async void OnRobotArmChanged(string arm_id) {
-        string robotId;
-        try {
-            robotId = SceneManager.Instance.RobotNameToId(RobotsList.GetValue().ToString());
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            robotId = null;
-
-        }
-        if (string.IsNullOrEmpty(robotId)) {
-            Notifications.Instance.ShowNotification("Robot not found", "Robot with name " + RobotsList.GetValue().ToString() + "does not exists");
-            return;
-        }
-        await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, arm_id, null);
     }
 
     public async void ValidateFields() {
@@ -91,7 +49,7 @@ public class AddOrientationMenu : MonoBehaviour {
         }
         else {
             if (interactable) {
-                if (RobotsList.Dropdown.dropdownItems.Count == 0) {
+                if (!SceneManager.Instance.IsRobotSelected()) {
                     interactable = false;
                     buttonTooltip.description = "There is no robot to be used";
                 }
@@ -113,12 +71,10 @@ public class AddOrientationMenu : MonoBehaviour {
                 await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
             } else { //using robot
 
-                string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                IRobot robot = SceneManager.Instance.GetRobot(robotId);
                 string armId = null;
-                if (robot.MultiArm())
-                    armId = DropdownArms.Dropdown.GetValue().ToString();
-                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name, armId);
+                if (SceneManager.Instance.SelectedRobot.MultiArm())
+                    armId = SceneManager.Instance.SelectedArmId;
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), name, armId);
             }
             Close(); //close add menu
             Notifications.Instance.ShowToastMessage("Orientation added successfully");
@@ -134,7 +90,6 @@ public class AddOrientationMenu : MonoBehaviour {
         CurrentActionPoint = actionPoint;
 
         ManualModeBlock.SetActive(ManualMode);
-        LiteModeBlock.SetActive(!ManualMode);
 
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
         OrientationManualEdit.SetOrientation(new Orientation());

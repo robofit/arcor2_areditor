@@ -122,7 +122,7 @@ namespace Base {
         /// Defines if scene was started on server - e.g. if all robots and other action objects
         /// are instantioned and are ready
         /// </summary>
-        public bool SceneStarted = false;
+        private bool sceneStarted = false;
 
         /// <summary>
         /// Flag which indicates whether scene update event should be trigered during update
@@ -157,6 +157,11 @@ namespace Base {
                     OnSceneSavedStatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
+        }
+
+        public bool SceneStarted {
+            get => sceneStarted;
+            private set => sceneStarted = value;
         }
 
         /// <summary>
@@ -374,11 +379,11 @@ namespace Base {
         }
 
         public bool IsRobotSelected() {
-            return SelectedRobot != null;
+            return SelectedRobot != null && !string.IsNullOrEmpty(SelectedArmId);
         }
 
         public bool IsRobotAndEESelected() {
-            return IsRobotSelected() && SelectedEndEffector != null && !string.IsNullOrEmpty(SelectedArmId);
+            return IsRobotSelected() && SelectedEndEffector != null;
         }
 
         /// <summary>
