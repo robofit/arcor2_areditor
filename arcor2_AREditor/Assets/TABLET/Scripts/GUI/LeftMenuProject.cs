@@ -82,8 +82,6 @@ public class LeftMenuProject : LeftMenu
         
             await base.UpdateBtns(obj);
 #if UNITY_ANDROID && AR_ON
-
-#endif
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 SetActionPointParentButton.SetInteractivity(false, "AR not calibrated");
                 AddActionButton.SetInteractivity(false, "AR not calibrated");
@@ -97,7 +95,9 @@ public class LeftMenuProject : LeftMenu
                 CopyButton.SetInteractivity(false, "AR not calibrated");
                 ActionPointAimingMenuButton.SetInteractivity(false, "AR not calibrated");
             }
-            else if (requestingObject || obj == null) {
+            else
+#endif
+            if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton.SetInteractivity(false, "No action point is selected");
                 AddActionButton2.SetInteractivity(false, "No action point is selected");

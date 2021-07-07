@@ -34,8 +34,10 @@ public class MainScreenMenu : MonoBehaviour
     }
 
     public void UseServerCalibration(bool useServer) {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         CalibrationManager.Instance.UseServerCalibration(useServer);
         EditorSettingsAutoCalibToggle.gameObject.SetActive(useServer);
+#endif
     }
 
     private void OnDestroy() {
