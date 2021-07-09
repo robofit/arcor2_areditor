@@ -28,7 +28,7 @@ public class ManualTooltip : MonoBehaviour {
 
     private void Start() {
         Debug.Assert(tooltipContent != null);
-        if (string.IsNullOrEmpty(Description)) {
+        if (string.IsNullOrEmpty(Description) && string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
             return;
         }

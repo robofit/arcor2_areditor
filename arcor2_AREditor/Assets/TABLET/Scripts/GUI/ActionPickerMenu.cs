@@ -27,14 +27,22 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
 
             foreach (Base.ActionMetadata am in keyval.Value) {
                 ActionButtonWithIcon btn = Instantiate(ButtonPrefab, collapsableMenu.Content.transform).GetComponent<ActionButtonWithIcon>();
+                ButtonWithTooltip btnTooltip = btn.GetComponent<ButtonWithTooltip>();
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.SetLabel(am.Name);
                 btn.Icon.sprite = AREditorResources.Instance.Action;
-                if (am.Disabled) {
-                    CreateTooltip(am.Problem, btn);
-                    btn.Button.interactable = false;
-                } else if (!string.IsNullOrEmpty(am.Description)) {
-                    CreateTooltip(am.Description, btn);
+                if (am.Name == "suck") {
+                    btn.SetInteractable(false);
+                    btnTooltip.SetInteractivity(false, "Go suck yourself");
+                    //btnTooltip.SetDescription("..."); //if Description is not set, the tooltip is disabled
+                } else {
+                    if (am.Disabled) {
+                        btn.SetInteractable(false);
+                        btnTooltip.SetInteractivity(false, am.Problem);
+                        //btnTooltip.SetDescription("..."); //if Description is not set, the tooltip is disabled
+                    } else if (!string.IsNullOrEmpty(am.Description)) {
+                        btnTooltip.SetDescription(am.Description);
+                    }
                 }
 
                 btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
@@ -66,18 +74,6 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
         return CanvasGroup.alpha > 0;
     }
 
-    private static void CreateTooltip(string text, ActionButton btn) {
-        TooltipContent btnTooltip = btn.gameObject.AddComponent<TooltipContent>();
-        btnTooltip.enabled = true;
-
-        if (btnTooltip.tooltipRect == null) {
-            btnTooltip.tooltipRect = Base.GameManager.Instance.Tooltip;
-        }
-        if (btnTooltip.descriptionText == null) {
-            btnTooltip.descriptionText = Base.GameManager.Instance.Text;
-        }
-        btnTooltip.description = text;
-    }
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), currentActionPoint);

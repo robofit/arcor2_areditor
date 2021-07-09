@@ -41,7 +41,6 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                 !actionObjectMetadata.Abstract) {
 
                 ActionButtonWithIconRemovable btn = CreateBtn(actionObjectMetadata);
-                btn.GetComponent<ActionButton>().Highlight(2f);
             }
         }
     }
