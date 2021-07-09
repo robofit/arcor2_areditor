@@ -223,8 +223,9 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
         } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != parameter.Value) {
-                    parametersChanged = true;
-                    SaveParametersBtn.SetInteractivity(true);
+                    //parametersChanged = true;
+                    //SaveParametersBtn.SetInteractivity(true);
+                    SaveParameters();
                 }
             } catch (JsonReaderException) {
                 SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
