@@ -502,7 +502,7 @@ namespace Base {
                     foreach (string eeId in eeList.Value) {
 
                         RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                        ee.InitEE(this, eeId);
+                        ee.InitEE(this, eeList.Key, eeId);
                         ee.gameObject.SetActive(false);
                         if (!EndEffectors.ContainsKey(eeList.Key)) {
                             EndEffectors.Add(eeList.Key, new List<RobotEE>());

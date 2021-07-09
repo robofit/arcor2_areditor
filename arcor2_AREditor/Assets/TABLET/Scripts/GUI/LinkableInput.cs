@@ -121,5 +121,8 @@ public class LinkableInput : LinkableParameter {
     public void ConstantPickedCallback(object value) {
         SetValue(value);
     }
-   
+
+    public override void SetInteractable(bool interactable) {
+        Input.SetInteractable(interactable);
+    }
 }

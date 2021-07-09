@@ -113,6 +113,10 @@ namespace Base {
         /// was not changed and now it is and vice versa) 
         /// </summary>
         public event EventHandler OnProjectSavedSatusChanged;
+        /// <summary>
+        /// Indicates whether there is any object with available action in the scene
+        /// </summary>
+        public bool AnyAvailableAction;
 
         public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
 
@@ -334,6 +338,12 @@ namespace Base {
             SetProjectMeta(DataHelper.ProjectToBareProject(project));
             AllowEdit = allowEdit;
             LoadSettings();
+            AnyAvailableAction = false;
+            foreach (ActionObject obj in SceneManager.Instance.ActionObjects.Values)
+                if (obj.ActionObjectMetadata.ActionsMetadata.Count > 0) {
+                    AnyAvailableAction = true;
+                    break;
+                }
 
             StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
             StartAction.Init(null, null, null, null, "START");

@@ -114,4 +114,6 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public Transform GetTransform() {
         return transform;
     }
+
+    public abstract void SetInteractable(bool interactable);
 }

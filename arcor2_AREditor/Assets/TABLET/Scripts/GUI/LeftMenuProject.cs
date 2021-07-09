@@ -123,8 +123,13 @@ public class LeftMenuProject : LeftMenu
                 ActionPointAimingMenuButton.SetInteractivity(false, "Object is locked");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                if (obj is ActionPoint3D) {
+                    AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, "No actions available");
+                    AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, "No actions available");
+                } else {
+                    AddActionButton.SetInteractivity(false, "Selected object is not action point");
+                    AddActionButton2.SetInteractivity(false, "Selected object is not action point");
+                }
                 ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");

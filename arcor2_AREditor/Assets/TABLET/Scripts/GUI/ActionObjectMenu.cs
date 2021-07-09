@@ -144,7 +144,10 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
         if (CurrentObject.ObjectParameters.Count > 0) {
             objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
         }
-        SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
+        foreach (IParameter parameter in objectParameters) {
+            parameter.SetInteractable(!SceneManager.Instance.SceneStarted);
+        }
+        //SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
         
         parametersChanged = false;
     }
@@ -182,13 +185,8 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     public void SaveParameters() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor)
             SaveSceneObjectParameters();
-        else
-            SaveProjectObjectParameters();
     }
 
-    public void SaveProjectObjectParameters() {
-
-    }
 
     public async void SaveSceneObjectParameters() {
         if (Base.Parameter.CheckIfAllValuesValid(objectParameters)) {

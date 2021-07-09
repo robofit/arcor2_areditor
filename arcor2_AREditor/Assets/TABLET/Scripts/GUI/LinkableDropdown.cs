@@ -56,6 +56,9 @@ public class LinkableDropdown : LinkableParameter
         DropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot, type);
     }
 
+    public override void SetInteractable(bool interactable) {
+        DropdownParameter.SetInteractable(interactable);
+    }
 
     public void SetOnValueChanged(OnChangeParameterHandlerDelegate onChangeParameterHandler) {
         //input.Input.Input.onValueChanged.AddListener((string newValue)

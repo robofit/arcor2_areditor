@@ -168,4 +168,10 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     public Transform GetTransform() {
         return transform;
     }
+
+    public void SetInteractable(bool interactable) {
+        throw new NotImplementedException();
+    }
+
+    
 }

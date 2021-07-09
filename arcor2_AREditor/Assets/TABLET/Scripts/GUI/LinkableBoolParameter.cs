@@ -14,6 +14,11 @@ public class LinkableBoolParameter : LinkableParameter
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         SetValue(value);
     }
+
+    public override void SetInteractable(bool interactable) {
+        SwitchComponent.Interactable = interactable;
+    }
+
     public override void SetType(string type, bool linkable, bool switchBtnClicked) {
         base.SetType(type, linkable, switchBtnClicked);
         this.type = type;

@@ -139,6 +139,9 @@ namespace Base {
 
         public string SelectCreatedActionObject;
 
+
+        
+
         public bool Valid = false;
         /// <summary>
         /// Public setter for sceneChanged property. Invokes OnSceneChanged event with each change and
@@ -174,14 +177,13 @@ namespace Base {
         /// <returns>True if scene successfully created, false otherwise</returns>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
-            
             if (SceneMeta != null)
                 return false;
             SelectorMenu.Instance.Clear();
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            
+
             UpdateActionObjects(scene, customCollisionModels);
 
             if (scene.Modified == System.DateTime.MinValue) { //new scene, never saved

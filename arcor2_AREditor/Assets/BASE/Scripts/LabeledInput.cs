@@ -108,4 +108,10 @@ public class LabeledInput : MonoBehaviour, IParameter
     public Transform GetTransform() {
         return transform;
     }
+
+    public void SetInteractable(bool interactable) {
+        Input.interactable = interactable;
+        Input.textComponent.color = interactable ? Color.white : Color.gray;
+        Label.color = interactable ? Color.white : Color.gray;
+    }
 }

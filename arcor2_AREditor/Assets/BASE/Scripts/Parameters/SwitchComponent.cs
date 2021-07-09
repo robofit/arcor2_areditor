@@ -85,4 +85,9 @@ public class SwitchComponent : MonoBehaviour, IParameter
     public Transform GetTransform() {
         return transform;
     }
+
+    public void SetInteractable(bool interactable) {
+        Interactable = interactable;
+        Label.color = interactable ? Color.white : Color.gray;
+    }
 }
