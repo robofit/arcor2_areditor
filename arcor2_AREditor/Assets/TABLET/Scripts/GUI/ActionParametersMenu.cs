@@ -52,6 +52,10 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         return CanvasGroup.alpha > 0;
     }
 
+    public void SetVisibility(bool visible) {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, visible);
+    }
+
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");

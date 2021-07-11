@@ -79,10 +79,13 @@ namespace Base {
             return JsonConvert.DeserializeObject<T>(Value);
         }
 
-        public static T GetValue<T>(string value) {
+        public static T GetValue<T>(string value, string type = null) {
             if (value == null) {
-                return default; 
-            }                
+                return default;
+            }
+            //else if (type == "constant") {
+            //    return ProjectManager.Instance.ProjectParameters.Find(p => p.Id == value).Name;
+            //}
             return JsonConvert.DeserializeObject<T>(value);
         }
 
@@ -314,9 +317,12 @@ namespace Base {
 
         public static IParameter InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
             LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
-            int? selectedValue = null;
+            object selectedValue = null;
             if (value != null) {
-                selectedValue = Parameter.GetValue<int?>(value.ToString());
+                if (type == LinkableParameter.ProjectParameterText)
+                    selectedValue = value; //id of project parameter
+                else
+                    selectedValue = Parameter.GetValue<int?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
@@ -561,8 +567,10 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        public static IParameter InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
+        public static IParameter InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled,
+            GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
             IParameter parameter = null;
+
 
             switch (actionParameterMetadata.Type) {
                 case "string":

@@ -7,7 +7,7 @@ using Base;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
-public class ProjectConstantButton : MonoBehaviour
+public class ProjectParameterButton : MonoBehaviour
 {
     public Button Button;
     [SerializeField]
@@ -18,7 +18,7 @@ public class ProjectConstantButton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        WebsocketManager.Instance.OnProjectConstantUpdated += OnConstantUpdated;
+        WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
         LockingEventsCache.Instance.OnObjectLockingEvent += OnLockingEvent;
     }
 
@@ -26,19 +26,19 @@ public class ProjectConstantButton : MonoBehaviour
         if (!args.ObjectIds.Contains(Id))
             return;
 
-        ButtonWithTooltip.SetInteractivity(!args.Locked && args.Owner != LandingScreen.Instance.GetUsername(), "Constant is being edited by " + args.Owner);
+        ButtonWithTooltip.SetInteractivity(!args.Locked && args.Owner != LandingScreen.Instance.GetUsername(), "Project parameter is being edited by " + args.Owner);
     }
 
-    private void OnConstantUpdated(object sender, ProjectConstantEventArgs args) {
-        if (args.ProjectConstant.Id != Id)
+    private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
+        if (args.ProjectParameter.Id != Id)
             return;
 
-        SetName(args.ProjectConstant.Name);
-        SetValue(ProjectConstantPicker.GetValue(args.ProjectConstant.Value, ProjectConstantPicker.ConvertStringConstantToEnum(args.ProjectConstant.Type)));
+        SetName(args.ProjectParameter.Name);
+        SetValue(ProjectParametersHelper.GetValue(args.ProjectParameter.Value, ProjectParametersHelper.ConvertStringParameterTypeToEnum(args.ProjectParameter.Type)));
     }
 
     private void OnDestroy() {
-        WebsocketManager.Instance.OnProjectConstantUpdated -= OnConstantUpdated;
+        WebsocketManager.Instance.OnProjectParameterUpdated -= OnProjectParameterUpdated;
         LockingEventsCache.Instance.OnObjectLockingEvent -= OnLockingEvent;
     }
 

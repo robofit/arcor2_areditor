@@ -9,6 +9,13 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+
+//please remove this file if forgotten..
+
+
+
+[Obsolete]
 public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
     public GameObject Content, ConstantButtonPrefab;
     public CanvasGroup CanvasGroup;
@@ -18,13 +25,13 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
     private bool parametersChanged;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
-    private EditConstantDialog EditConstantDialog;
+    private EditProjectParameterDialog EditConstantDialog;
     private bool isMenuOpened;
     private Action<object> constantPickedCallback = null;
     private string filterType = null;
 
     private void Start() {
-        EditConstantDialog = AREditorResources.Instance.EditConstantDialog;
+        EditConstantDialog = AREditorResources.Instance.EditProjectParameterDialog;
     }
 
     public void Show(string type = null, Action<object> constantPickedCallback = null) {
@@ -43,8 +50,8 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
             GenerateConstantButtons(type);
         }
 
-        WebsocketManager.Instance.OnProjectConstantAdded += OnConstantAdded;
-        WebsocketManager.Instance.OnProjectConstantRemoved += OnConstantRemoved;
+        WebsocketManager.Instance.OnProjectParameterAdded += OnConstantAdded;
+        WebsocketManager.Instance.OnProjectParameterRemoved += OnConstantRemoved;
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         isMenuOpened = true;
@@ -52,34 +59,34 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
 
 
 
-    private void OnConstantRemoved(object sender, ProjectConstantEventArgs args) {
-        ProjectConstantButton[] btns = Content.GetComponentsInChildren<ProjectConstantButton>();
+    private void OnConstantRemoved(object sender, ProjectParameterEventArgs args) {
+        ProjectParameterButton[] btns = Content.GetComponentsInChildren<ProjectParameterButton>();
         if (btns != null) {
-            foreach (ProjectConstantButton btn in btns.Where(o => o.Id == args.ProjectConstant.Id)){
+            foreach (ProjectParameterButton btn in btns.Where(o => o.Id == args.ProjectParameter.Id)){
                 Destroy(btn.gameObject);
                 return;
             }
         }
     }
 
-    private void OnConstantAdded(object sender, ProjectConstantEventArgs args) {
-        GenerateConstantButton(args.ProjectConstant);
+    private void OnConstantAdded(object sender, ProjectParameterEventArgs args) {
+        GenerateConstantButton(args.ProjectParameter);
     }
 
     private void GenerateConstantButtons() {
-        foreach (var constant in ProjectManager.Instance.ProjectConstants) {
+        foreach (var constant in ProjectManager.Instance.ProjectParameters) {
             GenerateConstantButton(constant);
         }
     }
 
     private void GenerateConstantButtons(string type) {
-        foreach (var constant in ProjectManager.Instance.ProjectConstants.Where(c => c.Type == type)) {
+        foreach (var constant in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type)) {
             GenerateConstantButton(constant);
         }
     }
 
-    private ProjectConstantButton GenerateConstantButton(ProjectParameter constant) {
-        ProjectConstantButton btn = Instantiate(ConstantButtonPrefab, Content.transform).GetComponent<ProjectConstantButton>();
+    private ProjectParameterButton GenerateConstantButton(ProjectParameter constant) {
+        ProjectParameterButton btn = Instantiate(ConstantButtonPrefab, Content.transform).GetComponent<ProjectParameterButton>();
         btn.Id = constant.Id;
         btn.SetName(constant.Name);
         btn.SetValue(Base.Parameter.GetValue<string>(constant.Value)); //TODO fix other types than string
@@ -107,8 +114,8 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
             currentAction = null;
         }
 
-        WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
-        WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
+        WebsocketManager.Instance.OnProjectParameterAdded -= OnConstantAdded;
+        WebsocketManager.Instance.OnProjectParameterRemoved -= OnConstantRemoved;
 
         AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         isMenuOpened = false;
@@ -136,23 +143,23 @@ public class ProjectConstantPicker : Singleton<ProjectConstantPicker> {
         EditConstantDialog.Open();
     }
 
-    public static ProjectConstantTypes ConvertStringConstantToEnum(string type) {
-        return (ProjectConstantTypes) Enum.Parse(typeof(ProjectConstantTypes), type);
+    public static ProjectParameterTypes ConvertStringConstantToEnum(string type) {
+        return (ProjectParameterTypes) Enum.Parse(typeof(ProjectParameterTypes), type);
     }
 
-    public static object GetValue(string value, ProjectConstantTypes type) {
+    public static object GetValue(string value, ProjectParameterTypes type) {
         object toReturn = null;
         switch (type) {
-            case ProjectConstantTypes.integer:
+            case ProjectParameterTypes.integer:
                 toReturn = JsonConvert.DeserializeObject<int>(value);
                 break;
-            case ProjectConstantTypes.@string:
+            case ProjectParameterTypes.@string:
                 toReturn = JsonConvert.DeserializeObject<string>(value);
                 break;
-            case ProjectConstantTypes.boolean:
+            case ProjectParameterTypes.boolean:
                 toReturn = JsonConvert.DeserializeObject<bool>(value);
                 break;
-            case ProjectConstantTypes.@double:
+            case ProjectParameterTypes.@double:
                 toReturn = JsonConvert.DeserializeObject<double>(value);
                 break;
         }

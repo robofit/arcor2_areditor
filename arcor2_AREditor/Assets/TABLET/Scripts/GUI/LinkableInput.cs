@@ -17,7 +17,8 @@ public class LinkableInput : LinkableParameter {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
         SetOnValueChanged(onChangeParameterHandler);
-        object v = value;
+        SetValue(value);
+        //object v = value;
         /*switch (type) {
             case "string":
                 if (value == null)
@@ -39,9 +40,8 @@ public class LinkableInput : LinkableParameter {
                 v = null;
                 break;
         }*/
-        SetValue(v);
     }
-    
+
 
 
 
@@ -57,11 +57,14 @@ public class LinkableInput : LinkableParameter {
         if (type == "link") {
             Input.gameObject.SetActive(false);
             Input.Input.onValueChanged.RemoveAllListeners();
-        }
-        else {
+        } else if(type == ProjectParameterText) {
+            Input.gameObject.SetActive(false);
+            Input.Input.onValueChanged.RemoveAllListeners();
+        } else {
             
             Input.gameObject.SetActive(true);
             Input.Input.onValueChanged.RemoveAllListeners();
+            Input.SetType(type);
             switch (ParameterMetadata.Type) {
                 case "integer":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
@@ -89,7 +92,6 @@ public class LinkableInput : LinkableParameter {
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
                     break;
             }
-            Input.SetType(type);
             
         }
     }
@@ -112,14 +114,6 @@ public class LinkableInput : LinkableParameter {
         } catch (FormatException) {
             return;
         }
-    }
-
-    public void ShowConstantPicker() {
-        AREditorResources.Instance.ProjectConstantPicker.Show(ParameterMetadata.Type, ConstantPickedCallback);
-    }
-
-    public void ConstantPickedCallback(object value) {
-        SetValue(value);
     }
 
     public override void SetInteractable(bool interactable) {

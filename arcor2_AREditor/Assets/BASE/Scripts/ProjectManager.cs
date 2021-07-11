@@ -25,9 +25,9 @@ namespace Base {
         /// </summary>
         public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
         /// <summary>
-        /// All Project constants <id, instance>
+        /// All Project parameters <id, instance>
         /// </summary>
-        public List<IO.Swagger.Model.ProjectParameter> ProjectConstants = new List<ProjectParameter>();
+        public List<IO.Swagger.Model.ProjectParameter> ProjectParameters = new List<ProjectParameter>();
         /// <summary>
         /// Spawn point for global action points
         /// </summary>
@@ -149,22 +149,22 @@ namespace Base {
             WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
             WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
 
-            WebsocketManager.Instance.OnProjectConstantAdded += OnProjectConstantAdded;
-            WebsocketManager.Instance.OnProjectConstantUpdated += OnProjectConstantUpdated;
-            WebsocketManager.Instance.OnProjectConstantRemoved += OnProjectConstantRemoved;
+            WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
+            WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
+            WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
         }
 
-        private void OnProjectConstantRemoved(object sender, ProjectConstantEventArgs args) {
-            ProjectConstants.Remove(args.ProjectConstant);
+        private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.Remove(args.ProjectParameter);
         }
 
-        private void OnProjectConstantUpdated(object sender, ProjectConstantEventArgs args) {
-            ProjectConstants.RemoveAll(c => c.Id == args.ProjectConstant.Id);
-            ProjectConstants.Add(args.ProjectConstant);
+        private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.RemoveAll(c => c.Id == args.ProjectParameter.Id);
+            ProjectParameters.Add(args.ProjectParameter);
         }
 
-        private void OnProjectConstantAdded(object sender, ProjectConstantEventArgs args) {
-            ProjectConstants.Add(args.ProjectConstant);
+        private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.Add(args.ProjectParameter);
         }
 
         private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -362,7 +362,7 @@ namespace Base {
             }
 
             UpdateActionPoints(project);
-            UpdateProjectConstants(project.Parameters);
+            UpdateProjectParameters(project.Parameters);
             if (project.HasLogic)
                 UpdateLogicItems(project.Logic);
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
@@ -377,11 +377,11 @@ namespace Base {
             return true;
         }
 
-        private void UpdateProjectConstants(List<ProjectParameter> constants) {
-            ProjectConstants.Clear();
-            if (constants == null)
+        private void UpdateProjectParameters(List<ProjectParameter> projectParameters) {
+            ProjectParameters.Clear();
+            if (projectParameters == null)
                 return;
-            ProjectConstants.AddRange(constants);
+            ProjectParameters.AddRange(projectParameters);
         }
 
         /// <summary>
@@ -405,7 +405,7 @@ namespace Base {
             ActionPoints.Clear();
             ConnectionManagerArcoro.Instance.Clear();
             LogicItems.Clear();
-            ProjectConstants.Clear();
+            ProjectParameters.Clear();
             return true;
         }
 

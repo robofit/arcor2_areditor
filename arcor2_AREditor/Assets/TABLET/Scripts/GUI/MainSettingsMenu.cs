@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 public class MainSettingsMenu : Singleton<MainSettingsMenu>
 {
     public GameObject ContainerEditor, ContainerConstants, ContentEditor, ContentConstants, ContainerAR, ContentAR, ConstantButtonPrefab;
+    public ButtonWithTooltip SwitchToProjectParametersBtn;
 
     public List<GameObject> ProjectRelatedSettings = new List<GameObject>();
 
@@ -27,13 +28,13 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     public ManualTooltip AutoCalibTooltip;
 
     //for constants
-    private EditConstantDialog EditConstantDialog;
-    private Action3D currentAction;
+    private EditProjectParameterDialog EditConstantDialog;
+    //private Action3D currentAction;
 
 
     private void Start() {
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
-        EditConstantDialog = (EditConstantDialog) AREditorResources.Instance.EditConstantDialog;
+        EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
 
 #if UNITY_ANDROID && AR_ON
         recalibrationTime.SetValue(CalibrationManager.Instance.AutoRecalibrateTime);
@@ -102,18 +103,24 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
             APOrientationsVisibility.gameObject.SetActive(true);
             APSizeSlider.value = ProjectManager.Instance.APSize;
             APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
+
+            SwitchToProjectParametersBtn.SetInteractivity(true);
+            GenerateParameterButtons();
+            WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
+            WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
         } else {
             APSizeSlider.gameObject.SetActive(false);
             APOrientationsVisibility.gameObject.SetActive(false);
+            SwitchToProjectParametersBtn.SetInteractivity(false, "Project parameters are available only in project editor.");
+            if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
+                SwitchToEditor();
         }
 
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
 
-        GenerateConstantButtons();
-        WebsocketManager.Instance.OnProjectConstantAdded += OnConstantAdded;
-        WebsocketManager.Instance.OnProjectConstantRemoved += OnConstantRemoved;
+        
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
@@ -123,8 +130,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
 
         DestroyConstantButtons();
-        WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
-        WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
+        WebsocketManager.Instance.OnProjectParameterAdded -= OnProjectParameterAdded;
+        WebsocketManager.Instance.OnProjectParameterRemoved -= OnProjectParameterRemoved;
     }
 
     public void SetVisibilityActionObjects() {
@@ -254,35 +261,35 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
 
 
-    #region Project constants (parameters)
+    #region Project parameters
 
-    private void OnConstantRemoved(object sender, ProjectConstantEventArgs args) {
-        ProjectConstantButton[] btns = ContentConstants.GetComponentsInChildren<ProjectConstantButton>();
+    private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
+        ProjectParameterButton[] btns = ContentConstants.GetComponentsInChildren<ProjectParameterButton>();
         if (btns != null) {
-            foreach (ProjectConstantButton btn in btns.Where(o => o.Id == args.ProjectConstant.Id)) {
+            foreach (ProjectParameterButton btn in btns.Where(o => o.Id == args.ProjectParameter.Id)) {
                 Destroy(btn.gameObject);
                 return;
             }
         }
     }
 
-    private void OnConstantAdded(object sender, ProjectConstantEventArgs args) {
-        GenerateConstantButton(args.ProjectConstant);
+    private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
+        GenerateParameterButton(args.ProjectParameter);
     }
 
-    private void GenerateConstantButtons() {
-        foreach (var constant in ProjectManager.Instance.ProjectConstants) {
-            GenerateConstantButton(constant);
+    private void GenerateParameterButtons() {
+        foreach (var projectParameter in ProjectManager.Instance.ProjectParameters) {
+            GenerateParameterButton(projectParameter);
         }
     }
 
-    private ProjectConstantButton GenerateConstantButton(ProjectParameter constant) {
-        ProjectConstantButton btn = Instantiate(ConstantButtonPrefab, ContentConstants.transform).GetComponent<ProjectConstantButton>();
-        btn.Id = constant.Id;
-        btn.SetName(constant.Name);
-        btn.SetValue(Base.Parameter.GetValue<string>(constant.Value)); //TODO fix other types than string
+    private ProjectParameterButton GenerateParameterButton(ProjectParameter projectParameter) {
+        ProjectParameterButton btn = Instantiate(ConstantButtonPrefab, ContentConstants.transform).GetComponent<ProjectParameterButton>();
+        btn.Id = projectParameter.Id;
+        btn.SetName(projectParameter.Name);
+        btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value)); //TODO fix other types than string
         btn.Button.onClick.AddListener(async () => {
-            if (!await EditConstantDialog.Init(Show, constant))
+            if (!await EditConstantDialog.Init(Show, projectParameter))
                 return;
             Hide();
             EditConstantDialog.Open();
@@ -331,23 +338,23 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         EditConstantDialog.Open();
     }
 
-    public static ProjectConstantTypes ConvertStringConstantToEnum(string type) {
-        return (ProjectConstantTypes) Enum.Parse(typeof(ProjectConstantTypes), type);
+    public static ProjectParameterTypes ConvertStringConstantToEnum(string type) {
+        return (ProjectParameterTypes) Enum.Parse(typeof(ProjectParameterTypes), type);
     }
 
-    public static object GetValue(string value, ProjectConstantTypes type) {
+    public static object GetValue(string value, ProjectParameterTypes type) {
         object toReturn = null;
         switch (type) {
-            case ProjectConstantTypes.integer:
+            case ProjectParameterTypes.integer:
                 toReturn = JsonConvert.DeserializeObject<int>(value);
                 break;
-            case ProjectConstantTypes.@string:
+            case ProjectParameterTypes.@string:
                 toReturn = JsonConvert.DeserializeObject<string>(value);
                 break;
-            case ProjectConstantTypes.boolean:
+            case ProjectParameterTypes.boolean:
                 toReturn = JsonConvert.DeserializeObject<bool>(value);
                 break;
-            case ProjectConstantTypes.@double:
+            case ProjectParameterTypes.@double:
                 toReturn = JsonConvert.DeserializeObject<double>(value);
                 break;
         }

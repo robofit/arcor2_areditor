@@ -414,13 +414,13 @@ namespace Base {
         }
     }
 
-    public class ProjectConstantEventArgs : EventArgs {
-        public ProjectParameter ProjectConstant {
+    public class ProjectParameterEventArgs : EventArgs {
+        public ProjectParameter ProjectParameter {
             get; set;
         }
 
-        public ProjectConstantEventArgs(ProjectParameter projectConstant) {
-            ProjectConstant = projectConstant;
+        public ProjectParameterEventArgs(ProjectParameter projectParameter) {
+            ProjectParameter = projectParameter;
         }
     }
 
@@ -458,6 +458,6 @@ namespace Base {
         public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
         public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
         public delegate void CalibrationEventHandler(object sender, CalibrationEventArgs args);
-        public delegate void ProjectConstantEventHandler(object sender, ProjectConstantEventArgs args);
+        public delegate void ProjectParameterEventHandler(object sender, ProjectParameterEventArgs args);
     }
 }

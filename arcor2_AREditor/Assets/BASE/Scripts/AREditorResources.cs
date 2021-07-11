@@ -11,6 +11,6 @@ public class AREditorResources : Base.Singleton<AREditorResources>
 
     public LeftMenuProject LeftMenuProject;
 
-    public EditConstantDialog EditConstantDialog;
-    public ProjectConstantPicker ProjectConstantPicker;
+    public EditProjectParameterDialog EditProjectParameterDialog;
+    public ActionParametersMenu ActionParametersMenu;
 }

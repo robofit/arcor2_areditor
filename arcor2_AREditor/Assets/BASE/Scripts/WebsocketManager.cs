@@ -105,9 +105,9 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
-        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantAdded;
-        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantUpdated;
-        public event AREditorEventArgs.ProjectConstantEventHandler OnProjectConstantRemoved;
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterAdded;
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterUpdated;
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterRemoved;
 
         /// <summary>
         /// event regarding calibration of camera or robot
@@ -401,7 +401,7 @@ namespace Base {
                         HandleProcessState(data);
                         break;
                     case "ProjectConstantChanged":
-                        HandleProjectConstantChanged(data);
+                        HandleProjectParameterChanged(data);
                         break;
                     default:
                         Debug.LogError(data);
@@ -1010,20 +1010,20 @@ namespace Base {
             OnProcessStateEvent?.Invoke(this, new ProcessStateEventArgs(processState.Data));
         }
 
-        private void HandleProjectConstantChanged(string data) {
-            IO.Swagger.Model.ProjectConstantChanged constantChanged = JsonConvert.DeserializeObject<ProjectConstantChanged>(data);
-            switch (constantChanged.ChangeType) {
+        private void HandleProjectParameterChanged(string data) {
+            IO.Swagger.Model.ProjectConstantChanged projectParameterChanged = JsonConvert.DeserializeObject<ProjectConstantChanged>(data);
+            switch (projectParameterChanged.ChangeType) {
                 case ProjectConstantChanged.ChangeTypeEnum.Add:
-                    OnProjectConstantAdded?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    OnProjectParameterAdded?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
                 case ProjectConstantChanged.ChangeTypeEnum.Update:
-                    OnProjectConstantUpdated?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
                 case ProjectConstantChanged.ChangeTypeEnum.Remove:
-                    OnProjectConstantRemoved?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    OnProjectParameterRemoved?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
                 case ProjectConstantChanged.ChangeTypeEnum.Updatebase:
-                    OnProjectConstantUpdated?.Invoke(this, new ProjectConstantEventArgs(constantChanged.Data));
+                    OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -2607,14 +2607,14 @@ namespace Base {
         }
 
         /// <summary>
-        /// Add project constant
+        /// Add project project parameter
         /// </summary>
-        /// <param name="name">Name of the project constant</param>
-        /// <param name="type">Type of the constant. As of now, 4 types are supported: str, int, bool, float</param>
-        /// <param name="value">Value of the constant. It needs to be formatted as JSON</param>
+        /// <param name="name">Name of the project project parameter</param>
+        /// <param name="type">Type of the project parameter. As of now, 4 types are supported: str, int, bool, float</param>
+        /// <param name="value">Value of the project parameter. It needs to be formatted as JSON</param>
         /// <param name="dryRun"></param>
         /// <returns></returns>
-        public async Task AddConstant(string name, string type, string value, bool dryRun = false) {
+        public async Task AddProjectParameter(string name, string type, string value, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.AddConstantRequestArgs args = new AddConstantRequestArgs(name, type, value);
 
@@ -2627,14 +2627,14 @@ namespace Base {
         }
 
         /// <summary>
-        /// Updates constant (type cannot be changed)
+        /// Updates project parameter (type cannot be changed)
         /// </summary>
         /// <param name="id">ID of constant</param>
-        /// <param name="name">New name of constant</param>
-        /// <param name="value">New value of constant in JSON format</param>
+        /// <param name="name">New name of project parameter</param>
+        /// <param name="value">New value of project parameter in JSON format</param>
         /// <param name="dryRun"></param>
         /// <returns></returns>
-        public async Task UpdateConstant(string id, string name, string value, bool dryRun = false) {
+        public async Task UpdateProjectParameter(string id, string name, string value, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.UpdateConstantRequestArgs args = new UpdateConstantRequestArgs(id, name, value);
 
@@ -2647,12 +2647,12 @@ namespace Base {
         }
 
         /// <summary>
-        /// Removes constant
+        /// Removes project parameter
         /// </summary>
-        /// <param name="id">ID of constant to remove</param>
+        /// <param name="id">ID of project parameter to remove</param>
         /// <param name="dryRun"></param>
         /// <returns></returns>
-        public async Task RemoveConstant(string id, bool dryRun = false) {
+        public async Task RemoveProjectParameter(string id, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RemoveConstantRequestArgs args = new RemoveConstantRequestArgs(id);
 
