@@ -227,4 +227,8 @@ public class Action3D : Base.Action, ISubItem {
         return ActionPoint;
     }
 
+    public override void EnableInputOutput(bool enable) {
+        InputArrow.gameObject.SetActive(enable);
+        OutputArrow.gameObject.SetActive(enable);
+    }
 }

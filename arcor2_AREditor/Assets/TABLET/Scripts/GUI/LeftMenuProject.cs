@@ -40,6 +40,15 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+
+        GameManager.Instance.OnActionExecution += OnActionExecutionEvent;
+        GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionEvent;
+        GameManager.Instance.OnActionExecutionFinished += OnActionExecutionEvent;
+    }
+
+
+    private void OnActionExecutionEvent(object sender, EventArgs args) {
+        UpdateBtns();
     }
 
     protected override void Awake() {

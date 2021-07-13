@@ -31,19 +31,13 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
                 btn.transform.localScale = new Vector3(1, 1, 1);
                 btn.SetLabel(am.Name);
                 btn.Icon.sprite = AREditorResources.Instance.Action;
-                if (am.Name == "suck") {
+                
+                if (am.Disabled) {
                     btn.SetInteractable(false);
-                    btnTooltip.SetInteractivity(false, "Go suck yourself");
-                    //btnTooltip.SetDescription("..."); //if Description is not set, the tooltip is disabled
-                } else {
-                    if (am.Disabled) {
-                        btn.SetInteractable(false);
-                        btnTooltip.SetInteractivity(false, am.Problem);
-                        //btnTooltip.SetDescription("..."); //if Description is not set, the tooltip is disabled
-                    } else if (!string.IsNullOrEmpty(am.Description)) {
-                        btnTooltip.SetDescription(am.Description);
-                    }
-                }
+                    btnTooltip.SetInteractivity(false, am.Problem);
+                } else if (!string.IsNullOrEmpty(am.Description)) {
+                    btnTooltip.SetDescription(am.Description);
+                }               
 
                 btn.Button.onClick.AddListener(() => ShowAddNewActionDialog(am.Name, keyval.Key));
             }

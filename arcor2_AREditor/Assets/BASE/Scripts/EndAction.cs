@@ -40,4 +40,8 @@ public class EndAction : StartEndAction
     public override void CloseMenu() {
         throw new NotImplementedException();
     }
+
+    public override void EnableInputOutput(bool enable) {
+        InputArrow.gameObject.SetActive(enable);
+    }
 }

@@ -36,6 +36,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
+        ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
 
 #if UNITY_ANDROID && AR_ON
         recalibrationTime.SetValue(CalibrationManager.Instance.AutoRecalibrateTime);

@@ -363,8 +363,9 @@ namespace Base {
 
             UpdateActionPoints(project);
             UpdateProjectParameters(project.Parameters);
-            if (project.HasLogic)
+            if (project.HasLogic) {
                 UpdateLogicItems(project.Logic);
+            }
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
             } else if (project.IntModified == System.DateTime.MinValue) {
@@ -373,7 +374,8 @@ namespace Base {
                 ProjectChanged = project.IntModified > project.Modified;
             }
             Valid = true;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);     
+            OnLoadProject?.Invoke(this, EventArgs.Empty);
+            SetActionInputOutputVisibility(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
             return true;
         }
 
@@ -1175,6 +1177,7 @@ namespace Base {
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
+                action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -1209,7 +1212,21 @@ namespace Base {
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
             }
-        }        
+        }
+
+        public void SetActionInputOutputVisibility(bool visible) {
+            if (!Valid || !ProjectMeta.HasLogic)
+                return;
+            foreach (Action action in GetAllActions()) {
+                action.EnableInputOutput(visible);
+            }
+            StartAction.EnableInputOutput(visible);
+            EndAction.EnableInputOutput(visible);
+            //SelectorMenu.Instance.ShowIO(visible);
+            if (SelectorMenu.Instance.IOToggle.Toggled != visible)
+                SelectorMenu.Instance.IOToggle.SwitchToggle();
+            SelectorMenu.Instance.IOToggle.SetInteractivity(visible, "Connections are hidden");
+        }
 
     }
 
