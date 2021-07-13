@@ -18,4 +18,5 @@ public interface IParameter
     Transform GetTransform();
 
     void SetInteractable(bool interactable);
+
 }

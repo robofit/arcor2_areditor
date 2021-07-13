@@ -90,4 +90,8 @@ public class SwitchComponent : MonoBehaviour, IParameter
         Interactable = interactable;
         Label.color = interactable ? Color.white : Color.gray;
     }
+
+    public bool IsOn() {
+        return (bool) GetValue();
+    }
 }

@@ -140,11 +140,16 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
                 CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, "Selected object cannot be duplicated");
+                if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
+                    AddConnectionButton.SetInteractivity(false, "Connections are hidden");
+                    AddConnectionButton2.SetInteractivity(false, "Connections are hidden");
+                } else {
+                    AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                        obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                    AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                        obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
 
-                AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
-                AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                }
                 string runBtnInteractivity = null;
 
                 if (obj.GetType() == typeof(Action3D)) {
