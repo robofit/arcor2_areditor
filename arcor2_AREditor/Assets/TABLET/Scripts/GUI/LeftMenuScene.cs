@@ -57,7 +57,7 @@ public class LeftMenuScene : LeftMenu
 
             await base.UpdateBtns(obj);
 
-            AddActionObjectButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Only available when online");
+            AddActionObjectButton.SetInteractivity(!SceneManager.Instance.SceneStarted, "Only available when offline");
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, "AR is not calibrated");

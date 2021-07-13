@@ -26,16 +26,20 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
+    private void Awake() {
+        if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
+            tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
+            tooltipContent.descriptionText = TooltipRef.Instance.Text;
+        }
+    }
+
     private void Start() {
         Debug.Assert(tooltipContent != null);
         if (string.IsNullOrEmpty(Description) && string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
             return;
         }
-        if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
-            tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
-            tooltipContent.descriptionText = TooltipRef.Instance.Text;            
-        }
+        
 
         if (DisplayAlternativeDescription) {
             ShowAlternativeDescription();
@@ -67,7 +71,7 @@ public class ManualTooltip : MonoBehaviour {
     }
 
     private void OnDisable() {
-        if (tooltipContent != null)
+        if (tooltipContent != null && tooltipContent.tooltipAnimator != null)
             tooltipContent.OnPointerExit(null);
     }
 
