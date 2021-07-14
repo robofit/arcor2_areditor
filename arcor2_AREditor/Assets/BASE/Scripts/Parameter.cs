@@ -428,7 +428,7 @@ namespace Base {
         public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
-                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, darkMode, default, linkable);
+                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -440,10 +440,10 @@ namespace Base {
             return parameters;
         }
 
-        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
+        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (Parameter parameter in _parameters) {
-                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Value, darkMode);
+                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Value, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
                     continue;

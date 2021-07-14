@@ -142,7 +142,7 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
 
     private void UpdateMenuScene() {
         if (CurrentObject.ObjectParameters.Count > 0) {
-            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
+            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
         }
         foreach (IParameter parameter in objectParameters) {
             parameter.SetInteractable(!SceneManager.Instance.SceneStarted);

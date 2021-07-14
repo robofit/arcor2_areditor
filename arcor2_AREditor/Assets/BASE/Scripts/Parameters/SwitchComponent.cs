@@ -16,6 +16,7 @@ public class SwitchComponent : MonoBehaviour, IParameter
     private bool interactable;
 
     private UnityAction<bool> onChangeCallback;
+    public ManualTooltip ManualTooltip;
 
     public bool Interactable {
         get => interactable;
@@ -39,6 +40,12 @@ public class SwitchComponent : MonoBehaviour, IParameter
 
     public void SetLabel(string label, string description) {
         SetLabel(label);
+        if (!string.IsNullOrEmpty(description)) {
+            ManualTooltip.Description = description;
+            ManualTooltip.DisplayAlternativeDescription = false;
+        } else {
+            ManualTooltip.DisableTooltip();
+        }
     }
 
     public void SetValue(object value) {

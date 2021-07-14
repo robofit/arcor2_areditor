@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System;
 using UnityEngine.Events;
 using IO.Swagger.Model;
+using System.Security.Cryptography;
 
 public class DropdownParameter : MonoBehaviour, IParameter {
 
@@ -16,11 +17,11 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     public VerticalLayoutGroup LayoutGroupToBeDisabled;
     public string Type;
 
-    private TooltipContent tooltipContent;
+    public ManualTooltip ManualTooltip;
     public GameObject Trigger, CanvasRoot;
 
     private void Awake() {
-        tooltipContent = Label.GetComponent<TooltipContent>();
+        Debug.Assert(ManualTooltip != null);
     }
 
     private void Start() {
@@ -52,19 +53,11 @@ public class DropdownParameter : MonoBehaviour, IParameter {
 
     public void SetLabel(string label, string description) {
         Label.text = label;
-        if (tooltipContent == null)
-            return;
         if (!string.IsNullOrEmpty(description)) {
-            tooltipContent.enabled = true;
-            if (tooltipContent.tooltipRect == null) {
-                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
-            }
-            if (tooltipContent.descriptionText == null) {
-                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
-            }
-            tooltipContent.description = description;
+            ManualTooltip.Description = description;
+            ManualTooltip.DisplayAlternativeDescription = false;
         } else {
-            tooltipContent.enabled = false;
+            ManualTooltip.DisableTooltip();
         }
     }
 

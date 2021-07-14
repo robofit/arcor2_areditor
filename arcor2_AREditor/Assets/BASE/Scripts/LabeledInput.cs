@@ -14,7 +14,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     private TMPro.TMP_Text Label;
     public TMPro.TMP_InputField Input;
 
-    private TooltipContent tooltipContent;
+    public ManualTooltip ManualTooltip;
 
     public void Init() {
         
@@ -23,7 +23,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     private void Awake() {
         Debug.Assert(Label != null);
         Debug.Assert(Input != null);
-        tooltipContent = Label.GetComponent<TooltipContent>();
+        Debug.Assert(ManualTooltip != null);
         if (!string.IsNullOrEmpty(ParameterType)) {
             SetType(ParameterType);
         }
@@ -38,19 +38,11 @@ public class LabeledInput : MonoBehaviour, IParameter
     public void SetLabel(string label, string description) {
 
         Label.text = label;
-        if (tooltipContent == null)
-            return;
         if (!string.IsNullOrEmpty(description)) {
-            tooltipContent.enabled = true;
-            if (tooltipContent.tooltipRect == null) {
-                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
-            }
-            if (tooltipContent.descriptionText == null) {
-                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
-            }
-            tooltipContent.description = description;
+            ManualTooltip.Description = description;
+            ManualTooltip.DisplayAlternativeDescription = false;
         } else {
-            tooltipContent.enabled = false;
+            ManualTooltip.DisableTooltip();
         }
             
     }

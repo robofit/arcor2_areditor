@@ -75,4 +75,8 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.OnPointerExit(null);
     }
 
+    public void DisableTooltip() {
+        tooltipContent.enabled = false;
+    }
+
 }
