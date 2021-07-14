@@ -38,28 +38,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
         ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
 
-#if UNITY_ANDROID && AR_ON
-        recalibrationTime.SetValue(CalibrationManager.Instance.AutoRecalibrateTime);
-        Trackables.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_trackables", false));
-        CalibrationElements.Interactable = false;
-        CalibrationElements.SetValue(true);
-        CalibrationElementsTooltip.DisplayAlternativeDescription = true;
 
-
-        bool useAutoCalib = PlayerPrefsHelper.LoadBool("control_box_autoCalib", true);
-
-        AutoCalibTooltip.DisplayAlternativeDescription = useAutoCalib;
-
-
-        AutoCalibration.SetValue(useAutoCalib);
-        // If the toggle is unchanged, we need to manually call the EnableAutoReCalibration function.
-        // If the toggle has changed, the function will be called automatically. So we need to avoid calling it twice.
-        if (((bool) AutoCalibration.GetValue() && useAutoCalib) || (!(bool) AutoCalibration.GetValue() && !useAutoCalib)) {
-            EnableAutoReCalibration(useAutoCalib);
-        } 
-
-#endif
-        ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
     }
 
 #if UNITY_ANDROID && AR_ON
@@ -122,7 +101,28 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
 
-        
+#if UNITY_ANDROID && AR_ON
+        recalibrationTime.SetValue(CalibrationManager.Instance.AutoRecalibrateTime);
+        Trackables.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_trackables", false));
+        CalibrationElements.Interactable = false;
+        CalibrationElements.SetValue(true);
+        CalibrationElementsTooltip.DisplayAlternativeDescription = true;
+
+
+        bool useAutoCalib = PlayerPrefsHelper.LoadBool("control_box_autoCalib", true);
+
+        AutoCalibTooltip.DisplayAlternativeDescription = useAutoCalib;
+
+
+        AutoCalibration.SetValue(useAutoCalib);
+        // If the toggle is unchanged, we need to manually call the EnableAutoReCalibration function.
+        // If the toggle has changed, the function will be called automatically. So we need to avoid calling it twice.
+        if (((bool) AutoCalibration.GetValue() && useAutoCalib) || (!(bool) AutoCalibration.GetValue() && !useAutoCalib)) {
+            EnableAutoReCalibration(useAutoCalib);
+        } 
+
+#endif
+        ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));

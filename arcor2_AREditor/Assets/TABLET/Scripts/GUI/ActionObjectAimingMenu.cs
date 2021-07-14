@@ -188,7 +188,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
-            await WebsocketManager.Instance.StartObjectFocusing(currentObject.Data.Id,
+            await WebsocketManager.Instance.ObjectAimingStart(currentObject.Data.Id,
                 SceneManager.Instance.SelectedRobot.GetId(),
                 SceneManager.Instance.SelectedEndEffector.GetName(),
                 armId);
@@ -218,7 +218,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         if (currentFocusPoint < 0)
             return;
         try {
-            await WebsocketManager.Instance.SavePosition(currentObject.Data.Id, currentFocusPoint);
+            await WebsocketManager.Instance.ObjectAimingAddPoint(currentFocusPoint);
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
@@ -237,7 +237,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             FocusObjectDoneButton.interactable = false;
             NextButton.interactable = false;
             PreviousButton.interactable = false;
-            await WebsocketManager.Instance.FocusObjectDone(currentObject.Data.Id);
+            await WebsocketManager.Instance.ObjectAimingDone();
             Focusing = false;
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);

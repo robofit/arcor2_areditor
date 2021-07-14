@@ -1011,18 +1011,18 @@ namespace Base {
         }
 
         private void HandleProjectParameterChanged(string data) {
-            IO.Swagger.Model.ProjectConstantChanged projectParameterChanged = JsonConvert.DeserializeObject<ProjectConstantChanged>(data);
+            IO.Swagger.Model.ProjectParameterChanged projectParameterChanged = JsonConvert.DeserializeObject<ProjectParameterChanged>(data);
             switch (projectParameterChanged.ChangeType) {
-                case ProjectConstantChanged.ChangeTypeEnum.Add:
+                case ProjectParameterChanged.ChangeTypeEnum.Add:
                     OnProjectParameterAdded?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
-                case ProjectConstantChanged.ChangeTypeEnum.Update:
+                case ProjectParameterChanged.ChangeTypeEnum.Update:
                     OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
-                case ProjectConstantChanged.ChangeTypeEnum.Remove:
+                case ProjectParameterChanged.ChangeTypeEnum.Remove:
                     OnProjectParameterRemoved?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
-                case ProjectConstantChanged.ChangeTypeEnum.Updatebase:
+                case ProjectParameterChanged.ChangeTypeEnum.Updatebase:
                     OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
                     break;
                 default:
@@ -1259,13 +1259,13 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="endEffector">ID of end effector</param>
         /// <returns></returns>
-        public async Task StartObjectFocusing(string objectId, string robotId, string endEffector, string armId = null) {
+        public async Task ObjectAimingStart(string objectId, string robotId, string endEffector, string armId = null, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(armId: armId, endEffector:endEffector, robotId: robotId);
-            IO.Swagger.Model.FocusObjectStartRequestArgs args = new IO.Swagger.Model.FocusObjectStartRequestArgs(objectId: objectId, robot: robotArg);
-            IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: r_id, request: "FocusObjectStart", args: args);
+            IO.Swagger.Model.ObjectAimingStartRequestArgs args = new IO.Swagger.Model.ObjectAimingStartRequestArgs(objectId: objectId, robot: robotArg);
+            IO.Swagger.Model.ObjectAimingStartRequest request = new IO.Swagger.Model.ObjectAimingStartRequest(id: r_id, request: "ObjectAimingStart", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectStartResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectStartResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingStartResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingStartResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1277,12 +1277,12 @@ namespace Base {
         /// <param name="objectId">Action object ID</param>
         /// <param name="pointIdx">ID of currently selected focus point</param>
         /// <returns></returns>
-        public async Task SavePosition(string objectId, int pointIdx) {
+        public async Task ObjectAimingAddPoint(int pointIdx, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.FocusObjectRequestArgs args = new IO.Swagger.Model.FocusObjectRequestArgs(objectId: objectId, pointIdx: pointIdx);
-            IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(id: r_id, request: "FocusObject", args: args);
+            IO.Swagger.Model.ObjectAimingAddPointRequestArgs args = new IO.Swagger.Model.ObjectAimingAddPointRequestArgs(pointIdx: pointIdx);
+            IO.Swagger.Model.ObjectAimingAddPointRequest request = new IO.Swagger.Model.ObjectAimingAddPointRequest(id: r_id, request: "ObjectAimingAddPoint", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingAddPointResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingAddPointResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1293,12 +1293,11 @@ namespace Base {
         /// </summary>
         /// <param name="objectId">Action object ID</param>
         /// <returns></returns>
-        public async Task FocusObjectDone(string objectId) {
+        public async Task ObjectAimingDone(bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: objectId);
-            IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(id: r_id, request: "FocusObjectDone", args: args);
+            IO.Swagger.Model.ObjectAimingDoneRequest request = new IO.Swagger.Model.ObjectAimingDoneRequest(id: r_id, request: "ObjectAimingDone", dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectDoneResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectDoneResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingDoneResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingDoneResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -2616,13 +2615,13 @@ namespace Base {
         /// <returns></returns>
         public async Task AddProjectParameter(string name, string type, string value, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddConstantRequestArgs args = new AddConstantRequestArgs(name, type, value);
+            IO.Swagger.Model.AddProjectParameterRequestArgs args = new AddProjectParameterRequestArgs(name, type, value);
 
-            IO.Swagger.Model.AddConstantRequest request = new IO.Swagger.Model.AddConstantRequest(r_id, "AddConstant", args: args, dryRun: dryRun);
+            IO.Swagger.Model.AddProjectParameterRequest request = new IO.Swagger.Model.AddProjectParameterRequest(r_id, "AddProjectParameter", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.AddConstantResponse response = await WaitForResult<IO.Swagger.Model.AddConstantResponse>(r_id);
+            IO.Swagger.Model.AddProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.AddProjectParameterResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to add constant" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to add project parameter" } : response.Messages);
             }
         }
 
@@ -2636,13 +2635,13 @@ namespace Base {
         /// <returns></returns>
         public async Task UpdateProjectParameter(string id, string name, string value, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.UpdateConstantRequestArgs args = new UpdateConstantRequestArgs(id, name, value);
+            IO.Swagger.Model.UpdateProjectParameterRequestArgs args = new UpdateProjectParameterRequestArgs(id, name, value);
 
-            IO.Swagger.Model.UpdateConstantRequest request = new IO.Swagger.Model.UpdateConstantRequest(r_id, "UpdateConstant", args: args, dryRun: dryRun);
+            IO.Swagger.Model.UpdateProjectParameterRequest request = new IO.Swagger.Model.UpdateProjectParameterRequest(r_id, "UpdateProjectParameter", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.UpdateConstantResponse response = await WaitForResult<IO.Swagger.Model.UpdateConstantResponse>(r_id);
+            IO.Swagger.Model.UpdateProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.UpdateProjectParameterResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update constant" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update project parameter" } : response.Messages);
             }
         }
 
@@ -2654,13 +2653,13 @@ namespace Base {
         /// <returns></returns>
         public async Task RemoveProjectParameter(string id, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RemoveConstantRequestArgs args = new RemoveConstantRequestArgs(id);
+            IO.Swagger.Model.RemoveProjectParameterRequestArgs args = new RemoveProjectParameterRequestArgs(id);
 
-            IO.Swagger.Model.RemoveConstantRequest request = new IO.Swagger.Model.RemoveConstantRequest(r_id, "RemoveConstant", args: args, dryRun: dryRun);
+            IO.Swagger.Model.RemoveProjectParameterRequest request = new IO.Swagger.Model.RemoveProjectParameterRequest(r_id, "RemoveProjectParameter", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.RemoveConstantResponse response = await WaitForResult<IO.Swagger.Model.RemoveConstantResponse>(r_id);
+            IO.Swagger.Model.RemoveProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.RemoveProjectParameterResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove constant" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove project parameter" } : response.Messages);
             }
         }
     }
