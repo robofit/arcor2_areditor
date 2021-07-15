@@ -46,6 +46,8 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
 
     public CanvasGroup CanvasGroup;
 
+    public TMPro.TMP_Text SelectedRobot, SelectedArm, SelectedEE;
+
     private enum StateEnum {
         Position,
         Orientations,
@@ -80,6 +82,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             return false;
         OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
         UpdateMenu();
+        
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         return true;
     }
@@ -282,6 +285,25 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             AddOrientationUsingRobotButton.SetInteractivity(true);
             AddJointsButton.SetInteractivity(true);
             JointsListLabel.text = "List of joints:";
+        }
+
+        if (!SceneManager.Instance.SceneStarted) {
+            SelectedRobot.text = "Robot is offline";
+            SelectedEE.text = "";
+            SelectedArm.text = "";
+        } else if (SceneManager.Instance.IsRobotSelected()) {
+            SelectedRobot.text = $"Robot: {SceneManager.Instance.SelectedRobot.GetName()}";
+            SelectedArm.text = $"Arm: {SceneManager.Instance.SelectedArmId}";
+            if (SceneManager.Instance.IsRobotAndEESelected()) {
+                SelectedEE.text = $"End effector: {SceneManager.Instance.SelectedEndEffector.GetName()}";
+                           
+            } else {
+                SelectedEE.text = "End effector: not selected";
+            }
+        } else {
+            SelectedRobot.text = "Robot: not selected";
+            SelectedEE.text = "End effector: not selected";
+            SelectedArm.text = "Arm: not selected";
         }
     }
 

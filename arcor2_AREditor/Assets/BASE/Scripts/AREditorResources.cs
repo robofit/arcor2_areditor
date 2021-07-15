@@ -15,4 +15,6 @@ public class AREditorResources : Base.Singleton<AREditorResources>
     public ActionParametersMenu ActionParametersMenu;
 
     public const float TooltipDelay = 0.5f;
+
+    public Sprite SceneOnline, SceneOffline;
 }

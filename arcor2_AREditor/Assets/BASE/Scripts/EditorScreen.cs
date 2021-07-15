@@ -47,10 +47,10 @@ public class EditorScreen : MonoBehaviour {
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         if (args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Started) {
-            StartStopSceneIcon.color = Color.white;
+            StartStopSceneIcon.sprite = AREditorResources.Instance.SceneOnline;
             StartStopSceneBtn.SetDescription("Go offline");
         } else {
-            StartStopSceneIcon.color = Color.gray;
+            StartStopSceneIcon.sprite = AREditorResources.Instance.SceneOffline;
             StartStopSceneBtn.SetDescription("Go online");
         }
     }
