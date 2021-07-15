@@ -31,6 +31,7 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
             tooltipContent.descriptionText = TooltipRef.Instance.Text;
         }
+        tooltipContent.delay = AREditorResources.TooltipDelay;
     }
 
     private void Start() {

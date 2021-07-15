@@ -13,4 +13,6 @@ public class AREditorResources : Base.Singleton<AREditorResources>
 
     public EditProjectParameterDialog EditProjectParameterDialog;
     public ActionParametersMenu ActionParametersMenu;
+
+    public const float TooltipDelay = 0.5f;
 }
