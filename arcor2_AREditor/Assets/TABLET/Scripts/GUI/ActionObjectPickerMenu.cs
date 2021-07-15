@@ -76,6 +76,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         btn.RemoveBtn.Button.onClick.AddListener(() => ShowRemoveActionObjectDialog(metadata.Type));
         btn.Button.onClick.AddListener(() => AddObjectToScene(metadata.Type));
         ButtonWithTooltip btnTooltip = btn.Button.GetComponent<ButtonWithTooltip>();
+        btnTooltip.SetDescription(metadata.Description);
         btnTooltip.SetInteractivity(!metadata.Disabled, metadata.Problem);
         return btn;
     }

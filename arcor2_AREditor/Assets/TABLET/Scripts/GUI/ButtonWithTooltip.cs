@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Michsky.UI.ModernUIPack;
 using UnityEditor;
 using UnityEngine;
@@ -40,7 +41,7 @@ public class ButtonWithTooltip : MonoBehaviour {
     }
 
     public void SetDescription(string description) {
-        if (tooltip == null)
+        if (tooltip == null || string.IsNullOrEmpty(description))
             return;
         tooltip.Description = description;
         tooltip.DisplayAlternativeDescription = false;

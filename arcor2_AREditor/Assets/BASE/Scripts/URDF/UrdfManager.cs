@@ -39,7 +39,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         //GameManager.Instance.SetTurboFramerate();
 
         //Debug.Log("URDF: download started");
-        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         UnityWebRequest www;
         try {
             www = UnityWebRequest.Get(uri);
@@ -231,6 +231,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string robotType, string fileName) {
+        //return true;
         //Debug.Log("URDF: Checking if newer robot model exists in: " + Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
 
         FileInfo urdfFileInfo = new FileInfo(Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
@@ -241,11 +242,11 @@ public class UrdfManager : Singleton<UrdfManager> {
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(fileName);
         }
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-
+            Debug.LogError(httpWebResponse.LastModified);
             // t1 is earlier than t2 --> newer version of urdf is present on the server
             if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
                 //Debug.Log("URDF: Newer version is present on the server.");
