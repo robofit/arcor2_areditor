@@ -406,13 +406,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
-        try {
+        /*try {
             await WebsocketManager.Instance.WriteLock(joints.Id, false);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to lock joints", ex.Message);
             Debug.LogError(ex.Message);
             return;
-        }
+        }*/
 
         CurrentActionPoint = currentActionPoint;
         this.joints = joints;
@@ -448,15 +448,15 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         gameObject.SetActive(false);
 
         if (isOrientationDetail) {
-            await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
+            //await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
             CurrentActionPoint.GetOrientationVisual(orientation.Id).SendMessage("Select", false);
         } else { //joints
             DestroyJointsFields();
-            try {
+            /*try {
                 await WebsocketManager.Instance.WriteUnlock(joints.Id);
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
-            }
+            }*/
         }
 
         foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {
