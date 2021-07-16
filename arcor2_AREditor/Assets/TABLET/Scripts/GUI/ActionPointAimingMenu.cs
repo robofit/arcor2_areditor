@@ -17,7 +17,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public Base.ActionPoint CurrentActionPoint;
 
     public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList, ContainerPosition, ContainerOrientations, ContainerJoints,
-        AddOrientationContainer, AddJointsContainer, OrientationJointsDetailContainer;
+        AddOrientationContainer, AddJointsContainer, OrientationJointsDetailContainer, RobotPickBlock;
 
     [SerializeField]
     private TMPro.TMP_Text OrientationsListLabel, JointsListLabel;
@@ -26,7 +26,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     private ActionButton OrientationManualDefaultButton;
 
     [SerializeField]
-    private ButtonWithTooltip AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
+    private ButtonWithTooltip AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn, UpdatePositionUsingRobotBtn2;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -239,6 +239,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         CloseAnySubmenu();        
          
         PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
+        RobotPickBlock.SetActive(!GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
         if (SceneManager.Instance.IsRobotSelected()) {
@@ -259,21 +260,25 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         const string sceneNotStarted = "To add using robot, go online";
         const string eeNotSelected = "End effector is not selected";
         UpdatePositionUsingRobotBtn.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
+        UpdatePositionUsingRobotBtn2.SetInteractivity(UpdatePositionUsingRobotBtn.IsInteractive());
         AddOrientationUsingRobotButton.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
         AddJointsButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene not started");
 
         if (!SceneManager.Instance.RobotInScene()) {
             UpdatePositionUsingRobotBtn.SetInteractivity(false, noRobot);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, noRobot);
             AddOrientationUsingRobotButton.SetInteractivity(false, noRobot);
             AddJointsButton.SetInteractivity(false, noRobot);
             JointsListLabel.text = "To show joints list, add a robot to the scene";
         } else if (!SceneManager.Instance.SceneStarted) {
             UpdatePositionUsingRobotBtn.SetInteractivity(false, "To update using robot, go online");
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, "To update using robot, go online");
             AddOrientationUsingRobotButton.SetInteractivity(false, sceneNotStarted);
             AddJointsButton.SetInteractivity(false, sceneNotStarted);
             JointsListLabel.text = "List of joints:";
         } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
             UpdatePositionUsingRobotBtn.SetInteractivity(false, eeNotSelected);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, eeNotSelected);
             AddOrientationUsingRobotButton.SetInteractivity(false, eeNotSelected);
             AddJointsButton.SetInteractivity(SceneManager.Instance.IsRobotSelected(), "Robot is not selected");
             if (SceneManager.Instance.IsRobotSelected())
@@ -282,6 +287,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
                 JointsListLabel.text = "To show joints list, select robot";
         } else {
             UpdatePositionUsingRobotBtn.SetInteractivity(true);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(true);
             AddOrientationUsingRobotButton.SetInteractivity(true);
             AddJointsButton.SetInteractivity(true);
             JointsListLabel.text = "List of joints:";

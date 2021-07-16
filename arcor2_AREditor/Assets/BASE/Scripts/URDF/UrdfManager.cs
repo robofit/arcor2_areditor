@@ -246,7 +246,6 @@ public class UrdfManager : Singleton<UrdfManager> {
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-            Debug.LogError(httpWebResponse.LastModified);
             // t1 is earlier than t2 --> newer version of urdf is present on the server
             if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
                 //Debug.Log("URDF: Newer version is present on the server.");
