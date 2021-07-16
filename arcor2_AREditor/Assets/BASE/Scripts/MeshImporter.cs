@@ -70,9 +70,10 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="uri">Where should be the mesh download from.</param>
     /// <param name="aoId">ID of action object which is asociated with mesh</param>
     /// <returns></returns>
-    private IEnumerator DownloadMesh(string meshId, string uri, string aoId) {
+    private IEnumerator DownloadMesh(string meshId, string fileName, string aoId) {
 
         Debug.LogError("MESH: download started");
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
             // Request and wait for the desired page.
             yield return www.Send();
@@ -82,7 +83,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             } else {
                 string meshDirectory = string.Format("{0}/meshes/{1}/", Application.persistentDataPath, meshId);
                 Directory.CreateDirectory(meshDirectory);
-                string savePath = string.Format("{0}/{1}", meshDirectory, meshId);
+                string savePath = string.Format("{0}/{1}", meshDirectory, fileName);
                 System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
 
                 //if the mesh is zipped, extract it
@@ -158,10 +159,10 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="meshId"></param>
     /// <param name="uri">Where the mesh should be downloaded from</param>
     /// <returns></returns>
-    public bool CheckIfNewerRobotModelExists(string meshId, string uri) {
+    public bool CheckIfNewerRobotModelExists(string meshId, string fileName) {
         Debug.LogError("mesh: Checking if newer  mesh exists " + meshId);
-
-        FileInfo meshFileInfo = new FileInfo(Application.persistentDataPath + "/meshes/" + meshId + "/" + meshId);
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        FileInfo meshFileInfo = new FileInfo(Application.persistentDataPath + "/meshes/" + meshId + "/" + fileName);
         if (!meshFileInfo.Exists) {
             Debug.LogError("mesh: mesh file " + meshId + " has to be downloaded.");
             // Check whether downloading can be started and start it, if so.
