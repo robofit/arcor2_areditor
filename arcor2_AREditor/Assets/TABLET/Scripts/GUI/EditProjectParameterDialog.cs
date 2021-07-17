@@ -51,7 +51,7 @@ public class EditProjectParameterDialog : Dialog
 
 
         if (isNewConstant) {
-            Title.text = "Add new constant";
+            Title.text = "New project parameter";
             removeButton.SetActive(false);
             nameInput.SetValue("");
             valueInput.SetValue("");
@@ -63,7 +63,7 @@ public class EditProjectParameterDialog : Dialog
         } else { //editing constant
             try {
                 await WebsocketManager.Instance.WriteLock(projectParameter.Id, false);
-                Title.text = "Edit constant";
+                Title.text = "Edit project paramater";
                 removeButton.SetActive(true);
                 nameInput.SetValue(projectParameter.Name);
                 OnTypeSelected(projectParameter.Type);
@@ -122,34 +122,6 @@ public class EditProjectParameterDialog : Dialog
         SetValueInputType();
     }
 
-    
-
-
-        //ProjectConstantTypes returnType = ProjectConstantTypes.integer;
-        //switch (returnType) {
-        //    case Enum.
-        //        break;
-        //    case ProjectConstantTypes.@string:
-        //        break;
-        //    case ProjectConstantTypes.boolean:
-        //        break;
-        //    case ProjectConstantTypes.@double:
-        //        break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.boolean.ToString():
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //}
-        //return returnType;
-    //}
 
     public void ValidateInput() {
         //TODO
@@ -183,7 +155,7 @@ public class EditProjectParameterDialog : Dialog
             //after updating, constant is unlocked automatically by server
             Close();
         } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "constant", e.Message);
+            Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter", e.Message);
         }
     }
 
@@ -215,7 +187,7 @@ public class EditProjectParameterDialog : Dialog
             await WebsocketManager.Instance.RemoveProjectParameter(projectParameter.Id);
             Close();
         } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to remove constant", e.Message);
+            Notifications.Instance.ShowNotification("Failed to remove project parameter", e.Message);
         }
     }
 }

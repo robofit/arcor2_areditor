@@ -400,7 +400,7 @@ namespace Base {
                     case "ProcessState":
                         HandleProcessState(data);
                         break;
-                    case "ProjectConstantChanged":
+                    case "ProjectParameterChanged":
                         HandleProjectParameterChanged(data);
                         break;
                     default:
@@ -2628,7 +2628,7 @@ namespace Base {
         /// <summary>
         /// Updates project parameter (type cannot be changed)
         /// </summary>
-        /// <param name="id">ID of constant</param>
+        /// <param name="id">ID of project parameter</param>
         /// <param name="name">New name of project parameter</param>
         /// <param name="value">New value of project parameter in JSON format</param>
         /// <param name="dryRun"></param>

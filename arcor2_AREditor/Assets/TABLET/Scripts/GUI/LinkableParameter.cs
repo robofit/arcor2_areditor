@@ -15,7 +15,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     protected string type;
     protected object value;
 
-    public const string ProjectParameterText = "constant";
+    public const string ProjectParameterText = "project_parameter";
     private const string NewProjectParameterText = "New project parameter";
 
     //!! has to be set in either start or init !! 
@@ -39,7 +39,6 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     private object EncodeProjectParameterValue(string v) {
         return ProjectManager.Instance.ProjectParameters.Find(p => p.Name == v).Id;
-        //throw new NotImplementedException(); //TODO
     }
 
     public virtual void SetDarkMode(bool dark) {
