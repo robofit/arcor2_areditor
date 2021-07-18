@@ -291,7 +291,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         btn.SetName(projectParameter.Name);
         btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value)); //TODO fix other types than string
         btn.Button.onClick.AddListener(async () => {
-            if (!await EditConstantDialog.Init(Show, projectParameter))
+            if (!await EditConstantDialog.Init(Show, Show, projectParameter))
                 return;
             Hide();
             EditConstantDialog.Open();
@@ -334,7 +334,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     public async void ShowNewConstantDialog() {
         Hide();
-        if (!await EditConstantDialog.Init(Show))
+        if (!await EditConstantDialog.Init(Show, Show))
             return;
         Hide();
         EditConstantDialog.Open();

@@ -68,6 +68,10 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu>
         return CanvasGroup.alpha > 0;
     }
 
+    public void SetVisibility(bool visible) {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, visible);
+    }
+
 
     public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
         AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), currentActionPoint);

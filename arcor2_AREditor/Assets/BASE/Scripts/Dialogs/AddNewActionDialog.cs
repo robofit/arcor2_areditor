@@ -10,6 +10,8 @@ public class AddNewActionDialog : Dialog
     public GameObject DynamicContent, CanvasRoot;
     public VerticalLayoutGroup DynamicContentLayout;
 
+    public bool IsVisible { get; protected set;}
+
     private Base.ActionMetadata actionMetadata;
     private Dictionary<string, Base.ParameterMetadata> actionParametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
     private List<IParameter> actionParameters = new List<IParameter>();
@@ -82,5 +84,19 @@ public class AddNewActionDialog : Dialog
 
     public override void Confirm() {
         CreateAction();
+    }
+
+    public override void Open() {
+        base.Open();
+        IsVisible = true;
+        LeftMenuProject.UpdateVisibility(false, true);
+        AREditorResources.Instance.ActionPickerMenu.SetVisibility(false);
+    }
+
+    public override void Close() {
+        base.Close();
+        IsVisible = false;
+        LeftMenuProject.UpdateVisibility(true);
+        AREditorResources.Instance.ActionPickerMenu.SetVisibility(true);
     }
 }

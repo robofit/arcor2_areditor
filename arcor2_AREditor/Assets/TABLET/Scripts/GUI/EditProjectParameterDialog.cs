@@ -29,15 +29,19 @@ public class EditProjectParameterDialog : Dialog
     private ProjectParameterTypes selectedType;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
     private System.Action onCloseCallback;
+    private System.Action onCancelCallback;
+    private bool cancelCallbackInvoked; //flag: only cancel callback should be invoked if canceled
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="projectParameter"></param>
-    public async Task<bool> Init(System.Action onCloseCallback, ProjectParameter projectParameter = null, string ofType = null) {
+    public async Task<bool> Init(System.Action onCloseCallback, System.Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
         this.projectParameter = projectParameter;
         isNewConstant = projectParameter == null;
         this.onCloseCallback = onCloseCallback;
+        this.onCancelCallback = onCancelCallback;
+        cancelCallbackInvoked = false;
 
         dropdown.Dropdown.dropdownItems.Clear();
         foreach (string type in Enum.GetNames(typeof(ProjectParameterTypes))) {
@@ -164,13 +168,16 @@ public class EditProjectParameterDialog : Dialog
         AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         dropdown.Dropdown.dropdownItems.Clear();
         projectParameter = null;
-        onCloseCallback?.Invoke();
+        if(!cancelCallbackInvoked)
+            onCloseCallback?.Invoke();
 
     }
 
     public async void Cancel() {
         if (projectParameter == null || isNewConstant) {
+            cancelCallbackInvoked = true;
             Close();
+            onCancelCallback?.Invoke();
             return;
         }
 
@@ -180,6 +187,7 @@ public class EditProjectParameterDialog : Dialog
             Notifications.Instance.ShowNotification("Failed to unlock " + projectParameter.Name, e.Message);
         }
         Close();
+        onCancelCallback?.Invoke();
     }
 
     public async void Remove() {
