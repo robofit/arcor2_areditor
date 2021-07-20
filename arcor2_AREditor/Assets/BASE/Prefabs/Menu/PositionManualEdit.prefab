@@ -193,27 +193,6 @@ MonoBehaviour:
   InputZ: {fileID: 6350994386045885580}
   ConfirmButton: {fileID: 7149305276107965500}
   buttonTooltip: {fileID: 2889134507487609337}
---- !u!114 &4764467341535125002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7328284099922081468}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f74f8e3213a5a144d801c9a0e3a84d80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mainCanvas: {fileID: 0}
-  tooltipObject: {fileID: 0}
-  tooltipContent: {fileID: 0}
-  tooltipSmoothness: 0.1
-  allowUpdating: 0
-  vBorderTop: -115
-  vBorderBottom: 100
-  hBorderLeft: 230
-  hBorderRight: -210
 --- !u!1001 &49717589935734768
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -885,12 +864,6 @@ PrefabInstance:
 --- !u!224 &159766603263949783 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1735003242729280096, guid: c77917a7826c62e419cc9a2867495b1f,
-    type: 3}
-  m_PrefabInstance: {fileID: 1883738986393053623}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7328284099922081468 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9193862448044351243, guid: c77917a7826c62e419cc9a2867495b1f,
     type: 3}
   m_PrefabInstance: {fileID: 1883738986393053623}
   m_PrefabAsset: {fileID: 0}
