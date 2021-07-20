@@ -14,8 +14,9 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     protected OnChangeParameterHandlerDelegate onChangeParameterHandler;
     protected string type;
     protected object value;
+    protected int dropdownIndexSelected;
 
-    public const string ProjectParameterText = "constant";
+    public const string ProjectParameterText = "project_parameter";
     private const string NewProjectParameterText = "New project parameter";
 
     //!! has to be set in either start or init !! 
@@ -39,7 +40,6 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     private object EncodeProjectParameterValue(string v) {
         return ProjectManager.Instance.ProjectParameters.Find(p => p.Name == v).Id;
-        //throw new NotImplementedException(); //TODO
     }
 
     public virtual void SetDarkMode(bool dark) {
@@ -79,16 +79,25 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         }
         projectParameters.Add(NewProjectParameterText);
         ActionsDropdown.PutData(projectParameters, DecodeProjectParameterValue(value?.ToString()), OnProjectParameterPicked);
+        dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
     }
 
     private void OnProjectParameterPicked(string name) {
         if (name == NewProjectParameterText) {
             bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible();
+            bool hideAddNewActionDialog = AREditorResources.Instance.AddNewActionDialog.IsVisible;
             if (hideActionParametersMenu)
                 AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);
+            else if (hideAddNewActionDialog) {
+                AREditorResources.Instance.AddNewActionDialog.Close();
+                AREditorResources.Instance.ActionPickerMenu.SetVisibility(false);
+            }
+
             _ = AREditorResources.Instance.EditProjectParameterDialog.Init(() => {
                 if (hideActionParametersMenu)
                     AREditorResources.Instance.ActionParametersMenu.SetVisibility(true); //make menu visible again
+                else if (hideAddNewActionDialog)
+                    AREditorResources.Instance.AddNewActionDialog.Open();
                 SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
                 if (ActionsDropdown.Dropdown.dropdownItems.Count >= 2) {
                     ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.Count - 2;
@@ -96,10 +105,20 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
                     ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke(); //select last added project parameter
                 }
             },
+            () => {
+                if (hideActionParametersMenu)
+                    AREditorResources.Instance.ActionParametersMenu.SetVisibility(true); //make menu visible again
+                else if (hideAddNewActionDialog)
+                    AREditorResources.Instance.AddNewActionDialog.Open();
+                ActionsDropdown.Dropdown.selectedItemIndex = dropdownIndexSelected;
+                ActionsDropdown.Dropdown.SetupDropdown();
+            },
             ofType: ParameterMetadata.Type);
             AREditorResources.Instance.EditProjectParameterDialog.Open();
+
         } else {
             onChangeParameterHandler?.Invoke(GetName(), GetValue(), type);
+            dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
         }
     }
 

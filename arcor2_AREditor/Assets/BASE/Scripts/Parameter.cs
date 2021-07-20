@@ -83,9 +83,6 @@ namespace Base {
             if (value == null) {
                 return default;
             }
-            //else if (type == "constant") {
-            //    return ProjectManager.Instance.ProjectParameters.Find(p => p.Id == value).Name;
-            //}
             return JsonConvert.DeserializeObject<T>(value);
         }
 

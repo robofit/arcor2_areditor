@@ -29,15 +29,19 @@ public class EditProjectParameterDialog : Dialog
     private ProjectParameterTypes selectedType;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
     private System.Action onCloseCallback;
+    private System.Action onCancelCallback;
+    private bool cancelCallbackInvoked; //flag: only cancel callback should be invoked if canceled
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="projectParameter"></param>
-    public async Task<bool> Init(System.Action onCloseCallback, ProjectParameter projectParameter = null, string ofType = null) {
+    public async Task<bool> Init(System.Action onCloseCallback, System.Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
         this.projectParameter = projectParameter;
         isNewConstant = projectParameter == null;
         this.onCloseCallback = onCloseCallback;
+        this.onCancelCallback = onCancelCallback;
+        cancelCallbackInvoked = false;
 
         dropdown.Dropdown.dropdownItems.Clear();
         foreach (string type in Enum.GetNames(typeof(ProjectParameterTypes))) {
@@ -51,7 +55,7 @@ public class EditProjectParameterDialog : Dialog
 
 
         if (isNewConstant) {
-            Title.text = "Add new constant";
+            Title.text = "New project parameter";
             removeButton.SetActive(false);
             nameInput.SetValue("");
             valueInput.SetValue("");
@@ -63,7 +67,7 @@ public class EditProjectParameterDialog : Dialog
         } else { //editing constant
             try {
                 await WebsocketManager.Instance.WriteLock(projectParameter.Id, false);
-                Title.text = "Edit constant";
+                Title.text = "Edit project paramater";
                 removeButton.SetActive(true);
                 nameInput.SetValue(projectParameter.Name);
                 OnTypeSelected(projectParameter.Type);
@@ -122,34 +126,6 @@ public class EditProjectParameterDialog : Dialog
         SetValueInputType();
     }
 
-    
-
-
-        //ProjectConstantTypes returnType = ProjectConstantTypes.integer;
-        //switch (returnType) {
-        //    case Enum.
-        //        break;
-        //    case ProjectConstantTypes.@string:
-        //        break;
-        //    case ProjectConstantTypes.boolean:
-        //        break;
-        //    case ProjectConstantTypes.@double:
-        //        break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.boolean.ToString():
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //        //case ProjectConstantTypes.integer.ToString("g"):
-        //        //    returnType = ProjectConstantTypes.integer;
-        //        //    break;
-        //}
-        //return returnType;
-    //}
 
     public void ValidateInput() {
         //TODO
@@ -183,7 +159,7 @@ public class EditProjectParameterDialog : Dialog
             //after updating, constant is unlocked automatically by server
             Close();
         } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "constant", e.Message);
+            Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter", e.Message);
         }
     }
 
@@ -192,13 +168,16 @@ public class EditProjectParameterDialog : Dialog
         AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         dropdown.Dropdown.dropdownItems.Clear();
         projectParameter = null;
-        onCloseCallback?.Invoke();
+        if(!cancelCallbackInvoked)
+            onCloseCallback?.Invoke();
 
     }
 
     public async void Cancel() {
         if (projectParameter == null || isNewConstant) {
+            cancelCallbackInvoked = true;
             Close();
+            onCancelCallback?.Invoke();
             return;
         }
 
@@ -208,6 +187,7 @@ public class EditProjectParameterDialog : Dialog
             Notifications.Instance.ShowNotification("Failed to unlock " + projectParameter.Name, e.Message);
         }
         Close();
+        onCancelCallback?.Invoke();
     }
 
     public async void Remove() {
@@ -215,7 +195,7 @@ public class EditProjectParameterDialog : Dialog
             await WebsocketManager.Instance.RemoveProjectParameter(projectParameter.Id);
             Close();
         } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to remove constant", e.Message);
+            Notifications.Instance.ShowNotification("Failed to remove project parameter", e.Message);
         }
     }
 }

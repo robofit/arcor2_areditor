@@ -10,9 +10,11 @@ public class AREditorResources : Base.Singleton<AREditorResources>
     public ConnectionSelectorDialog ConnectionSelectorDialog;
 
     public LeftMenuProject LeftMenuProject;
+    public ActionPickerMenu ActionPickerMenu;
 
     public EditProjectParameterDialog EditProjectParameterDialog;
     public ActionParametersMenu ActionParametersMenu;
+    public AddNewActionDialog AddNewActionDialog;
 
     public const float TooltipDelay = 0.5f;
 
