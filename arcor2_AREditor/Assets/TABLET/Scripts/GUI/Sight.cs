@@ -101,6 +101,7 @@ namespace Base {
                             items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
                         } catch (MissingReferenceException ex) {
                             Debug.LogError(ex);
+                            Debug.LogError($"{item.InteractiveObject.GetName()}: {hitinfo.collider.name}");
                         }
                     }
                     if (h) {

@@ -27,9 +27,12 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="mesh"></param>
     /// <param name="aoId">ID of action object which is asociated with the mesh</param>
     public void LoadModel(IO.Swagger.Model.Mesh mesh, string aoId) {
-        if(CheckIfNewerRobotModelExists(mesh.Id, mesh.Uri))
+        Debug.LogWarning("model loading");
+        if (CheckIfNewerRobotModelExists(mesh.Id, mesh.Uri)) {
             StartCoroutine(DownloadMesh(mesh.Id, mesh.Uri, aoId));
-        ImportMesh(string.Format("{0}/meshes/{1}/{1}", Application.persistentDataPath, mesh.Id), aoId);
+        } else {
+            ImportMesh(string.Format("{0}/meshes/{1}/{2}", Application.persistentDataPath, mesh.Id, mesh.Uri), aoId);
+        }
     }
 
     /// <summary>
@@ -42,7 +45,6 @@ public class MeshImporter : Singleton<MeshImporter> {
     private void ImportMesh(string path, string aoId) {
 
         GameObject loadedObject = new GameObject("ImportedMeshObject");
-
         if (Path.GetExtension(path).ToLower() == ".dae") {
         Debug.LogError("importing dae mesh name: " + path);
             StreamReader reader = File.OpenText(path);
@@ -81,11 +83,11 @@ public class MeshImporter : Singleton<MeshImporter> {
                 Debug.LogError(www.error + " (" + uri + ")");
                 Notifications.Instance.ShowNotification("Failed to download mesh", www.error);
             } else {
-                string meshDirectory = string.Format("{0}/meshes/{1}/", Application.persistentDataPath, meshId);
+                string meshDirectory = string.Format("{0}/meshes/{1}", Application.persistentDataPath, meshId);
                 Directory.CreateDirectory(meshDirectory);
                 string savePath = string.Format("{0}/{1}", meshDirectory, fileName);
                 System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-
+                Debug.LogError("MESH: download finished");
                 //if the mesh is zipped, extract it
                 if (Path.GetExtension(savePath).ToLower() == ".zip") {
                     string meshUnzipDirectory = string.Format("{0}/{1}", meshDirectory, "mesh");
@@ -149,6 +151,7 @@ public class MeshImporter : Singleton<MeshImporter> {
 
     private void OnModelLoadError(IContextualizedError obj) {
         Notifications.Instance.ShowNotification("Unable to show mesh ", obj.GetInnerException().Message);
+        Debug.LogError(obj);
     }
 
     /// <summary>

@@ -221,7 +221,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
                 case "Mesh":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Mesh;
                     string meshId = MeshId.text;
-                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), uri: "");
+                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), uri: meshId);
                     objectModel.Mesh = mesh;
                     break;
                 default:

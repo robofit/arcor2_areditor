@@ -28,7 +28,6 @@ public class ActionObject3D : ActionObject {
     private Shader transparentShader;
 
     private List<Renderer> aoRenderers = new List<Renderer>();
-    private List<Collider> aoColliders = new List<Collider>();
 
     protected override void Start() {
         base.Start();
@@ -176,7 +175,7 @@ public class ActionObject3D : ActionObject {
         //Model.GetComponent<Collider>().enabled = interactivity;
         if (ActionObjectMetadata.ObjectModel != null &&
             ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
-            foreach (var col in aoColliders) {
+            foreach (var col in Colliders) {
                 col.enabled = interactivity;
             }
         } else {
@@ -251,7 +250,7 @@ public class ActionObject3D : ActionObject {
         //if (IsRobot()) {
         //    Model.tag = "Robot";
         //}
-
+        
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
         Colliders.Add(Collider);
@@ -263,9 +262,7 @@ public class ActionObject3D : ActionObject {
         Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
         aoRenderers.Clear();
-        aoColliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
-        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
     }
 
     public override GameObject GetModelCopy() {
@@ -291,15 +288,16 @@ public class ActionObject3D : ActionObject {
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
+        
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
             child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
             child.gameObject.AddComponent<MeshCollider>();
         }
 
         aoRenderers.Clear();
-        aoColliders.Clear();
+        Colliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
-        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
+        Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
 
         outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
