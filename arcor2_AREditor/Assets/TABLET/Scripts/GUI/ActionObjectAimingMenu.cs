@@ -53,7 +53,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     public async void Show(ActionObject actionObject) {
-        if (!await actionObject.WriteLock(false))
+        if (!await actionObject.WriteLock(false) || !await SceneManager.Instance.SelectedRobot.WriteLock(false))
             return;
         currentObject = actionObject;
         UpdateMenu();
@@ -64,8 +64,10 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         if (currentObject != null) {
-            if (unlock)
+            if (unlock) {
                 await currentObject.WriteUnlock();
+                await SceneManager.Instance.SelectedRobot.WriteUnlock();
+            }
             currentObject = null;
         }
     }

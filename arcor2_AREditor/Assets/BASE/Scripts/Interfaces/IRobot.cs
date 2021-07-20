@@ -31,4 +31,8 @@ public interface IRobot
 
     bool MultiArm();
 
-}
+    Task<bool> WriteLock(bool lockTree);
+
+    Task<bool> WriteUnlock();
+
+    }

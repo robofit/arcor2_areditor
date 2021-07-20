@@ -46,7 +46,7 @@ public class MeshImporter : Singleton<MeshImporter> {
 
         GameObject loadedObject = new GameObject("ImportedMeshObject");
         if (Path.GetExtension(path).ToLower() == ".dae") {
-        Debug.LogError("importing dae mesh name: " + path);
+        //Debug.LogError("importing dae mesh name: " + path);
             StreamReader reader = File.OpenText(path);
             string daeFile = reader.ReadToEnd();
 
@@ -74,20 +74,20 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <returns></returns>
     private IEnumerator DownloadMesh(string meshId, string fileName, string aoId) {
 
-        Debug.LogError("MESH: download started");
+        //Debug.LogError("MESH: download started");
         string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
             // Request and wait for the desired page.
             yield return www.Send();
             if (www.isNetworkError || www.isHttpError) {
-                Debug.LogError(www.error + " (" + uri + ")");
+                //Debug.LogError(www.error + " (" + uri + ")");
                 Notifications.Instance.ShowNotification("Failed to download mesh", www.error);
             } else {
                 string meshDirectory = string.Format("{0}/meshes/{1}", Application.persistentDataPath, meshId);
                 Directory.CreateDirectory(meshDirectory);
                 string savePath = string.Format("{0}/{1}", meshDirectory, fileName);
                 System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
-                Debug.LogError("MESH: download finished");
+                //Debug.LogError("MESH: download finished");
                 //if the mesh is zipped, extract it
                 if (Path.GetExtension(savePath).ToLower() == ".zip") {
                     string meshUnzipDirectory = string.Format("{0}/{1}", meshDirectory, "mesh");
@@ -151,7 +151,7 @@ public class MeshImporter : Singleton<MeshImporter> {
 
     private void OnModelLoadError(IContextualizedError obj) {
         Notifications.Instance.ShowNotification("Unable to show mesh ", obj.GetInnerException().Message);
-        Debug.LogError(obj);
+        Debug.LogError(obj.GetInnerException().Message);
     }
 
     /// <summary>
@@ -163,11 +163,11 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="uri">Where the mesh should be downloaded from</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string meshId, string fileName) {
-        Debug.LogError("mesh: Checking if newer  mesh exists " + meshId);
+        //Debug.LogError("mesh: Checking if newer  mesh exists " + meshId);
         string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         FileInfo meshFileInfo = new FileInfo(Application.persistentDataPath + "/meshes/" + meshId + "/" + fileName);
         if (!meshFileInfo.Exists) {
-            Debug.LogError("mesh: mesh file " + meshId + " has to be downloaded.");
+            //Debug.LogError("mesh: mesh file " + meshId + " has to be downloaded.");
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(meshId);
         }
@@ -177,18 +177,18 @@ public class MeshImporter : Singleton<MeshImporter> {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
             if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
-                Debug.LogError("mesh: Newer version is present on the server.");
+                //Debug.LogError("mesh: Newer version is present on the server.");
                 httpWebResponse.Close();
                 // Check whether downloading can be started and start it, if so.
                 return CanIDownload(meshId);
             } else {
                 // There is no need to download anything, lets return false
-                Debug.LogError("mesh: Downloaded version is already the latest one.");
+                //Debug.LogError("mesh: Downloaded version is already the latest one.");
                 httpWebResponse.Close();
                 return false;
             }
         } catch (WebException ex) {
-            Debug.LogError(ex);
+            //Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to get robot model", ex.Message);
             return false;
         }
