@@ -26,6 +26,10 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public bool Focusing;
 
+    public GameObject Sphere;
+
+    private List<GameObject> spheres = new List<GameObject>();
+
 
 
     private void Start() {
@@ -63,6 +67,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     public async void Hide(bool unlock = true) {
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+        foreach (GameObject sphere in spheres) {
+            if (sphere != null) {
+                Destroy(sphere);
+            }
+        }
+        spheres.Clear();
         if (currentObject != null) {
             if (unlock) {
                 await currentObject.WriteUnlock();
@@ -83,7 +93,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public async void UpdateMenu() {
         CalibrateBtn.gameObject.SetActive(false);
-
+        
 
         if (!SceneManager.Instance.SceneStarted) {
             UpdatePositionBlockVO.SetActive(false);
@@ -111,6 +121,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
+                foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
+                    GameObject sphere = Instantiate(Sphere, currentObject.transform);
+                    sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                    sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
+                    sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
+                }
             } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
                 UpdatePositionBlockMesh.SetActive(false);

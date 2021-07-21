@@ -278,8 +278,10 @@ public class ActionObject3D : ActionObject {
     public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
         if (args.Name != this.GetId())
             return;
-        Model.SetActive(false);
-        Destroy(Model);
+        if (Model != null) {
+            Model.SetActive(false);
+            Destroy(Model);
+        }
         Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;

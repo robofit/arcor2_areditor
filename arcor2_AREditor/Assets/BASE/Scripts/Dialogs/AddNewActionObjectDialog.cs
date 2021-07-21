@@ -73,7 +73,7 @@ public class AddNewActionObjectDialog : Dialog {
             List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 if (!parametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
-                    Base.Notifications.Instance.ShowNotification("Failed to create new action", "Failed to get metadata for action parameter: " + actionParameter.GetName());
+                    Base.Notifications.Instance.ShowNotification("Failed to create new action object", "Failed to get metadata for action object parameter: " + actionParameter.GetName());
                     return;
                 }
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);

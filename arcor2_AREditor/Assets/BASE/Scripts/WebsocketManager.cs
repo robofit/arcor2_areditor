@@ -1303,6 +1303,21 @@ namespace Base {
         }
 
         /// <summary>
+        /// Called when all points are selected, asking server to compute pose of object.
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="objectId">Action object ID</param>
+        /// <returns></returns>
+        public async Task CancelObjectAiming(bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ObjectAimingCancelRequest request = new IO.Swagger.Model.ObjectAimingCancelRequest(id: r_id, request: "ObjectAimingCancel", dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ObjectAimingCancelResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingCancelResponse>(r_id);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+        }
+
+        /// <summary>
         /// Loads all scenes from server.
         /// Throws RequestFailedException when request failed
         /// </summary>

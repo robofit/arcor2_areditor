@@ -10,6 +10,7 @@ public class AREditorResources : Base.Singleton<AREditorResources>
     public ConnectionSelectorDialog ConnectionSelectorDialog;
 
     public LeftMenuProject LeftMenuProject;
+    public LeftMenuScene LeftMenuScene;
     public ActionPickerMenu ActionPickerMenu;
 
     public EditProjectParameterDialog EditProjectParameterDialog;
