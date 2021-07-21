@@ -264,7 +264,6 @@ namespace Base {
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
-                GameManager.Instance.SetEditorState(EditorStateEnum.Normal);
             }
         }
 
@@ -739,6 +738,8 @@ namespace Base {
         public void SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = SpawnActionObject(sceneObject);
             if (!string.IsNullOrEmpty(SelectCreatedActionObject) && sceneObject.Name.Contains(SelectCreatedActionObject)) {
+                if (ActionObjectPickerMenu.Instance.IsVisible())
+                    AREditorResources.Instance.LeftMenuScene.AddButtonClick();
                 SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
             }
             SelectCreatedActionObject = "";
@@ -750,7 +751,6 @@ namespace Base {
         /// </summary>
         /// <param name="sceneObject">Description of action object</param>
         public void SceneObjectRemoved(SceneObject sceneObject) {
-            GameManager.Instance.SetEditorState(EditorStateEnum.InteractionDisabled);
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
                 ActionObjects.Remove(sceneObject.Id);
