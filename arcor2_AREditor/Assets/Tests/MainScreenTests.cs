@@ -117,7 +117,7 @@ namespace TrilleonAutomation
         public  IEnumerator UserCanCreateAndSaveProjectTest() {
             yield return StartCoroutine(Q.driver.Click(projectsBtn, "Click on projects."));
             yield return StartCoroutine(Q.driver.Click(newSceneProjectBtn, "Click on new project button"));
-            newProjectDialog.NewProjectName.text = "test project";
+            newProjectDialog.NewProjectName.SetValue("test project");
             yield return StartCoroutine(Q.driver.Click(newProjectDialogOKButton, "Click on Got it button"));
             // not working.. solve better
             _ = WebsocketManager.Instance.AddActionPoint("asdf", null, new IO.Swagger.Model.Position());
