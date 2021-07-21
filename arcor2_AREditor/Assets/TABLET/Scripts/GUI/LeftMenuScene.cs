@@ -114,8 +114,17 @@ public class LeftMenuScene : LeftMenu
         ActionObjectAimingMenu.Instance.Hide(unlock);
     }
 
-    private void CancelObjectAiming() {
-        Notifications.Instance.ShowNotification("Not available at the moment", "Sorry, i'm not sorry");
+    private async void CancelObjectAiming() {
+        try {
+            await WebsocketManager.Instance.CancelObjectAiming();
+            ActionObjectAimingMenu.Instance.Focusing = false;
+            DeactivateAllSubmenus();
+            ConfirmationDialog.Close();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to cancel object aiming", ex.Message);
+        }
+
+
     }
 
     public void AddMeshClick() {
