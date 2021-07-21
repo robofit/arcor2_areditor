@@ -289,7 +289,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         ProjectParameterButton btn = Instantiate(ConstantButtonPrefab, ContentConstants.transform).GetComponent<ProjectParameterButton>();
         btn.Id = projectParameter.Id;
         btn.SetName(projectParameter.Name);
-        btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value)); //TODO fix other types than string
+        btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value));
         btn.Button.onClick.AddListener(async () => {
             if (!await EditConstantDialog.Init(Show, Show, projectParameter))
                 return;
@@ -299,23 +299,6 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         return btn;
     }
 
-
-    //public async void Hide(bool unlock = true) {
-    //    DestroyConstantButtons();
-
-    //    EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-    //    if (currentAction != null) {
-    //        currentAction.CloseMenu();
-    //        if (unlock)
-    //            await currentAction.WriteUnlock();
-    //        currentAction = null;
-    //    }
-
-    //    WebsocketManager.Instance.OnProjectConstantAdded -= OnConstantAdded;
-    //    WebsocketManager.Instance.OnProjectConstantRemoved -= OnConstantRemoved;
-
-    //    isMenuOpened = false;
-    //}
 
     private void DestroyConstantButtons() {
         RectTransform[] transforms = ContentConstants.GetComponentsInChildren<RectTransform>();

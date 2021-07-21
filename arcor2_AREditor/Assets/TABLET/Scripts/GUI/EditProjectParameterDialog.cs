@@ -11,8 +11,7 @@ using UnityEngine.Events;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
 
-public class EditProjectParameterDialog : Dialog
-{
+public class EditProjectParameterDialog : Dialog {
     public TMPro.TMP_Text Title;
 
     [SerializeField]
@@ -113,6 +112,7 @@ public class EditProjectParameterDialog : Dialog
 
     public override void Open() {
         base.Open();
+        ValidateInput();
         AREditorResources.Instance.LeftMenuProject.UpdateVisibility(false, true);
     }
 
@@ -124,42 +124,65 @@ public class EditProjectParameterDialog : Dialog
     private void OnTypeSelected(ProjectParameterTypes type) {
         selectedType = type;
         SetValueInputType();
+        ValidateInput();
     }
 
 
-    public void ValidateInput() {
-        //TODO
-        //if (isNewConstant) {
-        //    ConfirmButton.SetInteractivity(true);
-        //    return;
-        //}
+    public async void ValidateInput() {
+        bool valid = true;
 
-        //bool valid = ((string) nameInput.GetValue()) != selectedObject.GetName();
+        if (string.IsNullOrEmpty((string) nameInput.GetValue())) {
+            ConfirmButton.SetInteractivity(false, "Name cannot be empty");
+            valid = false;
+        } else if (string.IsNullOrEmpty(valueInput.Input.text) && selectedType != ProjectParameterTypes.boolean) {
+            ConfirmButton.SetInteractivity(false, "Value cannot be empty");
+            valid = false;
+        }
 
-        //ConfirmButton.SetInteractivity(valid, "Name has not been changed");
+        if (!isNewConstant) {
+            if (((string) nameInput.GetValue()) == projectParameter.Name && valueInput.Input.text == projectParameter.Value) { //known bug: always false when parameter's type is double or boolean
+                ConfirmButton.SetInteractivity(false, "Project parameter unchanged");
+                valid = false;
+            }
+        }
+
+        if (!valid)
+            return;
+
+        try {
+            await Confirm(true);
+            ConfirmButton.SetInteractivity(true);
+        } catch (RequestFailedException e) {
+            ConfirmButton.SetInteractivity(false, e.Message);
+        }
     }
 
-    public override async void Confirm() {
+    public async override void Confirm() {
+        await Confirm(false);
+    }
+
+    public async Task Confirm(bool dryRun) {
         string name = nameInput.GetValue() as string;
         string value;
-            if(selectedType == ProjectParameterTypes.boolean) {
+        if (selectedType == ProjectParameterTypes.boolean) {
             value = JsonConvert.SerializeObject(trueToggle.isOn);
         } else {
-        value = JsonConvert.SerializeObject(valueInput.GetValue());
+            value = JsonConvert.SerializeObject(valueInput.GetValue());
         }
-        //string value = Base.Parameter.Encode(valueInput.GetValue() as string, selectedType.ToString("g"));
         try {
             if (isNewConstant) {
-                //Notifications.Instance.ShowNotification(ParameterTypesEnum.relative_pose.ToString("G"), ParameterTypesEnum.@string.ToString("g"));
-                
-                await WebsocketManager.Instance.AddProjectParameter(name, selectedType.ToString("g"), value); //name, "{" + JsonConvert.SerializeObject(selectedType) + "}", value);
+                await WebsocketManager.Instance.AddProjectParameter(name, selectedType.ToString("g"), value, dryRun);
             } else {
-                await WebsocketManager.Instance.UpdateProjectParameter(projectParameter.Id, name, value);
+                await WebsocketManager.Instance.UpdateProjectParameter(projectParameter.Id, name, value, dryRun);
             }
             //after updating, constant is unlocked automatically by server
-            Close();
+            if (!dryRun)
+                Close();
         } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter", e.Message);
+            if (dryRun)
+                throw e;
+            else
+                Notifications.Instance.ShowNotification("Failed to " + (isNewConstant ? "add " : "update ") + "project parameter", e.Message);
         }
     }
 
@@ -168,14 +191,13 @@ public class EditProjectParameterDialog : Dialog
         AREditorResources.Instance.LeftMenuProject.UpdateVisibility();
         dropdown.Dropdown.dropdownItems.Clear();
         projectParameter = null;
-        if(!cancelCallbackInvoked)
+        if (!cancelCallbackInvoked)
             onCloseCallback?.Invoke();
-
     }
 
     public async void Cancel() {
+        cancelCallbackInvoked = true;
         if (projectParameter == null || isNewConstant) {
-            cancelCallbackInvoked = true;
             Close();
             onCancelCallback?.Invoke();
             return;
@@ -199,6 +221,7 @@ public class EditProjectParameterDialog : Dialog
         }
     }
 }
+
 
 public static class ProjectParametersHelper {
     public static ProjectParameterTypes ConvertStringParameterTypeToEnum(string type) {
