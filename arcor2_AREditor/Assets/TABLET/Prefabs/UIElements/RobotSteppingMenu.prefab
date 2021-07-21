@@ -1006,6 +1006,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
@@ -2093,6 +2094,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
@@ -2247,6 +2249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
@@ -2522,6 +2525,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
@@ -4569,6 +4573,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 224482949395985790, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 224482949395985790, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
+        type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -6.3000183
       objectReference: {fileID: 0}
@@ -4630,7 +4639,7 @@ PrefabInstance:
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 20
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 224824262674114156, guid: 8cf74ef4b41c8274e9ea7b32b5f45d11,
         type: 3}

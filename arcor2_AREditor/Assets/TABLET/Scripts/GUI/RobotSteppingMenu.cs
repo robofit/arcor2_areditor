@@ -22,7 +22,6 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     private bool safe = true, world = false, translate = true;
 
     private void Start() {
-        SpeedSlider.onValueChanged.AddListener((_) => Debug.LogError(GetSpeedSliderValue()));
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
         WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
     }
