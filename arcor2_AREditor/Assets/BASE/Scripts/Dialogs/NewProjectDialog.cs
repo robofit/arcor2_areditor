@@ -11,7 +11,7 @@ public class NewProjectDialog : Dialog
 {
     public GameObject ToggleGroup, GenerateLogicToggle;
     public GameObject TogglePrefab;
-    public TMPro.TMP_InputField NewProjectName;
+    public LabeledInput NewProjectName;
     public ButtonWithTooltip OKBtn;
     public void Start()
     {
@@ -24,7 +24,7 @@ public class NewProjectDialog : Dialog
     }
 
     public async void NewProject() {
-        string name = NewProjectName.text;
+        string name = NewProjectName.GetValue()?.ToString();
         string sceneName;
         bool generateLogic;
         try {
@@ -43,12 +43,13 @@ public class NewProjectDialog : Dialog
 
     public async void FieldChanged() {
         Base.RequestResult result = await ValidateFields();
+        Debug.LogError(result.Success);
         OKBtn.SetInteractivity(result.Success, result.Message);
 
     }
 
     public async Task<Base.RequestResult> ValidateFields() {
-        string name = NewProjectName.text;
+        string name = NewProjectName.GetValue()?.ToString();
         string sceneName;
         string sceneId;
         bool generateLogic = GenerateLogicToggle.GetComponent<Toggle>().isOn;
@@ -84,7 +85,7 @@ public class NewProjectDialog : Dialog
         if (selectedScene != null) {
             SetSelectedValue(ToggleGroup, selectedScene);
         }
-        NewProjectName.text = "";
+        NewProjectName.SetValue("");
         FieldChanged();
     }
 }

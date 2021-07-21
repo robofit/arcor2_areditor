@@ -636,7 +636,7 @@ MonoBehaviour:
   Switch: {fileID: 2990318297726141335}
   Label: {fileID: 774480672094598610}
   SwitchButton: {fileID: 7325740951115511514}
-  ManualTooltip: {fileID: 0}
+  ManualTooltip: {fileID: 789886301222118961}
 --- !u!1 &5461958711695955369
 GameObject:
   m_ObjectHideFlags: 0
@@ -649,6 +649,8 @@ GameObject:
   - component: {fileID: 206153944874827301}
   - component: {fileID: 774480672094598610}
   - component: {fileID: 938687004597151176}
+  - component: {fileID: 4661495967068276037}
+  - component: {fileID: 789886301222118961}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -791,6 +793,39 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &4661495967068276037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5461958711695955369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  tooltipAnimator: {fileID: 0}
+--- !u!114 &789886301222118961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5461958711695955369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 4661495967068276037}
+  Description: 
+  DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!1 &6262918096285932569
 GameObject:
   m_ObjectHideFlags: 0
