@@ -69,7 +69,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         foreach (GameObject sphere in spheres) {
             if (sphere != null) {
-                Destroy(sphere);
+                Destroy(sphere.gameObject);
             }
         }
         spheres.Clear();
@@ -126,6 +126,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
                     sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
+                    spheres.Add(sphere);
                 }
             } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);

@@ -248,10 +248,8 @@ namespace Base {
         public async override Task<RequestResult> Movable() {
             if (!ActionObjectMetadata.HasPose)
                 return new RequestResult(false, "Selected action object has no pose");
-            else if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+            else if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
                 return new RequestResult(false, "Action object could be moved only in scene editor");
-            else if (SceneManager.Instance.SceneStarted) {
-                return new RequestResult(false, "Scene online");
             } else {
                 return new RequestResult(true);
             }
