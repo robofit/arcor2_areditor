@@ -27,7 +27,7 @@ public class EditProjectParameterDialog : Dialog {
     private bool isNewConstant, booleanValue;
     private ProjectParameterTypes selectedType;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
-    private System.Action onCloseCallback;
+    private System.Action<string> onCloseCallback;
     private System.Action onCancelCallback;
     private bool cancelCallbackInvoked; //flag: only cancel callback should be invoked if canceled
 
@@ -35,7 +35,7 @@ public class EditProjectParameterDialog : Dialog {
     /// 
     /// </summary>
     /// <param name="projectParameter"></param>
-    public async Task<bool> Init(System.Action onCloseCallback, System.Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
+    public async Task<bool> Init(System.Action<string> onCloseCallback, System.Action onCancelCallback, ProjectParameter projectParameter = null, string ofType = null) {
         this.projectParameter = projectParameter;
         isNewConstant = projectParameter == null;
         this.onCloseCallback = onCloseCallback;
@@ -192,7 +192,7 @@ public class EditProjectParameterDialog : Dialog {
         dropdown.Dropdown.dropdownItems.Clear();
         projectParameter = null;
         if (!cancelCallbackInvoked)
-            onCloseCallback?.Invoke();
+            onCloseCallback?.Invoke((string) nameInput.GetValue());
     }
 
     public async void Cancel() {
