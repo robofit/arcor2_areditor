@@ -28,7 +28,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public GameObject Sphere;
 
-    private List<GameObject> spheres = new List<GameObject>();
+    private List<AimingPointSphere> spheres = new List<AimingPointSphere>();
 
 
 
@@ -67,7 +67,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     public async void Hide(bool unlock = true) {
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        foreach (GameObject sphere in spheres) {
+        foreach (AimingPointSphere sphere in spheres) {
             if (sphere != null) {
                 Destroy(sphere.gameObject);
             }
@@ -122,7 +122,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
-                    GameObject sphere = Instantiate(Sphere, currentObject.transform);
+                    AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
                     sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
