@@ -145,18 +145,19 @@ public class LeftMenuScene : LeftMenu
 
     public override void UpdateVisibility() {
         
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-            if (MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(true);
-                UpdateVisibility(true);
-            } else {
-                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
-                UpdateVisibility(false);
-            }
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);            
         } else {
             UpdateVisibility(false);
         }
         
+    }
+
+    public override void UpdateVisibility(bool visible, bool force = false) {
+        base.UpdateVisibility(visible, force);
+        if (GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor)
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);        
     }
 
     public async void SaveScene() {

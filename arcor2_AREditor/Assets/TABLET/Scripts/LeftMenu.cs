@@ -244,11 +244,12 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public abstract void UpdateVisibility();
 
-    public void UpdateVisibility(bool visible, bool force = false) {
+    public virtual void UpdateVisibility(bool visible, bool force = false) {
         isVisibilityForced = force;
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;
+        
         if (visible)
             UpdateBtns();
     }

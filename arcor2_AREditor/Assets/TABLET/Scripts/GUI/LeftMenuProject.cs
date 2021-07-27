@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using static Base.GameManager;
 
 public class LeftMenuProject : LeftMenu
 {
@@ -458,18 +459,18 @@ public class LeftMenuProject : LeftMenu
 
 
     public override void UpdateVisibility() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
-            if (MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(true);
-                UpdateVisibility(true);
-            } else {
-                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
-                UpdateVisibility(false);
-            }
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);            
         } else {
-
             UpdateVisibility(false);
         }
+    }
+
+    public override void UpdateVisibility(bool visible, bool force = false) {
+        base.UpdateVisibility(visible, force);
+        if (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor)
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);
     }
 
     public async void ShowCloseProjectDialog() {

@@ -56,16 +56,18 @@ public class LeftMenuPackage : LeftMenu {
 
     public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
         
-        if (newGameState == GameManager.GameStateEnum.PackageRunning) {
-            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
-            if (MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-                UpdateVisibility(true);
-            } else {
-                UpdateVisibility(false);
-            }
+        if (newGameState == GameManager.GameStateEnum.PackageRunning &&
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);            
         } else {
             UpdateVisibility(false);
         }
+    }
+
+    public override void UpdateVisibility(bool visible, bool force = false) {
+        base.UpdateVisibility(visible, force);
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning)
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
     }
 
     public void ShowStopPackageDialog() {
