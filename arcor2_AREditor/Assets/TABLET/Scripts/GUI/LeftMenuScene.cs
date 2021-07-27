@@ -98,7 +98,8 @@ public class LeftMenuScene : LeftMenu
                 CancelObjectAiming,
                 null,
                 "Cancel aiming",
-                "Keep running");
+                "Keep running",
+                true);
             return;
         }
 
