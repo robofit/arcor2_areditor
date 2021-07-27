@@ -249,6 +249,7 @@ public abstract class LeftMenu : MonoBehaviour {
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;
+        AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);
         if (visible)
             UpdateBtns();
     }

@@ -156,15 +156,18 @@ namespace Base {
 
         private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
             ProjectParameters.Remove(args.ProjectParameter);
+            ProjectChanged = true;
         }
 
         private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
             ProjectParameters.RemoveAll(c => c.Id == args.ProjectParameter.Id);
             ProjectParameters.Add(args.ProjectParameter);
+            ProjectChanged = true;
         }
 
         private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
             ProjectParameters.Add(args.ProjectParameter);
+            ProjectChanged = true;
         }
 
         private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {

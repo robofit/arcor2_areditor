@@ -74,7 +74,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     private void SetupDropdownForProjectParameters(string type, object value) {
         List<string> projectParameters = new List<string>();
-        foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type)) {
+        foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
             projectParameters.Add(pp.Name);
         }
         projectParameters.Add(NewProjectParameterText);
@@ -93,16 +93,16 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
                 AREditorResources.Instance.ActionPickerMenu.SetVisibility(false);
             }
 
-            _ = AREditorResources.Instance.EditProjectParameterDialog.Init(() => {
+            _ = AREditorResources.Instance.EditProjectParameterDialog.Init((string newProjectParameterName) => {
                 if (hideActionParametersMenu)
                     AREditorResources.Instance.ActionParametersMenu.SetVisibility(true); //make menu visible again
                 else if (hideAddNewActionDialog)
                     AREditorResources.Instance.AddNewActionDialog.Open();
                 SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
-                if (ActionsDropdown.Dropdown.dropdownItems.Count >= 2) {
-                    ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.Count - 2;
+                if (!string.IsNullOrEmpty(newProjectParameterName)) {
+                    ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.FindIndex(i => i.itemName == newProjectParameterName);
                     ActionsDropdown.Dropdown.SetupDropdown();
-                    ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke(); //select last added project parameter
+                    ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke(); //select newly added project parameter
                 }
             },
             () => {

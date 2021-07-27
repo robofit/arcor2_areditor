@@ -276,11 +276,13 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
-        GenerateParameterButton(args.ProjectParameter);
+        //it needs to be sorted alphabetically, so cannot just add new button
+        DestroyConstantButtons();
+        GenerateParameterButtons();
     }
 
     private void GenerateParameterButtons() {
-        foreach (var projectParameter in ProjectManager.Instance.ProjectParameters) {
+        foreach (var projectParameter in ProjectManager.Instance.ProjectParameters.OrderBy(p => p.Name)) {
             GenerateParameterButton(projectParameter);
         }
     }
@@ -291,7 +293,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         btn.SetName(projectParameter.Name);
         btn.SetValue(Base.Parameter.GetValue<string>(projectParameter.Value));
         btn.Button.onClick.AddListener(async () => {
-            if (!await EditConstantDialog.Init(Show, Show, projectParameter))
+            if (!await EditConstantDialog.Init((_) => Show(), Show, projectParameter))
                 return;
             Hide();
             EditConstantDialog.Open();
@@ -311,39 +313,12 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         }
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0;
-    }
-
     public async void ShowNewConstantDialog() {
         Hide();
-        if (!await EditConstantDialog.Init(Show, Show))
+        if (!await EditConstantDialog.Init((_) => Show(), Show))
             return;
         Hide();
         EditConstantDialog.Open();
-    }
-
-    public static ProjectParameterTypes ConvertStringConstantToEnum(string type) {
-        return (ProjectParameterTypes) Enum.Parse(typeof(ProjectParameterTypes), type);
-    }
-
-    public static object GetValue(string value, ProjectParameterTypes type) {
-        object toReturn = null;
-        switch (type) {
-            case ProjectParameterTypes.integer:
-                toReturn = JsonConvert.DeserializeObject<int>(value);
-                break;
-            case ProjectParameterTypes.@string:
-                toReturn = JsonConvert.DeserializeObject<string>(value);
-                break;
-            case ProjectParameterTypes.boolean:
-                toReturn = JsonConvert.DeserializeObject<bool>(value);
-                break;
-            case ProjectParameterTypes.@double:
-                toReturn = JsonConvert.DeserializeObject<double>(value);
-                break;
-        }
-        return toReturn;
     }
 
     #endregion
