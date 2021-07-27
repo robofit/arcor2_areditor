@@ -56,9 +56,13 @@ public class LeftMenuPackage : LeftMenu {
 
     public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
         
-        if (newGameState == GameManager.GameStateEnum.PackageRunning &&
-            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);
+        if (newGameState == GameManager.GameStateEnum.PackageRunning) {
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
+            if (MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+                UpdateVisibility(true);
+            } else {
+                UpdateVisibility(false);
+            }
         } else {
             UpdateVisibility(false);
         }

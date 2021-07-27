@@ -49,6 +49,10 @@ public class SwitchComponent : MonoBehaviour, IParameter
     }
 
     public void SetValue(object value) {
+        SetValue(value, true);
+    }
+
+    public void SetValue(object value, bool invokeEvent) {
         if (value == null)
             return;
         bool newValue = (bool) value;
@@ -56,13 +60,14 @@ public class SwitchComponent : MonoBehaviour, IParameter
         // switch gets updated upon onEnable event
         Switch.gameObject.SetActive(false);
         Switch.gameObject.SetActive(true);
-
-        // manually invoke switch methods, because they wont be invoked just by itself
-        if (Switch.isOn) {
-            Switch.OnEvents.Invoke();
-        } else {
-            Switch.OffEvents.Invoke();
-        }
+        if (invokeEvent) {
+            // manually invoke switch methods, because they wont be invoked just by itself
+            if (Switch.isOn) {
+                Switch.OnEvents.Invoke();
+            } else {
+                Switch.OffEvents.Invoke();
+            }
+        }        
     }
 
     public void SetDarkMode(bool dark) {

@@ -12,6 +12,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 {
     public GameObject ContainerEditor, ContainerConstants, ContentEditor, ContentConstants, ContainerAR, ContentAR, ConstantButtonPrefab;
     public ButtonWithTooltip SwitchToProjectParametersBtn;
+    public Image SwitchToProjectParametersBtnImage;
 
     public List<GameObject> ProjectRelatedSettings = new List<GameObject>();
 
@@ -33,12 +34,22 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
 
     private void Start() {
-        GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
+        SceneManager.Instance.OnLoadScene += OnLoadScene;
+        ProjectManager.Instance.OnLoadProject += OnLoadProject;
         EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
         ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
 
 
+    }
+
+
+    private void OnLoadProject(object sender, EventArgs e) {
+        OnProjectOrSceneLoaded();
+    }
+
+    private void OnLoadScene(object sender, EventArgs e) {
+        OnProjectOrSceneLoaded();
     }
 
 #if UNITY_ANDROID && AR_ON
@@ -52,33 +63,14 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         CalibrationManager.Instance.OnARRecalibrate -= OnARRecalibrate;
     }
 #endif
-    private void OnGameStateChanged(object sender, GameStateEventArgs args) {
-        //if (args.Data == GameManager.GameStateEnum.)
-        foreach (GameObject obj in ProjectRelatedSettings) {
-            obj.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor);
-        }
+
+   
+
+    private void OnProjectOrSceneLoaded() {
         
-    }
-
-    public void SwitchToEditor() {
-        ContainerConstants.SetActive(false);
-        ContainerAR.SetActive(false);
-        ContainerEditor.SetActive(true);
-    }
-
-    public void SwitchToConstants() {
-        ContainerEditor.SetActive(false);
-        ContainerAR.SetActive(false);
-        ContainerConstants.SetActive(true);
-    }
-
-    public void SwitchToAR() {
-        ContainerConstants.SetActive(false);
-        ContainerEditor.SetActive(false);
-        ContainerAR.SetActive(true);
-    }
-
-    public void Show() {
+        foreach (GameObject obj in ProjectRelatedSettings) {
+            obj.SetActive(GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor);
+        }
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
             APSizeSlider.gameObject.SetActive(true);
             APOrientationsVisibility.gameObject.SetActive(true);
@@ -86,6 +78,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
             APOrientationsVisibility.SetValue(Base.ProjectManager.Instance.APOrientationsVisible);
 
             SwitchToProjectParametersBtn.SetInteractivity(true);
+            SwitchToProjectParametersBtnImage.color = Color.white;
             GenerateParameterButtons();
             WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
             WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
@@ -93,12 +86,11 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
             APSizeSlider.gameObject.SetActive(false);
             APOrientationsVisibility.gameObject.SetActive(false);
             SwitchToProjectParametersBtn.SetInteractivity(false, "Project parameters are available only in project editor.");
-            if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
-                SwitchToEditor();
+            SwitchToProjectParametersBtnImage.color = Color.gray;
         }
 
         Interactibility.SetValue(Base.SceneManager.Instance.ActionObjectsInteractive);
-        RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible);
+        RobotsEEVisible.SetValue(Base.SceneManager.Instance.RobotsEEVisible, false);
         ActionObjectsVisibilitySlider.SetValueWithoutNotify(SceneManager.Instance.ActionObjectsVisibility * 100f);
 
 #if UNITY_ANDROID && AR_ON
@@ -123,9 +115,35 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
 #endif
         ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
+        recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
+
+    }
+
+    public void SwitchToEditor() {
+        ContainerConstants.SetActive(false);
+        ContainerAR.SetActive(false);
+        ContainerEditor.SetActive(true);
+    }
+
+    public void SwitchToConstants() {
+        ContainerEditor.SetActive(false);
+        ContainerAR.SetActive(false);
+        ContainerConstants.SetActive(true);
+    }
+
+    public void SwitchToAR() {
+        ContainerConstants.SetActive(false);
+        ContainerEditor.SetActive(false);
+        ContainerAR.SetActive(true);
+    }
+
+    public void Show() {
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+            if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
+                SwitchToEditor();
+        }
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
-        recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
     }
 
     public void Hide() {

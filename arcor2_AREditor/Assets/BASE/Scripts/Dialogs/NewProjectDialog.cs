@@ -43,7 +43,6 @@ public class NewProjectDialog : Dialog
 
     public async void FieldChanged() {
         Base.RequestResult result = await ValidateFields();
-        Debug.LogError(result.Success);
         OKBtn.SetInteractivity(result.Success, result.Message);
 
     }

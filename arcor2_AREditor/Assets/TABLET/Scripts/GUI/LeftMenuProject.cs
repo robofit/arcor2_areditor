@@ -458,10 +458,16 @@ public class LeftMenuProject : LeftMenu
 
 
     public override void UpdateVisibility() {
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
-            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+            if (MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(true);
+                UpdateVisibility(true);
+            } else {
+                AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
+                UpdateVisibility(false);
+            }
         } else {
+
             UpdateVisibility(false);
         }
     }
