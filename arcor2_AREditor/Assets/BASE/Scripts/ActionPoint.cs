@@ -351,7 +351,7 @@ namespace Base {
                 ChangeParent(projectActionPoint.Parent);
             }
             Data = projectActionPoint;
-            transform.localPosition = GetScenePosition();
+            transform.localPosition = GetScenePosition();            
             transform.localRotation = GetSceneOrientation();
             List<string> currentA = new List<string>();
 

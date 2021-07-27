@@ -289,7 +289,11 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
     }
 
-    
+    private void LateUpdate() {
+        if (InteractiveObject is ActionPoint) {
+            model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
+        }
+    }
 
     public async void Show(InteractiveObject interactiveObject) {
         InteractiveObject = interactiveObject;

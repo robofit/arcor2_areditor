@@ -16,6 +16,7 @@ public class ActionPoint3D : Base.ActionPoint {
     private Material sphereMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
+    public GameObject ActionsVisuals;
 
 
     private void Awake() {
@@ -34,7 +35,9 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        //transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        //Visual.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
@@ -48,12 +51,27 @@ public class ActionPoint3D : Base.ActionPoint {
 
 
     public override Vector3 GetScenePosition() {
-        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
-        
+        Vector3 position = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
+        /*ActionObject parentActionObject = GetActionObject();
+        // if AP is child of another AP and in the top of the hierarchy is some action object, action points has to use the action objects rotation
+        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
+            position = parentActionObject.GetTransform().localRotation * position;
+        }*/
+        return position;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="position">Global position of AP</param>
     public override void SetScenePosition(Vector3 position) {
-        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        ActionObject parentActionObject = GetActionObject();
+        Vector3 p = position;
+/*
+        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
+            
+        }*/
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(p));
     }
 
     public override Quaternion GetSceneOrientation() {
