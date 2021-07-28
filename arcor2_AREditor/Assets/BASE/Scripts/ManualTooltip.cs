@@ -4,11 +4,12 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.EventSystems;
 using RuntimeInspectorNamespace;
+using TMPro;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
     [SerializeField]
-    private TooltipContent tooltipContent;
+    protected TooltipContent tooltipContent;
     [SerializeField]
     public string Description, DescriptionAlternative;
     [SerializeField]
@@ -26,12 +27,13 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
+
     private void Awake() {
         if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
             tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
             tooltipContent.descriptionText = TooltipRef.Instance.Text;
         }
-        tooltipContent.delay = AREditorResources.TooltipDelay;
+        tooltipContent.delay = AREditorResources.TOOLTIP_DELAY;
     }
 
     private void Start() {
@@ -70,6 +72,7 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.enabled = true;
         }
     }
+
 
     private void OnDisable() {
         if (tooltipContent != null && tooltipContent.tooltipAnimator != null)

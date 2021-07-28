@@ -37,7 +37,6 @@ public class ButtonWithTooltip : MonoBehaviour {
             return;
         tooltip.DescriptionAlternative = alternativeDescription;
         SetInteractivity(interactable);
-        
     }
 
     public void SetDescription(string description) {

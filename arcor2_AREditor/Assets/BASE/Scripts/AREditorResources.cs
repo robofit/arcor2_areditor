@@ -17,7 +17,7 @@ public class AREditorResources : Base.Singleton<AREditorResources>
     public ActionParametersMenu ActionParametersMenu;
     public AddNewActionDialog AddNewActionDialog;
 
-    public const float TooltipDelay = 0.5f;
+    public const float TOOLTIP_DELAY = 0.5f;
 
     public Sprite SceneOnline, SceneOffline;
     public ButtonWithTooltip StartStopSceneBtn;

@@ -21,6 +21,9 @@ public class LeftMenuScene : LeftMenu
 
     public ButtonWithTooltip AddActionObjectButton;
 
+    private const string AIMING_MENU_BTN_LABEL = "Action object precise aiming"; 
+    private const string ADD_ACTION_OBJECT_BTN_LABEL = "Add new action object to scene"; 
+
     protected override void Awake() {
         base.Awake();
         Base.SceneManager.Instance.OnSceneSavedStatusChanged += OnSceneSavedStatusChanged;
@@ -30,6 +33,8 @@ public class LeftMenuScene : LeftMenu
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+        ActionObjectAimingMenuButton.SetDescription(AIMING_MENU_BTN_LABEL);
+        AddActionObjectButton.SetDescription(ADD_ACTION_OBJECT_BTN_LABEL);
     }
     protected override void Update() {
         base.Update();
@@ -57,7 +62,7 @@ public class LeftMenuScene : LeftMenu
 
             await base.UpdateBtns(obj);
 
-            AddActionObjectButton.SetInteractivity(!SceneManager.Instance.SceneStarted, "Only available when offline");
+            AddActionObjectButton.SetInteractivity(!SceneManager.Instance.SceneStarted, $"{ADD_ACTION_OBJECT_BTN_LABEL}\n(only available when offline");
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, "AR is not calibrated");
@@ -66,22 +71,22 @@ public class LeftMenuScene : LeftMenu
 #endif
             if (requestingObject || obj == null) {
                 SelectedObjectText.text = "";
-                ActionObjectAimingMenuButton.SetInteractivity(false, "No object selected");
+                ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(no object selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
-                ActionObjectAimingMenuButton.SetInteractivity(false, "Object is locked");
+                ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(object is locked)");
             } else {
                 if (obj is ActionObject actionObject) {
                     if (!SceneManager.Instance.SceneStarted) {
-                        ActionObjectAimingMenuButton.SetInteractivity(false, "Only available when online");
+                        ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(only available when online)");
                     } else if (!actionObject.ActionObjectMetadata.HasPose) {
-                        ActionObjectAimingMenuButton.SetInteractivity(false, "Not available for objects without pose");
+                        ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(not available for objects without pose)");
                     } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-                        ActionObjectAimingMenuButton.SetInteractivity(false, "End effector not selected");
+                        ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(end effector not selected)");
                     } else {
                         ActionObjectAimingMenuButton.SetInteractivity(true);
                     }
                 } else {
-                    ActionObjectAimingMenuButton.SetInteractivity(false, "Selected object is not action object");
+                    ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(selected object is not action object)");
                 }
             }
             
