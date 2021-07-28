@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Base;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -41,6 +42,12 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                 !actionObjectMetadata.Abstract) {
 
                 ActionButtonWithIconRemovable btn = CreateBtn(actionObjectMetadata);
+                foreach (ActionButtonWithIconRemovable t in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
+                    if (t.GetLabel().CompareTo(btn.GetLabel()) > 0) {
+                        btn.transform.SetSiblingIndex(t.transform.GetSiblingIndex());
+                        return;
+                    }
+                }
             }
         }
     }
@@ -53,7 +60,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                     Destroy(t.gameObject);
             }
             // create one button for each object type
-            foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectMetadata.Values) {
+            foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectMetadata.Values.OrderBy(x => x.Type)) {
                 if (actionObject.Abstract)
                     continue;
                 CreateBtn(actionObject);
