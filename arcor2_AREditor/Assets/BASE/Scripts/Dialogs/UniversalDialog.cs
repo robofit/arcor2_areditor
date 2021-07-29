@@ -28,7 +28,8 @@ public class UniversalDialog : Dialog
     }
 
     public void AddCancelCallback(UnityAction callback) {
-        windowManager.onCancel.AddListener(callback);
+        if (callback != null)
+            windowManager.onCancel.AddListener(callback);
     }
 
     public void SetDescription(string description) {

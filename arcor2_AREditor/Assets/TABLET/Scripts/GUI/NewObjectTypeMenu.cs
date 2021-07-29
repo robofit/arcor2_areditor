@@ -109,7 +109,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
             originalValue = (string) ParentsList.GetValue();
 
         List<string> values = new List<string>();
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectsMetadata.Values) {
             values.Add(actionObjectMetadata.Type);
         }
         ParentsList.PutData(values, originalValue, (_) => UpdateModelsMenu());

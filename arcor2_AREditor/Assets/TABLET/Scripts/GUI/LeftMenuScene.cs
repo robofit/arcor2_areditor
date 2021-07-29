@@ -61,8 +61,13 @@ public class LeftMenuScene : LeftMenu
             }
 
             await base.UpdateBtns(obj);
-
-            AddActionObjectButton.SetInteractivity(!SceneManager.Instance.SceneStarted, $"{ADD_ACTION_OBJECT_BTN_LABEL}\n(only available when offline");
+            if (SceneManager.Instance.SceneStarted) {
+                AddActionObjectButton.SetInteractivity(false, $"{ADD_ACTION_OBJECT_BTN_LABEL}\n(only available when offline)");
+            } else if (ActionsManager.Instance.AbstractOnlyObjects) {
+                AddActionObjectButton.SetInteractivity(false, $"{ADD_ACTION_OBJECT_BTN_LABEL}\n(no object type available)");
+            } else {
+                AddActionObjectButton.SetInteractivity(true);
+            }
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, "AR is not calibrated");
@@ -89,6 +94,7 @@ public class LeftMenuScene : LeftMenu
                     ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(selected object is not action object)");
                 }
             }
+
             
             previousUpdateDone = true;
         } finally {

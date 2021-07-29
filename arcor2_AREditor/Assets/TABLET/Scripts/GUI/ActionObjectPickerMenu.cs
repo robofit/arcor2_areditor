@@ -38,7 +38,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
     private void OnObjectTypesAdded(object sender, StringListEventArgs args) {
         foreach (string objectTypeName in args.Data) {
-            if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(objectTypeName, out ActionObjectMetadata actionObjectMetadata) &&
+            if (ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(objectTypeName, out ActionObjectMetadata actionObjectMetadata) &&
                 !actionObjectMetadata.Abstract) {
 
                 ActionButtonWithIconRemovable btn = CreateBtn(actionObjectMetadata);
@@ -60,7 +60,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                     Destroy(t.gameObject);
             }
             // create one button for each object type
-            foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectMetadata.Values.OrderBy(x => x.Type)) {
+            foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectsMetadata.Values.OrderBy(x => x.Type)) {
                 if (actionObject.Abstract)
                     continue;
                 CreateBtn(actionObject);
@@ -108,7 +108,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
 
     private void AddObjectToScene(string type) {
-        if (Base.ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {            
+        if (Base.ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {            
             ShowAddObjectDialog(type);
         } else {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
@@ -140,7 +140,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
     public void ShowAddObjectDialog(string type) {
 
-        if (ActionsManager.Instance.ActionObjectMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
+        if (ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out ActionObjectMetadata actionObjectMetadata)) {
             addNewActionObjectDialog.InitFromMetadata(actionObjectMetadata, UpdateRemoveBtns);
             addNewActionObjectDialog.Open();
         } else {

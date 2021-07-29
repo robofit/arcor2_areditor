@@ -21,4 +21,6 @@ public class AREditorResources : Base.Singleton<AREditorResources>
 
     public Sprite SceneOnline, SceneOffline;
     public ButtonWithTooltip StartStopSceneBtn;
+
+    public Material StartActionMaterial, EndActionMaterial;
 }

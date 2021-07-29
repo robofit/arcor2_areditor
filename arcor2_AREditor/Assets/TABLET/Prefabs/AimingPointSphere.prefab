@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a42075478d0bf9d4da97396f41dbbd78, type: 2}
+  - {fileID: 2100000, guid: 55415b4b8d44a4950aaf5382f16df8b5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -134,3 +134,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29dc17095c8853f47aa33f9d6c2f5742, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Enabled: 1
+  SelectorItem: {fileID: 0}
+  Colliders: []
+  outlineOnClick: {fileID: 1922578941796232153}
+  Renderer: {fileID: 1148781849001465116}

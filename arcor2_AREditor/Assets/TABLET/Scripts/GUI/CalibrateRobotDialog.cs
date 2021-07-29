@@ -10,14 +10,16 @@ public class CalibrateRobotDialog : Dialog {
     public SwitchComponent Switch;
     private string robotId;
 
-    public void Init(List<string> cameraNames, string robotId) {
+    public bool Init(List<string> cameraNames, string robotId) {
         if (cameraNames.Count == 0) {
             Notifications.Instance.ShowNotification("Calibration failed", "Could not calibrate robot wihtout camera");
             Close();
+            return false;
         }
         Switch.SetValue(false);
         Dropdown.PutData(cameraNames, "", null);
         this.robotId = robotId;
+        return true;
     }
 
 

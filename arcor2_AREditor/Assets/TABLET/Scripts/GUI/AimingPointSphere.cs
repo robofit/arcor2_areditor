@@ -7,16 +7,37 @@ using System;
 public class AimingPointSphere : InteractiveObject {
 
     private string id, pointName;
+    private int index;
+    private bool aimed;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
+    public MeshRenderer Renderer;
+
+    public int Index => index;
+    public bool Aimed => aimed;
+
     private void Awake() {
         id = Guid.NewGuid().ToString();
         outlineOnClick = GetComponent<OutlineOnClick>();
     }
 
-    public void Init(string name) {
+    public void SetAimed(bool aimed) {
+        this.aimed = aimed;
+        Renderer.material.color = aimed ? Color.green : Color.red;
+    }
+
+    public void Init(int index, string name) {
         pointName = name;
+        this.index = index;
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+    }
+
+    public void Highlight() {
+        outlineOnClick.Highlight();
+    }
+
+    public void UnHighlight() {
+        outlineOnClick.UnHighlight();
     }
 
     public override void CloseMenu() {

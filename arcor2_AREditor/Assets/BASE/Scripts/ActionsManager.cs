@@ -6,6 +6,7 @@ using IO.Swagger.Model;
 using System.Threading.Tasks;
 using System.Collections;
 using Newtonsoft.Json;
+using UnityEngine.XR.ARSubsystems;
 
 namespace Base {
 
@@ -27,12 +28,12 @@ namespace Base {
 
         public event AREditorEventArgs.StringListEventHandler OnObjectTypesAdded, OnObjectTypesRemoved, OnObjectTypesUpdated;
 
-        public bool ActionsReady, ActionObjectsLoaded;
+        public bool ActionsReady, ActionObjectsLoaded, AbstractOnlyObjects;
 
         public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
 
 
-        public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
+        public Dictionary<string, ActionObjectMetadata> ActionObjectsMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
        /* public Dictionary<string, ServiceMetadata> ServicesMetadata {
@@ -65,7 +66,7 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
+                foreach (ActionObjectMetadata ao in ActionObjectsMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
                         return;
                     }
@@ -84,12 +85,13 @@ namespace Base {
         public void Init() {
            // servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
+            AbstractOnlyObjects = true;
             ActionsReady = false;
             ActionObjectsLoaded = false;
         }
 
         public bool HasObjectTypePose(string type) {
-            if (!ActionObjectMetadata.TryGetValue(type,
+            if (!ActionObjectsMetadata.TryGetValue(type,
             out Base.ActionObjectMetadata actionObjectMetadata)) {
                 throw new ItemNotFoundException("No object type " + type);
             }
@@ -126,8 +128,14 @@ namespace Base {
                     removed.Add(item);
                 }
             }
-            if (type.Data.Count > 0)
+            if (type.Data.Count > 0) {
+                AbstractOnlyObjects = true;
+                foreach (ActionObjectMetadata obj in actionObjectsMetadata.Values) {
+                    if (AbstractOnlyObjects && !obj.Abstract)
+                        AbstractOnlyObjects = false;
+                }
                 OnObjectTypesRemoved?.Invoke(this, new StringListEventArgs(new List<string>(removed)));
+            }
 
         }
 
@@ -138,6 +146,8 @@ namespace Base {
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
+                if (AbstractOnlyObjects && !m.Abstract)
+                    AbstractOnlyObjects = false;
                 if (!m.Abstract && !m.BuiltIn)
                     UpdateActionsOfActionObject(m);
                 else
@@ -151,8 +161,13 @@ namespace Base {
             }
             if (robotAdded)
                 UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
-
+            
             OnObjectTypesAdded?.Invoke(this, new StringListEventArgs(added));
+        }
+
+        public bool AnyNonAbstractObject() {
+            
+            return false;
         }
 
         public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
@@ -165,6 +180,8 @@ namespace Base {
                     actionObjectMetadata.Update(obj);
                     if (actionObjectMetadata.Robot)
                         updatedRobot = true;
+                    if (AbstractOnlyObjects && !actionObjectMetadata.Abstract)
+                        AbstractOnlyObjects = false;
                     if (!actionObjectMetadata.Abstract && !actionObjectMetadata.BuiltIn)
                         UpdateActionsOfActionObject(actionObjectMetadata);
                     else
@@ -224,6 +241,8 @@ namespace Base {
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
+                if (AbstractOnlyObjects && !m.Abstract)
+                    AbstractOnlyObjects = false;
                 if (!m.Abstract && !m.BuiltIn)
                     UpdateActionsOfActionObject(m);
                 else

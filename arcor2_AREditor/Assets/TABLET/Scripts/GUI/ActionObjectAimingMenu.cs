@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Base;
+using IO.Swagger.Model;
 using UnityEngine;
 using UnityEngine.UI;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
@@ -9,7 +11,7 @@ using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 {
     public DropdownParameter PivotList;
-    public Button NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton;
+    public ButtonWithTooltip NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton, CancelAimingButton;
     public TMPro.TMP_Text CurrentPointLabel;
     public GameObject UpdatePositionBlockMesh, UpdatePositionBlockVO;
     public SwitchComponent ShowModelSwitch;
@@ -17,6 +19,8 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     public CalibrateRobotDialog CalibrateRobotDialog;
     private GameObject model;
     public ButtonWithTooltip CalibrateBtn;
+
+    private bool automaticPointSelection;
 
     private ActionObject currentObject;
 
@@ -30,7 +34,28 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     private List<AimingPointSphere> spheres = new List<AimingPointSphere>();
 
+    private void Update() {
+        if (!Focusing || !automaticPointSelection)
+            return;
+        float maxDist = float.MaxValue;
+        int closestPoint = 0;
+        foreach (AimingPointSphere sphere in spheres) {
+            float dist = Vector3.Distance(sphere.transform.position, SceneManager.Instance.SelectedEndEffector.transform.position);
+            if (dist < maxDist) {
+                closestPoint = sphere.Index;
+                maxDist = dist;
+            }
+        }
 
+        if (closestPoint != currentFocusPoint) {
+            if (currentFocusPoint >= 0 && currentFocusPoint < currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count)
+                spheres[currentFocusPoint].UnHighlight();
+            spheres[closestPoint].Highlight();
+            currentFocusPoint = closestPoint;
+            UpdateCurrentPointLabel();
+        }
+
+    }
 
     private void Start() {
         Debug.Assert(NextButton != null);
@@ -57,10 +82,15 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     public async void Show(ActionObject actionObject) {
-        if (!await actionObject.WriteLock(false) || !await SceneManager.Instance.SelectedRobot.WriteLock(false))
-            return;
+        if (actionObject.IsRobot()) {
+            if (!await actionObject.WriteLock(false))
+                return;
+        } else {
+            if (!await actionObject.WriteLock(false) || !await SceneManager.Instance.SelectedRobot.WriteLock(false))
+                return;
+        }
         currentObject = actionObject;
-        UpdateMenu();
+        await UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
 
@@ -76,7 +106,9 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         if (currentObject != null) {
             if (unlock) {
                 await currentObject.WriteUnlock();
-                await SceneManager.Instance.SelectedRobot.WriteUnlock();
+                if (!currentObject.IsRobot()) {
+                    await SceneManager.Instance.SelectedRobot.WriteUnlock();
+                }
             }
             currentObject = null;
         }
@@ -91,7 +123,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
     }
 
-    public async void UpdateMenu() {
+    public async Task UpdateMenu() {
         CalibrateBtn.gameObject.SetActive(false);
         
 
@@ -108,25 +140,56 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             CalibrateBtn.gameObject.SetActive(true);
             CalibrateBtn.SetDescription("Calibrate robot");
             CalibrateBtn.Button.onClick.AddListener(() => ShowCalibrateRobotDialog());
+            if (SceneManager.Instance.GetCamerasNames().Count > 0) {
+                CalibrateBtn.SetInteractivity(true);
+            } else {
+                CalibrateBtn.SetInteractivity(false, "Could not calibrate robot without camera");
+            }
         } else if (currentObject.IsCamera()) {
             CalibrateBtn.gameObject.SetActive(true);
             CalibrateBtn.SetDescription("Calibrate camera");
             CalibrateBtn.Button.onClick.AddListener(() => ShowCalibrateCameraDialog());
         }
 
-        if (currentFocusPoint >= 0)
-            return;
-        if (SceneManager.Instance.RobotInScene()) {
+        if (SceneManager.Instance.IsRobotAndEESelected()) {
 
             if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
+                int idx = 0;
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                     sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
                     sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
+                    sphere.Init(idx, $"Aiming point #{idx}");
                     spheres.Add(sphere);
+                    ++idx;
+                }
+                try {
+                    List<int> finishedIndexes = await WebsocketManager.Instance.ObjectAimingAddPoint(0, true);
+                    foreach (AimingPointSphere sphere in spheres) {
+                        sphere.SetAimed(finishedIndexes.Contains(sphere.Index));
+                    }
+                    if (!automaticPointSelection)
+                        currentFocusPoint = 0;
+                    UpdateCurrentPointLabel();
+                    StartObjectFocusingButton.SetInteractivity(false, "Already started");
+                    SavePositionButton.SetInteractivity(true);
+                    await CheckDoneBtn();
+                    Focusing = true;
+                    if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
+                        NextButton.SetInteractivity(true);
+                        PreviousButton.SetInteractivity(true);
+                        PreviousPoint();
+                    }
+                } catch (RequestFailedException ex) {
+                    StartObjectFocusingButton.SetInteractivity(true);
+                    FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
+                    NextButton.SetInteractivity(false, "No aiming in progress");
+                    PreviousButton.SetInteractivity(false, "No aiming in progress");
+                    SavePositionButton.SetInteractivity(false, "No aiming in progress");
+                    Focusing = false;
                 }
             } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
@@ -146,11 +209,18 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
 
 
-        FocusObjectDoneButton.interactable = false;
-        NextButton.interactable = false;
-        PreviousButton.interactable = false;
+        
 
 
+    }
+
+    private async Task CheckDoneBtn() {
+        try {
+            await WebsocketManager.Instance.ObjectAimingDone(true);
+            FocusObjectDoneButton.SetInteractivity(true);
+        } catch (RequestFailedException ex) {
+            FocusObjectDoneButton.SetInteractivity(false, ex.Message);
+        }
     }
 
     private void OnEEChanged(string eeId) {
@@ -180,22 +250,25 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     }
 
-
-    private void EnableFocusControls() {
-        SavePositionButton.GetComponent<Button>().interactable = true;
-        StartObjectFocusingButton.GetComponent<Button>().interactable = true;
-        NextButton.GetComponent<Button>().interactable = true;
-        PreviousButton.GetComponent<Button>().interactable = true;
-        FocusObjectDoneButton.GetComponent<Button>().interactable = true;
+    public async void CancelAiming() {
+        try {
+            await WebsocketManager.Instance.CancelObjectAiming();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to cancel aiming", ex.Message);
+        }
     }
 
-    private void DisableFocusControls() {
-        SavePositionButton.GetComponent<Button>().interactable = false;
-        StartObjectFocusingButton.GetComponent<Button>().interactable = false;
-        NextButton.GetComponent<Button>().interactable = false;
-        PreviousButton.GetComponent<Button>().interactable = false;
-        FocusObjectDoneButton.GetComponent<Button>().interactable = false;
+    public void SetAutomaticPointSelection(bool automatic) {
+        automaticPointSelection = automatic;
+        if (automatic) {
+            NextButton.SetInteractivity(false, "Not available when automatic point selection is active");
+            PreviousButton.SetInteractivity(false, "Not available when automatic point selection is active");
+        } else {
+            NextButton.SetInteractivity(currentFocusPoint > 0, "Selected point is the first one");
+            PreviousButton.SetInteractivity(currentFocusPoint < currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1, "Selected point is the first one");
+        }
     }
+
 
     public async void StartObjectFocusing() {
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
@@ -217,10 +290,16 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             //GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
             //GetComponent<SimpleSideMenu>().overlayCloseOnPressed = false;
 
-            FocusObjectDoneButton.interactable = true;
+            await CheckDoneBtn();
+            SavePositionButton.SetInteractivity(true);
+            StartObjectFocusingButton.SetInteractivity(false, "Already aiming");
             if (currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
-                NextButton.interactable = true;
-                PreviousButton.interactable = true;
+                NextButton.SetInteractivity(true);
+                PreviousButton.SetInteractivity(true);
+                PreviousPoint();
+            }
+            foreach (AimingPointSphere sphere in spheres) {
+                sphere.SetAimed(false);
             }
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to start object focusing", ex.Message);
@@ -238,6 +317,8 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             return;
         try {
             await WebsocketManager.Instance.ObjectAimingAddPoint(currentFocusPoint);
+            spheres[currentFocusPoint].SetAimed(true);
+            await CheckDoneBtn();
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to save current position", ex.Message);
         }
@@ -252,11 +333,14 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             // TODO: znovupovolit zavření menu
             //GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
             //GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
-            currentFocusPoint = -1;
-            FocusObjectDoneButton.interactable = false;
-            NextButton.interactable = false;
-            PreviousButton.interactable = false;
+            currentFocusPoint = -1;            
+            
             await WebsocketManager.Instance.ObjectAimingDone();
+            FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
+            NextButton.SetInteractivity(false, "No aiming in progress");
+            PreviousButton.SetInteractivity(false, "No aiming in progress");
+            SavePositionButton.SetInteractivity(false, "No aiming in progress");
+            StartObjectFocusingButton.SetInteractivity(true);
             Focusing = false;
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
@@ -264,25 +348,32 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     public void NextPoint() {
+        if (currentFocusPoint >= 0 && currentFocusPoint <= spheres.Count)
+            spheres[currentFocusPoint].UnHighlight();
+        spheres[currentFocusPoint].UnHighlight();
         currentFocusPoint = Math.Min(currentFocusPoint + 1, currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1);
-        PreviousButton.interactable = true;
+        PreviousButton.SetInteractivity(true);
         if (currentFocusPoint == currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1) {
-            NextButton.GetComponent<Button>().interactable = false;
+            NextButton.SetInteractivity(false, "Selected point is the last one");
         } else {
-            NextButton.GetComponent<Button>().interactable = true;
+            NextButton.SetInteractivity(true);
         }
         UpdateCurrentPointLabel();
+        spheres[currentFocusPoint].Highlight();
     }
 
     public void PreviousPoint() {
+        if (currentFocusPoint >= 0 && currentFocusPoint <= spheres.Count)
+            spheres[currentFocusPoint].UnHighlight();
         currentFocusPoint = Math.Max(currentFocusPoint - 1, 0);
-        NextButton.interactable = true;
+        NextButton.SetInteractivity(true);
         if (currentFocusPoint == 0) {
-            PreviousButton.GetComponent<Button>().interactable = false;
+            PreviousButton.SetInteractivity(false, "Selected point is the first one");
         } else {
-            PreviousButton.GetComponent<Button>().interactable = true;
+            PreviousButton.SetInteractivity(true);
         }
         UpdateCurrentPointLabel();
+        spheres[currentFocusPoint].Highlight();
     }
 
     private void UpdateCurrentPointLabel() {
@@ -340,8 +431,8 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
 
     public void ShowCalibrateRobotDialog() {
-        CalibrateRobotDialog.Init(SceneManager.Instance.GetCamerasNames(), currentObject.Data.Id);
-        CalibrateRobotDialog.Open();
+        if (CalibrateRobotDialog.Init(SceneManager.Instance.GetCamerasNames(), currentObject.Data.Id))
+            CalibrateRobotDialog.Open();
     }
 
 

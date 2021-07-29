@@ -1277,7 +1277,7 @@ namespace Base {
         /// <param name="objectId">Action object ID</param>
         /// <param name="pointIdx">ID of currently selected focus point</param>
         /// <returns></returns>
-        public async Task ObjectAimingAddPoint(int pointIdx, bool dryRun = false) {
+        public async Task<List<int>> ObjectAimingAddPoint(int pointIdx, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ObjectAimingAddPointRequestArgs args = new IO.Swagger.Model.ObjectAimingAddPointRequestArgs(pointIdx: pointIdx);
             IO.Swagger.Model.ObjectAimingAddPointRequest request = new IO.Swagger.Model.ObjectAimingAddPointRequest(id: r_id, request: "ObjectAimingAddPoint", args: args, dryRun: dryRun);
@@ -1285,6 +1285,8 @@ namespace Base {
             IO.Swagger.Model.ObjectAimingAddPointResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingAddPointResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            else
+                return response.Data.FinishedIndexes;
         }
 
         /// <summary>

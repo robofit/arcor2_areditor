@@ -571,7 +571,7 @@ namespace Base {
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
         public ActionObject SpawnActionObject(IO.Swagger.Model.SceneObject sceneObject, CollisionModels customCollisionModels = null) {
-            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
+            if (!ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
                 return null;
             }
             GameObject obj;
