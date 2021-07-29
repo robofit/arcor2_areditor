@@ -30,11 +30,32 @@ public abstract class LeftMenu : MonoBehaviour {
     protected bool selectedObjectUpdated = true, previousUpdateDone = true;
 
     private string MOVE_BTN_LABEL = "Move object";
-    private string REMOVE_BTN_LABEL = "Remove object";
+    private string REMOVE_BTN_LABEL = "Remove object"; 
+    private string RENAME_BTN_LABEL = "Rename object"; 
+    private string CALIBRATION_BTN_LABEL = "Calibrate"; 
+    private string OPEN_MENU_BTN_LABEL = "Open menu";
+    private string ROBOT_STEPPING_MENU_BTN_LABEL = "Robot stepping menu";
+    private string ROBOT_SELECTOR_MENU_BTN_LABEL = "Select robot";
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
         SceneManager.Instance.OnRobotSelected += OnRobotSelected;
+        if (MoveButton != null && MoveButton2 != null) {
+            MoveButton.SetDescription(MOVE_BTN_LABEL);
+            MoveButton2.SetDescription(MOVE_BTN_LABEL);
+        }
+        if (RemoveButton != null)
+            RemoveButton.SetDescription(REMOVE_BTN_LABEL);
+        if (RenameButton != null)
+            RenameButton.SetDescription(RENAME_BTN_LABEL);
+        if (CalibrationButton != null)
+            CalibrationButton.SetDescription(CALIBRATION_BTN_LABEL);
+        if (OpenMenuButton != null)
+            OpenMenuButton.SetDescription(OPEN_MENU_BTN_LABEL);
+        if (RobotSteppingButton != null)
+            RobotSteppingButton.SetDescription(ROBOT_STEPPING_MENU_BTN_LABEL);
+        if (RobotSelectorButton != null)
+            RobotSelectorButton.SetDescription(ROBOT_SELECTOR_MENU_BTN_LABEL);
     }
 
     protected virtual void Awake() {
@@ -111,24 +132,24 @@ public abstract class LeftMenu : MonoBehaviour {
         if (requestingObject || obj == null) {
             SelectedObjectText.text = "";
             MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(no object selected)");
-            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(no object selected");
-            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(no object selected");
-            RenameButton.SetInteractivity(false, "No object selected");
-            CalibrationButton.SetInteractivity(false, "No object selected");
-            OpenMenuButton.SetInteractivity(false, "No object selected");
+            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(no object selected)");
+            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(no object selected)");
+            RenameButton.SetInteractivity(false, $"{RENAME_BTN_LABEL}\n(no object selected)");
+            CalibrationButton.SetInteractivity(false, $"{CALIBRATION_BTN_LABEL}\n(no object selected)");
+            OpenMenuButton.SetInteractivity(false, $"{OPEN_MENU_BTN_LABEL}\n(no object selected)");
         } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
-            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked");
-            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked");
-            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(object is locked");
-            RenameButton.SetInteractivity(false, "Object is locked");
-            CalibrationButton.SetInteractivity(false, "Object is locked");
-            OpenMenuButton.SetInteractivity(false, "Object is locked");
+            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked)");
+            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked)");
+            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(object is locked)");
+            RenameButton.SetInteractivity(false, $"{RENAME_BTN_LABEL}\n(object is locked)");
+            CalibrationButton.SetInteractivity(false, $"{CALIBRATION_BTN_LABEL}\n(object is locked)");
+            OpenMenuButton.SetInteractivity(false, $"{OPEN_MENU_BTN_LABEL}\n(object is locked)");
         } else {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
-            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(loading...");
-            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(loading...");
-            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(loading...");
+            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(loading...)");
+            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(loading...)");
+            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(loading...)");
             Task<RequestResult> tMove = Task.Run(() => obj.Movable());
             Task<RequestResult> tRemove = Task.Run(() => obj.Removable());
             UpdateMoveAndRemoveBtns(selectedObject.GetId(), tMove, tRemove);
@@ -136,23 +157,24 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameButton.SetInteractivity(obj.GetType() == typeof(ActionPoint3D) ||
                 obj.GetType() == typeof(Action3D) || (obj.GetType().IsSubclassOf(typeof(ActionObject)) && !SceneManager.Instance.SceneStarted &&
                 GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor) ||
-                obj.GetType() == typeof(APOrientation), "Selected object could not be renamed");
+                obj.GetType() == typeof(APOrientation), $"{RENAME_BTN_LABEL}\n(selected object could not be renamed)");
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
-                obj.GetType() == typeof(CreateAnchor) || obj.GetType() == typeof(RecalibrateUsingServer), "Selected object is not calibration cube");
+                obj.GetType() == typeof(CreateAnchor) || obj.GetType() == typeof(RecalibrateUsingServer), $"{CALIBRATION_BTN_LABEL}\n(selected object is not calibration cube)");
             if (obj is Action3D action) {
-                OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Action has no parameters");
+                OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Open action parameters menu\nAction has no parameters)");
             } else {
-                OpenMenuButton.SetInteractivity(obj.HasMenu(), "Selected object has no menu");
+                OpenMenuButton.SetInteractivity(obj.HasMenu(), $"{OPEN_MENU_BTN_LABEL}\n(selected object has no menu)");
             }
         }
     }
+    
 
     private void UpdateRobotSelectorAndSteppingButtons() {
         RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
                     SceneManager.Instance.IsRobotAndEESelected() &&
                     !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
-                    SceneManager.Instance.SceneStarted ? "Robot not selected or locked" : "Scene offline");
-        RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
+                    SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot not selected or locked)" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+        RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
 
     private async void UpdateMoveAndRemoveBtns(string objId, Task<RequestResult> movable, Task<RequestResult> removable) {
@@ -161,7 +183,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
         if (selectedObject != null && objId != selectedObject.GetId()) // selected object was updated in the meantime
             return; 
-        MoveButton.SetInteractivity(move.Success, move.Message);
+        MoveButton.SetInteractivity(move.Success, $"{MOVE_BTN_LABEL}\n({move.Message})");
         MoveButton2.SetInteractivity(move.Success, $"{MOVE_BTN_LABEL}\n({move.Message})");
         RemoveButton.SetInteractivity(remove.Success, $"{REMOVE_BTN_LABEL}\n({remove.Message})");
     }

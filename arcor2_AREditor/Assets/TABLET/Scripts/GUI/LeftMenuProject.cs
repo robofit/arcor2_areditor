@@ -17,7 +17,6 @@ public class LeftMenuProject : LeftMenu
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
         AddActionPointButton2, CopyButton, ActionPointAimingMenuButton;
 
-    public GameObject ActionPicker;
     public InputDialog InputDialog;
     public AddNewActionDialog AddNewActionDialog;
 
@@ -27,6 +26,22 @@ public class LeftMenuProject : LeftMenu
         if (ProjectManager.Instance.ProjectMeta != null)
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
+    
+    
+
+    private const string SET_ACTION_POINT_PARENT_LABEL = "Set action point parent";
+    private const string ADD_ACTION_LABEL = "Add action";
+    private const string ADD_CONNECTION_LABEL = "Add connection";
+    private const string EDIT_CONNECTION_LABEL = "Edit connection";
+    private const string RUN_ACTION_LABEL = "Execute action";
+    private const string RUN_ACTION_OR_PACKAGE_LABEL = "Execute action or temporary package";
+    private const string RUN_TEMP_PACKAGE_LABEL = "Create and execute temporary package";
+    private const string ADD_ACTION_POINT_GLOBAL_LABEL = "Add global action point";
+    private const string ADD_ACTION_POINT_LABEL = "Add action point";
+    private const string COPY_LABEL = "Duplicate object";
+    private const string ACTION_POINT_AIMING_LABEL = "Open action point aiming menu";
+    private const string ADD_ACTION_POINT_USING_ROBOT_LABEL = "Add action point using robot";
+    
 
     protected override void Start() {
 #if !AR_ON
@@ -93,71 +108,80 @@ public class LeftMenuProject : LeftMenu
             await base.UpdateBtns(obj);
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
-                SetActionPointParentButton.SetInteractivity(false, "AR not calibrated");
-                AddActionButton.SetInteractivity(false, "AR not calibrated");
-                AddActionButton2.SetInteractivity(false, "AR not calibrated");
-                AddConnectionButton.SetInteractivity(false, "AR not calibrated");
-                AddConnectionButton2.SetInteractivity(false, "AR not calibrated");
-                RunButton.SetInteractivity(false, "AR not calibrated");
-                RunButton2.SetInteractivity(false, "AR not calibrated");
-                AddActionPointButton.SetInteractivity(false, "AR not calibrated");
-                AddActionPointButton2.SetInteractivity(false, "AR not calibrated");
-                CopyButton.SetInteractivity(false, "AR not calibrated");
-                ActionPointAimingMenuButton.SetInteractivity(false, "AR not calibrated");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(AR not calibrated)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(AR not calibrated)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(AR not calibrated)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(AR not calibrated)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(AR not calibrated)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(AR not calibrated)");
+                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(AR not calibrated)");
+                AddActionPointButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(AR not calibrated)");
+                AddActionPointButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(AR not calibrated)");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(AR not calibrated");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(AR not calibrated)");
             }
             else
 #endif
             if (requestingObject || obj == null) {
-                SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton2.SetInteractivity(false, "No action point is selected");
-                AddConnectionButton.SetInteractivity(false, "No input / output is selected");
-                AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
-                RunButton.SetInteractivity(false, "Select action to execute it or START to run project");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(no action point is selected)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(no action point is selected)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(no action point is selected)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(no input / output is selected)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(no input / output is selected)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(select action to execute it or START to run project)");
                 RunButton2.SetInteractivity(false, RunButton.GetAlternativeDescription());
                 AddActionPointButton.SetInteractivity(true);
                 AddActionPointButton2.SetInteractivity(true);
-                AddActionPointButton.SetDescription("Add global action point");
-                AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity(false, "No object to duplicate selected");
-                ActionPointAimingMenuButton.SetInteractivity(false, "No action point selected");
+                AddActionPointButton.SetDescription(ADD_ACTION_POINT_GLOBAL_LABEL);
+                AddActionPointButton2.SetDescription(ADD_ACTION_POINT_GLOBAL_LABEL);
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(no object to duplicate selected)");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(no action point selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
-                SetActionPointParentButton.SetInteractivity(false, "Object is locked");
-                AddConnectionButton.SetInteractivity(false, "Object is locked");
-                AddConnectionButton2.SetInteractivity(false, "Object is locked");
-                RunButton.SetInteractivity(false, "Object is locked");
-                RunButton2.SetInteractivity(false, "Object is locked");
-                AddActionButton.SetInteractivity(false, "Object is locked");
-                AddActionButton2.SetInteractivity(false, "Object is locked");
-                CopyButton.SetInteractivity(false, "Object is locked");
-                ActionPointAimingMenuButton.SetInteractivity(false, "Object is locked");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(object is locked)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
+                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(object is locked)");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(object is locked)");
             } else {
-                SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, $"{SET_ACTION_POINT_PARENT_LABEL}\n(selected object is not action point)");
                 if (obj is ActionPoint3D) {
-                    AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, "No actions available");
-                    AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, "No actions available");
+                    AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
+                    AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
                 } else {
-                    AddActionButton.SetInteractivity(false, "Selected object is not action point");
-                    AddActionButton2.SetInteractivity(false, "Selected object is not action point");
+                    AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
+                    AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                 }
-                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point)");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
                     AddActionPointButton.SetInteractivity(true);
                 } else {
-                    AddActionPointButton.SetInteractivity(false, "Selected object could not be parent of AP");
+                    AddActionPointButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(selected object could not be parent of AP");
                 }
-                AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
+                AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), $"{ADD_ACTION_POINT_LABEL}\n({AddActionPointButton.GetAlternativeDescription()})");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, "Selected object cannot be duplicated");
+                CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, $"{COPY_LABEL}\n(selected object cannot be duplicated)");
                 if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
-                    AddConnectionButton.SetInteractivity(false, "Connections are hidden");
-                    AddConnectionButton2.SetInteractivity(false, "Connections are hidden");
+                    AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
+                    AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                 } else {
                     AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                        obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
                     AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                        obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
+                    if (obj is InputOutput inputOutput) {
+                        if (inputOutput.GetLogicItems().Count > 0) {
+                            AddConnectionButton.SetDescription(ADD_CONNECTION_LABEL);
+                            AddConnectionButton2.SetDescription(ADD_CONNECTION_LABEL);
+                        } else {
+                            AddConnectionButton.SetDescription(EDIT_CONNECTION_LABEL);
+                            AddConnectionButton2.SetDescription(EDIT_CONNECTION_LABEL);
+                        }
+                    }
 
                 }
                 string runBtnInteractivity = null;
@@ -168,28 +192,33 @@ public class LeftMenuProject : LeftMenu
                     else if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
                         runBtnInteractivity = "Some action is already excecuted";
                     }
-                    RunButton.SetDescription("Execute action");
-                    RunButton2.SetDescription("Execute action");
+                    RunButton.SetDescription(RUN_ACTION_LABEL);
+                    RunButton2.SetDescription(RUN_ACTION_LABEL);
+                    RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_ACTION_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_ACTION_LABEL}\n({runBtnInteractivity})");
                 } else if (obj.GetType() == typeof(StartAction)) {
                     if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
                         runBtnInteractivity = "Project without logic could not be started from editor";
                     } else if (ProjectManager.Instance.ProjectChanged) {
                         runBtnInteractivity = "Project has unsaved changes";
                     }
-                    RunButton.SetDescription("Run project");
-                    RunButton2.SetDescription("Run project");
+                    RunButton.SetDescription(RUN_TEMP_PACKAGE_LABEL);
+                    RunButton2.SetDescription(RUN_TEMP_PACKAGE_LABEL);
+                    RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 } else {
                     runBtnInteractivity = "Select action to execute it or START to run project";
+                    RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 }
 
-                RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
-                RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
+                
             }
 
             if (!SceneManager.Instance.SceneStarted) {
-                AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
+                AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(scene offline");
             } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-                AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
+                AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(robot or EE not selected");
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
@@ -365,7 +394,6 @@ public class LeftMenuProject : LeftMenu
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            //ActionPicker.SetActive(false);
             ActionPickerMenu.Instance.Hide();
         } else {
             if (await ActionPickerMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
