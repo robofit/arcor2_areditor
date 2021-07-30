@@ -45,11 +45,11 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
 
     private void OnLoadProject(object sender, EventArgs e) {
-        OnProjectOrSceneLoaded();
+        OnProjectOrSceneLoaded(true);
     }
 
     private void OnLoadScene(object sender, EventArgs e) {
-        OnProjectOrSceneLoaded();
+        OnProjectOrSceneLoaded(false);
     }
 
 #if UNITY_ANDROID && AR_ON
@@ -66,12 +66,12 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
    
 
-    private void OnProjectOrSceneLoaded() {
+    private void OnProjectOrSceneLoaded(bool project) {
         
         foreach (GameObject obj in ProjectRelatedSettings) {
-            obj.SetActive(GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor);
+            obj.SetActive(project);
         }
-        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+        if (project) {
             APSizeSlider.gameObject.SetActive(true);
             APOrientationsVisibility.gameObject.SetActive(true);
             APSizeSlider.value = ProjectManager.Instance.APSize;

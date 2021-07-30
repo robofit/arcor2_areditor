@@ -27,7 +27,6 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="mesh"></param>
     /// <param name="aoId">ID of action object which is asociated with the mesh</param>
     public void LoadModel(IO.Swagger.Model.Mesh mesh, string aoId) {
-        Debug.LogWarning("model loading");
         if (CheckIfNewerRobotModelExists(mesh.Id, mesh.DataId)) {
             StartCoroutine(DownloadMesh(mesh.Id, mesh.DataId, aoId));
         } else {

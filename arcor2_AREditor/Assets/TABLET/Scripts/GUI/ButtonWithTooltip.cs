@@ -10,7 +10,7 @@ using UnityEngine.UI;
 public class ButtonWithTooltip : MonoBehaviour {
     [SerializeField]
     private ManualTooltip tooltip;
-    public Button Button;
+    public Button Button, Button2;
     [SerializeField]
     private TooltipContent TooltipContent;
     [SerializeField]
@@ -25,6 +25,9 @@ public class ButtonWithTooltip : MonoBehaviour {
         if (Button == null)
             return;
         Button.interactable = interactable;
+        if (Button2 != null)
+            Button2.interactable = interactable;
+            
         if (interactable) {
             tooltip.DisplayAlternativeDescription = false;
         } else {
