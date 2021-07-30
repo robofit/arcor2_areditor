@@ -31,8 +31,13 @@ public class MeshImporter : Singleton<MeshImporter> {
         if (CheckIfNewerRobotModelExists(mesh.Id, mesh.DataId)) {
             StartCoroutine(DownloadMesh(mesh.Id, mesh.DataId, aoId));
         } else {
-            ImportMesh(string.Format("{0}/meshes/{1}/{2}", Application.persistentDataPath, mesh.Id, mesh.DataId), aoId);
+            StartCoroutine(ImportMeshWhenReady(string.Format("{0}/meshes/{1}/{2}", Application.persistentDataPath, mesh.Id, mesh.DataId), aoId, mesh.DataId));
         }
+    }
+
+    private IEnumerator ImportMeshWhenReady(string path, string aoId, string fileName) {
+        yield return new WaitUntil(() => meshSources[fileName] == false);
+        ImportMesh(path, aoId);
     }
 
     /// <summary>
@@ -87,6 +92,8 @@ public class MeshImporter : Singleton<MeshImporter> {
                 Directory.CreateDirectory(meshDirectory);
                 string savePath = string.Format("{0}/{1}", meshDirectory, fileName);
                 System.IO.File.WriteAllBytes(savePath, www.downloadHandler.data);
+                meshSources[fileName] = false;
+                   
                 //Debug.LogError("MESH: download finished");
                 //if the mesh is zipped, extract it
                 if (Path.GetExtension(savePath).ToLower() == ".zip") {
