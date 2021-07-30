@@ -2459,7 +2459,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CalibrateCameraResponse response = await WaitForResult<IO.Swagger.Model.CalibrateCameraResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate camera" } : response.Messages);
             }
         }
 

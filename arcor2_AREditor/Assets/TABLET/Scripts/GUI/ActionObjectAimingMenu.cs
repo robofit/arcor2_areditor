@@ -72,7 +72,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
         PivotList.PutData(pivots, "Middle", OnPivotChanged);
         AimingInProgress = false;
-        WebsocketManager.Instance.OnProcessStateEvent += OnRobotCalibrationEvent;
+        WebsocketManager.Instance.OnProcessStateEvent += OnCameraOrRobotCalibrationEvent;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
 
@@ -114,12 +114,13 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
     }
 
-    private void OnRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
-        GameManager.Instance.HideLoadingScreen();
+    private void OnCameraOrRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
         if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Finished) {
             Notifications.Instance.ShowToastMessage("Calibration finished successfuly");
+            GameManager.Instance.HideLoadingScreen();
         } else if (args.Data.State == IO.Swagger.Model.ProcessStateData.StateEnum.Failed) {
             Notifications.Instance.ShowNotification("Calibration failed", args.Data.Message);
+            GameManager.Instance.HideLoadingScreen();
         }
     }
 
@@ -153,10 +154,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
         if (SceneManager.Instance.IsRobotAndEESelected()) {
 
-            if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh) {
+            if (currentObject.ActionObjectMetadata.ObjectModel?.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Mesh &&
+                currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints?.Count > 0) {
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
                 int idx = 0;
+                
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
@@ -193,7 +196,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                     CancelAimingButton.SetInteractivity(false, "No aiming in progress");
                     AimingInProgress = false;
                 }
-            } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
+            } else if (!currentObject.IsRobot() && !currentObject.IsCamera() && currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
                 UpdatePositionBlockMesh.SetActive(false);
                 ShowModelSwitch.Interactable = SceneManager.Instance.RobotsEEVisible;
@@ -459,6 +462,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public async Task CalibrateCamera() {
         try {
+            ConfirmationDialog.Close();
             GameManager.Instance.ShowLoadingScreen("Calibrating camera...");
             await WebsocketManager.Instance.CalibrateCamera(currentObject.Data.Id);
         } catch (RequestFailedException ex) {
