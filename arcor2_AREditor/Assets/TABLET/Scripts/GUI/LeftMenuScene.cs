@@ -119,7 +119,7 @@ public class LeftMenuScene : LeftMenu
     private async void CancelObjectAiming() {
         try {
             await WebsocketManager.Instance.CancelObjectAiming();
-            ActionObjectAimingMenu.Instance.Focusing = false;
+            ActionObjectAimingMenu.Instance.AimingInProgress = false;
             DeactivateAllSubmenus();
             ConfirmationDialog.Close();
         } catch (RequestFailedException ex) {
@@ -329,7 +329,7 @@ public class LeftMenuScene : LeftMenu
     }
 
     private bool CheckActionObjectAiming() {
-        if (ActionObjectAimingMenu.Instance.Focusing) {
+        if (ActionObjectAimingMenu.Instance.AimingInProgress) {
             ConfirmationDialog.Open("Cancel object aiming?",
                 "Action object aiming is running, do you want to cancel it?",
                 CancelObjectAiming,

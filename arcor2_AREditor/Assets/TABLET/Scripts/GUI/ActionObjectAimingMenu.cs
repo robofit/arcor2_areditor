@@ -28,14 +28,14 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public CanvasGroup CanvasGroup;
 
-    public bool Focusing;
+    public bool AimingInProgress;
 
     public GameObject Sphere;
 
     private List<AimingPointSphere> spheres = new List<AimingPointSphere>();
 
     private void Update() {
-        if (!Focusing || !automaticPointSelection)
+        if (!AimingInProgress || !automaticPointSelection)
             return;
         float maxDist = float.MaxValue;
         int closestPoint = 0;
@@ -71,7 +71,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             pivots.Add(item);
         }
         PivotList.PutData(pivots, "Middle", OnPivotChanged);
-        Focusing = false;
+        AimingInProgress = false;
         WebsocketManager.Instance.OnProcessStateEvent += OnRobotCalibrationEvent;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
     }
@@ -173,11 +173,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                     }
                     if (!automaticPointSelection)
                         currentFocusPoint = 0;
-                    UpdateCurrentPointLabel();
                     StartObjectFocusingButton.SetInteractivity(false, "Already started");
                     SavePositionButton.SetInteractivity(true);
+                    CancelAimingButton.SetInteractivity(true);
                     await CheckDoneBtn();
-                    Focusing = true;
+                    AimingInProgress = true;
+                    UpdateCurrentPointLabel();
                     if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                         NextButton.SetInteractivity(true);
                         PreviousButton.SetInteractivity(true);
@@ -189,7 +190,8 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                     NextButton.SetInteractivity(false, "No aiming in progress");
                     PreviousButton.SetInteractivity(false, "No aiming in progress");
                     SavePositionButton.SetInteractivity(false, "No aiming in progress");
-                    Focusing = false;
+                    CancelAimingButton.SetInteractivity(false, "No aiming in progress");
+                    AimingInProgress = false;
                 }
             } else if (currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
@@ -253,6 +255,11 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     public async void CancelAiming() {
         try {
             await WebsocketManager.Instance.CancelObjectAiming();
+            AimingInProgress = false;
+            if (currentFocusPoint >= 0 && currentFocusPoint < spheres.Count)
+                spheres[currentFocusPoint].UnHighlight();
+            UpdateCurrentPointLabel();
+            await UpdateMenu();
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to cancel aiming", ex.Message);
         }
@@ -264,8 +271,11 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             NextButton.SetInteractivity(false, "Not available when automatic point selection is active");
             PreviousButton.SetInteractivity(false, "Not available when automatic point selection is active");
         } else {
-            NextButton.SetInteractivity(currentFocusPoint > 0, "Selected point is the first one");
-            PreviousButton.SetInteractivity(currentFocusPoint < currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1, "Selected point is the first one");
+            if (!AimingInProgress)
+                return;
+
+            NextButton.SetInteractivity(currentFocusPoint < currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count - 1, "Selected point is the first one");
+            PreviousButton.SetInteractivity(currentFocusPoint > 0, "Selected point is the first one");
         }
     }
 
@@ -275,8 +285,10 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
+        if (! await currentObject.WriteLock(true) || ! await SceneManager.Instance.SelectedRobot.WriteLock(false))
+            Notifications.Instance.ShowNotification("Failed to start aiming", "Object or robot could not be locked");
         try {
-            Focusing = true;
+            AimingInProgress = true;
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
@@ -292,8 +304,9 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
             await CheckDoneBtn();
             SavePositionButton.SetInteractivity(true);
+            CancelAimingButton.SetInteractivity(true);
             StartObjectFocusingButton.SetInteractivity(false, "Already aiming");
-            if (currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
+            if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                 NextButton.SetInteractivity(true);
                 PreviousButton.SetInteractivity(true);
                 PreviousPoint();
@@ -305,7 +318,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to start object focusing", ex.Message);
             CurrentPointLabel.text = "";
             currentFocusPoint = -1;
-            Focusing = false;
+            AimingInProgress = false;
             if (ex.Message == "Focusing already started.") { //TODO HACK! find better solution
                 FocusObjectDone();
             }
@@ -341,7 +354,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             PreviousButton.SetInteractivity(false, "No aiming in progress");
             SavePositionButton.SetInteractivity(false, "No aiming in progress");
             StartObjectFocusingButton.SetInteractivity(true);
-            Focusing = false;
+            AimingInProgress = false;
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
         }
@@ -377,7 +390,10 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     private void UpdateCurrentPointLabel() {
-        CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
+        if (!AimingInProgress)
+            CurrentPointLabel.text = "";
+        else
+            CurrentPointLabel.text = "Point " + (currentFocusPoint + 1) + " out of " + currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count.ToString();
     }
 
     public void ShowModelOnEE() {
