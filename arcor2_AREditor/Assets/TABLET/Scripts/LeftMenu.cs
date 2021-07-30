@@ -456,9 +456,16 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
 
         SetActiveSubmenu(CurrentSubmenuOpened);
-        selectedObject.Remove();
+        ConfirmationDialog.Open($"Remove {selectedObject.GetObjectTypeName().ToLower()}",
+            $"Do you want to remove {selectedObject.GetName()}",
+            () => RemoveObject(selectedObject),
+            null);
     }
 
+    private void RemoveObject(InteractiveObject obj) {
+        obj.Remove();
+        ConfirmationDialog.Close();
+    }
 
     #endregion
 

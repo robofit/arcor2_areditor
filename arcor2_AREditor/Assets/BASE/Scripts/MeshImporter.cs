@@ -163,15 +163,32 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="uri">Where the mesh should be downloaded from</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string meshId, string fileName) {
+
+        // at the moment, project service could not provide lastModified property for meshes and URDFs, so it has to be downloaded every time..
+        if (meshSources.TryGetValue(fileName, out bool downloadInProgress)) {
+            if (downloadInProgress) {
+                // download is in progress, return false so the urdf file won't download again
+                return false;
+            } else {
+                // return true and start downloading
+                meshSources[fileName] = true;
+                return true;
+            }
+        } else {
+            // Create the entry in RoboModelsSources and set downloadProgress to true and start downloading
+            meshSources.Add(fileName, true);
+            return true;
+        }
+
         //Debug.LogError("mesh: Checking if newer  mesh exists " + meshId);
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         FileInfo meshFileInfo = new FileInfo(Application.persistentDataPath + "/meshes/" + meshId + "/" + fileName);
         if (!meshFileInfo.Exists) {
             //Debug.LogError("mesh: mesh file " + meshId + " has to be downloaded.");
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(meshId);
         }
-
+        
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         DateTime downloadedZipLastModified = meshFileInfo.LastWriteTime;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);

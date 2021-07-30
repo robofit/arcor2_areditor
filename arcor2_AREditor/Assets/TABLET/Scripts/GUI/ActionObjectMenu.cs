@@ -24,6 +24,7 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
     public CanvasGroup CanvasGroup;
+    public TMPro.TMP_Text VisibilityLabel;
 
     public GameObject ParameterOverridePrefab;
     private Dictionary<string, ActionObjectParameterOverride> overrides = new Dictionary<string, ActionObjectParameterOverride>();
@@ -133,8 +134,12 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
             UpdateMenuScene();
         else
             UpdateMenuProject();
-       
-        
+        VisibilitySlider.gameObject.SetActive(CurrentObject.ActionObjectMetadata.HasPose);
+        if (CurrentObject.ActionObjectMetadata.HasPose) {
+            VisibilityLabel.text = "Visibility:";
+        } else {
+            VisibilityLabel.text = "Can't set visibility for objects without pose";
+        }
         UpdateSaveBtn();
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
     }

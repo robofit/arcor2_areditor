@@ -23,6 +23,7 @@ namespace Base {
         public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
             Data.Id = sceneObject.Id;
             Data.Type = sceneObject.Type;
+            name = sceneObject.Name; // show actual object name in unity hierarchy
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
