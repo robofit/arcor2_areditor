@@ -103,18 +103,8 @@ public class LeftMenuScene : LeftMenu
     }
 
     public override void DeactivateAllSubmenus(bool unlock = true) {
-        if (ActionObjectAimingMenu.Instance.Focusing) {
-            ConfirmationDialog.Open("Cancel object aiming?",
-                "Action object aiming is running, do you want to cancel it?",
-                CancelObjectAiming,
-                null,
-                "Cancel aiming",
-                "Keep running",
-                true);
+        if (CheckActionObjectAiming())
             return;
-        }
-
-                
 
         base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
@@ -320,15 +310,8 @@ public class LeftMenuScene : LeftMenu
     }
 
     public void ActionObjectAimingMenuClick() {
-        if (ActionObjectAimingMenu.Instance.Focusing) {
-            ConfirmationDialog.Open("Cancel object aiming?",
-                "Action object aiming is running, do you want to cancel it?",
-                CancelObjectAiming,
-                null,
-                "Cancel aiming",
-                "Keep running");
+        if (CheckActionObjectAiming())
             return;
-        }
         if (selectedObject is ActionObject actionObject) {
             if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionObjectAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
                 SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
@@ -343,6 +326,20 @@ public class LeftMenuScene : LeftMenu
                 SelectorMenu.Instance.gameObject.SetActive(false);
             }
         }        
+    }
+
+    private bool CheckActionObjectAiming() {
+        if (ActionObjectAimingMenu.Instance.Focusing) {
+            ConfirmationDialog.Open("Cancel object aiming?",
+                "Action object aiming is running, do you want to cancel it?",
+                CancelObjectAiming,
+                null,
+                "Cancel aiming",
+                "Keep running",
+                true);
+            return true;
+        } else
+            return false;
     }
 
 
