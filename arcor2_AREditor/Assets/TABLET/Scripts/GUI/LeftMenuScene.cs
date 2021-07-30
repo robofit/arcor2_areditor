@@ -319,7 +319,11 @@ public class LeftMenuScene : LeftMenu
             if (ActionObjectAimingMenuButton.GetComponent<Image>().enabled) {
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = false;
                 SelectorMenu.Instance.gameObject.SetActive(true);
+                if (RobotSteppingMenu.Instance.CanvasGroup.alpha > 0) {
+                    RobotSteppingMenu.Instance.Hide();
+                }
                 ActionObjectAimingMenu.Instance.Hide();
+                
             } else {
                 ActionObjectAimingMenu.Instance.Show(actionObject);
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = true;

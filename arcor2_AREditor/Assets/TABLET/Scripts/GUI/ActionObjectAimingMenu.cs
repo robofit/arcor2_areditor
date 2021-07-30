@@ -468,4 +468,9 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
     }
 
+    public void OpenSteppingMenu() {
+        RobotSteppingMenu.Instance.Show(true, "Go back to aiming menu", () => EditorHelper.EnableCanvasGroup(CanvasGroup, true));
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    }
+
 }

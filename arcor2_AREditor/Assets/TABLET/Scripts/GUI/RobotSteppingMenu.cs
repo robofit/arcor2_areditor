@@ -5,6 +5,7 @@ using Base;
 using System;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using UnityEngine.Events;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular, HandTeachingModeButton;
@@ -14,6 +15,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public TranformWheelUnits Units, UnitsDegrees;
     public TwoStatesToggle RobotWorldBtn, RotateTranslateBtn, SafeButton;
     public Image HandBtnRedBackground;
+    public ButtonWithTooltip BackBtn;
 
     public CanvasGroup CanvasGroup;
 
@@ -21,9 +23,12 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     private bool safe = true, world = false, translate = true;
 
+    private UnityAction closeCallback;
+
     private void Start() {
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
         WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
+        closeCallback = null;
     }
 
 
@@ -187,13 +192,17 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         }
     }
 
-    public void Show() {
+    public void Show(bool showBackBtn = false, string backBtnDescritpion = null, UnityAction closeCallback = null) {
         if (gizmo != null)
             Destroy(gizmo);
-
+        this.closeCallback = closeCallback;
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
         gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
         gizmo.transform.localPosition = Vector3.zero;
+        BackBtn.gameObject.SetActive(showBackBtn);
+        if (!string.IsNullOrEmpty(backBtnDescritpion)) {
+            BackBtn.SetDescription(backBtnDescritpion);
+        }
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
 
         SetHandTeachingButtonInteractivity();
@@ -289,13 +298,16 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
 
-    internal void Hide(bool unlock = true) {
-        if (SceneManager.Instance.IsRobotAndEESelected()) {
-            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).WriteUnlock();
+    public void Hide(bool unlock = true) {
+        if (unlock && SceneManager.Instance.IsRobotAndEESelected()) {
+            SceneManager.Instance.SelectedRobot.WriteUnlock();
         }
         if (gizmo != null)
             Destroy(gizmo);
+        closeCallback?.Invoke();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+        
     }
+    
 }
 
