@@ -188,9 +188,10 @@ public class LeftMenuProject : LeftMenu
 
                 if (obj.GetType() == typeof(Action3D)) {
                     if (!SceneManager.Instance.SceneStarted)
-                        runBtnInteractivity = "Scene offline";
+                        runBtnInteractivity = "scene offline";
                     else if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
-                        runBtnInteractivity = "Some action is already excecuted";
+                        string actionName = ProjectManager.Instance.GetAction(GameManager.Instance.ExecutingAction).GetName();
+                        runBtnInteractivity = $"action '{actionName}' running";
                     }
                     RunButton.SetDescription(RUN_ACTION_LABEL);
                     RunButton2.SetDescription(RUN_ACTION_LABEL);
@@ -198,16 +199,16 @@ public class LeftMenuProject : LeftMenu
                     RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_ACTION_LABEL}\n({runBtnInteractivity})");
                 } else if (obj.GetType() == typeof(StartAction)) {
                     if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
-                        runBtnInteractivity = "Project without logic could not be started from editor";
+                        runBtnInteractivity = "project without logic could not be started from editor";
                     } else if (ProjectManager.Instance.ProjectChanged) {
-                        runBtnInteractivity = "Project has unsaved changes";
+                        runBtnInteractivity = "project has unsaved changes";
                     }
                     RunButton.SetDescription(RUN_TEMP_PACKAGE_LABEL);
                     RunButton2.SetDescription(RUN_TEMP_PACKAGE_LABEL);
                     RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
                     RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 } else {
-                    runBtnInteractivity = "Select action to execute it or START to run project";
+                    runBtnInteractivity = "select action to execute it or START to run project";
                     RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
                     RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 }

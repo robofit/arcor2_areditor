@@ -32,7 +32,6 @@ namespace Base {
         }
 
         public List<LogicItem> GetLogicItems() {
-            Debug.Assert(logicItemIds.Count > 0);
             List<LogicItem> items = new List<LogicItem>();
             foreach (string itemId in logicItemIds)
                 if (ProjectManager.Instance.LogicItems.TryGetValue(itemId, out LogicItem logicItem)) {

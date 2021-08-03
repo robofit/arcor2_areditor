@@ -246,6 +246,10 @@ public static class ProjectParametersHelper {
         }
         return toReturn;
     }
+
+    public static bool TypeSupported(string type) {
+        return type == "string" || type == "boolean" || type == "integer" || type == "double";
+    }
 }
 
 public enum ProjectParameterTypes {

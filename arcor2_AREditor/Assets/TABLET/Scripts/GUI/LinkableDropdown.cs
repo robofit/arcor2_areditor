@@ -69,7 +69,7 @@ public class LinkableDropdown : LinkableParameter
     public override void SetType(string type, bool linkable, bool switchBtnClicked) {
         base.SetType(type, linkable, switchBtnClicked);
         this.type = type;
-        if (type == "link") {
+        /*if (type == "link") {
             DropdownParameter.gameObject.SetActive(false);
             //DropdownParameter.Dropdown.onValueChanged.RemoveAllListeners();
         } else {
@@ -77,6 +77,6 @@ public class LinkableDropdown : LinkableParameter
             //Input.Input.onValueChanged.RemoveAllListeners();
             //Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), int.Parse(value), type));
             //Input.SetType(type);
-        }
+        }*/
     }
 }

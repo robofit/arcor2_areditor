@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Newtonsoft.Json;
+using System;
 
 public class LabeledInput : MonoBehaviour, IParameter
 {
@@ -102,8 +103,13 @@ public class LabeledInput : MonoBehaviour, IParameter
     }
 
     public void SetInteractable(bool interactable) {
-        Input.interactable = interactable;
-        Input.textComponent.color = interactable ? Color.white : Color.gray;
-        Label.color = interactable ? Color.white : Color.gray;
+        try {
+            Input.interactable = interactable;
+            Input.textComponent.color = interactable ? Color.white : Color.gray;
+            Label.color = interactable ? Color.white : Color.gray;
+        } catch (NullReferenceException ex) {
+            Debug.LogError($"Null reference exception on labeled input: {GetName()}: {ex.Message}");
+        }
+        
     }
 }

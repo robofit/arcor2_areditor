@@ -55,14 +55,14 @@ public class LinkableInput : LinkableParameter {
         base.SetType(type, linkable, switchBtnClicked);
 
         if (type == "link") {
-            Input.gameObject.SetActive(false);
+            //Input.gameObject.SetActive(false);
             Input.Input.onValueChanged.RemoveAllListeners();
         } else if(type == ProjectParameterText) {
-            Input.gameObject.SetActive(false);
+            //Input.gameObject.SetActive(false);
             Input.Input.onValueChanged.RemoveAllListeners();
         } else {
             
-            Input.gameObject.SetActive(true);
+            //Input.gameObject.SetActive(true);
             Input.Input.onValueChanged.RemoveAllListeners();
             Input.SetType(type);
             switch (ParameterMetadata.Type) {

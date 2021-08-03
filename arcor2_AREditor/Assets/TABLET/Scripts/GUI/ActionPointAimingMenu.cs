@@ -332,14 +332,23 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
                 string armId = null;
                 if (SceneManager.Instance.SelectedRobot.MultiArm())
                     armId = SceneManager.Instance.SelectedArmId;
+                
 
+                /*
+                if (! await SceneManager.Instance.SelectedRobot.WriteLock(false)) {
+                    Notifications.Instance.ShowNotification("Failed to update position", "Robot could not be locked");
+                    return;
+                }*/
+                
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
-                confirmationDialog.Close();
+                await SceneManager.Instance.SelectedRobot.WriteUnlock();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
         } catch (RequestFailedException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
+        } finally {
+            confirmationDialog.Close();
         }
     }
 

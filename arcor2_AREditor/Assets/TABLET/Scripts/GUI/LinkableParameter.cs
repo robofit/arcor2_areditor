@@ -73,13 +73,21 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     }
 
     private void SetupDropdownForProjectParameters(string type, object value) {
-        List<string> projectParameters = new List<string>();
-        foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
-            projectParameters.Add(pp.Name);
+        if (ProjectParametersHelper.TypeSupported(type)) {
+            List<string> projectParameters = new List<string>();
+            foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
+                projectParameters.Add(pp.Name);
+            }
+            projectParameters.Add(NewProjectParameterText);
+            ActionsDropdown.PutData(projectParameters, DecodeProjectParameterValue(value?.ToString()), OnProjectParameterPicked);
+            dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
+        } else {
+            //ActionsDropdown.SetInteractable(false);
+            //ActionsDropdown.Dropdown.selectedText.text = "Not available";
+            ActionsDropdown.PutData(new List<string>(), "", OnProjectParameterPicked);
+
         }
-        projectParameters.Add(NewProjectParameterText);
-        ActionsDropdown.PutData(projectParameters, DecodeProjectParameterValue(value?.ToString()), OnProjectParameterPicked);
-        dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
+
     }
 
     private void OnProjectParameterPicked(string name) {
@@ -135,6 +143,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             ParameterTypeToggle.gameObject.SetActive(true);
             ParameterTypeToggle.SetState("link", false);
             ActionsDropdown.gameObject.SetActive(true);
+            Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForActions(null);
             /*if (ActionsDropdown.Dropdown.dropdownItems.Count > 0) {
                 ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke();
@@ -142,12 +151,14 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         } else if (type == ProjectParameterText) {
             ParameterTypeToggle.gameObject.SetActive(true);
             ParameterTypeToggle.SetState("constant", false);
+            Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
             /*if (switchBtnClicked && ActionsDropdown.Dropdown.dropdownItems.Count > 0) {
                 ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke();
             }*/
             ActionsDropdown.gameObject.SetActive(true);
         } else {
+            Parameter.GetTransform().gameObject.SetActive(true);
             ActionsDropdown.gameObject.SetActive(false);
             ParameterTypeToggle.gameObject.SetActive(true);
             ParameterTypeToggle.SetState("value", false);
@@ -164,7 +175,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     public void PickProjectParameterCb() {
         SetType(ProjectParameterText, true, true);
-        if (ActionsDropdown.GetValue().ToString() != NewProjectParameterText)
+        if (ActionsDropdown.Dropdown.isActiveAndEnabled && ActionsDropdown.GetValue().ToString() != NewProjectParameterText)
             onChangeParameterHandler.Invoke(Parameter.GetName(), GetValue(), GetCurrentType());
     }
 

@@ -21,6 +21,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
+    public ToggleGroupIconButtons BottomButtons;
 
     public Dictionary<string, SelectorItem> SelectorItems = new Dictionary<string, SelectorItem>();
 

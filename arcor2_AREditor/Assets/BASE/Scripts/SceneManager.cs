@@ -741,6 +741,7 @@ namespace Base {
                 if (ActionObjectPickerMenu.Instance.IsVisible())
                     AREditorResources.Instance.LeftMenuScene.AddButtonClick();
                 SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
+                SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
             }
             SelectCreatedActionObject = "";
             updateScene = true;

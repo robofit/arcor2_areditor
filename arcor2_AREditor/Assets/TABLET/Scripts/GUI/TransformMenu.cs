@@ -216,8 +216,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void SwitchToTranslate() {
-        ResetTransformWheel();
         TransformWheel.Units = Units;
+        ResetTransformWheel();
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
         RotateTranslateBtn.SetDescription("Swith to rotate");
@@ -226,8 +226,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void SwitchToRotate() {
-        ResetTransformWheel();
         TransformWheel.Units = UnitsDegrees;
+        ResetTransformWheel();
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
         //ResetPosition();
