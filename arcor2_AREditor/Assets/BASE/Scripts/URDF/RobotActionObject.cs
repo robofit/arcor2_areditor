@@ -284,10 +284,10 @@ namespace Base {
             float robotScale = 0f;
             foreach (RobotLink link in RobotModel.Links.Values) {
                 robotScale = link.LinkScale;
-                if (!link.IsBaseLink) {
+                if (!link.IsBaseLink && robotScale != 0) {
                     break;
                 }
-            }            
+            }
             outlineOnClick.CompensateOutlineByModelScale(robotScale);
         }
 
