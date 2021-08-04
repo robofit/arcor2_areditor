@@ -12,6 +12,7 @@ public class LinkableBoolParameter : LinkableParameter
     public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
         Parameter = SwitchComponent;
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+        SwitchComponent.AddOnValueChangedListener((bool v) => onChangeParameterHandler(parameterMetadata.Name, v, parameterMetadata.Type));
         SetValue(value);
     }
 
