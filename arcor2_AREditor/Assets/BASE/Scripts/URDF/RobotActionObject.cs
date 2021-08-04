@@ -78,6 +78,7 @@ namespace Base {
         protected override void OnDestroy() {
             base.OnDestroy();
             SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+            DeleteActionObject();
         }
 
         private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -685,10 +686,10 @@ namespace Base {
         }
 
 	    public override void DeleteActionObject() {
-            base.DeleteActionObject();
             UnloadRobotModel();
             UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
             modelLoading = false;
+            base.DeleteActionObject();
         }
 
         private void UnloadRobotModel() {
