@@ -264,6 +264,11 @@ namespace Base {
 
             SetDefaultJoints();
 
+            Target target = GetComponent<Target>();
+            if (target != null) {
+                target.ChangeTarget(RobotModel.RobotModelGameObject);
+            }
+
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
             /*if (robotVisible) {
@@ -279,10 +284,10 @@ namespace Base {
             float robotScale = 0f;
             foreach (RobotLink link in RobotModel.Links.Values) {
                 robotScale = link.LinkScale;
-                if (!link.IsBaseLink) {
+                if (!link.IsBaseLink && robotScale != 0) {
                     break;
                 }
-            }            
+            }
             outlineOnClick.CompensateOutlineByModelScale(robotScale);
         }
 
