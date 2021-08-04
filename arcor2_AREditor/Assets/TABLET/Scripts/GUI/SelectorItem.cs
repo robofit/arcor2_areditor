@@ -20,18 +20,31 @@ public class SelectorItem : MonoBehaviour
     public GameObject CollapsableButtonIcon;
     public bool Collapsable, Collapsed;
     public GameObject SublistContent;
+    public ManualTooltip Tooltip;
 
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     private List<SelectorItem> childs = new List<SelectorItem>();
-    //public List<SelectorItem> VisibleChilds = new List<SelectorItem>();
 
     private void Start() {
         Removed = false;
+        UpdateTooltip();
     }
     public void SetText(string text) {
         Label.text = text;
         name = text;
+        UpdateTooltip();
+    }
+
+    public void UpdateTooltip() {
+        Label.ForceMeshUpdate(true);
+        if (Label.isTextTruncated) {
+            Tooltip.Description = name;
+            Tooltip.EnableTooltip();
+            Tooltip.ShowDefaultDescription();
+        } else {
+            Tooltip.DisableTooltip();
+        }
     }
 
     public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {

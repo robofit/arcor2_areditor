@@ -51,7 +51,7 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
-    private void ShowDefaultDescription() {
+    public void ShowDefaultDescription() {
         if (tooltipContent == null)
             return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(Description)) {
@@ -81,6 +81,10 @@ public class ManualTooltip : MonoBehaviour {
 
     public void DisableTooltip() {
         tooltipContent.enabled = false;
+    }
+
+    public void EnableTooltip() {
+        tooltipContent.enabled = true;
     }
 
 }
