@@ -13,7 +13,7 @@ public interface IRobot
 
     Task<List<string>> GetArmsIds();
 
-    Task<RobotEE> GetEE(string ee_id);
+    Task<RobotEE> GetEE(string ee_id, string arm_id);
 
     Task<List<RobotEE>> GetAllEE();
 

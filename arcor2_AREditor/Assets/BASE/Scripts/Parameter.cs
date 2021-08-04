@@ -355,13 +355,23 @@ namespace Base {
             input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
             input.Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue), actionParameterMetadata.Type));*/
-            
+
+            object selectedValue = null;
+            if (value != null) {
+                if (type == LinkableParameter.ProjectParameterText)
+                    selectedValue = value; //id of project parameter
+                else
+                    selectedValue = Parameter.GetValue<double?>(value.ToString());
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = actionParameterMetadata.GetDefaultValue<double>();
+            }
+
             input.Input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateDoubleParameter(input.Input, actionParameterMetadata, ParseDouble(newValue)));
-
-            input.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            input.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
             return input;
         }
+
 
         public static double ParseDouble(string value) {
             if (string.IsNullOrEmpty(value))
@@ -440,7 +450,7 @@ namespace Base {
         public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (Parameter parameter in _parameters) {
-                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Value, darkMode, "", linkable);
+                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
                     continue;

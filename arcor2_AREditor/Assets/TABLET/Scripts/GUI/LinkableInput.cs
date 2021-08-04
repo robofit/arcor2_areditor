@@ -56,14 +56,15 @@ public class LinkableInput : LinkableParameter {
 
         if (type == "link") {
             //Input.gameObject.SetActive(false);
-            Input.Input.onValueChanged.RemoveAllListeners();
+            //Input.Input.onValueChanged.
+            //Input.Input.onValueChanged.RemoveAllListeners();
         } else if(type == ProjectParameterText) {
             //Input.gameObject.SetActive(false);
-            Input.Input.onValueChanged.RemoveAllListeners();
+            //Input.Input.onValueChanged.RemoveAllListeners();
         } else {
             
             //Input.gameObject.SetActive(true);
-            Input.Input.onValueChanged.RemoveAllListeners();
+            //Input.Input.onValueChanged.RemoveAllListeners();
             Input.SetType(type);
             switch (ParameterMetadata.Type) {
                 case "integer":
@@ -71,25 +72,28 @@ public class LinkableInput : LinkableParameter {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<int>());
                     }
                     
-                    Input.Input.onValueChanged.AddListener((string value) => OnChangeInt(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => OnChangeInt(value, type));
                     break;
                 case "double":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<double>());
                     }
-                    Input.Input.onValueChanged.AddListener((string value) => OnChangeDouble(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => OnChangeDouble(value, type));
                     break;
                 case "string":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<string>());
                     }
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
                     break;
             }
             

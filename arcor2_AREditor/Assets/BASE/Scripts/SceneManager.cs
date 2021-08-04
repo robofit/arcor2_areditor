@@ -364,7 +364,7 @@ namespace Base {
                     SelectedRobot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId));
+                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId, armId));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
@@ -435,7 +435,7 @@ namespace Base {
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
                 try {
                     IRobot robot = GetRobot(args.Data.RobotId);
-                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId);
+                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId, eefPose.ArmId);
                     ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
                         TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
                 } catch (ItemNotFoundException) {

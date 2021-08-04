@@ -595,14 +595,15 @@ namespace Base {
             ResetPosition();
         }
 
-        public async Task<RobotEE> GetEE(string ee_id) {
+        public async Task<RobotEE> GetEE(string ee_id, string arm_id) {
             if (!ResourcesLoaded) {
                 await LoadResources();
             }
-            foreach (List<RobotEE> eeList in EndEffectors.Values)
-                foreach (RobotEE ee in eeList)
-                    if (ee.EEId == ee_id)
-                        return ee;
+            if (!EndEffectors.ContainsKey(arm_id))
+                throw new ItemNotFoundException($"Robot {GetName()} does not have arm {arm_id}");
+            foreach (RobotEE ee in EndEffectors[arm_id])
+                if (ee.EEId == ee_id)
+                    return ee;
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
