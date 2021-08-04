@@ -164,7 +164,12 @@ public class LeftMenuProject : LeftMenu
                 }
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), $"{ADD_ACTION_POINT_LABEL}\n({AddActionPointButton.GetAlternativeDescription()})");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, $"{COPY_LABEL}\n(selected object cannot be duplicated)");
+                if (obj is ActionPoint3D) {
+                    CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(checking...)");
+                    WebsocketManager.Instance.CopyActionPoint(obj.GetId(), null, obj.GetName(), CopyActionPointDryRunCallback, true);
+                } else {
+                    CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
+                }
                 if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
                     AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                     AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
@@ -298,9 +303,9 @@ public class LeftMenuProject : LeftMenu
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
         
-        BuildPackageButton.SetInteractivity(false, "Loading...");
-        SaveButton.SetInteractivity(false, "Loading...");
-        CloseButton.SetInteractivity(false, "Loading...");
+        BuildPackageButton.SetInteractivity(false, $"Build package\n(checking...)");
+        SaveButton.SetInteractivity(false, "Save project\n(checking...)");
+        CloseButton.SetInteractivity(false, "Close project\n(checking...)");
         if (SceneManager.Instance.SceneStarted) {
             WebsocketManager.Instance.StopScene(true, StopSceneCallback);
         } else {
@@ -309,10 +314,10 @@ public class LeftMenuProject : LeftMenu
 
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);            
-            SaveButton.SetInteractivity(false, "There are no unsaved changes");
+            SaveButton.SetInteractivity(false, "Save project\n(there are no unsaved changes)");
         } else {
             WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
-            BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
+            BuildPackageButton.SetInteractivity(false, "Build package\n(there are unsaved changes on project)");
             //RunButton.SetInteractivity(false, "There are unsaved changes on project");
             //RunButton2.SetInteractivity(false, "There are unsaved changes on project");
         }
@@ -335,6 +340,15 @@ public class LeftMenuProject : LeftMenu
             SaveButton.SetInteractivity(response.Result);
         }
     }
+    private void CopyActionPointDryRunCallback(string _, string data) {
+        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
+        if (response.Result) {
+            CopyButton.SetInteractivity(true);
+        } else {
+            CopyButton.SetInteractivity(false, response.Messages.FirstOrDefault());
+        }
+    }
+
     /*
     protected void CloseProjectCallback(string nothing, string data) {
         CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
@@ -351,19 +365,19 @@ public class LeftMenuProject : LeftMenu
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
             selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
-            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null);
+            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);            
         } else if (selectedObject is Base.Action action) {
-            //
-            /*
-            Action3D action = (Action3D) selectedObject;
-            List<ActionParameter> parameters = new List<ActionParameter>();
-            foreach (Base.Parameter p in action.Parameters.Values) {
-                parameters.Add(new ActionParameter(p.ParameterMetadata.Name, p.ParameterMetadata.Type, p.Value));
-            }
-            WebsocketManager.Instance.AddAction(action.ActionPoint.GetId(), parameters, action.ActionProvider.GetProviderId() + "/" + action.Metadata.Name, action.GetName() + "_copy", action.GetFlows());*/
-
             AddNewActionDialog.InitFromAction(action);
             AddNewActionDialog.Open();
+        }
+    }
+
+    private void CopyActionPointCallback(string actionPointName, string data) {
+        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
+        if (response.Result) {
+            Notifications.Instance.ShowToastMessage($"Action point {actionPointName} was duplicated");
+        } else {
+            Notifications.Instance.ShowNotification("Failed to duplicate action point", response.Messages.FirstOrDefault());
         }
     }
 

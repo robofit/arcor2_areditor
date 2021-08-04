@@ -2576,16 +2576,14 @@ namespace Base {
             }
         }
 
-        public async Task CopyActionPoint(string actionPointId, Position position) {
+        public void CopyActionPoint(string actionPointId, Position position, string originalActionPointName, UnityAction<string, string> callback, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CopyActionPointRequestArgs args = new CopyActionPointRequestArgs(id: actionPointId, position: position);
+            IO.Swagger.Model.CopyActionPointRequest request = new IO.Swagger.Model.CopyActionPointRequest(r_id, "CopyActionPoint", args: args, dryRun: dryRun);
 
-            IO.Swagger.Model.CopyActionPointRequest request = new IO.Swagger.Model.CopyActionPointRequest(r_id, "CopyActionPoint", args: args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.CopyActionPointResponse response = await WaitForResult<IO.Swagger.Model.CopyActionPointResponse>(r_id);
-            if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to copy action point" } : response.Messages);
-            }
+            responsesCallback.Add(r_id, Tuple.Create(originalActionPointName, callback));
+            SendDataToServer(request.ToJson(), r_id, false);
+
         }
 
 
