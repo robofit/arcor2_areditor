@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Michsky.UI.ModernUIPack;
 using UnityEditor;
 using UnityEngine;
@@ -9,9 +10,10 @@ using UnityEngine.UI;
 public class ButtonWithTooltip : MonoBehaviour {
     [SerializeField]
     private ManualTooltip tooltip;
-    public Button Button;
+    public Button Button, Button2;
     [SerializeField]
     private TooltipContent TooltipContent;
+    [SerializeField]
 
     private void Awake() {
         Button = gameObject.GetComponent<Button>();
@@ -23,6 +25,9 @@ public class ButtonWithTooltip : MonoBehaviour {
         if (Button == null)
             return;
         Button.interactable = interactable;
+        if (Button2 != null)
+            Button2.interactable = interactable;
+            
         if (interactable) {
             tooltip.DisplayAlternativeDescription = false;
         } else {
@@ -35,11 +40,10 @@ public class ButtonWithTooltip : MonoBehaviour {
             return;
         tooltip.DescriptionAlternative = alternativeDescription;
         SetInteractivity(interactable);
-        
     }
 
     public void SetDescription(string description) {
-        if (tooltip == null)
+        if (tooltip == null || string.IsNullOrEmpty(description))
             return;
         tooltip.Description = description;
         tooltip.DisplayAlternativeDescription = false;
@@ -66,5 +70,6 @@ public class ButtonWithTooltip : MonoBehaviour {
     public string GetAlternativeDescription() {
         return tooltip.DescriptionAlternative;
     }
+
 
 }

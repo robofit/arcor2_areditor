@@ -120,4 +120,14 @@ public class RelPoseParam : MonoBehaviour, IParameter {
     public Transform GetTransform() {
         return transform;
     }
+
+    public void SetInteractable(bool interactable) {
+        posX.SetInteractable(interactable);
+        posY.SetInteractable(interactable);
+        posZ.SetInteractable(interactable);
+        orX.SetInteractable(interactable);
+        orY.SetInteractable(interactable);
+        orZ.SetInteractable(interactable);
+        orW.SetInteractable(interactable);
+    }
 }

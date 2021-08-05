@@ -11,21 +11,18 @@ public class SwitchComponent : MonoBehaviour, IParameter
     public SwitchManager Switch;
     public TMPro.TMP_Text Label;
 
-    private Button switchButton;
+    public Button SwitchButton;
 
     private bool interactable;
 
     private UnityAction<bool> onChangeCallback;
-
-    private void Start() {
-        switchButton = Switch.gameObject.GetComponent<Button>();
-    }
+    public ManualTooltip ManualTooltip;
 
     public bool Interactable {
         get => interactable;
         set {
             interactable = value;
-            switchButton.interactable = value;
+            SwitchButton.interactable = value;
         }
     }
 
@@ -43,9 +40,19 @@ public class SwitchComponent : MonoBehaviour, IParameter
 
     public void SetLabel(string label, string description) {
         SetLabel(label);
+        if (!string.IsNullOrEmpty(description)) {
+            ManualTooltip.Description = description;
+            ManualTooltip.DisplayAlternativeDescription = false;
+        } else {
+            ManualTooltip.DisableTooltip();
+        }
     }
 
     public void SetValue(object value) {
+        SetValue(value, true);
+    }
+
+    public void SetValue(object value, bool invokeEvent) {
         if (value == null)
             return;
         bool newValue = (bool) value;
@@ -53,6 +60,14 @@ public class SwitchComponent : MonoBehaviour, IParameter
         // switch gets updated upon onEnable event
         Switch.gameObject.SetActive(false);
         Switch.gameObject.SetActive(true);
+        if (invokeEvent) {
+            // manually invoke switch methods, because they wont be invoked just by itself
+            if (Switch.isOn) {
+                Switch.OnEvents.Invoke();
+            } else {
+                Switch.OffEvents.Invoke();
+            }
+        }        
     }
 
     public void SetDarkMode(bool dark) {
@@ -81,5 +96,14 @@ public class SwitchComponent : MonoBehaviour, IParameter
 
     public Transform GetTransform() {
         return transform;
+    }
+
+    public void SetInteractable(bool interactable) {
+        Interactable = interactable;
+        Label.color = interactable ? Color.white : Color.gray;
+    }
+
+    public bool IsOn() {
+        return (bool) GetValue();
     }
 }

@@ -11,6 +11,7 @@ using TriLibCore.General;
 using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class ActionObject3D : ActionObject {
     public TextMeshPro ActionObjectName;
     public GameObject Visual, Model;
@@ -27,7 +28,6 @@ public class ActionObject3D : ActionObject {
     private Shader transparentShader;
 
     private List<Renderer> aoRenderers = new List<Renderer>();
-    private List<Collider> aoColliders = new List<Collider>();
 
     protected override void Start() {
         base.Start();
@@ -94,7 +94,7 @@ public class ActionObject3D : ActionObject {
 
 
     public override bool SceneInteractable() {
-        return base.SceneInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
+        return base.SceneInteractable() && GameManager.Instance.SceneInteractable;
     }
 
 
@@ -175,7 +175,7 @@ public class ActionObject3D : ActionObject {
         //Model.GetComponent<Collider>().enabled = interactivity;
         if (ActionObjectMetadata.ObjectModel != null &&
             ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
-            foreach (var col in aoColliders) {
+            foreach (var col in Colliders) {
                 col.enabled = interactivity;
             }
         } else {
@@ -250,7 +250,7 @@ public class ActionObject3D : ActionObject {
         //if (IsRobot()) {
         //    Model.tag = "Robot";
         //}
-
+        
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
         Colliders.Add(Collider);
@@ -262,9 +262,7 @@ public class ActionObject3D : ActionObject {
         Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
         aoRenderers.Clear();
-        aoColliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
-        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
     }
 
     public override GameObject GetModelCopy() {
@@ -280,8 +278,10 @@ public class ActionObject3D : ActionObject {
     public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
         if (args.Name != this.GetId())
             return;
-        Model.SetActive(false);
-        Destroy(Model);
+        if (Model != null) {
+            Model.SetActive(false);
+            Destroy(Model);
+        }
         Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;
@@ -290,15 +290,16 @@ public class ActionObject3D : ActionObject {
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
+        
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
             child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
             child.gameObject.AddComponent<MeshCollider>();
         }
 
         aoRenderers.Clear();
-        aoColliders.Clear();
+        Colliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
-        aoColliders.AddRange(Model.GetComponentsInChildren<Collider>(true));
+        Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
 
         outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
@@ -340,11 +341,13 @@ public class ActionObject3D : ActionObject {
             ActionObjectName.gameObject.SetActive(true);
         }
         outlineOnClick.Highlight();
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         ActionObjectName.gameObject.SetActive(false);
         outlineOnClick.UnHighlight();
+        DisplayOffscreenIndicator(false);
     }
 
     public override void UpdateColor() {
@@ -357,18 +360,8 @@ public class ActionObject3D : ActionObject {
         modelMaterial.color = color;
     }
 
-    public override async void OpenMenu() {
-        if (!await this.WriteLock(false))
-            return;
-        outlineOnClick.GizmoUnHighlight();
-        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-            actionObjectMenu.CurrentObject = this;
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-            actionObjectMenuProjectEditor.CurrentObject = this;
-            actionObjectMenuProjectEditor.UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-        }
+    public override void OpenMenu() {
+        ActionObjectMenu.Instance.Show(this);
     }
 
     public override bool HasMenu() {
@@ -393,5 +386,9 @@ public class ActionObject3D : ActionObject {
 
     public override void StartManipulation() {
         throw new NotImplementedException();
+    }
+
+    public override void CloseMenu() {
+        ActionObjectMenu.Instance.Hide();
     }
 }

@@ -16,4 +16,7 @@ public interface IParameter
     string GetCurrentType();
 
     Transform GetTransform();
+
+    void SetInteractable(bool interactable);
+
 }

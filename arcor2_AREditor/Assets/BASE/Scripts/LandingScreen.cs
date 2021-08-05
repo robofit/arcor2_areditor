@@ -13,6 +13,7 @@ public class LandingScreen : Base.Singleton<LandingScreen>
     public CanvasGroup CanvasGroup;
     [SerializeField]
     private TMPro.TMP_Text Version;
+    public Button ConnectToServerBtn;
 
     private void Start() {
         Debug.Assert(Domain != null);
@@ -28,7 +29,7 @@ public class LandingScreen : Base.Singleton<LandingScreen>
         Username.text = PlayerPrefs.GetString("arserver_username", "user1");
         KeepConnected.isOn = keepConnected;
         Version.text = Application.version;
-
+        ConnectToServerBtn.onClick.AddListener(() => ConnectToServer(true));
 #if UNITY_STANDALONE //automatic connection for android and ios is handled by OnApplicationPause method in GameManager
         if (keepConnected) {
             ConnectToServer();

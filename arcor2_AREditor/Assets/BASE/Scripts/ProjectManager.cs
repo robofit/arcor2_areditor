@@ -25,6 +25,10 @@ namespace Base {
         /// </summary>
         public Dictionary<string, LogicItem> LogicItems = new Dictionary<string, LogicItem>();
         /// <summary>
+        /// All Project parameters <id, instance>
+        /// </summary>
+        public List<IO.Swagger.Model.ProjectParameter> ProjectParameters = new List<ProjectParameter>();
+        /// <summary>
         /// Spawn point for global action points
         /// </summary>
         public GameObject ActionPointsOrigin;
@@ -109,6 +113,10 @@ namespace Base {
         /// was not changed and now it is and vice versa) 
         /// </summary>
         public event EventHandler OnProjectSavedSatusChanged;
+        /// <summary>
+        /// Indicates whether there is any object with available action in the scene
+        /// </summary>
+        public bool AnyAvailableAction;
 
         public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
 
@@ -140,6 +148,26 @@ namespace Base {
             WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
             WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
             WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+
+            WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
+            WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
+            WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
+        }
+
+        private void OnProjectParameterRemoved(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.Remove(args.ProjectParameter);
+            ProjectChanged = true;
+        }
+
+        private void OnProjectParameterUpdated(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.RemoveAll(c => c.Id == args.ProjectParameter.Id);
+            ProjectParameters.Add(args.ProjectParameter);
+            ProjectChanged = true;
+        }
+
+        private void OnProjectParameterAdded(object sender, ProjectParameterEventArgs args) {
+            ProjectParameters.Add(args.ProjectParameter);
+            ProjectChanged = true;
         }
 
         private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -313,6 +341,12 @@ namespace Base {
             SetProjectMeta(DataHelper.ProjectToBareProject(project));
             AllowEdit = allowEdit;
             LoadSettings();
+            AnyAvailableAction = false;
+            foreach (ActionObject obj in SceneManager.Instance.ActionObjects.Values)
+                if (obj.ActionObjectMetadata.ActionsMetadata.Count > 0) {
+                    AnyAvailableAction = true;
+                    break;
+                }
 
             StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
             StartAction.Init(null, null, null, null, "START");
@@ -331,8 +365,10 @@ namespace Base {
             }
 
             UpdateActionPoints(project);
-            if (project.HasLogic)
+            UpdateProjectParameters(project.Parameters);
+            if (project.HasLogic) {
                 UpdateLogicItems(project.Logic);
+            }
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
             } else if (project.IntModified == System.DateTime.MinValue) {
@@ -341,10 +377,17 @@ namespace Base {
                 ProjectChanged = project.IntModified > project.Modified;
             }
             Valid = true;
-            OnLoadProject?.Invoke(this, EventArgs.Empty);     
+            OnLoadProject?.Invoke(this, EventArgs.Empty);
+            SetActionInputOutputVisibility(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
             return true;
         }
 
+        private void UpdateProjectParameters(List<ProjectParameter> projectParameters) {
+            ProjectParameters.Clear();
+            if (projectParameters == null)
+                return;
+            ProjectParameters.AddRange(projectParameters);
+        }
 
         /// <summary>
         /// Destroys current project
@@ -367,6 +410,7 @@ namespace Base {
             ActionPoints.Clear();
             ConnectionManagerArcoro.Instance.Clear();
             LogicItems.Clear();
+            ProjectParameters.Clear();
             return true;
         }
 
@@ -1136,6 +1180,7 @@ namespace Base {
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
+                action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
@@ -1170,7 +1215,21 @@ namespace Base {
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
             }
-        }        
+        }
+
+        public void SetActionInputOutputVisibility(bool visible) {
+            if (!Valid || !ProjectMeta.HasLogic)
+                return;
+            foreach (Action action in GetAllActions()) {
+                action.EnableInputOutput(visible);
+            }
+            StartAction.EnableInputOutput(visible);
+            EndAction.EnableInputOutput(visible);
+            //SelectorMenu.Instance.ShowIO(visible);
+            if (SelectorMenu.Instance.IOToggle.Toggled != visible)
+                SelectorMenu.Instance.IOToggle.SwitchToggle();
+            SelectorMenu.Instance.IOToggle.SetInteractivity(visible, "Connections are hidden");
+        }
 
     }
 

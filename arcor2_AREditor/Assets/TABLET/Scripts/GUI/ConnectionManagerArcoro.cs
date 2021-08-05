@@ -31,7 +31,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             c.target[0] = o2.GetComponent<RectTransform>();
         }
         Connections.Add(c);
-        if (!ControlBoxManager.Instance.ConnectionsToggle.isOn)
+        if (! (bool) MainSettingsMenu.Instance.ConnectionsSwitch.GetValue())
             c.gameObject.SetActive(false);
         
         return c;

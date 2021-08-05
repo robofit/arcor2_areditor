@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
@@ -11,6 +12,9 @@ using TMPro;
 using UnityEngine;
 
 namespace Base {
+
+    [RequireComponent(typeof(OutlineOnClick))]
+    [RequireComponent(typeof(Target))]
     public class RobotActionObject : ActionObject, IRobot {
         
         public TextMeshPro ActionObjectName;
@@ -40,7 +44,7 @@ namespace Base {
 
         private bool robotVisible = false;
 
-        private List<RobotEE> EndEffectors = new List<RobotEE>();
+        private Dictionary<string, List<RobotEE>> EndEffectors = new Dictionary<string, List<RobotEE>>();
         
         private GameObject RobotPlaceholder;
 
@@ -61,6 +65,8 @@ namespace Base {
 
         private bool isGreyColorForced;
 
+        public RobotMeta RobotMeta;
+
         protected override void Start() {
             base.Start();
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning && SceneManager.Instance.RobotsEEVisible && SceneManager.Instance.SceneStarted) {
@@ -72,6 +78,7 @@ namespace Base {
         protected override void OnDestroy() {
             base.OnDestroy();
             SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+            DeleteActionObject();
         }
 
         private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -143,19 +150,23 @@ namespace Base {
         }
 
         public void ShowRobotEE() {
-            foreach (RobotEE ee in EndEffectors) {
-                ee.gameObject.SetActive(true);
-            }            
+            foreach (List<RobotEE> eeList in EndEffectors.Values)
+                foreach (RobotEE ee in eeList) {
+                    ee.gameObject.SetActive(true);
+                }            
         }
 
         public void HideRobotEE() {
-            foreach (RobotEE ee in EndEffectors) {
-                try {
-                    ee.gameObject.SetActive(false);
-                } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException)  {
-                    continue;
-                }                    
-            }            
+            foreach (List<RobotEE> eeList in EndEffectors.Values) {
+                foreach (RobotEE ee in eeList) {
+                    try {
+                        ee.gameObject.SetActive(false);
+                    } catch (Exception ex) when (ex is NullReferenceException || ex is MissingReferenceException) {
+                        continue;
+                    }
+                }
+                               
+            }           
         }
 
         public async Task DisableVisualisationOfEE() {
@@ -186,19 +197,24 @@ namespace Base {
             base.InitActionObject(sceneObject, position, orientation, actionObjectMetadata);
 
             // if there should be an urdf robot model
-            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta) && !string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
-                // Get the robot model, if it returns null, the robot will be loading itself
-                RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
-                if (RobotModel != null) {
-                    RobotModelLoaded();
-                } else {
-                    // Robot is not loaded yet, let's wait for it to be loaded
-                    UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
-                    modelLoading = true;
+            if (ActionsManager.Instance.RobotsMeta.TryGetValue(sceneObject.Type, out RobotMeta robotMeta)) {
+                RobotMeta = robotMeta;
+                if (!string.IsNullOrEmpty(robotMeta.UrdfPackageFilename)) {
+                    // Get the robot model, if it returns null, the robot will be loading itself
+                    RobotModel = UrdfManager.Instance.GetRobotModelInstance(robotMeta.Type, robotMeta.UrdfPackageFilename);
+                
+                    if (RobotModel != null) {
+                        RobotModelLoaded();
+                    } else {
+                        // Robot is not loaded yet, let's wait for it to be loaded
+                        UrdfManager.Instance.OnRobotUrdfModelLoaded += OnRobotModelLoaded;
+                        modelLoading = true;
+                    }
                 }
             }
-
+            
             ResourcesLoaded = false;
+            
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
@@ -249,6 +265,11 @@ namespace Base {
 
             SetDefaultJoints();
 
+            Target target = GetComponent<Target>();
+            if (target != null) {
+                target.ChangeTarget(RobotModel.RobotModelGameObject);
+            }
+
             // Show or hide the robot based on global settings of displaying ActionObjects.
             // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
             /*if (robotVisible) {
@@ -264,10 +285,10 @@ namespace Base {
             float robotScale = 0f;
             foreach (RobotLink link in RobotModel.Links.Values) {
                 robotScale = link.LinkScale;
-                if (!link.IsBaseLink) {
+                if (!link.IsBaseLink && robotScale != 0) {
                     break;
                 }
-            }            
+            }
             outlineOnClick.CompensateOutlineByModelScale(robotScale);
         }
 
@@ -418,22 +439,29 @@ namespace Base {
         }
 
 
-        public async Task<List<string>> GetEndEffectorIds() {
+        public async Task<List<string>> GetEndEffectorIds(string arm_id = null) {
             await LoadResources();
             List<string> result = new List<string>();
-            foreach (RobotEE ee in EndEffectors)
-                result.Add(ee.EEId);
+            if (string.IsNullOrEmpty(arm_id)) {
+                foreach (List<RobotEE> eeList in EndEffectors.Values) {
+                    foreach (RobotEE ee in eeList) {
+                        result.Add(ee.EEId);
+                    }
+                }
+            } else if (EndEffectors.ContainsKey(arm_id)) {
+                foreach (RobotEE ee in EndEffectors[arm_id]) {
+                    result.Add(ee.EEId);
+                }
+            } else {
+                throw new KeyNotFoundException($"Robot {GetName()} does not contain arm {arm_id}");
+            }
+            
             return result;
-        }
-
-        public async Task<List<RobotEE>> GetEndEffectors() {
-            await LoadResources();
-            return EndEffectors;            
         }
 
         private async Task LoadResources() {
             if (!ResourcesLoaded) {
-                ResourcesLoaded = await LoadEndEffectors();
+                ResourcesLoaded = await LoadEndEffectorsAndArms();
             }
         }
 
@@ -452,9 +480,8 @@ namespace Base {
 
         }
 
-        public async Task<bool> LoadEndEffectors() {
+        public async Task<bool> LoadEndEffectorsAndArms() {
             // TODO: maybe wrong condition
-            Debug.LogError(GameManager.Instance.GetGameState());
             if (!SceneManager.Instance.Valid) {
                 Debug.LogError("SceneManager instance not valid");
                 return false;
@@ -467,14 +494,29 @@ namespace Base {
             }
             GameManager.Instance.ShowLoadingScreen("Loading end effectors of robot " + Data.Name);
             try {
-                List<string> endEffectors = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
-                foreach (string eeId in endEffectors) {
-                    
-                    RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                    ee.InitEE(this, eeId);
-                    ee.gameObject.SetActive(false);
-                    EndEffectors.Add(ee);
+                Dictionary<string, List<string>> endEffectors = new Dictionary<string, List<string>>();
+                
+                if (RobotMeta.MultiArm) {
+                    List<string> arms = await WebsocketManager.Instance.GetRobotArms(Data.Id);
+                    foreach (string arm in arms) {
+                        endEffectors[arm] = await WebsocketManager.Instance.GetEndEffectors(Data.Id, arm);
+                    }
+                } else {
+                    endEffectors["default"] = await WebsocketManager.Instance.GetEndEffectors(Data.Id);
                 }
+                foreach (KeyValuePair<string, List<string>> eeList in endEffectors) {
+                    foreach (string eeId in eeList.Value) {
+
+                        RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+                        ee.InitEE(this, eeList.Key, eeId);
+                        ee.gameObject.SetActive(false);
+                        if (!EndEffectors.ContainsKey(eeList.Key)) {
+                            EndEffectors.Add(eeList.Key, new List<RobotEE>());
+                        }
+                        EndEffectors[eeList.Key].Add(ee);
+                    }
+                }
+                
                 return true;
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex.Message);
@@ -539,11 +581,13 @@ namespace Base {
             }
             ActionObjectName.gameObject.SetActive(true);
             outlineOnClick.Highlight();
+            DisplayOffscreenIndicator(true);
         }
 
         public override void OnHoverEnd() {
             ActionObjectName.gameObject.SetActive(false);
             outlineOnClick.UnHighlight();
+            DisplayOffscreenIndicator(false);
         }
 
         public override void UpdateObjectName(string newUserId) {
@@ -557,11 +601,17 @@ namespace Base {
             ResetPosition();
         }
 
-        public async Task<RobotEE> GetEE(string ee_id) {
+        public async Task<RobotEE> GetEE(string ee_id, string arm_id) {
             if (!ResourcesLoaded) {
                 await LoadResources();
             }
-            foreach (RobotEE ee in EndEffectors)
+            string realArmId = arm_id;
+            if (!MultiArm())
+                realArmId = "default";
+
+            if (!EndEffectors.ContainsKey(realArmId))
+                throw new ItemNotFoundException($"Robot {GetName()} does not have arm {realArmId}");
+            foreach (RobotEE ee in EndEffectors[realArmId])
                 if (ee.EEId == ee_id)
                     return ee;
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
@@ -641,10 +691,10 @@ namespace Base {
         }
 
 	    public override void DeleteActionObject() {
-            base.DeleteActionObject();
             UnloadRobotModel();
             UrdfManager.Instance.OnRobotUrdfModelLoaded -= OnRobotModelLoaded;
             modelLoading = false;
+            base.DeleteActionObject();
         }
 
         private void UnloadRobotModel() {
@@ -687,18 +737,8 @@ namespace Base {
             }
         }
 
-        public override async void OpenMenu() {
-            if (!await this.WriteLock(false))
-                return;
-            outlineOnClick.GizmoUnHighlight();
-            if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-                actionObjectMenu.CurrentObject = this;
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-            } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-                actionObjectMenuProjectEditor.CurrentObject = this;
-                actionObjectMenuProjectEditor.UpdateMenu();
-                MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-            }
+        public override void OpenMenu() {
+            ActionObjectMenu.Instance.Show(this);
         }
 
         public override bool HasMenu() {
@@ -716,7 +756,10 @@ namespace Base {
 
         public async Task<List<RobotEE>> GetAllEE() {
             await LoadResources();
-            return EndEffectors;
+            List<RobotEE> eeList = new List<RobotEE>();
+            foreach (List<RobotEE> ee in EndEffectors.Values)
+                eeList.AddRange(ee);
+            return eeList;
         }
 
         public override string GetObjectTypeName() {
@@ -742,6 +785,19 @@ namespace Base {
             base.OnObjectUnlocked();
             ActionObjectName.text = GetName();
             LockIcon.SetActive(false);
+        }
+
+        public async Task<List<string>> GetArmsIds() {
+            await LoadResources();
+            return EndEffectors.Keys.ToList();
+        }
+
+        public bool MultiArm() {
+            return RobotMeta.MultiArm;
+        }
+
+        public override void CloseMenu() {
+            ActionObjectMenu.Instance.Hide();
         }
     }
 }

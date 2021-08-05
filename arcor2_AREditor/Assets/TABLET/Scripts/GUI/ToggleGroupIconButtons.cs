@@ -14,17 +14,18 @@ public class ToggleGroupIconButtons : MonoBehaviour {
     private void Start() {
         foreach (IconButton btn in Buttons) {
             btn.Background.color = Color.clear;
-            btn.Button.onClick.AddListener(() => SelectButton(btn));
+            btn.Button.onClick.AddListener(() => SelectButton(btn, false));
         }
         Default.Background.color = SelectedColor;
     }
 
-    public void SelectButton(IconButton button) {
+    public void SelectButton(IconButton button, bool invoke) {
         foreach (IconButton btn in Buttons) {
             btn.Background.color = Color.clear;
         }
         button.Background.color = SelectedColor;
+        if (invoke)
+            button.Button.onClick.Invoke();
     }
-
 
 }

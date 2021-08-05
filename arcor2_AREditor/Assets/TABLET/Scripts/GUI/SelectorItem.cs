@@ -15,25 +15,36 @@ public class SelectorItem : MonoBehaviour
     public float Score;
     private long lastUpdate;
     private bool selected;
-    public Sprite ActionPoint, ActionObject, Robot, RobotEE, Orientation, ActionInput, ActionOutput, Action, Others;
 
     public Button CollapsableButton;
     public GameObject CollapsableButtonIcon;
     public bool Collapsable, Collapsed;
     public GameObject SublistContent;
-    private string name;
+    public ManualTooltip Tooltip;
 
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     private List<SelectorItem> childs = new List<SelectorItem>();
-    //public List<SelectorItem> VisibleChilds = new List<SelectorItem>();
 
     private void Start() {
         Removed = false;
+        UpdateTooltip();
     }
     public void SetText(string text) {
         Label.text = text;
         name = text;
+        UpdateTooltip();
+    }
+
+    public void UpdateTooltip() {
+        Label.ForceMeshUpdate(true);
+        if (Label.isTextTruncated) {
+            Tooltip.Description = name;
+            Tooltip.EnableTooltip();
+            Tooltip.ShowDefaultDescription();
+        } else {
+            Tooltip.DisableTooltip();
+        }
     }
 
     public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
@@ -60,25 +71,25 @@ public class SelectorItem : MonoBehaviour
         lastUpdate = currentIteration;
         if (interactiveObject.GetType() == typeof(RobotActionObject)) {
             Collapsable = true;
-            Icon.sprite = Robot;
+            Icon.sprite = AREditorResources.Instance.Robot;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
-            Icon.sprite = ActionObject;
+            Icon.sprite = AREditorResources.Instance.ActionObject;
         } else if (interactiveObject.GetType() == typeof(PuckInput)) {
-            Icon.sprite = ActionInput;
+            Icon.sprite = AREditorResources.Instance.ActionInput;
         } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
-            Icon.sprite = ActionOutput;
+            Icon.sprite = AREditorResources.Instance.ActionOutput;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
             Collapsable = true;
-            Icon.sprite = Action;
+            Icon.sprite = AREditorResources.Instance.Action;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
             Collapsable = true;
-            Icon.sprite = ActionPoint;
+            Icon.sprite = AREditorResources.Instance.ActionPoint;
         } else if (interactiveObject.GetType() == typeof(RobotEE)) {
-            Icon.sprite = RobotEE;
+            Icon.sprite = AREditorResources.Instance.RobotEE;
         } else if (interactiveObject.GetType() == typeof(APOrientation)) {
-            Icon.sprite = Orientation;
+            Icon.sprite = AREditorResources.Instance.Orientation;
         } else {
-            Icon.sprite = Others;
+            Icon.sprite = AREditorResources.Instance.Others;
         }
         if (!Collapsable)
             CollapsableButton.gameObject.SetActive(false);

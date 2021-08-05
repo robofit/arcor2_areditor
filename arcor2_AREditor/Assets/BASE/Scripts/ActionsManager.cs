@@ -6,6 +6,7 @@ using IO.Swagger.Model;
 using System.Threading.Tasks;
 using System.Collections;
 using Newtonsoft.Json;
+using UnityEngine.XR.ARSubsystems;
 
 namespace Base {
 
@@ -25,13 +26,14 @@ namespace Base {
 
         public GameObject InteractiveObjects;
 
-        public event AREditorEventArgs.StringListEventHandler OnActionObjectsUpdated;
+        public event AREditorEventArgs.StringListEventHandler OnObjectTypesAdded, OnObjectTypesRemoved, OnObjectTypesUpdated;
 
-        public bool ActionsReady, ActionObjectsLoaded;
+        public bool ActionsReady, ActionObjectsLoaded, AbstractOnlyObjects;
 
         public Dictionary<string, RobotMeta> RobotsMeta = new Dictionary<string, RobotMeta>();
 
-        public Dictionary<string, ActionObjectMetadata> ActionObjectMetadata {
+
+        public Dictionary<string, ActionObjectMetadata> ActionObjectsMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
        /* public Dictionary<string, ServiceMetadata> ServicesMetadata {
@@ -64,7 +66,7 @@ namespace Base {
 
         private void Update() {
             if (!ActionsReady && ActionObjectsLoaded) {
-                foreach (ActionObjectMetadata ao in ActionObjectMetadata.Values) {
+                foreach (ActionObjectMetadata ao in ActionObjectsMetadata.Values) {
                     if (!ao.Disabled && !ao.ActionsLoaded) {
                         return;
                     }
@@ -83,12 +85,13 @@ namespace Base {
         public void Init() {
            // servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
+            AbstractOnlyObjects = true;
             ActionsReady = false;
             ActionObjectsLoaded = false;
         }
 
         public bool HasObjectTypePose(string type) {
-            if (!ActionObjectMetadata.TryGetValue(type,
+            if (!ActionObjectsMetadata.TryGetValue(type,
             out Base.ActionObjectMetadata actionObjectMetadata)) {
                 throw new ItemNotFoundException("No object type " + type);
             }
@@ -118,46 +121,79 @@ namespace Base {
 
 
         public void ObjectTypeRemoved(object sender, StringListEventArgs type) {
+            List<string> removed = new List<string>();
             foreach (string item in type.Data) {
                 if (actionObjectsMetadata.ContainsKey(item)) {
                     actionObjectsMetadata.Remove(item);
+                    removed.Add(item);
                 }
             }
-            if (type.Data.Count > 0)
-                OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(new List<string>()));
+            if (type.Data.Count > 0) {
+                AbstractOnlyObjects = true;
+                foreach (ActionObjectMetadata obj in actionObjectsMetadata.Values) {
+                    if (AbstractOnlyObjects && !obj.Abstract)
+                        AbstractOnlyObjects = false;
+                }
+                OnObjectTypesRemoved?.Invoke(this, new StringListEventArgs(new List<string>(removed)));
+            }
 
         }
 
-        public void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
+        public async void ObjectTypeAdded(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
+            bool robotAdded = false;
             List<string> added = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: obj);
-                UpdateActionsOfActionObject(m);
+                if (AbstractOnlyObjects && !m.Abstract)
+                    AbstractOnlyObjects = false;
+                if (!m.Abstract && !m.BuiltIn)
+                    UpdateActionsOfActionObject(m);
+                else
+                    m.ActionsLoaded = true;
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
                 actionObjectsMetadata.Add(obj.Type, m);
+                if (m.Robot)
+                    robotAdded = true;
                 added.Add(obj.Type);
             }
+            if (robotAdded)
+                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
             
-            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(added));
+            OnObjectTypesAdded?.Invoke(this, new StringListEventArgs(added));
         }
 
-        public void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
+        public bool AnyNonAbstractObject() {
+            
+            return false;
+        }
+
+        public async void ObjectTypeUpdated(object sender, ObjectTypesEventArgs args) {
             ActionsReady = false;
             enabled = true;
+            bool updatedRobot = false;
             List<string> updated = new List<string>();
             foreach (ObjectTypeMeta obj in args.ObjectTypes) {
                 if (actionObjectsMetadata.TryGetValue(obj.Type, out ActionObjectMetadata actionObjectMetadata)) {
                     actionObjectMetadata.Update(obj);
-                    UpdateActionsOfActionObject(actionObjectMetadata);
+                    if (actionObjectMetadata.Robot)
+                        updatedRobot = true;
+                    if (AbstractOnlyObjects && !actionObjectMetadata.Abstract)
+                        AbstractOnlyObjects = false;
+                    if (!actionObjectMetadata.Abstract && !actionObjectMetadata.BuiltIn)
+                        UpdateActionsOfActionObject(actionObjectMetadata);
+                    else
+                        actionObjectMetadata.ActionsLoaded = true;
                     updated.Add(obj.Type);
                 } else {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
                 }
             }
-            OnActionObjectsUpdated?.Invoke(this, new StringListEventArgs(updated));
+            if (updatedRobot)
+                UpdateRobotsMetadata(await WebsocketManager.Instance.GetRobotMeta());
+            OnObjectTypesUpdated?.Invoke(this, new StringListEventArgs(updated));
         }
         
 
@@ -192,24 +228,6 @@ namespace Base {
             Dictionary<string, ActionMetadata> metadata = new Dictionary<string, ActionMetadata>();
             foreach (IO.Swagger.Model.ObjectAction action in actions) {
                 ActionMetadata a = new ActionMetadata(action);
-                /*
-                foreach (IO.Swagger.Model.ActionParameterMeta arg in action.Parameters) {
-                    switch (arg.Type) {
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.String:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.String, "");
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Pose:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Pose, "");
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Double:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Double, 0d);
-                            break;
-                        case IO.Swagger.Model.ObjectActionArgs.TypeEnum.Integer:
-                            a.Parameters[arg.Name] = new ActionParameterMetadata(arg.Name, IO.Swagger.Model.ActionParameter.TypeEnum.Integer, (long) 0);
-                            break;
-                    }
-
-            }*/
                 metadata[a.Name] = a;
             }
             return metadata;
@@ -223,7 +241,12 @@ namespace Base {
             actionObjectsMetadata.Clear();
             foreach (IO.Swagger.Model.ObjectTypeMeta metadata in newActionObjectsMetadata) {
                 ActionObjectMetadata m = new ActionObjectMetadata(meta: metadata);
-                UpdateActionsOfActionObject(m);
+                if (AbstractOnlyObjects && !m.Abstract)
+                    AbstractOnlyObjects = false;
+                if (!m.Abstract && !m.BuiltIn)
+                    UpdateActionsOfActionObject(m);
+                else
+                    m.ActionsLoaded = true;
                 actionObjectsMetadata.Add(metadata.Type, m);
             }
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
@@ -233,7 +256,6 @@ namespace Base {
             enabled = true;
 
             ActionObjectsLoaded = true;
-            OnActionObjectsUpdated?.Invoke(this, new Base.StringListEventArgs(new List<string>()));
         }
 
         private bool IsDescendantOfType(string type, ActionObjectMetadata actionObjectMetadata) {

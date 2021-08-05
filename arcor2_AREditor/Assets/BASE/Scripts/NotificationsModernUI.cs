@@ -45,6 +45,7 @@ namespace Base {
             Application.logMessageReceived -= HandleLog;
         }
 
+
         private void HandleLog(string logString, string stackTrace, LogType type) {
             LogEntries.Add(new LogEntry(type.ToString(), logString, stackTrace));
             if (type == LogType.Exception) {

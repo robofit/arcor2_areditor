@@ -414,6 +414,16 @@ namespace Base {
         }
     }
 
+    public class ProjectParameterEventArgs : EventArgs {
+        public ProjectParameter ProjectParameter {
+            get; set;
+        }
+
+        public ProjectParameterEventArgs(ProjectParameter projectParameter) {
+            ProjectParameter = projectParameter;
+        }
+    }
+
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void StringListEventHandler(object sender, StringListEventArgs args);
@@ -448,5 +458,6 @@ namespace Base {
         public delegate void ObjectLockingEventHandler(object sender, ObjectLockingEventArgs args);
         public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
         public delegate void CalibrationEventHandler(object sender, CalibrationEventArgs args);
+        public delegate void ProjectParameterEventHandler(object sender, ProjectParameterEventArgs args);
     }
 }

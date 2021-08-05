@@ -79,10 +79,10 @@ namespace Base {
             return JsonConvert.DeserializeObject<T>(Value);
         }
 
-        public static T GetValue<T>(string value) {
+        public static T GetValue<T>(string value, string type = null) {
             if (value == null) {
-                return default; 
-            }                
+                return default;
+            }
             return JsonConvert.DeserializeObject<T>(value);
         }
 
@@ -314,9 +314,12 @@ namespace Base {
 
         public static IParameter InitializeIntegerParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
             LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
-            int? selectedValue = null;
+            object selectedValue = null;
             if (value != null) {
-                selectedValue = Parameter.GetValue<int?>(value.ToString());
+                if (type == LinkableParameter.ProjectParameterText)
+                    selectedValue = value; //id of project parameter
+                else
+                    selectedValue = Parameter.GetValue<int?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<int>();
             }
@@ -352,13 +355,23 @@ namespace Base {
             input.Input.text = selectedValue != null ? selectedValue.ToString() : "0";
             input.Input.onValueChanged.AddListener((string newValue)
                 => onChangeParameterHandler(actionParameterMetadata.Name, ParseDouble(newValue), actionParameterMetadata.Type));*/
-            
+
+            object selectedValue = null;
+            if (value != null) {
+                if (type == LinkableParameter.ProjectParameterText)
+                    selectedValue = value; //id of project parameter
+                else
+                    selectedValue = Parameter.GetValue<double?>(value.ToString());
+            } else if (actionParameterMetadata.DefaultValue != null) {
+                selectedValue = actionParameterMetadata.GetDefaultValue<double>();
+            }
+
             input.Input.Input.onValueChanged.AddListener((string newValue)
                 => ValidateDoubleParameter(input.Input, actionParameterMetadata, ParseDouble(newValue)));
-
-            input.Init(actionParameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
+            input.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
             return input;
         }
+
 
         public static double ParseDouble(string value) {
             if (string.IsNullOrEmpty(value))
@@ -422,7 +435,7 @@ namespace Base {
         public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
-                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, darkMode, default, linkable);
+                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -434,10 +447,10 @@ namespace Base {
             return parameters;
         }
 
-        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode) {
+        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (Parameter parameter in _parameters) {
-                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Value, darkMode);
+                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
                     continue;
@@ -561,8 +574,10 @@ namespace Base {
             throw new Base.ItemNotFoundException("Parameter not found: " + param_id);
         }
 
-        public static IParameter InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
+        public static IParameter InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled,
+            GameObject canvasRoot, string value, string type, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
             IParameter parameter = null;
+
 
             switch (actionParameterMetadata.Type) {
                 case "string":

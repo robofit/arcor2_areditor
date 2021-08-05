@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Newtonsoft.Json;
+using System;
 
 public class LabeledInput : MonoBehaviour, IParameter
 {
@@ -13,9 +14,8 @@ public class LabeledInput : MonoBehaviour, IParameter
     [SerializeField]
     private TMPro.TMP_Text Label;
     public TMPro.TMP_InputField Input;
-    public TMPro.TMP_Text Text; 
 
-    private TooltipContent tooltipContent;
+    public ManualTooltip ManualTooltip;
 
     public void Init() {
         
@@ -24,7 +24,7 @@ public class LabeledInput : MonoBehaviour, IParameter
     private void Awake() {
         Debug.Assert(Label != null);
         Debug.Assert(Input != null);
-        tooltipContent = Label.GetComponent<TooltipContent>();
+        Debug.Assert(ManualTooltip != null);
         if (!string.IsNullOrEmpty(ParameterType)) {
             SetType(ParameterType);
         }
@@ -39,19 +39,11 @@ public class LabeledInput : MonoBehaviour, IParameter
     public void SetLabel(string label, string description) {
 
         Label.text = label;
-        if (tooltipContent == null)
-            return;
         if (!string.IsNullOrEmpty(description)) {
-            tooltipContent.enabled = true;
-            if (tooltipContent.tooltipRect == null) {
-                tooltipContent.tooltipRect = Base.GameManager.Instance.Tooltip;
-            }
-            if (tooltipContent.descriptionText == null) {
-                tooltipContent.descriptionText = Base.GameManager.Instance.Text;
-            }
-            tooltipContent.description = description;
+            ManualTooltip.Description = description;
+            ManualTooltip.DisplayAlternativeDescription = false;
         } else {
-            tooltipContent.enabled = false;
+            ManualTooltip.DisableTooltip();
         }
             
     }
@@ -93,10 +85,10 @@ public class LabeledInput : MonoBehaviour, IParameter
 
     public void SetDarkMode(bool dark) {
         if (dark) {
-            Text.color = Color.black;
+            Input.textComponent.color = Color.black;
             Label.color = Color.black;
         } else {
-            Text.color = Color.white;
+            Input.textComponent.color = Color.white;
             Label.color = Color.white;
         }
         
@@ -108,5 +100,16 @@ public class LabeledInput : MonoBehaviour, IParameter
 
     public Transform GetTransform() {
         return transform;
+    }
+
+    public void SetInteractable(bool interactable) {
+        try {
+            Input.interactable = interactable;
+            Input.textComponent.color = interactable ? Color.white : Color.gray;
+            Label.color = interactable ? Color.white : Color.gray;
+        } catch (NullReferenceException ex) {
+            Debug.LogError($"Null reference exception on labeled input: {GetName()}: {ex.Message}");
+        }
+        
     }
 }

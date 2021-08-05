@@ -6,13 +6,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(SimpleSideMenu))]
-public class AddJointsMenu : MonoBehaviour, IMenu {
+public class AddJointsMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;
-    public DropdownParameter RobotsList;
-
 
     [SerializeField]
     private Button CreateNewJoints;
@@ -20,39 +17,29 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
-    private SimpleSideMenu SideMenu;
+    private string jointsName;
 
-
-    private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
-    }
-
-
-    public async void UpdateMenu() {
-        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
-        robotsListDropdown.dropdownItems.Clear();
-
-        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init((string x) =>{ }, false);
-
+    public async void UpdateMenu() {        
         ValidateFields();
     }
 
+
     public async void ValidateFields() {
         bool interactable = true;
-        name = NameInput.text;
+        jointsName = NameInput.text;
 
-        if (string.IsNullOrEmpty(name)) {
+        if (string.IsNullOrEmpty(jointsName)) {
             buttonTooltip.description = "Name is required parameter";
             interactable = false;
-        } else if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
-            buttonTooltip.description = "There already exists orientation or joints with name " + name;
+        } else if (CurrentActionPoint.OrientationNameExist(jointsName) || CurrentActionPoint.JointsNameExist(jointsName)) {
+            buttonTooltip.description = "There already exists orientation or joints with name " + jointsName;
             interactable = false;
         }
 
         if (interactable) {
-            if (RobotsList.Dropdown.dropdownItems.Count == 0) {
+            if (!SceneManager.Instance.IsRobotSelected()) {
                 interactable = false;
-                buttonTooltip.description = "There is no robot to be used";
+                buttonTooltip.description = "Robot is not selected";
             }
         }
         
@@ -61,20 +48,14 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
     }
 
     public async void AddJoints() {
-        string robotName = (string) RobotsList.GetValue();
-
-        IRobot robot;
-        try {
-            robot = SceneManager.Instance.GetRobotByName(robotName);
-        } catch (ItemNotFoundException ex) {
-            Notifications.Instance.ShowNotification("Failed to add joints", "Could not found robot called: " + robotName);
-            Debug.LogError(ex);
-            return;
-        }
-
+        
         Debug.Assert(CurrentActionPoint != null);
         try {
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, robot.GetId(), name);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            jointsName = NameInput.text;
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, armId);
             Notifications.Instance.ShowToastMessage("Joints added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);
@@ -93,10 +74,10 @@ public class AddJointsMenu : MonoBehaviour, IMenu {
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
 
         UpdateMenu();
-        SideMenu.Open();
+        gameObject.SetActive(true);
     }
 
     public void Close() {
-        SideMenu.Close();
+        ActionPointAimingMenu.Instance.SwitchToJoints();
     }
 }

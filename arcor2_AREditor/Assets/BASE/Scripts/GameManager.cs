@@ -62,7 +62,7 @@ namespace Base {
         /// <summary>
         /// Called when list of scenes is changed (new, removed, renamed)
         /// </summary>
-        public event EventHandler OnSceneListChanged;
+        public event EventHandler OnScenesListChanged;
         /// <summary>
         /// Called when editor connected to server. Contains server URI
         /// </summary>
@@ -145,10 +145,6 @@ namespace Base {
         /// </summary>
         public CanvasGroup MainMenuBtnCG;
         /// <summary>
-        /// Canvas group of status panel
-        /// </summary>
-        public CanvasGroup StatusPanelCG;
-        /// <summary>
         /// Standard button prefab
         /// </summary>
         public GameObject ButtonPrefab;
@@ -201,7 +197,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.15.0";
+        public const string ApiVersion = "0.16.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -284,11 +280,13 @@ namespace Base {
 
         private bool openPackageRunningScreenFlag = false;
 
+
+        /// TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! is this still neccassarry? How to use it when there is no menumanager anymore?
         /// <summary>
         /// Checks whether scene is interactable
         /// </summary>
         public bool SceneInteractable {
-            get => !MenuManager.Instance.IsAnyMenuOpened;
+            get => true;
         }
 
 
@@ -480,13 +478,10 @@ namespace Base {
                 // when normal state, enable main menu button and status panel
                 case EditorStateEnum.Normal:
                     EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
-                    EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
                     break;
                 // otherwise, disable main menu button and status panel
                 default:
                     EditorHelper.EnableCanvasGroup(MainMenuBtnCG, false);
-                    EditorHelper.EnableCanvasGroup(StatusPanelCG, false);
-                    MenuManager.Instance.HideAllMenus();
                     break;
             }
         }
@@ -513,7 +508,6 @@ namespace Base {
             Debug.Assert(requestType != EditorStateEnum.Closed &&
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
-            MenuManager.Instance.HideAllMenus();
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
             /*switch (requestType) {
@@ -834,9 +828,9 @@ namespace Base {
                     ServerVersion.text = "Editor version: " + Application.version +
                         "\nServer version: " + systemInfo.Version;
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
-                    MenuManager.Instance.DisableAllMenus();
-                    
-                    
+                    MainMenu.Instance.gameObject.SetActive(false);
+
+
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
 
                     await UpdateActionObjects();
@@ -916,7 +910,7 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OnActionsLoaded(object sender, EventArgs e) {
-            MenuManager.Instance.EnableAllWindows();
+            MainMenu.Instance.gameObject.SetActive(true);
         }
 
         /// <summary>
@@ -1034,9 +1028,7 @@ namespace Base {
                 Debug.LogError(ex);
                 Notifications.Instance.SaveLogs(scene, null, "Failed to initialize scene");
                 HideLoadingScreen();
-            } catch (Exception ex) {
-                throw ex;
-            }
+            } 
             
 
         }
@@ -1165,46 +1157,24 @@ namespace Base {
             throw new RequestFailedException("No scene with name: " + name);
         }
 
-        public void LoadScenesCb(string id, string responseData) {
-            IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
-            Scenes = response.Data;
-            Scenes.Sort(delegate (ListScenesResponseData x, ListScenesResponseData y) {
-                return y.Modified.CompareTo(x.Modified);
-            });
-            OnSceneListChanged?.Invoke(this, EventArgs.Empty);
+        public void InvokeScenesListChanged() {
+            OnScenesListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void LoadProjectsCb(string id, string responseData) {
-            IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
-            Projects = response.Data;
-            Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
-                return y.Modified.CompareTo(x.Modified);
-            });
+        public void InvokeProjectsListChanged() {
             OnProjectsListChanged?.Invoke(this, EventArgs.Empty);
         }
 
-       
-        public void LoadPackagesCb(string id, string responseData) {
-            IO.Swagger.Model.ListPackagesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListPackagesResponse>(responseData);
-            if (response == null)
-                Notifications.Instance.ShowNotification("Failed to load packages", "Please, try again later.");
-            Packages = response.Data;
-            Packages.Sort(delegate (PackageSummary x, PackageSummary y) {
-                return y.PackageMeta.Built.CompareTo(x.PackageMeta.Built);
-            });
+        public void InvokePackagesListChanged() {
             OnPackagesListChanged?.Invoke(this, EventArgs.Empty);
         }
-
-            /// <summary>
-            /// Gets package by ID
-            /// </summary>
-            /// <param name="id">Id of package</param>
-            /// <returns>Package with corresponding ID</returns>
-            public PackageSummary GetPackage(string id) {
+             
+        /// <summary>
+        /// Gets package by ID
+        /// </summary>
+        /// <param name="id">Id of package</param>
+        /// <returns>Package with corresponding ID</returns>
+        public PackageSummary GetPackage(string id) {
             foreach (PackageSummary package in Packages) {
                 if (id == package.Id)
                     return package;
@@ -1244,7 +1214,7 @@ namespace Base {
                 OnSaveProject?.Invoke(this, EventArgs.Empty);
             } else {
                 saveProjectResponse.Messages.ForEach(Debug.LogError);
-                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? ": " + saveProjectResponse.Messages[0] : ""));
+                Base.Notifications.Instance.ShowNotification("Failed to save project", (saveProjectResponse.Messages.Count > 0 ? saveProjectResponse.Messages[0] : ""));
                 return;
             }
         }
@@ -1329,20 +1299,7 @@ namespace Base {
             }
         }
 
-        /// <summary>
-        /// Asks server to stop running package
-        /// </summary>
-        public async Task<bool> StopPackage() {
-            ShowLoadingScreen();
-            try {
-                await WebsocketManager.Instance.StopPackage();
-                return true;
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
-                HideLoadingScreen();
-                return false;
-            }
-        }
+        
 
         /// <summary>
         /// Asks server to pause running package
@@ -1398,10 +1355,10 @@ namespace Base {
         /// </summary>
         public void ExitApp() => Application.Quit();
 
-        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string endEffectorId) {
+        public async void UpdateActionPointPositionUsingRobot(string actionPointId, string robotId, string arm_id, string endEffectorId) {
 
             try {
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(actionPointId, robotId, endEffectorId, arm_id);
             } catch (RequestFailedException ex) {
                 Notifications.Instance.ShowNotification("Failed to update action point", ex.Message);
             }
@@ -1601,20 +1558,14 @@ namespace Base {
         /// </summary>
         /// <param name="what">Defines what list should be displayed (scenes/projects/packages)</param>
         /// <param name="highlight">ID of element to highlight (e.g. when scene is closed, it is highlighted for a few seconds</param>
-        /// <param name="updateResources">Whether or not update lists of scenes/packages/projects</param>
         /// <returns></returns>
-        public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight, bool updateResources = true) {
+        public async Task OpenMainScreen(ShowMainScreenData.WhatEnum what, string highlight) {
 
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
             Scene.SetActive(false);
-            MenuManager.Instance.MainMenu.Close();
-            if (updateResources) {
-                WebsocketManager.Instance.LoadScenes(LoadScenesCb);
-                WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
-                WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
-            }
+            MainMenu.Instance.Close();
             switch (what) {
                 case ShowMainScreenData.WhatEnum.PackagesList:
                     MainScreen.Instance.SwitchToPackages();
@@ -1648,7 +1599,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1667,7 +1618,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);
             SetEditorState(EditorStateEnum.Normal);
@@ -1680,11 +1631,10 @@ namespace Base {
         public async void OpenPackageRunningScreen() {
             openPackageRunningScreenFlag = false;
             try {
-                MenuManager.Instance.MainMenu.Close();
+                MainMenu.Instance.Close();
                 SetGameState(GameStateEnum.PackageRunning);
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 EditorHelper.EnableCanvasGroup(MainMenuBtnCG, true);
-                EditorHelper.EnableCanvasGroup(StatusPanelCG, true);
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
                 ARSession.enabled = true;
                 if (CalibrationManager.Instance.Calibrated) {
@@ -1726,7 +1676,7 @@ namespace Base {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
 #endif
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
             Scene.SetActive(false);
             SetGameState(GameStateEnum.Disconnected);
             HideLoadingScreen(true);

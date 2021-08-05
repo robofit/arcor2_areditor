@@ -23,9 +23,8 @@ namespace Base {
             SceneManager.Instance.OnLoadScene += OnProjectOrSceneLoaded;
             ProjectManager.Instance.OnLoadProject += OnProjectOrSceneLoaded;
             WebsocketManager.Instance.OnDisconnectEvent += OnAppDisconnected;
-            CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
-
 #if UNITY_ANDROID && AR_ON
+            CalibrationManager.Instance.OnARCalibrated += OnARCalibrated;
             arOn = true;
 #endif
         }

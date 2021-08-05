@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using static Base.GameManager;
 
 public class LeftMenuProject : LeftMenu
 {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
-        AddActionPointButton2, CopyButton;
+        AddActionPointButton2, CopyButton, ActionPointAimingMenuButton;
 
-    public GameObject ActionPicker;
     public InputDialog InputDialog;
     public AddNewActionDialog AddNewActionDialog;
 
@@ -26,6 +26,22 @@ public class LeftMenuProject : LeftMenu
         if (ProjectManager.Instance.ProjectMeta != null)
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
+    
+    
+
+    private const string SET_ACTION_POINT_PARENT_LABEL = "Set action point parent";
+    private const string ADD_ACTION_LABEL = "Add action";
+    private const string ADD_CONNECTION_LABEL = "Add connection";
+    private const string EDIT_CONNECTION_LABEL = "Edit connection";
+    private const string RUN_ACTION_LABEL = "Execute action";
+    private const string RUN_ACTION_OR_PACKAGE_LABEL = "Execute action or temporary package";
+    private const string RUN_TEMP_PACKAGE_LABEL = "Create and execute temporary package";
+    private const string ADD_ACTION_POINT_GLOBAL_LABEL = "Add global action point";
+    private const string ADD_ACTION_POINT_LABEL = "Add action point";
+    private const string COPY_LABEL = "Duplicate object";
+    private const string ACTION_POINT_AIMING_LABEL = "Open action point aiming menu";
+    private const string ADD_ACTION_POINT_USING_ROBOT_LABEL = "Add action point using robot";
+    
 
     protected override void Start() {
 #if !AR_ON
@@ -40,6 +56,15 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
         GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
         SelectorMenu.Instance.OnObjectSelectedChangedEvent += OnObjectSelectedChangedEvent;
+
+        GameManager.Instance.OnActionExecution += OnActionExecutionEvent;
+        GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionEvent;
+        GameManager.Instance.OnActionExecutionFinished += OnActionExecutionEvent;
+    }
+
+
+    private void OnActionExecutionEvent(object sender, EventArgs args) {
+        UpdateBtns();
     }
 
     protected override void Awake() {
@@ -82,90 +107,124 @@ public class LeftMenuProject : LeftMenu
         
             await base.UpdateBtns(obj);
 #if UNITY_ANDROID && AR_ON
-
-#endif
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
-                SetActionPointParentButton.SetInteractivity(false, "AR not calibrated");
-                AddActionButton.SetInteractivity(false, "AR not calibrated");
-                AddActionButton2.SetInteractivity(false, "AR not calibrated");
-                AddConnectionButton.SetInteractivity(false, "AR not calibrated");
-                AddConnectionButton2.SetInteractivity(false, "AR not calibrated");
-                RunButton.SetInteractivity(false, "AR not calibrated");
-                RunButton2.SetInteractivity(false, "AR not calibrated");
-                AddActionPointButton.SetInteractivity(false, "AR not calibrated");
-                AddActionPointButton2.SetInteractivity(false, "AR not calibrated");
-                CopyButton.SetInteractivity(false, "AR not calibrated");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(AR not calibrated)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(AR not calibrated)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(AR not calibrated)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(AR not calibrated)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(AR not calibrated)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(AR not calibrated)");
+                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(AR not calibrated)");
+                AddActionPointButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(AR not calibrated)");
+                AddActionPointButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(AR not calibrated)");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(AR not calibrated");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(AR not calibrated)");
             }
-            else if (requestingObject || obj == null) {
-                SetActionPointParentButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton.SetInteractivity(false, "No action point is selected");
-                AddActionButton2.SetInteractivity(false, "No action point is selected");
-                AddConnectionButton.SetInteractivity(false, "No input / output is selected");
-                AddConnectionButton2.SetInteractivity(false, "No input / output is selected");
-                RunButton.SetInteractivity(false, "Select action to execute it or START to run project");
+            else
+#endif
+            if (requestingObject || obj == null) {
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(no action point is selected)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(no action point is selected)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(no action point is selected)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(no input / output is selected)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(no input / output is selected)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(select action to execute it or START to run project)");
                 RunButton2.SetInteractivity(false, RunButton.GetAlternativeDescription());
                 AddActionPointButton.SetInteractivity(true);
                 AddActionPointButton2.SetInteractivity(true);
-                AddActionPointButton.SetDescription("Add global action point");
-                AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity(false, "No object to duplicate selected");
+                AddActionPointButton.SetDescription(ADD_ACTION_POINT_GLOBAL_LABEL);
+                AddActionPointButton2.SetDescription(ADD_ACTION_POINT_GLOBAL_LABEL);
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(no object to duplicate selected)");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(no action point selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
-                SetActionPointParentButton.SetInteractivity(false, "Object is locked");
-                AddConnectionButton.SetInteractivity(false, "Object is locked");
-                AddConnectionButton2.SetInteractivity(false, "Object is locked");
-                RunButton.SetInteractivity(false, "Object is locked");
-                RunButton2.SetInteractivity(false, "Object is locked");
-                AddActionButton.SetInteractivity(false, "Object is locked");
-                AddActionButton2.SetInteractivity(false, "Object is locked");
-                CopyButton.SetInteractivity(false, "Object is locked");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(object is locked)");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
+                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(object is locked)");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(object is locked)");
             } else {
-                SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
-                AddActionButton2.SetInteractivity(obj is ActionPoint3D, "Selected object is not action point");
+                SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, $"{SET_ACTION_POINT_PARENT_LABEL}\n(selected object is not action point)");
+                if (obj is ActionPoint3D) {
+                    AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
+                    AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
+                } else {
+                    AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
+                    AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
+                }
+                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point)");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
                     AddActionPointButton.SetInteractivity(true);
                 } else {
-                    AddActionPointButton.SetInteractivity(false, "Selected object could not be parent of AP");
+                    AddActionPointButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(selected object could not be parent of AP");
                 }
-                AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), AddActionPointButton.GetAlternativeDescription());
+                AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), $"{ADD_ACTION_POINT_LABEL}\n({AddActionPointButton.GetAlternativeDescription()})");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                CopyButton.SetInteractivity((obj is Base.Action && !(obj is StartEndAction)) || obj is ActionPoint3D, "Selected object cannot be duplicated");
+                if (obj is ActionPoint3D) {
+                    CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(checking...)");
+                    WebsocketManager.Instance.CopyActionPoint(obj.GetId(), null, obj.GetName(), CopyActionPointDryRunCallback, true);
+                } else {
+                    CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
+                }
+                if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
+                    AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
+                    AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
+                } else {
+                    AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
+                    AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
+                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
+                    if (obj is InputOutput inputOutput) {
+                        if (inputOutput.GetLogicItems().Count > 0) {
+                            AddConnectionButton.SetDescription(ADD_CONNECTION_LABEL);
+                            AddConnectionButton2.SetDescription(ADD_CONNECTION_LABEL);
+                        } else {
+                            AddConnectionButton.SetDescription(EDIT_CONNECTION_LABEL);
+                            AddConnectionButton2.SetDescription(EDIT_CONNECTION_LABEL);
+                        }
+                    }
 
-                AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
-                AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                    obj.GetType() == typeof(PuckOutput), "Selected object is not input or output of an action");
+                }
                 string runBtnInteractivity = null;
 
                 if (obj.GetType() == typeof(Action3D)) {
                     if (!SceneManager.Instance.SceneStarted)
-                        runBtnInteractivity = "Scene offline";
+                        runBtnInteractivity = "scene offline";
                     else if (!string.IsNullOrEmpty(GameManager.Instance.ExecutingAction)) {
-                        runBtnInteractivity = "Some action is already excecuted";
+                        string actionName = ProjectManager.Instance.GetAction(GameManager.Instance.ExecutingAction).GetName();
+                        runBtnInteractivity = $"action '{actionName}' running";
                     }
-                    RunButton.SetDescription("Execute action");
-                    RunButton2.SetDescription("Execute action");
+                    RunButton.SetDescription(RUN_ACTION_LABEL);
+                    RunButton2.SetDescription(RUN_ACTION_LABEL);
+                    RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_ACTION_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_ACTION_LABEL}\n({runBtnInteractivity})");
                 } else if (obj.GetType() == typeof(StartAction)) {
                     if (!ProjectManager.Instance.ProjectMeta.HasLogic) {
-                        runBtnInteractivity = "Project without logic could not be started from editor";
+                        runBtnInteractivity = "project without logic could not be started from editor";
                     } else if (ProjectManager.Instance.ProjectChanged) {
-                        runBtnInteractivity = "Project has unsaved changes";
+                        runBtnInteractivity = "project has unsaved changes";
                     }
-                    RunButton.SetDescription("Run project");
-                    RunButton2.SetDescription("Run project");
+                    RunButton.SetDescription(RUN_TEMP_PACKAGE_LABEL);
+                    RunButton2.SetDescription(RUN_TEMP_PACKAGE_LABEL);
+                    RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 } else {
-                    runBtnInteractivity = "Select action to execute it or START to run project";
+                    runBtnInteractivity = "select action to execute it or START to run project";
+                    RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
+                    RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 }
 
-                RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
-                RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), runBtnInteractivity);
+                
             }
 
             if (!SceneManager.Instance.SceneStarted) {
-                AddActionPointUsingRobotButton.SetInteractivity(false, "Scene offline");
+                AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(scene offline");
             } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-                AddActionPointUsingRobotButton.SetInteractivity(false, "Robot or EE not selected");
+                AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(robot or EE not selected");
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
@@ -179,10 +238,13 @@ public class LeftMenuProject : LeftMenu
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
+        ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
         if (ActionPickerMenu.Instance.IsVisible())
             ActionPickerMenu.Instance.Hide(unlock);
         if (ActionParametersMenu.Instance.IsVisible())
             ActionParametersMenu.Instance.Hide();
+        if (ActionPointAimingMenu.Instance.IsVisible())
+            _ = ActionPointAimingMenu.Instance.Hide(unlock);
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
@@ -212,7 +274,7 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try {
             await Base.WebsocketManager.Instance.TemporaryPackage();
-            MenuManager.Instance.MainMenu.Close();
+            MainMenu.Instance.Close();
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
             Debug.LogError(ex);
@@ -241,9 +303,9 @@ public class LeftMenuProject : LeftMenu
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
         
-        BuildPackageButton.SetInteractivity(false, "Loading...");
-        SaveButton.SetInteractivity(false, "Loading...");
-        CloseButton.SetInteractivity(false, "Loading...");
+        BuildPackageButton.SetInteractivity(false, $"Build package\n(checking...)");
+        SaveButton.SetInteractivity(false, "Save project\n(checking...)");
+        CloseButton.SetInteractivity(false, "Close project\n(checking...)");
         if (SceneManager.Instance.SceneStarted) {
             WebsocketManager.Instance.StopScene(true, StopSceneCallback);
         } else {
@@ -252,10 +314,10 @@ public class LeftMenuProject : LeftMenu
 
         if (!ProjectManager.Instance.ProjectChanged) {
             BuildPackageButton.SetInteractivity(true);            
-            SaveButton.SetInteractivity(false, "There are no unsaved changes");
+            SaveButton.SetInteractivity(false, "Save project\n(there are no unsaved changes)");
         } else {
             WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
-            BuildPackageButton.SetInteractivity(false, "There are unsaved changes on project");
+            BuildPackageButton.SetInteractivity(false, "Build package\n(there are unsaved changes on project)");
             //RunButton.SetInteractivity(false, "There are unsaved changes on project");
             //RunButton2.SetInteractivity(false, "There are unsaved changes on project");
         }
@@ -278,6 +340,15 @@ public class LeftMenuProject : LeftMenu
             SaveButton.SetInteractivity(response.Result);
         }
     }
+    private void CopyActionPointDryRunCallback(string _, string data) {
+        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
+        if (response.Result) {
+            CopyButton.SetInteractivity(true);
+        } else {
+            CopyButton.SetInteractivity(false, response.Messages.FirstOrDefault());
+        }
+    }
+
     /*
     protected void CloseProjectCallback(string nothing, string data) {
         CloseProjectResponse response = JsonConvert.DeserializeObject<CloseProjectResponse>(data);
@@ -294,19 +365,19 @@ public class LeftMenuProject : LeftMenu
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
             selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
-            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null);
+            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);            
         } else if (selectedObject is Base.Action action) {
-            //
-            /*
-            Action3D action = (Action3D) selectedObject;
-            List<ActionParameter> parameters = new List<ActionParameter>();
-            foreach (Base.Parameter p in action.Parameters.Values) {
-                parameters.Add(new ActionParameter(p.ParameterMetadata.Name, p.ParameterMetadata.Type, p.Value));
-            }
-            WebsocketManager.Instance.AddAction(action.ActionPoint.GetId(), parameters, action.ActionProvider.GetProviderId() + "/" + action.Metadata.Name, action.GetName() + "_copy", action.GetFlows());*/
-
             AddNewActionDialog.InitFromAction(action);
             AddNewActionDialog.Open();
+        }
+    }
+
+    private void CopyActionPointCallback(string actionPointName, string data) {
+        CopyActionPointResponse response = JsonConvert.DeserializeObject<CopyActionPointResponse>(data);
+        if (response.Result) {
+            Notifications.Instance.ShowToastMessage($"Action point {actionPointName} was duplicated");
+        } else {
+            Notifications.Instance.ShowNotification("Failed to duplicate action point", response.Messages.FirstOrDefault());
         }
     }
 
@@ -338,7 +409,6 @@ public class LeftMenuProject : LeftMenu
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            //ActionPicker.SetActive(false);
             ActionPickerMenu.Instance.Hide();
         } else {
             if (await ActionPickerMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
@@ -361,9 +431,13 @@ public class LeftMenuProject : LeftMenu
     }
 
     public void AddActionPointUsingRobotClick() {
+        string armId = null;
+        if (SceneManager.Instance.SelectedRobot.MultiArm())
+            armId = SceneManager.Instance.SelectedArmId;
         CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
-            SceneManager.Instance.SelectedEndEffector.GetName());
+            SceneManager.Instance.SelectedEndEffector.GetName(),
+            armId);
     }
 
     /// <summary>
@@ -383,7 +457,7 @@ public class LeftMenuProject : LeftMenu
     }
 
 
-    private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId) {
+    private void CreateGlobalActionPointUsingRobot(string name, string robotId, string eeId, string armId) {
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(robotId) || string.IsNullOrEmpty(eeId)) {
             Notifications.Instance.ShowNotification("Failed to create new AP", "Some required parameter is missing");
             return;
@@ -391,7 +465,7 @@ public class LeftMenuProject : LeftMenu
 
         GameManager.Instance.ShowLoadingScreen("Adding AP...");
 
-        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback);
+        WebsocketManager.Instance.AddActionPointUsingRobot(name, eeId, robotId, false, AddActionPointUsingRobotCallback, armId);
         selectAPNameWhenCreated = name;
     }
 
@@ -406,14 +480,40 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
+    public async void ActionPointAimingClick() {
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionPointAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+        }
+
+        if (ActionPointAimingMenuButton.GetComponent<Image>().enabled) {
+            ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            _ = ActionPointAimingMenu.Instance.Hide(true);
+        } else {
+            if (await ActionPointAimingMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
+                ActionPointAimingMenuButton.GetComponent<Image>().enabled = true;
+                SelectorMenu.Instance.gameObject.SetActive(false);
+            } else {
+                Notifications.Instance.ShowNotification("Failed to open action picker", "Could not lock action point");
+            }
+
+        }
+    }
+
 
     public override void UpdateVisibility() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
-            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);            
         } else {
             UpdateVisibility(false);
         }
+    }
+
+    public override void UpdateVisibility(bool visible, bool force = false) {
+        base.UpdateVisibility(visible, force);
+        if (GameManager.Instance.GetGameState() == GameStateEnum.ProjectEditor)
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);
     }
 
     public async void ShowCloseProjectDialog() {
@@ -434,7 +534,7 @@ public class LeftMenuProject : LeftMenu
         GameManager.Instance.ShowLoadingScreen("Closing project..");
         _ = await GameManager.Instance.CloseProject(true);
         ConfirmationDialog.Close();
-        MenuManager.Instance.MainMenu.Close();
+        MainMenu.Instance.Close();
         GameManager.Instance.HideLoadingScreen();
     }
 

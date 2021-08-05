@@ -11,7 +11,7 @@ public class MainScreenMenu : MonoBehaviour
     public Toggle CloudAnchorToggle;
     public Toggle ServerCalibrationToggle;
 
-    public Toggle ControlBoxAutoCalibToggle;
+    public GameObject EditorSettingsAutoCalibToggle;
 
     private void Start() {
         Debug.Assert(ConnectionString != null);
@@ -34,8 +34,10 @@ public class MainScreenMenu : MonoBehaviour
     }
 
     public void UseServerCalibration(bool useServer) {
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         CalibrationManager.Instance.UseServerCalibration(useServer);
-        ControlBoxAutoCalibToggle.gameObject.SetActive(useServer);
+        EditorSettingsAutoCalibToggle.gameObject.SetActive(useServer);
+#endif
     }
 
     private void OnDestroy() {

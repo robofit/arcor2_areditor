@@ -24,6 +24,7 @@ public class ToastMessage : Base.Singleton<ToastMessage>
             }
 #elif UNITY_STANDALONE || !AR_ON
         text.text = message;
+        StopAllCoroutines();
         StartCoroutine(ShowToast());
         StartCoroutine(HideToast(duration));
 #endif

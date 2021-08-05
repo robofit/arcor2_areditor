@@ -105,6 +105,9 @@ namespace Base {
         public event AREditorEventArgs.RobotMoveToActionPointJointsEventHandler OnRobotMoveToActionPointJointsEvent;
         public event AREditorEventArgs.SceneStateHandler OnSceneStateEvent;
 
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterAdded;
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterUpdated;
+        public event AREditorEventArgs.ProjectParameterEventHandler OnProjectParameterRemoved;
 
         /// <summary>
         /// event regarding calibration of camera or robot
@@ -396,6 +399,9 @@ namespace Base {
                         break;
                     case "ProcessState":
                         HandleProcessState(data);
+                        break;
+                    case "ProjectParameterChanged":
+                        HandleProjectParameterChanged(data);
                         break;
                     default:
                         Debug.LogError(data);
@@ -1004,6 +1010,26 @@ namespace Base {
             OnProcessStateEvent?.Invoke(this, new ProcessStateEventArgs(processState.Data));
         }
 
+        private void HandleProjectParameterChanged(string data) {
+            IO.Swagger.Model.ProjectParameterChanged projectParameterChanged = JsonConvert.DeserializeObject<ProjectParameterChanged>(data);
+            switch (projectParameterChanged.ChangeType) {
+                case ProjectParameterChanged.ChangeTypeEnum.Add:
+                    OnProjectParameterAdded?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
+                    break;
+                case ProjectParameterChanged.ChangeTypeEnum.Update:
+                    OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
+                    break;
+                case ProjectParameterChanged.ChangeTypeEnum.Remove:
+                    OnProjectParameterRemoved?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
+                    break;
+                case ProjectParameterChanged.ChangeTypeEnum.Updatebase:
+                    OnProjectParameterUpdated?.Invoke(this, new ProjectParameterEventArgs(projectParameterChanged.Data));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
         /// <summary>
         /// Loads object types from server. Throws RequestFailedException when request failed
         /// </summary>
@@ -1078,9 +1104,9 @@ namespace Base {
         /// <param name="packageId">Id of package</param>
         /// <param name="cleanupAfterRun"></param>
         /// <returns></returns>
-        public async Task RunPackage(string packageId, bool cleanupAfterRun = true) {
+        public async Task RunPackage(string packageId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId, cleanupAfterRun: cleanupAfterRun);
+            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
@@ -1106,13 +1132,12 @@ namespace Base {
         /// Asks server to stop currently executed package. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns></returns>
-        public async Task StopPackage() {
+        public void StopPackage(UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            SendDataToServer(request.ToJson(), r_id, false);
+            
         }
 
         /// <summary>
@@ -1149,10 +1174,10 @@ namespace Base {
         /// <param name="robotId">Id of robot</param>
         /// <param name="endEffectorId">Id of end effector</param>
         /// <returns></returns>
-        public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId) {
+        public async Task UpdateActionPointUsingRobot(string actionPointId, string robotId, string endEffectorId, string armId = null) {
 
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId, armId: armId);
             IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointUsingRobotRequestArgs(actionPointId: actionPointId,
                 robot: robotArg);
             IO.Swagger.Model.UpdateActionPointUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointUsingRobotRequest(id: r_id, request: "UpdateActionPointUsingRobot", args);
@@ -1195,10 +1220,10 @@ namespace Base {
         /// point on object model to match end effector tip.</param>
         /// <returns></returns>
         public async Task UpdateActionObjectPoseUsingRobot(string actionObjectId, string robotId, string endEffectorId,
-            IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum pivot) {
+            IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum pivot, string armId = null) {
 
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffectorId, armId: armId);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs
                 (id: actionObjectId, robot: robotArg, pivot: pivot);
             IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest request = new IO.Swagger.Model.UpdateObjectPoseUsingRobotRequest
@@ -1233,13 +1258,13 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="endEffector">ID of end effector</param>
         /// <returns></returns>
-        public async Task StartObjectFocusing(string objectId, string robotId, string endEffector) {
+        public async Task ObjectAimingStart(string objectId, string robotId, string endEffector, string armId = null, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector, robotId);
-            IO.Swagger.Model.FocusObjectStartRequestArgs args = new IO.Swagger.Model.FocusObjectStartRequestArgs(objectId: objectId, robot: robotArg);
-            IO.Swagger.Model.FocusObjectStartRequest request = new IO.Swagger.Model.FocusObjectStartRequest(id: r_id, request: "FocusObjectStart", args: args);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(armId: armId, endEffector:endEffector, robotId: robotId);
+            IO.Swagger.Model.ObjectAimingStartRequestArgs args = new IO.Swagger.Model.ObjectAimingStartRequestArgs(objectId: objectId, robot: robotArg);
+            IO.Swagger.Model.ObjectAimingStartRequest request = new IO.Swagger.Model.ObjectAimingStartRequest(id: r_id, request: "ObjectAimingStart", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectStartResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectStartResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingStartResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingStartResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1251,12 +1276,29 @@ namespace Base {
         /// <param name="objectId">Action object ID</param>
         /// <param name="pointIdx">ID of currently selected focus point</param>
         /// <returns></returns>
-        public async Task SavePosition(string objectId, int pointIdx) {
+        public async Task<List<int>> ObjectAimingAddPoint(int pointIdx, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.FocusObjectRequestArgs args = new IO.Swagger.Model.FocusObjectRequestArgs(objectId: objectId, pointIdx: pointIdx);
-            IO.Swagger.Model.FocusObjectRequest request = new IO.Swagger.Model.FocusObjectRequest(id: r_id, request: "FocusObject", args: args);
+            IO.Swagger.Model.ObjectAimingAddPointRequestArgs args = new IO.Swagger.Model.ObjectAimingAddPointRequestArgs(pointIdx: pointIdx);
+            IO.Swagger.Model.ObjectAimingAddPointRequest request = new IO.Swagger.Model.ObjectAimingAddPointRequest(id: r_id, request: "ObjectAimingAddPoint", args: args, dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingAddPointResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingAddPointResponse>(r_id);
+            if (response == null || !response.Result)
+                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            else
+                return response.Data.FinishedIndexes;
+        }
+
+        /// <summary>
+        /// Called when all points are selected, asking server to compute pose of object.
+        /// Throws RequestFailedException when request failed
+        /// </summary>
+        /// <param name="objectId">Action object ID</param>
+        /// <returns></returns>
+        public async Task ObjectAimingDone(bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.ObjectAimingDoneRequest request = new IO.Swagger.Model.ObjectAimingDoneRequest(id: r_id, request: "ObjectAimingDone", dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.ObjectAimingDoneResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingDoneResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1267,12 +1309,11 @@ namespace Base {
         /// </summary>
         /// <param name="objectId">Action object ID</param>
         /// <returns></returns>
-        public async Task FocusObjectDone(string objectId) {
+        public async Task CancelObjectAiming(bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: objectId);
-            IO.Swagger.Model.FocusObjectDoneRequest request = new IO.Swagger.Model.FocusObjectDoneRequest(id: r_id, request: "FocusObjectDone", args: args);
+            IO.Swagger.Model.ObjectAimingCancelRequest request = new IO.Swagger.Model.ObjectAimingCancelRequest(id: r_id, request: "ObjectAimingCancel", dryRun: dryRun);
             SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.FocusObjectDoneResponse response = await WaitForResult<IO.Swagger.Model.FocusObjectDoneResponse>(r_id);
+            IO.Swagger.Model.ObjectAimingCancelResponse response = await WaitForResult<IO.Swagger.Model.ObjectAimingCancelResponse>(r_id);
             if (response == null || !response.Result)
                 throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
         }
@@ -1676,10 +1717,10 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="dryRun"></param>
         /// <param name="callback"></param>
-        public void AddActionPointUsingRobot(string name, string endEffectorId, string robotId, bool dryRun, UnityAction<string, string> callback) {
+        public void AddActionPointUsingRobot(string name, string endEffectorId, string robotId, bool dryRun, UnityAction<string, string> callback, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
             responsesCallback.Add(r_id, Tuple.Create("", callback));
-            AddApUsingRobotRequestArgs args = new AddApUsingRobotRequestArgs(endEffectorId: endEffectorId, name: name, robotId: robotId);
+            AddApUsingRobotRequestArgs args = new AddApUsingRobotRequestArgs(endEffectorId: endEffectorId, name: name, robotId: robotId, armId: armId);
             IO.Swagger.Model.AddApUsingRobotRequest request = new IO.Swagger.Model.AddApUsingRobotRequest(r_id, "AddApUsingRobot", args, dryRun);
             SendDataToServer(request.ToJson(), r_id, false);
         }
@@ -1803,9 +1844,9 @@ namespace Base {
         /// <param name="endEffector">ID of end effector</param>
         /// <param name="name">Human readable name of orientation</param>
         /// <returns></returns>
-        public async Task AddActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string name) {
+        public async Task AddActionPointOrientationUsingRobot(string id, string robotId, string endEffector, string name, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(endEffector, robotId);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(armId: armId, endEffector: endEffector, robotId: robotId);
             IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequestArgs(actionPointId: id, robot: robotArg, name: name);
             IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.AddActionPointOrientationUsingRobotRequest(r_id, "AddActionPointOrientationUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -1824,9 +1865,9 @@ namespace Base {
         /// <param name="endEffector">ID of end effector</param>
         /// <param name="orientationId">UUID of orientation</param>
         /// <returns></returns>
-        public async Task UpdateActionPointOrientationUsingRobot(string robotId, string endEffector, string orientationId) {
+        public async Task UpdateActionPointOrientationUsingRobot(string robotId, string endEffector, string orientationId, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffector);
+            IO.Swagger.Model.RobotArg robotArg = new IO.Swagger.Model.RobotArg(robotId: robotId, endEffector: endEffector, armId: armId);
             IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs args = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequestArgs(robot: robotArg, orientationId: orientationId);
             IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest request = new IO.Swagger.Model.UpdateActionPointOrientationUsingRobotRequest(r_id, "UpdateActionPointOrientationUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -1843,9 +1884,9 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="name">Human readable name of joints</param>
         /// <returns></returns>
-        public async Task AddActionPointJoints(string id, string robotId, string name) {
+        public async Task AddActionPointJoints(string id, string robotId, string name, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs(actionPointId: id, robotId: robotId, name: name);
+            IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs args = new IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs(actionPointId: id, robotId: robotId, name: name, armId: armId);
             IO.Swagger.Model.AddActionPointJointsUsingRobotRequest request = new IO.Swagger.Model.AddActionPointJointsUsingRobotRequest(r_id, "AddActionPointJointsUsingRobot", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.AddActionPointJointsUsingRobotResponse response = await WaitForResult<IO.Swagger.Model.AddActionPointJointsUsingRobotResponse>(r_id);
@@ -1937,9 +1978,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="jointsId">ID of joints on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId, bool safe) {
+        public async Task MoveToActionPointJoints(string robotId, decimal speed, string jointsId, bool safe, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId, safe: safe);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: null, speed: speed, orientationId: null, jointsId: jointsId, safe: safe, armId: armId);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RenameActionPointJointsResponse response = await WaitForResult<IO.Swagger.Model.RenameActionPointJointsResponse>(r_id);
@@ -1957,9 +1998,9 @@ namespace Base {
         /// <param name="speed">Speed of movement in interval 0..1</param>
         /// <param name="orientationId">ID of orientation on selected action point</param>
         /// <returns></returns>
-        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId, bool safe) {
+        public async Task MoveToActionPointOrientation(string robotId, string endEffectorId, decimal speed, string orientationId, bool safe, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null, safe: safe);
+            IO.Swagger.Model.MoveToActionPointRequestArgs args = new IO.Swagger.Model.MoveToActionPointRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientationId: orientationId, jointsId: null, safe: safe, armId: armId);
             IO.Swagger.Model.MoveToActionPointRequest request = new IO.Swagger.Model.MoveToActionPointRequest(r_id, "MoveToActionPoint", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.MoveToActionPointResponse response = await WaitForResult<IO.Swagger.Model.MoveToActionPointResponse>(r_id);
@@ -1977,9 +2018,9 @@ namespace Base {
         /// <param name="position">Position in world frame</param>
         /// <param name="orientation">Orientation in world frame</param>
         /// <returns></returns>
-        public async Task MoveToPose(string robotId, string endEffectorId, decimal speed, Position position, Orientation orientation) {
+        public async Task MoveToPose(string robotId, string endEffectorId, decimal speed, Position position, Orientation orientation, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.MoveToPoseRequestArgs args = new IO.Swagger.Model.MoveToPoseRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientation: orientation, position: position);
+            IO.Swagger.Model.MoveToPoseRequestArgs args = new IO.Swagger.Model.MoveToPoseRequestArgs(robotId: robotId, endEffectorId: endEffectorId, speed: speed, orientation: orientation, position: position, armId: armId);
             IO.Swagger.Model.MoveToPoseRequest request = new IO.Swagger.Model.MoveToPoseRequest(r_id, "MoveToPose", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.MoveToPoseResponse response = await WaitForResult<IO.Swagger.Model.MoveToPoseResponse>(r_id);
@@ -2226,9 +2267,9 @@ namespace Base {
         /// <param name="robotId">ID of robot</param>
         /// <param name="endeffectorId">ID of end effector</param>
         /// <returns></returns>
-        public async Task<IO.Swagger.Model.Pose> GetEndEffectorPose(string robotId, string endeffectorId) {
+        public async Task<IO.Swagger.Model.Pose> GetEndEffectorPose(string robotId, string endeffectorId, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.GetEndEffectorPoseRequestArgs args = new IO.Swagger.Model.GetEndEffectorPoseRequestArgs(robotId: robotId, endEffectorId: endeffectorId);
+            IO.Swagger.Model.GetEndEffectorPoseRequestArgs args = new IO.Swagger.Model.GetEndEffectorPoseRequestArgs(robotId: robotId, endEffectorId: endeffectorId, armId: armId);
             IO.Swagger.Model.GetEndEffectorPoseRequest request = new IO.Swagger.Model.GetEndEffectorPoseRequest(r_id, "GetEndEffectorPose", args);
             SendDataToServer(request.ToJson(), r_id, true, false);
             IO.Swagger.Model.GetEndEffectorPoseResponse response = await WaitForResult<IO.Swagger.Model.GetEndEffectorPoseResponse>(r_id);
@@ -2274,9 +2315,9 @@ namespace Base {
         }
 
 
-        public async Task<List<string>> GetEndEffectors(string robotId) {
+        public async Task<List<string>> GetEndEffectors(string robotId, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            GetEndEffectorsRequestArgs args = new GetEndEffectorsRequestArgs(robotId: robotId);
+            GetEndEffectorsRequestArgs args = new GetEndEffectorsRequestArgs(robotId: robotId, armId: armId);
             IO.Swagger.Model.GetEndEffectorsRequest request = new IO.Swagger.Model.GetEndEffectorsRequest(r_id, "GetEndEffectors", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.GetEndEffectorsResponse response = await WaitForResult<IO.Swagger.Model.GetEndEffectorsResponse>(r_id);
@@ -2286,6 +2327,21 @@ namespace Base {
                 return response.Data;
             }
         }
+
+        public async Task<List<string>> GetRobotArms(string robotId) {
+            int r_id = Interlocked.Increment(ref requestID);
+            GetRobotArmsRequestArgs args = new GetRobotArmsRequestArgs(robotId: robotId);
+            IO.Swagger.Model.GetRobotArmsRequest request = new IO.Swagger.Model.GetRobotArmsRequest(r_id, "GetRobotArms", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.GetRobotArmsResponse response = await WaitForResult<IO.Swagger.Model.GetRobotArmsResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to get robot arms" } : response.Messages);
+            } else {
+                return response.Data;
+            }
+        }
+
+
 
         public async Task StartScene(bool dryRun) {
             int r_id = Interlocked.Increment(ref requestID);
@@ -2365,10 +2421,10 @@ namespace Base {
             }
         }
 
-        public async Task<IO.Swagger.Model.Pose> ForwardKinematics(string robotId, string endEffectorId, List<IO.Swagger.Model.Joint> joints) {
+        public async Task<IO.Swagger.Model.Pose> ForwardKinematics(string robotId, string endEffectorId, List<IO.Swagger.Model.Joint> joints, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.ForwardKinematicsRequestArgs args = new ForwardKinematicsRequestArgs(robotId: robotId,
-                endEffectorId: endEffectorId, joints: joints);
+                endEffectorId: endEffectorId, joints: joints, armId: armId);
 
             IO.Swagger.Model.ForwardKinematicsRequest request = new IO.Swagger.Model.ForwardKinematicsRequest(r_id, "ForwardKinematics", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -2402,7 +2458,7 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.CalibrateCameraResponse response = await WaitForResult<IO.Swagger.Model.CalibrateCameraResponse>(r_id);
             if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate robot" } : response.Messages);
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to calibrate camera" } : response.Messages);
             }
         }
 
@@ -2507,9 +2563,9 @@ namespace Base {
             }
         }
 
-        public async Task HandTeachingMode(string robotId, bool enable) {
+        public async Task HandTeachingMode(string robotId, bool enable, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.HandTeachingModeRequestArgs args = new HandTeachingModeRequestArgs(enable: enable, robotId: robotId);
+            IO.Swagger.Model.HandTeachingModeRequestArgs args = new HandTeachingModeRequestArgs(enable: enable, robotId: robotId, armId: armId);
 
             IO.Swagger.Model.HandTeachingModeRequest request = new IO.Swagger.Model.HandTeachingModeRequest(r_id, "HandTeachingMode", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
@@ -2519,23 +2575,21 @@ namespace Base {
             }
         }
 
-        public async Task CopyActionPoint(string actionPointId, Position position) {
+        public void CopyActionPoint(string actionPointId, Position position, string originalActionPointName, UnityAction<string, string> callback, bool dryRun = false) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.CopyActionPointRequestArgs args = new CopyActionPointRequestArgs(id: actionPointId, position: position);
+            IO.Swagger.Model.CopyActionPointRequest request = new IO.Swagger.Model.CopyActionPointRequest(r_id, "CopyActionPoint", args: args, dryRun: dryRun);
 
-            IO.Swagger.Model.CopyActionPointRequest request = new IO.Swagger.Model.CopyActionPointRequest(r_id, "CopyActionPoint", args: args);
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.CopyActionPointResponse response = await WaitForResult<IO.Swagger.Model.CopyActionPointResponse>(r_id);
-            if (response == null || !response.Result) {
-                throw new RequestFailedException(response == null ? new List<string>() { "Failed to copy action point" } : response.Messages);
-            }
+            responsesCallback.Add(r_id, Tuple.Create(originalActionPointName, callback));
+            SendDataToServer(request.ToJson(), r_id, false);
+
         }
 
 
         public async Task StepRobotEef(StepRobotEefRequestArgs.AxisEnum axis, string endEffectorId, bool safe, string robotId, decimal speed, decimal step,
-            StepRobotEefRequestArgs.WhatEnum what, StepRobotEefRequestArgs.ModeEnum mode = StepRobotEefRequestArgs.ModeEnum.World) {
+            StepRobotEefRequestArgs.WhatEnum what, StepRobotEefRequestArgs.ModeEnum mode = StepRobotEefRequestArgs.ModeEnum.World, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.StepRobotEefRequestArgs args = new StepRobotEefRequestArgs(axis: axis, endEffectorId: endEffectorId, mode: mode, robotId: robotId, safe: safe, speed: speed, step: step, what: what);
+            IO.Swagger.Model.StepRobotEefRequestArgs args = new StepRobotEefRequestArgs(axis: axis, endEffectorId: endEffectorId, mode: mode, robotId: robotId, safe: safe, speed: speed, step: step, what: what, armId: armId);
             IO.Swagger.Model.StepRobotEefRequest request = new IO.Swagger.Model.StepRobotEefRequest(r_id, "StepRobotEef", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.StepRobotEefResponse response = await WaitForResult<IO.Swagger.Model.StepRobotEefResponse>(r_id);
@@ -2543,9 +2597,9 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to step robot" } : response.Messages);
             }
         }
-        public async Task SetEefPerpendicularToWorld(string robotId, string eeId, decimal speed, bool safe) {
+        public async Task SetEefPerpendicularToWorld(string robotId, string eeId, decimal speed, bool safe, string armId = null) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs args = new SetEefPerpendicularToWorldRequestArgs(robotId: robotId, endEffectorId: eeId, safe: safe, speed: speed);
+            IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs args = new SetEefPerpendicularToWorldRequestArgs(robotId: robotId, endEffectorId: eeId, safe: safe, speed: speed, armId: armId);
             IO.Swagger.Model.SetEefPerpendicularToWorldRequest request = new SetEefPerpendicularToWorldRequest(r_id, "SetEefPerpendicularToWorld", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.SetEefPerpendicularToWorldResponse response = await WaitForResult<IO.Swagger.Model.SetEefPerpendicularToWorldResponse>(r_id);
@@ -2562,6 +2616,64 @@ namespace Base {
             IO.Swagger.Model.RegisterUserResponse response = await WaitForResult<IO.Swagger.Model.RegisterUserResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to register user" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Add project project parameter
+        /// </summary>
+        /// <param name="name">Name of the project project parameter</param>
+        /// <param name="type">Type of the project parameter. As of now, 4 types are supported: str, int, bool, float</param>
+        /// <param name="value">Value of the project parameter. It needs to be formatted as JSON</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task AddProjectParameter(string name, string type, string value, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.AddProjectParameterRequestArgs args = new AddProjectParameterRequestArgs(name, type, value);
+
+            IO.Swagger.Model.AddProjectParameterRequest request = new IO.Swagger.Model.AddProjectParameterRequest(r_id, "AddProjectParameter", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.AddProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.AddProjectParameterResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to add project parameter" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Updates project parameter (type cannot be changed)
+        /// </summary>
+        /// <param name="id">ID of project parameter</param>
+        /// <param name="name">New name of project parameter</param>
+        /// <param name="value">New value of project parameter in JSON format</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task UpdateProjectParameter(string id, string name, string value, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateProjectParameterRequestArgs args = new UpdateProjectParameterRequestArgs(id, name, value);
+
+            IO.Swagger.Model.UpdateProjectParameterRequest request = new IO.Swagger.Model.UpdateProjectParameterRequest(r_id, "UpdateProjectParameter", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.UpdateProjectParameterResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update project parameter" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Removes project parameter
+        /// </summary>
+        /// <param name="id">ID of project parameter to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task RemoveProjectParameter(string id, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.RemoveProjectParameterRequestArgs args = new RemoveProjectParameterRequestArgs(id);
+
+            IO.Swagger.Model.RemoveProjectParameterRequest request = new IO.Swagger.Model.RemoveProjectParameterRequest(r_id, "RemoveProjectParameter", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.RemoveProjectParameterResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove project parameter" } : response.Messages);
             }
         }
     }

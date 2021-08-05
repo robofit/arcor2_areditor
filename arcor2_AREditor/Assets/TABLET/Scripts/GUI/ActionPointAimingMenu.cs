@@ -2,34 +2,31 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Base;
 using DanielLochner.Assets.SimpleSideMenu;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
+using RuntimeInspectorNamespace;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-[RequireComponent(typeof(SimpleSideMenu))]
-public class ActionPointAimingMenu : MonoBehaviour, IMenu {
+public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     public Base.ActionPoint CurrentActionPoint;
 
-    public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList;
+    public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList, ContainerPosition, ContainerOrientations, ContainerJoints,
+        AddOrientationContainer, AddJointsContainer, OrientationJointsDetailContainer, RobotPickBlock;
 
     [SerializeField]
-    private TMPro.TMP_Text ActionPointName, OrientationsListLabel, JointsListLabel;
+    private TMPro.TMP_Text OrientationsListLabel, JointsListLabel;
 
     [SerializeField]
     private ActionButton OrientationManualDefaultButton;
 
     [SerializeField]
-    private Button AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn;
-
-    [SerializeField]
-    private TooltipContent UpdatePositionUsingRobotTooltip, AddOrientationUsingRobotTooltip, AddJointsTooltip;
-
-    public DropdownParameter PositionRobotsList, JointsRobotsList, PositionEndEffectorList;
+    private ButtonWithTooltip AddOrientationUsingRobotButton, AddJointsButton, UpdatePositionUsingRobotBtn, UpdatePositionUsingRobotBtn2;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -47,11 +44,19 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private PositionManualEdit PositionManualEdit;
 
-    private SimpleSideMenu SideMenu;
+    public CanvasGroup CanvasGroup;
+
+    public TMPro.TMP_Text SelectedRobot, SelectedArm, SelectedEE;
+
+    private enum StateEnum {
+        Position,
+        Orientations,
+        Joints
+    }
+
+    private StateEnum State;
 
     private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
-        WebsocketManager.Instance.OnActionPointUpdated += OnActionPointUpdated;
         WebsocketManager.Instance.OnActionPointBaseUpdated += OnActionPointBaseUpdated;
 
         // TODO: subscribe only when menu is opened
@@ -63,15 +68,89 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         WebsocketManager.Instance.OnActionPointJointsBaseUpdated += OnActionPointJointsBaseUpdated;
         WebsocketManager.Instance.OnActionPointJointsUpdated += OnActionPointJointsUpdated;
         WebsocketManager.Instance.OnActionPointJointsRemoved += OnActionPointJointsRemoved;
+        SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+    }
+
+    private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
+        UpdateMenu();
+    }
+
+    public async Task<bool> Show(Base.ActionPoint actionPoint) {
+
+        CurrentActionPoint = actionPoint;
+        if (!await actionPoint.WriteLock(true))
+            return false;
+        OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
+        UpdateMenu();
+        
+        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+        return true;
+    }
+    public async Task<bool> Show(Base.ActionPoint actionPoint, string preselectedOrientation) {
+        if (!await Show(actionPoint))
+            return false;
+
+        try {
+
+            OpenDetailMenu(actionPoint.GetOrientation(preselectedOrientation));
+            return true;
+        } catch (KeyNotFoundException ex) {
+            Notifications.Instance.ShowNotification("Unable to open detail menu", ex.Message);
+            return false;
+        }
+    }
+
+    public async Task Hide(bool unlockAP = false) {
+        if (unlockAP)
+            await CurrentActionPoint.WriteUnlock();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    }
+
+    public bool IsVisible() {
+        return CanvasGroup.alpha > 0;
+    }
+
+    public void SwitchToPosition() {
+        AddOrientationContainer.SetActive(false);
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(true);
+        State = StateEnum.Position;
+    }
+
+    public void SwitchToOrientations() {
+        AddOrientationContainer.SetActive(false);
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerPosition.SetActive(false);
+        ContainerOrientations.SetActive(true);
+        State = StateEnum.Orientations;
+    }
+
+    public void SwitchToJoints() {
+        AddOrientationContainer.SetActive(false);
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(false);
+        ContainerJoints.SetActive(true);
+        State = StateEnum.Joints;
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible() && ContainerJoints.activeInHierarchy)
             return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
+            Debug.LogError(btn.GetLabel());
             btn.GetComponent<TooltipContent>().enabled = !args.Data.IsValid;
-            btn.GetComponentInParent<ServiceButton>().State = args.Data.IsValid;
+            btn.transform.parent.GetComponent<ServiceButton>().State = args.Data.IsValid;
 
         } catch (ItemNotFoundException) {
             // not currently opened action point
@@ -79,16 +158,16 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible())
             return;
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
-        UpdateJointsDynamicList((string) JointsRobotsList.GetValue());  //because of possible invalidation of joints
+        UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedArmId);  //because of possible invalidation of joints
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible())
             return;
         try {
             ActionButton btn = GetButton(args.Data, JointsDynamicList);
@@ -101,7 +180,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible())
             return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
@@ -112,17 +191,16 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Closed ||
-                args.ActionPointId != CurrentActionPoint.GetId())
+        if (!IsVisible() || args.ActionPointId != CurrentActionPoint.GetId())
             return;
-        if (SceneManager.Instance.GetRobot(args.Data.RobotId).GetName() == (string) JointsRobotsList.GetValue()) {
-            var btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
+        if (args.Data.RobotId == SceneManager.Instance.SelectedRobot.GetId()) {
+            ServiceButton btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
             btn.GetComponentInChildren<ActionButton>().Highlight(2f);
         }
     }
 
     private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible())
             return;
         try {
             ActionButton btn = GetButton(args.Data, OrientationsDynamicList);
@@ -136,7 +214,7 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OnActionPointOrientationBaseUpdated(object sender, ActionPointOrientationEventArgs args) {
 
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState != SimpleSideMenu.State.Open)
+        if (!IsVisible())
             return;
         try {
             CurrentActionPoint.GetOrientation(args.Data.Id);
@@ -149,108 +227,90 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
 
-        if (MenuManager.Instance.ActionPointAimingMenu.CurrentState == SimpleSideMenu.State.Open &&
-                CurrentActionPoint.Data.Id == args.ActionPointId) {
+        if (IsVisible() && CurrentActionPoint.Data.Id == args.ActionPointId) {
             CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }
     }
 
-    private void OnActionPointUpdated(object sender, ProjectActionPointEventArgs args) {
-        if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
-            return;
-        ActionPointName.text = args.ActionPoint.Name;
-    }
-
     public async void UpdateMenu() {
         if (CurrentActionPoint == null)
             return;
-        ActionPointName.text = CurrentActionPoint.Data.Name;
-
-        CustomDropdown positionRobotsListDropdown = PositionRobotsList.Dropdown;
-        positionRobotsListDropdown.dropdownItems.Clear();
-        await PositionRobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        if (!SceneManager.Instance.SceneStarted || positionRobotsListDropdown.dropdownItems.Count == 0) {
-            PositionRobotsList.gameObject.SetActive(false);
-            PositionEndEffectorList.gameObject.SetActive(false);
-            UpdatePositionUsingRobotBtn.interactable = false;
-            AddOrientationUsingRobotButton.interactable = false;
-        } else {
-            PositionRobotsList.gameObject.SetActive(true);
-            PositionEndEffectorList.gameObject.SetActive(true);
-            UpdatePositionUsingRobotBtn.interactable = true;
-            AddOrientationUsingRobotButton.interactable = true;
-            OnRobotChanged((string) PositionRobotsList.GetValue());
-        }
-
+        CloseAnySubmenu();        
+         
         PositionExpertModeBlock.SetActive(GameManager.Instance.ExpertMode);
+        RobotPickBlock.SetActive(!GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
-
-        JointsRobotsList.Dropdown.dropdownItems.Clear();
-        await JointsRobotsList.gameObject.GetComponent<DropdownRobots>().Init(UpdateJointsDynamicList, false);
-        if (JointsRobotsList.Dropdown.dropdownItems.Count > 0) {
-            JointsRobotsList.gameObject.SetActive(true);
+        if (SceneManager.Instance.IsRobotSelected()) {
             JointsDynamicList.SetActive(true);
-            UpdateJointsDynamicList((string) JointsRobotsList.GetValue());
+            if (SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected()) {
+                UpdateJointsDynamicList(SceneManager.Instance.SelectedArmId);
+            } else {
+                UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), null);
+            }
         } else {
-            JointsRobotsList.gameObject.SetActive(false);
             JointsDynamicList.SetActive(false);
         }
-        if (SceneManager.Instance.SceneStarted) {
-            AddJointsButton.interactable = true;
-        } else {
-            AddJointsButton.interactable = false;
-        }
+        
 
         UpdateOrientationsDynamicList();
-        this.gameObject.SetActive(true); //so the couroutine can be started for sure
-        StartCoroutine(UpdateTooltips());
-    }
-
-
-    private IEnumerator UpdateTooltips() {
-        yield return new WaitForSeconds(0.1f); //fixes a bug, when after the first collapsing of collapsable menu there is no tooltip
 
         const string noRobot = "There is no robot in the scene";
         const string sceneNotStarted = "To add using robot, go online";
+        const string eeNotSelected = "End effector is not selected";
+        UpdatePositionUsingRobotBtn.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
+        UpdatePositionUsingRobotBtn2.SetInteractivity(UpdatePositionUsingRobotBtn.IsInteractive());
+        AddOrientationUsingRobotButton.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
+        AddJointsButton.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene not started");
 
         if (!SceneManager.Instance.RobotInScene()) {
-            UpdatePositionUsingRobotTooltip.description = noRobot;
-            AddOrientationUsingRobotTooltip.description = noRobot;
-            AddJointsTooltip.description = noRobot;
-            UpdatePositionUsingRobotTooltip.enabled = true;
-            AddOrientationUsingRobotTooltip.enabled = true;
-            AddJointsTooltip.enabled = true;
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, noRobot);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, noRobot);
+            AddOrientationUsingRobotButton.SetInteractivity(false, noRobot);
+            AddJointsButton.SetInteractivity(false, noRobot);
             JointsListLabel.text = "To show joints list, add a robot to the scene";
         } else if (!SceneManager.Instance.SceneStarted) {
-            UpdatePositionUsingRobotTooltip.description = "To update using robot, go online";
-            AddOrientationUsingRobotTooltip.description = sceneNotStarted;
-            AddJointsTooltip.description = sceneNotStarted;
-            UpdatePositionUsingRobotTooltip.enabled = true;
-            AddOrientationUsingRobotTooltip.enabled = true;
-            AddJointsTooltip.enabled = true;
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, "To update using robot, go online");
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, "To update using robot, go online");
+            AddOrientationUsingRobotButton.SetInteractivity(false, sceneNotStarted);
+            AddJointsButton.SetInteractivity(false, sceneNotStarted);
             JointsListLabel.text = "List of joints:";
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            UpdatePositionUsingRobotBtn.SetInteractivity(false, eeNotSelected);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(false, eeNotSelected);
+            AddOrientationUsingRobotButton.SetInteractivity(false, eeNotSelected);
+            AddJointsButton.SetInteractivity(SceneManager.Instance.IsRobotSelected(), "Robot is not selected");
+            if (SceneManager.Instance.IsRobotSelected())
+                JointsListLabel.text = "List of joints:";
+            else
+                JointsListLabel.text = "To show joints list, select robot";
         } else {
-            UpdatePositionUsingRobotTooltip.enabled = false;
-            AddOrientationUsingRobotTooltip.enabled = false;
-            AddJointsTooltip.enabled = false;
+            UpdatePositionUsingRobotBtn.SetInteractivity(true);
+            UpdatePositionUsingRobotBtn2.SetInteractivity(true);
+            AddOrientationUsingRobotButton.SetInteractivity(true);
+            AddJointsButton.SetInteractivity(true);
             JointsListLabel.text = "List of joints:";
         }
-    }
 
-    private async void OnRobotChanged(string robot_name) {
-        PositionEndEffectorList.Dropdown.dropdownItems.Clear();
-
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await PositionEndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
-
-        } catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
+        if (!SceneManager.Instance.SceneStarted) {
+            SelectedRobot.text = "Robot is offline";
+            SelectedEE.text = "";
+            SelectedArm.text = "";
+        } else if (SceneManager.Instance.IsRobotSelected()) {
+            SelectedRobot.text = $"Robot: {SceneManager.Instance.SelectedRobot.GetName()}";
+            SelectedArm.text = $"Arm: {SceneManager.Instance.SelectedArmId}";
+            if (SceneManager.Instance.IsRobotAndEESelected()) {
+                SelectedEE.text = $"End effector: {SceneManager.Instance.SelectedEndEffector.GetName()}";
+                           
+            } else {
+                SelectedEE.text = "End effector: not selected";
+            }
+        } else {
+            SelectedRobot.text = "Robot: not selected";
+            SelectedEE.text = "End effector: not selected";
+            SelectedArm.text = "Arm: not selected";
         }
-
     }
 
     public void ShowUpdatePositionConfirmationDialog() {
@@ -269,16 +329,26 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
             if (position != null) {
                 await WebsocketManager.Instance.UpdateActionPointPosition(CurrentActionPoint.GetId(), position);
             } else {
-                string robotId = SceneManager.Instance.RobotNameToId(PositionRobotsList.Dropdown.selectedText.text);
-                string endEffectorId = PositionEndEffectorList.Dropdown.selectedText.text;
+                string armId = null;
+                if (SceneManager.Instance.SelectedRobot.MultiArm())
+                    armId = SceneManager.Instance.SelectedArmId;
+                
 
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), robotId, endEffectorId);
-                confirmationDialog.Close();
+                /*
+                if (! await SceneManager.Instance.SelectedRobot.WriteLock(false)) {
+                    Notifications.Instance.ShowNotification("Failed to update position", "Robot could not be locked");
+                    return;
+                }*/
+                
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
+                await SceneManager.Instance.SelectedRobot.WriteUnlock();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
         } catch (RequestFailedException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Update position failed", ex.Message);
+        } finally {
+            confirmationDialog.Close();
         }
     }
 
@@ -286,30 +356,9 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
         UpdateActionPointPosition(PositionManualEdit.GetPosition());
     }
 
-    public void ShowMenu(Base.ActionPoint actionPoint) {
-        CurrentActionPoint = actionPoint;
-        OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
-        UpdateMenu();
-        SideMenu.Open();
-    }
 
-    public void ShowMenu(Base.ActionPoint actionPoint, string preselectedOrientation) {
-        ShowMenu(actionPoint);
 
-        try {
-            
-            OpenDetailMenu(actionPoint.GetOrientation(preselectedOrientation));
-        } catch (KeyNotFoundException ex) {
-            Notifications.Instance.ShowNotification("Unable to open detail menu", ex.Message);
-        }
-    }
 
-    public async void Close(bool unlockAP = false) {
-        SideMenu.Close();
-        if (unlockAP)
-            await CurrentActionPoint.WriteUnlock();
-
-    }
 
     public void UpdateOrientationsDynamicList() {
         foreach (RectTransform o in OrientationsDynamicList.GetComponentsInChildren<RectTransform>()) {
@@ -416,12 +465,16 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
 
-    public void UpdateJointsDynamicList(string robotName) {
-        if (robotName == null)
-            return;
+    public void UpdateJointsDynamicList(string arm_id) {
+        UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedRobot.MultiArm() ? arm_id : "");
+    }
+
+
+    public void UpdateJointsDynamicList(string robot_id, string arm_id) {
+        
 
         try {
-            string robotId = SceneManager.Instance.RobotNameToId(robotName);
+            //string robotId = SceneManager.Instance.RobotNameToId(JointsRobotsList.GetValue().ToString());
 
             foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
                 if (o.gameObject.tag != "Persistent") {
@@ -429,10 +482,15 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
                 }
             }
 
-            System.Collections.Generic.List<ProjectRobotJoints> joints = CurrentActionPoint.GetAllJoints(true, robotId).Values.ToList();
+            System.Collections.Generic.List<ProjectRobotJoints> joints;
+            if (string.IsNullOrEmpty(arm_id))
+                joints = CurrentActionPoint.GetAllJoints(true, robot_id).Values.ToList();
+            else
+                joints = CurrentActionPoint.GetJointsOfArm(robot_id, arm_id, true).Values.ToList();
             foreach (IO.Swagger.Model.ProjectRobotJoints joint in joints) {
                 CreateJointsButton(JointsDynamicList.transform, joint.Id, joint.Name, () => OpenDetailMenu(joint), joint.IsValid);
             }
+            
         } catch (ItemNotFoundException ex) {
             Debug.LogError(ex);
             Notifications.Instance.ShowNotification("Failed to get robot's ID", "");
@@ -441,11 +499,25 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
 
-    private async void OpenDetailMenu(ProjectRobotJoints joint) {
+    public async void OpenDetailMenu(ProjectRobotJoints joint) {
+        AddOrientationContainer.SetActive(false);
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(false);
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, joint);
     }
 
-    private async void OpenDetailMenu(NamedOrientation orientation) {
+    public async void OpenDetailMenu(NamedOrientation orientation) {
+        AddOrientationContainer.SetActive(false);
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(false);
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, orientation);
         APOrientation orientationArrow = CurrentActionPoint.GetOrientationVisual(orientation.Id);
         SceneManager.Instance.SetSelectedObject(orientationArrow.gameObject);
@@ -457,6 +529,12 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     /// </summary>
     public void OpenAddOrientationMenuManualDefault() {
         if (GameManager.Instance.ExpertMode) {
+            AddJointsContainer.SetActive(false);
+            if (OrientationJointsDetailMenu.IsVisible())
+                OrientationJointsDetailMenu.HideMenu();
+            ContainerJoints.SetActive(false);
+            ContainerOrientations.SetActive(false);
+            ContainerPosition.SetActive(false);
             AddOrientationMenu.ShowMenu(CurrentActionPoint, true);
         } else {
             AddDefaultOrientation();
@@ -464,12 +542,47 @@ public class ActionPointAimingMenu : MonoBehaviour, IMenu {
     }
 
     public void OpenAddOrientationMenuUsingRobot() {
+        AddJointsContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(false);
         AddOrientationMenu.ShowMenu(CurrentActionPoint, false);
     }
 
     public void OpenAddJointsMenu(bool manual) {
+        AddOrientationContainer.SetActive(false);
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        ContainerJoints.SetActive(false);
+        ContainerOrientations.SetActive(false);
+        ContainerPosition.SetActive(false);
         AddJointsMenu.ShowMenu(CurrentActionPoint);
     }
+
+    public void CloseOrientationJointsDetailMenu() {
+        CloseAnySubmenu();
+    }
+
+    public void CloseAnySubmenu() {
+        if (OrientationJointsDetailMenu.IsVisible())
+            OrientationJointsDetailMenu.HideMenu();
+        AddOrientationMenu.gameObject.SetActive(false);
+        AddJointsMenu.gameObject.SetActive(false);
+        switch (State) {
+            case StateEnum.Joints:
+                SwitchToJoints();
+                break;
+            case StateEnum.Orientations:
+                SwitchToOrientations();
+                break;
+            case StateEnum.Position:
+                SwitchToPosition();
+                break;
+        }
+    }
+
 
     public async void AddDefaultOrientation() {
         try {

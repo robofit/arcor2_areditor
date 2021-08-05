@@ -31,4 +31,12 @@ public class StartAction : StartEndAction
     public override string GetObjectTypeName() {
         return "Start action";
     }
+
+    public override void CloseMenu() {
+        throw new NotImplementedException();
+    }
+
+    public override void EnableInputOutput(bool enable) {
+        OutputArrow.gameObject.SetActive(enable);
+    }
 }

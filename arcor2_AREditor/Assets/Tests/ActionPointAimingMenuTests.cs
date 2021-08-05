@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace TrilleonAutomation
 {
-
+    /*
     [AutomationClass]
     public class ActionPointAimingMenuTests : MonoBehaviour
     {
@@ -942,6 +942,6 @@ namespace TrilleonAutomation
 
         }
 
-    }
+    }*/
 
 }

@@ -25,6 +25,7 @@ public class UrdfManager : Singleton<UrdfManager> {
 
     /// <summary>
     /// Dictionary of all urdf robot source file names (e.g. dobot-magician.zip) and bool value indicating, whether download of these source files is in progress.
+    /// // HACK - at the moment, this indicates if it was already downloaded - remove when lastModified will work on project service
     /// (fileName, downloadInProgress)
     /// </summary>
     private Dictionary<string, bool> RobotModelsSources = new Dictionary<string, bool>();
@@ -39,7 +40,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         //GameManager.Instance.SetTurboFramerate();
 
         //Debug.Log("URDF: download started");
-        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         UnityWebRequest www;
         try {
             www = UnityWebRequest.Get(uri);
@@ -66,8 +67,9 @@ public class UrdfManager : Singleton<UrdfManager> {
             try {
                 ZipFile.ExtractToDirectory(savePath, urdfDictionary);
                 //Debug.Log("URDF: zip extracted");
+                // HACK: remove when lastModified will work on project service
                 // Set to false to indicate that download is not in progress.
-                RobotModelsSources[fileName] = false;
+                //RobotModelsSources[fileName] = false;
                 OnUrdfDownloaded(urdfDictionary, robotType);
             } catch (Exception ex) when (ex is ArgumentException ||
                                             ex is ArgumentNullException ||
@@ -231,7 +233,24 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string robotType, string fileName) {
-        //Debug.Log("URDF: Checking if newer robot model exists in: " + Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
+        // HACK - remove once lastModified on project service get working again
+        if (RobotModelsSources.TryGetValue(fileName, out bool downloadInProgress)) {
+            if (downloadInProgress) {
+                // download is in progress, return false so the urdf file won't download again
+                return false;
+            } else {
+                // return true and start downloading
+                RobotModelsSources[fileName] = true;
+                return true;
+            }
+        } else {
+            // Create the entry in RoboModelsSources and set downloadProgress to true and start downloading
+            RobotModelsSources.Add(fileName, true);
+            return true;
+        }
+
+        // at the moment, project service could not provide lastModified property for meshes and URDFs, so it has to be downloaded every time..
+        return true;
 
         FileInfo urdfFileInfo = new FileInfo(Application.persistentDataPath + "/urdf/" + robotType + "/" + fileName);
         DateTime downloadedZipLastModified = urdfFileInfo.LastWriteTime;
@@ -241,11 +260,10 @@ public class UrdfManager : Singleton<UrdfManager> {
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(fileName);
         }
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6780/urdf/" + fileName;
+        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-
             // t1 is earlier than t2 --> newer version of urdf is present on the server
             if (DateTime.Compare(downloadedZipLastModified, httpWebResponse.LastModified) < 0) {
                 //Debug.Log("URDF: Newer version is present on the server.");

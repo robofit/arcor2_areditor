@@ -7,8 +7,9 @@ using System;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using Base;
+using UnityEngine.Events;
 
-public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
+public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu> {
     [SerializeField]
     private GameObject BoxMenu, CylinderMenu, SphereMenu, MeshMenu;
     [SerializeField]
@@ -20,6 +21,10 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
 
     [SerializeField]
     private TooltipContent buttonTooltip;
+
+    public CanvasGroup CanvasGroup;
+
+    private UnityAction closeCallback;
 
 
 
@@ -37,18 +42,32 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     // Start is called before the first frame update
     private void Start() {
         //TODO: find out why start is called twice
-        Base.ActionsManager.Instance.OnActionObjectsUpdated += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesAdded += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesRemoved += UpdateObjectsList;
+        Base.ActionsManager.Instance.OnObjectTypesUpdated += UpdateObjectsList;
         buttonTooltip.descriptionText = TooltipRef.Instance.Text;
         buttonTooltip.tooltipRect = TooltipRef.Instance.Tooltip;
     }
+
 
     // Update is called once per frame
     private void Update() {
 
     }
 
+    public void Show(UnityAction closeCallback) {
+        this.closeCallback = closeCallback;
+        UpdateMenu();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+    }
+
+    public void Hide() {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    }
+
     public void UpdateMenu() {
         CreateNewObjectBtn.interactable = false;
+        UpdateObjectsList();
         UpdateModelsMenu();
         ValidateFields();
     }
@@ -81,16 +100,19 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
     }
 
     public void UpdateObjectsList(object sender, Base.StringListEventArgs eventArgs) {
+        UpdateObjectsList();        
+    }
+
+    private void UpdateObjectsList() {
         string originalValue = "";
         if (ParentsList.Dropdown.dropdownItems.Count > 0)
             originalValue = (string) ParentsList.GetValue();
 
         List<string> values = new List<string>();
-        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectMetadata.Values) {
+        foreach (Base.ActionObjectMetadata actionObjectMetadata in Base.ActionsManager.Instance.ActionObjectsMetadata.Values) {
             values.Add(actionObjectMetadata.Type);
         }
         ParentsList.PutData(values, originalValue, (_) => UpdateModelsMenu());
-        
     }
 
     public async void ValidateFields() {
@@ -159,7 +181,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
         
         bool success = await Base.GameManager.Instance.CreateNewObjectType(CreateObjectTypeMeta());
         if (success) {
-            MenuManager.Instance.NewObjectTypeMenu.Close();
+            closeCallback?.Invoke();
         }
         CreateNewObjectBtn.interactable = true;
     }
@@ -199,7 +221,7 @@ public class NewObjectTypeMenu : Base.Singleton<NewObjectTypeMenu>, IMenu {
                 case "Mesh":
                     modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Mesh;
                     string meshId = MeshId.text;
-                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), uri: "");
+                    IO.Swagger.Model.Mesh mesh = new IO.Swagger.Model.Mesh(id: meshId, focusPoints: new List<IO.Swagger.Model.Pose>(), dataId: meshId);
                     objectModel.Mesh = mesh;
                     break;
                 default:

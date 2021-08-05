@@ -5,16 +5,18 @@ using Base;
 using RosSharp.Urdf;
 using UnityEngine;
 
+[RequireComponent(typeof(Target))]
 public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
 
-    public string RobotId, EEId;
+    public string RobotId, EEId, ARMId;
     
 
-    public void InitEE(IRobot robot, string eeId) {
+    public void InitEE(IRobot robot, string armId, string eeId) {
         RobotId = robot.GetId();
+        ARMId = armId;
         EEId = eeId;
         SetLabel(robot.GetName(), eeId);
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
@@ -32,10 +34,12 @@ public class RobotEE : InteractiveObject, ISubItem {
 
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         eeName.gameObject.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
     /// <summary>
@@ -55,7 +59,7 @@ public class RobotEE : InteractiveObject, ISubItem {
     }
 
     public override string GetId() {
-        return RobotId + "/" + EEId;
+        return $"{RobotId}/{ARMId}/{EEId}";
     }
 
     public override void OpenMenu() {
@@ -100,5 +104,9 @@ public class RobotEE : InteractiveObject, ISubItem {
         } catch (KeyNotFoundException) {
             return null;
         }
+    }
+
+    public override void CloseMenu() {
+        throw new System.NotImplementedException();
     }
 }

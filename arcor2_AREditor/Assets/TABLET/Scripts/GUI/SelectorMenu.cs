@@ -21,6 +21,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
+    public ToggleGroupIconButtons BottomButtons;
 
     public Dictionary<string, SelectorItem> SelectorItems = new Dictionary<string, SelectorItem>();
 
@@ -112,8 +113,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     private void Update() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.MainScreen ||
-            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected ||
-            MenuManager.Instance.IsAnyMenuOpened) {
+            GameManager.Instance.GetGameState() == GameManager.GameStateEnum.Disconnected) {
             CanvasGroup.interactable = false;
             CanvasGroup.blocksRaycasts = false;
             CanvasGroup.alpha = 0;

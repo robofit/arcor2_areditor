@@ -9,52 +9,63 @@ using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 using Newtonsoft.Json;
 using System.Linq;
 
-[RequireComponent(typeof(SimpleSideMenu))]
-public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
+public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     public Base.ActionObject CurrentObject;
-    [SerializeField]
-    protected TMPro.TMP_Text objectName;
     public GameObject Parameters;
     public Slider VisibilitySlider;
     public InputDialog InputDialog;
     public ButtonWithTooltip SaveParametersBtn;
+    public GameObject ObjectHasNoParameterLabel;
 
 
     public ConfirmationDialog ConfirmationDialog;
 
-
-    protected SimpleSideMenu menu;
-
     protected bool parametersChanged = false;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
+    public CanvasGroup CanvasGroup;
+    public TMPro.TMP_Text VisibilityLabel;
+
+    public GameObject ParameterOverridePrefab;
+    private Dictionary<string, ActionObjectParameterOverride> overrides = new Dictionary<string, ActionObjectParameterOverride>();
 
     protected List<IParameter> objectParameters = new List<IParameter>();
 
     private void Start() {
         
-        Debug.Assert(objectName != null);
         Debug.Assert(VisibilitySlider != null);
         Debug.Assert(InputDialog != null);
         Debug.Assert(ConfirmationDialog != null);
 
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
 
+        WebsocketManager.Instance.OnOverrideAdded += OnOverrideAddedOrUpdated;
+        WebsocketManager.Instance.OnOverrideUpdated += OnOverrideAddedOrUpdated;
+        WebsocketManager.Instance.OnOverrideBaseUpdated += OnOverrideAddedOrUpdated;
+        WebsocketManager.Instance.OnOverrideRemoved += OnOverrideRemoved;
+
     }
 
-    private void Awake() {
-        menu = GetComponent<SimpleSideMenu>();
+    private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
+        //Debug
+        if (CurrentObject.TryGetParameter(args.Parameter.Name, out IO.Swagger.Model.Parameter parameter)) {
+            if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
+                parameterOverride.SetValue(Parameter.GetStringValue(parameter.Value, parameter.Type), false);
+            }
+        }
+    }
+
+    private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
+        //Debug.LogError("added");
+        if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
+            parameterOverride.SetValue(Parameter.GetStringValue(args.Parameter.Value, args.Parameter.Type), true);
+        }
     }
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         if (CurrentObject != null)
             UpdateMenu();
     }
 
-    internal async void HideMenu() {
-        if (CurrentObject == null)
-            return;
-        await CurrentObject.WriteUnlock();
-    }
 
 
     public async void DeleteActionObject() {
@@ -66,7 +77,7 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
         }
         CurrentObject = null;
         ConfirmationDialog.Close();
-        MenuManager.Instance.ActionObjectMenuSceneEditor.Close();
+        Hide();
     }
 
     public void ShowDeleteActionDialog() {
@@ -89,28 +100,125 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
         try {
             await WebsocketManager.Instance.RenameObject(CurrentObject.Data.Id, newName);
             InputDialog.Close();
-            objectName.text = newName;
         } catch (RequestFailedException e) {
             Notifications.Instance.ShowNotification("Failed to rename object", e.Message);
         }
     }
 
+    public async void Show(ActionObject actionObject) {
+        if (!await actionObject.WriteLock(false))
+            return;
+
+        CurrentObject = actionObject;
+        UpdateMenu();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+    }
+
+    public void Hide() {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+        if (CurrentObject != null)
+            _ = CurrentObject.WriteUnlock();
+    }
+
 
     public virtual void UpdateMenu() {
-        objectName.text = CurrentObject.Data.Name;
         // Parameters:
-
+        ObjectHasNoParameterLabel.SetActive(CurrentObject.ObjectParameters.Count == 0);
         Parameters.GetComponent<VerticalLayoutGroup>().enabled = true;
         foreach (Transform o in Parameters.transform) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
                 Destroy(o.gameObject);
             }
         }
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor)
+            UpdateMenuScene();
+        else
+            UpdateMenuProject();
+        VisibilitySlider.gameObject.SetActive(CurrentObject.ActionObjectMetadata.HasPose);
+        if (CurrentObject.ActionObjectMetadata.HasPose) {
+            VisibilityLabel.text = "Visibility:";
+        } else {
+            VisibilityLabel.text = "Can't set visibility for objects without pose";
+        }
+        UpdateSaveBtn();
         VisibilitySlider.value = CurrentObject.GetVisibility() * 100;
     }
 
-    protected abstract void UpdateSaveBtn();
+
+    private void UpdateMenuScene() {
+        if (CurrentObject.ObjectParameters.Count > 0) {
+            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
+        }
+        foreach (IParameter parameter in objectParameters) {
+            parameter.SetInteractable(!SceneManager.Instance.SceneStarted);
+        }
+        //SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
         
+        parametersChanged = false;
+    }
+
+    private void UpdateMenuProject() {
+        overrides.Clear();
+
+        foreach (Parameter param in CurrentObject.ObjectParameters.Values.ToList()) {
+            ActionObjectParameterOverride overrideParam = Instantiate(ParameterOverridePrefab, Parameters.transform).GetComponent<ActionObjectParameterOverride>();
+            overrideParam.transform.SetAsLastSibling();
+            overrideParam.Init(param.GetStringValue(), false, param.ParameterMetadata, CurrentObject.Data.Id, !SceneManager.Instance.SceneStarted, DynamicContentLayout, CanvasRoot);
+            if (CurrentObject.Overrides.TryGetValue(param.Name, out Parameter p)) {
+                Debug.LogError(p);
+                overrideParam.SetValue(p.GetStringValue(), true);
+            }
+            overrides[param.Name] = overrideParam;
+        }
+
+        
+    }
+
+    protected virtual void UpdateSaveBtn() {
+        if (SceneManager.Instance.SceneStarted) {
+            SaveParametersBtn.SetInteractivity(false, "Parameters could be updated only when offline.");
+            return;
+        }
+        if (!parametersChanged) {
+            SaveParametersBtn.SetInteractivity(false, "No parameter changed");
+            return;
+        }
+        // TODO: add dry run save
+        SaveParametersBtn.SetInteractivity(true);
+    }
+
+    public void SaveParameters() {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor)
+            SaveSceneObjectParameters();
+    }
+
+
+    public async void SaveSceneObjectParameters() {
+        if (Base.Parameter.CheckIfAllValuesValid(objectParameters)) {
+            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
+            foreach (IParameter p in objectParameters) {
+                if (CurrentObject.TryGetParameterMetadata(p.GetName(), out IO.Swagger.Model.ParameterMeta parameterMeta)) {
+                    IO.Swagger.Model.ParameterMeta metadata = parameterMeta;
+                    IO.Swagger.Model.Parameter ap = new IO.Swagger.Model.Parameter(name: p.GetName(), value: JsonConvert.SerializeObject(p.GetValue()), type: metadata.Type);
+                    parameters.Add(ap);
+                } else {
+                    Notifications.Instance.ShowNotification("Failed to save parameters!", "");
+
+                }
+
+            }
+
+            try {
+                await WebsocketManager.Instance.UpdateObjectParameters(CurrentObject.Data.Id, parameters, false);
+                Base.Notifications.Instance.ShowToastMessage("Parameters saved");
+                parametersChanged = false;
+                UpdateSaveBtn();
+            } catch (RequestFailedException e) {
+                Notifications.Instance.ShowNotification("Failed to update object parameters ", e.Message);
+            }
+        }
+    }
+
 
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
@@ -118,8 +226,9 @@ public abstract class ActionObjectMenu : MonoBehaviour, IMenu {
         } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != parameter.Value) {
-                    parametersChanged = true;
-                    SaveParametersBtn.SetInteractivity(true);
+                    //parametersChanged = true;
+                    //SaveParametersBtn.SetInteractivity(true);
+                    SaveParameters();
                 }
             } catch (JsonReaderException) {
                 SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");

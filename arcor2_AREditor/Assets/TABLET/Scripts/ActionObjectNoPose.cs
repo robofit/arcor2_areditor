@@ -6,6 +6,11 @@ using RuntimeGizmos;
 using UnityEngine;
 
 public class ActionObjectNoPose : ActionObject {
+    public override void CloseMenu() {
+
+        ActionObjectMenu.Instance.Hide();
+    }
+
     public override void CreateModel(CollisionModels customCollisionModels = null) {
         // no pose object has no model
     }
@@ -47,16 +52,7 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override async void OpenMenu() {
-        if (!await this.WriteLock(false))
-            return;
-        if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.SceneEditor) {
-            actionObjectMenu.CurrentObject = this;
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuSceneEditor);
-        } else if (Base.GameManager.Instance.GetGameState() == Base.GameManager.GameStateEnum.ProjectEditor) {
-            actionObjectMenuProjectEditor.CurrentObject = this;
-            actionObjectMenuProjectEditor.UpdateMenu();
-            MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionObjectMenuProjectEditor);
-        }
+        ActionObjectMenu.Instance.Show(this);
     }
 
     public override void SetInteractivity(bool interactive) {

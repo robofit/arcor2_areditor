@@ -5,6 +5,7 @@ using Base;
 using System;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using UnityEngine.Events;
 
 public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular, HandTeachingModeButton;
@@ -14,6 +15,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public TranformWheelUnits Units, UnitsDegrees;
     public TwoStatesToggle RobotWorldBtn, RotateTranslateBtn, SafeButton;
     public Image HandBtnRedBackground;
+    public ButtonWithTooltip BackBtn;
 
     public CanvasGroup CanvasGroup;
 
@@ -21,10 +23,12 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     private bool safe = true, world = false, translate = true;
 
+    private UnityAction closeCallback;
+
     private void Start() {
-        SpeedSlider.onValueChanged.AddListener((_) => Debug.LogError(GetSpeedSliderValue()));
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
         WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
+        closeCallback = null;
     }
 
 
@@ -92,7 +96,11 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public async void SetPerpendicular() {
         try {
             SetInteractivityOfRobotBtns(false, "Robot is already moving");
-            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+
+            await WebsocketManager.Instance.SetEefPerpendicularToWorld(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), GetSpeedSliderValue(), safe, armId);
         } catch (RequestFailedException ex) {
             SetInteractivityOfRobotBtns(true);
             Notifications.Instance.ShowNotification("Failed to set robot perpendicular", ex.Message);
@@ -161,7 +169,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             return;
         HandBtnRedBackground.enabled = true;
         try {
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to enable hand teaching mode", ex.Message);
         }
@@ -172,19 +183,26 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             return;
         HandBtnRedBackground.enabled = false;
         try {
-            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false);
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            await WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to disable hand teaching mode", ex.Message);
         }
     }
 
-    public void Show() {
+    public void Show(bool showBackBtn = false, string backBtnDescritpion = null, UnityAction closeCallback = null) {
         if (gizmo != null)
             Destroy(gizmo);
-
+        this.closeCallback = closeCallback;
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
         gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
         gizmo.transform.localPosition = Vector3.zero;
+        BackBtn.gameObject.SetActive(showBackBtn);
+        if (!string.IsNullOrEmpty(backBtnDescritpion)) {
+            BackBtn.SetDescription(backBtnDescritpion);
+        }
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
 
         SetHandTeachingButtonInteractivity();
@@ -229,9 +247,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
                 break;
         }
         try {
+
+            string armId = null;
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
             await WebsocketManager.Instance.StepRobotEef(axis, SceneManager.Instance.SelectedEndEffector.GetName(), safe, SceneManager.Instance.SelectedRobot.GetId(), GetSpeedSliderValue(),
             (decimal) step, translate ? IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Position : IO.Swagger.Model.StepRobotEefRequestArgs.WhatEnum.Orientation,
-            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot);
+            world ? IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.World : IO.Swagger.Model.StepRobotEefRequestArgs.ModeEnum.Robot, armId);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to move robot", ex.Message);
             SetInteractivityOfRobotBtns(true);
@@ -276,13 +298,16 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
 
-    internal void Hide(bool unlock = true) {
-        if (SceneManager.Instance.IsRobotAndEESelected()) {
-            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).WriteUnlock();
+    public void Hide(bool unlock = true) {
+        if (unlock && SceneManager.Instance.IsRobotAndEESelected()) {
+            SceneManager.Instance.SelectedRobot.WriteUnlock();
         }
         if (gizmo != null)
             Destroy(gizmo);
+        closeCallback?.Invoke();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+        
     }
+    
 }
 

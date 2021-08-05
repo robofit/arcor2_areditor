@@ -15,23 +15,15 @@ namespace Base {
 
         public IO.Swagger.Model.SceneObject Data = new IO.Swagger.Model.SceneObject(id: "", name: "", pose: DataHelper.CreatePose(new Vector3(), new Quaternion()), type: "");
         public ActionObjectMetadata ActionObjectMetadata;
-        protected ActionObjectMenu actionObjectMenu;
-        protected ActionObjectMenuProjectEditor actionObjectMenuProjectEditor;
 
         public Dictionary<string, Parameter> ObjectParameters = new Dictionary<string, Parameter>();
         public Dictionary<string, Parameter> Overrides = new Dictionary<string, Parameter>();
 
-        protected override void Start() {
-            base.Start();
-            actionObjectMenu = MenuManager.Instance.ActionObjectMenuSceneEditor.gameObject.GetComponent<ActionObjectMenu>();
-            actionObjectMenuProjectEditor = MenuManager.Instance.ActionObjectMenuProjectEditor.gameObject.GetComponent<ActionObjectMenuProjectEditor>();
-
-
-        }
 
         public virtual void InitActionObject(IO.Swagger.Model.SceneObject sceneObject, Vector3 position, Quaternion orientation, ActionObjectMetadata actionObjectMetadata, IO.Swagger.Model.CollisionModels customCollisionModels = null, bool loadResuources = true) {
             Data.Id = sceneObject.Id;
             Data.Type = sceneObject.Type;
+            name = sceneObject.Name; // show actual object name in unity hierarchy
             ActionObjectMetadata = actionObjectMetadata;
             if (actionObjectMetadata.HasPose) {
                 SetScenePosition(position);
@@ -257,10 +249,8 @@ namespace Base {
         public async override Task<RequestResult> Movable() {
             if (!ActionObjectMetadata.HasPose)
                 return new RequestResult(false, "Selected action object has no pose");
-            else if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor)
+            else if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
                 return new RequestResult(false, "Action object could be moved only in scene editor");
-            else if (SceneManager.Instance.SceneStarted) {
-                return new RequestResult(false, "Scene online");
             } else {
                 return new RequestResult(true);
             }

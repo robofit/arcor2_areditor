@@ -4,11 +4,12 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.EventSystems;
 using RuntimeInspectorNamespace;
+using TMPro;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
     [SerializeField]
-    private TooltipContent tooltipContent;
+    protected TooltipContent tooltipContent;
     [SerializeField]
     public string Description, DescriptionAlternative;
     [SerializeField]
@@ -26,16 +27,22 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
+
+    private void Awake() {
+        if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
+            tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
+            tooltipContent.descriptionText = TooltipRef.Instance.Text;
+        }
+        tooltipContent.delay = AREditorResources.TOOLTIP_DELAY;
+    }
+
     private void Start() {
         Debug.Assert(tooltipContent != null);
-        if (string.IsNullOrEmpty(Description)) {
+        if (string.IsNullOrEmpty(Description) && string.IsNullOrEmpty(DescriptionAlternative)) {
             tooltipContent.enabled = false;
             return;
         }
-        if (tooltipContent.tooltipRect == null || tooltipContent.descriptionText == null) {
-            tooltipContent.tooltipRect = TooltipRef.Instance.Tooltip;
-            tooltipContent.descriptionText = TooltipRef.Instance.Text;            
-        }
+        
 
         if (DisplayAlternativeDescription) {
             ShowAlternativeDescription();
@@ -44,7 +51,7 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
-    private void ShowDefaultDescription() {
+    public void ShowDefaultDescription() {
         if (tooltipContent == null)
             return; // tooltip was destroyed in the meantime
         if (string.IsNullOrEmpty(Description)) {
@@ -66,9 +73,18 @@ public class ManualTooltip : MonoBehaviour {
         }
     }
 
+
     private void OnDisable() {
-        if (tooltipContent != null)
+        if (tooltipContent != null && tooltipContent.tooltipAnimator != null)
             tooltipContent.OnPointerExit(null);
+    }
+
+    public void DisableTooltip() {
+        tooltipContent.enabled = false;
+    }
+
+    public void EnableTooltip() {
+        tooltipContent.enabled = true;
     }
 
 }

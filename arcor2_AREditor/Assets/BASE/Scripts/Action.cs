@@ -29,6 +29,7 @@ namespace Base {
 
         public TextMeshPro NameText;
 
+
         public bool ActionBeingExecuted = false;
         
         public virtual void Init(IO.Swagger.Model.Action projectAction, ActionMetadata metadata, ActionPoint ap, IActionProvider actionProvider) {
@@ -163,6 +164,8 @@ namespace Base {
             SelectorMenu.Instance.DestroySelectorItem(Output);
             base.OnDestroy();
         }
+
+        public abstract void EnableInputOutput(bool enable);
     }
 
 }

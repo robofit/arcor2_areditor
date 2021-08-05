@@ -5,13 +5,11 @@ using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(SimpleSideMenu))]
-public class AddOrientationMenu : MonoBehaviour, IMenu {
+public class AddOrientationMenu : MonoBehaviour {
     public Base.ActionPoint CurrentActionPoint;
 
     public TMPro.TMP_InputField NameInput;// QuaternionX, QuaternionY, QuaternionZ, QuaternionW;
-    public DropdownParameter RobotsList, EndEffectorList;
-    public GameObject LiteModeBlock, ManualModeBlock;
+    public GameObject ManualModeBlock;
     public bool ManualMode;
 
     public OrientationManualEdit OrientationManualEdit;
@@ -22,44 +20,12 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
     [SerializeField]
     private TooltipContent buttonTooltip;
 
-    private SimpleSideMenu SideMenu;
-
-    private void Start() {
-        SideMenu = GetComponent<SimpleSideMenu>();
-    }
-
-  
 
     public async void UpdateMenu() {
-        CustomDropdown robotsListDropdown = RobotsList.Dropdown;
-        robotsListDropdown.dropdownItems.Clear();
-
-        await RobotsList.gameObject.GetComponent<DropdownRobots>().Init(OnRobotChanged, true);
-        if (robotsListDropdown.dropdownItems.Count > 0) {
-            OnRobotChanged((string) RobotsList.GetValue());
-        }
-
+        
         ValidateFields();
     }
 
-    /// <summary>
-    /// updates EndEffectorList on selected robot change
-    /// </summary>
-    /// <param name="robot_name">Newly selected robot's name</param>
-    private async void OnRobotChanged(string robot_name) {
-        EndEffectorList.Dropdown.dropdownItems.Clear();
-
-        try {
-            string robotId = SceneManager.Instance.RobotNameToId(robot_name);
-            await EndEffectorList.gameObject.GetComponent<DropdownEndEffectors>().Init(robotId, null);
-        }
-        catch (ItemNotFoundException ex) {
-            Debug.LogError(ex);
-            Notifications.Instance.ShowNotification("Failed to load end effectors", "");
-        }
-
-    }
-    
     public async void ValidateFields() {
         bool interactable = true;
         name = NameInput.text;
@@ -83,7 +49,7 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         }
         else {
             if (interactable) {
-                if (RobotsList.Dropdown.dropdownItems.Count == 0) {
+                if (!SceneManager.Instance.IsRobotSelected()) {
                     interactable = false;
                     buttonTooltip.description = "There is no robot to be used";
                 }
@@ -105,8 +71,10 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
                 await WebsocketManager.Instance.AddActionPointOrientation(CurrentActionPoint.Data.Id, orientation, name);
             } else { //using robot
 
-                string robotId = SceneManager.Instance.RobotNameToId((string) RobotsList.GetValue());
-                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, robotId, (string) EndEffectorList.GetValue(), name);
+                string armId = null;
+                if (SceneManager.Instance.SelectedRobot.MultiArm())
+                    armId = SceneManager.Instance.SelectedArmId;
+                await WebsocketManager.Instance.AddActionPointOrientationUsingRobot(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), name, armId);
             }
             Close(); //close add menu
             Notifications.Instance.ShowToastMessage("Orientation added successfully");
@@ -122,21 +90,14 @@ public class AddOrientationMenu : MonoBehaviour, IMenu {
         CurrentActionPoint = actionPoint;
 
         ManualModeBlock.SetActive(ManualMode);
-        LiteModeBlock.SetActive(!ManualMode);
 
         NameInput.text = CurrentActionPoint.GetFreeOrientationName();
-        /*
-        QuaternionX.text = "0";
-        QuaternionY.text = "0";
-        QuaternionZ.text = "0";
-        QuaternionW.text = "1";
-        */
         OrientationManualEdit.SetOrientation(new Orientation());
         UpdateMenu();
-        SideMenu.Open();
+        gameObject.SetActive(true);
     }
 
     public void Close() {
-        SideMenu.Close();
+        ActionPointAimingMenu.Instance.SwitchToOrientations();
     }
 }

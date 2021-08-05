@@ -28,7 +28,8 @@ public class UniversalDialog : Dialog
     }
 
     public void AddCancelCallback(UnityAction callback) {
-        windowManager.onCancel.AddListener(callback);
+        if (callback != null)
+            windowManager.onCancel.AddListener(callback);
     }
 
     public void SetDescription(string description) {
@@ -44,7 +45,7 @@ public class UniversalDialog : Dialog
         windowManager.windowTitle.text = title;
     }
 
-    public virtual void Open(string title, string description, UnityAction confirmationCallback, UnityAction cancelCallback, string confirmLabel = "Confirm", string cancelLabel = "Cancel") {
+    public virtual void Open(string title, string description, UnityAction confirmationCallback, UnityAction cancelCallback, string confirmLabel = "Confirm", string cancelLabel = "Cancel", bool wideButtons = false) {
         windowManager.onConfirm.RemoveAllListeners();
         windowManager.onCancel.RemoveAllListeners();
         SetTitle(title);
@@ -54,6 +55,15 @@ public class UniversalDialog : Dialog
         SetConfirmLabel(confirmLabel);
         SetCancelLabel(cancelLabel);
         Open();
+        RectTransform okBtnTrans = okBtn.GetComponent<RectTransform>();
+        RectTransform cancelBtnTrans = cancelBtn.GetComponent<RectTransform>();
+        if (wideButtons) {
+            okBtnTrans.sizeDelta = new Vector2(400, okBtnTrans.rect.height);
+            cancelBtnTrans.sizeDelta = new Vector2(400, cancelBtnTrans.rect.height);
+        } else {
+            okBtnTrans.sizeDelta = new Vector2(250, okBtnTrans.rect.height);
+            cancelBtnTrans.sizeDelta = new Vector2(250, cancelBtnTrans.rect.height);
+        }
     }
 
     public override void Confirm() {

@@ -122,7 +122,7 @@ namespace Base {
         /// Defines if scene was started on server - e.g. if all robots and other action objects
         /// are instantioned and are ready
         /// </summary>
-        public bool SceneStarted = false;
+        private bool sceneStarted = false;
 
         /// <summary>
         /// Flag which indicates whether scene update event should be trigered during update
@@ -133,9 +133,14 @@ namespace Base {
 
         public IRobot SelectedRobot;
 
+        public string SelectedArmId;
+
         public RobotEE SelectedEndEffector;
 
         public string SelectCreatedActionObject;
+
+
+        
 
         public bool Valid = false;
         /// <summary>
@@ -157,6 +162,11 @@ namespace Base {
             }
         }
 
+        public bool SceneStarted {
+            get => sceneStarted;
+            private set => sceneStarted = value;
+        }
+
         /// <summary>
         /// Creates scene from given json
         /// </summary>
@@ -167,14 +177,13 @@ namespace Base {
         /// <returns>True if scene successfully created, false otherwise</returns>
         public async Task<bool> CreateScene(IO.Swagger.Model.Scene scene, bool loadResources, CollisionModels customCollisionModels = null) {
             Debug.Assert(ActionsManager.Instance.ActionsReady);
-            
             if (SceneMeta != null)
                 return false;
             SelectorMenu.Instance.Clear();
             SetSceneMeta(DataHelper.SceneToBareScene(scene));            
             this.loadResources = loadResources;
             LoadSettings();
-            
+
             UpdateActionObjects(scene, customCollisionModels);
 
             if (scene.Modified == System.DateTime.MinValue) { //new scene, never saved
@@ -255,7 +264,6 @@ namespace Base {
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
-                GameManager.Instance.SetEditorState(EditorStateEnum.Normal);
             }
         }
 
@@ -322,8 +330,11 @@ namespace Base {
                     SceneStarted = false;
                     GameManager.Instance.HideLoadingScreen();
                     SelectedRobot = null;
+                    SelectedArmId = null;
                     SelectedEndEffector = null;
                     OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
+                    if (RobotsEEVisible)
+                        OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
                     break;
             }
         }
@@ -339,21 +350,24 @@ namespace Base {
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             RegisterRobotsForEvent(true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
             string selectedRobotID = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotId", null);
+            SelectedArmId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedRobotArmId", null);
             string selectedEndEffectorId = PlayerPrefsHelper.LoadString(SceneMeta.Id + "/selectedEndEffectorId", null);
-            await SelectRobotAndEE(selectedRobotID, selectedEndEffectorId);
+            await SelectRobotAndEE(selectedRobotID, SelectedArmId, selectedEndEffectorId);
             GameManager.Instance.HideLoadingScreen();
             OnSceneStateEvent?.Invoke(this, args); // needs to be rethrown to ensure all subscribers has updated data
         }
 
-        public async Task SelectRobotAndEE(string robotId, string eeId) {
+        public async Task SelectRobotAndEE(string robotId, string armId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
+                    SelectedArmId = armId;
                     SelectedRobot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId));
+                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId, armId));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+                            PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
                             Debug.LogError(ex);
                         }
                     }
@@ -366,7 +380,7 @@ namespace Base {
         }
 
         public bool IsRobotSelected() {
-            return SelectedRobot != null;
+            return SelectedRobot != null && !string.IsNullOrEmpty(SelectedArmId);
         }
 
         public bool IsRobotAndEESelected() {
@@ -421,7 +435,7 @@ namespace Base {
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
                 try {
                     IRobot robot = GetRobot(args.Data.RobotId);
-                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId);
+                    RobotEE ee = await robot.GetEE(eefPose.EndEffectorId, eefPose.ArmId);
                     ee.UpdatePosition(TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(eefPose.Pose.Position)),
                         TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(eefPose.Pose.Orientation)));
                 } catch (ItemNotFoundException) {
@@ -456,7 +470,6 @@ namespace Base {
         /// <param name="robotId">Id of robot which should be registered. If null, all robots in scene are registered.</param>
         public bool ShowRobotsEE() {
             RobotsEEVisible = true;
-
             if (SceneStarted) {
                 OnShowRobotsEE?.Invoke(this, EventArgs.Empty);
             } else {
@@ -471,6 +484,7 @@ namespace Base {
         /// Hides end effectors and unregister from EE positions and robot joints subscription
         /// </summary>
         public void HideRobotsEE() {
+            Debug.LogError("hide");
             RobotsEEVisible = false;
             OnHideRobotsEE?.Invoke(this, EventArgs.Empty);
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/RobotsEEVisibility", false);
@@ -557,7 +571,7 @@ namespace Base {
         /// <param name="customCollisionModels">Allows to override collision model of spawned action objects</param>
         /// <returns>Spawned action object</returns>
         public ActionObject SpawnActionObject(IO.Swagger.Model.SceneObject sceneObject, CollisionModels customCollisionModels = null) {
-            if (!ActionsManager.Instance.ActionObjectMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
+            if (!ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(sceneObject.Type, out ActionObjectMetadata aom)) {
                 return null;
             }
             GameObject obj;
@@ -724,7 +738,10 @@ namespace Base {
         public void SceneObjectAdded(SceneObject sceneObject) {
             ActionObject actionObject = SpawnActionObject(sceneObject);
             if (!string.IsNullOrEmpty(SelectCreatedActionObject) && sceneObject.Name.Contains(SelectCreatedActionObject)) {
+                if (ActionObjectPickerMenu.Instance.IsVisible())
+                    AREditorResources.Instance.LeftMenuScene.AddButtonClick();
                 SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
+                SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
             }
             SelectCreatedActionObject = "";
             updateScene = true;
@@ -735,11 +752,10 @@ namespace Base {
         /// </summary>
         /// <param name="sceneObject">Description of action object</param>
         public void SceneObjectRemoved(SceneObject sceneObject) {
-            GameManager.Instance.SetEditorState(EditorStateEnum.InteractionDisabled);
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
                 ActionObjects.Remove(sceneObject.Id);
-                Destroy(actionObject.gameObject);
+                actionObject.DeleteActionObject();
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
@@ -827,7 +843,6 @@ namespace Base {
                 actionObject.SetVisibility(value);
             }
             PlayerPrefsHelper.SaveFloat("AOVisibility" + (VRModeManager.Instance.VRModeON ? "VR" : "AR"), value);
-            Debug.LogError("save float " + value.ToString());
             ActionObjectsVisibility = value;
         }
 
@@ -836,7 +851,8 @@ namespace Base {
         /// </summary>
         public void SetActionObjectsInteractivity(bool interactivity) {
             foreach (ActionObject actionObject in ActionObjects.Values) {
-                actionObject.SetInteractivity(interactivity);
+                if (actionObject != null)
+                    actionObject.SetInteractivity(interactivity);
             }
             PlayerPrefsHelper.SaveBool("scene/" + SceneMeta.Id + "/AOInteractivity", interactivity);
             ActionObjectsInteractive = interactivity;

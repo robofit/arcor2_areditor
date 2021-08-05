@@ -8,6 +8,7 @@ using System;
 using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
+[RequireComponent(typeof(Target))]
 public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
@@ -15,6 +16,7 @@ public class ActionPoint3D : Base.ActionPoint {
     private Material sphereMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
+    public GameObject ActionsVisuals;
 
 
     private void Awake() {
@@ -33,7 +35,9 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        //transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        //Visual.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
@@ -42,22 +46,32 @@ public class ActionPoint3D : Base.ActionPoint {
 
 
     public async void ShowMenu(bool enableBackButton = false) {
-        if (!await this.WriteLock(false))
-            return;
-
-        actionPointMenu.CurrentActionPoint = this;
-        actionPointMenu.EnableBackButton(enableBackButton);
-        MenuManager.Instance.ShowMenu(MenuManager.Instance.ActionPointMenu);
+        throw new NotImplementedException();
     }
 
 
     public override Vector3 GetScenePosition() {
-        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
-        
+        Vector3 position = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
+        /*ActionObject parentActionObject = GetActionObject();
+        // if AP is child of another AP and in the top of the hierarchy is some action object, action points has to use the action objects rotation
+        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
+            position = parentActionObject.GetTransform().localRotation * position;
+        }*/
+        return position;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="position">Global position of AP</param>
     public override void SetScenePosition(Vector3 position) {
-        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
+        ActionObject parentActionObject = GetActionObject();
+        Vector3 p = position;
+/*
+        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
+            
+        }*/
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(p));
     }
 
     public override Quaternion GetSceneOrientation() {
@@ -88,7 +102,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
     
     public override bool ProjectInteractable() {
-        return base.ProjectInteractable() && !MenuManager.Instance.IsAnyMenuOpened;
+        return base.ProjectInteractable() && GameManager.Instance.SceneInteractable;
     }
 
     public override void ActivateForGizmo(string layer) {
@@ -146,12 +160,14 @@ public class ActionPoint3D : Base.ActionPoint {
         
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         HighlightAP(false);
         ActionPointName.gameObject.SetActive(false);
         Lock.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
 
@@ -174,11 +190,11 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override async void OpenMenu() {
-        ShowMenu();
+        throw new NotImplementedException();
     }
 
     public override bool HasMenu() {
-        return true;
+        return false;
     }
 
     public async override void StartManipulation() {
@@ -240,6 +256,10 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void OnClick(Click type) {
+        throw new NotImplementedException();
+    }
+
+    public override void CloseMenu() {
         throw new NotImplementedException();
     }
 }

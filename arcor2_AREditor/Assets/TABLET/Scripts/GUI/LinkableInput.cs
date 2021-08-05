@@ -17,7 +17,8 @@ public class LinkableInput : LinkableParameter {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
 
         SetOnValueChanged(onChangeParameterHandler);
-        object v = value;
+        SetValue(value);
+        //object v = value;
         /*switch (type) {
             case "string":
                 if (value == null)
@@ -39,9 +40,8 @@ public class LinkableInput : LinkableParameter {
                 v = null;
                 break;
         }*/
-        SetValue(v);
     }
-    
+
 
 
 
@@ -55,41 +55,47 @@ public class LinkableInput : LinkableParameter {
         base.SetType(type, linkable, switchBtnClicked);
 
         if (type == "link") {
-            Input.gameObject.SetActive(false);
-            Input.Input.onValueChanged.RemoveAllListeners();
-        }
-        else {
+            //Input.gameObject.SetActive(false);
+            //Input.Input.onValueChanged.
+            //Input.Input.onValueChanged.RemoveAllListeners();
+        } else if(type == ProjectParameterText) {
+            //Input.gameObject.SetActive(false);
+            //Input.Input.onValueChanged.RemoveAllListeners();
+        } else {
             
-            Input.gameObject.SetActive(true);
-            Input.Input.onValueChanged.RemoveAllListeners();
+            //Input.gameObject.SetActive(true);
+            //Input.Input.onValueChanged.RemoveAllListeners();
+            Input.SetType(type);
             switch (ParameterMetadata.Type) {
                 case "integer":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<int>());
                     }
                     
-                    Input.Input.onValueChanged.AddListener((string value) => OnChangeInt(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => OnChangeInt(value, type));
                     break;
                 case "double":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<double>());
                     }
-                    Input.Input.onValueChanged.AddListener((string value) => OnChangeDouble(value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => OnChangeDouble(value, type));
                     break;
                 case "string":
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<string>());
                     }
-                    Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
+                    else
+                        Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
                     break;
             }
-            Input.SetType(type);
             
         }
     }
@@ -114,5 +120,7 @@ public class LinkableInput : LinkableParameter {
         }
     }
 
-   
+    public override void SetInteractable(bool interactable) {
+        Input.SetInteractable(interactable);
+    }
 }

@@ -52,11 +52,13 @@ public abstract class StartEndAction : Base.Action {
         }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
+        DisplayOffscreenIndicator(true);
     }
 
     public override void OnHoverEnd() {
         outlineOnClick.UnHighlight();
         NameText.gameObject.SetActive(false);
+        DisplayOffscreenIndicator(false);
     }
 
     public async override Task<RequestResult> Movable() {

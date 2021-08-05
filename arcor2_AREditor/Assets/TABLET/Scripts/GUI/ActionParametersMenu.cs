@@ -42,7 +42,6 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         }
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         if (currentAction != null) {
-            currentAction.CloseMenu();
             if(unlock)
                 await currentAction.WriteUnlock();
             currentAction = null;
@@ -53,6 +52,10 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         return CanvasGroup.alpha > 0;
     }
 
+    public void SetVisibility(bool visible) {
+        EditorHelper.EnableCanvasGroup(CanvasGroup, visible);
+    }
+
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
         if (!isValueValid) {
             SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
@@ -60,7 +63,8 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
                     parametersChanged = true;
-                    SaveParametersBtn.SetInteractivity(true);
+                    //SaveParametersBtn.SetInteractivity(true);
+                    SaveParameters();
                 }
             } catch (JsonReaderException) {
                 SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
@@ -92,7 +96,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
                 /*if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
                     await UpdateExecuteAndStopBtns();*/
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to update action ", e.Message);
+                Notifications.Instance.ShowNotification("Failed to save parameters", e.Message);
             }
         }
     }

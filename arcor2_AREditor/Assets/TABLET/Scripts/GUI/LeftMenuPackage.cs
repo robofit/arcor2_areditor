@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Base;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class LeftMenuPackage : LeftMenu {
@@ -26,14 +27,12 @@ public class LeftMenuPackage : LeftMenu {
     }
 
     private void OnPausePackage(object sender, ProjectMetaEventArgs args) {
-        Debug.LogError("Pause");
         ResumeBtn.gameObject.SetActive(true);
         PauseBtn.gameObject.SetActive(false);
         ResumeBtn.SetInteractivity(true);
     }
 
     private void OnOpenProjectRunning(object sender, ProjectMetaEventArgs args) {
-        Debug.LogError("open package running");
         ResumeBtn.gameObject.SetActive(false);
         PauseBtn.gameObject.SetActive(true);
         CloseButton.SetInteractivity(true);
@@ -57,11 +56,17 @@ public class LeftMenuPackage : LeftMenu {
     public void UpdateVisibility(GameManager.GameStateEnum newGameState) {
         
         if (newGameState == GameManager.GameStateEnum.PackageRunning &&
-            MenuManager.Instance.MainMenu.CurrentState == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);
+            MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
+            UpdateVisibility(true);            
         } else {
             UpdateVisibility(false);
         }
+    }
+
+    public override void UpdateVisibility(bool visible, bool force = false) {
+        base.UpdateVisibility(visible, force);
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning)
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(false);
     }
 
     public void ShowStopPackageDialog() {
@@ -73,12 +78,22 @@ public class LeftMenuPackage : LeftMenu {
         
     }
 
-    public async void StopPackage() {
+    public void StopPackage() {
         CloseButton.SetInteractivity(false, "Stopping package");
-        if (await GameManager.Instance.StopPackage()) {
-            CloseButton.SetInteractivity(true);
-        }
+        GameManager.Instance.ShowLoadingScreen();
+        WebsocketManager.Instance.StopPackage(StopPackageCallback);
+        
     }
+
+
+    private void StopPackageCallback(string _, string data) {
+        GameManager.Instance.HideLoadingScreen();
+        IO.Swagger.Model.StopPackageResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.StopPackageResponse>(data);
+        CloseButton.SetInteractivity(true);
+        if (!response.Result) {
+            Notifications.Instance.ShowNotification("Failed to stop package.", response.Messages.Count > 0 ? response.Messages[0] : "Unknown error");
+        }
+    } 
 
     public async void PausePackage() {
         PauseBtn.SetInteractivity(false, "Pausing package");
