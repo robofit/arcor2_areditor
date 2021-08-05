@@ -755,7 +755,7 @@ namespace Base {
             ActionObject actionObject = GetActionObject(sceneObject.Id);
             if (actionObject != null) {
                 ActionObjects.Remove(sceneObject.Id);
-                Destroy(actionObject.gameObject);
+                actionObject.DeleteActionObject();
             } else {
                 Debug.LogError("Object " + sceneObject.Name + "(" + sceneObject.Id + ") not found");
             }
