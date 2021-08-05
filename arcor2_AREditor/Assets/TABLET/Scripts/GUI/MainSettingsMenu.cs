@@ -39,7 +39,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
         ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
-
+        WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
+        WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
 
     }
 
@@ -141,6 +142,9 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
                 SwitchToEditor();
+        } else {
+            DestroyConstantButtons();
+            GenerateParameterButtons();
         }
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
@@ -300,7 +304,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     private void GenerateParameterButtons() {
-        foreach (var projectParameter in ProjectManager.Instance.ProjectParameters.OrderBy(p => p.Name)) {
+        foreach (ProjectParameter projectParameter in ProjectManager.Instance.ProjectParameters.OrderBy(p => p.Name)) {
             GenerateParameterButton(projectParameter);
         }
     }
