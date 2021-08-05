@@ -604,9 +604,13 @@ namespace Base {
             if (!ResourcesLoaded) {
                 await LoadResources();
             }
-            if (!EndEffectors.ContainsKey(arm_id))
-                throw new ItemNotFoundException($"Robot {GetName()} does not have arm {arm_id}");
-            foreach (RobotEE ee in EndEffectors[arm_id])
+            string realArmId = arm_id;
+            if (!MultiArm())
+                realArmId = "default";
+
+            if (!EndEffectors.ContainsKey(realArmId))
+                throw new ItemNotFoundException($"Robot {GetName()} does not have arm {realArmId}");
+            foreach (RobotEE ee in EndEffectors[realArmId])
                 if (ee.EEId == ee_id)
                     return ee;
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
