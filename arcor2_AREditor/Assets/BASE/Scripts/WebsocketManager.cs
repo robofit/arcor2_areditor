@@ -280,7 +280,7 @@ namespace Base {
 
             if (dispatch?.response == null && dispatch?.request == null && dispatch?.@event == null)
                 return;
-            if (dispatch?.@event == null || (/*dispatch?.@event != "RobotEef" && */dispatch?.@event != "RobotJoints"))
+            if (dispatch?.@event == null || (dispatch?.@event != "RobotEef" && dispatch?.@event != "RobotJoints"))
                 Debug.Log("Recieved new data: " + data);
             if (dispatch.response != null) {
 
@@ -1132,13 +1132,12 @@ namespace Base {
         /// Asks server to stop currently executed package. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns></returns>
-        public async Task StopPackage() {
+        public void StopPackage(UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.StopPackageRequest request = new IO.Swagger.Model.StopPackageRequest(id: r_id, request: "StopPackage");
-            SendDataToServer(request.ToJson(), r_id, true);
-            IO.Swagger.Model.StopPackageResponse response = await WaitForResult<IO.Swagger.Model.StopPackageResponse>(r_id);
-            if (response == null || !response.Result)
-                throw new RequestFailedException(response == null ? "Request timed out" : response.Messages[0]);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            SendDataToServer(request.ToJson(), r_id, false);
+            
         }
 
         /// <summary>

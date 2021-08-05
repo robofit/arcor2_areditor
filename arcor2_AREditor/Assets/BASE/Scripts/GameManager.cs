@@ -1299,20 +1299,7 @@ namespace Base {
             }
         }
 
-        /// <summary>
-        /// Asks server to stop running package
-        /// </summary>
-        public async Task<bool> StopPackage() {
-            ShowLoadingScreen();
-            try {
-                await WebsocketManager.Instance.StopPackage();
-                return true;
-            } catch (RequestFailedException ex) {
-                Notifications.Instance.ShowNotification("Failed to stop project", ex.Message);
-                HideLoadingScreen();
-                return false;
-            }
-        }
+        
 
         /// <summary>
         /// Asks server to pause running package

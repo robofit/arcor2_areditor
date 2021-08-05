@@ -1231,6 +1231,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   screenBoundOffset: 0.9
+  lWidth: 0
+  lHeight: 0
+  rWidth: 0
+  rHeight: 0
+  rootCanvas: {fileID: 0}
 --- !u!114 &1584867615516966974
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19931,11 +19936,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -22.345
-      objectReference: {fileID: 0}
-    - target: {fileID: 5836623740901391807, guid: 26574a11b23697849be421670e867642,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5885432361892028082, guid: 26574a11b23697849be421670e867642,
         type: 3}
