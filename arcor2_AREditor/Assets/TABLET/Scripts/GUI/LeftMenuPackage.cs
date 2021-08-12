@@ -87,11 +87,12 @@ public class LeftMenuPackage : LeftMenu {
 
 
     private void StopPackageCallback(string _, string data) {
-        GameManager.Instance.HideLoadingScreen();
         IO.Swagger.Model.StopPackageResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.StopPackageResponse>(data);
         CloseButton.SetInteractivity(true);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to stop package.", response.Messages.Count > 0 ? response.Messages[0] : "Unknown error");
+            GameManager.Instance.HideLoadingScreen();
+
         }
     } 
 
