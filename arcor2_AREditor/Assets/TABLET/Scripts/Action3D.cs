@@ -139,7 +139,7 @@ public class Action3D : Base.Action, ISubItem {
         Output.UpdateColor();
 
         foreach (Material material in Visual.materials)
-            if (Enabled && !IsLocked)
+            if (Enabled && !(IsLocked && !IsLockedByMe))
                 material.color = new Color(0.9f, 0.84f, 0.27f);
             else
                 material.color = Color.gray;

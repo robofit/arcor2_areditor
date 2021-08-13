@@ -18,7 +18,7 @@ namespace Base
             Renderer renderer = Action.InputArrow.GetComponent<Renderer>();
             List<Material> materials = new List<Material>(renderer.materials);
 
-            if (Enabled && !IsLocked) {
+            if (Enabled && !(IsLocked && !IsLockedByMe)) {
                 foreach (var material in materials) {
                     if (Action.Data.Id == "START")
                         material.color = Color.green;

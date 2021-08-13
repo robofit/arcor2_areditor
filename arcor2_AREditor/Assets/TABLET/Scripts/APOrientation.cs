@@ -29,20 +29,7 @@ public class APOrientation : InteractiveObject, ISubItem {
     public override void OnHoverStart() {
         if (!enabled)
             return;
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
-                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
-                    return;
-            } else {
-                return;
-            }
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
-            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
-            return;
-        }
+        
 
         HighlightOrientation(true);
         DisplayOffscreenIndicator(true);

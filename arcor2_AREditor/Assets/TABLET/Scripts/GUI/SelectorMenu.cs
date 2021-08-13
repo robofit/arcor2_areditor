@@ -307,14 +307,14 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItems.RemoveAt(index);
     }
 
-    public void SetSelectedObject(InteractiveObject interactiveObject, bool manually = false) {
+    public void SetSelectedObject(InteractiveObject interactiveObject, bool manually = false, bool enableRequestingObject = true) {
         if (SelectorItems.TryGetValue(interactiveObject.GetId(), out SelectorItem item)) {
-            SetSelectedObject(item, manually);            
+            SetSelectedObject(item, manually, enableRequestingObject);            
         }
     }
 
-    public void SetSelectedObject(SelectorItem selectorItem, bool manually = false) {
-        if (manually && requestingObject) {
+    public void SetSelectedObject(SelectorItem selectorItem, bool manually = false, bool enableRequestingObject = true) {
+        if (manually && requestingObject && enableRequestingObject) {
             GameManager.Instance.ObjectSelected(selectorItem.InteractiveObject);
         } else {
             if (manually) {

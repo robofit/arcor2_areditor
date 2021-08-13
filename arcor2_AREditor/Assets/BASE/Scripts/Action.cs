@@ -87,7 +87,7 @@ namespace Base {
 
         public virtual void UpdateName(string newName) {
             Data.Name = newName;
-
+            name = newName;
         }
 
         public string GetActionType() {

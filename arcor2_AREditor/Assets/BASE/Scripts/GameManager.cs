@@ -526,9 +526,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
                     ProjectManager.Instance.EnableAllActionPoints(true);
@@ -536,9 +535,8 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
@@ -547,39 +545,35 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    EnableServiceInteractiveObjects(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
                 case EditorStateEnum.SelectingAPOrientation:
                     ProjectManager.Instance.EnableAllActions(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    EnableServiceInteractiveObjects(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllOrientations(true);
                     break;
                 case EditorStateEnum.SelectingEndEffector:
                     ProjectManager.Instance.EnableAllActions(false);
-                    //if (SceneManager.Instance.SceneStarted)
-                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    EnableServiceInteractiveObjects(false);
                     SceneManager.Instance.EnableAllActionObjects(false, false);
                     SceneManager.Instance.EnableAllRobots(true);
                     await ProjectManager.Instance.EnableAllRobotsEE(true);

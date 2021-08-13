@@ -22,7 +22,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
         if (!await action.WriteLock(false))
             return false;
         currentAction = action;
-        actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
+        actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
         parametersChanged = false;
         SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
 
