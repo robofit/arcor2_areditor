@@ -10,7 +10,7 @@ public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
-
+    public OutlineOnClick OutlineOnClick;
     public string RobotId, EEId, ARMId;
     
 
@@ -35,11 +35,13 @@ public class RobotEE : InteractiveObject, ISubItem {
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
         DisplayOffscreenIndicator(true);
+        OutlineOnClick.Highlight();
     }
 
     public override void OnHoverEnd() {
         eeName.gameObject.SetActive(false);
         DisplayOffscreenIndicator(false);
+        OutlineOnClick.UnHighlight();
     }
 
     /// <summary>

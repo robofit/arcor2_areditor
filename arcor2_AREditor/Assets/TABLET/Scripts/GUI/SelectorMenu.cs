@@ -82,6 +82,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             case EditorStateEnum.SelectingActionObject:
             case EditorStateEnum.SelectingActionOutput:
             case EditorStateEnum.SelectingActionPoint:
+            case EditorStateEnum.SelectingEndEffector:
+            case EditorStateEnum.SelectingAPOrientation:
             case EditorStateEnum.SelectingActionPointParent:
                 DeselectObject(true);
                 requestingObject = true;

@@ -66,8 +66,10 @@ MonoBehaviour:
   Colliders:
   - {fileID: 7157647198806504771}
   eeName: {fileID: 2613969908525368025}
+  OutlineOnClick: {fileID: 2419119033604782728}
   RobotId: 
   EEId: 
+  ARMId: 
 --- !u!114 &2419119033604782728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,6 +113,7 @@ MonoBehaviour:
   needBoxIndicator: 0
   needArrowIndicator: 1
   needDistanceText: 0
+  targetGameObject: {fileID: 0}
   indicator: {fileID: 0}
 --- !u!1 &5484956194713478415
 GameObject:
@@ -329,6 +332,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 122374042231028600}
   m_maskType: 0
+  _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
 --- !u!1001 &4593720685819818358

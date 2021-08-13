@@ -377,6 +377,14 @@ namespace Base {
             /// </summary>
             SelectingActionPointParent,
             /// <summary>
+            /// Indicates that user should select orientation of action point
+            /// </summary>
+            SelectingAPOrientation,
+            /// <summary>
+            /// Indicates that user should select end effector
+            /// </summary>
+            SelectingEndEffector,
+            /// <summary>
             /// Indicates that all interaction is disabled
             /// </summary>
             InteractionDisabled
@@ -510,7 +518,7 @@ namespace Base {
                 requestType != EditorStateEnum.InteractionDisabled);
             SetEditorState(requestType);
             // "disable" non-relevant elements to simplify process for the user
-            /*switch (requestType) {
+            switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
@@ -518,45 +526,67 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    if (SceneManager.Instance.SceneStarted)
-                        await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
-                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    if (SceneManager.Instance.SceneStarted)
-                        await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
-                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    if (SceneManager.Instance.SceneStarted)
-                        await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    await ProjectManager.Instance.EnableAllRobotsEE(false);
                     EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
-                    if (SceneManager.Instance.SceneStarted)
-                        await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
                     EnableServiceInteractiveObjects(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
-
-            }*/
+                case EditorStateEnum.SelectingAPOrientation:
+                    ProjectManager.Instance.EnableAllActions(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    EnableServiceInteractiveObjects(false);
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
+                    ProjectManager.Instance.EnableAllOrientations(true);
+                    break;
+                case EditorStateEnum.SelectingEndEffector:
+                    ProjectManager.Instance.EnableAllActions(false);
+                    //if (SceneManager.Instance.SceneStarted)
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    EnableServiceInteractiveObjects(false);
+                    SceneManager.Instance.EnableAllActionObjects(false, false);
+                    SceneManager.Instance.EnableAllRobots(true);
+                    await ProjectManager.Instance.EnableAllRobotsEE(true);
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    break;
+            }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,

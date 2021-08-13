@@ -210,6 +210,8 @@ public abstract class LeftMenu : MonoBehaviour {
             case EditorStateEnum.SelectingActionOutput:
             case EditorStateEnum.SelectingActionPoint:
             case EditorStateEnum.SelectingActionPointParent:
+            case EditorStateEnum.SelectingAPOrientation:
+            case EditorStateEnum.SelectingEndEffector:
                 requestingObject = true;
                 break;
         }
@@ -326,7 +328,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSelectorButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-
+        /*
         if (RobotSelectorButton.GetComponent<Image>().enabled) {
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSelector.Close();
@@ -335,6 +337,24 @@ public abstract class LeftMenu : MonoBehaviour {
                 SelectorMenu.Instance.gameObject.SetActive(false);
                 UpdateVisibility(false, true);
             }
+        }*/
+        await GameManager.Instance.RequestObject(EditorStateEnum.SelectingEndEffector, SelectEndEffector, "Select End Effector", ValidateEndEffector);
+    }
+
+    private async void SelectEndEffector(object selectedObject) {
+        RobotEE endEffector = (RobotEE) selectedObject;
+        SceneManager.Instance.SelectedEndEffector = endEffector;
+        IRobot robot = SceneManager.Instance.GetRobot(endEffector.RobotId);
+        SceneManager.Instance.SelectedRobot = robot;
+        SceneManager.Instance.SelectedArmId = endEffector.ARMId;
+        Notifications.Instance.ShowToastMessage($"Selected EE {endEffector.GetName()} on robot {robot.GetName()}" + (robot.MultiArm() ? $" (arm {endEffector.ARMId})" : ""));
+    }
+
+    private async Task<RequestResult> ValidateEndEffector(object selectedInput) {
+        if (selectedInput is RobotEE) {
+            return new RequestResult(true);
+        } else {
+            return new RequestResult(false, "Selected object is not end effector");
         }
     }
 
