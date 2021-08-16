@@ -264,7 +264,6 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
 
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.OpenMenu();
-        actionObject.SendMessage("Select", false);
     }
 
 }

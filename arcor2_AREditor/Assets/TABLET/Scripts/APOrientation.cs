@@ -118,6 +118,7 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override void CloseMenu() {
-        throw new System.NotImplementedException();
+        ActionPointAimingMenu.Instance.Hide();
+        HighlightOrientation(false);
     }
 }

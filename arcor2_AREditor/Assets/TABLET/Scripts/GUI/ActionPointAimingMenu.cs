@@ -521,7 +521,6 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         OrientationJointsDetailMenu.ShowMenu(CurrentActionPoint, orientation);
         APOrientation orientationArrow = CurrentActionPoint.GetOrientationVisual(orientation.Id);
         SceneManager.Instance.SetSelectedObject(orientationArrow.gameObject);
-        orientationArrow.SendMessage("Select", false);
     }
 
     /// <summary>
