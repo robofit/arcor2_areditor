@@ -268,13 +268,18 @@ namespace Base {
             // Remove all actions of this action point
             RemoveActions();
             RemoveConnectionToParent();
-
+            RemoveOrientations();
 
             // Remove this ActionPoint reference from parent ActionObject list
             if (removeFromList) // to allow remove all AP in foreach
                 ProjectManager.Instance.ActionPoints.Remove(this.Data.Id);
 
+            DestroyObject();
             Destroy(gameObject);
+        }
+
+        public override void DestroyObject() {
+            base.DestroyObject();
         }
 
         private void RemoveConnectionToParent() {
@@ -519,6 +524,12 @@ namespace Base {
             originalOrientation.Name = orientation.Name;
         }
 
+        public void RemoveOrientations() {
+            foreach (NamedOrientation o in Data.Orientations) {
+                RemoveOrientationVisual(o.Id);
+            }
+            Data.Orientations.Clear();
+        }
         
         public void RemoveOrientation(string id) {
             int i = 0;
@@ -536,7 +547,7 @@ namespace Base {
         private void RemoveOrientationVisual(string id) {
             try {
                 APOrientation o = GetOrientationVisual(id);
-                Destroy(o.gameObject);
+                o.DestroyObject();
             } catch (KeyNotFoundException) {
                 // älready destroyed..
             }          
