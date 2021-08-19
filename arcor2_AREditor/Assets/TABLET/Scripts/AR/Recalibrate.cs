@@ -91,4 +91,8 @@ public class Recalibrate : InteractiveObject {
     public override void CloseMenu() {
         throw new NotImplementedException();
     }
+
+    private void OnDestroy() {
+        base.DestroyObject();
+    }
 }
