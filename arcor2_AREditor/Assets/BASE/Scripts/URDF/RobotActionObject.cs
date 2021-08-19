@@ -245,6 +245,7 @@ namespace Base {
 
             RobotModel.SetActiveAllVisuals(true);
 
+            outlineOnClick.UnHighlight();
             outlineOnClick.ClearRenderers();
             RobotPlaceholder.SetActive(false);
             Destroy(RobotPlaceholder);
