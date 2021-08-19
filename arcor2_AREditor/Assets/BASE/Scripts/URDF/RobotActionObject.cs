@@ -75,11 +75,12 @@ namespace Base {
             SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         }
 
-        protected override void OnDestroy() {
-            base.OnDestroy();
-            SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
-            DeleteActionObject();
-        }
+        // ONDESTROY CANNOT BE USED BECAUSE OF ITS DELAYED CALL - it causes mess when directly creating project from scene
+        //protected override void OnDestroy() {
+        //    base.OnDestroy();
+        //    SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+        //    DeleteActionObject();
+        //}
 
         private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
             UpdateColor();
@@ -245,6 +246,7 @@ namespace Base {
 
             RobotModel.SetActiveAllVisuals(true);
 
+            outlineOnClick.UnHighlight();
             outlineOnClick.ClearRenderers();
             RobotPlaceholder.SetActive(false);
             Destroy(RobotPlaceholder);

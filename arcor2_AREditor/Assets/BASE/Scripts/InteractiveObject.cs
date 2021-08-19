@@ -33,7 +33,8 @@ public abstract class InteractiveObject : Clickable {
             offscreenIndicator.enabled = active;
     }
 
-    protected virtual void OnDestroy() {
+    // ONDESTROY CANNOT BE USED BECAUSE OF ITS DELAYED CALL - it causes mess when directly creating project from scene
+    public virtual void DestroyObject() {
         if (SelectorItem != null)
             SelectorMenu.Instance.DestroySelectorItem(SelectorItem);
         LockingEventsCache.Instance.OnObjectLockingEvent -= OnObjectLockingEvent;
