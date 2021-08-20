@@ -199,9 +199,9 @@ namespace Base {
         public static void OnChangeRelativePose(string parameterName, string newValue, OnChangeParameterHandlerDelegate onChangeParameterHandler) {
             try {
                 IO.Swagger.Model.Pose pose = JsonConvert.DeserializeObject<IO.Swagger.Model.Pose>(newValue);
-                onChangeParameterHandler(parameterName, pose, "rel_pose");
+                onChangeParameterHandler(parameterName, pose, "relative_pose");
             } catch (JsonReaderException) {
-                onChangeParameterHandler(parameterName, null, "rel_pose", false);
+                onChangeParameterHandler(parameterName, null, "relative_pose", false);
             }
         }
 

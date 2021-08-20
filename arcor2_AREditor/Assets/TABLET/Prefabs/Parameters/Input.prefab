@@ -181,13 +181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c65c7917835d8a04b94c8b906234b09e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fieldTrigger: {fileID: 7499289194220289867}
   inputText: {fileID: 0}
   inputFieldAnimator: {fileID: 0}
-  isEmpty: 1
-  isClicked: 0
-  inAnim: In
-  outAnim: Out
 --- !u!114 &5812647574475069394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,7 +218,7 @@ MonoBehaviour:
   ParameterType: 
   Label: {fileID: 8588169511257002130}
   Input: {fileID: 982966503115170484}
-  Text: {fileID: 4392711892792948809}
+  ManualTooltip: {fileID: 1397875425965750565}
 --- !u!1 &2864087821588459047
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,6 +306,7 @@ GameObject:
   - component: {fileID: 407556270209203310}
   - component: {fileID: 8588169511257002130}
   - component: {fileID: 1052022943540245635}
+  - component: {fileID: 1397875425965750565}
   m_Layer: 5
   m_Name: Placeholder
   m_TagString: Untagged
@@ -447,9 +443,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
+--- !u!114 &1397875425965750565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5273442805909220052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 1052022943540245635}
+  Description: 
+  DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!1 &5382132729643203073
 GameObject:
   m_ObjectHideFlags: 0
