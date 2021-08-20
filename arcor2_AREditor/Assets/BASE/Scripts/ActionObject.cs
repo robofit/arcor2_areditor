@@ -168,9 +168,14 @@ namespace Base {
             // Remove this ActionObject reference from the scene ActionObject list
             SceneManager.Instance.ActionObjects.Remove(this.Data.Id);
 
+            DestroyObject();
             Destroy(gameObject);
         }
-        
+
+        public override void DestroyObject() {
+            base.DestroyObject();
+        }
+
         public void RemoveActionPoints() {
             // Remove all action points of this action object
             List<ActionPoint> actionPoints = GetActionPoints();

@@ -117,6 +117,11 @@ public class APOrientation : InteractiveObject, ISubItem {
         return ActionPoint;
     }
 
+    public override void DestroyObject() {
+        base.DestroyObject();
+        Destroy(gameObject);
+    }
+
     public override void CloseMenu() {
         ActionPointAimingMenu.Instance.Hide();
         HighlightOrientation(false);

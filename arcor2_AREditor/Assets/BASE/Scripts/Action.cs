@@ -113,9 +113,8 @@ namespace Base {
             }*/
 
             Destroy(gameObject);
-
+            DestroyObject();
             ActionPoint.Actions.Remove(Data.Id);
-
         }
 
         public Dictionary<string, Parameter> Parameters {
@@ -133,9 +132,6 @@ namespace Base {
         public virtual void StopAction() {
 
         }
-
-
-
 
         public static Tuple<string, string> ParseActionType(string type) {
             if (!type.Contains("/"))
@@ -159,10 +155,10 @@ namespace Base {
             return new RequestResult(false, "Actions could not be moved");
         }
 
-        protected override void OnDestroy() {
+        public override void DestroyObject() {
             SelectorMenu.Instance.DestroySelectorItem(Input);
             SelectorMenu.Instance.DestroySelectorItem(Output);
-            base.OnDestroy();
+            base.DestroyObject();
         }
 
         public abstract void EnableInputOutput(bool enable);
