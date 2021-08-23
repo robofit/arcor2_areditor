@@ -15,6 +15,9 @@ public class APOrientation : InteractiveObject, ISubItem {
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
+    [SerializeField]
+    private MeshRenderer renderer;
+
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
@@ -110,7 +113,14 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override void UpdateColor() {
-        //TODO??
+        Color c;
+        if (Enabled && !(IsLocked && !IsLockedByMe))
+            c = new Color(0.9921f, 0.721f, 0.074f);
+        else
+            c = Color.gray;
+        foreach (Renderer r in outlineOnClick.Renderers)
+            r.material.color = c;
+            
     }
 
     public InteractiveObject GetParentObject() {
@@ -126,4 +136,6 @@ public class APOrientation : InteractiveObject, ISubItem {
         ActionPointAimingMenu.Instance.Hide();
         HighlightOrientation(false);
     }
+
+    
 }

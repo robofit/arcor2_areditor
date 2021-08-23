@@ -517,9 +517,19 @@ namespace Base {
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
             SetEditorState(requestType);
+
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(false);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(false);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(false);
+
             // "disable" non-relevant elements to simplify process for the user
             switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
+                    SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllActions(false);
@@ -550,6 +560,9 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
+                    SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
@@ -608,6 +621,12 @@ namespace Base {
                 ObjectCallback.Invoke(null);
                 ObjectCallback = null;
             }
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(true);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
@@ -637,7 +656,13 @@ namespace Base {
                     return;
                 }
                 
-            }            
+            }
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(true);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);

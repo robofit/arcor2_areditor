@@ -183,7 +183,7 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void UpdateColor() {
-        if (Enabled && !IsLocked)
+        if (Enabled && !(IsLocked && !IsLockedByMe))
             sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
         else
             sphereMaterial.color = Color.gray;
