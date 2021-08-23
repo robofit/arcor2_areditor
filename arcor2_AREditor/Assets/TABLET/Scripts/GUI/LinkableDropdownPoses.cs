@@ -100,8 +100,7 @@ public class LinkableDropdownPoses : LinkableDropdown
             if (value == null)
                 return null;
 
-            Base.ActionPoint actionPoint = Base.ProjectManager.Instance.GetactionpointByName(value.Split('.').First());
-            return actionPoint.GetNamedOrientationByName(value.Split('.').Last()).Id;
+            return selectedOrientation.GetId();
         }    
     }
 }
