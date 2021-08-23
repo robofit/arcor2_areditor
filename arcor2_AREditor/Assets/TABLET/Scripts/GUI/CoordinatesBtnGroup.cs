@@ -26,7 +26,7 @@ public class CoordinatesBtnGroup : MonoBehaviour
         btn.Select();
     }
 
-    public string GetSelectedAxis() {
+    public TransformMenu.Axis GetSelectedAxis() {
         return selectedBtn.Axis;
     }
 }

@@ -408,6 +408,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 7804001992296156350}
   Button: {fileID: 516592181357474667}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 1633820730419329034}
 --- !u!114 &1633820730419329034
 MonoBehaviour:
@@ -422,6 +423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   description: 
+  delay: 0
   tooltipRect: {fileID: 0}
   descriptionText: {fileID: 0}
   tooltipAnimator: {fileID: 0}
@@ -1810,7 +1812,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
@@ -2287,7 +2289,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: z
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
@@ -2648,7 +2650,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}

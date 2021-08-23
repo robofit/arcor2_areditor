@@ -10,6 +10,14 @@ using UnityEngine.Animations;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class TransformMenu : Singleton<TransformMenu> {
+
+    public enum Axis {
+        X,
+        Y,
+        Z,
+        NONE
+    }
+
     public InteractiveObject InteractiveObject;
     public TransformWheel TransformWheel;
     public GameObject Wheel, StepButtons;
@@ -20,15 +28,15 @@ public class TransformMenu : Singleton<TransformMenu> {
     public ButtonWithTooltip SubmitButton, ResetButton;
     private float prevValue;
 
-    private Vector3 cameraPrev = new Vector3();
-    
+    private Vector3 origPosition = new Vector3();
+
 
     public CanvasGroup CanvasGroup;
 
     private bool handHolding = false;
 
 
-    private GameObject gizmo;
+    private Gizmo gizmo;
     private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
 
 
@@ -60,7 +68,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         float newValue = 0;
         if (RotateTranslateBtn.CurrentState == "rotate") {
             newValue = GetRotationValue(TransformWheel.GetValue());
-            if (prevValue != newValue)
+            if (handHolding || prevValue != newValue)
                 UpdateRotate(newValue - prevValue);
 
             Quaternion delta = TransformConvertor.UnityToROS(model.transform.localRotation);
@@ -160,46 +168,39 @@ public class TransformMenu : Singleton<TransformMenu> {
             return;
 
         if (handHolding) {
-            Vector3 cameraNow = Camera.main.transform.position;
-            model.transform.position += new Vector3(cameraNow.x - cameraPrev.x, cameraNow.y - cameraPrev.y, cameraNow.z - cameraPrev.z);
-            cameraPrev = cameraNow;
+            model.transform.position = Camera.main.transform.TransformPoint(origPosition);
         } else {
             
             switch (Coordinates.GetSelectedAxis()) {
-                case "x":
+                case Axis.X:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.right));
                     break;
-                case "y":
+                case Axis.Y:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.up));
                     break;
-                case "z":
+                case Axis.Z:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.forward));
                     break;
             }
         }
-        
     }
 
     private void UpdateRotate(float wheelValue) {
-        if (    handHolding) {
-            
+        if (handHolding) {
+            model.transform.position = Camera.main.transform.TransformPoint(origPosition);
         } else {
-
             switch (Coordinates.GetSelectedAxis()) {
-                case "x":
+                case Axis.X:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.right));
                     break;
-                case "y":
+                case Axis.Y:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.up));
                     break;
-                case "z":
+                case Axis.Z:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.forward));
                     break;
             }
-
         }
-
-        
     }
 
     public float GetRoundedValue(float value) {
@@ -221,7 +222,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
         RotateTranslateBtn.SetDescription("Swith to rotate");
-
+        SetRotationAxis(Axis.NONE);
         //ResetPosition();
     }
 
@@ -232,6 +233,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         UnitsDegrees.gameObject.SetActive(true);
         //ResetPosition();
         RotateTranslateBtn.SetDescription("Swith to translate");
+        SetRotationAxis(Coordinates.GetSelectedAxis());
     }
 
     public void SwitchToTablet() {
@@ -268,7 +270,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     public void HoldPressed() {
         if (RobotTabletBtn.CurrentState == "tablet") {
-            cameraPrev = Camera.main.transform.position;
+            origPosition = Camera.main.transform.InverseTransformPoint(model.transform.position);
             handHolding = true;
         } else {
             string armId = null;
@@ -316,6 +318,14 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.SetParent(interactiveObject.transform);
             model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
             model.transform.localPosition = Vector3.zero;
+
+            Target target = model.AddComponent<Target>();
+            target.SetTarget(Color.yellow, false, true, false);
+            target.enabled = true;
+
+            ((ActionPoint3D) interactiveObject).EnableOffscreenIndicator(false);
+            ((ActionPoint3D) interactiveObject).EnableVisual(false);
+
         } else if (interactiveObject.GetType() == typeof(ActionObject3D)) {
             model = ((ActionObject3D) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(true);
@@ -323,6 +333,14 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
             model.transform.localPosition = Vector3.zero;
+
+            Target target = model.AddComponent<Target>();
+            target.SetTarget(Color.yellow, false, true, false);
+            target.enabled = true;
+
+            ((ActionObject3D) interactiveObject).EnableOffscreenIndicator(false);
+            ((ActionObject3D) interactiveObject).EnableVisual(false);
+
         } else if (interactiveObject.GetType() == typeof(RobotActionObject)) {
             model = ((RobotActionObject) interactiveObject).GetModelCopy();
             RotateTranslateBtn.SetInteractivity(true);
@@ -330,24 +348,38 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
             model.transform.localPosition = Vector3.zero;
+
+            Target target = model.AddComponent<Target>();
+            target.SetTarget(Color.yellow, false, true, false);
+            target.enabled = true;
+
+            ((RobotActionObject) interactiveObject).EnableOffscreenIndicator(false);
+            ((RobotActionObject) interactiveObject).EnableVisual(false);
         }
 
         if (model == null) {
             Hide();
             return;
         }
-        if (gizmo != null)
-            Destroy(gizmo);
 
-        gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
+        gizmo = Instantiate(GameManager.Instance.GizmoPrefab).GetComponent<Gizmo>();
         gizmo.transform.SetParent(model.transform);
         // 0.1 is default scale for our gizmo
         gizmo.transform.localScale = new Vector3(0.1f / model.transform.localScale.x, 0.1f / model.transform.localScale.y, 0.1f / model.transform.localScale.z);
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
-        gizmo.SetActive(true);
+        gizmo.gameObject.SetActive(true);
         enabled = true;
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+
+        switch (RotateTranslateBtn.CurrentState) {
+            case "translate":
+                SetRotationAxis(Axis.NONE);
+                break;
+            case "rotate":
+                SetRotationAxis(Coordinates.GetSelectedAxis());
+                break;
+        }
     }
 
     public async void Hide(bool unlock = true) {
@@ -356,16 +388,35 @@ public class TransformMenu : Singleton<TransformMenu> {
         if(unlock)
             await InteractiveObject.WriteUnlock();
 
+        InteractiveObject.EnableOffscreenIndicator(true);
+        InteractiveObject.EnableVisual(true);
+
+
+        if (gizmo != null) {
+            Destroy(gizmo.gameObject);
+            gizmo = null;
+        }
+
         InteractiveObject = null;
         Destroy(model);
         model = null;
         enabled = false;
+
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);        
     }
 
     public void ResetTransformWheel() {
         prevValue = 0;
         TransformWheel.InitList(0);
+    }
+
+    public void SetRotationAxis(Axis axis) {
+        if (RotateTranslateBtn.CurrentState == "translate") {
+            gizmo?.SetRotationAxis(Axis.NONE);
+        } else {
+            gizmo?.SetRotationAxis(axis);
+        }
     }
 
     public async void SubmitPosition() {

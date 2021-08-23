@@ -236,13 +236,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         SetInteractivityOfRobotBtns(false, "Robot is already moving");
         IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
         switch (Coordinates.GetSelectedAxis()) {
-            case "x":
+            case TransformMenu.Axis.X:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
                 break;
-            case "y":
+            case TransformMenu.Axis.Y:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Y;
                 break;
-            case "z":
+            case TransformMenu.Axis.Z:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Z;
                 break;
         }
