@@ -801,5 +801,10 @@ namespace Base {
         public override void CloseMenu() {
             ActionObjectMenu.Instance.Hide();
         }
+
+        public override void EnableVisual(bool enable) {
+            if (RobotModel != null)
+                RobotModel.RobotModelGameObject.SetActive(enable);
+        }
     }
 }

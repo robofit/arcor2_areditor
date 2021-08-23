@@ -170,4 +170,9 @@ public abstract class InteractiveObject : Clickable {
             UpdateColor();
     }
 
+    public virtual void EnableOffscreenIndicator(bool enable) {
+        offscreenIndicator.enabled = enable;
+    }
+
+    public abstract void EnableVisual(bool enable);
 }

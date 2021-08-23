@@ -111,4 +111,8 @@ public class RobotEE : InteractiveObject, ISubItem {
     public override void CloseMenu() {
         throw new System.NotImplementedException();
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new System.NotImplementedException();
+    }
 }

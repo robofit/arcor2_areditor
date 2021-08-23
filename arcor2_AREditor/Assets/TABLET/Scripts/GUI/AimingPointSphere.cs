@@ -99,4 +99,8 @@ public class AimingPointSphere : InteractiveObject {
     public override void UpdateColor() {
         throw new System.NotImplementedException();
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
 }

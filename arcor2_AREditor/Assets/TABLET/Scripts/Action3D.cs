@@ -231,4 +231,8 @@ public class Action3D : Base.Action, ISubItem {
         InputArrow.gameObject.SetActive(enable);
         OutputArrow.gameObject.SetActive(enable);
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
 }

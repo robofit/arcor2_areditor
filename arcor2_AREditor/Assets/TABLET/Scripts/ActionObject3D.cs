@@ -391,4 +391,8 @@ public class ActionObject3D : ActionObject {
     public override void CloseMenu() {
         ActionObjectMenu.Instance.Hide();
     }
+
+    public override void EnableVisual(bool enable) {
+        Visual.SetActive(enable);
+    }
 }

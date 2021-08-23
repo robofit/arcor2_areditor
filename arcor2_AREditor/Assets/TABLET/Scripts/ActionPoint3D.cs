@@ -262,4 +262,8 @@ public class ActionPoint3D : Base.ActionPoint {
     public override void CloseMenu() {
         throw new NotImplementedException();
     }
+
+    public override void EnableVisual(bool enable) {
+        Visual.SetActive(enable);
+    }
 }

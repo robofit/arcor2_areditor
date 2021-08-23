@@ -39,4 +39,8 @@ public class StartAction : StartEndAction
     public override void EnableInputOutput(bool enable) {
         OutputArrow.gameObject.SetActive(enable);
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
 }

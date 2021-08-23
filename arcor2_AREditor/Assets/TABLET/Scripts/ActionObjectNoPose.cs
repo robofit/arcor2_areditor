@@ -15,6 +15,10 @@ public class ActionObjectNoPose : ActionObject {
         // no pose object has no model
     }
 
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
+
     public override GameObject GetModelCopy() {
         return null;
     }

@@ -137,5 +137,7 @@ public class APOrientation : InteractiveObject, ISubItem {
         HighlightOrientation(false);
     }
 
-    
+    public override void EnableVisual(bool enable) {
+        throw new System.NotImplementedException();
+    }
 }

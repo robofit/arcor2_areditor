@@ -95,4 +95,8 @@ public class Recalibrate : InteractiveObject {
     private void OnDestroy() {
         base.DestroyObject();
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
 }

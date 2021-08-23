@@ -85,4 +85,8 @@ public class CreateAnchor : InteractiveObject {
     public override void CloseMenu() {
         throw new NotImplementedException();
     }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
 }
