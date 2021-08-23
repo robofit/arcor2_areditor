@@ -181,24 +181,21 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     continue;
                 if (!item.Item2.Enabled)
                     continue;
-                if (true) { //selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
-                    if (!SelectorItems.ContainsKey(item.Item2.GetId())) {
-                        continue;
-                    }
-                    SelectorItem selectorItem = GetSelectorItemInAimMenu(item.Item2);
-                    if (selectorItem == null) {
-                        
-                        selectorItem = SelectorItems[item.Item2.GetId()];
-                        AddItemToAimingList(selectorItem);
-                    } else {
-                        if (IsRootItem(selectorItem) && selectorItem.transform.parent != ContentAim.transform) {
-                            selectorItem.transform.SetParent(ContentAim.transform);
-                        }
-                    }
-                    selectorItem.UpdateScore(item.Item1, iteration);
-                    
+               
+                if (!SelectorItems.ContainsKey(item.Item2.GetId())) {
+                    continue;
                 }
-
+                SelectorItem selectorItem = GetSelectorItemInAimMenu(item.Item2);
+                if (selectorItem == null) {
+                        
+                    selectorItem = SelectorItems[item.Item2.GetId()];
+                    AddItemToAimingList(selectorItem);
+                } else {
+                    if (IsRootItem(selectorItem) && selectorItem.transform.parent != ContentAim.transform) {
+                        selectorItem.transform.SetParent(ContentAim.transform);
+                    }
+                }
+                selectorItem.UpdateScore(item.Item1, iteration);
             }
 
             ++iteration;
@@ -212,7 +209,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     newItems.Add(selectorItemsAimMenu[index].InteractiveObject.GetId());
                     newItems.UnionWith(GetAncestors(selectorItemsAimMenu[index].InteractiveObject));
                     if (ManuallySelected && selectorItemsAimMenu[index].IsSelected()) {
-                        selectedAdded = true;
+                        selectedAdded = true;                        
                     }
                 }
                 if (newItems.Count >= MaxItems) {
@@ -220,8 +217,16 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
                 ++index;
             }
-            if (ManuallySelected && !selectedAdded)
-                newItems.Add(GetSelectedObject().GetId());
+            if (ManuallySelected) {
+                if (!selectedAdded)
+                    newItems.Add(GetSelectedObject().GetId());
+                SelectorItem parent = GetSelectedObject().SelectorItem.ParentItem;
+                while (parent != null) {
+                    newItems.Add(parent.InteractiveObject.GetId());
+                    parent = parent.ParentItem;
+                }                
+            }
+                
             foreach (SelectorItem item in selectorItemsAimMenu) {
                 if (newItems.Contains(item.InteractiveObject.GetId()))
                     continue;
@@ -273,6 +278,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
     
     public void RemoveFromAimingList(SelectorItem selectorItem) {
+        //Debug.LogError($"{selectorItem.Label.text}: {selectorItem.ChildSelected}");
         if (IsRootItem(selectorItem)) {
             selectorItem.transform.SetParent(ContentAlphabet.transform);
         } else {            

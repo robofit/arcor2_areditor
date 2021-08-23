@@ -22,9 +22,13 @@ public class SelectorItem : MonoBehaviour
     public GameObject SublistContent;
     public ManualTooltip Tooltip;
 
+
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     private List<SelectorItem> childs = new List<SelectorItem>();
+
+    public SelectorItem ParentItem;
+
 
     private void Start() {
         Removed = false;
@@ -49,12 +53,14 @@ public class SelectorItem : MonoBehaviour
 
     public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
         childs.Add(selectorItem);
+        selectorItem.ParentItem = this;
         if (updateCollapsableInteractivity)
             CollapsableButton.interactable = true;
     }
 
     public void RemoveChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
         childs.Remove(selectorItem);
+        selectorItem.ParentItem = null;
         if (updateCollapsableInteractivity)
             CollapsableButton.interactable = HasChilds();
     }
