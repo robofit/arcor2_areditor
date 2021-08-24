@@ -16,13 +16,18 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
 
+
+    public TMPro.TMP_Text ActionName, ActionType, ActionPointName;
+
     public async Task<bool> Show(Action3D action) {
         if (!await action.WriteLock(false))
             return false;
         currentAction = action;
         actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
 
-
+        ActionName.text = $"Name: {action.GetName()}";
+        ActionType.text = $"Type: {action.ActionProvider.GetProviderName()}/{action.Metadata.Name}";
+        ActionPointName.text = $"AP: {action.ActionPoint.GetName()}";
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         return true;
     }
