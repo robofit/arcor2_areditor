@@ -163,7 +163,8 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
         PositionManualEdit.SetPosition(args.ActionPoint.Position);
-        UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedArmId);  //because of possible invalidation of joints
+        if (SceneManager.Instance.SceneStarted)
+            UpdateJointsDynamicList(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedArmId);  //because of possible invalidation of joints
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
@@ -242,7 +243,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         RobotPickBlock.SetActive(!GameManager.Instance.ExpertMode);
         PositionManualEdit.SetPosition(CurrentActionPoint.Data.Position);
 
-        if (SceneManager.Instance.IsRobotSelected()) {
+        if (SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotSelected()) {
             JointsDynamicList.SetActive(true);
             if (SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected()) {
                 UpdateJointsDynamicList(SceneManager.Instance.SelectedArmId);

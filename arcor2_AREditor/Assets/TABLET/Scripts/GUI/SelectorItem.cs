@@ -40,6 +40,7 @@ public class SelectorItem : MonoBehaviour
         UpdateTooltip();
     }
 
+
     public void UpdateTooltip() {
         Label.ForceMeshUpdate(true);
         if (Label.isTextTruncated) {

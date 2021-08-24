@@ -126,6 +126,7 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 
     protected async virtual Task UpdateBtns(InteractiveObject obj) {
+
         if (CanvasGroup.alpha == 0)
             return;
         UpdateRobotSelectorAndSteppingButtons();

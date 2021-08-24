@@ -126,20 +126,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         
     }
-    /*
-    public void ForceUpdateMenus() {
-        UpdateAlphabetMenu();
-        if (ContentNoPose.activeSelf)
-            UpdateNoPoseMenu();
-    }*/
 
     private void OnProjectChanged(object sender, System.EventArgs e) {
-        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
     private void OnSceneChanged(object sender, System.EventArgs e) {
-        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
@@ -167,12 +159,6 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
     }
 
-    private void PrintItems() {
-        Debug.Log(selectorItemsAimMenu.Count);
-        foreach (SelectorItem item in selectorItemsAimMenu) {
-            Debug.LogError(item.InteractiveObject.GetName() + ": " + item.Score + " (" + item.InteractiveObject.GetId() + ")");
-        }
-    }
 
     public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
         if (ContainerAim.activeSelf) {
