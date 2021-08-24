@@ -12,9 +12,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
     public GameObject Content;
     public CanvasGroup CanvasGroup;
     private Action3D currentAction;
-    public ButtonWithTooltip SaveParametersBtn;
     private List<IParameter> actionParameters = new List<IParameter>();
-    private bool parametersChanged;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
 
@@ -23,8 +21,6 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             return false;
         currentAction = action;
         actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
-        parametersChanged = false;
-        SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
 
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
@@ -57,19 +53,14 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
-        if (!isValueValid) {
-            SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-        } else if (currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {
+        if (isValueValid && currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {           
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
-                    parametersChanged = true;
-                    //SaveParametersBtn.SetInteractivity(true);
                     SaveParameters();
                 }
             } catch (JsonReaderException) {
-                SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-            }
 
+            }
         }
 
     }
@@ -79,11 +70,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 IO.Swagger.Model.ParameterMeta metadata = currentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                string value;
-                /*if (actionParameter.GetCurrentType() == "link")
-                    value = actionParameter.GetValue().ToString();
-                else*/
-                    value = JsonConvert.SerializeObject(actionParameter.GetValue());
+                string value = JsonConvert.SerializeObject(actionParameter.GetValue());
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
@@ -91,10 +78,6 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             try {
                 await WebsocketManager.Instance.UpdateAction(currentAction.Data.Id, parameters, currentAction.GetFlows());
                 Notifications.Instance.ShowToastMessage("Parameters saved");
-                SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
-                parametersChanged = false;
-                /*if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
-                    await UpdateExecuteAndStopBtns();*/
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to save parameters", e.Message);
             }

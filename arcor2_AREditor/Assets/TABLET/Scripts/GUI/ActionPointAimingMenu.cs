@@ -46,7 +46,6 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
 
     public CanvasGroup CanvasGroup;
 
-    public TMPro.TMP_Text SelectedRobot, SelectedArm, SelectedEE;
 
     private enum StateEnum {
         Position,
@@ -84,6 +83,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         UpdateMenu();
         
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+        RobotInfoMenu.Instance.Show();
         return true;
     }
     public async Task<bool> Show(Base.ActionPoint actionPoint, string preselectedOrientation) {
@@ -101,9 +101,13 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     public async Task Hide(bool unlockAP = false) {
+        if (CanvasGroup.alpha == 0)
+            return;
         if (unlockAP)
             await CurrentActionPoint.WriteUnlock();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+
+        RobotInfoMenu.Instance.Hide();
     }
 
     public bool IsVisible() {
@@ -294,24 +298,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
             JointsListLabel.text = "List of joints:";
         }
 
-        if (!SceneManager.Instance.SceneStarted) {
-            SelectedRobot.text = "Robot is offline";
-            SelectedEE.text = "";
-            SelectedArm.text = "";
-        } else if (SceneManager.Instance.IsRobotSelected()) {
-            SelectedRobot.text = $"Robot: {SceneManager.Instance.SelectedRobot.GetName()}";
-            SelectedArm.text = $"Arm: {SceneManager.Instance.SelectedArmId}";
-            if (SceneManager.Instance.IsRobotAndEESelected()) {
-                SelectedEE.text = $"End effector: {SceneManager.Instance.SelectedEndEffector.GetName()}";
-                           
-            } else {
-                SelectedEE.text = "End effector: not selected";
-            }
-        } else {
-            SelectedRobot.text = "Robot: not selected";
-            SelectedEE.text = "End effector: not selected";
-            SelectedArm.text = "Arm: not selected";
-        }
+        
     }
 
     public void ShowUpdatePositionConfirmationDialog() {

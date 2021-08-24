@@ -95,9 +95,7 @@ public class RobotSelectorDialog : Dialog {
     }
 
     public async override void Confirm() {
-        PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotId", robotId);
-        PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedRobotArmId", armId);
-        PlayerPrefsHelper.SaveString(SceneManager.Instance.SceneMeta.Id + "/selectedEndEffectorId", eeId);
+        
         await SceneManager.Instance.SelectRobotAndEE(robotId, armId, eeId);
         Close();
     }

@@ -344,11 +344,10 @@ public abstract class LeftMenu : MonoBehaviour {
 
     private async void SelectEndEffector(object selectedObject) {
         RobotEE endEffector = (RobotEE) selectedObject;
-        SceneManager.Instance.SelectedEndEffector = endEffector;
-        IRobot robot = SceneManager.Instance.GetRobot(endEffector.RobotId);
-        SceneManager.Instance.SelectedRobot = robot;
-        SceneManager.Instance.SelectedArmId = endEffector.ARMId;
-        Notifications.Instance.ShowToastMessage($"Selected EE {endEffector.GetName()} on robot {robot.GetName()}" + (robot.MultiArm() ? $" (arm {endEffector.ARMId})" : ""));
+        SceneManager.Instance.SelectRobotAndEE(endEffector);
+        
+
+        Notifications.Instance.ShowToastMessage($"Selected EE {endEffector.GetName()} on robot {SceneManager.Instance.SelectedRobot.GetName()}" + (SceneManager.Instance.SelectedRobot.MultiArm() ? $" (arm {SceneManager.Instance.SelectedArmId})" : ""));
     }
 
     private async Task<RequestResult> ValidateEndEffector(object selectedInput) {

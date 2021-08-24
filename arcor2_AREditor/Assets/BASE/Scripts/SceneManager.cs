@@ -135,7 +135,7 @@ namespace Base {
 
         public string SelectedArmId;
 
-        public RobotEE SelectedEndEffector;
+        private RobotEE selectedEndEffector;
 
         public string SelectCreatedActionObject;
 
@@ -165,6 +165,10 @@ namespace Base {
         public bool SceneStarted {
             get => sceneStarted;
             private set => sceneStarted = value;
+        }
+        public RobotEE SelectedEndEffector {
+            get => selectedEndEffector;
+            set => selectedEndEffector = value;
         }
 
         /// <summary>
@@ -360,11 +364,10 @@ namespace Base {
         public async Task SelectRobotAndEE(string robotId, string armId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
-                    SelectedArmId = armId;
-                    SelectedRobot = GetRobot(robotId);
+                    IRobot robot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId, armId));
+                            SelectRobotAndEE(await (robot.GetEE(eeId, armId)));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
@@ -375,7 +378,34 @@ namespace Base {
                     PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
                     Debug.LogError(ex);
                 }
+            } else {
+                SelectRobotAndEE(null);
             }
+        }
+
+        public void SelectRobotAndEE(RobotEE endEffector) {
+            if (endEffector == null) {
+                SelectedArmId = null;
+                SelectedRobot = null;
+                SelectedEndEffector = null;
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+            } else {
+                try {
+                    SelectedArmId = endEffector.ARMId;
+                    SelectedRobot = GetRobot(endEffector.RobotId);
+                    SelectedEndEffector = endEffector;
+                } catch (ItemNotFoundException ex) {
+                    PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                    Debug.LogError(ex);
+                }
+
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", SelectedRobot.GetId());
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", SelectedArmId);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", SelectedEndEffector.GetId());
+            }
+
             OnRobotSelected(this, EventArgs.Empty);
         }
 

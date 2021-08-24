@@ -380,10 +380,12 @@ public class TransformMenu : Singleton<TransformMenu> {
                 SetRotationAxis(Coordinates.GetSelectedAxis());
                 break;
         }
+
+        RobotInfoMenu.Instance.Show();
     }
 
     public async void Hide(bool unlock = true) {
-        if (InteractiveObject == null)
+        if (CanvasGroup.alpha == 0 || InteractiveObject == null)
             return;
         if(unlock)
             await InteractiveObject.WriteUnlock();
@@ -403,7 +405,9 @@ public class TransformMenu : Singleton<TransformMenu> {
         enabled = false;
 
 
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);        
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+
+        RobotInfoMenu.Instance.Hide();
     }
 
     public void ResetTransformWheel() {

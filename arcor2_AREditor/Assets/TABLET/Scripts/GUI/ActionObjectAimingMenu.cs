@@ -92,9 +92,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         currentObject = actionObject;
         await UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+        RobotInfoMenu.Instance.Show();
     }
 
     public async void Hide(bool unlock = true) {
+        if (CanvasGroup.alpha == 0)
+            return;
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         foreach (AimingPointSphere sphere in spheres) {
@@ -112,6 +115,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             }
             currentObject = null;
         }
+        RobotInfoMenu.Instance.Hide();
     }
 
     private void OnCameraOrRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
