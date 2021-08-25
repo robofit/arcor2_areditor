@@ -19,7 +19,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     public CanvasGroup CanvasGroup;
 
-    private GameObject gizmo;
+    private Gizmo gizmo;
 
     private bool safe = true, world = false, translate = true;
 
@@ -31,6 +31,17 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         closeCallback = null;
     }
 
+    private void OnEnable() {
+        Coordinates.OnAxisChanged += OnAxisSwitch;
+    }
+
+    private void OnDisable() {
+        Coordinates.OnAxisChanged -= OnAxisSwitch;
+    }
+
+    private void OnAxisSwitch(object sender, CoordinatesBtnGroup.CoordinateSwitchEventArgs args) {
+        SetRotationAxis(args.SelectedAxis);
+    }
 
     private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
         if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
@@ -155,6 +166,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
         RotateTranslateBtn.SetDescription("Switch to rotate");
+        SetRotationAxis(Gizmo.Axis.NONE);
     }
 
     public void SwitchToRotate() {
@@ -162,6 +174,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
         RotateTranslateBtn.SetDescription("Switch to translate");
+        SetRotationAxis(Coordinates.GetSelectedAxis());
     }
 
     public async void HoldPressed() {
@@ -194,9 +207,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     public void Show(bool showBackBtn = false, string backBtnDescritpion = null, UnityAction closeCallback = null) {
         if (gizmo != null)
-            Destroy(gizmo);
+            Destroy(gizmo.gameObject);
         this.closeCallback = closeCallback;
-        gizmo = Instantiate(GameManager.Instance.GizmoPrefab);
+        gizmo = Instantiate(GameManager.Instance.GizmoPrefab).GetComponent<Gizmo>();
         gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
         gizmo.transform.localPosition = Vector3.zero;
         BackBtn.gameObject.SetActive(showBackBtn);
@@ -204,6 +217,15 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             BackBtn.SetDescription(backBtnDescritpion);
         }
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+
+        switch (RotateTranslateBtn.CurrentState) {
+            case "translate":
+                SetRotationAxis(Gizmo.Axis.NONE);
+                break;
+            case "rotate":
+                SetRotationAxis(Coordinates.GetSelectedAxis());
+                break;
+        }
 
         SetHandTeachingButtonInteractivity();
     }
@@ -236,13 +258,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         SetInteractivityOfRobotBtns(false, "Robot is already moving");
         IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
         switch (Coordinates.GetSelectedAxis()) {
-            case TransformMenu.Axis.X:
+            case Gizmo.Axis.X:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.X;
                 break;
-            case TransformMenu.Axis.Y:
+            case Gizmo.Axis.Y:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Y;
                 break;
-            case TransformMenu.Axis.Z:
+            case Gizmo.Axis.Z:
                 axis = IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum.Z;
                 break;
         }
@@ -303,11 +325,18 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
             SceneManager.Instance.SelectedRobot.WriteUnlock();
         }
         if (gizmo != null)
-            Destroy(gizmo);
+            Destroy(gizmo.gameObject);
         closeCallback?.Invoke();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);        
     }
-    
+
+    public void SetRotationAxis(Gizmo.Axis axis) {
+        if (RotateTranslateBtn.CurrentState == "translate") {
+            gizmo?.SetRotationAxis(Gizmo.Axis.NONE);
+        } else {
+            gizmo?.SetRotationAxis(axis);
+        }
+    }
+
 }
 

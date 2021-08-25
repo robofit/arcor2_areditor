@@ -11,13 +11,6 @@ using UnityEngine.Animations;
 [RequireComponent(typeof(CanvasGroup))]
 public class TransformMenu : Singleton<TransformMenu> {
 
-    public enum Axis {
-        X,
-        Y,
-        Z,
-        NONE
-    }
-
     public InteractiveObject InteractiveObject;
     public TransformWheel TransformWheel;
     public GameObject Wheel, StepButtons;
@@ -39,11 +32,22 @@ public class TransformMenu : Singleton<TransformMenu> {
     private Gizmo gizmo;
     private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
 
-
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
 
         Coordinates.X.Select();
+    }
+
+    private void OnEnable() {
+        Coordinates.OnAxisChanged += OnAxisSwitch;
+    }
+
+    private void OnDisable() {
+        Coordinates.OnAxisChanged -= OnAxisSwitch;
+    }
+
+    private void OnAxisSwitch(object sender, CoordinatesBtnGroup.CoordinateSwitchEventArgs args) {
+        SetRotationAxis(args.SelectedAxis);
     }
 
     private void Update() {
@@ -172,13 +176,13 @@ public class TransformMenu : Singleton<TransformMenu> {
         } else {
             
             switch (Coordinates.GetSelectedAxis()) {
-                case Axis.X:
+                case Gizmo.Axis.X:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.right));
                     break;
-                case Axis.Y:
+                case Gizmo.Axis.Y:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.up));
                     break;
-                case Axis.Z:
+                case Gizmo.Axis.Z:
                     model.transform.Translate(TransformConvertor.ROSToUnity(wheelValue * Vector3.forward));
                     break;
             }
@@ -190,13 +194,13 @@ public class TransformMenu : Singleton<TransformMenu> {
             model.transform.position = Camera.main.transform.TransformPoint(origPosition);
         } else {
             switch (Coordinates.GetSelectedAxis()) {
-                case Axis.X:
+                case Gizmo.Axis.X:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.right));
                     break;
-                case Axis.Y:
+                case Gizmo.Axis.Y:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.up));
                     break;
-                case Axis.Z:
+                case Gizmo.Axis.Z:
                     model.transform.Rotate(TransformConvertor.ROSToUnity(wheelValue * Vector3.forward));
                     break;
             }
@@ -222,7 +226,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
         RotateTranslateBtn.SetDescription("Swith to rotate");
-        SetRotationAxis(Axis.NONE);
+        SetRotationAxis(Gizmo.Axis.NONE);
         //ResetPosition();
     }
 
@@ -374,7 +378,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
         switch (RotateTranslateBtn.CurrentState) {
             case "translate":
-                SetRotationAxis(Axis.NONE);
+                SetRotationAxis(Gizmo.Axis.NONE);
                 break;
             case "rotate":
                 SetRotationAxis(Coordinates.GetSelectedAxis());
@@ -415,9 +419,9 @@ public class TransformMenu : Singleton<TransformMenu> {
         TransformWheel.InitList(0);
     }
 
-    public void SetRotationAxis(Axis axis) {
+    public void SetRotationAxis(Gizmo.Axis axis) {
         if (RotateTranslateBtn.CurrentState == "translate") {
-            gizmo?.SetRotationAxis(Axis.NONE);
+            gizmo?.SetRotationAxis(Gizmo.Axis.NONE);
         } else {
             gizmo?.SetRotationAxis(axis);
         }

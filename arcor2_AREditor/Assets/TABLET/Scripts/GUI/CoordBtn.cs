@@ -58,14 +58,13 @@ public class CoordBtn : MonoBehaviour
             field.text += string.Format("{0:0.##°}", value);
     }
 
-    public TransformMenu.Axis Axis;
+    public Gizmo.Axis Axis;
     public void Deselect() {
         Background.color = new Color(Outline.color.r, Outline.color.g, Outline.color.b, 0f);
     }
 
     public void Select() {
         Background.color = new Color(Outline.color.r, Outline.color.g, Outline.color.b, 0.5f);
-        TransformMenu.Instance.SetRotationAxis(Axis);
     }
 
     public void OnClick() {
