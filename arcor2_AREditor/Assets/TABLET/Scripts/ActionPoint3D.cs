@@ -51,13 +51,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
 
     public override Vector3 GetScenePosition() {
-        Vector3 position = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
-        /*ActionObject parentActionObject = GetActionObject();
-        // if AP is child of another AP and in the top of the hierarchy is some action object, action points has to use the action objects rotation
-        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
-            position = parentActionObject.GetTransform().localRotation * position;
-        }*/
-        return position;
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
     }
 
     /// <summary>
@@ -65,13 +59,7 @@ public class ActionPoint3D : Base.ActionPoint {
     /// </summary>
     /// <param name="position">Global position of AP</param>
     public override void SetScenePosition(Vector3 position) {
-        ActionObject parentActionObject = GetActionObject();
-        Vector3 p = position;
-/*
-        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
-            
-        }*/
-        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(p));
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {

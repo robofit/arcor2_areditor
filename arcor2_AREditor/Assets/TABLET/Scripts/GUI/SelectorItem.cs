@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -39,7 +40,6 @@ public class SelectorItem : MonoBehaviour
         name = text;
         UpdateTooltip();
     }
-
 
     public void UpdateTooltip() {
         Label.ForceMeshUpdate(true);
