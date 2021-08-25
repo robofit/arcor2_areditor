@@ -221,6 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 6555291606973599892}
   Button: {fileID: 6407259048352103065}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 7816911766007442225}
 --- !u!114 &7816911766007442225
 MonoBehaviour:
@@ -1172,6 +1173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 8428377759523256130}
   Button: {fileID: 133889641382435492}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 7864903005777812491}
 --- !u!114 &7864903005777812491
 MonoBehaviour:
@@ -2261,6 +2263,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 1042029004379764163}
   Button: {fileID: 5333052160222249584}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 6071553679352925149}
 --- !u!114 &6071553679352925149
 MonoBehaviour:
@@ -2464,6 +2467,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 4005430112102643826}
   Button: {fileID: 5595032265936572597}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 6372355856094263876}
 --- !u!114 &840855418598669838
 MonoBehaviour:
@@ -2693,6 +2697,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 7152832621337213471}
   Button: {fileID: 7200308104574480693}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 8040566749617777612}
 --- !u!114 &8040566749617777612
 MonoBehaviour:
@@ -2906,7 +2911,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: z
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
@@ -3108,7 +3113,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
@@ -4451,7 +4456,7 @@ PrefabInstance:
     - target: {fileID: 475637202829759307, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
       propertyPath: Axis
-      value: y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 955910484288382112, guid: 64ef07c7d6a44fc4f89bee648d495bd9,
         type: 3}
