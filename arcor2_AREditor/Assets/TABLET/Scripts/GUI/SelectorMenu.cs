@@ -10,6 +10,8 @@ using UnityEngine.Events;
 using System.Threading.Tasks;
 using TriLibCore.Extensions;
 using RuntimeInspectorNamespace;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -162,34 +164,33 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
         if (ContainerAim.activeSelf) {
-            foreach (Tuple<float, InteractiveObject> item in items) {
+
+            // add all items to selector items aim menu list so they can be sorted and their score updated
+            foreach (Tuple<float, InteractiveObject> item in items) {                
                 if (item.Item2.GetType() == typeof(ActionObjectNoPose))
                     continue;
                 if (!item.Item2.Enabled)
                     continue;
-               
                 if (!SelectorItems.ContainsKey(item.Item2.GetId())) {
                     continue;
                 }
-                SelectorItem selectorItem = GetSelectorItemInAimMenu(item.Item2);
-                if (selectorItem == null) {
-                        
-                    selectorItem = SelectorItems[item.Item2.GetId()];
-                    AddItemToAimingList(selectorItem);
-                } else {
-                    if (IsRootItem(selectorItem) && selectorItem.transform.parent != ContentAim.transform) {
-                        selectorItem.transform.SetParent(ContentAim.transform);
-                    }
-                }
-                selectorItem.UpdateScore(item.Item1, iteration);
-            }
 
+                SelectorItem selectorItem = selectorItemsAimMenu.Find(x => (x.InteractiveObject.GetId() == item.Item2.GetId()));
+                if (selectorItem == null) {
+                    selectorItem = item.Item2.SelectorItem;                    
+                    selectorItemsAimMenu.Add(selectorItem);
+                }                 
+                selectorItem.UpdateScore(item.Item1, iteration);
+            }            
             ++iteration;
             
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             HashSet<string> newItems = new HashSet<string>();
             int index = 0;
             bool selectedAdded = false;
+
+            // find MaxItems to be inserted to the list
+            // for each sub item find all ancestors and add them to list
             foreach (SelectorItem item in selectorItemsAimMenu) {
                 if (iteration - selectorItemsAimMenu[index].GetLastUpdate() <= 5) {
                     newItems.Add(selectorItemsAimMenu[index].InteractiveObject.GetId());
@@ -203,6 +204,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
                 ++index;
             }
+            // add manually selected item if it is not there yet
             if (ManuallySelected) {
                 if (!selectedAdded)
                     newItems.Add(GetSelectedObject().GetId());
@@ -212,17 +214,19 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                     parent = parent.ParentItem;
                 }                
             }
-                
+            // remove all old items from list
             foreach (SelectorItem item in selectorItemsAimMenu) {
-                if (newItems.Contains(item.InteractiveObject.GetId()))
-                    continue;
-                RemoveFromAimingList(item);
+                if (!newItems.Contains(item.InteractiveObject.GetId()))
+                    RemoveFromAimingList(item);
             }
             selectorItemsAimMenu.Clear();
+
+            // add all new items to the list
             foreach (string io in newItems) {
                 if (SelectorItems.TryGetValue(io, out SelectorItem selectorItem))
                     AddItemToAimingList(selectorItem);
             }
+
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             
         }
@@ -251,9 +255,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 SelectedObjectChanged(null);
             }
         }
-
-
     }
+
     private HashSet<string> GetAncestors(InteractiveObject interactiveObject) {
         HashSet<string> ancestors = new HashSet<string>();
         if (interactiveObject is ISubItem subItem && subItem.GetParentObject() != null) {
@@ -276,11 +279,15 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItem.SetCollapsedState(false);
         
         if (IsRootItem(selectorItem)) {
-            selectorItem.transform.SetParent(ContentAim.transform);
+            if (selectorItem.transform.parent != ContentAim.transform)
+                selectorItem.transform.SetParent(ContentAim.transform);
         } else {
-            selectorItem.gameObject.SetActive(selectorItem.InteractiveObject.Enabled);
             if (!selectorItem.gameObject.activeSelf)
-                return;     
+                selectorItem.gameObject.SetActive(true);
+            
+            //selectorItem.gameObject.SetActive(selectorItem.InteractiveObject.Enabled);
+            //if (!selectorItem.gameObject.activeSelf)
+            //    return;     
             
         }
         selectorItemsAimMenu.Add(selectorItem);
@@ -527,7 +534,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public void SwitchToAlphabet(bool updateCollapsedState) {
         foreach (SelectorItem item in SelectorItems.Values.OrderBy(item => item.InteractiveObject.GetName())) {
             if (IsRootItem(item)) {
-                item.transform.SetParent(ContentAlphabet.transform);
+                if (item.transform.parent != ContentAlphabet.transform)
+                    item.transform.SetParent(ContentAlphabet.transform);
                 item.transform.SetAsLastSibling();
             } else {
                 item.gameObject.SetActive(item.InteractiveObject.Enabled);
