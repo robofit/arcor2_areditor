@@ -85,8 +85,6 @@ public class LeftMenuScene : LeftMenu
                         ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(only available when online)");
                     } else if (!actionObject.ActionObjectMetadata.HasPose) {
                         ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(not available for objects without pose)");
-                    } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-                        ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(end effector not selected)");
                     } else {
                         ActionObjectAimingMenuButton.SetInteractivity(true);
                     }
@@ -312,6 +310,11 @@ public class LeftMenuScene : LeftMenu
     public void ActionObjectAimingMenuClick() {
         if (CheckActionObjectAiming())
             return;
+        if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
+            OpenRobotSelector(ActionObjectAimingMenuClick);
+            return;
+        }
         if (selectedObject is ActionObject actionObject) {
             if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionObjectAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
                 SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons

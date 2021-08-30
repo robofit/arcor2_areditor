@@ -223,8 +223,6 @@ public class LeftMenuProject : LeftMenu
 
             if (!SceneManager.Instance.SceneStarted) {
                 AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(scene offline");
-            } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-                AddActionPointUsingRobotButton.SetInteractivity(false, $"{ADD_ACTION_POINT_USING_ROBOT_LABEL}\n(robot or EE not selected");
             } else {
                 AddActionPointUsingRobotButton.SetInteractivity(true);
             }
@@ -432,11 +430,16 @@ public class LeftMenuProject : LeftMenu
 
     public void AddActionPointUsingRobotClick() {
         string armId = null;
+        if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
+            OpenRobotSelector(AddActionPointUsingRobotClick);
+            return;
+        }
         if (SceneManager.Instance.SelectedRobot.MultiArm())
             armId = SceneManager.Instance.SelectedArmId;
         CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
-            SceneManager.Instance.SelectedEndEffector.GetName(),
+            SceneManager.Instance.SelectedEndEffector.EEId,
             armId);
     }
 

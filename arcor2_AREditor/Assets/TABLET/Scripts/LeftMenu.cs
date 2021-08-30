@@ -1,9 +1,11 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using RuntimeGizmos;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using static Base.GameManager;
 
@@ -168,13 +170,16 @@ public abstract class LeftMenu : MonoBehaviour {
             }
         }
     }
-    
+
 
     private void UpdateRobotSelectorAndSteppingButtons() {
-        RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
-                    SceneManager.Instance.IsRobotAndEESelected() &&
+        if (SceneManager.Instance.IsRobotAndEESelected()) {
+            RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
                     !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
-                    SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot not selected or locked)" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+                    SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot locked by another user)" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+        } else {
+            RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+        }
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
 
@@ -320,29 +325,42 @@ public abstract class LeftMenu : MonoBehaviour {
 
     #region Robot buttons methods
 
-    public async void RobotSelectorButtonClick() {
+    public void RobotSelectorButtonClick() {
+        OpenRobotSelector();
+    }
+
+    protected void OpenRobotSelector(UnityAction afterSelectionCallback = null) {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
             return;
         }
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSelectorButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(CurrentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened, unlock: true); //close all other opened menus/dialogs and take care of red background of buttons
         }
-        /*
-        if (RobotSelectorButton.GetComponent<Image>().enabled) {
-            SelectorMenu.Instance.gameObject.SetActive(true);
-            RobotSelector.Close();
+
+        Action<object> callback;
+        if (afterSelectionCallback == null) {
+            callback = selectedObject => SelectEndEffector(selectedObject);
         } else {
-            if (await RobotSelector.Open(UpdateVisibility)) {
-                SelectorMenu.Instance.gameObject.SetActive(false);
-                UpdateVisibility(false, true);
-            }
-        }*/
-        await GameManager.Instance.RequestObject(EditorStateEnum.SelectingEndEffector, SelectEndEffector, "Select End Effector", ValidateEndEffector);
+            InteractiveObject tempSelectedObject = SelectorMenu.Instance.GetSelectedObject();
+            bool manuallySelected = SelectorMenu.Instance.ManuallySelected;
+            callback = (returnedObject) => {                
+                SelectEndEffector(returnedObject);
+                if (tempSelectedObject != null)
+                    SelectorMenu.Instance.SetSelectedObject(tempSelectedObject, manuallySelected);
+                if (returnedObject != null) {
+                    afterSelectionCallback.Invoke();
+                }
+            };
+        }
+
+        _ = GameManager.Instance.RequestObject(EditorStateEnum.SelectingEndEffector, callback, "Select End Effector", ValidateEndEffector);
     }
 
-    private async void SelectEndEffector(object selectedObject) {
+    private void SelectEndEffector(object selectedObject) {
+        if (selectedObject == null)
+            return;
         RobotEE endEffector = (RobotEE) selectedObject;
         SceneManager.Instance.SelectRobotAndEE(endEffector);
         
@@ -365,7 +383,8 @@ public abstract class LeftMenu : MonoBehaviour {
             Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
             return;
         } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Robot or EE not selected");
+            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
+            OpenRobotSelector(RobotSteppingButtonClick);
             return;
         }
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened

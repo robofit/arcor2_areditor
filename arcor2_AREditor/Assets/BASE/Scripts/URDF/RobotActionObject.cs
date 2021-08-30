@@ -600,6 +600,11 @@ namespace Base {
         public override void ActionObjectUpdate(IO.Swagger.Model.SceneObject actionObjectSwagger) {
             base.ActionObjectUpdate(actionObjectSwagger);
             ActionObjectName.text = actionObjectSwagger.Name;
+            // update label on each end effector
+            foreach (List<RobotEE> arm in EndEffectors.Values) {
+                foreach (RobotEE ee in arm)
+                    ee.UpdateLabel();
+            }
             ResetPosition();
         }
 

@@ -11,19 +11,22 @@ public class RobotEE : InteractiveObject, ISubItem {
     [SerializeField]
     private TMPro.TMP_Text eeName;
     public OutlineOnClick OutlineOnClick;
-    public string RobotId, EEId, ARMId;
-    
+    public string EEId, ARMId;
+    public IRobot Robot;
 
     public void InitEE(IRobot robot, string armId, string eeId) {
-        RobotId = robot.GetId();
+        Robot = robot;
         ARMId = armId;
         EEId = eeId;
-        SetLabel(robot.GetName(), eeId);
+        UpdateLabel();
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
     }
 
-    public void SetLabel(string robotName, string eeName) {
-        this.eeName.text = robotName + "/" + eeName;
+    public void UpdateLabel() {
+        if (Robot.MultiArm())
+            eeName.text = $"{Robot.GetName()}/{ARMId}/{EEId}";
+        else
+            eeName.text = $"{Robot.GetName()}/{EEId}";
     }
 
     public override void OnClick(Click type) {
@@ -57,11 +60,14 @@ public class RobotEE : InteractiveObject, ISubItem {
     }
 
     public override string GetName() {
-        return EEId;
+        if (Robot.MultiArm())
+            return $"{ARMId}/{EEId}";
+        else
+            return EEId;
     }
 
     public override string GetId() {
-        return $"{RobotId}/{ARMId}/{EEId}";
+        return $"{Robot.GetId()}/{ARMId}/{EEId}";
     }
 
     public override void OpenMenu() {
@@ -102,7 +108,7 @@ public class RobotEE : InteractiveObject, ISubItem {
 
     public InteractiveObject GetParentObject() {
         try {
-            return SceneManager.Instance.GetActionObject(RobotId);
+            return SceneManager.Instance.GetActionObject(Robot.GetId());
         } catch (KeyNotFoundException) {
             return null;
         }
