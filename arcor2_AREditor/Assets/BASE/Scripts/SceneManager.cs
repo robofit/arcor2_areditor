@@ -394,7 +394,7 @@ namespace Base {
             } else {
                 try {
                     SelectedArmId = endEffector.ARMId;
-                    SelectedRobot = GetRobot(endEffector.RobotId);
+                    SelectedRobot = GetRobot(endEffector.Robot.GetId());
                     SelectedEndEffector = endEffector;
                 } catch (ItemNotFoundException ex) {
                     PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
@@ -403,7 +403,7 @@ namespace Base {
 
                 PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", SelectedRobot.GetId());
                 PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", SelectedArmId);
-                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", SelectedEndEffector.GetId());
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", SelectedEndEffector.EEId);
             }
 
             OnRobotSelected(this, EventArgs.Empty);
@@ -771,7 +771,8 @@ namespace Base {
                 if (ActionObjectPickerMenu.Instance.IsVisible())
                     AREditorResources.Instance.LeftMenuScene.AddButtonClick();
                 SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
-                SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
+                if (!actionObject.ActionObjectMetadata.HasPose)
+                    SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
             }
             SelectCreatedActionObject = "";
             updateScene = true;
