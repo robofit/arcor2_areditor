@@ -27,12 +27,8 @@ public class ButtonWithTooltip : MonoBehaviour {
         Button.interactable = interactable;
         if (Button2 != null)
             Button2.interactable = interactable;
-            
-        if (interactable) {
-            tooltip.DisplayAlternativeDescription = false;
-        } else {
-            tooltip.DisplayAlternativeDescription = true;
-        }
+
+        tooltip.DisplayAlternativeDescription = !interactable;
     }
 
     public virtual void SetInteractivity(bool interactable, string alternativeDescription) {
@@ -45,10 +41,9 @@ public class ButtonWithTooltip : MonoBehaviour {
     public void SetDescription(string description) {
         if (tooltip == null || string.IsNullOrEmpty(description))
             return;
+
         tooltip.Description = description;
         tooltip.DisplayAlternativeDescription = false;
-        if (TooltipContent.descriptionText != null)
-            TooltipContent.descriptionText.text = description;
     }
 
     public void HideTooltip() {
