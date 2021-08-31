@@ -22,6 +22,7 @@ public class ProjectTile : Tile
         InitTile(projectId);
         this.sceneName.text = "Scene: " + sceneName;
         SetTimestamp(modified.ToString());
+        Tooltip.DisableTooltip();
     }
 
     private void InitTile(string projectId) {
@@ -32,7 +33,7 @@ public class ProjectTile : Tile
         }
     }
 
-    public void InitInvalidProject(string projectId, string name, DateTime created, DateTime modified, bool starVisible, string sceneName = "unknown") {
+    public void InitInvalidProject(string projectId, string name, DateTime created, DateTime modified, bool starVisible, string problem, string sceneName = "unknown") {
         SetLabel($"{name} (invalid)");
         this.sceneName.text = "Scene: " + sceneName;
         Created = created;
@@ -44,6 +45,8 @@ public class ProjectTile : Tile
         MainButton.interactable = false;
         TopImage.color = new Color(1, 1, 1, 0.4f);
         Outline.color = Color.gray;
+        Tooltip.Description = problem;
+        Tooltip.EnableTooltip();
     }
 
     public void SetTimestamp(string value) {

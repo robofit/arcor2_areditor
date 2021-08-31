@@ -137,15 +137,15 @@ public class LeftMenuProject : LeftMenu
                 CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(no object to duplicate selected)");
                 ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(no action point selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
-                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(object is locked)");
-                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
-                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is locked)");
-                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
-                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is locked)");
-                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
-                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is locked)");
-                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(object is locked)");
-                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(object is locked)");
+                SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(object is used by {obj.LockOwner})");
+                AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is used by {obj.LockOwner})");
+                AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is used by {obj.LockOwner})");
+                RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is used by {obj.LockOwner})");
+                RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n(object is used by {obj.LockOwner})");
+                AddActionButton.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is used by {obj.LockOwner})");
+                AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is used by {obj.LockOwner})");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(object is used by {obj.LockOwner})");
+                ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(object is used by {obj.LockOwner})");
             } else {
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, $"{SET_ACTION_POINT_PARENT_LABEL}\n(selected object is not action point)");
                 if (obj is ActionPoint3D) {
@@ -431,7 +431,6 @@ public class LeftMenuProject : LeftMenu
     public void AddActionPointUsingRobotClick() {
         string armId = null;
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
             OpenRobotSelector(AddActionPointUsingRobotClick);
             return;
         }

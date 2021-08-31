@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Base;
+using IO.Swagger.Model;
 using Newtonsoft.Json;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
 public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
@@ -121,20 +123,33 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
             return;
         }
+        List<string> types = new List<string>();
         foreach (ActionButtonWithIconRemovable b in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
             if (b == null || b.RemoveBtn == null)
                 return;
-            WebsocketManager.Instance.DeleteObjectTypeDryRun(b.GetLabel(), UpdateRemoveBtnCallback);
+            types.Add(b.GetLabel());
         }
+        WebsocketManager.Instance.DeleteObjectTypeDryRun(types, UpdateRemoveBtnCallback);
     }
 
-    public void UpdateRemoveBtnCallback(string id, string data) {
-        IO.Swagger.Model.DeleteObjectTypeResponse deleteObjectTypeResponse =
-            JsonConvert.DeserializeObject<IO.Swagger.Model.DeleteObjectTypeResponse>(data);
+    public void UpdateRemoveBtnCallback(string _, string data) {        
+        IO.Swagger.Model.DeleteObjectTypesResponse deleteObjectTypeResponse =
+            JsonConvert.DeserializeObject<IO.Swagger.Model.DeleteObjectTypesResponse>(data);
+        Dictionary<string, string> problems = new Dictionary<string, string>();
+        if (deleteObjectTypeResponse.Data != null) {
+            foreach (DeleteObjectTypesResponseData d in deleteObjectTypeResponse.Data) {
+                problems[d.Id] = d.Error;
+            }
+        }
         foreach (ActionButtonWithIconRemovable b in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
-            if (b != null && b.RemoveBtn != null && deleteObjectTypeResponse != null && id == b.GetLabel())
-                b.RemoveBtn.SetInteractivity(deleteObjectTypeResponse.Result,
-                    deleteObjectTypeResponse.Messages != null && deleteObjectTypeResponse.Messages.Count > 0 ? deleteObjectTypeResponse.Messages[0] : "");
+            if (b != null && b.RemoveBtn != null) {
+                if (problems.ContainsKey(b.GetLabel())) {
+                    b.RemoveBtn.SetInteractivity(false, problems[b.GetLabel()]);
+                } else {
+                    b.RemoveBtn.SetInteractivity(true);
+                }
+            }
+                
         }
     }
 

@@ -811,5 +811,9 @@ namespace Base {
             if (RobotModel != null)
                 RobotModel.RobotModelGameObject.SetActive(enable);
         }
+
+        string IRobot.LockOwner() {
+            return LockOwner;
+        }
     }
 }

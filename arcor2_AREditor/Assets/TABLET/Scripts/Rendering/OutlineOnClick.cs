@@ -165,7 +165,7 @@ public class OutlineOnClick : Clickable {
         Renderers.Clear();
     }
 
-    protected void Deselect() {
+    public void Deselect() {
         if (selected) {
             selected = false;
             UnsetOutline();
@@ -176,7 +176,7 @@ public class OutlineOnClick : Clickable {
     /// Called when OnClick event is triggered on attached gameobject.
     /// </summary>
     /// <param name="force"></param>
-    protected virtual void Select(bool force = false) {
+    public virtual void Select(bool force = false) {
         if (HoverOnly)
             return;
 

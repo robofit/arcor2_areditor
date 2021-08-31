@@ -142,12 +142,12 @@ public abstract class LeftMenu : MonoBehaviour {
             OpenMenuButton.SetInteractivity(false, $"{OPEN_MENU_BTN_LABEL}\n(no object selected)");
         } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
-            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked)");
-            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is locked)");
-            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(object is locked)");
-            RenameButton.SetInteractivity(false, $"{RENAME_BTN_LABEL}\n(object is locked)");
-            CalibrationButton.SetInteractivity(false, $"{CALIBRATION_BTN_LABEL}\n(object is locked)");
-            OpenMenuButton.SetInteractivity(false, $"{OPEN_MENU_BTN_LABEL}\n(object is locked)");
+            MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is used by {obj.LockOwner})");
+            MoveButton2.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(object is used by {obj.LockOwner})");
+            RemoveButton.SetInteractivity(false, $"{REMOVE_BTN_LABEL}\n(object is used by {obj.LockOwner})");
+            RenameButton.SetInteractivity(false, $"{RENAME_BTN_LABEL}\n(object is used by {obj.LockOwner})");
+            CalibrationButton.SetInteractivity(false, $"{CALIBRATION_BTN_LABEL}\n(object is used by {obj.LockOwner})");
+            OpenMenuButton.SetInteractivity(false, $"{OPEN_MENU_BTN_LABEL}\n(object is used by {obj.LockOwner})");
         } else {
             SelectedObjectText.text = obj.GetName() + "\n" + obj.GetObjectTypeName();
             MoveButton.SetInteractivity(false, $"{MOVE_BTN_LABEL}\n(loading...)");
@@ -176,7 +176,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (SceneManager.Instance.IsRobotAndEESelected()) {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
                     !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
-                    SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot locked by another user)" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+                    SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         } else {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         }
@@ -329,7 +329,7 @@ public abstract class LeftMenu : MonoBehaviour {
         OpenRobotSelector();
     }
 
-    protected void OpenRobotSelector(UnityAction afterSelectionCallback = null) {
+    protected async void OpenRobotSelector(UnityAction afterSelectionCallback = null) {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot selector", "Scene offline");
             return;
@@ -354,8 +354,15 @@ public abstract class LeftMenu : MonoBehaviour {
                 }
             };
         }
-
-        _ = GameManager.Instance.RequestObject(EditorStateEnum.SelectingEndEffector, callback, "Select End Effector", ValidateEndEffector);
+        System.Collections.Generic.List<RobotEE> EEs = await SceneManager.Instance.GetAllRobotsEEs();
+        if (EEs.Count == 0) {
+            Notifications.Instance.ShowNotification("Failed to open EE selector", "There is no robot with EE in the scene");
+            return;
+        } else if (EEs.Count == 1) {
+            callback(EEs[0]);
+        } else {
+            _ = GameManager.Instance.RequestObject(EditorStateEnum.SelectingEndEffector, callback, "Select End Effector", ValidateEndEffector);
+        }
     }
 
     private void SelectEndEffector(object selectedObject) {
@@ -383,7 +390,6 @@ public abstract class LeftMenu : MonoBehaviour {
             Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
             return;
         } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
             OpenRobotSelector(RobotSteppingButtonClick);
             return;
         }

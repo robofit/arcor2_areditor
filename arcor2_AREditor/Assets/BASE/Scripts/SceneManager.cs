@@ -982,6 +982,15 @@ namespace Base {
             }
             return objects;
         }
+
+        public async Task<List<RobotEE>> GetAllRobotsEEs() {
+            List<RobotEE> eeList = new List<RobotEE>();
+            foreach (ActionObject ao in ActionObjects.Values) {
+                if (ao.IsRobot())
+                    eeList.AddRange(await ((IRobot) ao).GetAllEE());
+            }
+            return eeList;
+        }
              
         
 

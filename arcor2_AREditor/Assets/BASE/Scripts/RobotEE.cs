@@ -14,12 +14,30 @@ public class RobotEE : InteractiveObject, ISubItem {
     public string EEId, ARMId;
     public IRobot Robot;
 
+    private void Awake() {
+        SceneManager.Instance.OnRobotSelected += OnRobotSelected;
+    }
+
+    private void OnDestroy() {
+        SceneManager.Instance.OnRobotSelected -= OnRobotSelected;
+    }
+
+    private void OnRobotSelected(object sender, System.EventArgs e) {
+        if (SceneManager.Instance.SelectedEndEffector == this) {
+            OutlineOnClick.Select();
+        } else {
+            OutlineOnClick.Deselect();
+        }
+    }
+
     public void InitEE(IRobot robot, string armId, string eeId) {
         Robot = robot;
         ARMId = armId;
         EEId = eeId;
         UpdateLabel();
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+
+        
     }
 
     public void UpdateLabel() {
@@ -35,9 +53,14 @@ public class RobotEE : InteractiveObject, ISubItem {
         }
     }
 
+    public bool IsSelected => SceneManager.Instance.SelectedEndEffector == this;
+
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
         DisplayOffscreenIndicator(true);
+        if (IsSelected) {
+            OutlineOnClick.Deselect();
+        }
         OutlineOnClick.Highlight();
     }
 
@@ -45,6 +68,9 @@ public class RobotEE : InteractiveObject, ISubItem {
         eeName.gameObject.SetActive(false);
         DisplayOffscreenIndicator(false);
         OutlineOnClick.UnHighlight();
+        if (IsSelected) {
+            OutlineOnClick.Select();
+        }
     }
 
     /// <summary>

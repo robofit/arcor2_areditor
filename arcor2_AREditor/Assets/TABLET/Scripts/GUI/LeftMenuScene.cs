@@ -78,7 +78,7 @@ public class LeftMenuScene : LeftMenu
                 SelectedObjectText.text = "";
                 ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(no object selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
-                ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(object is locked)");
+                ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(the object is used by {obj.LockOwner})");
             } else {
                 if (obj is ActionObject actionObject) {
                     if (!SceneManager.Instance.SceneStarted) {

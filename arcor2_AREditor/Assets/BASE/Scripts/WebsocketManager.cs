@@ -1399,8 +1399,7 @@ namespace Base {
         /// <returns></returns>
         public async Task DeleteObjectType(string type) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
-            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: false);
+            IO.Swagger.Model.DeleteObjectTypesRequest request = new IO.Swagger.Model.DeleteObjectTypesRequest(id: r_id, request: "DeleteObjectTypes", args: new List<string>() { type }, dryRun: false);
             SendDataToServer(request.ToJson(), r_id, true);
             RemoveFromSceneResponse response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
             if (response == null || !response.Result) {
@@ -1408,11 +1407,10 @@ namespace Base {
             }
         }
 
-        public void DeleteObjectTypeDryRun(string type, UnityAction<string, string> callback) {
+        public void DeleteObjectTypeDryRun(List<string> types, UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
-            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: true);
-            responsesCallback.Add(r_id, Tuple.Create(type, callback));
+            IO.Swagger.Model.DeleteObjectTypesRequest request = new IO.Swagger.Model.DeleteObjectTypesRequest(id: r_id, request: "DeleteObjectTypes", args: types, dryRun: true);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
             SendDataToServer(request.ToJson(), r_id, false);
         }
 
