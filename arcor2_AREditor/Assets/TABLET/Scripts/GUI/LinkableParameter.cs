@@ -15,11 +15,13 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     protected string type;
     protected object value;
     protected int dropdownIndexSelected;
-
+    
     public const string ProjectParameterText = "project_parameter";
     private const string NewProjectParameterText = "New project parameter";
 
-    //!! has to be set in either start or init !! 
+    /// <summary>
+    ///  !! has to be set in either start or init !!
+    /// </summary>     
     public IParameter Parameter;
 
     public virtual string GetCurrentType() {

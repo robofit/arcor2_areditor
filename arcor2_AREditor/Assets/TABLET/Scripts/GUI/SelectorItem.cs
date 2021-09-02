@@ -24,6 +24,8 @@ public class SelectorItem : MonoBehaviour
     public ManualTooltip Tooltip;
 
 
+
+
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     private List<SelectorItem> childs = new List<SelectorItem>();

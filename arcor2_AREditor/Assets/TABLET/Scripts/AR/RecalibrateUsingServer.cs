@@ -33,10 +33,6 @@ public class RecalibrateUsingServer : InteractiveObject {
         CalibrationManager.Instance.RecalibrateUsingServer(inverse:true, showNotification:true);
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-    }
-
 
     public override void OnHoverStart() {
         DisplayOffscreenIndicator(true);

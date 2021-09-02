@@ -29,6 +29,8 @@ public class ActionObject3D : ActionObject {
 
     private List<Renderer> aoRenderers = new List<Renderer>();
 
+
+
     protected override void Start() {
         base.Start();
         transform.localScale = new Vector3(1f, 1f, 1f);
@@ -351,13 +353,28 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void UpdateColor() {
+        if (Blocklisted)
+            return;
         Color color;
         if (Enabled && !IsLocked)
             color = new Color(0.89f, 0.83f, 0.44f);
         else
             color = Color.gray;
+
         color.a = SceneManager.Instance.ActionObjectsVisibility;
         modelMaterial.color = color;
+    }
+
+    public override void Enable(bool enable, bool putOnBlocklist = false, bool removeFromBlocklist = false) {
+        bool prevBlocklisted = Blocklisted;
+        base.Enable(enable, putOnBlocklist, removeFromBlocklist);
+        if (prevBlocklisted != Blocklisted) {
+            if (Blocklisted) {
+                SetVisibility(0);
+            } else {
+                SetVisibility(MainSettingsMenu.Instance.GetVisibilityActionObjects());
+            }
+        }
     }
 
     public override void OpenMenu() {

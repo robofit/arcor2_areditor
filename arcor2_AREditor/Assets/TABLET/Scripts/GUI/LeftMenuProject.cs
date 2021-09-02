@@ -155,7 +155,7 @@ public class LeftMenuProject : LeftMenu
                     AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                     AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                 }
-                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point)");
+                ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D || obj is APOrientation, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point or orientation)");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
                     AddActionPointButton.SetInteractivity(true);
@@ -492,12 +492,20 @@ public class LeftMenuProject : LeftMenu
             SelectorMenu.Instance.gameObject.SetActive(true);
             _ = ActionPointAimingMenu.Instance.Hide(true);
         } else {
-            if (await ActionPointAimingMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
+            bool opened = false;
+
+            if (selectedObject is ActionPoint3D actionPoint) {
+                opened = await ActionPointAimingMenu.Instance.Show(actionPoint);
+            } else if (selectedObject is APOrientation orientation) {
+                opened = await orientation.OpenDetailMenu();     
+            }
+            if (opened) {
                 ActionPointAimingMenuButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
             } else {
                 Notifications.Instance.ShowNotification("Failed to open action picker", "Could not lock action point");
             }
+            
 
         }
     }

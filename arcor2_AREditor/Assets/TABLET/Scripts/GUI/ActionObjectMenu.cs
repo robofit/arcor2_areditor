@@ -26,6 +26,8 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     public CanvasGroup CanvasGroup;
     public TMPro.TMP_Text VisibilityLabel;
 
+    public SwitchComponent BlocklistSwitch;
+
     public GameObject ParameterOverridePrefab;
     private Dictionary<string, ActionObjectParameterOverride> overrides = new Dictionary<string, ActionObjectParameterOverride>();
 
@@ -66,7 +68,13 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
             UpdateMenu();
     }
 
+    public void PutOnBlocklist() {
+        CurrentObject.Enable(false, true, false);
+    }
 
+    public void RemoveFromBlocklist() {
+        CurrentObject.Enable(SelectorMenu.Instance.ObjectsToggle.Toggled, false, true);
+    }
 
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
@@ -124,6 +132,7 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     public virtual void UpdateMenu() {
         // Parameters:
         ObjectHasNoParameterLabel.SetActive(CurrentObject.ObjectParameters.Count == 0);
+        BlocklistSwitch.SetValue(CurrentObject.Blocklisted);
         Parameters.GetComponent<VerticalLayoutGroup>().enabled = true;
         foreach (Transform o in Parameters.transform) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {

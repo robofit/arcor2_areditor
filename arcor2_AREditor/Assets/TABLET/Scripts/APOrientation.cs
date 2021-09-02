@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -65,12 +66,19 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override async void OpenMenu() {
-        ActionPoint.ShowOrientationDetailMenu(OrientationId);
-        HighlightOrientation(true);
+        throw new NotImplementedException();
     }
 
     public override bool HasMenu() {
-        return true;
+        return false;
+    }
+
+    public async Task<bool> OpenDetailMenu() {
+        if (await ActionPoint.ShowOrientationDetailMenu(OrientationId)) {
+            HighlightOrientation(true);
+            return true;
+        }
+        return false;
     }
 
     public async override Task<RequestResult> Movable() {

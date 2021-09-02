@@ -605,9 +605,12 @@ namespace Base {
             apOrientation.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(apOrientation);
         }
 
-        internal async void ShowOrientationDetailMenu(string orientationId) {
-            if (await ActionPointAimingMenu.Instance.Show(this))
+        internal async Task<bool> ShowOrientationDetailMenu(string orientationId) {
+            if (await ActionPointAimingMenu.Instance.Show(this)) {
                 ActionPointAimingMenu.Instance.OpenDetailMenu(GetOrientation(orientationId));
+                return true;
+            }
+            return false;
         }
 
         public abstract void HighlightAP(bool highlight);

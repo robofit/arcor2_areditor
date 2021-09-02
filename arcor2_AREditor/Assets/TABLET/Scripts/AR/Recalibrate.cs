@@ -33,9 +33,6 @@ public class Recalibrate : InteractiveObject {
         CalibrationManager.Instance.RecalibrateUsingARFoundation();
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-    }
 
     public override void OnHoverStart() {
         DisplayOffscreenIndicator(true);

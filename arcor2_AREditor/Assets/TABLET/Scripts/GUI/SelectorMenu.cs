@@ -19,7 +19,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject SelectorItemPrefab;
 
     public CanvasGroup CanvasGroup;
-    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim, ContainerNoPose;
+    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContentBlocklisted, ContainerAlphabet, ContainerAim, ContainerNoPose, ContainerBlocklisted;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
@@ -268,6 +268,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     
     public void RemoveFromAimingList(SelectorItem selectorItem) {
         //Debug.LogError($"{selectorItem.Label.text}: {selectorItem.ChildSelected}");
+        if (selectorItem.InteractiveObject.Blocklisted)
+            return;
         if (IsRootItem(selectorItem)) {
             selectorItem.transform.SetParent(ContentAlphabet.transform);
         } else {            
@@ -276,6 +278,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void AddItemToAimingList(SelectorItem selectorItem) {
+        if (selectorItem.InteractiveObject.Blocklisted)
+            return;
         selectorItem.SetCollapsedState(false);
         
         if (IsRootItem(selectorItem)) {
@@ -512,6 +516,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAim.SetActive(true);
         ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(false);
         foreach (SelectorItem item in SelectorItems.Values) {
             if (!IsRootItem(item)) {
                 item.gameObject.SetActive(false);
@@ -524,6 +529,15 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAim.SetActive(false);
         ContainerNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(false);
+        UpdateNoPoseMenu();
+    }
+
+    public void SwitchToBlocklisted() {
+        ContainerAim.SetActive(false);
+        ContainerNoPose.SetActive(false);
+        ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(true);
         UpdateNoPoseMenu();
     }
 
@@ -533,7 +547,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void SwitchToAlphabet(bool updateCollapsedState) {
         foreach (SelectorItem item in SelectorItems.Values.OrderBy(item => item.InteractiveObject.GetName())) {
-            if (IsRootItem(item)) {
+            if (item.InteractiveObject.Blocklisted)
+                continue;
+            if (IsRootItem(item)) {                
                 if (item.transform.parent != ContentAlphabet.transform)
                     item.transform.SetParent(ContentAlphabet.transform);
                 item.transform.SetAsLastSibling();
@@ -550,6 +566,15 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAim.SetActive(false);
         ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(true);
+        ContainerBlocklisted.SetActive(false);
+    }
+
+    public void PutOnBlocklist(SelectorItem selectorItem) {
+        selectorItem.transform.SetParent(ContentBlocklisted.transform);
+    }
+
+    public void RemoveFromBlacklist(SelectorItem selectorItem) {
+        selectorItem.transform.SetParent(ContentAlphabet.transform);
     }
 
     public InteractiveObject GetSelectedObject() {

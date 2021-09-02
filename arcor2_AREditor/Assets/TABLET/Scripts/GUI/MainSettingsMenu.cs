@@ -162,6 +162,10 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         SceneManager.Instance.SetVisibilityActionObjects(ActionObjectsVisibilitySlider.value / 100f);
     }
 
+    public float GetVisibilityActionObjects() {
+        return ActionObjectsVisibilitySlider.value / 100f;
+    }
+
     public void ShowAPOrientations() {
         Base.ProjectManager.Instance.ShowAPOrientations();
     }

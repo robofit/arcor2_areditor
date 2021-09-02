@@ -17,10 +17,17 @@ public abstract class InteractiveObject : Clickable {
     public bool IsLockedByMe => IsLocked && LockOwner == LandingScreen.Instance.GetUsername();
     public bool IsLockedByOtherUser => IsLocked && LockOwner != LandingScreen.Instance.GetUsername();
 
+    public bool Blocklisted => blocklisted;
+
     public SelectorItem SelectorItem;
     public List<Collider> Colliders = new List<Collider>();
 
     protected Target offscreenIndicator;
+
+    /// <summary>
+    /// Indicates that object is on blacklist and should not be listed in aim menu and object visibility should be 0
+    /// </summary>
+    private bool blocklisted;
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
@@ -69,8 +76,29 @@ public abstract class InteractiveObject : Clickable {
         }
         return minDist;
     }
-    
-    public virtual void Enable(bool enable) {
+
+    /// <summary>
+    /// Sets wheter or not the object is enabled for interaction in the scene
+    /// Note: putOnBlocklist and removeFromBlocklist could not be both true!
+    /// Note2: Could not set enable to true and putOnBlocklist at the same time!
+    /// </summary>
+    /// <param name="enable">Enable flag</param>
+    /// <param name="putOnBlocklist">Object should be blocklisted (if it is not already)</param>
+    /// <param name="removeFromBlocklist">Object should be removed from blacklist</param>
+    public virtual void Enable(bool enable, bool putOnBlocklist = false, bool removeFromBlocklist = false) {
+        Debug.Assert(!(putOnBlocklist && removeFromBlocklist));
+        Debug.Assert(!(putOnBlocklist && enable));
+
+        if (blocklisted && !removeFromBlocklist) 
+            return;
+        if (putOnBlocklist) {
+            blocklisted = true;
+            SelectorMenu.Instance.PutOnBlocklist(SelectorItem);
+        }
+        if (removeFromBlocklist) {
+            blocklisted = false;
+            SelectorMenu.Instance.RemoveFromBlacklist(SelectorItem);
+        }
         Enabled = enable;
         UpdateColor();
 
@@ -78,7 +106,7 @@ public abstract class InteractiveObject : Clickable {
             collider.enabled = enable;
         }
         if (SelectorItem != null)
-            SelectorItem.gameObject.SetActive(enable);
+            SelectorItem.gameObject.SetActive(enable || blocklisted);
         if (!enable && SelectorMenu.Instance.GetSelectedObject() == this) {
             SelectorMenu.Instance.DeselectObject(true);
         }
