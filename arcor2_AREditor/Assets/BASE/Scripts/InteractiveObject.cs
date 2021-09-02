@@ -94,10 +94,13 @@ public abstract class InteractiveObject : Clickable {
         if (putOnBlocklist) {
             blocklisted = true;
             SelectorMenu.Instance.PutOnBlocklist(SelectorItem);
+            PlayerPrefsHelper.SaveBool($"ActionObject/{GetId()}/blocklisted", true);
         }
         if (removeFromBlocklist) {
             blocklisted = false;
             SelectorMenu.Instance.RemoveFromBlacklist(SelectorItem);
+
+            PlayerPrefsHelper.SaveBool($"ActionObject/{GetId()}/blocklisted", false);
         }
         Enabled = enable;
         UpdateColor();

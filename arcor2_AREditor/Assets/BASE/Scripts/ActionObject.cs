@@ -37,6 +37,11 @@ namespace Base {
             } else {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
             }
+
+            if (PlayerPrefsHelper.LoadBool($"ActionObject/{GetId()}/blocklisted", false)) {
+                Enable(false, true, false);
+            }
+
         }
         
         public virtual void UpdateObjectName(string newUserId) {

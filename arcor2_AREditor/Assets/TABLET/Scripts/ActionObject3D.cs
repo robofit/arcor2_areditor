@@ -101,7 +101,10 @@ public class ActionObject3D : ActionObject {
 
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
-        base.SetVisibility(value);
+        float normalizedValue = value;
+        if (Blocklisted)
+            normalizedValue = 0;
+        base.SetVisibility(normalizedValue);
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
         }
@@ -113,7 +116,7 @@ public class ActionObject3D : ActionObject {
         if (ActionObjectMetadata.ObjectModel != null &&
             ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
             // Set opaque shader
-            if (value >= 1) {
+            if (normalizedValue >= 1) {
                 transparent = false;
                 foreach (var renderer in aoRenderers) {
                     foreach (var material in renderer.materials) {
@@ -137,14 +140,14 @@ public class ActionObject3D : ActionObject {
                 foreach (var renderer in aoRenderers) {
                     foreach (var material in renderer.materials) {
                         Color col = material.color;
-                        col.a = value;
+                        col.a = normalizedValue;
                         material.color = col;
                     }
                 }
             }
         } else { //not mesh
             // Set opaque shader
-            if (value >= 1) {
+            if (normalizedValue >= 1) {
                 transparent = false;
                 modelMaterial.shader = standardShader;
             }
@@ -156,7 +159,7 @@ public class ActionObject3D : ActionObject {
                 }
                 // set alpha of the material
                 Color color = modelMaterial.color;
-                color.a = value;
+                color.a = normalizedValue;
                 modelMaterial.color = color;
             }
         }
