@@ -17,7 +17,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
     public VerticalLayoutGroup LayoutGroupToBeDisabled;
     public string Type;
 
-    public ManualTooltip ManualTooltip;
+    public ManualTooltip ManualTooltip, DropdownTooltip;
     public GameObject Trigger, CanvasRoot;
 
     private void Awake() {
@@ -83,15 +83,22 @@ public class DropdownParameter : MonoBehaviour, IParameter {
         gameObject.GetComponent<VerticalLayoutGroup>().enabled = false;
     }
 
-    public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback) {
+    public virtual void PutData(List<string> data, string selectedItem, UnityAction<string> callback, List<string> labels = null) {
+        Debug.Assert(labels == null || labels.Count == data.Count);
         List<CustomDropdown.Item> items = new List<CustomDropdown.Item>();
-        foreach (string d in data) {
+        for (int i = 0; i < data.Count; ++i) {
+
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = d
+                itemName = labels == null ? data[i] : labels[i]
             };
             items.Add(item);
         }
         PutData(items, selectedItem, callback);
+    }
+
+    public void UpdateTooltip(string newValue) {
+        DropdownTooltip.Description = newValue;
+        DropdownTooltip.ShowDefaultDescription();
     }
 
     public void PutData(List<CustomDropdown.Item> items, string selectedItem, UnityAction<string> callback) {
@@ -103,6 +110,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
                     item.OnItemSelection = new UnityEvent();
                 }
                 item.OnItemSelection.AddListener(() => callback(item.itemName));
+                item.OnItemSelection.AddListener(() => UpdateTooltip(item.itemName));
             }
 
             Dropdown.dropdownItems.Add(item);
@@ -118,6 +126,7 @@ public class DropdownParameter : MonoBehaviour, IParameter {
             
             Dropdown.SetupDropdown();
             NoOption.gameObject.SetActive(false);
+            UpdateTooltip(Dropdown.selectedText.text);
         } else {
             Dropdown.gameObject.SetActive(false);
             NoOption.gameObject.SetActive(true);

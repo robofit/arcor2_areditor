@@ -6,6 +6,7 @@ using static Base.Parameter;
 using UnityEngine.UI;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public NStateToggle ParameterTypeToggle;
@@ -35,7 +36,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         if (type == "link")
             return EncodeLinkValue((string) ActionsDropdown.GetValue());
         else if (type == ProjectParameterText) {
-            return EncodeProjectParameterValue((string) ActionsDropdown.GetValue());
+            return EncodeProjectParameterValue(((string) ActionsDropdown.GetValue()).Split(':')[0]);
         } else
             return Parameter.GetValue();
     }
@@ -77,23 +78,28 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     private void SetupDropdownForProjectParameters(string type, object value) {
         if (ProjectParametersHelper.TypeSupported(type)) {
             List<string> projectParameters = new List<string>();
+            List<string> labels = new List<string>();
+            string selectedLabel = null;
             foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
                 projectParameters.Add(pp.Name);
+                labels.Add($"{pp.Name}: {ProjectParameterHelper.GetValue(pp)}");
+                if (value != null && pp.Id == JsonConvert.DeserializeObject<string>(value.ToString())) {
+                    selectedLabel = labels.Last();
+                }                
             }
             projectParameters.Add(NewProjectParameterText);
-            ActionsDropdown.PutData(projectParameters, DecodeProjectParameterValue(value?.ToString()), OnProjectParameterPicked);
+            labels.Add(NewProjectParameterText);
+            ActionsDropdown.PutData(projectParameters, selectedLabel, OnProjectParameterPicked, labels);
             dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
         } else {
-            //ActionsDropdown.SetInteractable(false);
-            //ActionsDropdown.Dropdown.selectedText.text = "Not available";
             ActionsDropdown.PutData(new List<string>(), "", OnProjectParameterPicked);
-
         }
 
     }
 
-    private void OnProjectParameterPicked(string name) {
-        if (name == NewProjectParameterText) {
+
+    private void OnProjectParameterPicked(string projectParameterName) {
+        if (projectParameterName == NewProjectParameterText) {
             bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible();
             bool hideAddNewActionDialog = AREditorResources.Instance.AddNewActionDialog.IsVisible;
             if (hideActionParametersMenu)
@@ -110,7 +116,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
                     AREditorResources.Instance.AddNewActionDialog.Open();
                 SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
                 if (!string.IsNullOrEmpty(newProjectParameterName)) {
-                    ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.FindIndex(i => i.itemName == newProjectParameterName);
+                    ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.FindIndex(i => i.itemName.Split(':')[0] == newProjectParameterName);
                     ActionsDropdown.Dropdown.SetupDropdown();
                     ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke(); //select newly added project parameter
                 }
@@ -127,7 +133,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             AREditorResources.Instance.EditProjectParameterDialog.Open();
 
         } else {
-            onChangeParameterHandler?.Invoke(GetName(), GetValue(), type);
+            onChangeParameterHandler?.Invoke(GetName(), projectParameterName, type);
             dropdownIndexSelected = ActionsDropdown.Dropdown.selectedItemIndex;
         }
     }

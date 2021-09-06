@@ -21,7 +21,7 @@ namespace Base {
         //public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata)
 
         /// <summary>
-        /// Creates action parameter based on it's metadata, parent action and action paramater swagger model.
+        /// Creates action parameter based on it's metadata, parent action and action parameter swagger model.
         /// </summary>
         /// <param name="parameterMetadata"></param>
         /// <param name="action"></param>
