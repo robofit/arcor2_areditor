@@ -640,6 +640,13 @@ namespace Base {
             return Data.Id;
         }
 
+        public bool AnyOrientation() {
+            return Data.Orientations.Count > 0;
+        }
+
+        public bool AnyJoints() {
+            return Data.RobotJoints.Count > 0;
+        }
 
     }
 }

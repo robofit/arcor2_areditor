@@ -365,8 +365,7 @@ public class LeftMenuProject : LeftMenu
             selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
             WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);            
         } else if (selectedObject is Base.Action action) {
-            AddNewActionDialog.InitFromAction(action);
-            AddNewActionDialog.Open();
+            ActionPickerMenu.Instance.DuplicateAction(action);
         }
     }
 

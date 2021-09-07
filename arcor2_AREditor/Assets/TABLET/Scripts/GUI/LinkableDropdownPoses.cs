@@ -44,7 +44,10 @@ public class LinkableDropdownPoses : LinkableDropdown
     }
 
     private void UpdateButtonLabel() {
-        Button.SetLabel($"AP: {selectedAP.GetName()}\nPose: {selectedOrientation.GetName()}");
+        if (selectedAP != null && selectedOrientation != null)
+            Button.SetLabel($"AP: {selectedAP.GetName()}\nPose: {selectedOrientation.GetName()}");
+        else
+            Button.SetLabel($"There is no available Pose");
     }
 
     public async void OnClick() {
@@ -99,7 +102,8 @@ public class LinkableDropdownPoses : LinkableDropdown
             string value = (string) v;
             if (value == null)
                 return null;
-
+            if (selectedOrientation == null)
+                return null;
             return selectedOrientation.GetId();
         }    
     }

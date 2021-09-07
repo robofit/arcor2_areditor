@@ -23,8 +23,9 @@ public class RenameDialog : Dialog
     private UnityAction _updateVisibilityCallback;
     private bool isNewObject;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
+    private UnityAction confirmCallback;
 
-    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null, UnityAction confirmCallback = null) {
         if (!await objectToRename.WriteLock(false))
             return;
 
@@ -40,9 +41,10 @@ public class RenameDialog : Dialog
         nameInput.SetLabel("Name", "New name");
         nameInput.SetType("string");
         CloseBtn.Button.onClick.RemoveAllListeners();
-        CloseBtn.Button.onClick.AddListener(() => Cancel());
+        CloseBtn.Button.onClick.AddListener(Cancel);
         if (cancelCallback != null)
             CloseBtn.Button.onClick.AddListener(cancelCallback);
+        this.confirmCallback = confirmCallback;
     }
 
     public void ValidateInput() {
@@ -60,12 +62,17 @@ public class RenameDialog : Dialog
         string name = (string) nameInput.GetValue();
         if (name == selectedObject.GetName()) { //for new objects, without changing name
             Cancel();
+            confirmCallback?.Invoke();
+            Debug.LogError("invoke callback");
             return;
         }
 
-            try {
+        try {
             await selectedObject.Rename(name);
-            Close();
+            Cancel();
+            confirmCallback?.Invoke();
+
+            Debug.LogError("invoke callback");
         } catch (RequestFailedException) {
             //notification already shown, nothing else to do
         }
@@ -75,6 +82,7 @@ public class RenameDialog : Dialog
         //LeftMenu.Instance.UpdateVisibility();
 
         SelectorMenu.Instance.gameObject.SetActive(true);
+        Debug.LogError("show selectormenu");
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
@@ -82,11 +90,11 @@ public class RenameDialog : Dialog
         selectedObject = null;
     }
 
-    public async void Cancel() {
-        if (selectedObject == null)
-            return;
-
-        await selectedObject.WriteUnlock();
+    public void Cancel() {
+        if (selectedObject != null) {
+            _ = selectedObject.WriteUnlock();
+        }
         Close();
+
     }
 }

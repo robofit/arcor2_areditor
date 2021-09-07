@@ -9,6 +9,9 @@ public abstract class Dialog : MonoBehaviour
 {
     protected ModalWindowManager windowManager;
 
+    private bool visible;
+    public bool Visible => visible;
+
     public virtual void Awake() {
         windowManager = GetComponent<ModalWindowManager>();
     }
@@ -59,12 +62,15 @@ public abstract class Dialog : MonoBehaviour
     }
 
     public virtual void Close() {
+        visible = false;
         InputHandler.Instance.OnEscPressed -= OnEscPressed;
         InputHandler.Instance.OnEnterPressed -= OnEnterPressed;
         windowManager.CloseWindow();
+        
     }
 
     public virtual void Open() {
+        visible = true;
         InputHandler.Instance.OnEscPressed += OnEscPressed;
         InputHandler.Instance.OnEnterPressed += OnEnterPressed;
         windowManager.OpenWindow();

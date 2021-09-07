@@ -12,7 +12,7 @@ using MiniJSON;
 using RosSharp.Urdf;
 
 namespace Base {
-    public class Parameter : IO.Swagger.Model.Parameter {
+    public class Parameter : IO.Swagger.Model.ActionParameter {
         public ParameterMetadata ParameterMetadata;
 
         public delegate void OnChangeParameterHandlerDelegate(string parameterId, object newValue, string type, bool isValueValid = true);

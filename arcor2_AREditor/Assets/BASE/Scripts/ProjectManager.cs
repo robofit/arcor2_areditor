@@ -119,6 +119,7 @@ namespace Base {
         public bool AnyAvailableAction;
 
         public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
+        public event AREditorEventArgs.ActionEventHandler OnActionAddedToScene;
 
         public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationAdded;
         public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationUpdated;
@@ -502,7 +503,7 @@ namespace Base {
                         Parameters = new List<IO.Swagger.Model.ActionParameter>()                        
                     };
                     foreach (Parameter param in action.Parameters.Values) {
-                        projectAction.Parameters.Add(DataHelper.ParameterToActionParameter(param));
+                        projectAction.Parameters.Add(param);
                     }
                 }
                 project.ActionPoints.Add(projectActionPoint);
@@ -1182,6 +1183,7 @@ namespace Base {
                 action.ActionUpdate(projectAction);
                 action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
+                OnActionAddedToScene.Invoke(this, new ActionEventArgs(action));
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
             }            
@@ -1229,6 +1231,22 @@ namespace Base {
             if (SelectorMenu.Instance.IOToggle.Toggled != visible)
                 SelectorMenu.Instance.IOToggle.SwitchToggle();
             SelectorMenu.Instance.IOToggle.SetInteractivity(visible, "Connections are hidden");
+        }
+
+        public bool AnyOrientationInTheProject() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                if (ap.AnyOrientation())
+                    return true;
+            }
+            return false;
+        }
+
+        public bool AnyJointsInTheProject() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                if (ap.AnyJoints())
+                    return true;
+            }
+            return false;
         }
 
     }

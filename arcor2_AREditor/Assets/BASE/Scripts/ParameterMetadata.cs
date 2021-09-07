@@ -1,10 +1,21 @@
 using Newtonsoft.Json;
+using RestSharp.Extensions;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Base {
     public class ParameterMetadata : IO.Swagger.Model.ParameterMeta {
+
+        public const string INT = "integer";
+        public const string DOUBLE = "double";
+        public const string STR = "string";
+        public const string STR_ENUM = "string_enum";
+        public const string INT_ENUM = "integer_enum";
+        public const string REL_POSE = "relative_pose";
+        public const string JOINTS = "joints";
+        public const string BOOL = "boolean";
+        public const string POSE = "pose";
 
         public ARServer.Models.BaseParameterExtra ParameterExtra = null;
 
@@ -13,16 +24,16 @@ namespace Base {
             if (Extra != null && Extra != "{}") {// TODO solve better than with test of brackets
 
                 switch (Type) {
-                    case "string_enum":
+                    case STR_ENUM:
                         ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.StringEnumParameterExtra>(Extra);
                         break;
-                    case "integer_enum":
+                    case INT_ENUM:
                         ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntegerEnumParameterExtra>(Extra);
                         break;
-                    case "integer":
+                    case INT:
                         ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.IntParameterExtra>(Extra);
                         break;
-                    case "double":
+                    case DOUBLE:
                         ParameterExtra = JsonConvert.DeserializeObject<ARServer.Models.DoubleParameterExtra>(Extra);
                         break;
                 }
@@ -39,9 +50,45 @@ namespace Base {
 
         public T GetDefaultValue<T>() {
             if (DefaultValue == null)
-                return default;
+                if (ParameterExtra != null) {
+                    switch (Type) {
+                        case INT:
+                            return (T) ((ARServer.Models.IntParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
+                        case DOUBLE:
+                            return (T) ((ARServer.Models.DoubleParameterExtra) ParameterExtra).Minimum.ChangeType(typeof(T));
+                    }
+                } else {
+                    return default;
+                }
             return JsonConvert.DeserializeObject<T>(DefaultValue);
-        } 
+        }
+
+        public object GetDefaultValue() {
+            switch (Type) {
+                case INT:
+                    return GetDefaultValue<int>();
+                case DOUBLE:
+                    return GetDefaultValue<double>();
+                case STR:
+                    return GetDefaultValue<string>();
+                case STR_ENUM:
+                    return GetDefaultValue<string>();
+                case INT_ENUM:
+                    return GetDefaultValue<int>();
+                case REL_POSE:
+                    return GetDefaultValue<string>();
+                case JOINTS:
+                    return GetDefaultValue<string>();
+                case BOOL:
+                    return GetDefaultValue<bool>();
+                case POSE:
+                    return GetDefaultValue<string>();
+                default:
+                    Debug.LogError($"Trying to use unsupported parameter type: {Type}");
+                    throw new RequestFailedException("Unknown type");
+
+            }
+        }
 
     }
 

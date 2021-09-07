@@ -164,7 +164,7 @@ public abstract class LeftMenu : MonoBehaviour {
             CalibrationButton.SetInteractivity(obj.GetType() == typeof(Recalibrate) ||
                 obj.GetType() == typeof(CreateAnchor) || obj.GetType() == typeof(RecalibrateUsingServer), $"{CALIBRATION_BTN_LABEL}\n(selected object is not calibration cube)");
             if (obj is Action3D action) {
-                OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Open action parameters menu\nAction has no parameters)");
+                OpenMenuButton.SetInteractivity(action.Parameters.Count > 0, "Open action parameters menu\n(action has no parameters)");
             } else {
                 OpenMenuButton.SetInteractivity(obj.HasMenu(), $"{OPEN_MENU_BTN_LABEL}\n(selected object has no menu)");
             }
@@ -477,7 +477,7 @@ public abstract class LeftMenu : MonoBehaviour {
         RenameClick(false);   
     }
 
-    public void RenameClick(bool removeOnCancel) {
+    public void RenameClick(bool removeOnCancel, UnityAction confirmCallback = null) {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
@@ -489,9 +489,9 @@ public abstract class LeftMenu : MonoBehaviour {
         UpdateVisibility(false, true);
         SelectorMenu.Instance.gameObject.SetActive(false);
         if (removeOnCancel)
-            RenameDialog.Init(selectedObject, UpdateVisibility, true, () => selectedObject.Remove());
+            RenameDialog.Init(selectedObject, UpdateVisibility, true, () => selectedObject.Remove(), confirmCallback);
         else
-            RenameDialog.Init(selectedObject, UpdateVisibility);
+            RenameDialog.Init(selectedObject, UpdateVisibility, false, null, confirmCallback);
         RenameDialog.Open();
     }
 
@@ -589,8 +589,8 @@ public abstract class LeftMenu : MonoBehaviour {
     /// <param name="unlock">Unlock objects?</param>
     public virtual void DeactivateAllSubmenus(bool unlock = true) {
         SelectorMenu.Instance.gameObject.SetActive(true);
-        if (RenameDialog.isActiveAndEnabled)
-            RenameDialog.Close();
+        if (RenameDialog.Visible)
+            RenameDialog.Cancel();
         TransformMenu.Instance.Hide(unlock);
         RobotSteppingMenu.Instance.Hide();
 

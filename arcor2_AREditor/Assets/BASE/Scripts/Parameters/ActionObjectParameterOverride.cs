@@ -80,9 +80,9 @@ public class ActionObjectParameterOverride : MonoBehaviour
         Parameter parameter = new Parameter(parameterMetadata, Input.GetValue());
         try {
             if (overridden)
-                await WebsocketManager.Instance.UpdateOverride(objectId, parameter, false);
+                await WebsocketManager.Instance.UpdateOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
             else
-                await WebsocketManager.Instance.AddOverride(objectId, parameter, false);
+                await WebsocketManager.Instance.AddOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
             Destroy(Input.GetTransform().gameObject);
             Value.gameObject.SetActive(true);
             SaveBtn.gameObject.SetActive(false);
