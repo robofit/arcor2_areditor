@@ -548,8 +548,6 @@ namespace Base {
             OnRobotMoveToActionPointOrientationEvent?.Invoke(this, new RobotMoveToActionPointOrientationEventArgs(robotMoveToActionPointOrientationEvent));
             if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointOrientationEvent.Data.Message);
-            else if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToPoseEvent(string data) {
@@ -557,8 +555,6 @@ namespace Base {
             OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
             if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
-            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToJointsEvent(string data) {
@@ -566,8 +562,6 @@ namespace Base {
             OnRobotMoveToJointsEvent?.Invoke(this, new RobotMoveToJointsEventArgs(robotMoveToJointsEvent));
             if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToJointsEvent.Data.Message);
-            else if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToActionPointJointsEvent(string data) {
@@ -575,8 +569,6 @@ namespace Base {
             OnRobotMoveToActionPointJointsEvent?.Invoke(this, new RobotMoveToActionPointJointsEventArgs(robotMoveToActionPointJointsEvent));
             if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointJointsEvent.Data.Message);
-            else if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleStateBefore(string obj) {
