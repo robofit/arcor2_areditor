@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7181962868006894900}
+  - component: {fileID: 8396557668389755906}
   m_Layer: 0
   m_Name: y_axis
   m_TagString: Untagged
@@ -33,6 +34,36 @@ Transform:
   m_Father: {fileID: 968243829547990733}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: -90, y: 90, z: 0}
+--- !u!114 &8396557668389755906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 75896112217242483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
+  OutlineShaderType: 0
+  OutlineClickFirstPass: {fileID: 0}
+  OutlineClickSecondPass: {fileID: 0}
+  OutlineHoverFirstPass: {fileID: 0}
+  OutlineHoverSecondPass: {fileID: 0}
+  OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
+    type: 2}
+  OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
+    type: 2}
+  Renderers:
+  - {fileID: 30667709650160507}
+  - {fileID: 7006783183552405572}
+  - {fileID: 8970438787259863729}
+  - {fileID: 2940766387087319077}
+  HoverOnly: 0
 --- !u!1 &213767856491483027
 GameObject:
   m_ObjectHideFlags: 0
@@ -44,9 +75,10 @@ GameObject:
   - component: {fileID: 991786921762282865}
   - component: {fileID: 6831078694817741932}
   - component: {fileID: 1639470427316395726}
+  - component: {fileID: 9109149286149954518}
   m_Layer: 0
   m_Name: x_cylinder
-  m_TagString: Untagged
+  m_TagString: gizmo_x
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -112,6 +144,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &9109149286149954518
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213767856491483027}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3647263876657241951, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &442535900650120311
 GameObject:
   m_ObjectHideFlags: 0
@@ -161,6 +207,9 @@ MonoBehaviour:
   XAxisRotation: {fileID: 6358645469066668913}
   YAxisRotation: {fileID: 6576956993362172024}
   ZAxisRotation: {fileID: 1353922331461813003}
+  XAxisOutline: {fileID: 7821555115422055097}
+  YAxisOutline: {fileID: 8396557668389755906}
+  ZAxisOutline: {fileID: 6465386918885493145}
 --- !u!1 &618896558061219880
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,9 +221,10 @@ GameObject:
   - component: {fileID: 2066811790432696520}
   - component: {fileID: 2825300134973478722}
   - component: {fileID: 30667709650160507}
+  - component: {fileID: 2092790267274374521}
   m_Layer: 0
   m_Name: y_cone
-  m_TagString: Untagged
+  m_TagString: gizmo_y
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -240,6 +290,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &2092790267274374521
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 618896558061219880}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 2354867493812278720, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &908947164322296393
 GameObject:
   m_ObjectHideFlags: 0
@@ -253,7 +317,7 @@ GameObject:
   - component: {fileID: 2190426232229096123}
   m_Layer: 0
   m_Name: z_cone.001
-  m_TagString: Untagged
+  m_TagString: gizmo_z
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -364,7 +428,7 @@ GameObject:
   - component: {fileID: 4742058387098873040}
   m_Layer: 0
   m_Name: z_cylinder.001
-  m_TagString: Untagged
+  m_TagString: gizmo_z
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -441,9 +505,10 @@ GameObject:
   - component: {fileID: 7433060445699025827}
   - component: {fileID: 9118436265950006341}
   - component: {fileID: 8045487214886943776}
+  - component: {fileID: 8600110116028189677}
   m_Layer: 0
   m_Name: z_cylinder
-  m_TagString: Untagged
+  m_TagString: gizmo_z
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -509,6 +574,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &8600110116028189677
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1925477806821681277}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -621732962967718649, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &3384849864392660304
 GameObject:
   m_ObjectHideFlags: 0
@@ -520,9 +599,10 @@ GameObject:
   - component: {fileID: 2718201349671196795}
   - component: {fileID: 8862524047273251833}
   - component: {fileID: 7006783183552405572}
+  - component: {fileID: 6455182843904097367}
   m_Layer: 0
   m_Name: y_cylinder
-  m_TagString: Untagged
+  m_TagString: gizmo_y
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -588,6 +668,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &6455182843904097367
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3384849864392660304}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -1382167744570421658, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &3451967405407481199
 GameObject:
   m_ObjectHideFlags: 0
@@ -599,9 +693,10 @@ GameObject:
   - component: {fileID: 1109654926431508778}
   - component: {fileID: 8587750959598815271}
   - component: {fileID: 640363733970012016}
+  - component: {fileID: 3925592725594493210}
   m_Layer: 0
   m_Name: z_cone
-  m_TagString: Untagged
+  m_TagString: gizmo_z
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -667,6 +762,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &3925592725594493210
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3451967405407481199}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 5682436511074422235, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &3587789156092798532
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,7 +789,7 @@ GameObject:
   - component: {fileID: 2940766387087319077}
   m_Layer: 0
   m_Name: y_cylinder.001
-  m_TagString: Untagged
+  m_TagString: gizmo_y
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -759,7 +868,7 @@ GameObject:
   - component: {fileID: 8475556419656007397}
   m_Layer: 0
   m_Name: x_cylinder.001
-  m_TagString: Untagged
+  m_TagString: gizmo_x
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -838,7 +947,7 @@ GameObject:
   - component: {fileID: 8970438787259863729}
   m_Layer: 0
   m_Name: y_cone.001
-  m_TagString: Untagged
+  m_TagString: gizmo_y
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -915,9 +1024,10 @@ GameObject:
   - component: {fileID: 746228658182027189}
   - component: {fileID: 3650297974666300448}
   - component: {fileID: 2364269645122401694}
+  - component: {fileID: 4582855873620548595}
   m_Layer: 0
   m_Name: x_cone
-  m_TagString: Untagged
+  m_TagString: gizmo_x
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -983,6 +1093,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!64 &4582855873620548595
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5421417356008294121}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3296328883932684163, guid: e0d75d84424839947beea8742e8fa53a, type: 3}
 --- !u!1 &5825931387923440818
 GameObject:
   m_ObjectHideFlags: 0
@@ -992,6 +1116,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7178940978631520685}
+  - component: {fileID: 7821555115422055097}
   m_Layer: 0
   m_Name: x_axis
   m_TagString: Untagged
@@ -1016,6 +1141,36 @@ Transform:
   m_Father: {fileID: 968243829547990733}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &7821555115422055097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5825931387923440818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
+  OutlineShaderType: 0
+  OutlineClickFirstPass: {fileID: 0}
+  OutlineClickSecondPass: {fileID: 0}
+  OutlineHoverFirstPass: {fileID: 0}
+  OutlineHoverSecondPass: {fileID: 0}
+  OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
+    type: 2}
+  OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
+    type: 2}
+  Renderers:
+  - {fileID: 2364269645122401694}
+  - {fileID: 1639470427316395726}
+  - {fileID: 986389616732212302}
+  - {fileID: 8475556419656007397}
+  HoverOnly: 0
 --- !u!1 &6100531078275009072
 GameObject:
   m_ObjectHideFlags: 0
@@ -1025,6 +1180,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8284014794452972413}
+  - component: {fileID: 6465386918885493145}
   m_Layer: 0
   m_Name: z_axis
   m_TagString: Untagged
@@ -1049,6 +1205,36 @@ Transform:
   m_Father: {fileID: 968243829547990733}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6465386918885493145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100531078275009072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d190eacf2d73849ba8866ad2cb6072, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Enabled: 1
+  OutlineSize: 1
+  OutlineHoverSize: 1
+  OutlineShaderType: 0
+  OutlineClickFirstPass: {fileID: 0}
+  OutlineClickSecondPass: {fileID: 0}
+  OutlineHoverFirstPass: {fileID: 0}
+  OutlineHoverSecondPass: {fileID: 0}
+  OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
+    type: 2}
+  OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
+    type: 2}
+  Renderers:
+  - {fileID: 640363733970012016}
+  - {fileID: 8045487214886943776}
+  - {fileID: 2190426232229096123}
+  - {fileID: 4742058387098873040}
+  HoverOnly: 0
 --- !u!1 &6358645469066668913
 GameObject:
   m_ObjectHideFlags: 0
@@ -1126,7 +1312,7 @@ GameObject:
   - component: {fileID: 986389616732212302}
   m_Layer: 0
   m_Name: x_cone.001
-  m_TagString: Untagged
+  m_TagString: gizmo_x
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

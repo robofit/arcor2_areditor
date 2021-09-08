@@ -69,6 +69,11 @@ public class OutlineOnClick : Clickable {
 
     private bool localMaterialsInstantiated = false;
 
+    public bool Highlighted {
+        get => highlighted;
+        set => highlighted = value;
+    }
+
     private void Awake() {
         if (!localMaterialsInstantiated) {
             InitMaterials();

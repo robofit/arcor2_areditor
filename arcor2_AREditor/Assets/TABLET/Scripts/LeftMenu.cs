@@ -76,7 +76,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected virtual void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
         if (args.Event.State == SceneStateData.StateEnum.Stopping) {
 
-            if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == "robot") {
+            if (TransformMenu.Instance.CanvasGroup.alpha == 1 && TransformMenu.Instance.RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
                 MoveButton.GetComponent<Image>().enabled = false;
                 MoveButton2.GetComponent<Image>().enabled = false;
                 TransformMenu.Instance.Hide();

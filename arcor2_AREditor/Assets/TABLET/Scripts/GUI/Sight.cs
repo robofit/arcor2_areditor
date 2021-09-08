@@ -6,6 +6,7 @@ using System.Linq;
 using RuntimeInspectorNamespace;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using UnityEngine.Events;
 
 namespace Base {
 
@@ -16,6 +17,9 @@ namespace Base {
         public System.DateTime HoverStartTime;
 
         private bool endingHover = false;
+
+        public AREditorEventArgs.GizmoAxisEventHandler SelectedGizmoAxis;
+
 
         private void Awake() {
             GameManager.Instance.OnEditorStateChanged += OnEditorStateChanged;
@@ -33,8 +37,21 @@ namespace Base {
             }
         }
         private void Update() {
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+            if (SelectedGizmoAxis?.GetInvocationList().Length > 0) {
+                RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
+                foreach (RaycastHit hit in hits) {
+                    if (hit.collider.gameObject.CompareTag("gizmo_x")) {
+                        SelectedGizmoAxis.Invoke(this, new GizmoAxisEventArgs(Gizmo.Axis.X));
+                    } else if (hit.collider.gameObject.CompareTag("gizmo_y")) {
+                        SelectedGizmoAxis.Invoke(this, new GizmoAxisEventArgs(Gizmo.Axis.Y));
+                    } else if(hit.collider.gameObject.CompareTag("gizmo_z")) {
+                        SelectedGizmoAxis.Invoke(this, new GizmoAxisEventArgs(Gizmo.Axis.Z));
+                    }
+                }
+            }
             if (SelectorMenu.Instance.CanvasGroup.alpha > 0 && SelectorMenu.Instance.gameObject.activeSelf) {
-                Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+                
 
                 RaycastHit hitinfo = new RaycastHit();
                 bool anyHit = false, directHit = false;

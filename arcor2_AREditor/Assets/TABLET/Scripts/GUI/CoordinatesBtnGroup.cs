@@ -1,25 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 
 public class CoordinatesBtnGroup : MonoBehaviour
 {
-    public class CoordinateSwitchEventArgs : EventArgs {
-        public Gizmo.Axis SelectedAxis {
-            get; set;
-        }
-
-        public CoordinateSwitchEventArgs(Gizmo.Axis selectedAxis) {
-            SelectedAxis = selectedAxis;
-        }
-    }
+   
 
     public CoordBtn X, Y, Z;
     private CoordBtn selectedBtn;
 
-    public delegate void CoordinateSwitchEventHandler(object sender, CoordinateSwitchEventArgs args);
-    public event CoordinateSwitchEventHandler OnAxisChanged;
+    public event AREditorEventArgs.GizmoAxisEventHandler OnAxisChanged;
 
 
     private void Start() {
@@ -37,7 +29,7 @@ public class CoordinatesBtnGroup : MonoBehaviour
         DisableAll();
         selectedBtn = btn;
         btn.Select();
-        OnAxisChanged?.Invoke(this, new CoordinateSwitchEventArgs(selectedBtn.Axis));
+        OnAxisChanged?.Invoke(this, new GizmoAxisEventArgs(selectedBtn.Axis));
     }
 
     public Gizmo.Axis GetSelectedAxis() {
