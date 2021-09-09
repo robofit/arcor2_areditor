@@ -14,8 +14,6 @@ public class TwoStatesToggleNew : MonoBehaviour
     }  
     
     private void Awake() {
-        /*icon1 = BigImage.sprite;
-        icon2 = SmallImage.sprite;*/
         CurrentState = States.Left;
     }
     public Image LeftImage, RightImage;
@@ -27,12 +25,14 @@ public class TwoStatesToggleNew : MonoBehaviour
 
     public UnityEvent OnLeft, OnRight;
 
+    public ManualTooltip DisabledTooltip;
+    public GameObject DisabledImage;
+
     public void SwitchToLeft() {
         if (CurrentState == States.Left)
             return;
         CurrentState = States.Left;
         OnLeft?.Invoke();
-        //Animator.SetTrigger("SwitchToLeft");
         Animator.Play("SwitchToLeft");
     }
 
@@ -41,28 +41,18 @@ public class TwoStatesToggleNew : MonoBehaviour
             return;
         CurrentState = States.Right;
         OnRight?.Invoke();
-        //Animator.SetTrigger("SwitchToRight");
         Animator.Play("SwitchToRight");
     }
 
     public void SetInteractivity(bool interactable) {
-        //base.SetInteractivity(interactable);
-        //SetImagesColors(interactable);
+        DisabledImage.SetActive(!interactable);
     }
 
     public void SetInteractivity(bool interactive, string alterateDescription = null) {
-        //base.SetInteractivity(interactive, alterateDescription);
-        //SetImagesColors(interactive);
+        SetInteractivity(interactive);
+        DisabledTooltip.DescriptionAlternative = alterateDescription;
+        DisabledTooltip.DisplayAlternativeDescription = !interactive;
     }
 
-    /*private void SetImagesColors(bool interactable) {
-        if (!interactable) {
-            BigImage.color = Color.gray;
-            SmallImage.color = Color.gray;
-        } else {
-            BigImage.color = Color.white;
-            SmallImage.color = Color.white;
-        }
-    }*/
 
 }

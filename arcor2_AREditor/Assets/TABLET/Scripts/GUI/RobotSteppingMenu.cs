@@ -12,8 +12,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public Slider SpeedSlider;
     public GameObject StepButtons;
     public TranformWheelUnits Units, UnitsDegrees;
-    public TwoStatesToggle RobotWorldBtn, RotateTranslateBtn, SafeButton;
-    public Image HandBtnRedBackground;
+    public TwoStatesToggleNew RobotWorldBtn, RotateTranslateBtn, SafeButton;
+    public GameObject HandBtnRedBackground;
     public ButtonWithTooltip BackBtn;
 
     public CanvasGroup CanvasGroup;
@@ -143,29 +143,24 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     public void SwitchToSafe() {
         safe = true;
-        SafeButton.SetDescription("Switch to unsafe movements");
     }
 
     public void SwithToUnsafe() {
         safe = false;
-        SafeButton.SetDescription("Switch to safe movements");
     }
 
     public void SwitchToRobot() {
         world = false;
-        RobotWorldBtn.SetDescription("Switch to world coordinate system");
     }
 
     public void SwitchToWorld() {
         world = true;
-        RobotWorldBtn.SetDescription("Switch to robot coordinate system");
     }
 
     public void SwithToTranslate() {
         translate = true;
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
-        RotateTranslateBtn.SetDescription("Switch to rotate");
         SetRotationAxis(Gizmo.Axis.NONE);
     }
 
@@ -173,14 +168,13 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         translate = false;
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
-        RotateTranslateBtn.SetDescription("Switch to translate");
         SetRotationAxis(selectedAxis);
     }
 
     public async void HoldPressed() {
         if (!HandTeachingModeButton.IsInteractive())
             return;
-        HandBtnRedBackground.enabled = true;
+        HandBtnRedBackground.SetActive(true);
         try {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
@@ -194,7 +188,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public async void HoldReleased() {
         if (!HandTeachingModeButton.IsInteractive())
             return;
-        HandBtnRedBackground.enabled = false;
+        HandBtnRedBackground.SetActive(false);
         try {
             string armId = null;
             if (SceneManager.Instance.SelectedRobot.MultiArm())
@@ -221,10 +215,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
 
         switch (RotateTranslateBtn.CurrentState) {
-            case "translate":
+            case TwoStatesToggleNew.States.Right:
                 SetRotationAxis(Gizmo.Axis.NONE);
                 break;
-            case "rotate":
+            case TwoStatesToggleNew.States.Left:
                 SetRotationAxis(selectedAxis);
                 break;
         }
@@ -334,7 +328,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
     public void SetRotationAxis(Gizmo.Axis axis) {
-        if (RotateTranslateBtn.CurrentState == "translate") {
+        if (RotateTranslateBtn.CurrentState == TwoStatesToggleNew.States.Right) {
             gizmo?.SetRotationAxis(Gizmo.Axis.NONE);
         } else {
             gizmo?.SetRotationAxis(axis);
