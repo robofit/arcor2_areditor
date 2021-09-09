@@ -92,4 +92,16 @@ public class Gizmo : MonoBehaviour {
         ZAxisLabel.text = $"Δ{FormatValue(value)}";
     }
 
+    public void SetXDeltaRotation(float value) {        
+        XAxisLabel.text = $"Δ{value}°";
+    }
+
+    public void SetYDeltaRotation(float value) {        
+        YAxisLabel.text = $"Δ{value}°";
+    }
+
+    public void SetZDeltaRotation(float value) {        
+        ZAxisLabel.text = $"Δ{value}°";
+    }
+
 }

@@ -654,6 +654,22 @@ namespace Base {
             return freeName;
         }
 
+        public string GetFreeObjectTypeName(string objectTypeName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = objectTypeName;
+            do {
+                hasFreeName = true;
+                if (ActionsManager.Instance.ActionObjectsMetadata.ContainsKey(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = ToUnderscoreCase(objectTypeName) + "_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
         /// <summary>
         /// Returns all robots in scene
         /// </summary>

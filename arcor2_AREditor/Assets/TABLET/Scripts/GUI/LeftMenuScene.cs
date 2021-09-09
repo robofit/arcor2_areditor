@@ -138,7 +138,7 @@ public class LeftMenuScene : LeftMenu
         } else {
             AddActionObjectButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
-            ActionObjectPickerMenu.Instance.Show();
+            ActionObjectPickerMenu.Instance.Show(ActionObjectPickerMenu.Type.ActionObjects);
         }
 
     }
@@ -299,9 +299,9 @@ public class LeftMenuScene : LeftMenu
         if (AddNewObjectTypeButton.GetComponent<Image>().enabled) {
             AddNewObjectTypeButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            NewObjectTypeMenu.Instance.Hide();
+            ActionObjectPickerMenu.Instance.Hide();
         } else {
-            NewObjectTypeMenu.Instance.Show(() => DeactivateAllSubmenus(false));
+            ActionObjectPickerMenu.Instance.Show(ActionObjectPickerMenu.Type.CollisionObjects);
             AddNewObjectTypeButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
         }

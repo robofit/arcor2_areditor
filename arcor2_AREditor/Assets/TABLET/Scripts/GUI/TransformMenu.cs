@@ -105,6 +105,9 @@ public class TransformMenu : Singleton<TransformMenu> {
             Coordinates.Y.SetDeltaDegrees(delta.eulerAngles.y);
             Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
             Coordinates.Z.SetDeltaDegrees(delta.eulerAngles.z);*/
+            gizmo.SetXDeltaRotation(delta.eulerAngles.x);
+            gizmo.SetYDeltaRotation(delta.eulerAngles.y);
+            gizmo.SetZDeltaRotation(delta.eulerAngles.z);
         } else {
             newValue = GetPositionValue(TransformWheel.GetValue());
             if (handHolding || prevValue != newValue)

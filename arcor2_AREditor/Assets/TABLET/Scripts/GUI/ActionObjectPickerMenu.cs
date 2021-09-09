@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,23 @@ using UnityEngine;
 
 public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 {
+    public enum Type {
+        Robots,
+        ActionObjects,
+        CollisionObjects
+    }
+
+    public enum CollisionObjectType {
+        Cube,
+        Sphere,
+        Cylinder
+    }
+
     public GameObject Content;
     public CanvasGroup CanvasGroup;
     public ActionButtonWithIconRemovable ButtonPrefab;
+
+    public GameObject ActionObjects, CollisionObjects;
 
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
@@ -164,7 +179,17 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
     }
 
-    public void Show() {
+    public void Show(Type type) {
+        switch (type) {
+            case Type.ActionObjects:
+                ActionObjects.SetActive(true);
+                CollisionObjects.SetActive(false);
+                break;
+            case Type.CollisionObjects:
+                ActionObjects.SetActive(false);
+                CollisionObjects.SetActive(true);
+                break;
+        }
         UpdateRemoveBtns();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
     }
@@ -177,4 +202,70 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         return CanvasGroup.alpha > 0;
     }
 
-}
+    public async void CreateCube() {
+        ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cube);
+        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
+        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Cube"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+    }
+
+    public async void CreateCylinder() {
+        ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cylinder);
+        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
+        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Cylinder"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+    }
+
+    public async void CreateSphere() {
+        ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Sphere);
+        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
+        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Sphere"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+    }
+
+    public IO.Swagger.Model.Pose CreatePose() {
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+        Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.2f)));
+        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(Quaternion.identity));
+        
+    }
+
+    public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta(CollisionObjectType collisionObjectType) {
+        string name;
+        IO.Swagger.Model.ObjectModel objectModel = new IO.Swagger.Model.ObjectModel();
+        IO.Swagger.Model.ObjectTypeMeta objectTypeMeta;
+        IO.Swagger.Model.ObjectModel.TypeEnum modelType = new IO.Swagger.Model.ObjectModel.TypeEnum();
+        switch (collisionObjectType) {
+            case CollisionObjectType.Cube:
+                name = SceneManager.Instance.GetFreeObjectTypeName("Cube");
+                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Box;
+                decimal sizeX = 0.1m;
+                decimal sizeY = 0.1m;
+                decimal sizeZ = 0.1m;
+                IO.Swagger.Model.Box box = new IO.Swagger.Model.Box(name, sizeX, sizeY, sizeZ);
+                objectModel.Box = box;
+                break;
+            case CollisionObjectType.Sphere:
+                name = SceneManager.Instance.GetFreeObjectTypeName("Sphere");
+                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Sphere;
+                decimal radius = 0.1m;
+                IO.Swagger.Model.Sphere sphere = new IO.Swagger.Model.Sphere(name, radius);
+                objectModel.Sphere = sphere;
+                break;
+            case CollisionObjectType.Cylinder:
+                name = SceneManager.Instance.GetFreeObjectTypeName("Cylinder");
+                modelType = IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder;
+                decimal cylinderRadius = 0.1m;
+                decimal cylinderHeight = 0.1m;
+                IO.Swagger.Model.Cylinder cylinder = new IO.Swagger.Model.Cylinder(name, cylinderHeight, cylinderRadius);
+                objectModel.Cylinder = cylinder;
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+        objectModel.Type = modelType;
+        objectTypeMeta = new IO.Swagger.Model.ObjectTypeMeta(builtIn: false, description: "", type: name, objectModel: objectModel,
+            _base: "CollisionObject", hasPose: true, modified: DateTime.Now);
+
+
+        return objectTypeMeta;
+    }
+
+    }
