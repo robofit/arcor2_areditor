@@ -18,6 +18,10 @@ public class Gizmo : MonoBehaviour {
     [SerializeField] private OutlineOnClick YAxisOutline;
     [SerializeField] private OutlineOnClick ZAxisOutline;
 
+    [SerializeField] private TMPro.TMP_Text XAxisLabel;
+    [SerializeField] private TMPro.TMP_Text YAxisLabel;
+    [SerializeField] private TMPro.TMP_Text ZAxisLabel;
+
     public void SetRotationAxis(Axis axis) {
         switch (axis) {
             case Axis.X:
@@ -62,6 +66,42 @@ public class Gizmo : MonoBehaviour {
                 break;
         }
         
+    }
+
+    private string FormatValue(float value) {
+        if (value == 0)
+            return "0m"; 
+        if (Mathf.Abs(value) < 0.000999f)
+            return $"{value * 1000000f:0}μm";
+        if (Mathf.Abs(value) < 0.00999f)
+            return $"{value * 1000:0.##}mm";
+        if (Mathf.Abs(value) < 0.9999f)
+            return $"{value * 100:0.##}cm";
+        return $"{value:0.###}m";
+    }
+
+    public void SetXDelta(float value) {        
+        XAxisLabel.text = $"Δ{FormatValue(value)}";
+    }
+
+    public void SetYDelta(float value) {        
+        YAxisLabel.text = $"Δ{FormatValue(value)}";
+    }
+
+    public void SetZDelta(float value) {        
+        ZAxisLabel.text = $"Δ{FormatValue(value)}";
+    }
+
+    public void SetXDeltaRotation(float value) {        
+        XAxisLabel.text = $"Δ{value}°";
+    }
+
+    public void SetYDeltaRotation(float value) {        
+        YAxisLabel.text = $"Δ{value}°";
+    }
+
+    public void SetZDeltaRotation(float value) {        
+        ZAxisLabel.text = $"Δ{value}°";
     }
 
 }

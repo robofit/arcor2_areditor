@@ -2666,6 +2666,24 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove project parameter" } : response.Messages);
             }
         }
+
+        /// <summary>
+        /// Removes project parameter
+        /// </summary>
+        /// <param name="id">ID of project parameter to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+       /* public async Task UpdateObjectModel(string id, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateObjectModelRequestArgs args = new UpdateObjectModelRequestArgs(id);
+
+            IO.Swagger.Model.UpdateObjectModelRequest request = new IO.Swagger.Model.UpdateObjectModelRequest (r_id, "RemoveProjectParameter", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.RemoveProjectParameterResponse response = await WaitForResult<IO.Swagger.Model.RemoveProjectParameterResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove project parameter" } : response.Messages);
+            }
+        }*/
     }
 }
 
