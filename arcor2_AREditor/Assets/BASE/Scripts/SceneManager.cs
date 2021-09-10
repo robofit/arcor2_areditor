@@ -75,6 +75,10 @@ namespace Base {
         /// </summary>
         public GameObject ActionObjectNoPosePrefab;
         /// <summary>
+        /// Prefab for collision object
+        /// </summary>
+        public GameObject CollisionObjectPrefab;
+        /// <summary>
         /// Object which is currently selected in scene
         /// </summary>
         public GameObject CurrentlySelectedObject;
@@ -610,7 +614,11 @@ namespace Base {
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
 
             } else if (aom.HasPose) {
-                obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
+                if (aom.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
+                    obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
+                } else {
+                    obj = Instantiate(CollisionObjectPrefab, ActionObjectsSpawn.transform);
+                }
             } else {
                 obj = Instantiate(ActionObjectNoPosePrefab, ActionObjectsSpawn.transform);
             }
@@ -1006,6 +1014,10 @@ namespace Base {
                     eeList.AddRange(await ((IRobot) ao).GetAllEE());
             }
             return eeList;
+        }
+
+        public List<ActionObject> GetAllObjectsOfType(string type) {
+            return ActionObjects.Values.Where(obj => obj.ActionObjectMetadata.Type == type).ToList();
         }
              
         

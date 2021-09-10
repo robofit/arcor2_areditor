@@ -7,6 +7,8 @@ using TrilleonAutomation;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Animations;
+using System.Threading.Tasks;
+using UnityEngine.XR.LegacyInputHelpers;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class TransformMenu : Singleton<TransformMenu> {
@@ -37,9 +39,12 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     private bool handHolding = false;
 
+    public ToggleGroupIconButtons BottomButtons;
+
 
     private Gizmo gizmo;
     private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
+    private bool IsSizeChanged => model != null && InteractiveObject != null && InteractiveObject is CollisionObject collisionObject && (model.transform.localScale != collisionObject.Model.transform.localScale);
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
@@ -73,8 +78,10 @@ public class TransformMenu : Singleton<TransformMenu> {
     }*/
 
     private void Update() {
-        SubmitButton.SetInteractivity(IsPositionChanged);
-        ResetButton.SetInteractivity(IsPositionChanged);
+        bool isPositionChanged = IsPositionChanged;
+        bool isSizeChanged = IsSizeChanged;
+        SubmitButton.SetInteractivity(isPositionChanged || isSizeChanged);
+        ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
         if (model == null)
             return;
         if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
@@ -108,7 +115,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             gizmo.SetXDeltaRotation(delta.eulerAngles.x);
             gizmo.SetYDeltaRotation(delta.eulerAngles.y);
             gizmo.SetZDeltaRotation(delta.eulerAngles.z);
-        } else {
+        } else if (CurrentState == State.Translate) {
             newValue = GetPositionValue(TransformWheel.GetValue());
             if (handHolding || prevValue != newValue)
                 UpdateTranslate(newValue - prevValue);
@@ -119,6 +126,16 @@ public class TransformMenu : Singleton<TransformMenu> {
             gizmo.SetYDelta(TransformConvertor.UnityToROS(model.transform.localPosition).y);
             //Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).z);
             gizmo.SetZDelta(TransformConvertor.UnityToROS(model.transform.localPosition).z);
+        } else {
+            if (InteractiveObject is CollisionObject collisionObject) {
+                newValue = GetPositionValue(TransformWheel.GetValue());
+                if (newValue != prevValue)
+                    UpdateScale(newValue - prevValue);
+                Vector3 delta = TransformConvertor.UnityToROSScale(model.transform.localScale - collisionObject.Model.transform.localScale);
+                gizmo.SetXDelta(delta.x);
+                gizmo.SetYDelta(delta.y);
+                gizmo.SetZDelta(delta.z);
+            }
         }
 
 
@@ -232,6 +249,38 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
     }
 
+    private void UpdateScale(float wheelValue) {
+        if (InteractiveObject is CollisionObject collisionObject) {
+            if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Box) {
+                switch (selectedAxis) {
+                    case Gizmo.Axis.X:
+                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.right);
+                        break;
+                    case Gizmo.Axis.Y:
+                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.up);
+                        break;
+                    case Gizmo.Axis.Z:
+                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        break;
+                }
+            } else if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Sphere) {
+                model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.one);
+            } else if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder) {
+                switch (selectedAxis) {
+                    case Gizmo.Axis.X:
+                    case Gizmo.Axis.Y:
+                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * new Vector3(1, 1, 0));
+                        break;
+                    case Gizmo.Axis.Z:
+                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        break;
+                }
+            }
+        }
+        
+        NormalizeGizmoScale();
+    }
+
     public float GetRoundedValue(float value) {
         switch (Units.GetValue()) {
             case "cm":
@@ -250,9 +299,10 @@ public class TransformMenu : Singleton<TransformMenu> {
         ResetTransformWheel();
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        RobotTabletBtn.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
         SetRotationAxis(Gizmo.Axis.NONE);
         CurrentState = State.Translate;
-        //ResetPosition();
+        BottomButtons.SelectButton(BottomButtons.Buttons[0], false);
     }
 
     public void SwitchToRotate() {
@@ -260,7 +310,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         ResetTransformWheel();
         Units.gameObject.SetActive(false);
         UnitsDegrees.gameObject.SetActive(true);
-        //ResetPosition();
+        RobotTabletBtn.SetInteractivity(false);
         SetRotationAxis(selectedAxis);
         CurrentState = State.Rotate;
     }
@@ -270,6 +320,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         ResetTransformWheel();
         Units.gameObject.SetActive(true);
         UnitsDegrees.gameObject.SetActive(false);
+        RobotTabletBtn.SetInteractivity(false);
         SetRotationAxis(Gizmo.Axis.NONE);
         CurrentState = State.Scale;
     }
@@ -329,8 +380,10 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
     }
 
-    public async void Show(InteractiveObject interactiveObject) {
+    public async Task<bool> Show(InteractiveObject interactiveObject) {
         InteractiveObject = interactiveObject;
+        if (! await interactiveObject.WriteLock(true))
+            return false;
         RobotTabletBtn.SwitchToRight();
         /*robotTabletBtnTooltip.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
         RotateTranslateBtn.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D));
@@ -339,6 +392,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         //offsetPosition = Vector3.zero;
         ResetTransformWheel();
         SwitchToTranslate();
+
         
         if (interactiveObject is ActionPoint3D actionPoint) {
             model = actionPoint.GetModelCopy();
@@ -359,7 +413,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         } else if (interactiveObject is ActionObject3D actionObject) {
             model = actionObject.GetModelCopy();
             RotateBtn.SetInteractivity(true);
-            ScaleBtn.SetInteractivity(actionObject.ActionObjectMetadata.ObjectModel.Type != IO.Swagger.Model.ObjectModel.TypeEnum.Mesh, "Action point size could not be changed");
+            ScaleBtn.SetInteractivity(interactiveObject is CollisionObject, "Only collision objects size could be changed");
             RobotTabletBtn.SetInteractivity(true);
             model.transform.SetParent(interactiveObject.transform);
             model.transform.localRotation = Quaternion.identity;
@@ -388,17 +442,16 @@ public class TransformMenu : Singleton<TransformMenu> {
             robot.EnableOffscreenIndicator(false);
             robot.EnableVisual(false);
         }
-
         
         if (model == null) {
             Hide();
-            return;
+            return false;
         }
         UpdateSceneStateRelatedStuff();
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab).GetComponent<Gizmo>();
         gizmo.transform.SetParent(model.transform);
         // 0.1 is default scale for our gizmo
-        gizmo.transform.localScale = new Vector3(0.1f / model.transform.localScale.x, 0.1f / model.transform.localScale.y, 0.1f / model.transform.localScale.z);
+        NormalizeGizmoScale();
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.gameObject.SetActive(true);
@@ -418,6 +471,11 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
 
         RobotInfoMenu.Instance.Show();
+        return true;
+    }
+
+    private void NormalizeGizmoScale() {
+        gizmo.transform.localScale = new Vector3(0.1f / model.transform.localScale.x, 0.1f / model.transform.localScale.y, 0.1f / model.transform.localScale.z);
     }
 
     private void UpdateSceneStateRelatedStuff() {
@@ -488,7 +546,31 @@ public class TransformMenu : Singleton<TransformMenu> {
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
             }
-        } else if (InteractiveObject.GetType().IsSubclassOf(typeof(ActionObject))) {
+        } else if (InteractiveObject is ActionObject actionObject) {
+            if (IsSizeChanged) {
+                try {
+                    IO.Swagger.Model.ObjectModel objectModel = actionObject.ActionObjectMetadata.ObjectModel;
+                    Vector3 transformedScale = TransformConvertor.UnityToROSScale(model.transform.localScale);
+
+                    switch (objectModel.Type) {
+                        case IO.Swagger.Model.ObjectModel.TypeEnum.Box:
+                            objectModel.Box.SizeX = (decimal) transformedScale.x;
+                            objectModel.Box.SizeY = (decimal) transformedScale.y;
+                            objectModel.Box.SizeZ = (decimal) transformedScale.z;
+                            break;
+                        case IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder:
+                            objectModel.Cylinder.Radius = (decimal) transformedScale.x;
+                            objectModel.Cylinder.Height = (decimal) transformedScale.z;
+                            break;
+                        case IO.Swagger.Model.ObjectModel.TypeEnum.Sphere:
+                            objectModel.Sphere.Radius = (decimal) transformedScale.x;
+                            break;
+                    }
+                    await WebsocketManager.Instance.UpdateObjectModel(actionObject.ActionObjectMetadata.Type, objectModel);
+                } catch (RequestFailedException e) {
+                    Notifications.Instance.ShowNotification("Failed to update size of collision object", e.Message);
+                }
+            } 
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right)
                     await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
@@ -502,14 +584,19 @@ public class TransformMenu : Singleton<TransformMenu> {
                 }
                 ResetPosition();
             } catch (RequestFailedException e) {
-                Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
+                Notifications.Instance.ShowNotification("Failed to update action object position", e.Message);
             }
+            
         }
     }
 
     public void ResetPosition(bool manually = false) {
         if (model == null)
             return;
+        if (InteractiveObject is CollisionObject collisionObject) {
+            model.transform.localScale = collisionObject.Model.transform.localScale;
+            NormalizeGizmoScale();
+        }
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.identity;
         ResetTransformWheel();

@@ -82,4 +82,8 @@ public class ActionObjectNoPose : ActionObject {
     public override void UpdateColor() {
         //nothing to do here
     }
+
+    public override void UpdateModel() {
+        // nothing to do here
+    }
 }

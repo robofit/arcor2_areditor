@@ -16,19 +16,18 @@ public class ActionObject3D : ActionObject {
     public TextMeshPro ActionObjectName;
     public GameObject Visual, Model;
 
-    public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
-
     private bool transparent = false;
     private Renderer modelRenderer;
     private Material modelMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
-
+    public GameObject CubePrefab;
     private Shader standardShader;
     private Shader transparentShader;
 
     private List<Renderer> aoRenderers = new List<Renderer>();
 
+    public GameObject CylinderPrefab, SpherePrefab;
 
 
     protected override void Start() {
@@ -194,6 +193,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
+       
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -414,5 +414,26 @@ public class ActionObject3D : ActionObject {
 
     public override void EnableVisual(bool enable) {
         Visual.SetActive(enable);
+    }
+
+    public override void UpdateModel() {
+        if (ActionObjectMetadata.ObjectModel == null)
+            return;
+        Vector3? dimensions = null;
+        switch (ActionObjectMetadata.ObjectModel.Type) {
+            case ObjectModel.TypeEnum.Box:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
+               break;
+            case ObjectModel.TypeEnum.Sphere:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius));
+                break;
+            case ObjectModel.TypeEnum.Cylinder:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height));
+                break;
+
+        }
+        if (dimensions != null)
+            Model.transform.localScale = new Vector3(dimensions.Value.x, dimensions.Value.y, dimensions.Value.z);
+
     }
 }

@@ -815,5 +815,9 @@ namespace Base {
         string IRobot.LockOwner() {
             return LockOwner;
         }
+
+        public override void UpdateModel() {
+            return;
+        }
     }
 }

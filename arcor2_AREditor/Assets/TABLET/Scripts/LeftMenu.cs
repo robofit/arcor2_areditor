@@ -461,9 +461,7 @@ public abstract class LeftMenu : MonoBehaviour {
             if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
                 selectedObject.StartManipulation();
             } else {
-                if (await selectedObject.WriteLock(true)) {
-                    TransformMenu.Instance.Show(selectedObject);
-                } else {
+                if (! await TransformMenu.Instance.Show(selectedObject)) {
                     SetActiveSubmenu(CurrentSubmenuOpened);
                     return;
                 }

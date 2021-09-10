@@ -187,6 +187,9 @@ namespace Base {
                     else
                         actionObjectMetadata.ActionsLoaded = true;
                     updated.Add(obj.Type);
+                    foreach (ActionObject updatedObj in SceneManager.Instance.GetAllObjectsOfType(obj.Type)) {
+                        updatedObj.UpdateModel();
+                    }
                 } else {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
                 }
