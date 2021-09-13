@@ -16,6 +16,8 @@ public class TransformWheelList : EventTrigger {
 
     public bool Dragging { get; private set; } = false;
 
+    public EventHandler MovementDone;
+
     public void Init() {
         _underInertia = false;
         Dragging = false;
@@ -60,6 +62,7 @@ public class TransformWheelList : EventTrigger {
                 _time = 0.0f;
                 _finishing = false;
                 Velocity = Vector2.zero;
+                MovementDone?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -94,5 +97,13 @@ public class TransformWheelList : EventTrigger {
     public override void OnPointerUp(PointerEventData eventData) {
         _underInertia = true;
         Dragging = false;
+    }
+
+    public void Stop() {
+        if (Dragging)
+            return;
+        _underInertia = false;
+        _time = 0.0f;
+        Velocity = Vector2.zero;_finishing = false;
     }
 }

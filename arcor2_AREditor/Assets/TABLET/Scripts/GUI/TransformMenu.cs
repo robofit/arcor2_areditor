@@ -31,8 +31,11 @@ public class TransformMenu : Singleton<TransformMenu> {
     private Gizmo.Axis selectedAxis;
     public State CurrentState;
     private Vector3 origPosition = new Vector3();
+    private List<TransformPoseAndScale> history = new List<TransformPoseAndScale>();
 
-    public ButtonWithTooltip RotateBtn, ScaleBtn;
+    public ButtonWithTooltip RotateBtn, ScaleBtn, HandBtn;
+
+    private int historyIndex;
 
 
     public CanvasGroup CanvasGroup;
@@ -43,13 +46,19 @@ public class TransformMenu : Singleton<TransformMenu> {
 
 
     private Gizmo gizmo;
-    private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
+    //private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
+    private bool IsPositionChanged => model != null && ((model.transform.position - InteractiveObject.transform.position).magnitude > 0.001 || Quaternion.Angle(model.transform.rotation, InteractiveObject.transform.rotation) > 0.001);
     private bool IsSizeChanged => model != null && InteractiveObject != null && InteractiveObject is CollisionObject collisionObject && (model.transform.localScale != collisionObject.Model.transform.localScale);
 
     private void Awake() {
         CanvasGroup = GetComponent<CanvasGroup>();
         selectedAxis = Gizmo.Axis.X;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
+        TransformWheel.List.MovementDone += TransformWheelMovementDone;
+    }
+
+    private void TransformWheelMovementDone(object sender, EventArgs e) {
+        SubmitPosition();
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -72,6 +81,8 @@ public class TransformMenu : Singleton<TransformMenu> {
             ResetTransformWheel();
         }
     }
+
+    
     /*
     private void OnAxisSwitch(object sender, GizmoAxisEventArgs args) {
         SetRotationAxis(args.SelectedAxis);
@@ -81,7 +92,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         bool isPositionChanged = IsPositionChanged;
         bool isSizeChanged = IsSizeChanged;
         SubmitButton.SetInteractivity(isPositionChanged || isSizeChanged);
-        ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
+        //ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
         if (model == null)
             return;
         if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
@@ -302,6 +313,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         RobotTabletBtn.SetInteractivity(SceneManager.Instance.SceneStarted && SceneManager.Instance.IsRobotAndEESelected());
         SetRotationAxis(Gizmo.Axis.NONE);
         CurrentState = State.Translate;
+        HandBtn.SetInteractivity(true);
         BottomButtons.SelectButton(BottomButtons.Buttons[0], false);
     }
 
@@ -312,6 +324,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         UnitsDegrees.gameObject.SetActive(true);
         RobotTabletBtn.SetInteractivity(false);
         SetRotationAxis(selectedAxis);
+        HandBtn.SetInteractivity(false);
         CurrentState = State.Rotate;
     }
 
@@ -322,12 +335,14 @@ public class TransformMenu : Singleton<TransformMenu> {
         UnitsDegrees.gameObject.SetActive(false);
         RobotTabletBtn.SetInteractivity(false);
         SetRotationAxis(Gizmo.Axis.NONE);
+
+        HandBtn.SetInteractivity(false, "Not available for scaling");
         CurrentState = State.Scale;
     }
 
     public void SwitchToTablet() {
         TransformWheel.gameObject.SetActive(true);
-        ResetPosition();
+        //ResetPosition();
         Wheel.gameObject.SetActive(true);
         if (InteractiveObject.GetType() != typeof(ActionPoint3D))
             RotateBtn.SetInteractivity(true);
@@ -344,7 +359,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             return;
         }
         TransformWheel.gameObject.SetActive(false);
-        ResetPosition();
+        //ResetPosition();
         if (CurrentState == State.Rotate) {
             SwitchToTranslate();
         }
@@ -392,16 +407,16 @@ public class TransformMenu : Singleton<TransformMenu> {
         //offsetPosition = Vector3.zero;
         ResetTransformWheel();
         SwitchToTranslate();
-
-        
+        history.Clear();
+        historyIndex = -1;
         if (interactiveObject is ActionPoint3D actionPoint) {
             model = actionPoint.GetModelCopy();
             RotateBtn.SetInteractivity(false, "Action point could not be rotated");
             ScaleBtn.SetInteractivity(false, "Action point size could not be changed");
             RobotTabletBtn.SetInteractivity(true);
-            model.transform.SetParent(interactiveObject.transform);
-            model.transform.rotation = GameManager.Instance.Scene.transform.rotation;
-            model.transform.localPosition = Vector3.zero;
+            model.transform.SetParent(GameManager.Instance.Scene.transform);
+            model.transform.rotation = Quaternion.identity;
+            model.transform.position = interactiveObject.transform.position;
 
             Target target = model.AddComponent<Target>();
             target.SetTarget(Color.yellow, false, true, false);
@@ -415,9 +430,9 @@ public class TransformMenu : Singleton<TransformMenu> {
             RotateBtn.SetInteractivity(true);
             ScaleBtn.SetInteractivity(interactiveObject is CollisionObject, "Only collision objects size could be changed");
             RobotTabletBtn.SetInteractivity(true);
-            model.transform.SetParent(interactiveObject.transform);
-            model.transform.localRotation = Quaternion.identity;
-            model.transform.localPosition = Vector3.zero;
+            model.transform.SetParent(GameManager.Instance.Scene.transform);
+            model.transform.rotation = interactiveObject.transform.rotation;
+            model.transform.position = interactiveObject.transform.position;
 
             Target target = model.AddComponent<Target>();
             target.SetTarget(Color.yellow, false, true, false);
@@ -432,8 +447,8 @@ public class TransformMenu : Singleton<TransformMenu> {
             ScaleBtn.SetInteractivity(false, "Robot size could not be changed");
             RobotTabletBtn.SetInteractivity(false, "Robot position could not be set using robot");
             model.transform.SetParent(interactiveObject.transform);
-            model.transform.localRotation = Quaternion.identity;
-            model.transform.localPosition = Vector3.zero;
+            model.transform.rotation = interactiveObject.transform.rotation;
+            model.transform.position = interactiveObject.transform.position;
 
             Target target = model.AddComponent<Target>();
             target.SetTarget(Color.yellow, false, true, false);
@@ -455,7 +470,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         gizmo.transform.localPosition = Vector3.zero;
         gizmo.transform.localRotation = Quaternion.identity;
         gizmo.gameObject.SetActive(true);
-
+        SaveHistory();
         Sight.Instance.SelectedGizmoAxis += OnSelectedGizmoAxis;
         SelectAxis(Gizmo.Axis.X, true);
         enabled = true;
@@ -528,8 +543,46 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
     }
 
-    public async void SubmitPosition() {
+    public void Undo() {
+        if (history.Count == 0 || historyIndex == 0)
+            return;
+        Debug.LogError((model.transform.position - InteractiveObject.transform.position).magnitude);
+        Debug.LogError(Quaternion.Angle(model.transform.rotation, InteractiveObject.transform.rotation));
+        if (historyIndex < 0) {
+            if (IsPositionChanged) {
+                TransformWheel.List.Stop();
+                SubmitPosition(true);
+            }
+            historyIndex = history.Count - 1;
+        }
         
+        historyIndex--;
+        //model.transform.position = InteractiveObject.transform.parent.TransformPoint(history[historyIndex].Position);
+        model.transform.localPosition = history[historyIndex].Position;
+        if (!(InteractiveObject is ActionPoint))
+            model.transform.localRotation = history[historyIndex].Rotation;
+        if (InteractiveObject is CollisionObject)
+            model.transform.localScale = history[historyIndex].Scale;
+        SubmitPosition(false);
+    }
+
+    private void SaveHistory() {
+        if (historyIndex > 0) {
+            history.RemoveRange(historyIndex, history.Count - historyIndex);
+            historyIndex = -1;
+        }
+        history.Add(new TransformPoseAndScale(
+            model.transform.localPosition,
+            model.transform.localRotation,
+            model.transform.localScale));
+        historyIndex = -1;
+    }
+
+    public async void SubmitPosition(bool saveHistory = true) {
+        if (saveHistory) {
+            SaveHistory();
+        }
+        ResetButton.SetInteractivity(history.Count > 1 && historyIndex != 0);
         if (InteractiveObject is ActionPoint3D actionPoint) {
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right) {
@@ -542,7 +595,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                         armId = SceneManager.Instance.SelectedArmId;
                     await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
                 }
-                ResetPosition();
+                //ResetPosition();
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
             }
@@ -582,7 +635,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                         armId = SceneManager.Instance.SelectedArmId;
                     await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top, armId);
                 }
-                ResetPosition();
+                //ResetPosition();
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action object position", e.Message);
             }
@@ -600,5 +653,19 @@ public class TransformMenu : Singleton<TransformMenu> {
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.identity;
         ResetTransformWheel();
+    }
+}
+
+public class TransformPoseAndScale {
+    public Vector3 Position;
+    public Quaternion Rotation;
+    public Vector3 Scale;
+    public int BottomMenuIndex; //TODO
+
+    public TransformPoseAndScale(Vector3 position, Quaternion rotation, Vector3 scale, int bottomMenuIndex) {
+        Position = position;
+        Rotation = rotation;
+        Scale = scale;
+        BottomMenuIndex = bottomMenuIndex;
     }
 }
