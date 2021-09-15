@@ -139,8 +139,8 @@ MonoBehaviour:
   Units: {fileID: 8329945096762975637}
   UnitsDegrees: {fileID: 9014622126289755119}
   RobotTabletBtn: {fileID: 254019256007613835}
-  SubmitButton: {fileID: 5330303495899346795}
-  ResetButton: {fileID: 1716189857427151265}
+  RedoBtn: {fileID: 5330303495899346795}
+  UndoBtn: {fileID: 1716189857427151265}
   CurrentState: 0
   RotateBtn: {fileID: 693906815701168679}
   ScaleBtn: {fileID: 3315351733993744566}
@@ -1022,12 +1022,12 @@ PrefabInstance:
     - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_Name
-      value: SubmitButton
+      value: RedoBtn
       objectReference: {fileID: 0}
     - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2000112917390502529, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -1037,7 +1037,7 @@ PrefabInstance:
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: Description
-      value: Confirm new position of object
+      value: Redo
       objectReference: {fileID: 0}
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -1127,7 +1127,7 @@ PrefabInstance:
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 6
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -1137,7 +1137,7 @@ PrefabInstance:
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SubmitPosition
+      value: Redo
       objectReference: {fileID: 0}
     - target: {fileID: 4991226775622563084, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -1232,7 +1232,7 @@ PrefabInstance:
     - target: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -311
+      value: -333
       objectReference: {fileID: 0}
     - target: {fileID: 7710050843114423662, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -1258,7 +1258,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300002, guid: 1c1bef4b40e990c42aed6432ebd324ef,
+      objectReference: {fileID: 21300000, guid: f5f7f509a0135004d8a155b49330a501,
         type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a37f66d2914458b4c85e50f9fa33cf93, type: 3}
@@ -2035,7 +2035,12 @@ PrefabInstance:
     - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_Name
-      value: ResetButton
+      value: UndoBtn
+      objectReference: {fileID: 0}
+    - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2000112917390502529, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2045,7 +2050,7 @@ PrefabInstance:
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: Description
-      value: Reset position of gizmo
+      value: Undo
       objectReference: {fileID: 0}
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
@@ -2261,7 +2266,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 87452724b40cb584383ed452ce1f5974,
+      objectReference: {fileID: 21300000, guid: e478f5d7210826840aae0db32fa491b7,
         type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a37f66d2914458b4c85e50f9fa33cf93, type: 3}

@@ -26,13 +26,15 @@ public class TransformMenu : Singleton<TransformMenu> {
     public TranformWheelUnits Units, UnitsDegrees;
     private GameObject model;
     public TwoStatesToggleNew RobotTabletBtn;
-    public ButtonWithTooltip SubmitButton, ResetButton;
+    public ButtonWithTooltip RedoBtn, UndoBtn;
     private float prevValue;
     private Gizmo.Axis selectedAxis;
     public State CurrentState;
     private Vector3 origPosition = new Vector3();
     private List<TransformPoseAndScale> history = new List<TransformPoseAndScale>();
+    public Transform GizmoTransform;
 
+    private Vector3 origScale = new Vector3();
     public ButtonWithTooltip RotateBtn, ScaleBtn, HandBtn;
 
     private int historyIndex;
@@ -55,6 +57,11 @@ public class TransformMenu : Singleton<TransformMenu> {
         selectedAxis = Gizmo.Axis.X;
         SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         TransformWheel.List.MovementDone += TransformWheelMovementDone;
+        TransformWheel.List.MovementStart += TransformWheelMovementStart;
+    }
+
+    private void TransformWheelMovementStart(object sender, EventArgs e) {
+        RedoBtn.SetInteractivity(false);
     }
 
     private void TransformWheelMovementDone(object sender, EventArgs e) {
@@ -77,21 +84,13 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (forceUpdate || (selectedAxis != axis && !handHolding && TransformWheel.List.Velocity.magnitude < 0.01f && !TransformWheel.List.Dragging)) {
             selectedAxis = axis;
             gizmo.HiglightAxis(axis);
-            SetRotationAxis(axis);
+            if (CurrentState == State.Rotate)
+                SetRotationAxis(axis);
             ResetTransformWheel();
         }
     }
 
-    
-    /*
-    private void OnAxisSwitch(object sender, GizmoAxisEventArgs args) {
-        SetRotationAxis(args.SelectedAxis);
-    }*/
-
     private void Update() {
-        bool isPositionChanged = IsPositionChanged;
-        bool isSizeChanged = IsSizeChanged;
-        SubmitButton.SetInteractivity(isPositionChanged || isSizeChanged);
         //ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
         if (model == null)
             return;
@@ -99,7 +98,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             if (SceneManager.Instance.IsRobotAndEESelected()) {
                 model.transform.position = SceneManager.Instance.SelectedEndEffector.transform.position;
                 //Coordinates.X.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.x);
-                gizmo.SetXDelta(model.transform.localPosition.x);
+                gizmo.SetXDelta( model.transform.localPosition.x);
                 //Coordinates.Y.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.y);
                 gizmo.SetYDelta(model.transform.localPosition.y);
                 //Coordinates.Z.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.z);
@@ -142,7 +141,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                 newValue = GetPositionValue(TransformWheel.GetValue());
                 if (newValue != prevValue)
                     UpdateScale(newValue - prevValue);
-                Vector3 delta = TransformConvertor.UnityToROSScale(model.transform.localScale - collisionObject.Model.transform.localScale);
+                Vector3 delta = TransformConvertor.UnityToROSScale(model.transform.localScale - origScale);
                 gizmo.SetXDelta(delta.x);
                 gizmo.SetYDelta(delta.y);
                 gizmo.SetZDelta(delta.z);
@@ -367,6 +366,7 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void HoldPressed() {
+        RedoBtn.SetInteractivity(false);
         if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right) {
             origPosition = Camera.main.transform.InverseTransformPoint(model.transform.position);
             handHolding = true;
@@ -376,6 +376,7 @@ public class TransformMenu : Singleton<TransformMenu> {
                 armId = SceneManager.Instance.SelectedArmId;
             _ = WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: true, armId);
         }
+        Debug.LogError("Hold pressed");
     }
 
     public void HoldReleased() {
@@ -387,6 +388,8 @@ public class TransformMenu : Singleton<TransformMenu> {
                 armId = SceneManager.Instance.SelectedArmId;
             _ = WebsocketManager.Instance.HandTeachingMode(robotId: SceneManager.Instance.SelectedRobot.GetId(), enable: false, armId);
         }
+        Debug.LogError("Hold released");
+        SubmitPosition(true);
     }
 
     private void LateUpdate() {
@@ -400,21 +403,20 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (! await interactiveObject.WriteLock(true))
             return false;
         RobotTabletBtn.SwitchToRight();
-        /*robotTabletBtnTooltip.SetInteractivity(SceneManager.Instance.SceneStarted, "Scene offline");
-        RotateTranslateBtn.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D));
-        rotateTranslateBtnTooltip.SetInteractivity(InteractiveObject.GetType() != typeof(ActionPoint3D), "Action point could not be translated");
-        */
-        //offsetPosition = Vector3.zero;
         ResetTransformWheel();
         SwitchToTranslate();
         history.Clear();
         historyIndex = -1;
+        GizmoTransform.transform.position = interactiveObject.transform.position;
+        GizmoTransform.transform.rotation = interactiveObject.transform.rotation;
+        if (interactiveObject is CollisionObject collisionObject)
+            origScale = collisionObject.Model.transform.localScale;
         if (interactiveObject is ActionPoint3D actionPoint) {
             model = actionPoint.GetModelCopy();
             RotateBtn.SetInteractivity(false, "Action point could not be rotated");
             ScaleBtn.SetInteractivity(false, "Action point size could not be changed");
             RobotTabletBtn.SetInteractivity(true);
-            model.transform.SetParent(GameManager.Instance.Scene.transform);
+            model.transform.SetParent(GizmoTransform);
             model.transform.rotation = Quaternion.identity;
             model.transform.position = interactiveObject.transform.position;
 
@@ -430,7 +432,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             RotateBtn.SetInteractivity(true);
             ScaleBtn.SetInteractivity(interactiveObject is CollisionObject, "Only collision objects size could be changed");
             RobotTabletBtn.SetInteractivity(true);
-            model.transform.SetParent(GameManager.Instance.Scene.transform);
+            model.transform.SetParent(GizmoTransform);
             model.transform.rotation = interactiveObject.transform.rotation;
             model.transform.position = interactiveObject.transform.position;
 
@@ -446,7 +448,7 @@ public class TransformMenu : Singleton<TransformMenu> {
             RotateBtn.SetInteractivity(true);
             ScaleBtn.SetInteractivity(false, "Robot size could not be changed");
             RobotTabletBtn.SetInteractivity(false, "Robot position could not be set using robot");
-            model.transform.SetParent(interactiveObject.transform);
+            model.transform.SetParent(GizmoTransform);
             model.transform.rotation = interactiveObject.transform.rotation;
             model.transform.position = interactiveObject.transform.position;
 
@@ -475,9 +477,11 @@ public class TransformMenu : Singleton<TransformMenu> {
         SelectAxis(Gizmo.Axis.X, true);
         enabled = true;
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
-
+        UndoBtn.SetInteractivity(false);
+        RedoBtn.SetInteractivity(false);
         switch (CurrentState) {
             case State.Translate:
+            case State.Scale:
                 SetRotationAxis(Gizmo.Axis.NONE);
                 break;
             case State.Rotate:
@@ -504,8 +508,9 @@ public class TransformMenu : Singleton<TransformMenu> {
 
 
     public async void Hide(bool unlock = true) {
-        if (CanvasGroup.alpha == 0 || InteractiveObject == null)
+        if (!IsVisible())
             return;
+        SubmitPosition(false);
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
         if (unlock)
             await InteractiveObject.WriteUnlock();
@@ -536,18 +541,20 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     public void SetRotationAxis(Gizmo.Axis axis) {
-        if (CurrentState == State.Translate) {
+        switch (CurrentState) {
+            case State.Translate:
+            case State.Scale:
             gizmo?.SetRotationAxis(Gizmo.Axis.NONE);
-        } else {
+                break;
+            case State.Rotate:
             gizmo?.SetRotationAxis(axis);
+                break;
         }
     }
 
     public void Undo() {
         if (history.Count == 0 || historyIndex == 0)
             return;
-        Debug.LogError((model.transform.position - InteractiveObject.transform.position).magnitude);
-        Debug.LogError(Quaternion.Angle(model.transform.rotation, InteractiveObject.transform.rotation));
         if (historyIndex < 0) {
             if (IsPositionChanged) {
                 TransformWheel.List.Stop();
@@ -557,32 +564,56 @@ public class TransformMenu : Singleton<TransformMenu> {
         }
         
         historyIndex--;
-        //model.transform.position = InteractiveObject.transform.parent.TransformPoint(history[historyIndex].Position);
-        model.transform.localPosition = history[historyIndex].Position;
-        if (!(InteractiveObject is ActionPoint))
-            model.transform.localRotation = history[historyIndex].Rotation;
-        if (InteractiveObject is CollisionObject)
-            model.transform.localScale = history[historyIndex].Scale;
+        SetModelToHistoryPosition(historyIndex);
+
         SubmitPosition(false);
+        RedoBtn.SetInteractivity(true);
+    }
+
+    private void SetModelToHistoryPosition(int index) {
+        model.transform.localPosition = history[index].Position;
+        if (!(InteractiveObject is ActionPoint))
+            model.transform.localRotation = history[index].Rotation;
+        if (InteractiveObject is CollisionObject)
+            model.transform.localScale = history[index].Scale;
+        BottomButtons.SelectButton(history[historyIndex].BottomMenuIndex, true);
+    }
+
+    public void Redo() {
+        Debug.Assert(historyIndex >= 0 && historyIndex < history.Count - 1);
+        historyIndex++;
+        RedoBtn.SetInteractivity(historyIndex < history.Count - 1);
+        SetModelToHistoryPosition(historyIndex);
+        SubmitPosition(false);
+
     }
 
     private void SaveHistory() {
-        if (historyIndex > 0) {
-            history.RemoveRange(historyIndex, history.Count - historyIndex);
+        Debug.Assert(history.Count == 0 || historyIndex < history.Count - 1);
+        if (historyIndex >= 0) {
+            history.RemoveRange(historyIndex + 1, history.Count - historyIndex - 1);
             historyIndex = -1;
         }
         history.Add(new TransformPoseAndScale(
             model.transform.localPosition,
             model.transform.localRotation,
-            model.transform.localScale));
+            model.transform.localScale,
+            BottomButtons.GetSelectedIndex()));
         historyIndex = -1;
+        RedoBtn.SetInteractivity(false);
+    }
+
+    public bool IsVisible() {
+        return CanvasGroup.alpha > 0 && InteractiveObject != null;
     }
 
     public async void SubmitPosition(bool saveHistory = true) {
+        if (!IsVisible())
+            return;
         if (saveHistory) {
             SaveHistory();
         }
-        ResetButton.SetInteractivity(history.Count > 1 && historyIndex != 0);
+        UndoBtn.SetInteractivity(history.Count > 1 && historyIndex != 0);
         if (InteractiveObject is ActionPoint3D actionPoint) {
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right) {

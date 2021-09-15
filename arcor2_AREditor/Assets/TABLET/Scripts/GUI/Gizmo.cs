@@ -69,10 +69,8 @@ public class Gizmo : MonoBehaviour {
     }
 
     private string FormatValue(float value) {
-        if (value == 0)
-            return "0m"; 
-        if (Mathf.Abs(value) < 0.000999f)
-            return $"{value * 1000000f:0}μm";
+        if (Mathf.Abs(value) < 0.000099f)
+            return $"0cm";
         if (Mathf.Abs(value) < 0.00999f)
             return $"{value * 1000:0.##}mm";
         if (Mathf.Abs(value) < 0.9999f)
@@ -93,15 +91,15 @@ public class Gizmo : MonoBehaviour {
     }
 
     public void SetXDeltaRotation(float value) {        
-        XAxisLabel.text = $"Δ{value}°";
+        XAxisLabel.text = $"Δ{value:0.##}°";
     }
 
     public void SetYDeltaRotation(float value) {        
-        YAxisLabel.text = $"Δ{value}°";
+        YAxisLabel.text = $"Δ{value:0.##}°";
     }
 
     public void SetZDeltaRotation(float value) {        
-        ZAxisLabel.text = $"Δ{value}°";
+        ZAxisLabel.text = $"Δ{value:0.##}°";
     }
 
 }
