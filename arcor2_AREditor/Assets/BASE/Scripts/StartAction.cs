@@ -40,7 +40,4 @@ public class StartAction : StartEndAction
         OutputArrow.gameObject.SetActive(enable);
     }
 
-    public override void EnableVisual(bool enable) {
-        throw new NotImplementedException();
-    }
 }

@@ -8,7 +8,7 @@ namespace Base {
     public class ActionObjectMetadata : ObjectTypeMeta {
 
         private Dictionary<string, ActionMetadata> actionsMetadata = new Dictionary<string, ActionMetadata>();
-        private bool robot, actionsLoaded, camera;
+        private bool robot, actionsLoaded, camera, collisionObject;
 
         public ActionObjectMetadata(ObjectTypeMeta meta) : base(_abstract: meta.Abstract,
                                                                 _base: meta.Base,
@@ -53,6 +53,10 @@ namespace Base {
         public Dictionary<string, ActionMetadata> ActionsMetadata {
             get => actionsMetadata;
             set => actionsMetadata = value;
+        }
+        public bool CollisionObject {
+            get => collisionObject;
+            set => collisionObject = value;
         }
 
         public Vector3 GetModelBB() {

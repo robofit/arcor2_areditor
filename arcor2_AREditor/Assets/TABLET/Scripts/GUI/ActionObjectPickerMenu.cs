@@ -55,7 +55,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
     private void OnObjectTypesAdded(object sender, StringListEventArgs args) {
         foreach (string objectTypeName in args.Data) {
             if (ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(objectTypeName, out ActionObjectMetadata actionObjectMetadata) &&
-                !actionObjectMetadata.Abstract) {
+                !actionObjectMetadata.Abstract && !actionObjectMetadata.CollisionObject) {
 
                 ActionButtonWithIconRemovable btn = CreateBtn(actionObjectMetadata);
                 foreach (ActionButtonWithIconRemovable t in Content.GetComponentsInChildren<ActionButtonWithIconRemovable>()) {
@@ -77,7 +77,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
             }
             // create one button for each object type
             foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectsMetadata.Values.OrderBy(x => x.Type)) {
-                if (actionObject.Abstract)
+                if (actionObject.Abstract || actionObject.CollisionObject)
                     continue;
                 CreateBtn(actionObject);
             }
@@ -195,7 +195,10 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
     }
 
     public void Hide() {
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+        if (IsVisible()) {
+            EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+            AREditorResources.Instance.LeftMenuScene.SetActiveSubmenu(LeftMenuSelection.Add, false);
+        }
     }
 
     public bool IsVisible() {
@@ -204,27 +207,34 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
     public async void CreateCube() {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cube);
-        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
-        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Cube"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+        SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
+        SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
+        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);        
     }
 
     public async void CreateCylinder() {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cylinder);
-        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
-        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Cylinder"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+        SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
+        SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
+        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
     }
 
     public async void CreateSphere() {
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Sphere);
-        await WebsocketManager.Instance.CreateNewObjectType(newObjectType, false);
-        await WebsocketManager.Instance.AddObjectToScene(SceneManager.Instance.GetFreeAOName("Sphere"), newObjectType.Type, CreatePose(), new List<IO.Swagger.Model.Parameter>());
+        SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
+        SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
+        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
     }
 
-    public IO.Swagger.Model.Pose CreatePose() {
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-        Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.2f)));
-        return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(Quaternion.identity));
-        
+    
+
+    private void AddVirtualCollisionObjectResponseCallback(string objectType, string data) {
+        AddVirtualCollisionObjectToSceneResponse response = JsonConvert.DeserializeObject<AddVirtualCollisionObjectToSceneResponse>(data);
+        if (response == null || !response.Result) {
+            Notifications.Instance.ShowNotification($"Failed to add {objectType}", response.Messages.FirstOrDefault());
+        } else {
+            Hide();
+        }
     }
 
     public IO.Swagger.Model.ObjectTypeMeta CreateObjectTypeMeta(CollisionObjectType collisionObjectType) {

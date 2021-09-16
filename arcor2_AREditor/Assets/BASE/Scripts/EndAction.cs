@@ -45,7 +45,4 @@ public class EndAction : StartEndAction
         InputArrow.gameObject.SetActive(enable);
     }
 
-    public override void EnableVisual(bool enable) {
-        throw new NotImplementedException();
-    }
 }

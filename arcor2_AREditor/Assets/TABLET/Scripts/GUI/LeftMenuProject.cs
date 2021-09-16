@@ -15,7 +15,7 @@ public class LeftMenuProject : LeftMenu
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
-        AddActionPointButton2, CopyButton, ActionPointAimingMenuButton;
+        AddActionPointButton2, ActionPointAimingMenuButton;
 
     public InputDialog InputDialog;
     public AddNewActionDialog AddNewActionDialog;
@@ -38,7 +38,6 @@ public class LeftMenuProject : LeftMenu
     private const string RUN_TEMP_PACKAGE_LABEL = "Create and execute temporary package";
     private const string ADD_ACTION_POINT_GLOBAL_LABEL = "Add global action point";
     private const string ADD_ACTION_POINT_LABEL = "Add action point";
-    private const string COPY_LABEL = "Duplicate object";
     private const string ACTION_POINT_AIMING_LABEL = "Open action point aiming menu";
     private const string ADD_ACTION_POINT_USING_ROBOT_LABEL = "Add action point using robot";
     
@@ -357,7 +356,7 @@ public class LeftMenuProject : LeftMenu
         }
     }*/
 
-    public void CopyObjectClick() {
+    public override void CopyObjectClick() {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;

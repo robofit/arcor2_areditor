@@ -24,6 +24,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
 
     private UnityAction closeCallback;
     private Gizmo.Axis selectedAxis;
+    public Transform OrigPose;
 
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
         SelectAxis(args.SelectedAxis);
@@ -33,7 +34,7 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         if (forceUpdate || selectedAxis != axis) {
             selectedAxis = axis;
             gizmo.HiglightAxis(axis);
-            SetRotationAxis(axis);
+            SetRotationAxis(RotateTranslateBtn.CurrentState == TwoStatesToggleNew.States.Left ? axis : Gizmo.Axis.NONE);
         }
     }
 
@@ -73,26 +74,24 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
                 }
 
                 if (translate) {
-                    Vector3 position;
-                    if (world) {
-                        position = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
-                    } else {
-                        //position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedRobot.GetTransform().InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
-                        position = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.localPosition);
-                    }
+                    Vector3 position = TransformConvertor.UnityToROS(OrigPose.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
+                    
                     //Coordinates.X.SetValueMeters(position.x);
                     //Coordinates.Y.SetValueMeters(position.y);
                     //Coordinates.Z.SetValueMeters(position.z);
+                    gizmo.SetXDelta(position.x);
+                    gizmo.SetYDelta(position.y);
+                    gizmo.SetZDelta(position.z);
 
                 } else {
-                    Quaternion newrotation;
-                    if (world)
-                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-                    else
-                        newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(SceneManager.Instance.SelectedRobot.GetTransform().rotation));
+                    Quaternion newrotation = TransformConvertor.UnityToROS(SceneManager.Instance.SelectedEndEffector.transform.rotation * Quaternion.Inverse(OrigPose.transform.transform.rotation));
                     //Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
                     //Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
                     //Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
+
+                    gizmo.SetXDeltaRotation(newrotation.eulerAngles.x);
+                    gizmo.SetYDeltaRotation(newrotation.eulerAngles.y);
+                    gizmo.SetZDeltaRotation(newrotation.eulerAngles.z);
                 }
             }
         }
@@ -203,6 +202,9 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         if (gizmo != null)
             Destroy(gizmo.gameObject);
         this.closeCallback = closeCallback;
+
+        OrigPose.transform.position = SceneManager.Instance.SelectedEndEffector.transform.position;
+        OrigPose.transform.rotation = SceneManager.Instance.SelectedEndEffector.transform.rotation;
         gizmo = Instantiate(GameManager.Instance.GizmoPrefab).GetComponent<Gizmo>();
         gizmo.transform.SetParent(SceneManager.Instance.SelectedEndEffector.transform);
         gizmo.transform.localPosition = Vector3.zero;

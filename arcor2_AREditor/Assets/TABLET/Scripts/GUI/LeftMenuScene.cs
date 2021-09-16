@@ -9,13 +9,14 @@ using TMPro;
 using System.Linq;
 using Newtonsoft.Json;
 using IO.Swagger.Model;
+using System.Collections.Generic;
 
 public class LeftMenuScene : LeftMenu
 {
 
     //public GameObject MeshPicker;
 
-    public ButtonWithTooltip CreateProjectBtn, AddNewObjectTypeButton, ActionObjectAimingMenuButton;
+    public ButtonWithTooltip CreateProjectBtn, AddNewCollisionObjectButton, ActionObjectAimingMenuButton;
 
     public InputDialogWithToggle InputDialogWithToggle;
 
@@ -23,6 +24,7 @@ public class LeftMenuScene : LeftMenu
 
     private const string AIMING_MENU_BTN_LABEL = "Action object precise aiming"; 
     private const string ADD_ACTION_OBJECT_BTN_LABEL = "Add new action object to scene"; 
+    private const string ADD_NEW_COLLISION_OBJECT_BTN_LABEL = "Add new collision object to scene"; 
 
     protected override void Awake() {
         base.Awake();
@@ -61,6 +63,7 @@ public class LeftMenuScene : LeftMenu
             }
 
             await base.UpdateBtns(obj);
+            AddNewCollisionObjectButton.SetInteractivity(!SceneManager.Instance.SceneStarted, $"{ADD_NEW_COLLISION_OBJECT_BTN_LABEL}\n(only available when offline)");
             if (SceneManager.Instance.SceneStarted) {
                 AddActionObjectButton.SetInteractivity(false, $"{ADD_ACTION_OBJECT_BTN_LABEL}\n(only available when offline)");
             } else if (ActionsManager.Instance.AbstractOnlyObjects) {
@@ -77,19 +80,27 @@ public class LeftMenuScene : LeftMenu
             if (requestingObject || obj == null) {
                 SelectedObjectText.text = "";
                 ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(no object selected)");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(no object selected)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(the object is used by {obj.LockOwner})");
+                CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(the object is used by {obj.LockOwner})");
+
             } else {
                 if (obj is ActionObject actionObject) {
                     if (!SceneManager.Instance.SceneStarted) {
                         ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(only available when online)");
                     } else if (!actionObject.ActionObjectMetadata.HasPose) {
                         ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(not available for objects without pose)");
+                        CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(not available for objects without pose)");
                     } else {
                         ActionObjectAimingMenuButton.SetInteractivity(true);
+                        CopyButton.SetInteractivity(true);
                     }
+
+                    CopyButton.SetInteractivity(!SceneManager.Instance.SceneStarted, $"{COPY_LABEL}\n(only available when offline)");
                 } else {
                     ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(selected object is not action object)");
+                    CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(selected object is not action object)");
                 }
             }
 
@@ -106,7 +117,7 @@ public class LeftMenuScene : LeftMenu
 
         base.DeactivateAllSubmenus(unlock);
         AddActionObjectButton.GetComponent<Image>().enabled = false;
-        AddNewObjectTypeButton.GetComponent<Image>().enabled = false;
+        AddNewCollisionObjectButton.GetComponent<Image>().enabled = false;
         ActionObjectAimingMenuButton.GetComponent<Image>().enabled = false;
 
         ActionObjectPickerMenu.Instance.Hide();
@@ -293,16 +304,16 @@ public class LeftMenuScene : LeftMenu
 
 
     public void ShowNewObjectTypeMenu() {        
-        if (!SelectorMenu.Instance.gameObject.activeSelf && !AddNewObjectTypeButton.GetComponent<Image>().enabled) { //other menu/dialog opened
+        if (!SelectorMenu.Instance.gameObject.activeSelf && !AddNewCollisionObjectButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
         }
-        if (AddNewObjectTypeButton.GetComponent<Image>().enabled) {
-            AddNewObjectTypeButton.GetComponent<Image>().enabled = false;
+        if (AddNewCollisionObjectButton.GetComponent<Image>().enabled) {
+            AddNewCollisionObjectButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
             ActionObjectPickerMenu.Instance.Hide();
         } else {
             ActionObjectPickerMenu.Instance.Show(ActionObjectPickerMenu.Type.CollisionObjects);
-            AddNewObjectTypeButton.GetComponent<Image>().enabled = true;
+            AddNewCollisionObjectButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
         }
     }
@@ -349,6 +360,18 @@ public class LeftMenuScene : LeftMenu
             return false;
     }
 
-
+    public async override void CopyObjectClick() {
+        if (selectedObject is ActionObject actionObject) {
+            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
+            foreach (Base.Parameter p in actionObject.ObjectParameters.Values) {
+                parameters.Add(DataHelper.ActionParameterToParameter(p));
+            }
+            string newName = SceneManager.Instance.GetFreeAOName(actionObject.GetName());
+            SceneManager.Instance.SelectCreatedActionObject = newName;
+            SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
+            await WebsocketManager.Instance.AddObjectToScene(newName,
+                actionObject.ActionObjectMetadata.Type, Sight.Instance.CreatePoseInTheView(), parameters);
+        }
+    }
 }
 

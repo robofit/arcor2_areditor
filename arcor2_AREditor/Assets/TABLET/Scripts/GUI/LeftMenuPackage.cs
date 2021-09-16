@@ -138,4 +138,8 @@ public class LeftMenuPackage : LeftMenu {
             previousUpdateDone = true;
         }
     }
+
+    public override void CopyObjectClick() {
+        throw new System.NotImplementedException();
+    }
 }

@@ -16,7 +16,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
     public ButtonWithTooltip MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton,
-        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton, MainSettingsButton; //Buttons with number 2 are duplicates in favorites submenu
+        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton, MainSettingsButton, CopyButton; //Buttons with number 2 are duplicates in favorites submenu
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
@@ -31,13 +31,14 @@ public abstract class LeftMenu : MonoBehaviour {
     protected InteractiveObject selectedObject = null;
     protected bool selectedObjectUpdated = true, previousUpdateDone = true;
 
-    private string MOVE_BTN_LABEL = "Move object";
-    private string REMOVE_BTN_LABEL = "Remove object"; 
-    private string RENAME_BTN_LABEL = "Rename object"; 
-    private string CALIBRATION_BTN_LABEL = "Calibrate"; 
-    private string OPEN_MENU_BTN_LABEL = "Open menu";
-    private string ROBOT_STEPPING_MENU_BTN_LABEL = "Robot stepping menu";
-    private string ROBOT_SELECTOR_MENU_BTN_LABEL = "Select robot";
+    private const string MOVE_BTN_LABEL = "Move object";
+    private const string REMOVE_BTN_LABEL = "Remove object";
+    private const string RENAME_BTN_LABEL = "Rename object";
+    private const string CALIBRATION_BTN_LABEL = "Calibrate";
+    private const string OPEN_MENU_BTN_LABEL = "Open menu";
+    private const string ROBOT_STEPPING_MENU_BTN_LABEL = "Robot stepping menu";
+    private const string ROBOT_SELECTOR_MENU_BTN_LABEL = "Select robot";
+    protected const string COPY_LABEL = "Duplicate object";
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
@@ -182,6 +183,8 @@ public abstract class LeftMenu : MonoBehaviour {
         }
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
+
+    public abstract void CopyObjectClick();
 
     private async void UpdateMoveAndRemoveBtns(string objId, Task<RequestResult> movable, Task<RequestResult> removable) {
         RequestResult move = await movable;
@@ -450,22 +453,15 @@ public abstract class LeftMenu : MonoBehaviour {
         if (clickedButton.GetComponent<Image>().enabled) {
             clickedButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
-                TransformGizmo.Instance.ClearTargets();
-            } else {
-                TransformMenu.Instance.Hide();
-            }
+            TransformMenu.Instance.Hide();
         } else {
-            clickedButton.GetComponent<Image>().enabled = true;
+            clickedButton.GetComponent<Image>().enabled = true;            
             
-            if (selectedObject.GetType().IsSubclassOf(typeof(StartEndAction))) {
-                selectedObject.StartManipulation();
-            } else {
-                if (! await TransformMenu.Instance.Show(selectedObject)) {
-                    SetActiveSubmenu(CurrentSubmenuOpened);
-                    return;
-                }
+            if (! await TransformMenu.Instance.Show(selectedObject)) {
+                SetActiveSubmenu(CurrentSubmenuOpened);
+                return;
             }
+            
             SelectorMenu.Instance.gameObject.SetActive(false);
         }
 
@@ -475,7 +471,7 @@ public abstract class LeftMenu : MonoBehaviour {
         RenameClick(false);   
     }
 
-    public void RenameClick(bool removeOnCancel, UnityAction confirmCallback = null) {
+    public void RenameClick(bool removeOnCancel, UnityAction confirmCallback = null, bool keepObjectLocked = false) {
         InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
         if (selectedObject is null)
             return;
@@ -487,9 +483,9 @@ public abstract class LeftMenu : MonoBehaviour {
         UpdateVisibility(false, true);
         SelectorMenu.Instance.gameObject.SetActive(false);
         if (removeOnCancel)
-            RenameDialog.Init(selectedObject, UpdateVisibility, true, () => selectedObject.Remove(), confirmCallback);
+            RenameDialog.Init(selectedObject, UpdateVisibility, true, () => selectedObject.Remove(), confirmCallback, keepObjectLocked);
         else
-            RenameDialog.Init(selectedObject, UpdateVisibility, false, null, confirmCallback);
+            RenameDialog.Init(selectedObject, UpdateVisibility, false, null, confirmCallback, keepObjectLocked);
         RenameDialog.Open();
     }
 

@@ -1987,7 +1987,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Project">
              <summary>
-             Project(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'List[ActionPoint]' = &lt;factory&gt;, parameters: 'List[ProjectParameter]' = &lt;factory&gt;, functions: 'List[ProjectFunction]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, object_overrides: 'List[SceneObjectOverride]' = &lt;factory&gt;)
+             Project(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'List[ActionPoint]' = &lt;factory&gt;, parameters: 'List[ProjectParameter]' = &lt;factory&gt;, functions: 'List[ProjectFunction]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, object_overrides: 'List[SceneObjectOverride]' = &lt;factory&gt;, project_objects_ids: 'Optional[List[str]]' = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Project.#ctor">
@@ -1995,7 +1995,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Project" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.Project.#ctor(System.DateTime,System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String,System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter})">
+        <member name="M:IO.Swagger.Model.Project.#ctor(System.DateTime,System.String,System.Boolean,System.String,System.DateTime,System.DateTime,System.String,System.String,System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter},System.Collections.Generic.List{System.String})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.Project" /> class.
              </summary>
@@ -2012,6 +2012,7 @@
              <param name="logic">logic.</param>
              <param name="objectOverrides">objectOverrides.</param>
              <param name="parameters">parameters.</param>
+             <param name="projectObjectsIds">projectObjectsIds.</param>
             </member>
         <member name="P:IO.Swagger.Model.Project.Created">
              <summary>
@@ -2076,6 +2077,11 @@
         <member name="P:IO.Swagger.Model.Project.Parameters">
              <summary>
              Gets or Sets Parameters
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.Project.ProjectObjectsIds">
+             <summary>
+             Gets or Sets ProjectObjectsIds
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Project.ToString">
@@ -10374,6 +10380,90 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotMetaResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.Equals(IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse)">
+             <summary>
+             Returns true if AddVirtualCollisionObjectToSceneResponse instances are equal
+             </summary>
+             <param name="input">Instance of AddVirtualCollisionObjectToSceneResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -20085,6 +20175,84 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest">
+             <summary>
+             Request(id: int, args: arcor2_arserver_data.rpc.scene.AddVirtualCollisionObjectToScene.Request.Args, dry_run: bool = False)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs,System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.Equals(IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest)">
+             <summary>
+             Returns true if AddVirtualCollisionObjectToSceneRequest instances are equal
+             </summary>
+             <param name="input">Instance of AddVirtualCollisionObjectToSceneRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointOrientationRequestArgs">
              <summary>
              Args(orientation_id: str, orientation: arcor2.data.common.Orientation)
@@ -25102,7 +25270,7 @@
              ProjectAllOf
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ProjectAllOf.#ctor(System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter})">
+        <member name="M:IO.Swagger.Model.ProjectAllOf.#ctor(System.Collections.Generic.List{IO.Swagger.Model.ActionPoint},System.Collections.Generic.List{IO.Swagger.Model.ProjectFunction},System.Collections.Generic.List{IO.Swagger.Model.LogicItem},System.Collections.Generic.List{IO.Swagger.Model.SceneObjectOverride},System.Collections.Generic.List{IO.Swagger.Model.ProjectParameter},System.Collections.Generic.List{System.String})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ProjectAllOf" /> class.
              </summary>
@@ -25111,6 +25279,7 @@
              <param name="logic">logic.</param>
              <param name="objectOverrides">objectOverrides.</param>
              <param name="parameters">parameters.</param>
+             <param name="projectObjectsIds">projectObjectsIds.</param>
             </member>
         <member name="P:IO.Swagger.Model.ProjectAllOf.ActionPoints">
              <summary>
@@ -25135,6 +25304,11 @@
         <member name="P:IO.Swagger.Model.ProjectAllOf.Parameters">
              <summary>
              Gets or Sets Parameters
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ProjectAllOf.ProjectObjectsIds">
+             <summary>
+             Gets or Sets ProjectObjectsIds
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectAllOf.ToString">
@@ -34863,6 +35037,78 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs">
+             <summary>
+             Args(name: str, pose: arcor2.data.common.Pose, model: arcor2.data.object_type.ObjectModel)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.#ctor(IO.Swagger.Model.ObjectModel,System.String,IO.Swagger.Model.Pose)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs" /> class.
+             </summary>
+             <param name="model">model (required).</param>
+             <param name="name">name (required).</param>
+             <param name="pose">pose (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.Model">
+             <summary>
+             Gets or Sets Model
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.Name">
+             <summary>
+             Gets or Sets Name
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.Pose">
+             <summary>
+             Gets or Sets Pose
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.Equals(IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs)">
+             <summary>
+             Returns true if AddVirtualCollisionObjectToSceneRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of AddVirtualCollisionObjectToSceneRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.TypeArgs">
              <summary>
              TypeArgs(type: str)
@@ -37934,37 +38180,34 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionMetadata">
              <summary>
-             ActionMetadata(blocking: 'bool' = False, composite: 'bool' = False, blackbox: 'bool' = False)
+             ActionMetadata(composite: 'bool' = False, hidden: 'bool' = False)
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ActionMetadata.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:IO.Swagger.Model.ActionMetadata.#ctor(System.Boolean,System.Boolean,System.Boolean)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ActionMetadata" /> class.
              </summary>
-             <param name="blackbox">blackbox (default to false).</param>
-             <param name="blocking">blocking (default to false).</param>
-             <param name="cancellable">cancellable (default to false).</param>
-             <param name="composite">composite (default to false).</param>
-            </member>
-        <member name="P:IO.Swagger.Model.ActionMetadata.Blackbox">
-             <summary>
-             Gets or Sets Blackbox
-             </summary>
-            </member>
-        <member name="P:IO.Swagger.Model.ActionMetadata.Blocking">
-             <summary>
-             Gets or Sets Blocking
-             </summary>
+             <param name="cancellable">Defines whether action execution can be cancelled. (default to false).</param>
+             <param name="composite">Should be set for nested actions. (default to false).</param>
+             <param name="hidden">When set, action will be hidden in UIs. (default to false).</param>
             </member>
         <member name="P:IO.Swagger.Model.ActionMetadata.Cancellable">
              <summary>
-             Gets or Sets Cancellable
+             Defines whether action execution can be cancelled.
              </summary>
+             <value>Defines whether action execution can be cancelled.</value>
             </member>
         <member name="P:IO.Swagger.Model.ActionMetadata.Composite">
              <summary>
-             Gets or Sets Composite
+             Should be set for nested actions.
              </summary>
+             <value>Should be set for nested actions.</value>
+            </member>
+        <member name="P:IO.Swagger.Model.ActionMetadata.Hidden">
+             <summary>
+             When set, action will be hidden in UIs.
+             </summary>
+             <value>When set, action will be hidden in UIs.</value>
             </member>
         <member name="M:IO.Swagger.Model.ActionMetadata.ToString">
              <summary>
@@ -43681,6 +43924,72 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.IdArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf">
+             <summary>
+             AddVirtualCollisionObjectToSceneRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.#ctor(IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestArgs,System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+             <param name="dryRun">dryRun (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.DryRun">
+             <summary>
+             Gets or Sets DryRun
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.Equals(IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf)">
+             <summary>
+             Returns true if AddVirtualCollisionObjectToSceneRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of AddVirtualCollisionObjectToSceneRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>

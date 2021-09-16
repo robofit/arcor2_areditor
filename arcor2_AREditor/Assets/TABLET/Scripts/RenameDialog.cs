@@ -24,8 +24,9 @@ public class RenameDialog : Dialog
     private bool isNewObject;
     public ButtonWithTooltip CloseBtn, ConfirmButton;
     private UnityAction confirmCallback;
+    private bool keepObjectLocked;
 
-    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null, UnityAction confirmCallback = null) {
+    public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null, UnityAction confirmCallback = null, bool keepObjectLocked = false) {
         if (!await objectToRename.WriteLock(false))
             return;
 
@@ -36,6 +37,7 @@ public class RenameDialog : Dialog
             return;
 
         Title.text = "Rename " + selectedObject.GetObjectTypeName();
+        this.keepObjectLocked = keepObjectLocked;
 
         nameInput.SetValue(objectToRename.GetName());
         nameInput.SetLabel("Name", "New name");
@@ -63,7 +65,6 @@ public class RenameDialog : Dialog
         if (name == selectedObject.GetName()) { //for new objects, without changing name
             Cancel();
             confirmCallback?.Invoke();
-            Debug.LogError("invoke callback");
             return;
         }
 
@@ -71,8 +72,6 @@ public class RenameDialog : Dialog
             await selectedObject.Rename(name);
             Cancel();
             confirmCallback?.Invoke();
-
-            Debug.LogError("invoke callback");
         } catch (RequestFailedException) {
             //notification already shown, nothing else to do
         }
@@ -82,7 +81,6 @@ public class RenameDialog : Dialog
         //LeftMenu.Instance.UpdateVisibility();
 
         SelectorMenu.Instance.gameObject.SetActive(true);
-        Debug.LogError("show selectormenu");
         if (_updateVisibilityCallback != null)
             _updateVisibilityCallback.Invoke();
         base.Close();
@@ -91,7 +89,7 @@ public class RenameDialog : Dialog
     }
 
     public void Cancel() {
-        if (selectedObject != null) {
+        if (selectedObject != null && !keepObjectLocked) {
             _ = selectedObject.WriteUnlock();
         }
         Close();

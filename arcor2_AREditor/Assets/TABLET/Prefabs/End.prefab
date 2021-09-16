@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SelectorItem: {fileID: 0}
   Colliders:
   - {fileID: 1910968989511566013}
   Input: {fileID: 4880005387537242525}
@@ -21,8 +22,12 @@ MonoBehaviour:
   OutputArrow: {fileID: 6616330263180599034}
   ActionPoint: {fileID: 0}
   NameText: {fileID: 5451630378588609808}
+  ActionBeingExecuted: 0
   Visual: {fileID: 2605560298224851498}
+  VisualRoot: {fileID: 2605560297740973846}
   outlineOnClick: {fileID: 6975415401428609950}
+  ModelPrefab: {fileID: 6172840125693581223, guid: b0bfa2118f8c5094caa65542cc370c8d,
+    type: 3}
 --- !u!114 &6997291219196793752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,6 +78,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -88,6 +98,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
@@ -99,16 +114,6 @@ PrefabInstance:
     - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
-        type: 3}
-      propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3166032771580886009, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
@@ -197,6 +202,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5053e62e365046e4a830ee9ca06df9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2605560297740973846 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6417292781798665001, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,
+    type: 3}
+  m_PrefabInstance: {fileID: 9017898060511943743}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &5451630378588609808 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3931104211541885231, guid: 95ac9ebcf9bac6045bc0198ac650dd9c,

@@ -142,7 +142,7 @@ namespace Base {
         private RobotEE selectedEndEffector;
 
         public string SelectCreatedActionObject;
-
+        public bool OpenTransformMenuOnCreatedObject;
 
         
 
@@ -612,13 +612,10 @@ namespace Base {
             if (aom.Robot) {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
-
+            } else if (aom.CollisionObject) {
+                obj = Instantiate(CollisionObjectPrefab, ActionObjectsSpawn.transform);
             } else if (aom.HasPose) {
-                if (aom.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
-                    obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
-                } else {
-                    obj = Instantiate(CollisionObjectPrefab, ActionObjectsSpawn.transform);
-                }
+                obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             } else {
                 obj = Instantiate(ActionObjectNoPosePrefab, ActionObjectsSpawn.transform);
             }
@@ -798,7 +795,12 @@ namespace Base {
                 if (!actionObject.ActionObjectMetadata.HasPose)
                     SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
             }
+            if (OpenTransformMenuOnCreatedObject) {
+                AREditorResources.Instance.LeftMenuScene.SetActiveSubmenu(LeftMenuSelection.Utility);
+                AREditorResources.Instance.LeftMenuScene.MoveClick();
+            }
             SelectCreatedActionObject = "";
+            OpenTransformMenuOnCreatedObject = false;
             updateScene = true;
         }
 

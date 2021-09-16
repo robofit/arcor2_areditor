@@ -10,7 +10,7 @@ public class TwoStatesToggleNew : MonoBehaviour
     }  
     
     private void Awake() {
-        CurrentState = States.Left;
+        CurrentState = States.Right;
     }
     public Image LeftImage, RightImage;
     private Sprite icon1, icon2;

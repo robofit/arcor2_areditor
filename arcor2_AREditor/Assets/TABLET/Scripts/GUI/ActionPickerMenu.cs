@@ -49,7 +49,7 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu> {
             AREditorResources.Instance.LeftMenuProject.RenameClick(true, () => {
                 AREditorResources.Instance.LeftMenuProject.SetActiveSubmenu(LeftMenuSelection.Utility);
                 AREditorResources.Instance.LeftMenuProject.OpenMenuButtonClick();
-            });
+            }, true);
             addedActionName = null;
         }
     }

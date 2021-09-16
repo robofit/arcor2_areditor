@@ -175,6 +175,7 @@ namespace Base {
             }
         }
 
+
         /// <summary>
         /// Disconnects from server
         /// </summary>
@@ -2683,6 +2684,22 @@ namespace Base {
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to update object model" } : response.Messages);
             }
+        }
+
+        /// <summary>
+        /// Removes project parameter
+        /// </summary>
+        /// <param name="id">ID of project parameter to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public Task AddVirtualCollisionObjectToScene(string name, ObjectModel objectModel, IO.Swagger.Model.Pose pose, UnityAction<string, string> callback, bool dryRun = false) {
+            Debug.Assert(callback != null);
+            int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            AddVirtualCollisionObjectToSceneRequestArgs args = new AddVirtualCollisionObjectToSceneRequestArgs(model: objectModel, name: name, pose: pose);
+            AddVirtualCollisionObjectToSceneRequest request = new AddVirtualCollisionObjectToSceneRequest(r_id, "AddVirtualCollisionObjectToScene", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, false);
+            return Task.CompletedTask;
         }
     }
 }

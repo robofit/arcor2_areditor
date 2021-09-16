@@ -824,6 +824,7 @@ MonoBehaviour:
   ActionObjectsVisibility: 0
   SelectedArmId: 
   SelectCreatedActionObject: 
+  OpenTransformMenuOnCreatedObject: 0
   Valid: 0
 --- !u!1 &281650273 stripped
 GameObject:
@@ -22153,6 +22154,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3081057087100122726, guid: ce7fcaa9f2e51014ba31f987a92587f1,
+        type: 3}
+      propertyPath: OrigPose
+      value: 
+      objectReference: {fileID: 1350991960}
     - target: {fileID: 3086192706816062841, guid: ce7fcaa9f2e51014ba31f987a92587f1,
         type: 3}
       propertyPath: m_AnchorMax.y

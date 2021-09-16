@@ -8,32 +8,22 @@ public class CollisionObject : ActionObject3D
         return "Collision object";
     }
 
-    public async override Task<bool> WriteLock(bool lockTree) {
-        bool lockObject;
-        lockObject = await base.WriteLock(lockTree);
-        if (!lockObject)
-            return false;
+    public async Task<bool> WriteLockObjectType() {
         try {
-            await WebsocketManager.Instance.WriteLock(ActionObjectMetadata.Type, lockTree);
+            await WebsocketManager.Instance.WriteLock(ActionObjectMetadata.Type, false);
             return true;
         } catch (RequestFailedException) {
-            await WriteUnlock();
             return false;
         }
-        
     }
 
-    public async override Task<bool> WriteUnlock() {
-        bool unlockObject;
-        unlockObject = await base.WriteUnlock();
-        if (!unlockObject)
-            return false;
+    public async Task<bool> WriteUnlockObjectType() {
         try {
             await WebsocketManager.Instance.WriteUnlock(ActionObjectMetadata.Type);
             return true;
         } catch (RequestFailedException) {
             return false;
         }
-
     }
+
 }

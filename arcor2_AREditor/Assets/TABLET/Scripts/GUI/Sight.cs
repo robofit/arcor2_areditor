@@ -356,7 +356,14 @@ namespace Base {
                 }
             }
             return false;
-        }        
+        }
+
+        public IO.Swagger.Model.Pose CreatePoseInTheView(float distance = 0.3f) {
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+            Vector3 point = TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(distance)));
+            return new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(point), orientation: DataHelper.QuaternionToOrientation(Quaternion.identity));
+
+        }
 
         private IEnumerator HoverEnd() {
             endingHover = true;

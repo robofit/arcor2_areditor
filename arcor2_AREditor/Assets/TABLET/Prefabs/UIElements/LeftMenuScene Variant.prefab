@@ -58,6 +58,7 @@ MonoBehaviour:
   CloseButton: {fileID: 3453585985977246671}
   SaveButton: {fileID: 6259248197169340348}
   MainSettingsButton: {fileID: 7358036640347342079}
+  CopyButton: {fileID: 2953797150594062912}
   FavoritesButtons: {fileID: 3174690355288088533}
   HomeButtons: {fileID: 1067311030087285564}
   UtilityButtons: {fileID: 8094630427502642271}
@@ -70,7 +71,7 @@ MonoBehaviour:
   CurrentSubmenuOpened: 0
   ConfirmationDialog: {fileID: 0}
   CreateProjectBtn: {fileID: 1385844879172678783}
-  AddNewObjectTypeButton: {fileID: 3089527997614608021}
+  AddNewCollisionObjectButton: {fileID: 3089527997614608021}
   ActionObjectAimingMenuButton: {fileID: 6604372997042491094}
   InputDialogWithToggle: {fileID: 0}
   AddActionObjectButton: {fileID: 3419814040477592579}
@@ -628,7 +629,7 @@ PrefabInstance:
     - target: {fileID: 1472630701308425568, guid: 779f62d28bb1d084496ba8c148ec4971,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1645442421768047032, guid: 779f62d28bb1d084496ba8c148ec4971,
         type: 3}
@@ -924,11 +925,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2301029804283813097}
+      objectReference: {fileID: 2413133117213990986}
     - target: {fileID: 4713704943942072864, guid: 779f62d28bb1d084496ba8c148ec4971,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: 
+      value: CopyObjectClick
       objectReference: {fileID: 0}
     - target: {fileID: 4839426906436990215, guid: 779f62d28bb1d084496ba8c148ec4971,
         type: 3}
@@ -1268,6 +1269,36 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985319224019290690, guid: 779f62d28bb1d084496ba8c148ec4971,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8197722637096110431, guid: 779f62d28bb1d084496ba8c148ec4971,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -1545,6 +1576,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 8906217880992916851}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2953797150594062912 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6009142353806819123, guid: 779f62d28bb1d084496ba8c148ec4971,
+    type: 3}
+  m_PrefabInstance: {fileID: 8906217880992916851}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c51c72ffdfd9174788c173c64918514, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2301029804283813097 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7239496353200273818, guid: 779f62d28bb1d084496ba8c148ec4971,
@@ -1669,7 +1712,7 @@ PrefabInstance:
     - target: {fileID: 1171430893015759436, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}
       propertyPath: m_Name
-      value: CreateNewObjectTypeButton
+      value: AddNewCollisionObjectButton
       objectReference: {fileID: 0}
     - target: {fileID: 3750091178015956156, guid: a37f66d2914458b4c85e50f9fa33cf93,
         type: 3}

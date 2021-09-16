@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 public abstract class StartEndAction : Base.Action {
     public Renderer Visual;
+    public GameObject VisualRoot;
 
     protected string playerPrefsKey;
     [SerializeField]
     protected OutlineOnClick outlineOnClick;
+    public GameObject ModelPrefab;
 
     public override void OnClick(Click type) {
         if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
@@ -29,11 +31,8 @@ public abstract class StartEndAction : Base.Action {
 
     }
 
-    private void Update() {
-        if (gameObject.transform.hasChanged) {
-            PlayerPrefsHelper.SaveVector3(playerPrefsKey, transform.localPosition);
-            transform.hasChanged = false;
-        }
+    public void SavePosition() {
+        PlayerPrefsHelper.SaveVector3(playerPrefsKey, transform.localPosition);
     }
 
     public override void OnHoverStart() {
@@ -70,8 +69,7 @@ public abstract class StartEndAction : Base.Action {
     }
 
     public override void StartManipulation() {
-        TransformGizmo.Instance.AddTarget(Visual.transform);
-        outlineOnClick.GizmoHighlight();
+        throw new NotImplementedException();
     }
 
     public override async Task<bool> WriteUnlock() {
@@ -112,5 +110,13 @@ public abstract class StartEndAction : Base.Action {
 
     public override Task Rename(string name) {
         throw new NotImplementedException();
+    }
+
+    public GameObject GetModelCopy() {
+        return Instantiate(ModelPrefab);
+    }
+
+    public override void EnableVisual(bool enable) {
+        VisualRoot.SetActive(enable);
     }
 }
