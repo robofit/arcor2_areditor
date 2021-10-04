@@ -1,0 +1,45 @@
+@@ -28,23 +28,24 @@
+
+ 	public void CalculateVectors(RectTransform transform) {
+ 		if (!transform) return;
+-
++
++
+ 		switch (direction) {
+ 			case ConnectionDirection.North:
+-				p = transform.TransformPoint(
+-					transform.rect.width/2f * position,
+-					transform.rect.height/2f,
+-					0);
+-				c = p + transform.up * weight;
+-			break;
++                p = transform.TransformPoint(
++                    transform.sizeDelta.x / 2f * position,
++                    transform.sizeDelta.y / 2f,
++                    0);
++                c = p + transform.forward * weight;
++            break;
+
+ 			case ConnectionDirection.South:
+-				p = transform.TransformPoint(
+-					transform.sizeDelta.x/2f * position,
+-					-transform.sizeDelta.y/2f,
+-					0);
+-				c = p - transform.up * weight;
+-			break;
++                p = transform.TransformPoint(
++                    transform.sizeDelta.x / 2f * position,
++                    transform.sizeDelta.y / 2f,
++                    0);
++                c = p - transform.forward * weight;
++            break;
+
+ 			case ConnectionDirection.East:
+ 				p = transform.TransformPoint(
+@@ -71,5 +72,5 @@
+ 				c = p + transform.TransformDirection(Mathf.Cos(angle), Mathf.Sin(angle), 0) * weight;
+ 			break;
+ 		}
+-	}
++    }
+ }
