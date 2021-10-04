@@ -516,9 +516,19 @@ public class LeftMenuProject : LeftMenu
     public async void ShowCloseProjectDialog() {
         (bool success, _) = await Base.GameManager.Instance.CloseProject(false);
         if (!success) {
+            string message = "Are you sure you want to close current project? ";
+            if (ProjectManager.Instance.ProjectChanged) {
+                message += "Unsaved changes will be lost";
+                if (SceneManager.Instance.SceneStarted) {
+                    message += " and system will go offline";
+                }
+                message += ".";
+            } else if (SceneManager.Instance.SceneStarted) {
+                message += "System will go offline.";
+            }
             GameManager.Instance.HideLoadingScreen();
             ConfirmationDialog.Open("Close project",
-                         "Are you sure you want to close current project? Unsaved changes will be lost and system will go offline (if online).",
+                         message,
                          () => CloseProject(),
                          () => ConfirmationDialog.Close());
         }
