@@ -54,18 +54,16 @@ public class SelectorItem : MonoBehaviour
         }
     }
 
-    public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+    public void AddChild(SelectorItem selectorItem) {
         childs.Add(selectorItem);
         selectorItem.ParentItem = this;
-        if (updateCollapsableInteractivity)
-            CollapsableButton.interactable = true;
+        CollapsableButton.interactable = true;
     }
 
-    public void RemoveChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+    public void RemoveChild(SelectorItem selectorItem) {
         childs.Remove(selectorItem);
         selectorItem.ParentItem = null;
-        if (updateCollapsableInteractivity)
-            CollapsableButton.interactable = HasChilds();
+        CollapsableButton.interactable = HasChilds();
     }
 
     public bool HasChilds() {
@@ -88,7 +86,6 @@ public class SelectorItem : MonoBehaviour
         } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
             Icon.sprite = AREditorResources.Instance.ActionOutput;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
-            Collapsable = true;
             Icon.sprite = AREditorResources.Instance.Action;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
             Collapsable = true;

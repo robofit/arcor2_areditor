@@ -23,8 +23,8 @@ public class Action3D : Base.Action, ISubItem {
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
         base.Init(projectAction, metadata, ap, actionProvider);
-        Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
-        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
+       // Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
+        //Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
     protected override void Start() {
@@ -135,8 +135,7 @@ public class Action3D : Base.Action, ISubItem {
     }
 
     public override void UpdateColor() {
-        Input.UpdateColor();
-        Output.UpdateColor();
+        
 
         foreach (Material material in Visual.materials)
             if (Enabled && !(IsLocked && !IsLockedByMe))
@@ -212,25 +211,17 @@ public class Action3D : Base.Action, ISubItem {
         if (owner != LandingScreen.Instance.GetUsername()) {
             NameText.text = GetLockedText();
         }
-        Input.OnObjectLocked(owner);
-        Output.OnObjectLocked(owner);
     }
 
     public override void OnObjectUnlocked() {
         base.OnObjectUnlocked();
         NameText.text = GetName();
-        Input.OnObjectUnlocked();
-        Output.OnObjectUnlocked();
     }
 
     public InteractiveObject GetParentObject() {
         return ActionPoint;
     }
 
-    public override void EnableInputOutput(bool enable) {
-        InputArrow.gameObject.SetActive(enable);
-        OutputArrow.gameObject.SetActive(enable);
-    }
 
     public override void EnableVisual(bool enable) {
         throw new NotImplementedException();

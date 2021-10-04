@@ -12,7 +12,7 @@ using RosSharp.RosBridgeClient.MessageTypes.Nav;
 namespace Base {
     [RequireComponent(typeof(OutlineOnClick))]
     [RequireComponent(typeof(Target))]
-    public abstract class InputOutput : InteractiveObject, ISubItem {
+    public abstract class InputOutput : MonoBehaviour, ISubItem {
         public Action Action;
         private List<string> logicItemIds = new List<string>();
         [SerializeField]
@@ -55,7 +55,7 @@ namespace Base {
             }
             return true;
         }
-
+/*
         public override async void OnClick(Click type) {
             if (!CheckClickType(type))
                 return;
@@ -129,184 +129,20 @@ namespace Base {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs("Failed to remove connection");
                         ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-                    }*/
+                    }*//*
                 }
             }
             
         }
+*/
+
+        
 
 
-        public async Task SelectedConnection(LogicItem logicItem) {
-            AREditorResources.Instance.ConnectionSelectorDialog.Close();
-            if (logicItem == null) {
-                if (typeof(PuckOutput) == GetType() && Action.Metadata.Returns.Count > 0 && Action.Metadata.Returns[0] == "boolean") {
-                    ShowOutputTypeDialog(async () => await CreateNewConnection());
-                } else {
-                    await CreateNewConnection();
-                }
-            } else {
-                GameObject theOtherOne = ConnectionManagerArcoro.Instance.GetConnectedTo(logicItem.GetConnection(), gameObject);
-
-                try {
-                    Action otherAction;
-                    if (Action.GetId() == logicItem.Data.Start)
-                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.End);
-                    else
-                        otherAction = ProjectManager.Instance.GetAction(logicItem.Data.Start);
-                    GameManager.Instance.ShowLoadingScreen("Removing old connection...");
-                    await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
-                    GameManager.Instance.HideLoadingScreen();
-                    if (!await otherAction.WriteLock(false)) {
-                        return;
-                    }
-                    ConnectionManagerArcoro.Instance.CreateConnectionToPointer(theOtherOne);
-                    if (typeof(PuckOutput) == GetType()) {
-                        await theOtherOne.GetComponent<PuckInput>().GetOutput();
-                    } else {
-                        await theOtherOne.GetComponent<PuckOutput>().GetInput();
-                    }
-                } catch (RequestFailedException ex) {
-                    GameManager.Instance.HideLoadingScreen();
-                    Notifications.Instance.ShowNotification("Failed to remove connection", ex.Message);
-                    //Debug.LogError(ex);
-                    //Notifications.Instance.SaveLogs("Failed to remove connection");
-                    //ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-                }
-            }
-        }
-
-
-        private void ShowOutputTypeDialog(UnityAction callback) {
-            if (logicItemIds.Count == 2) {
-                Notifications.Instance.ShowNotification("Failed", "Cannot create any other connection.");
-                return;
-            } else if (logicItemIds.Count == 1) {
-                List<LogicItem> items = GetLogicItems();
-                Debug.Assert(items.Count == 1, "There must be exactly one valid logic item!");
-                LogicItem item = items[0];
-                if (item.Data.Condition is null) {
-                    Notifications.Instance.ShowNotification("Failed", "There is already connection which serves all results");
-                    return;
-                } else {
-                    bool condition = JsonConvert.DeserializeObject<bool>(item.Data.Condition.Value);
-                    AREditorResources.Instance.OutputTypeDialog.Open(this, callback, false, !condition, condition);                
-                    return;
-                }
-            }
-            AREditorResources.Instance.OutputTypeDialog.Open(this, callback, true, true, true);
-        }
-
-        private async Task CreateNewConnection() {
-            ConnectionManagerArcoro.Instance.CreateConnectionToPointer(gameObject);
-            if (typeof(PuckOutput) == GetType()) {
-                await GetInput();
-            } else {
-                await GetOutput();
-            }
-        }
-
-
-        public async Task GetInput() {
-            List<Action> actionList = ProjectManager.Instance.GetAllActions();
-            actionList.Add(ProjectManager.Instance.StartAction);
-            actionList.Add(ProjectManager.Instance.EndAction);
-            /*foreach (Action a in actionList) {
-                if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, a.Input)) {
-                    a.Input.Disable();
-                }
-            }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionInput, GetInput,
-                "Select input of other action", ValidateInput, async() => await Action.WriteUnlock());
-        }
-
-        public async Task GetOutput() {
-            List<Action> actionList = ProjectManager.Instance.GetAllActions();
-            actionList.Add(ProjectManager.Instance.StartAction);
-            actionList.Add(ProjectManager.Instance.EndAction);
-            /*foreach (Action a in actionList) {
-                if (!await ConnectionManagerArcoro.Instance.ValidateConnection(a.Output, this)) {
-                    a.Output.Disable();
-                }
-            }*/
-            await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionOutput, GetOutput,
-                "Select output of other action", ValidateOutput, async () => await Action.WriteUnlock());
-        }
-
-        private async Task<RequestResult> ValidateInput(object selectedInput) {
-            InputOutput input;
-            try {
-                input = (InputOutput) selectedInput;
-            } catch (InvalidCastException) {
-                return new RequestResult(false, "Wrong object type selected");
-            } 
-            
-            RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(this, input, GetProjectLogicIf())) {
-                result.Success = false;
-                result.Message = "Invalid connection";
-            }
-            return result;
-        }
-
-        private async Task<RequestResult> ValidateOutput(object selectedOutput) {
-            PuckOutput output;
-            try {
-                output = (PuckOutput) selectedOutput;
-            } catch (InvalidCastException) {
-                return new RequestResult(false, "Wrong object type selected");
-            }
-            RequestResult result = new RequestResult(true, "");
-            if (!await ConnectionManagerArcoro.Instance.ValidateConnection(output, this, output.GetProjectLogicIf())) {
-                result.Success = false;
-                result.Message = "Invalid connection";
-            }
-            return result;
-        }
-
-        protected async virtual void GetInput(object selectedInput) {
-            InputOutput input = (InputOutput) selectedInput;
-            
-            if (selectedInput == null || input == null) {
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-                return;
-            }
-            try {
-                await WebsocketManager.Instance.AddLogicItem(Action.Data.Id, input.Action.Data.Id, GetProjectLogicIf(), false);
-                ifValue = null;
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to add connection");
-            }
-
-        }
-
-        private async void GetOutput(object selectedOutput) {
-            PuckOutput output = (PuckOutput) selectedOutput;
-            
-            if (selectedOutput == null || output == null) {
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();
-                return;
-            }
-            try {
-                await WebsocketManager.Instance.AddLogicItem(output.Action.Data.Id, Action.Data.Id, output.GetProjectLogicIf(), false);
-                ifValue = null;
-                ConnectionManagerArcoro.Instance.DestroyConnectionToMouse();                
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex);
-                Notifications.Instance.SaveLogs("Failed to add connection");
-            }
-        }
-
-        private IO.Swagger.Model.ProjectLogicIf GetProjectLogicIf() {
-            if (ifValue is null)
-                return null;
-            List<Flow> flows = Action.GetFlows();
-            string flowName = flows[0].Type.GetValueOrDefault().ToString().ToLower();
-            IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(JsonConvert.SerializeObject(ifValue), Action.Data.Id + "/" + flowName + "/0");
-            return projectLogicIf;
-        }
-
+        
+        
+        
+/*
         public async override void OnHoverStart() {
             if (!Enabled)
                 return;
@@ -328,8 +164,8 @@ namespace Base {
             }
             if (!result)
                 ConnectionManagerArcoro.Instance.DisableConnectionToMouse();
-        }
-
+        }*/
+/*
         public override void OnHoverEnd() {
             outlineOnClick.UnHighlight();
             Action.NameText.gameObject.SetActive(false);
@@ -375,9 +211,17 @@ namespace Base {
 
         public override Task Rename(string name) {
             throw new NotImplementedException();
-        }
+        }*/
         public InteractiveObject GetParentObject() {
             return Action;
+        }
+
+        public bool AnyConnection() {
+            return ConnectionCount() > 0;
+        }
+
+        public int ConnectionCount() {
+            return logicItemIds.Count();
         }
     }
 

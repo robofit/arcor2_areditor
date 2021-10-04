@@ -173,19 +173,15 @@ public class LeftMenuProject : LeftMenu
                     AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                     AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                 } else {
-                    AddConnectionButton.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
-                    AddConnectionButton2.SetInteractivity(obj.GetType() == typeof(PuckInput) ||
-                        obj.GetType() == typeof(PuckOutput), $"{ADD_CONNECTION_LABEL}\n(selected object is not input or output of an action)");
-                    if (obj is InputOutput inputOutput) {
-                        if (inputOutput.GetLogicItems().Count > 0) {
-                            AddConnectionButton.SetDescription(ADD_CONNECTION_LABEL);
-                            AddConnectionButton2.SetDescription(ADD_CONNECTION_LABEL);
+                    if (obj is Base.Action) {
+                        if (obj is EndAction) {
+                            AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(end action could not be connected to anything else)");
                         } else {
-                            AddConnectionButton.SetDescription(EDIT_CONNECTION_LABEL);
-                            AddConnectionButton2.SetDescription(EDIT_CONNECTION_LABEL);
+                            AddConnectionButton.SetInteractivity(true);
                         }
+                        AddConnectionButton2.SetInteractivity(AddConnectionButton.IsInteractive(), AddConnectionButton.GetAlternativeDescription());
                     }
+                    
 
                 }
                 string runBtnInteractivity = null;
@@ -378,15 +374,8 @@ public class LeftMenuProject : LeftMenu
     }
 
     public async void AddConnectionClick() {
-        InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
-        if (selectedObject is null)
-            return;
-        if ((selectedObject.GetType() == typeof(PuckInput) ||
-                selectedObject.GetType() == typeof(PuckOutput))) {
-            if (!await ((InputOutput) selectedObject).Action.WriteLock(false))
-                return;
-            
-            ((InputOutput) selectedObject).OnClick(Clickable.Click.TOUCH);
+        if (SelectorMenu.Instance.GetSelectedObject() is Base.Action action) {
+            action.AddConnection();            
         }
     }
 

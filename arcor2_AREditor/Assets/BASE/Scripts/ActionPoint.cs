@@ -42,12 +42,14 @@ namespace Base {
         public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
-
             SelectorItem.SetText(apData.Name);
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
                 ConnectionToParent.UpdateLine();
+            foreach (Action action in Actions.Values) {
+                action.UpdateRotation();
+            }
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }

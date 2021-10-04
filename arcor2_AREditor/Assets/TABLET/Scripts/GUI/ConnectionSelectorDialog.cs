@@ -23,7 +23,7 @@ public class ConnectionSelectorDialog : Dialog {
         OnCancelCallback?.Invoke();
     }
 
-    public void Open(Dictionary<string, LogicItem> connections, bool newConnection, InputOutput sender, UnityAction onCancel = null) {
+    public void Open(Dictionary<string, LogicItem> connections, bool newConnection, Action sender, UnityAction onCancel = null) {
         DestroyButtons();
         foreach (KeyValuePair<string, LogicItem> c in connections) {
             DialogButton dialogButton = Instantiate(DialogButtonPrefab, content.transform).GetComponent<DialogButton>();

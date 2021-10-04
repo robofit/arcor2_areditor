@@ -955,9 +955,10 @@ namespace Base {
                 return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Input.Enable(enable);
+                    ;
+                    //action.Input.Enable(enable);
             }
-            EndAction.Input.Enable(enable);
+            //EndAction.Input.Enable(enable);
         }
 
 
@@ -969,9 +970,10 @@ namespace Base {
                 return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Output.Enable(enable);
+                    ;
+                    //action.Output.Enable(enable);
             }
-            StartAction.Output.Enable(enable);
+            //StartAction.Output.Enable(enable);
         }
 
 
@@ -1166,7 +1168,7 @@ namespace Base {
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
-                action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
+                //action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
                 OnActionAddedToScene.Invoke(this, new ActionEventArgs(action));
             } catch (RequestFailedException ex) {
@@ -1207,11 +1209,11 @@ namespace Base {
         public void SetActionInputOutputVisibility(bool visible) {
             if (!Valid || !ProjectMeta.HasLogic)
                 return;
-            foreach (Action action in GetAllActions()) {
+            /*foreach (Action action in GetAllActions()) {
                 action.EnableInputOutput(visible);
             }
             StartAction.EnableInputOutput(visible);
-            EndAction.EnableInputOutput(visible);
+            EndAction.EnableInputOutput(visible);*/
             //SelectorMenu.Instance.ShowIO(visible);
             if (SelectorMenu.Instance.IOToggle.Toggled != visible)
                 SelectorMenu.Instance.IOToggle.SwitchToggle();

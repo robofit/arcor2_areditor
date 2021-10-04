@@ -5,6 +5,7 @@ using UnityEngine;
 namespace Base
 {
     public class PuckInput : InputOutput {
+        /*
         public override string GetObjectTypeName() {
             return "Action input";
         }
@@ -39,7 +40,7 @@ namespace Base
 
         public override void EnableVisual(bool enable) {
             throw new System.NotImplementedException();
-        }
+        }*/
     }    
 
 }
