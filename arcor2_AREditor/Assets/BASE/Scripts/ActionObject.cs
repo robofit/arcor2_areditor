@@ -311,6 +311,10 @@ namespace Base {
             return;
         }
     }
+
+        public Transform GetSpawnPoint() {
+            return transform;
+        }
     }
 
 

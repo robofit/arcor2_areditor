@@ -283,8 +283,19 @@ public class LeftMenuScene : LeftMenu
         (bool success, _) = await Base.GameManager.Instance.CloseScene(false);
         if (!success) {
             GameManager.Instance.HideLoadingScreen();
+            string message = "Are you sure you want to close current scene? ";
+            if (SceneManager.Instance.SceneChanged) {
+                message += "Unsaved changes will be lost";
+                if (SceneManager.Instance.SceneStarted) {
+                    message += " and system will go offline";
+                }
+                message += ".";
+            } else if (SceneManager.Instance.SceneStarted) {
+                 message += "System will go offline.";
+            }
+
             ConfirmationDialog.Open("Close scene",
-                         "Are you sure you want to close current scene? Unsaved changes will be lost and system will go offline (if online)..",
+                         message,
                          () => CloseScene(),
                          () => ConfirmationDialog.Close());
         }

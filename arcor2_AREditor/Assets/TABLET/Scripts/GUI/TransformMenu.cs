@@ -65,7 +65,8 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
     private void TransformWheelMovementDone(object sender, EventArgs e) {
-        SubmitPosition();
+        if (IsVisible())
+            SubmitPosition();
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -399,8 +400,10 @@ public class TransformMenu : Singleton<TransformMenu> {
         if (! await interactiveObject.WriteLock(true))
             return false;
         if (interactiveObject is CollisionObject co) {
-            if (!await co.WriteLockObjectType())
+            if (!await co.WriteLockObjectType()) {
+                Notifications.Instance.ShowNotification("Failed to lock the object", "");
                 return false;
+            }
         } 
         RobotTabletBtn.SwitchToRight();
         ResetTransformWheel();

@@ -819,5 +819,14 @@ namespace Base {
         public override void UpdateModel() {
             return;
         }
+
+        public override async Task<RequestResult> Movable() {
+            RequestResult result = await base.Movable();
+            if (result.Success && SceneManager.Instance.SceneStarted) {
+                result.Success = false;
+                result.Message = "Robot could only be manipulated when scene is offline.";
+            }
+            return result;
+        }
     }
 }

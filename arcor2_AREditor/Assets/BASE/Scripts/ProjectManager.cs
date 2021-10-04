@@ -569,7 +569,7 @@ namespace Base {
             if (actionPointParent == null) {               
                 AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
             } else {
-                AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
+                AP = Instantiate(ActionPointPrefab, actionPointParent.GetSpawnPoint());
             }
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
@@ -838,6 +838,15 @@ namespace Base {
             throw new KeyNotFoundException("Joints with id " + id + " not found");
         }
 
+        public IO.Swagger.Model.ProjectRobotJoints GetAnyJoints() {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.Data.RobotJoints.Count > 0)
+                    return actionPoint.Data.RobotJoints[0];
+            }
+            throw new KeyNotFoundException("No joints available");
+        }
+
+
         /// <summary>
         /// Returns orientation with id or throws KeyNotFoundException
         /// </summary>
@@ -851,6 +860,15 @@ namespace Base {
             }
             throw new KeyNotFoundException("Orientations with id " + id + " not found");
         }
+
+        public IO.Swagger.Model.NamedOrientation GetAnyNamedOrientation() {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.Data.Orientations.Count > 0)
+                    return actionPoint.Data.Orientations[0];
+            }
+            throw new ItemNotFoundException("No orientation available");
+        }
+
 
         /// <summary>
         /// Returns action point containing orientation with id or throws KeyNotFoundException

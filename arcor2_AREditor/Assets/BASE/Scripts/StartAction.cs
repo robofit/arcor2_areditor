@@ -23,9 +23,9 @@ public class StartAction : StartEndAction
 
 
     public override void UpdateColor() {
-        if (Enabled)
-            foreach (Renderer renderer in outlineOnClick.Renderers)
-                renderer.material.color = Color.green;
+        Color color = Enabled ? Color.green : Color.gray;
+        foreach (Renderer renderer in outlineOnClick.Renderers)
+            renderer.material.color = color;
     }
 
     public override string GetObjectTypeName() {

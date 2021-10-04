@@ -471,15 +471,34 @@ namespace Base {
                     case "pose":
                         try {
                             value = actionPoint.GetFirstOrientation().Id;
-                        } catch (ItemNotFoundException ex) {
+                        } catch (ItemNotFoundException) {
                             // there is no orientation on this action point
+                            try {
+                                value = actionPoint.GetFirstOrientationFromDescendants().Id;
+                            } catch (ItemNotFoundException) {
+                                try {
+                                    value = ProjectManager.Instance.GetAnyNamedOrientation().Id;
+                                } catch (ItemNotFoundException) {                                
+                                       
+                                }
+                            }                         
                         }
                         break;
                     case "joints":
                         try {
                             value = actionPoint.GetFirstJoints().Id;
-                        } catch (ItemNotFoundException ex) {
+                        } catch (ItemNotFoundException) {
                             // there are no valid joints on this action point
+                            try {
+                                value = actionPoint.GetFirstJointsFromDescendants().Id;
+                            } catch (ItemNotFoundException) {
+                                try {
+                                    value = ProjectManager.Instance.GetAnyJoints().Id;
+                                } catch (ItemNotFoundException) {
+                                    // there are no valid joints in the scene
+                                }
+                            }
+                            
                         }
                         break;
                 }

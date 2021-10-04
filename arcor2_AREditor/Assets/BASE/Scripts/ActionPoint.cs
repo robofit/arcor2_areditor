@@ -12,6 +12,7 @@ namespace Base {
         // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
         public GameObject ActionsSpawn;
+        public GameObject ActionPoints;
 
         public IActionPointParent Parent;
 
@@ -171,12 +172,32 @@ namespace Base {
                         ActionPoint parent = ProjectManager.Instance.GetActionPoint(Data.Parent);
                         return parent.GetFirstOrientation();
                     }
+
                 } else {
                     return Data.Orientations[0];
                 }
             } catch (KeyNotFoundException) {
                 
             }
+            throw new ItemNotFoundException("No orientation");
+        }
+
+        public NamedOrientation GetFirstOrientationFromDescendants() {
+            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+            foreach (Transform t in ActionPoints.transform) {
+                ActionPoint ap = t.GetComponent<ActionPoint>();
+                if (ap.Data.Orientations.Count > 0)
+                    return ap.Data.Orientations[0];
+                descendantActionPoints.Add(ap);
+            }
+            foreach (ActionPoint ap in descendantActionPoints) {
+                try {
+                    return ap.GetFirstOrientationFromDescendants();
+                } catch (ItemNotFoundException) {
+
+                }
+            }
+            
             throw new ItemNotFoundException("No orientation");
         }
 
@@ -228,6 +249,25 @@ namespace Base {
             }
 
             throw new ItemNotFoundException();    
+        }
+
+        public IO.Swagger.Model.ProjectRobotJoints GetFirstJointsFromDescendants() {
+            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+            foreach (Transform t in ActionPoints.transform) {
+                ActionPoint ap = t.GetComponent<ActionPoint>();
+                if (ap.Data.RobotJoints.Count > 0)
+                    return ap.Data.RobotJoints[0];
+                descendantActionPoints.Add(ap);
+            }
+            foreach (ActionPoint ap in descendantActionPoints) {
+                try {
+                    return ap.GetFirstJointsFromDescendants();
+                } catch (ItemNotFoundException) {
+
+                }
+            }
+
+            throw new ItemNotFoundException("No joints");
         }
 
         public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetAllJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
@@ -650,5 +690,8 @@ namespace Base {
             return Data.RobotJoints.Count > 0;
         }
 
+        public Transform GetSpawnPoint() {
+            return ActionPoints.transform;
+        }
     }
 }

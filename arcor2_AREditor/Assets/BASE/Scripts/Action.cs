@@ -37,10 +37,6 @@ namespace Base {
             this.metadata = metadata;
             ActionProvider = actionProvider;
             Data = projectAction;
-
-            
-
-
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();

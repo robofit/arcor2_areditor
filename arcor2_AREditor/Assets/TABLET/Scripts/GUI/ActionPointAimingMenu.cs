@@ -328,7 +328,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
                     return;
                 }*/
                 
-                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
+                await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.EEId, armId);
                 await SceneManager.Instance.SelectedRobot.WriteUnlock();
             }
             Notifications.Instance.ShowToastMessage("Position updated successfully");
