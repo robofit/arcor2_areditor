@@ -246,6 +246,8 @@ namespace Base {
 
             RobotModel.SetActiveAllVisuals(true);
 
+            bool outlineWasHighlighted = outlineOnClick.Highlighted;
+
             outlineOnClick.UnHighlight();
             outlineOnClick.ClearRenderers();
             RobotPlaceholder.SetActive(false);
@@ -270,6 +272,11 @@ namespace Base {
             Target target = GetComponent<Target>();
             if (target != null) {
                 target.ChangeTarget(RobotModel.RobotModelGameObject);
+            }
+
+            if (outlineWasHighlighted) {
+                outlineOnClick.Highlight();
+                DisplayOffscreenIndicator(true);
             }
 
             // Show or hide the robot based on global settings of displaying ActionObjects.

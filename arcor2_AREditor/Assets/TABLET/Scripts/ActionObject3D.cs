@@ -306,11 +306,19 @@ public class ActionObject3D : ActionObject {
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
 
+        bool outlineWasHighlighted = outlineOnClick.Highlighted;
+
+        outlineOnClick.UnHighlight();
         outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
 
         transparent = false; //needs to be set before 1st call of SetVisibility after model loading
         SetVisibility(visibility);
+
+        if (outlineWasHighlighted) {
+            outlineOnClick.Highlight();
+            DisplayOffscreenIndicator(true);
+        }
 
         MeshImporter.Instance.OnMeshImported -= OnModelLoaded;
     }
