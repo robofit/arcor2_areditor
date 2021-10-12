@@ -35,7 +35,9 @@ public class RecalibrateUsingServer : InteractiveObject {
 
 
     public override void OnHoverStart() {
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {

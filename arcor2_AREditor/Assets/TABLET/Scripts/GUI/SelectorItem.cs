@@ -113,8 +113,7 @@ public class SelectorItem : MonoBehaviour
 
     public void SetSelected(bool selected, bool manually) {
         if (InteractiveObject != null) {
-
-            if (!this.selected && selected) {
+            if ((!this.selected && selected) || (selected && manually)) {
                 InteractiveObject.SendMessage("OnHoverStart", SendMessageOptions.DontRequireReceiver);
             } else if (this.selected && !selected) {
                 InteractiveObject.SendMessage("OnHoverEnd", SendMessageOptions.DontRequireReceiver);

@@ -276,7 +276,9 @@ namespace Base {
 
             if (outlineWasHighlighted) {
                 outlineOnClick.Highlight();
-                DisplayOffscreenIndicator(true);
+                if (SelectorMenu.Instance.ManuallySelected) {
+                    DisplayOffscreenIndicator(true);
+                }
             }
 
             // Show or hide the robot based on global settings of displaying ActionObjects.
@@ -590,7 +592,9 @@ namespace Base {
             }
             ActionObjectName.gameObject.SetActive(true);
             outlineOnClick.Highlight();
-            DisplayOffscreenIndicator(true);
+            if (SelectorMenu.Instance.ManuallySelected) {
+                DisplayOffscreenIndicator(true);
+            }
         }
 
         public override void OnHoverEnd() {

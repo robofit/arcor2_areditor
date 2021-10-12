@@ -57,7 +57,9 @@ public class RobotEE : InteractiveObject, ISubItem {
 
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
         if (IsSelected) {
             OutlineOnClick.Deselect();
         }

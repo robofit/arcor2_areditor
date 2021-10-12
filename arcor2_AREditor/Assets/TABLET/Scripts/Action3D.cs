@@ -125,7 +125,9 @@ public class Action3D : Base.Action, ISubItem {
         }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {

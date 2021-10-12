@@ -51,7 +51,9 @@ public abstract class StartEndAction : Base.Action {
         }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
