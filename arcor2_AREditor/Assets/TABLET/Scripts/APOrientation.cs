@@ -36,7 +36,9 @@ public class APOrientation : InteractiveObject, ISubItem {
         
 
         HighlightOrientation(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {

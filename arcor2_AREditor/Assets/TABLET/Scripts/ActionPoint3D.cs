@@ -148,7 +148,9 @@ public class ActionPoint3D : Base.ActionPoint {
         
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {

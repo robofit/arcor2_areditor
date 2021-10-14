@@ -31,13 +31,18 @@ public abstract class InteractiveObject : Clickable {
 
     protected virtual void Start() {
         LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
-        offscreenIndicator = gameObject.GetComponent<Target>();
-        DisplayOffscreenIndicator(false);
+        if (!offscreenIndicator) {
+            offscreenIndicator = gameObject.GetComponent<Target>();
+            DisplayOffscreenIndicator(false);
+        }
     }
 
     public virtual void DisplayOffscreenIndicator(bool active) {
-        if (offscreenIndicator)
-            offscreenIndicator.enabled = active;
+        if (!offscreenIndicator) {
+            offscreenIndicator = gameObject.GetComponent<Target>();
+        }
+
+        offscreenIndicator.enabled = active;
     }
 
     // ONDESTROY CANNOT BE USED BECAUSE OF ITS DELAYED CALL - it causes mess when directly creating project from scene

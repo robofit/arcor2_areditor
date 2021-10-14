@@ -4,7 +4,6 @@ using System;
 using Base;
 using UnityEngine.UI;
 using System.Threading.Tasks;
-using glTFLoader2.Schema;
 
 public class SceneOptionMenu : TileOptionMenu {
 

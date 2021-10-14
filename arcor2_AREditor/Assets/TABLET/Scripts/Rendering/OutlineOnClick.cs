@@ -235,10 +235,10 @@ public class OutlineOnClick : Clickable {
     private void UnsetOutline() {
         foreach (Renderer renderer in Renderers) {
             List<Material> materials = new List<Material>(renderer.sharedMaterials);
-            if (OutlineShaderType == OutlineType.TwoPassShader && materials.Count > 0) {
+            if (OutlineShaderType == OutlineType.TwoPassShader && materials.Count >= 3) {
                 materials.RemoveAt(0);
             }
-            if (materials.Count > 0)
+            if (materials.Count >= 2)
                 materials.RemoveAt(materials.Count - 1);
             renderer.sharedMaterials = materials.ToArray();
         }

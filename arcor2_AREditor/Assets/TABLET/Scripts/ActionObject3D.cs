@@ -54,32 +54,30 @@ public class ActionObject3D : ActionObject {
     }
 
     public async override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
-            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
-            GameManager.Instance.ObjectSelected(this);
-            return;
-        }
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
-            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-            Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
-            return;
-        }
+    //    if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
+    //        GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
+    //        GameManager.Instance.ObjectSelected(this);
+    //        return;
+    //    }
+    //    if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+    //        return;
+    //    }
+    //    if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+    //        GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+    //        Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+    //        return;
+    //    }
 
-        outlineOnClick.GizmoUnHighlight();
-        // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-            // We have clicked with left mouse and started manipulation with object
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                StartManipulation();
-            }
-        } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            OpenMenu();
-
-        }
-
+    //    outlineOnClick.GizmoUnHighlight();
+    //    // HANDLE MOUSE
+    //    if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
+    //        // We have clicked with left mouse and started manipulation with object
+    //        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+    //            StartManipulation();
+    //        }
+    //    } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
+    //        OpenMenu();
+    //    }
     }
 
     public override void UpdateObjectName(string newUserId) {
@@ -306,11 +304,21 @@ public class ActionObject3D : ActionObject {
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
 
+        bool outlineWasHighlighted = outlineOnClick.Highlighted;
+
+        outlineOnClick.UnHighlight();
         outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
 
         transparent = false; //needs to be set before 1st call of SetVisibility after model loading
         SetVisibility(visibility);
+
+        if (outlineWasHighlighted) {
+            outlineOnClick.Highlight();
+            if (SelectorMenu.Instance.ManuallySelected) {
+                DisplayOffscreenIndicator(true);
+            }
+        }
 
         MeshImporter.Instance.OnMeshImported -= OnModelLoaded;
     }
@@ -322,6 +330,8 @@ public class ActionObject3D : ActionObject {
     private void OnModelLoadError(IContextualizedError obj) {
         Notifications.Instance.ShowNotification("Unable to show mesh " + this.GetName(), obj.GetInnerException().Message);
     }
+
+    
 
 
     public override void OnHoverStart() {
@@ -346,7 +356,9 @@ public class ActionObject3D : ActionObject {
             ActionObjectName.gameObject.SetActive(true);
         }
         outlineOnClick.Highlight();
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
