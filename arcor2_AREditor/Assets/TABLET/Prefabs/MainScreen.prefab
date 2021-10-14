@@ -186,6 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 8685459288050851350}
   Button: {fileID: 0}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 5623642210321481633}
 --- !u!114 &5623642210321481633
 MonoBehaviour:
@@ -594,6 +595,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 8952896599580916485}
   Button: {fileID: 1415648396061069462}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 3171704536928692211}
 --- !u!114 &3171704536928692211
 MonoBehaviour:
@@ -1994,10 +1996,10 @@ RectTransform:
   m_Father: {fileID: 2768830357252732581}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1257.5, y: 0}
-  m_SizeDelta: {x: 2515, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3232450956005114729
 MonoBehaviour:
@@ -2867,6 +2869,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 9170986231271455975}
   Button: {fileID: 111043859547723332}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 957696625019990134}
 --- !u!114 &957696625019990134
 MonoBehaviour:
@@ -3565,10 +3568,10 @@ RectTransform:
   m_Father: {fileID: 728554504835127953}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1257.5, y: 0}
-  m_SizeDelta: {x: 2515, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3904259932764687526
 MonoBehaviour:
@@ -4316,10 +4319,10 @@ RectTransform:
   m_Father: {fileID: 4620524145206687212}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1257.5, y: 0}
-  m_SizeDelta: {x: 2515, y: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6697117201149070756
 MonoBehaviour:
@@ -9264,7 +9267,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 3232450956286077593}
+      objectReference: {fileID: 1708373867908624679}
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -9273,7 +9276,7 @@ PrefabInstance:
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: NotImplemented
+      value: DuplicateProject
       objectReference: {fileID: 0}
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
@@ -14006,7 +14009,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 3232450956286077593}
+      objectReference: {fileID: 5097601852682664557}
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -14015,7 +14018,7 @@ PrefabInstance:
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: NotImplemented
+      value: DuplicateScene
       objectReference: {fileID: 0}
     - target: {fileID: 5049670254133983174, guid: 981634e233417404a87ce17bc0447271,
         type: 3}

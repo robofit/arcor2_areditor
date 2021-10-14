@@ -129,8 +129,20 @@ public class SceneOptionMenu : TileOptionMenu {
     public void NewProject() {
         MainScreen.Instance.NewProjectDialog.Open(sceneTile.GetLabel());
     }
+    public async void DuplicateScene() {
+        try {
+            string name = SceneManager.Instance.GetFreeSceneName($"{sceneTile.GetLabel()}_copy");
+            GameManager.Instance.ShowLoadingScreen($"Creating {name} project...");
+            await WebsocketManager.Instance.DuplicateScene(sceneTile.SceneId, name);
+            Close();
+            MainScreen.Instance.SwitchToScenes();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to duplicate scene", ex.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen();
+        }
+    }
 
-   
 
 
 }

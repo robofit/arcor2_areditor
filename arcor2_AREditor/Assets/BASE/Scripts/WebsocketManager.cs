@@ -2701,6 +2701,32 @@ namespace Base {
             SendDataToServer(request.ToJson(), r_id, false);
             return Task.CompletedTask;
         }
+
+        public async Task DuplicateScene(string sceneId, string newSceneName) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CopySceneRequestArgs args = new CopySceneRequestArgs(sourceId: sceneId, targetName: newSceneName);
+
+            IO.Swagger.Model.CopySceneRequest request = new IO.Swagger.Model.CopySceneRequest(r_id, "CopyScene", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CopySceneResponse response = await WaitForResult<IO.Swagger.Model.CopySceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to duplicate scene" } : response.Messages);
+            }
+        }
+
+        public async Task DuplicateProject(string projectId, string newProjectName, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CopyProjectRequestArgs args = new CopyProjectRequestArgs(sourceId: projectId, targetName: newProjectName);
+
+            IO.Swagger.Model.CopyProjectRequest request = new IO.Swagger.Model.CopyProjectRequest(r_id, "CopyProject", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CopyProjectResponse response = await WaitForResult<IO.Swagger.Model.CopyProjectResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to duplicate project" } : response.Messages);
+            }
+        }
+
+
     }
 }
 

@@ -195,8 +195,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
     }
 
-    private void WaitUntilScenesLoaded() {
-        Task.Run(() => {
+    private async Task WaitUntilScenesLoaded() {
+        await Task.Run(() => {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
@@ -212,8 +212,8 @@ public class MainScreen : Base.Singleton<MainScreen>
         });
     }
 
-    private void WaitUntilProjectsLoaded() {
-        Task.Run(() => {
+    private async Task WaitUntilProjectsLoaded() {
+        await Task.Run(() => {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
@@ -230,8 +230,8 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     }
 
-    private void WaitUntilPackagesLoaded() {
-        Task.Run(() => {
+    private async Task WaitUntilPackagesLoaded() {
+        await Task.Run(() => {
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
@@ -250,20 +250,20 @@ public class MainScreen : Base.Singleton<MainScreen>
 
 
     public async void SwitchToProjects() {
-        GameManager.Instance.ShowLoadingScreen("Updating projects...");
+        GameManager.Instance.ShowLoadingScreen("Updating projects...", true);
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
             WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
         try {
-            WaitUntilScenesLoaded();
+            await WaitUntilScenesLoaded();
             if (!projectsUpdating) {
                 projectsUpdating = true;
                 projectsLoaded = false;
                 WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
             }
-            WaitUntilProjectsLoaded();
+            await WaitUntilProjectsLoaded();
             foreach (TMPro.TMP_Text btn in ScenesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
@@ -282,21 +282,22 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterLists();
             SortCurrentList();
         } catch (TimeoutException ex) {
-            GameManager.Instance.HideLoadingScreen();
             Notifications.Instance.ShowNotification("Failed to switch to projects", ex.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen(true);
         }
         
     }
 
-    public void SwitchToScenes() {
-        GameManager.Instance.ShowLoadingScreen("Updating scenes..");
+    public async void SwitchToScenes() {
+        GameManager.Instance.ShowLoadingScreen("Updating scenes..", true);
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
             WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
         try {
-            WaitUntilScenesLoaded();
+            await WaitUntilScenesLoaded();
 
 
             foreach (TMPro.TMP_Text btn in ScenesBtns) {
@@ -317,33 +318,34 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterScenesById(null);
             FilterLists();
             SortCurrentList();
-        } catch (TimeoutException ex) {
-            GameManager.Instance.HideLoadingScreen();
+        } catch (TimeoutException ex) {            
             Notifications.Instance.ShowNotification("Failed to switch to scenes", ex.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen(true);
         }
     }
 
-    public void SwitchToPackages() {
-        GameManager.Instance.ShowLoadingScreen("Updating packages...");
+    public async void SwitchToPackages() {
+        GameManager.Instance.ShowLoadingScreen("Updating packages...", true);
         if (!scenesUpdating) {
             scenesUpdating = true;
             scenesLoaded = false;
             WebsocketManager.Instance.LoadScenes(LoadScenesCb);
         }
         try {
-            WaitUntilScenesLoaded();
+            await WaitUntilScenesLoaded();
             if (!projectsUpdating) {
                 projectsUpdating = true;
                 projectsLoaded = false;
                 WebsocketManager.Instance.LoadProjects(LoadProjectsCb);
             }
-            WaitUntilProjectsLoaded();
+            await WaitUntilProjectsLoaded();
             if (!packagesUpdating) {
                 packagesUpdating = true;
                 packagesLoaded = false;
                 WebsocketManager.Instance.LoadPackages(LoadPackagesCb);
             }
-            WaitUntilPackagesLoaded();
+            await WaitUntilPackagesLoaded();
             foreach (TMPro.TMP_Text btn in ScenesBtns) {
                 btn.color = new Color(0.687f, 0.687f, 0.687f);
             }
@@ -360,8 +362,9 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterLists();
             SortCurrentList();
         } catch (TimeoutException ex) {
-            GameManager.Instance.HideLoadingScreen();
             Notifications.Instance.ShowNotification("Failed to switch to packages", ex.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen(true);
         }
     }
 
@@ -371,7 +374,6 @@ public class MainScreen : Base.Singleton<MainScreen>
         if (response == null || !response.Result) {
             Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
             scenesUpdating = false;
-            GameManager.Instance.HideLoadingScreen();
             return;
         }
         GameManager.Instance.Scenes = response.Data;
@@ -385,8 +387,9 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void LoadProjectsCb(string id, string responseData) {
         IO.Swagger.Model.ListProjectsResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListProjectsResponse>(responseData);
-        if (response == null)
+        if (response == null) {
             Notifications.Instance.ShowNotification("Failed to load projects", "Please, try again later.");
+        }
         GameManager.Instance.Projects = response.Data;
         GameManager.Instance.Projects.Sort(delegate (ListProjectsResponseData x, ListProjectsResponseData y) {
             return y.Modified.CompareTo(x.Modified);
@@ -649,4 +652,10 @@ public class MainScreen : Base.Singleton<MainScreen>
         }
         throw new ItemNotFoundException("Project tile not found");
     }
+
+    public void DuplicateScene() {
+
+    }
+
+
 }

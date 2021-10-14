@@ -600,6 +600,26 @@ namespace Base {
             return freeName;
         }
 
+
+        public string GetFreeProjectName(string projectName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = projectName;
+            do {
+                hasFreeName = true;
+                try {
+                    GameManager.Instance.GetProjectId(freeName);
+                    hasFreeName = false;
+                    freeName = projectName + "_" + i++.ToString();
+                } catch (RequestFailedException) {
+                    // there is no project called "freeName" -> that is our new name
+                }
+
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
         /// <summary>
         /// Checks if action point with given name exists
         /// </summary>

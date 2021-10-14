@@ -103,4 +103,19 @@ public class ProjectOptionMenu : TileOptionMenu
     }
 
 
+    public async void DuplicateProject() {
+        try {
+            string name = ProjectManager.Instance.GetFreeProjectName($"{projectTile.GetLabel()}_copy");
+            GameManager.Instance.ShowLoadingScreen($"Creating {name} project...");
+            await WebsocketManager.Instance.DuplicateProject(projectTile.ProjectId, name, false);
+            Close();
+            MainScreen.Instance.SwitchToProjects();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to duplicate project", ex.Message);
+        } finally {
+            GameManager.Instance.HideLoadingScreen();
+        }
+    }
+
+
 }

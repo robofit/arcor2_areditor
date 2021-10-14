@@ -1206,6 +1206,19 @@ namespace Base {
             throw new RequestFailedException("No scene with name: " + name);
         }
 
+        /// <summary>
+        /// Get project id based on its name
+        /// </summary>
+        /// <param name="name">Name of project</param>
+        /// <returns>Project ID</returns>
+        public string GetProjectId(string name) {
+            foreach (ListProjectsResponseData project in Projects) {
+                if (name == project.Name)
+                    return project.Id;
+            }
+            throw new RequestFailedException("No project with name: " + name);
+        }
+
         public void InvokeScenesListChanged() {
             OnScenesListChanged?.Invoke(this, EventArgs.Empty);
         }

@@ -675,6 +675,25 @@ namespace Base {
             return freeName;
         }
 
+        public string GetFreeSceneName(string sceneName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = sceneName;
+            do {
+                hasFreeName = true;
+                try {
+                    GameManager.Instance.GetSceneId(freeName);
+                    hasFreeName = false;
+                    freeName = sceneName + "_" + i++.ToString();
+                } catch (RequestFailedException) {
+                    
+                }
+                    
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
         /// <summary>
         /// Returns all robots in scene
         /// </summary>
