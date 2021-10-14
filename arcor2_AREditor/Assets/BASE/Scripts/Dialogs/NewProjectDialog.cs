@@ -20,7 +20,8 @@ public class NewProjectDialog : Dialog
 
     public void UpdateScenes(object sender, EventArgs eventArgs) {
         UpdateToggleGroup(TogglePrefab, ToggleGroup, Base.GameManager.Instance.Scenes);
-        FieldChanged();
+        if (Visible)
+            FieldChanged();
     }
 
     public async void NewProject() {
