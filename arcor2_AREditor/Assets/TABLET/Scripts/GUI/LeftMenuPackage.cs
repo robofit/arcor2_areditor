@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class LeftMenuPackage : LeftMenu {
 
-    public ButtonWithTooltip PauseBtn, ResumeBtn;
+    public ButtonWithTooltip PauseBtn, ResumeBtn, StepBtn;
 
     protected override void Awake() {
         base.Awake();
@@ -142,4 +142,12 @@ public class LeftMenuPackage : LeftMenu {
     public override void CopyObjectClick() {
         throw new System.NotImplementedException();
     }
+
+    public async void StepAction() {
+        try {
+            await WebsocketManager.Instance.StepAction();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to step", ex.Message);
+        }
+    } 
 }

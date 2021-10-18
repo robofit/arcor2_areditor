@@ -1274,6 +1274,15 @@ namespace Base {
             return false;
         }
 
+        public List<string> GetAllBreakpoints() {
+            List<string> breakPoints = new List<string>();
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.BreakPoint)
+                    breakPoints.Add(actionPoint.GetId());
+            }
+            return breakPoints;
+        }
+
     }
 
 

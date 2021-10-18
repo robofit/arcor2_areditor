@@ -1112,7 +1112,7 @@ namespace Base {
         /// removed immideately after package execution. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns></returns>
-        public async Task TemporaryPackage() {
+        public async Task TemporaryPackage(bool pauseOnFirstAction = false, List<string> apBreakpoints = null) {
             int r_id = Interlocked.Increment(ref requestID);
             IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage");
             SendDataToServer(request.ToJson(), r_id, true);
@@ -2723,6 +2723,17 @@ namespace Base {
             IO.Swagger.Model.CopyProjectResponse response = await WaitForResult<IO.Swagger.Model.CopyProjectResponse>(r_id);
             if (response == null || !response.Result) {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to duplicate project" } : response.Messages);
+            }
+        }
+
+        public async Task StepAction() {
+            int r_id = Interlocked.Increment(ref requestID);
+            
+            IO.Swagger.Model.StepActionRequest request = new IO.Swagger.Model.StepActionRequest(r_id, "StepAction");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StepActionResponse response = await WaitForResult<IO.Swagger.Model.StepActionResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to step" } : response.Messages);
             }
         }
 

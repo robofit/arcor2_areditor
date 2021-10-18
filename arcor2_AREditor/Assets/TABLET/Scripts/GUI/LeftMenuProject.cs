@@ -15,7 +15,7 @@ public class LeftMenuProject : LeftMenu
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
-        AddActionPointButton2, ActionPointAimingMenuButton;
+        AddActionPointButton2, ActionPointAimingMenuButton, RunDebugButton;
 
     public InputDialog InputDialog;
     public AddNewActionDialog AddNewActionDialog;
@@ -551,7 +551,6 @@ public class LeftMenuProject : LeftMenu
             if (selectedObject is null)
                 return;
             if (selectedObject is StartAction) {
-                Debug.LogError("START");
                 RunProject();
             } else if (selectedObject is Action3D action) {
                 action.ActionBeingExecuted = true;
@@ -567,5 +566,19 @@ public class LeftMenuProject : LeftMenu
             return;
         }
         
+    }
+
+    public void RunDebugClicked() {
+        ConfirmationDialog.Open("Debug project", "Do you want to pause execution on the first action?", () => RunDebug(true), () => RunDebug(false), "Yes", "No");
+    }
+
+    public async void RunDebug(bool pause) {
+        try {
+            GameManager.Instance.ShowLoadingScreen("Starting...");
+            await WebsocketManager.Instance.TemporaryPackage(pause, ProjectManager.Instance.GetAllBreakpoints());
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to debug project", ex.Message);
+            GameManager.Instance.HideLoadingScreen();
+        } 
     }
 }

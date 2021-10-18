@@ -29,6 +29,16 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
+        private bool breakPoint;
+
+        public bool BreakPoint {
+            get => breakPoint;
+            set {
+                breakPoint = value;
+                PlayerPrefsHelper.SaveBool("/AP/" + Data.Id + "/breakPoint", value);
+            }
+        }
+
         protected override void Start() {
             base.Start();
         }
@@ -64,6 +74,7 @@ namespace Base {
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
+            breakPoint = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/breakPoint", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
             if (Data.Actions == null)
