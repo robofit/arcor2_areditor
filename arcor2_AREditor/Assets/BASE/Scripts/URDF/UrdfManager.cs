@@ -146,7 +146,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// </summary>
     private void ImportUrdfObject(string filename, string robotType) {
-        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useColliderInVisuals:true, useUrdfMaterials: false);
+        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useColliderInVisuals:true, useUrdfMaterials:true);
         urdfRobot.transform.parent = transform;
         urdfRobot.transform.localPosition = Vector3.zero;
         urdfRobot.transform.localEulerAngles = Vector3.zero;
@@ -179,16 +179,26 @@ public class UrdfManager : Singleton<UrdfManager> {
             // check if imported model corresponds to this robot
             RobotModel robotModel = GetRobotModel(urdfRobot.gameObject);
             if (robotModel != null) {
-
+                UrdfVisual urdfVisual = importedModel.GetComponentsInParent<UrdfVisual>(true)[0];
                 if (args.CollidersOnly) {
                     robotModel.SetLinkCollisionLoaded(importedModel.GetComponentsInParent<UrdfLink>(true)[0].name, importedModel.GetComponentsInParent<UrdfCollision>(true)[0]);
                 } else {
                     robotModel.SetLinkVisualLoaded(importedModel.GetComponentsInParent<UrdfLink>(true)[0].name, importedModel.GetComponentsInParent<UrdfVisual>(true)[0]);
                 }
 
+                if (urdfVisual.UrdfMaterial) {
+                    SetLinkMaterial(importedModel.gameObject, urdfVisual.UrdfMaterial);
+                }
+
                 //Debug.Log("URDF: model of the link: " + importedModel.parent.parent.parent.parent.name + " imported");
             }
         }
+    }
+
+    private void SetLinkMaterial(GameObject gameObject, Material material) {
+        var renderers = gameObject.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+            renderer.sharedMaterial = material;
     }
 
     /// <summary>
@@ -233,6 +243,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string robotType, string fileName) {
+        return false;
         // HACK - remove once lastModified on project service get working again
         if (RobotModelsSources.TryGetValue(fileName, out bool downloadInProgress)) {
             if (downloadInProgress) {
