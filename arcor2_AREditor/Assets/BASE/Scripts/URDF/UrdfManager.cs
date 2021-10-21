@@ -243,7 +243,6 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// <returns></returns>
     public bool CheckIfNewerRobotModelExists(string robotType, string fileName) {
-        return false;
         // HACK - remove once lastModified on project service get working again
         if (RobotModelsSources.TryGetValue(fileName, out bool downloadInProgress)) {
             if (downloadInProgress) {
