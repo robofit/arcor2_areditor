@@ -742,7 +742,7 @@ namespace Base {
             if (grey) {
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
-                        mat.SetColor("_EmissionColor", Color.grey);
+                        mat.SetColor("_EmissionColor", new Color(0.2f, 0.05f, 0.05f));
                         mat.EnableKeyword("_EMISSION");
                     }
                 }
