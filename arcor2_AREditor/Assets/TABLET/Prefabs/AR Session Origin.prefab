@@ -332,7 +332,6 @@ GameObject:
   - component: {fileID: 7313577448931428177}
   - component: {fileID: 7694872491458505934}
   - component: {fileID: 7694872491458505935}
-  - component: {fileID: 7694872491458505938}
   m_Layer: 0
   m_Name: AR Camera
   m_TagString: MainCamera
@@ -443,72 +442,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_UseCustomMaterial: 0
   m_CustomMaterial: {fileID: 0}
---- !u!114 &7694872491458505938
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7694872491458505929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c0ad0e8e55c95c4e931911c4b943a64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  space: 2
-  objectRelativeTransform: {fileID: 0}
-  transformType: 0
-  pivot: 0
-  centerType: 0
-  scaleType: 0
-  SetMoveType: 0
-  SetRotateType: 0
-  SetScaleType: 0
-  SetAllTransformType: 0
-  SetSpaceToggle: 0
-  SetPivotModeToggle: 0
-  SetCenterTypeToggle: 0
-  SetScaleTypeToggle: 0
-  translationSnapping: 306
-  AddSelection: 0
-  RemoveSelection: 0
-  ActionKey: 0
-  UndoAction: 0
-  RedoAction: 0
-  xColor: {r: 0, g: 1, b: 0, a: 0.8}
-  yColor: {r: 0, g: 0, b: 1, a: 0.8}
-  zColor: {r: 1, g: 0, b: 0, a: 0.8}
-  allColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.8}
-  selectedColor: {r: 1, g: 1, b: 0, a: 0.8}
-  hoverColor: {r: 1, g: 0.75, b: 0, a: 0.8}
-  planesOpacity: 0.5
-  movementSnap: 0.25
-  rotationSnap: 15
-  scaleSnap: 1
-  handleLength: 0.25
-  handleWidth: 0.003
-  planeSize: 0.035
-  triangleSize: 0.03
-  boxSize: 0.03
-  circleDetail: 40
-  allMoveHandleLengthMultiplier: 1
-  allRotateHandleLengthMultiplier: 1.4
-  allScaleHandleLengthMultiplier: 1.6
-  minSelectedDistanceCheck: 0.01
-  moveSpeedMultiplier: 1
-  scaleSpeedMultiplier: 1
-  rotateSpeedMultiplier: 1
-  allRotateSpeedMultiplier: 20
-  useFirstSelectedAsMain: 1
-  circularRotationMethod: 0
-  forceUpdatePivotPointOnChange: 1
-  maxUndoStored: 100
-  manuallyHandleGizmo: 0
-  selectionMask:
-    serializedVersion: 2
-    m_Bits: 256
-  myCamera: {fileID: 0}
-  movement: {x: 0, y: 0, z: 0}
 --- !u!1 &7694872492407101039
 GameObject:
   m_ObjectHideFlags: 0

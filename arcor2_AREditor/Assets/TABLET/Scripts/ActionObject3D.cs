@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Base;
-using RuntimeGizmos;
 using IO.Swagger.Model;
 using TriLibCore;
 using System;
@@ -262,7 +261,6 @@ public class ActionObject3D : ActionObject {
         modelMaterial = modelRenderer.material;
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
         outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
-        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
         aoRenderers.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
@@ -291,7 +289,6 @@ public class ActionObject3D : ActionObject {
         Model.gameObject.transform.localPosition = Vector3.zero;
 
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
-        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
         
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {

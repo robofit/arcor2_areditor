@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
-using RuntimeGizmos;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -612,8 +611,6 @@ public abstract class LeftMenu : MonoBehaviour {
         RobotSelectorButton.GetComponent<Image>().enabled = false;
         RobotSteppingButton.GetComponent<Image>().enabled = false;
         RobotSelector.Close(false);
-        if (TransformGizmo.Instance != null)
-            TransformGizmo.Instance.ClearTargets();
     }
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {

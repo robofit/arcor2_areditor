@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using RosSharp.Urdf;
-using RuntimeGizmos;
 using TMPro;
 using UnityEngine;
 
@@ -112,32 +111,6 @@ namespace Base {
         }
 
         protected override async void Update() {
-            if (manipulationStarted) {
-                if (TransformGizmo.Instance.mainTargetRoot != null && GameObject.ReferenceEquals(TransformGizmo.Instance.mainTargetRoot.gameObject, gameObject)) {
-                    if (!TransformGizmo.Instance.isTransforming && updatePose) {
-                        updatePose = false;
-
-                        if (ActionObjectMetadata.HasPose) {
-                            UpdatePose();
-                        } else {
-                            PlayerPrefsHelper.SavePose("scene/" + SceneManager.Instance.SceneMeta.Id + "/action_object/" + Data.Id + "/pose",
-                                transform.localPosition, transform.localRotation);
-                        }
-                    }
-
-                    if (TransformGizmo.Instance.isTransforming)
-                        updatePose = true;
-
-                } else {
-                    if (eeVisible)
-                        ShowRobotEE();
-                    manipulationStarted = false;
-                    if (!await this.WriteUnlock())
-                        return;
-                }
-
-            }
-
             base.Update();
         }
 
@@ -261,7 +234,7 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitMaterials();
 
-            outlineOnClick.InitGizmoMaterials();
+            //outlineOnClick.InitGizmoMaterials();
             SetOutlineSizeBasedOnScale();
 
             SetVisibility(visibility, forceShaderChange: true);
@@ -555,7 +528,7 @@ namespace Base {
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
-            outlineOnClick.InitGizmoMaterials();
+            //outlineOnClick.InitGizmoMaterials();
         }
 
         public override GameObject GetModelCopy() {
@@ -721,8 +694,6 @@ namespace Base {
                 if (UrdfManager.Instance != null) {
                     // remove every outlines on the robot
                     outlineOnClick.UnHighlight();
-                    outlineOnClick.GizmoUnHighlight();
-                    outlineOnClick.UnHighlight();
                     UrdfManager.Instance.ReturnRobotModelInstace(RobotModel);
                 }
             }
@@ -768,8 +739,6 @@ namespace Base {
                 return;
             manipulationStarted = true;
             HideRobotEE();
-            TransformGizmo.Instance.AddTarget(transform);
-            outlineOnClick.GizmoHighlight();
         }
 
         public async Task<List<RobotEE>> GetAllEE() {
