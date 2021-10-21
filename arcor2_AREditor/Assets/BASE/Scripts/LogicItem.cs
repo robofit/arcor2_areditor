@@ -41,7 +41,7 @@ public class LogicItem
         input.AddLogicItem(Data.Id);
         output.AddLogicItem(Data.Id);        
         connection = ConnectionManagerArcoro.Instance.CreateConnection(input.gameObject, output.gameObject);
-        output.Action.UpdateRotation(input.Action);
+        //output.Action.UpdateRotation(input.Action);
     }
 
     public Connection GetConnection() {

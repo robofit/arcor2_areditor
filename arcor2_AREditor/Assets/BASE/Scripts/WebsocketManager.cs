@@ -1112,9 +1112,10 @@ namespace Base {
         /// removed immideately after package execution. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns></returns>
-        public async Task TemporaryPackage(bool pauseOnFirstAction = false, List<string> apBreakpoints = null) {
+        public async Task TemporaryPackage(List<string> apBreakpoints, bool pauseOnFirstAction = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage");
+            IO.Swagger.Model.TemporaryPackageRequestArgs args = new TemporaryPackageRequestArgs(breakpoints: apBreakpoints, startPaused: pauseOnFirstAction);
+            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.TemporaryPackageResponse response = await WaitForResult<IO.Swagger.Model.TemporaryPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)

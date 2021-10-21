@@ -40,7 +40,7 @@ namespace Base {
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();
-            UpdateRotation(null);
+            //UpdateRotation(null);
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
         }
 
@@ -302,11 +302,11 @@ namespace Base {
             } else {
                 UpdateRotation(null);
             }
-
+            /*
             if (Input.AnyConnection()) {
                 LogicItem c = Input.GetLogicItems()[0];
                 c.Output.Action.UpdateRotation(this);
-            }
+            }*/
                 
         }
 

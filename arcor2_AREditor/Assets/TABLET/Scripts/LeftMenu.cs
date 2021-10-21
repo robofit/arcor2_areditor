@@ -585,7 +585,7 @@ public abstract class LeftMenu : MonoBehaviour {
         SelectorMenu.Instance.gameObject.SetActive(true);
         if (RenameDialog.Visible)
             RenameDialog.Cancel();
-        TransformMenu.Instance.Hide(unlock);
+        TransformMenu.Instance.Hide();
         RobotSteppingMenu.Instance.Hide();
 
         ActionParametersMenu.Instance.Hide(unlock);

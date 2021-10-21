@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine.XR.LegacyInputHelpers;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class TransformMenu : Singleton<TransformMenu> {
+public class TransformMenu : RightMenu<TransformMenu> {
 
     public enum State {
         Translate,
@@ -397,7 +397,7 @@ public class TransformMenu : Singleton<TransformMenu> {
 
     public async Task<bool> Show(InteractiveObject interactiveObject) {
         InteractiveObject = interactiveObject;
-        if (! await interactiveObject.WriteLock(true))
+        if (! await LockObject(interactiveObject, true))
             return false;
         if (interactiveObject is CollisionObject co) {
             if (!await co.WriteLockObjectType()) {
@@ -525,17 +525,19 @@ public class TransformMenu : Singleton<TransformMenu> {
     }
 
 
-    public async void Hide(bool unlock = true) {
-        if (!IsVisible())
-            return;
-        SubmitPosition(false);
-        Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
-        if (unlock) {
-            await InteractiveObject.WriteUnlock();
-            if (InteractiveObject is CollisionObject co) {
-                await co.WriteLockObjectType();
-            }
+    public async void Hide() {
+        if (InteractiveObject != null) {
+            await SubmitPosition(false);
         }
+        if (lockedObjects.Count > 0) {
+            await UnlockAllObjects();
+        }
+        if (!IsVisible()) {
+            return;
+        }
+        
+        Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
+        
 
         InteractiveObject.EnableOffscreenIndicator(true);
         InteractiveObject.EnableVisual(true);
@@ -630,7 +632,7 @@ public class TransformMenu : Singleton<TransformMenu> {
         return CanvasGroup.alpha > 0 && InteractiveObject != null;
     }
 
-    public async void SubmitPosition(bool saveHistory = true) {
+    public async Task SubmitPosition(bool saveHistory = true) {
         if (!IsVisible())
             return;
         if (saveHistory) {

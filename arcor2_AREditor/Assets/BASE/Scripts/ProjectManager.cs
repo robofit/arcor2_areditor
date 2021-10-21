@@ -370,6 +370,10 @@ namespace Base {
             if (project.HasLogic) {
                 UpdateLogicItems(project.Logic);
             }
+            // update orientation of all actions
+            /*foreach (Action action in GetAllActions()) {
+                action.UpdateRotation();
+            }*/
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
             } else if (project.IntModified == System.DateTime.MinValue) {

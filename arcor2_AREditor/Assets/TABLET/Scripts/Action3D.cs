@@ -32,6 +32,10 @@ public class Action3D : Base.Action, ISubItem {
         GameManager.Instance.OnStopPackage += OnProjectStop;
     }
 
+    private void LateUpdate() {
+        UpdateRotation();
+    }
+
     private void OnEnable() {
         GameManager.Instance.OnSceneInteractable += OnDeselect;
     }

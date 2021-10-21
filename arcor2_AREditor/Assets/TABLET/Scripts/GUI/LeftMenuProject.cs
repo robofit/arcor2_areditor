@@ -266,7 +266,7 @@ public class LeftMenuProject : LeftMenu
     public async void RunProject() {
         GameManager.Instance.ShowLoadingScreen("Running project", true);
         try {
-            await Base.WebsocketManager.Instance.TemporaryPackage();
+            await Base.WebsocketManager.Instance.TemporaryPackage(new List<string>());
             MainMenu.Instance.Close();
         } catch (RequestFailedException ex) {
             Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
@@ -574,8 +574,9 @@ public class LeftMenuProject : LeftMenu
 
     public async void RunDebug(bool pause) {
         try {
+            ConfirmationDialog.Close();
             GameManager.Instance.ShowLoadingScreen("Starting...");
-            await WebsocketManager.Instance.TemporaryPackage(pause, ProjectManager.Instance.GetAllBreakpoints());
+            await WebsocketManager.Instance.TemporaryPackage(ProjectManager.Instance.GetAllBreakpoints(), pause);
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to debug project", ex.Message);
             GameManager.Instance.HideLoadingScreen();

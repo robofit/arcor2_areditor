@@ -58,9 +58,9 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             if (Parent != null)
                 ConnectionToParent.UpdateLine();
-            foreach (Action action in Actions.Values) {
+            /*foreach (Action action in Actions.Values) {
                 action.UpdateRotation();
-            }
+            }*/
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }
