@@ -393,7 +393,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void OpenMenu() {
-        ActionObjectMenu.Instance.Show(this);
+        _ = ActionObjectMenu.Instance.Show(this, false);
     }
 
     public override bool HasMenu() {
@@ -421,7 +421,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void CloseMenu() {
-        ActionObjectMenu.Instance.Hide();
+        _ = ActionObjectMenu.Instance.Hide();
     }
 
     public override void EnableVisual(bool enable) {

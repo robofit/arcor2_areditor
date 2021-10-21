@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
 
-public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
+public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     public Base.ActionObject CurrentObject;
     public GameObject Parameters;
     public Slider VisibilitySlider;
@@ -23,7 +24,6 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     protected bool parametersChanged = false;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
-    public CanvasGroup CanvasGroup;
     public TMPro.TMP_Text VisibilityLabel;
 
     public SwitchComponent BlocklistSwitch;
@@ -113,19 +113,23 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
         }
     }
 
-    public async void Show(ActionObject actionObject) {
-        if (!await actionObject.WriteLock(false))
-            return;
-
-        CurrentObject = actionObject;
-        UpdateMenu();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+    public override async Task<bool> Show(InteractiveObject obj, bool lockTree) {
+        if (!await base.Show(obj, false))
+            return false;
+        if (obj is ActionObject actionObject) {
+            CurrentObject = actionObject;
+            UpdateMenu();
+            EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public void Hide() {
+    public override async Task Hide() {
+        await base.Hide();
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        if (CurrentObject != null)
-            _ = CurrentObject.WriteUnlock();
     }
 
 

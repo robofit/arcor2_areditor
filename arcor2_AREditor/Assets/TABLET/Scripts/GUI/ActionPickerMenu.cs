@@ -9,9 +9,8 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionPickerMenu : Base.Singleton<ActionPickerMenu> {
+public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     public GameObject Content;
-    public CanvasGroup CanvasGroup;
     public GameObject CollapsablePrefab, ButtonPrefab;
 
     public AddNewActionDialog AddNewActionDialog;
@@ -28,7 +27,7 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu> {
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         if (args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Started ||
             args.Event.State == IO.Swagger.Model.SceneStateData.StateEnum.Stopped) {
@@ -54,11 +53,14 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu> {
         }
     }
 
-    public async Task<bool> Show(ActionPoint actionPoint) {
-        if (!await actionPoint.WriteLock(false))
+    public override async Task<bool> Show(InteractiveObject interactiveObject, bool lockTree) {
+        if (!await base.Show(interactiveObject, lockTree))
             return false;
-        
-        currentActionPoint = actionPoint;
+
+        if (interactiveObject is ActionPoint ac)
+            currentActionPoint = ac;
+        else
+            return false;
 
         UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
@@ -138,19 +140,15 @@ public class ActionPickerMenu : Base.Singleton<ActionPickerMenu> {
         return result;
     }
 
-    public async void Hide(bool unlock = true) {
+    public async override Task Hide() {
+        await base.Hide();
+        if (!IsVisible)
+            return;
         ClearMenu();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        if (currentActionPoint != null) {
-            if(unlock)
-                await currentActionPoint.WriteUnlock();
-            currentActionPoint = null;
-        }
+        currentActionPoint = null;
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0;
-    }
+    
 
     public void SetVisibility(bool visible) {
         EditorHelper.EnableCanvasGroup(CanvasGroup, visible);

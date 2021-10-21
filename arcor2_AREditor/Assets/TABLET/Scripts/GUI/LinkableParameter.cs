@@ -100,7 +100,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     private void OnProjectParameterPicked(string projectParameterName) {
         if (projectParameterName == NewProjectParameterText) {
-            bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible();
+            bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible;
             bool hideAddNewActionDialog = AREditorResources.Instance.AddNewActionDialog.IsVisible;
             if (hideActionParametersMenu)
                 AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);

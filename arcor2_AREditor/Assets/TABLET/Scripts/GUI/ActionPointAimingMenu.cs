@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
+public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     public Base.ActionPoint CurrentActionPoint;
 
     public GameObject PositionExpertModeBlock, PositionRobotPickBlock, OrientationsDynamicList, JointsDynamicList, ContainerPosition, ContainerOrientations, ContainerJoints,
@@ -44,8 +44,6 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     [SerializeField]
     private PositionManualEdit PositionManualEdit;
 
-    public CanvasGroup CanvasGroup;
-
 
     private enum StateEnum {
         Position,
@@ -74,24 +72,28 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         UpdateMenu();
     }
 
-    public async Task<bool> Show(Base.ActionPoint actionPoint) {
-
-        CurrentActionPoint = actionPoint;
-        if (!await actionPoint.WriteLock(true))
-            return false;
-        OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
-        UpdateMenu();
+    public override async Task<bool> Show(InteractiveObject obj, bool lockTree) {
         
-        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
-        RobotInfoMenu.Instance.Show();
-        return true;
+        if (!await base.Show(obj, lockTree))
+            return false;
+
+        if (obj is ActionPoint3D actionPoint) {
+            CurrentActionPoint = actionPoint;
+            OrientationManualDefaultButton.SetLabel(GameManager.Instance.ExpertMode ? "Manual" : "Default");
+            UpdateMenu();
+            EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+            RobotInfoMenu.Instance.Show();
+            return true;
+        } else {
+            return false;
+        }
+        
     }
     public async Task<bool> Show(Base.ActionPoint actionPoint, string preselectedOrientation) {
-        if (!await Show(actionPoint))
+        if (!await Show(actionPoint, true))
             return false;
 
         try {
-
             OpenDetailMenu(actionPoint.GetOrientation(preselectedOrientation));
             return true;
         } catch (KeyNotFoundException ex) {
@@ -100,19 +102,14 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
         }
     }
 
-    public async Task Hide(bool unlockAP = false) {
-        if (CanvasGroup.alpha == 0)
+    public async override Task Hide() {
+        await base.Hide();
+        if (!IsVisible)
             return;
-        if (unlockAP)
-            await CurrentActionPoint.WriteUnlock();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-
         RobotInfoMenu.Instance.Hide();
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0;
-    }
 
     public void SwitchToPosition() {
         AddOrientationContainer.SetActive(false);
@@ -148,7 +145,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointJointsUpdated(object sender, RobotJointsEventArgs args) {
-        if (!IsVisible() && ContainerJoints.activeInHierarchy)
+        if (!IsVisible && ContainerJoints.activeInHierarchy)
             return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
@@ -162,7 +159,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointBaseUpdated(object sender, BareActionPointEventArgs args) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         if (CurrentActionPoint == null || args.ActionPoint.Id != CurrentActionPoint.GetId())
             return;
@@ -172,7 +169,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointJointsRemoved(object sender, StringEventArgs args) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         try {
             ActionButton btn = GetButton(args.Data, JointsDynamicList);
@@ -185,7 +182,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointJointsBaseUpdated(object sender, RobotJointsEventArgs args) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         try {
             ActionButton btn = GetButton(args.Data.Id, JointsDynamicList);
@@ -196,7 +193,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointJointsAdded(object sender, RobotJointsEventArgs args) {
-        if (!IsVisible() || args.ActionPointId != CurrentActionPoint.GetId())
+        if (!IsVisible || args.ActionPointId != CurrentActionPoint.GetId())
             return;
         if (args.Data.RobotId == SceneManager.Instance.SelectedRobot.GetId()) {
             ServiceButton btn = CreateJointsButton(JointsDynamicList.transform, args.Data.Id, args.Data.Name, () => OpenDetailMenu(args.Data), args.Data.IsValid);
@@ -205,7 +202,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
     }
 
     private void OnActionPointOrientationRemoved(object sender, StringEventArgs args) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         try {
             ActionButton btn = GetButton(args.Data, OrientationsDynamicList);
@@ -219,7 +216,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
 
     private void OnActionPointOrientationBaseUpdated(object sender, ActionPointOrientationEventArgs args) {
 
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         try {
             CurrentActionPoint.GetOrientation(args.Data.Id);
@@ -232,7 +229,7 @@ public class ActionPointAimingMenu : Base.Singleton<ActionPointAimingMenu> {
 
     private void OnActionPointOrientationAdded(object sender, ActionPointOrientationEventArgs args) {
 
-        if (IsVisible() && CurrentActionPoint.Data.Id == args.ActionPointId) {
+        if (IsVisible && CurrentActionPoint.Data.Id == args.ActionPointId) {
             CreateOrientationBtn(args.Data);
             UpdateOrientationsListLabel();
         }

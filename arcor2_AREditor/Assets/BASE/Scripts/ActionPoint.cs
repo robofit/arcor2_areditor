@@ -659,7 +659,7 @@ namespace Base {
         }
 
         internal async Task<bool> ShowOrientationDetailMenu(string orientationId) {
-            if (await ActionPointAimingMenu.Instance.Show(this)) {
+            if (await ActionPointAimingMenu.Instance.Show(this, true)) {
                 ActionPointAimingMenu.Instance.OpenDetailMenu(GetOrientation(orientationId));
                 return true;
             }

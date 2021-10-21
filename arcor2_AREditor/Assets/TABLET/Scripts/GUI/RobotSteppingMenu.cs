@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using System.Threading.Tasks;
 using UnityEngine.Events;
 
-public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
+public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
     public ButtonWithTooltip StepuUpButton, StepDownButton, SetEEfPerpendicular, HandTeachingModeButton;
     public Slider SpeedSlider;
     public GameObject StepButtons;
@@ -15,8 +15,6 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     public TwoStatesToggleNew RobotWorldBtn, RotateTranslateBtn, SafeButton;
     public GameObject HandBtnRedBackground;
     public ButtonWithTooltip BackBtn;
-
-    public CanvasGroup CanvasGroup;
 
     private Gizmo gizmo;
 
@@ -198,9 +196,10 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
         }
     }
 
-    public void Show(bool showBackBtn = false, string backBtnDescritpion = null, UnityAction closeCallback = null) {
+    public async void Show(bool showBackBtn = false, string backBtnDescritpion = null, UnityAction closeCallback = null) {
         if (gizmo != null)
             Destroy(gizmo.gameObject);
+        await base.Show(SceneManager.Instance.SelectedRobot.GetInteractiveObject(), false);
         this.closeCallback = closeCallback;
 
         OrigPose.transform.position = SceneManager.Instance.SelectedEndEffector.transform.position;
@@ -318,10 +317,8 @@ public class RobotSteppingMenu : Singleton<RobotSteppingMenu> {
     }
 
 
-    public void Hide(bool unlock = true) {
-        if (unlock && SceneManager.Instance.IsRobotAndEESelected()) {
-            SceneManager.Instance.SelectedRobot.WriteUnlock();
-        }
+    public async override Task Hide() {
+        await base.Hide();
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
         if (gizmo != null)
             Destroy(gizmo.gameObject);

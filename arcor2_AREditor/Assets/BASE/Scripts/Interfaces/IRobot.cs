@@ -37,4 +37,6 @@ public interface IRobot
 
     string LockOwner();
 
+    InteractiveObject GetInteractiveObject();
+
     }

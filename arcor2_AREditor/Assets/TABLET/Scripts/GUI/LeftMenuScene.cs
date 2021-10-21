@@ -111,18 +111,17 @@ public class LeftMenuScene : LeftMenu
         }
     }
 
-    public override void DeactivateAllSubmenus(bool unlock = true) {
+    public override void DeactivateAllSubmenus() {
         if (CheckActionObjectAiming())
             return;
 
-        base.DeactivateAllSubmenus(unlock);
+        base.DeactivateAllSubmenus();
         AddActionObjectButton.GetComponent<Image>().enabled = false;
         AddNewCollisionObjectButton.GetComponent<Image>().enabled = false;
         ActionObjectAimingMenuButton.GetComponent<Image>().enabled = false;
 
         ActionObjectPickerMenu.Instance.Hide();
-        NewObjectTypeMenu.Instance.Hide();
-        ActionObjectAimingMenu.Instance.Hide(unlock);
+        ActionObjectAimingMenu.Instance.Hide();
     }
 
     private async void CancelObjectAiming() {
@@ -140,7 +139,7 @@ public class LeftMenuScene : LeftMenu
 
     public void AddMeshClick() {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !AddActionObjectButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
         if (AddActionObjectButton.GetComponent<Image>().enabled) {
             AddActionObjectButton.GetComponent<Image>().enabled = false;
@@ -316,7 +315,7 @@ public class LeftMenuScene : LeftMenu
 
     public void ShowNewObjectTypeMenu() {        
         if (!SelectorMenu.Instance.gameObject.activeSelf && !AddNewCollisionObjectButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
         if (AddNewCollisionObjectButton.GetComponent<Image>().enabled) {
             AddNewCollisionObjectButton.GetComponent<Image>().enabled = false;
@@ -339,7 +338,7 @@ public class LeftMenuScene : LeftMenu
         }
         if (selectedObject is ActionObject actionObject) {
             if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionObjectAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-                SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+                SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
             }
             if (ActionObjectAimingMenuButton.GetComponent<Image>().enabled) {
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = false;
@@ -350,7 +349,7 @@ public class LeftMenuScene : LeftMenu
                 ActionObjectAimingMenu.Instance.Hide();
                 
             } else {
-                ActionObjectAimingMenu.Instance.Show(actionObject);
+                _ = ActionObjectAimingMenu.Instance.Show(actionObject, false);
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
             }

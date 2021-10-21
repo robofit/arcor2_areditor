@@ -154,13 +154,8 @@ public class Action3D : Base.Action, ISubItem {
         return Data.Name;
     }
 
-    public override async void OpenMenu() {
-        if (!await ActionParametersMenu.Instance.Show(this))
-            return;
-        //ActionMenu.Instance.CurrentAction = this;
-        //MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
-        selected = true;
-        ActionPoint.HighlightAP(true);        
+    public override void OpenMenu() {
+        _ = ActionParametersMenu.Instance.Show(this, false);        
     }
 
     public override void CloseMenu() {

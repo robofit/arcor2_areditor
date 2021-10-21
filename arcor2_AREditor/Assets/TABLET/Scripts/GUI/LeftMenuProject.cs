@@ -226,18 +226,18 @@ public class LeftMenuProject : LeftMenu
         }
     }
 
-    public override void DeactivateAllSubmenus(bool unlock = true) {
-        base.DeactivateAllSubmenus(unlock);
+    public override void DeactivateAllSubmenus() {
+        base.DeactivateAllSubmenus();
 
         AddActionButton.GetComponent<Image>().enabled = false;
         AddActionButton2.GetComponent<Image>().enabled = false;
         ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
-        if (ActionPickerMenu.Instance.IsVisible())
-            ActionPickerMenu.Instance.Hide(unlock);
-        if (ActionParametersMenu.Instance.IsVisible())
+        if (ActionPickerMenu.Instance.IsVisible)
+            ActionPickerMenu.Instance.Hide();
+        if (ActionParametersMenu.Instance.IsVisible)
             ActionParametersMenu.Instance.Hide();
-        if (ActionPointAimingMenu.Instance.IsVisible())
-            _ = ActionPointAimingMenu.Instance.Hide(unlock);
+        if (ActionPointAimingMenu.Instance.IsVisible)
+            ActionPointAimingMenu.Instance.Hide();
     }
 
     private void OnOpenProjectEditor(object sender, EventArgs eventArgs) {
@@ -388,7 +388,7 @@ public class LeftMenuProject : LeftMenu
         }
 
         if (!SelectorMenu.Instance.gameObject.activeSelf && !clickedButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (clickedButton.GetComponent<Image>().enabled) {
@@ -396,7 +396,7 @@ public class LeftMenuProject : LeftMenu
             SelectorMenu.Instance.gameObject.SetActive(true);
             ActionPickerMenu.Instance.Hide();
         } else {
-            if (await ActionPickerMenu.Instance.Show((Base.ActionPoint) selectedObject)) {
+            if (await ActionPickerMenu.Instance.Show(selectedObject, false)) {
                 clickedButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
             } else {
@@ -471,18 +471,18 @@ public class LeftMenuProject : LeftMenu
 
     public async void ActionPointAimingClick() {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !ActionPointAimingMenuButton.GetComponent<Image>().enabled) { //other menu/dialog opened
-            SetActiveSubmenu(CurrentSubmenuOpened, unlock: false); //close all other opened menus/dialogs and takes care of red background of buttons
+            SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
 
         if (ActionPointAimingMenuButton.GetComponent<Image>().enabled) {
             ActionPointAimingMenuButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            _ = ActionPointAimingMenu.Instance.Hide(true);
+            ActionPointAimingMenu.Instance.Hide();
         } else {
             bool opened = false;
 
             if (selectedObject is ActionPoint3D actionPoint) {
-                opened = await ActionPointAimingMenu.Instance.Show(actionPoint);
+                opened = await ActionPointAimingMenu.Instance.Show(actionPoint, true);
             } else if (selectedObject is APOrientation orientation) {
                 opened = await orientation.OpenDetailMenu();     
             }

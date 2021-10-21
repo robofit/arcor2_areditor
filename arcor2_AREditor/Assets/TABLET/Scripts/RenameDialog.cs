@@ -27,14 +27,15 @@ public class RenameDialog : Dialog
     private bool keepObjectLocked;
 
     public async void Init(InteractiveObject objectToRename, UnityAction updateVisibilityCallback, bool isNewObject = false, UnityAction cancelCallback = null, UnityAction confirmCallback = null, bool keepObjectLocked = false) {
+        if (objectToRename == null)
+            return;
         if (!await objectToRename.WriteLock(false))
             return;
 
         this.isNewObject = isNewObject;
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
-        if (objectToRename == null)
-            return;
+        
 
         Title.text = "Rename " + selectedObject.GetObjectTypeName();
         this.keepObjectLocked = keepObjectLocked;

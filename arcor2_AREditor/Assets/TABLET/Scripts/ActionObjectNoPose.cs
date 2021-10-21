@@ -56,7 +56,7 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override async void OpenMenu() {
-        ActionObjectMenu.Instance.Show(this);
+        _ = ActionObjectMenu.Instance.Show(this, false);
     }
 
     public override void SetInteractivity(bool interactive) {

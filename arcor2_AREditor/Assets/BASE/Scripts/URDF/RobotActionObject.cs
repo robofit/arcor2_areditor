@@ -756,7 +756,7 @@ namespace Base {
         }
 
         public override void OpenMenu() {
-            ActionObjectMenu.Instance.Show(this);
+            _ = ActionObjectMenu.Instance.Show(this, false);
         }
 
         public override bool HasMenu() {
@@ -764,12 +764,7 @@ namespace Base {
         }
 
         public override async void StartManipulation() {
-            if (!await this.WriteLock(true))
-                return;
-            manipulationStarted = true;
-            HideRobotEE();
-            TransformGizmo.Instance.AddTarget(transform);
-            outlineOnClick.GizmoHighlight();
+            throw new NotImplementedException();
         }
 
         public async Task<List<RobotEE>> GetAllEE() {
@@ -838,6 +833,10 @@ namespace Base {
                 result.Message = "Robot could only be manipulated when scene is offline.";
             }
             return result;
+        }
+
+        public InteractiveObject GetInteractiveObject() {
+            return this;
         }
     }
 }

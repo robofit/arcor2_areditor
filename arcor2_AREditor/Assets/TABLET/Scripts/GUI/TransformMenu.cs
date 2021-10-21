@@ -39,9 +39,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
     private int historyIndex;
 
-
-    public CanvasGroup CanvasGroup;
-
     private bool handHolding = false;
 
     public ToggleGroupIconButtons BottomButtons;
@@ -395,13 +392,15 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
 
-    public async Task<bool> Show(InteractiveObject interactiveObject) {
+    public async override Task<bool> Show(InteractiveObject interactiveObject, bool lockTree) {
+        
         InteractiveObject = interactiveObject;
-        if (! await LockObject(interactiveObject, true))
+        if (!await base.Show(interactiveObject, lockTree))
             return false;
         if (interactiveObject is CollisionObject co) {
             if (!await co.WriteLockObjectType()) {
                 Notifications.Instance.ShowNotification("Failed to lock the object", "");
+                await UnlockAllObjects();
                 return false;
             }
         } 
@@ -525,13 +524,12 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
 
-    public async void Hide() {
+    public override async Task Hide() {
         if (InteractiveObject != null) {
             await SubmitPosition(false);
         }
-        if (lockedObjects.Count > 0) {
-            await UnlockAllObjects();
-        }
+        // take care of locked objects
+        await base.Hide();
         if (!IsVisible()) {
             return;
         }
@@ -553,9 +551,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
         model = null;
         enabled = false;
 
-
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-
         RobotInfoMenu.Instance.Hide();
     }
 

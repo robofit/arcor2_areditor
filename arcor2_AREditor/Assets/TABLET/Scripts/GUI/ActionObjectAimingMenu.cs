@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
-public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
+public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
 {
     public DropdownParameter PivotList;
     public ButtonWithTooltip NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton, CancelAimingButton;
@@ -25,8 +25,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     private ActionObject currentObject;
 
     public ConfirmationDialog ConfirmationDialog;
-
-    public CanvasGroup CanvasGroup;
 
     public bool AimingInProgress;
 
@@ -77,26 +75,33 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        Hide(false);
-        
+        _ = Hide();        
     }
 
-    public async void Show(ActionObject actionObject) {
-        if (actionObject.IsRobot()) {
-            if (!await actionObject.WriteLock(false))
-                return;
+    public async override Task<bool> Show(InteractiveObject obj, bool lockTree) {
+        if (obj is ActionObject actionObject) {
+            if (actionObject.IsRobot()) {
+                return false;
+            } else {
+                if (await base.Show(obj, lockTree) && await SceneManager.Instance.SelectedRobot.WriteLock(false))
+                    lockedObjects.Add(SceneManager.Instance.SelectedRobot.GetInteractiveObject());
+                else
+                    return false;
+                currentObject = actionObject;
+            }
         } else {
-            if (!await actionObject.WriteLock(false) || !await SceneManager.Instance.SelectedRobot.WriteLock(false))
-                return;
+            return false;
         }
-        currentObject = actionObject;
+        
         await UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         RobotInfoMenu.Instance.Show();
+        return true;
     }
 
-    public async void Hide(bool unlock = true) {
-        if (CanvasGroup.alpha == 0)
+    public override async Task Hide() {
+        await base.Hide();
+        if (!IsVisible)
             return;
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
@@ -105,16 +110,9 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                 Destroy(sphere.gameObject);
             }
         }
-        spheres.Clear();
-        if (currentObject != null) {
-            if (unlock) {
-                await currentObject.WriteUnlock();
-                if (!currentObject.IsRobot()) {
-                    await SceneManager.Instance.SelectedRobot.WriteUnlock();
-                }
-            }
-            currentObject = null;
-        }
+        spheres.Clear();    
+        currentObject = null;
+        
         RobotInfoMenu.Instance.Hide();
     }
 

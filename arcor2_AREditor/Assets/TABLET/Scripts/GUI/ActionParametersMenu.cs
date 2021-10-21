@@ -7,10 +7,9 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionParametersMenu : Singleton<ActionParametersMenu>
+public class ActionParametersMenu : RightMenu<ActionParametersMenu>
 {
     public GameObject Content;
-    public CanvasGroup CanvasGroup;
     private Action3D currentAction;
     private List<IParameter> actionParameters = new List<IParameter>();
     public VerticalLayoutGroup DynamicContentLayout;
@@ -19,20 +18,30 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
 
     public TMPro.TMP_Text ActionName, ActionType, ActionPointName;
 
-    public async Task<bool> Show(Action3D action) {
-        if (!await action.WriteLock(false))
+    public override async Task<bool> Show(InteractiveObject interactiveObject, bool lockTree) {
+        if (!await base.Show(interactiveObject, lockTree))
             return false;
-        currentAction = action;
-        actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
+        if (interactiveObject is Action3D action) {
+            currentAction = action;
+            actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
 
-        ActionName.text = $"Name: {action.GetName()}";
-        ActionType.text = $"Type: {action.ActionProvider.GetProviderName()}/{action.Metadata.Name}";
-        ActionPointName.text = $"AP: {action.ActionPoint.GetName()}";
-        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
-        return true;
+            ActionName.text = $"Name: {action.GetName()}";
+            ActionType.text = $"Type: {action.ActionProvider.GetProviderName()}/{action.Metadata.Name}";
+            ActionPointName.text = $"AP: {action.ActionPoint.GetName()}";
+            EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+            action.ActionPoint.HighlightAP(true);
+            return true;
+        } else {
+            return false;
+        }
+        
     }
 
-    public async void Hide(bool unlock = true) {
+    public override async Task Hide() {
+        await base.Hide();
+        if (!IsVisible)
+            return;
+
         RectTransform[] transforms = Content.GetComponentsInChildren<RectTransform>();
         if (transforms != null) {
             foreach (RectTransform o in transforms) {
@@ -41,17 +50,13 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
                 }
             }
         }
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        if (currentAction != null) {
-            if(unlock)
-                await currentAction.WriteUnlock();
-            currentAction = null;
-        }
+        currentAction.ActionPoint.HighlightAP(false);
+        currentAction = null;
+        
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0;
-    }
 
     public void SetVisibility(bool visible) {
         EditorHelper.EnableCanvasGroup(CanvasGroup, visible);
