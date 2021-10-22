@@ -75,11 +75,11 @@ namespace Base {
         }
 
         // ONDESTROY CANNOT BE USED BECAUSE OF ITS DELAYED CALL - it causes mess when directly creating project from scene
-        //protected override void OnDestroy() {
+        private void OnDestroy() {
         //    base.OnDestroy();
-        //    SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
+            SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
         //    DeleteActionObject();
-        //}
+        }
 
         private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
             UpdateColor();
@@ -95,11 +95,13 @@ namespace Base {
         private void OnDisable() {
             SceneManager.Instance.OnShowRobotsEE -= OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE -= OnHideRobotsEE;
+            SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
         }
 
         private void OnEnable() {
             SceneManager.Instance.OnShowRobotsEE += OnShowRobotsEE;
             SceneManager.Instance.OnHideRobotsEE += OnHideRobotsEE;
+            SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
         }
         
         private void OnShowRobotsEE(object sender, EventArgs e) {
@@ -209,7 +211,7 @@ namespace Base {
         private async void RobotModelLoaded() {
             RobotModel.RobotModelGameObject.transform.parent = transform;
             RobotModel.RobotModelGameObject.transform.localPosition = Vector3.zero;
-            RobotModel.RobotModelGameObject.transform.localEulerAngles = Vector3.zero;
+            RobotModel.RobotModelGameObject.transform.localRotation = Quaternion.identity;
 
             // retarget OnClickCollider target to receive OnClick events
             foreach (OnClickCollider onCLick in RobotModel.RobotModelGameObject.GetComponentsInChildren<OnClickCollider>(true)) {
