@@ -34,7 +34,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        //transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         //Visual.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
@@ -70,7 +70,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override Quaternion GetSceneOrientation() {
         //return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Orientations[0].Orientation));
-        return new Quaternion();
+        return Quaternion.identity;
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {

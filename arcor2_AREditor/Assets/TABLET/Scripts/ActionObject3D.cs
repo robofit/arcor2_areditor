@@ -279,17 +279,24 @@ public class ActionObject3D : ActionObject {
     public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
         if (args.Name != this.GetId())
             return;
+
+        bool outlineWasHighlighted = outlineOnClick.Highlighted;
+
         if (Model != null) {
+            outlineOnClick.UnHighlight();
+            outlineOnClick.ClearRenderers();
+
             Model.SetActive(false);
             Destroy(Model);
         }
+
         Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;
         Model.gameObject.transform.localPosition = Vector3.zero;
+        Model.gameObject.transform.localRotation = Quaternion.identity;
 
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
-
         
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
             child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
@@ -300,15 +307,11 @@ public class ActionObject3D : ActionObject {
         Colliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
-
-        bool outlineWasHighlighted = outlineOnClick.Highlighted;
-
-        outlineOnClick.UnHighlight();
-        outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
+        outlineOnClick.InitMaterials();
 
-        transparent = false; //needs to be set before 1st call of SetVisibility after model loading
-        SetVisibility(visibility);
+        //transparent = false; //needs to be set before 1st call of SetVisibility after model loading
+        SetVisibility(visibility, forceShaderChange:true);
 
         if (outlineWasHighlighted) {
             outlineOnClick.Highlight();
