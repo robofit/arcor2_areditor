@@ -62,7 +62,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
     private void TransformWheelMovementDone(object sender, EventArgs e) {
-        if (IsVisible())
+        if (IsVisible() && InteractiveObject.IsLockedByMe)
             SubmitPosition();
     }
 
