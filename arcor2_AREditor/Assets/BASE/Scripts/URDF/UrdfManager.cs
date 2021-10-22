@@ -179,15 +179,10 @@ public class UrdfManager : Singleton<UrdfManager> {
             // check if imported model corresponds to this robot
             RobotModel robotModel = GetRobotModel(urdfRobot.gameObject);
             if (robotModel != null) {
-                UrdfVisual urdfVisual = importedModel.GetComponentsInParent<UrdfVisual>(true)[0];
                 if (args.CollidersOnly) {
                     robotModel.SetLinkCollisionLoaded(importedModel.GetComponentsInParent<UrdfLink>(true)[0].name, importedModel.GetComponentsInParent<UrdfCollision>(true)[0]);
                 } else {
                     robotModel.SetLinkVisualLoaded(importedModel.GetComponentsInParent<UrdfLink>(true)[0].name, importedModel.GetComponentsInParent<UrdfVisual>(true)[0]);
-                }
-
-                if (urdfVisual.UrdfMaterial) {
-                    SetLinkMaterial(importedModel.gameObject, urdfVisual.UrdfMaterial);
                 }
 
                 //Debug.Log("URDF: model of the link: " + importedModel.parent.parent.parent.parent.name + " imported");
@@ -195,11 +190,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         }
     }
 
-    private void SetLinkMaterial(GameObject gameObject, Material material) {
-        var renderers = gameObject.GetComponentsInChildren<Renderer>();
-        foreach (var renderer in renderers)
-            renderer.sharedMaterial = material;
-    }
+
 
     /// <summary>
     /// Creates identical copy of specified RobotModel.

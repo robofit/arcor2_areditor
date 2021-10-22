@@ -419,7 +419,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
             ScaleBtn.SetInteractivity(false, "Action point size could not be changed");
             RobotTabletBtn.SetInteractivity(true);
             model.transform.SetParent(GizmoTransform);
-            model.transform.rotation = Quaternion.identity;
+            model.transform.rotation = interactiveObject.transform.rotation;
             model.transform.position = interactiveObject.transform.position;
 
             Target target = model.AddComponent<Target>();

@@ -92,10 +92,20 @@ public class RobotModel {
 
         link?.SetLinkScale(scale);
 
+        if (urdfVisual.UrdfMaterial) {
+            SetLinkMaterial(urdfVisual.gameObject, urdfVisual.UrdfMaterial);
+        }
+
         IsRobotLoaded();
 
         // if robot is loaded, show its visuals, otherwise hide them
         //link?.SetActiveVisuals(RobotLoaded);
+    }
+
+    private void SetLinkMaterial(GameObject gameObject, Material material) {
+        var renderers = gameObject.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+            renderer.sharedMaterial = material;
     }
 
     /// <summary>

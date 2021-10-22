@@ -64,9 +64,6 @@ public class OutlineOnClick : Clickable {
     private bool selected = false;
     private bool highlighted = false;
 
-    private Material[] gizmoMaterial;
-    private bool gizmoHighlighted = false;
-
     private bool localMaterialsInstantiated = false;
 
     public bool Highlighted {
@@ -78,24 +75,7 @@ public class OutlineOnClick : Clickable {
         if (!localMaterialsInstantiated) {
             InitMaterials();
         }
-
-        InitGizmoMaterials();
     }
-
-    //private void Update() {
-    //    if (!Mathf.Approximately(OutlineSize, CurrentOutlineSize)) {
-    //        CurrentOutlineSize = OutlineSize;
-    //        if (OutlineShaderType == OutlineType.OnePassShader) {
-    //            OutlineClickMaterial.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
-    //            OutlineHoverMaterial.SetFloat("_OutlineWidth", OutlineSize);
-    //        } else {
-    //            OutlineClickFirstPass.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
-    //            OutlineClickSecondPass.SetFloat("_OutlineWidth", OutlineSize + 0.02f);
-    //            OutlineHoverFirstPass.SetFloat("_OutlineWidth", OutlineSize);
-    //            OutlineHoverSecondPass.SetFloat("_OutlineWidth", OutlineSize);
-    //        }
-    //    }
-    //}
 
     public void CompensateOutlineByModelScale(float modelScale) {
         if (OutlineShaderType == OutlineType.OnePassShader) {
@@ -104,7 +84,6 @@ public class OutlineOnClick : Clickable {
 
             localOutlineClickMaterial.SetFloat("_OutlineWidth", OutlineSize);
             localOutlineHoverMaterial.SetFloat("_OutlineWidth", OutlineHoverSize);
-            gizmoMaterial[0].SetFloat("_OutlineWidth", OutlineHoverSize);
         } else {
             OutlineSize = (1f / modelScale) * OutlineClickSecondPass.GetFloat("_OutlineWidth");
             OutlineHoverSize = (1f / modelScale) * OutlineHoverSecondPass.GetFloat("_OutlineWidth");
@@ -113,8 +92,6 @@ public class OutlineOnClick : Clickable {
             localOutlineClickSecondPass.SetFloat("_OutlineWidth", OutlineSize);
             localOutlineHoverFirstPass.SetFloat("_OutlineWidth", OutlineHoverSize);
             localOutlineHoverSecondPass.SetFloat("_OutlineWidth", OutlineHoverSize);
-            gizmoMaterial[0].SetFloat("_OutlineWidth", OutlineHoverSize);
-            gizmoMaterial[1].SetFloat("_OutlineWidth", OutlineHoverSize);
         }
     }
 
@@ -133,25 +110,6 @@ public class OutlineOnClick : Clickable {
         }
 
         localMaterialsInstantiated = true;
-    }
-
-    public void InitGizmoMaterials() {
-        if (OutlineShaderType == OutlineType.OnePassShader) {
-            gizmoMaterial = new Material[1];
-            gizmoMaterial[0] = new Material(OutlineHoverMaterial) {
-                name = "OutlineGizmoMaterial"
-            };
-            gizmoMaterial[0].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
-        } else {
-            gizmoMaterial = new Material[2];
-            gizmoMaterial[0] = new Material(OutlineHoverFirstPass) {
-                name = "OutlineGizmoFirstPass"
-            };
-            gizmoMaterial[1] = new Material(OutlineHoverSecondPass) {
-                name = "OutlineGizmoSecondPass",
-            };
-            gizmoMaterial[1].SetColor("_OutlineColor", new Color(1f, 0.7f, 0f));
-        }
     }
 
     /// <summary>
@@ -248,7 +206,7 @@ public class OutlineOnClick : Clickable {
     /// Called when OnHoverStart/OnHoverEnd event is triggered from attached gameobject.
     /// </summary>
     public void Highlight() {
-        if (!selected && !gizmoHighlighted && !highlighted) {
+        if (!selected && !highlighted) {
             highlighted = true;
             if (OutlineShaderType == OutlineType.OnePassShader) {
                 SetOutline(localOutlineHoverMaterial);
@@ -259,31 +217,9 @@ public class OutlineOnClick : Clickable {
     }
 
     public void UnHighlight() {
-        if (highlighted && !selected && !gizmoHighlighted) {
+        if (highlighted && !selected) {
             highlighted = false;
             UnsetOutline();
-        }
-    }
-
-    public void GizmoHighlight() {
-        if (highlighted) {
-            UnHighlight();
-        }
-
-        if (!gizmoHighlighted) {
-            if (OutlineShaderType == OutlineType.OnePassShader) {
-                SetOutline(gizmoMaterial[0]);
-            } else {
-                SetOutline(gizmoMaterial[0], gizmoMaterial[1]);
-            }
-            gizmoHighlighted = true;
-        }
-    }
-
-    public void GizmoUnHighlight() {
-        if (gizmoHighlighted) {
-            UnsetOutline();
-            gizmoHighlighted = false;
         }
     }
 
