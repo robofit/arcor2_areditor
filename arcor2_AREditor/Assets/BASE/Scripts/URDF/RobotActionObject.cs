@@ -188,7 +188,6 @@ namespace Base {
             }
             
             ResourcesLoaded = false;
-            
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
@@ -234,7 +233,6 @@ namespace Base {
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
             outlineOnClick.InitMaterials();
 
-            //outlineOnClick.InitGizmoMaterials();
             SetOutlineSizeBasedOnScale();
 
             SetVisibility(visibility, forceShaderChange: true);
@@ -528,7 +526,6 @@ namespace Base {
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.OnePassShader;
-            //outlineOnClick.InitGizmoMaterials();
         }
 
         public override GameObject GetModelCopy() {
