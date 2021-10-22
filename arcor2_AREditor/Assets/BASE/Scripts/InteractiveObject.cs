@@ -75,7 +75,7 @@ public abstract class InteractiveObject : Clickable {
         float minDist = float.MaxValue;
         foreach (Collider collider in Colliders) {
             Vector3 point = collider.ClosestPointOnBounds(origin);
-           
+
             minDist = Math.Min(Vector3.Distance(origin, point), minDist);
 
         }

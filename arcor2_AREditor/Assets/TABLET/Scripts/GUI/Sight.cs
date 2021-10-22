@@ -100,7 +100,8 @@ namespace Base {
                             foreach (Collider c in item.InteractiveObject.Colliders) {
 
                                 if (c == hitinfo.collider) {
-                                    dist = 0;
+                                    // little hack - set object that was directly hit to distance < 0 in order to let the sorting method of SelectorMenu display it on top
+                                    dist = -1;
                                     h = true;
                                 }
 
@@ -112,7 +113,7 @@ namespace Base {
                                 Debug.DrawLine(ray.origin, hitinfo.point);
                                 continue;
                             }
-                            
+
                             items.Add(new Tuple<float, InteractiveObject>(dist, item.InteractiveObject));
                         } catch (MissingReferenceException ex) {
                             Debug.LogError(ex);
