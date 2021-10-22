@@ -40,7 +40,11 @@ public class LeftMenuProject : LeftMenu
     private const string ADD_ACTION_POINT_LABEL = "Add action point";
     private const string ACTION_POINT_AIMING_LABEL = "Open action point aiming menu";
     private const string ADD_ACTION_POINT_USING_ROBOT_LABEL = "Add action point using robot";
-    
+    private const string RUN_DEBUG_LABEL = "Run package in debug mode";
+    private const string RUN_DEBUG_OR_TRIGGER_BREAKPOINT_LABEL = "Run package in debug mode or trigger breakpoint on AP";
+    private const string TRIGGER_BREAKPOINT_ON_LABEL = "Add breakpoint";
+    private const string TRIGGER_BREAKPOINT_OFF_LABEL = "Remove breakpoint";
+
 
     protected override void Start() {
 #if !AR_ON
@@ -135,6 +139,7 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton2.SetDescription(ADD_ACTION_POINT_GLOBAL_LABEL);
                 CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(no object to duplicate selected)");
                 ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(no action point selected)");
+                RunDebugButton.SetInteractivity(false, $"{RUN_DEBUG_OR_TRIGGER_BREAKPOINT_LABEL}\n(select action point to trigger breakpoint or START to run debug mode)");
             } else if (obj.IsLocked && obj.LockOwner != LandingScreen.Instance.GetUsername()) {
                 SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(object is used by {obj.LockOwner})");
                 AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(object is used by {obj.LockOwner})");
@@ -145,15 +150,23 @@ public class LeftMenuProject : LeftMenu
                 AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(object is used by {obj.LockOwner})");
                 CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(object is used by {obj.LockOwner})");
                 ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(object is used by {obj.LockOwner})");
+                RunDebugButton.SetInteractivity(false, $"{RUN_DEBUG_OR_TRIGGER_BREAKPOINT_LABEL}\n(object is used by {obj.LockOwner})");
             } else {
+                RunDebugButton.SetInteractivity(false, $"{RUN_DEBUG_OR_TRIGGER_BREAKPOINT_LABEL}\n(select action point to trigger breakpoint or START to run debug mode)");
                 SetActionPointParentButton.SetInteractivity(obj is ActionPoint3D, $"{SET_ACTION_POINT_PARENT_LABEL}\n(selected object is not action point)");
-                if (obj is ActionPoint3D) {
+                if (obj is ActionPoint3D ap) {
                     AddActionButton.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
                     AddActionButton2.SetInteractivity(ProjectManager.Instance.AnyAvailableAction, $"{ADD_ACTION_LABEL}\n(no actions available)");
+                    CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(checking...)");
+                    WebsocketManager.Instance.CopyActionPoint(obj.GetId(), null, obj.GetName(), CopyActionPointDryRunCallback, true);
+                    RunDebugButton.SetInteractivity(true);
+                    RunDebugButton.SetDescription(ap.BreakPoint ? TRIGGER_BREAKPOINT_OFF_LABEL : TRIGGER_BREAKPOINT_ON_LABEL);
                 } else {
                     AddActionButton.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                     AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
+                    CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
                 }
+                
                 ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D || obj is APOrientation, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point or orientation)");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
@@ -163,12 +176,7 @@ public class LeftMenuProject : LeftMenu
                 }
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), $"{ADD_ACTION_POINT_LABEL}\n({AddActionPointButton.GetAlternativeDescription()})");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                if (obj is ActionPoint3D) {
-                    CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(checking...)");
-                    WebsocketManager.Instance.CopyActionPoint(obj.GetId(), null, obj.GetName(), CopyActionPointDryRunCallback, true);
-                } else {
-                    CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
-                }
+                
                 if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
                     AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                     AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
@@ -205,8 +213,10 @@ public class LeftMenuProject : LeftMenu
                     }
                     RunButton.SetDescription(RUN_TEMP_PACKAGE_LABEL);
                     RunButton2.SetDescription(RUN_TEMP_PACKAGE_LABEL);
+                    RunDebugButton.SetDescription(RUN_DEBUG_LABEL);
                     RunButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
                     RunButton2.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_TEMP_PACKAGE_LABEL}\n({runBtnInteractivity})");
+                    RunDebugButton.SetInteractivity(string.IsNullOrEmpty(runBtnInteractivity), $"{RUN_DEBUG_LABEL}\n({runBtnInteractivity})");
                 } else {
                     runBtnInteractivity = "select action to execute it or START to run project";
                     RunButton.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
@@ -269,7 +279,7 @@ public class LeftMenuProject : LeftMenu
             await Base.WebsocketManager.Instance.TemporaryPackage(new List<string>());
             MainMenu.Instance.Close();
         } catch (RequestFailedException ex) {
-            Base.Notifications.Instance.ShowNotification("Failed to run temporary package", "");
+            Base.Notifications.Instance.ShowNotification("Failed to run temporary package", ex.Message);
             Debug.LogError(ex);
             GameManager.Instance.HideLoadingScreen(true);
         }
@@ -569,7 +579,13 @@ public class LeftMenuProject : LeftMenu
     }
 
     public void RunDebugClicked() {
-        ConfirmationDialog.Open("Debug project", "Do you want to pause execution on the first action?", () => RunDebug(true), () => RunDebug(false), "Yes", "No");
+        if (selectedObject is StartAction)
+            ConfirmationDialog.Open("Debug project", "Do you want to pause execution on the first action?", () => RunDebug(true), () => RunDebug(false), "Yes", "No");
+        else if (selectedObject is ActionPoint3D actionPoint) {
+            actionPoint.BreakPoint = !actionPoint.BreakPoint;
+            RunDebugButton.SetDescription(actionPoint.BreakPoint ? TRIGGER_BREAKPOINT_OFF_LABEL : TRIGGER_BREAKPOINT_ON_LABEL);
+            RunDebugButton.ForceUpdate();
+        }
     }
 
     public async void RunDebug(bool pause) {

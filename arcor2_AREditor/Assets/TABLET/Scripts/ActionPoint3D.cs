@@ -12,7 +12,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
-    private Material sphereMaterial;
+    public Material BreakPointMaterial, SphereMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
     public GameObject ActionsVisuals;
@@ -43,6 +43,13 @@ public class ActionPoint3D : Base.ActionPoint {
             orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
+    public override bool BreakPoint {
+        get => base.BreakPoint;
+        set {
+            base.BreakPoint = value;
+            Sphere.GetComponent<Renderer>().material = BreakPoint ? BreakPointMaterial : SphereMaterial;
+        }
+    }
 
     public async void ShowMenu(bool enableBackButton = false) {
         throw new NotImplementedException();
@@ -167,15 +174,17 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
-        sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 
     public override void UpdateColor() {
-        if (Enabled && !(IsLocked && !IsLockedByMe))
-            sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
-        else
-            sphereMaterial.color = Color.gray;
+        if (Enabled && !(IsLocked && !IsLockedByMe)) {
+            SphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+            BreakPointMaterial.color = new Color(0.93f, 0.07f, 0.09f);
+        } else {
+            SphereMaterial.color = Color.gray;
+            BreakPointMaterial.color = Color.gray;
+        }
     }
 
     public override async void OpenMenu() {

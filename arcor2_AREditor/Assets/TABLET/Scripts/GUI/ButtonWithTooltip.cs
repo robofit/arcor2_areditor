@@ -66,5 +66,9 @@ public class ButtonWithTooltip : MonoBehaviour {
         return tooltip.DescriptionAlternative;
     }
 
+    public void ForceUpdate() {
+        TooltipContent.descriptionText.text = tooltip.DisplayAlternativeDescription ? GetAlternativeDescription() : GetDescription();
+    }
+
 
 }

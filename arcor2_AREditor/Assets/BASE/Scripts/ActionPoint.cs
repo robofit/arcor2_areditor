@@ -31,7 +31,7 @@ namespace Base {
 
         private bool breakPoint;
 
-        public bool BreakPoint {
+        public virtual bool BreakPoint {
             get => breakPoint;
             set {
                 breakPoint = value;
@@ -74,7 +74,7 @@ namespace Base {
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
-            breakPoint = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/breakPoint", false);
+            BreakPoint = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/breakPoint", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
             if (Data.Actions == null)

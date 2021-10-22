@@ -175,7 +175,7 @@ namespace Base {
         /// <summary>
         /// Temp storage for delayed package
         /// </summary>
-        private PackageStateData newPackageState;
+        private PackageStateData newPackageState, nextPackageState;
 
         /// <summary>
         /// Indicates that project should be opened with delay (waiting for scene or action objects)
@@ -305,12 +305,16 @@ namespace Base {
             }
         }
 
+
+
         /// <summary>
         /// Enum specifying connection states
         /// </summary>
         public enum ConnectionStatusEnum {
             Connected, Disconnected, Connecting
         }
+
+        private bool updatingPackageState;
 
         /// <summary>
         /// Enum specifying aplication states
@@ -411,7 +415,7 @@ namespace Base {
                     newScene = null;
                     await SceneOpened(scene);
                 }
-            // request for delayed openning of project to allow loading of action objects and their actions
+                // request for delayed openning of project to allow loading of action objects and their actions
             } else if (openProject) {
                 openProject = false;
                 if (newProject != null && newScene != null) {
@@ -421,10 +425,16 @@ namespace Base {
                     newProject = null;
                     ProjectOpened(scene, project);
                 }
-            // request for delayed openning of package to allow loading of action objects and their actions
+                // request for delayed openning of package to allow loading of action objects and their actions
             } else if (openPackage) {
                 openPackage = false;
-                PackageStateUpdated(newPackageState);
+                updatingPackageState = true;
+                UpdatePackageState(newPackageState);
+            }
+            if (nextPackageState != null && !updatingPackageState && GameManager.Instance.GetGameState() == GameStateEnum.PackageRunning) {
+                updatingPackageState = true;
+                UpdatePackageState(nextPackageState);
+                nextPackageState = null;
             }
             // request for delayed openning of main screen to allow loading of action objects and their actions
             if (openMainScreenRequest && ActionsManager.Instance.ActionsReady) {
@@ -707,6 +717,8 @@ namespace Base {
         /// </summary>
         private void Start() {
             SetDefaultFramerate();
+            updatingPackageState = false;
+            nextPackageState = null;
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
             /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
@@ -1124,7 +1136,18 @@ namespace Base {
         /// - running - the package is runnnig
         /// - paused - the package was paused
         /// - stopped - the package was stopped</param>
-        public async void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+        public void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+            if (!updatingPackageState) {
+                nextPackageState = null;
+                updatingPackageState = true;
+                UpdatePackageState(state);
+            }
+            else
+                nextPackageState = state;
+        }
+
+        public async void UpdatePackageState(IO.Swagger.Model.PackageStateData state) {
+
             if (state.State == PackageStateData.StateEnum.Running ||
                 state.State == PackageStateData.StateEnum.Paused) {
                 if (!ActionsManager.Instance.ActionsReady || PackageInfo == null) {
@@ -1132,22 +1155,29 @@ namespace Base {
                     openPackage = true;
                     return;
                 }
-                if (GetGameState() != GameStateEnum.PackageRunning) {
+                if (!ProjectManager.Instance.Valid) {
                     try {
                         WaitUntilPackageReady(5000);
-                        if (PackageInfo == null)
+                        if (PackageInfo == null) {                        
+                            updatingPackageState = false;
                             return;
+                        }   
                         if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
+                            updatingPackageState = false;
                             return;
                         }
-                        if (PackageInfo == null)
+                        if (PackageInfo == null) {
+                            updatingPackageState = false;
                             return;
+                        }
                         if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
-                        if (PackageInfo == null)
+                        if (PackageInfo == null) {
+                            updatingPackageState = false;
                             return;
+                        }
                         openPackageRunningScreenFlag = true;
                         if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
@@ -1163,8 +1193,8 @@ namespace Base {
                     OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
                 }
-                
-                
+
+
             } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
@@ -1172,6 +1202,7 @@ namespace Base {
                 SceneManager.Instance.DestroyScene();
                 OnStopPackage?.Invoke(this, new EventArgs());
             }
+            updatingPackageState = false;
         }
 
         /// <summary>

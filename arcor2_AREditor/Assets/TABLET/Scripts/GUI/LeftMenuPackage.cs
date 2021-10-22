@@ -24,12 +24,14 @@ public class LeftMenuPackage : LeftMenu {
         ResumeBtn.gameObject.SetActive(false);
         PauseBtn.gameObject.SetActive(true);
         PauseBtn.SetInteractivity(true);
+        StepBtn.SetInteractivity(false, "Step to next action\n(Only available when progam is paused)");
     }
 
     private void OnPausePackage(object sender, ProjectMetaEventArgs args) {
         ResumeBtn.gameObject.SetActive(true);
         PauseBtn.gameObject.SetActive(false);
         ResumeBtn.SetInteractivity(true);
+        StepBtn.SetInteractivity(true);
     }
 
     private void OnOpenProjectRunning(object sender, ProjectMetaEventArgs args) {
@@ -37,6 +39,7 @@ public class LeftMenuPackage : LeftMenu {
         PauseBtn.gameObject.SetActive(true);
         CloseButton.SetInteractivity(true);
         PauseBtn.SetInteractivity(true);
+        StepBtn.SetInteractivity(false, "Step to next action\n(Only available when progam is paused)");
         EditorInfo.text = "Package: " + args.Name;
         UpdateVisibility();
     }

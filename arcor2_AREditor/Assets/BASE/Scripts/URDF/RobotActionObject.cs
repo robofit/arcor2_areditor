@@ -261,7 +261,8 @@ namespace Base {
                 Hide();
             }
             */
-            await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+                await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
         private void SetOutlineSizeBasedOnScale() {
@@ -489,14 +490,7 @@ namespace Base {
                 }
                 foreach (KeyValuePair<string, List<string>> eeList in endEffectors) {
                     foreach (string eeId in eeList.Value) {
-
-                        RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
-                        ee.InitEE(this, eeList.Key, eeId);
-                        ee.gameObject.SetActive(false);
-                        if (!EndEffectors.ContainsKey(eeList.Key)) {
-                            EndEffectors.Add(eeList.Key, new List<RobotEE>());
-                        }
-                        EndEffectors[eeList.Key].Add(ee);
+                        CreateEndEffector(eeList.Key, eeId);
                     }
                 }
                 
@@ -509,6 +503,17 @@ namespace Base {
                 loadingEndEffectors = false;
                 GameManager.Instance.HideLoadingScreen();
             }            
+        }
+
+        private RobotEE CreateEndEffector(string armId, string eeId) {
+            RobotEE ee = Instantiate(SceneManager.Instance.RobotEEPrefab, EEOrigin.transform).GetComponent<RobotEE>();
+            ee.InitEE(this, armId, eeId);
+            ee.gameObject.SetActive(false);
+            if (!EndEffectors.ContainsKey(armId)) {
+                EndEffectors.Add(armId, new List<RobotEE>());
+            }
+            EndEffectors[armId].Add(ee);
+            return ee;
         }
 
         public override void CreateModel(CollisionModels customCollisionModels = null) {
@@ -591,18 +596,28 @@ namespace Base {
         }
 
         public async Task<RobotEE> GetEE(string ee_id, string arm_id) {
-            if (!ResourcesLoaded) {
+            bool packageRunning = GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning;
+            if (!packageRunning && !ResourcesLoaded) {
                 await LoadResources();
             }
+
             string realArmId = arm_id;
             if (!MultiArm())
                 realArmId = "default";
 
-            if (!EndEffectors.ContainsKey(realArmId))
-                throw new ItemNotFoundException($"Robot {GetName()} does not have arm {realArmId}");
+            if (!EndEffectors.ContainsKey(realArmId)) {
+                if (packageRunning) {
+                    EndEffectors.Add(realArmId, new List<RobotEE>());
+                } else {
+                    throw new ItemNotFoundException($"Robot {GetName()} does not have arm {realArmId}");
+                }
+            }
             foreach (RobotEE ee in EndEffectors[realArmId])
                 if (ee.EEId == ee_id)
                     return ee;
+            if (packageRunning) {
+                return CreateEndEffector(realArmId, ee_id);
+            }
             throw new ItemNotFoundException("End effector with ID " + ee_id + " not found for " + GetName());
         }
 
