@@ -380,7 +380,9 @@ public class LeftMenuScene : LeftMenu
             SceneManager.Instance.SelectCreatedActionObject = newName;
             SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
             await WebsocketManager.Instance.AddObjectToScene(newName,
-                actionObject.ActionObjectMetadata.Type, Sight.Instance.CreatePoseInTheView(), parameters);
+                actionObject.ActionObjectMetadata.Type, new IO.Swagger.Model.Pose(
+                    orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(actionObject.transform.localRotation)),
+                    position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(actionObject.transform.localPosition))), parameters);
         }
     }
 }
