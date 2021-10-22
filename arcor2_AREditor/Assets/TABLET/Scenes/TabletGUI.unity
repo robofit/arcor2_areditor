@@ -1108,7 +1108,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VRCamera: {fileID: 1810644474}
   ARCamera: {fileID: 1704561859}
-  TFGizmo: {fileID: 1617425458}
   ARCameraVis: {fileID: 1617425457}
   GridPlane: {fileID: 169938987}
   CameraMoveJoystick: {fileID: 1994642991}
@@ -4427,7 +4426,8 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7694872491458505938, guid: 917a61edd84946d4d84b396b6e2eefc8, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 917a61edd84946d4d84b396b6e2eefc8, type: 3}
 --- !u!114 &1617425453 stripped
 MonoBehaviour:
@@ -4483,18 +4483,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1617425452}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1617425458 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7694872491458505938, guid: 917a61edd84946d4d84b396b6e2eefc8,
-    type: 3}
-  m_PrefabInstance: {fileID: 1617425452}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c0ad0e8e55c95c4e931911c4b943a64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1617425460 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4944955270593107803, guid: 917a61edd84946d4d84b396b6e2eefc8,
