@@ -332,9 +332,12 @@ namespace Base {
 
         public static IParameter InitializeBooleanParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable) {
             LinkableBoolParameter parameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterBooleanPrefab).GetComponent<LinkableBoolParameter>();
-            bool? selectedValue = null;
+            object selectedValue = null;
             if (value != null) {
-                selectedValue = Parameter.GetValue<bool?>(value.ToString());
+                if (type == LinkableParameter.ProjectParameterText)
+                    selectedValue = value; //id of project parameter
+                else
+                    selectedValue = Parameter.GetValue<bool?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
                 selectedValue = actionParameterMetadata.GetDefaultValue<bool>();
             }

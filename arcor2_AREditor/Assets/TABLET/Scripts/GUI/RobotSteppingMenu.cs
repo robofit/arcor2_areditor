@@ -326,6 +326,10 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);        
     }
 
+    public void HideMenu() {
+        Hide();
+    }
+
     public void SetRotationAxis(Gizmo.Axis axis) {
         if (RotateTranslateBtn.CurrentState == TwoStatesToggleNew.States.Right) {
             gizmo?.SetRotationAxis(Gizmo.Axis.NONE);

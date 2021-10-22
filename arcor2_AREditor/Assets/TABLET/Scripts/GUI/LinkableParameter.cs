@@ -232,6 +232,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         ParameterMetadata = parameterMetadata;
         SetType(type, linkable, false);
+        this.onChangeParameterHandler = onChangeParameterHandler;
     }
 
     

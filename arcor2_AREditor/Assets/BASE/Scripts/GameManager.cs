@@ -189,6 +189,10 @@ namespace Base {
         /// Indicates that package should be opened with delay (waiting for scene or action objects)
         /// </summary>
         private bool openPackage = false;
+        /// <summary>
+        /// Id of action which runs when initializing package
+        /// </summary>
+        public string ActionRunningOnStartupId;
 
         /// <summary>
         /// Holds ID of currently executing action. Null if there is no such action
@@ -1181,6 +1185,18 @@ namespace Base {
                         openPackageRunningScreenFlag = true;
                         if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
+                        }
+                        if (!string.IsNullOrEmpty(ActionRunningOnStartupId)) {
+                            try {
+                                Action action = ProjectManager.Instance.GetAction(ActionRunningOnStartupId);
+                                ActionsManager.Instance.CurrentlyRunningAction = action;
+                                action.RunAction();
+                            } catch (ItemNotFoundException) {
+
+                            } finally {
+                                ActionRunningOnStartupId = null;
+                            }
+                            
                         }
                     } catch (TimeoutException ex) {
                         Debug.LogError(ex);

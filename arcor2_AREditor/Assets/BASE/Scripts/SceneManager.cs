@@ -463,7 +463,7 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
         private async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
-            if (!RobotsEEVisible) {
+            if (!RobotsEEVisible || !Valid) {
                 return;
             }
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {

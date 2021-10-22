@@ -468,7 +468,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
             model.transform.SetParent(GizmoTransform);
             model.transform.rotation = interactiveObject.transform.rotation;
             model.transform.position = interactiveObject.transform.position;
-
             Target target = model.AddComponent<Target>();
             target.SetTarget(Color.yellow, false, true, false);
             target.enabled = true;

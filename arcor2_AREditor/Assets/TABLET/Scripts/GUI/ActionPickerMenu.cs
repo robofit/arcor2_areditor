@@ -142,8 +142,6 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
 
     public async override Task Hide() {
         await base.Hide();
-        if (!IsVisible)
-            return;
         ClearMenu();
         currentActionPoint = null;
     }

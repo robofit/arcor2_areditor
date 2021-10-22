@@ -80,7 +80,7 @@ public class LinkableDropdownPoses : LinkableDropdown
         if (this.selectedObject != null) {
             SelectorMenu.Instance.SetSelectedObject(this.selectedObject, selectedObjectManually, false);
         }
-
+        onChangeParameterHandler?.Invoke(GetName(), GetValue(), type);
         AREditorResources.Instance.LeftMenuProject.UpdateBtns();
         SelectorMenu.Instance.gameObject.SetActive(false);
     }

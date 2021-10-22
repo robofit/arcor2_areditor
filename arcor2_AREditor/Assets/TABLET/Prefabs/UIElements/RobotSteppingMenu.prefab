@@ -197,8 +197,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 3658915795490669362}
-        m_MethodName: Hide
-        m_Mode: 6
+        m_MethodName: HideMenu
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1808,6 +1808,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faa75a4545feee74dad6fc1dfcba221e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CanvasGroup: {fileID: 8670156389882649838}
   StepuUpButton: {fileID: 557880645036899482}
   StepDownButton: {fileID: 8445990022167727108}
   SetEEfPerpendicular: {fileID: 1969797960592637427}
@@ -1821,7 +1822,7 @@ MonoBehaviour:
   SafeButton: {fileID: 5473223943826498578}
   HandBtnRedBackground: {fileID: 3747148034738746763}
   BackBtn: {fileID: 4568652294791426111}
-  CanvasGroup: {fileID: 8670156389882649838}
+  OrigPose: {fileID: 0}
 --- !u!1 &6698094592209744755
 GameObject:
   m_ObjectHideFlags: 0

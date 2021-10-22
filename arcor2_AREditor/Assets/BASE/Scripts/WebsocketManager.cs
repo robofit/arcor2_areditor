@@ -573,20 +573,19 @@ namespace Base {
         }
 
         private void HandleStateBefore(string obj) {
-            if (!ProjectManager.Instance.Valid)
-                return;
             string puck_id;
-            if (!ProjectManager.Instance.Valid) {
-                Debug.LogWarning("Project not yet loaded, ignoring current action");
-                return;
-            }
+            
             try {
 
                 IO.Swagger.Model.ActionStateBefore actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateBefore>(obj);
 
                 puck_id = actionStateBefore.Data.ActionId;
 
-
+                if (!ProjectManager.Instance.Valid) {
+                    Debug.LogWarning("Project not yet loaded, ignoring current action");
+                    GameManager.Instance.ActionRunningOnStartupId = puck_id;
+                    return;
+                }
 
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleCurrentAction()");
