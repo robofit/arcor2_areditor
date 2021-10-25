@@ -11,7 +11,11 @@ public class OutlineOnClick : Clickable {
         TwoPassShader
     }
 
+    [HideInInspector]
+    public bool SetOutlineSize = false;
+    [HideInInspector]
     public float OutlineSize = 1f;
+    [HideInInspector]
     public float OutlineHoverSize = 1f;
 
     /// <summary>
@@ -76,6 +80,25 @@ public class OutlineOnClick : Clickable {
             InitMaterials();
         }
     }
+
+    private void Start() {
+        if (SetOutlineSize) {
+            SetOutlineScale();
+        }
+    }
+
+    private void SetOutlineScale() {
+        if (OutlineShaderType == OutlineType.OnePassShader) {
+            localOutlineClickMaterial.SetFloat("_OutlineWidth", OutlineSize);
+            localOutlineHoverMaterial.SetFloat("_OutlineWidth", OutlineHoverSize);
+        } else {
+            localOutlineClickFirstPass.SetFloat("_OutlineWidth", OutlineSize);
+            localOutlineClickSecondPass.SetFloat("_OutlineWidth", OutlineSize);
+            localOutlineHoverFirstPass.SetFloat("_OutlineWidth", OutlineHoverSize);
+            localOutlineHoverSecondPass.SetFloat("_OutlineWidth", OutlineHoverSize);
+        }
+    }
+
 
     public void CompensateOutlineByModelScale(float modelScale) {
         if (OutlineShaderType == OutlineType.OnePassShader) {
