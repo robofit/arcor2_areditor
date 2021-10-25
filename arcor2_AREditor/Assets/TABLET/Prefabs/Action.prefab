@@ -268,7 +268,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 1
   m_renderer: {fileID: 4524046482305262798}
   m_maskType: 0
-  _SortingLayer: 0
   _SortingLayerID: 0
   _SortingOrder: 0
 --- !u!114 &7576348849702125217
@@ -438,9 +437,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
-  OutlineSize: 1
-  OutlineHoverSize: 1
-  OutlineShaderType: 0
+  SetOutlineSize: 1
+  OutlineSize: 0.045
+  OutlineHoverSize: 0.04
+  OutlineShaderType: 1
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
   OutlineClickSecondPass: {fileID: 2100000, guid: ec9869b8f200e5144b913b44d0b5a07c,
