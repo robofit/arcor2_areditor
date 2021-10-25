@@ -40,6 +40,10 @@ ENDCG
             Tags {"LightMode" = "Always" }
             Cull Front
             ZWrite On
+            ZTest Always
+            Tags {
+                "Queue" = "Transparent+10"
+            }
             ColorMask RGB
             Blend SrcAlpha OneMinusSrcAlpha
 

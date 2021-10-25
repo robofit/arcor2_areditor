@@ -24,6 +24,12 @@ public class OutlineOnClickEditor : Editor {
             outlineOnClick.OutlineHoverSecondPass = (Material) EditorGUILayout.ObjectField("Outline Hover Second Pass Material", outlineOnClick.OutlineHoverSecondPass, typeof(Material), true);
         }
 
+        outlineOnClick.SetOutlineSize = EditorGUILayout.Toggle("Set Outline Size", outlineOnClick.SetOutlineSize);
+        if (outlineOnClick.SetOutlineSize) {
+            outlineOnClick.OutlineSize = EditorGUILayout.FloatField("Outline Size", outlineOnClick.OutlineSize);
+            outlineOnClick.OutlineHoverSize = EditorGUILayout.FloatField("Outline Hover Size", outlineOnClick.OutlineHoverSize);
+        }
+
         if (GUI.changed)
             EditorUtility.SetDirty(outlineOnClick);
 
