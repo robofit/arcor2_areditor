@@ -40,7 +40,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         //GameManager.Instance.SetTurboFramerate();
 
         //Debug.Log("URDF: download started");
-        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         UnityWebRequest www;
         try {
             www = UnityWebRequest.Get(uri);
@@ -261,7 +261,7 @@ public class UrdfManager : Singleton<UrdfManager> {
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(fileName);
         }
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();

@@ -32,7 +32,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     private EditProjectParameterDialog EditConstantDialog;
     //private Action3D currentAction;
 
-
+    public LinkableInput ProjectServiceURI;
+    public ButtonWithTooltip ResetProjectServiceURIButton;
     private void Start() {
         SceneManager.Instance.OnLoadScene += OnLoadScene;
         ProjectManager.Instance.OnLoadProject += OnLoadProject;
@@ -44,7 +45,14 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     }
 
-
+    public string GetProjectServiceURI(bool complete = true) {
+        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
+        string suffix = complete ? "/files/" : "";
+        if (string.IsNullOrEmpty(uri))
+            return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790" + suffix;
+        else
+            return uri + suffix;
+    }
     private void OnLoadProject(object sender, EventArgs e) {
         OnProjectOrSceneLoaded(true);
     }
@@ -117,6 +125,14 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 #endif
         ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
+        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
+        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
+        if (string.IsNullOrEmpty(uri)) {
+            ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+        } else {
+            ResetProjectServiceURIButton.SetInteractivity(true);
+        }
+            
 
     }
 
@@ -139,6 +155,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     public void Show() {
+
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
                 SwitchToEditor();
@@ -286,6 +303,18 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 #endif
         PlayerPrefsHelper.SaveBool("control_box_display_connections", (bool) ConnectionsSwitch.GetValue());
     }
+
+    public void SetProjectServiceURI(string uri) {
+        PlayerPrefsHelper.SaveString("ProjectServiceURI", uri);
+        ResetProjectServiceURIButton.SetInteractivity(true);
+    }
+
+    public void ResetProjectServiceURI() {
+        PlayerPrefsHelper.SaveString("ProjectServiceURI", "");
+        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
+        ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+    }
+
 
 
 
