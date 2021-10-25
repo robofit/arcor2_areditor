@@ -533,6 +533,10 @@ namespace Base {
             outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
             outlineOnClick.InitRenderers(robotRenderers);
             outlineOnClick.OutlineShaderType = OutlineOnClick.OutlineType.TwoPassShader;
+            Target target = GetComponent<Target>();
+            if (target != null) {
+                target.ChangeTarget(RobotPlaceholder);
+            }
         }
 
         public override GameObject GetModelCopy() {
