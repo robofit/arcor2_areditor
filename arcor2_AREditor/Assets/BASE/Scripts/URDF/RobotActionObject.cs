@@ -262,7 +262,7 @@ namespace Base {
                 Hide();
             }
             */
-            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
+            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning || GameManager.Instance.GetGameState() != GameManager.GameStateEnum.LoadingPackage)
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
 
@@ -466,10 +466,14 @@ namespace Base {
         }
 
         public async Task<bool> LoadEndEffectorsAndArms() {
-            // TODO: maybe wrong condition
             if (!SceneManager.Instance.Valid) {
                 Debug.LogError("SceneManager instance not valid");
                 return false;
+            }
+            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning) {
+                loadingEndEffectors = false;
+                GameManager.Instance.HideLoadingScreen();
+                return true;
             }
             if (loadingEndEffectors) {
                 await WaitUntilResourcesReady();
@@ -597,7 +601,8 @@ namespace Base {
         }
 
         public async Task<RobotEE> GetEE(string ee_id, string arm_id) {
-            bool packageRunning = GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning;
+            bool packageRunning = GameManager.Instance.GetGameState() == GameManager.GameStateEnum.PackageRunning ||
+                GameManager.Instance.GetGameState() == GameManager.GameStateEnum.LoadingPackage;
             if (!packageRunning && !ResourcesLoaded) {
                 await LoadResources();
             }
