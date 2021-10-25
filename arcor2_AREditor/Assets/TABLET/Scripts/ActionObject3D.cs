@@ -16,13 +16,13 @@ public class ActionObject3D : ActionObject {
     public GameObject Visual, Model;
 
     private bool transparent = false;
-    private Renderer modelRenderer;
-    private Material modelMaterial;
+
     [SerializeField]
     private OutlineOnClick outlineOnClick;
     public GameObject CubePrefab;
     private Shader standardShader;
     private Shader transparentShader;
+    private bool isGreyColorForced;
 
     private List<Renderer> aoRenderers = new List<Renderer>();
 
@@ -109,54 +109,43 @@ public class ActionObject3D : ActionObject {
             transparentShader = Shader.Find("Transparent/Diffuse");
         }
 
-        if (ActionObjectMetadata.ObjectModel != null &&
-            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
-            // Set opaque shader
-            if (normalizedValue >= 1) {
-                transparent = false;
-                foreach (var renderer in aoRenderers) {
-                    foreach (var material in renderer.materials) {
-                        material.shader = standardShader;
-                        Color col = material.color;
-                        col.a = 1f;
-                        material.color = col;
-                    }
+        // Set opaque shader
+        if (value >= 1) {
+            transparent = false;
+            foreach (Renderer renderer in aoRenderers) {
+                // Object has its outline active, we need to select second material,
+                // (first is mask, second is object material, third is outline)
+                if (renderer.materials.Length == 3) {
+                    renderer.materials[1].shader = standardShader;
+                } else {
+                    renderer.material.shader = standardShader;
                 }
             }
-            // Set transparent shader
-            else {
-                if (!transparent) {
-                    transparent = true;
-                    foreach (var renderer in aoRenderers) {
-                        foreach (var material in renderer.materials) {
-                            material.shader = transparentShader;
-                        }
+        }
+        // Set transparent shader
+        else {
+            transparent = false;
+            if (forceShaderChange || !transparent) {
+                foreach (Renderer renderer in aoRenderers) {
+                    if (renderer.materials.Length == 3) {
+                        renderer.materials[1].shader = transparentShader;
+                    } else {
+                        renderer.material.shader = transparentShader;
                     }
                 }
-                foreach (var renderer in aoRenderers) {
-                    foreach (var material in renderer.materials) {
-                        Color col = material.color;
-                        col.a = normalizedValue;
-                        material.color = col;
-                    }
-                }
+                transparent = true;
             }
-        } else { //not mesh
-            // Set opaque shader
-            if (normalizedValue >= 1) {
-                transparent = false;
-                modelMaterial.shader = standardShader;
-            }
-            // Set transparent shader
-            else {
-                if (!transparent) {
-                    modelMaterial.shader = transparentShader;
-                    transparent = true;
+            // set alpha of the material
+            foreach (Renderer renderer in aoRenderers) {
+                Material mat;
+                if (renderer.materials.Length == 3) {
+                    mat = renderer.materials[1];
+                } else {
+                    mat = renderer.material;
                 }
-                // set alpha of the material
-                Color color = modelMaterial.color;
-                color.a = normalizedValue;
-                modelMaterial.color = color;
+                Color color = mat.color;
+                color.a = value;
+                mat.color = color;
             }
         }
     }
@@ -257,13 +246,13 @@ public class ActionObject3D : ActionObject {
         Collider = Model.GetComponent<Collider>();
         Colliders.Add(Collider);
         Model.GetComponent<OnClickCollider>().Target = gameObject;
-        modelRenderer = Model.GetComponent<Renderer>();
-        modelMaterial = modelRenderer.material;
+
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
 
         aoRenderers.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
+
+        outlineOnClick.InitRenderers(aoRenderers);
     }
 
     public override GameObject GetModelCopy() {
@@ -370,14 +359,36 @@ public class ActionObject3D : ActionObject {
     public override void UpdateColor() {
         if (Blocklisted)
             return;
-        Color color;
-        if (Enabled && !IsLocked)
-            color = new Color(0.89f, 0.83f, 0.44f);
-        else
-            color = Color.gray;
 
-        color.a = SceneManager.Instance.ActionObjectsVisibility;
-        modelMaterial.color = color;
+        SetGrey(IsLockedByOtherUser || isGreyColorForced);
+    }
+
+    /// <summary>
+    /// Sets grey color of AO model (indicates that model is not in position of real robot)
+    /// </summary>
+    /// <param name="grey">True for setting grey, false for standard state.</param>
+    public void SetGrey(bool grey, bool force = false) {
+        isGreyColorForced = force && grey;
+        if (force) {
+            UpdateColor();
+            return;
+        }
+
+        if (grey) {
+            foreach (Renderer renderer in aoRenderers) {
+                foreach (Material mat in renderer.materials) {
+                    mat.SetTexture("_EmissionMap", null);
+                    mat.SetColor("_EmissionColor", new Color(0.2f, 0.05f, 0.05f));
+                    mat.EnableKeyword("_EMISSION");
+                }
+            }
+        } else {
+            foreach (Renderer renderer in aoRenderers) {
+                foreach (Material mat in renderer.materials) {
+                    mat.DisableKeyword("_EMISSION");
+                }
+            }
+        }
     }
 
     public override void Enable(bool enable, bool putOnBlocklist = false, bool removeFromBlocklist = false) {
