@@ -43,7 +43,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
     public ToggleGroupIconButtons BottomButtons;
 
-    public override bool IsVisible => base.IsVisible && InteractiveObject != null;
+    public override bool IsVisible => base.IsVisible || InteractiveObject != null;
 
     private Gizmo gizmo;
     //private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
@@ -91,7 +91,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
     private void Update() {
         //ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
-        if (model == null)
+        if (model == null || gizmo == null)
             return;
         if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
             if (SceneManager.Instance.IsRobotAndEESelected()) {
@@ -565,10 +565,11 @@ public class TransformMenu : RightMenu<TransformMenu> {
         }
         
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
-        
 
-        InteractiveObject.EnableOffscreenIndicator(true);
-        InteractiveObject.EnableVisual(true);
+        if (InteractiveObject != null) {
+            InteractiveObject.EnableOffscreenIndicator(true);
+            InteractiveObject.EnableVisual(true);
+        }
 
 
         if (gizmo != null) {
@@ -656,7 +657,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
 
     public async Task SubmitPosition(bool saveHistory = true) {
-        if (!IsVisible)
+        if (!IsVisible || GameManager.Instance.ConnectionStatus != GameManager.ConnectionStatusEnum.Connected)
             return;
         if (saveHistory) {
             SaveHistory();

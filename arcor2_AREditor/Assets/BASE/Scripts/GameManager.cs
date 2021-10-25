@@ -920,6 +920,7 @@ namespace Base {
                     connectionStatus = newState;
                     break;
                 case ConnectionStatusEnum.Disconnected:
+                    connectionStatus = ConnectionStatusEnum.Disconnected;
                     OpenDisconnectedScreen();
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
@@ -928,7 +929,6 @@ namespace Base {
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
                     Scene.SetActive(false);
-                    connectionStatus = newState;
                     break;
             }
         }
@@ -973,6 +973,7 @@ namespace Base {
         /// Disconnects from server
         /// </summary>
         public void DisconnectFromSever() {
+            ConnectionStatus = ConnectionStatusEnum.Disconnected;
             WebsocketManager.Instance.DisconnectFromSever();
         }
 
@@ -1741,6 +1742,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            AREditorResources.Instance.LeftMenuScene.DeactivateAllSubmenus();
             MainMenu.Instance.Close();
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
@@ -1760,6 +1762,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            AREditorResources.Instance.LeftMenuProject.DeactivateAllSubmenus();
             MainMenu.Instance.Close();
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);

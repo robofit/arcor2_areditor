@@ -13,6 +13,10 @@ public abstract class RightMenu<T> : Singleton<T> where T : MonoBehaviour {
     public virtual bool IsVisible => CanvasGroup.alpha > 0;
 
     public async Task<RequestResult> UnlockAllObjects() {
+        if (GameManager.Instance.ConnectionStatus == GameManager.ConnectionStatusEnum.Disconnected) {
+            lockedObjects.Clear();
+            return new RequestResult(true);
+        }
         for (int i = lockedObjects.Count - 1; i >= 0; --i) {
             if (lockedObjects[i].IsLockedByMe) {
                 if (!await lockedObjects[i].WriteUnlock()) {

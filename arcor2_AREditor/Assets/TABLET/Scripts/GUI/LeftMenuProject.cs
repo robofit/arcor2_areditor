@@ -18,7 +18,6 @@ public class LeftMenuProject : LeftMenu
         AddActionPointButton2, ActionPointAimingMenuButton, RunDebugButton;
 
     public InputDialog InputDialog;
-    public AddNewActionDialog AddNewActionDialog;
 
     private string selectAPNameWhenCreated = "";
     protected override void Update() {

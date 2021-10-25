@@ -101,19 +101,12 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     private void OnProjectParameterPicked(string projectParameterName) {
         if (projectParameterName == NewProjectParameterText) {
             bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible;
-            bool hideAddNewActionDialog = AREditorResources.Instance.AddNewActionDialog.IsVisible;
             if (hideActionParametersMenu)
-                AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);
-            else if (hideAddNewActionDialog) {
-                AREditorResources.Instance.AddNewActionDialog.Close();
-                AREditorResources.Instance.ActionPickerMenu.SetVisibility(false);
-            }
+                AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);            
 
             _ = AREditorResources.Instance.EditProjectParameterDialog.Init((string newProjectParameterName) => {
                 if (hideActionParametersMenu)
                     AREditorResources.Instance.ActionParametersMenu.SetVisibility(true); //make menu visible again
-                else if (hideAddNewActionDialog)
-                    AREditorResources.Instance.AddNewActionDialog.Open();
                 SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
                 if (!string.IsNullOrEmpty(newProjectParameterName)) {
                     ActionsDropdown.Dropdown.selectedItemIndex = ActionsDropdown.Dropdown.dropdownItems.FindIndex(i => i.itemName.Split(':')[0] == newProjectParameterName);
@@ -124,8 +117,6 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             () => {
                 if (hideActionParametersMenu)
                     AREditorResources.Instance.ActionParametersMenu.SetVisibility(true); //make menu visible again
-                else if (hideAddNewActionDialog)
-                    AREditorResources.Instance.AddNewActionDialog.Open();
                 ActionsDropdown.Dropdown.selectedItemIndex = dropdownIndexSelected;
                 ActionsDropdown.Dropdown.SetupDropdown();
             },
@@ -153,17 +144,11 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             ActionsDropdown.gameObject.SetActive(true);
             Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForActions(null);
-            /*if (ActionsDropdown.Dropdown.dropdownItems.Count > 0) {
-                ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke();
-            }*/
         } else if (type == ProjectParameterText) {
             ParameterTypeToggle.gameObject.SetActive(true);
             ParameterTypeToggle.SetState("constant", false);
             Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
-            /*if (switchBtnClicked && ActionsDropdown.Dropdown.dropdownItems.Count > 0) {
-                ActionsDropdown.Dropdown.dropdownItems[ActionsDropdown.Dropdown.selectedItemIndex].OnItemSelection.Invoke();
-            }*/
             ActionsDropdown.gameObject.SetActive(true);
         } else {
             Parameter.GetTransform().gameObject.SetActive(true);
