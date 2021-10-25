@@ -10,7 +10,7 @@ public abstract class RightMenu<T> : Singleton<T> where T : MonoBehaviour {
 
     public CanvasGroup CanvasGroup;
 
-    public bool IsVisible => CanvasGroup.alpha > 0;
+    public virtual bool IsVisible => CanvasGroup.alpha > 0;
 
     public async Task<RequestResult> UnlockAllObjects() {
         for (int i = lockedObjects.Count - 1; i >= 0; --i) {

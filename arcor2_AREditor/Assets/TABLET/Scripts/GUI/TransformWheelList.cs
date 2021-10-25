@@ -104,11 +104,14 @@ public class TransformWheelList : EventTrigger {
         Dragging = false;
     }
 
-    public void Stop() {
+    public void Stop(bool invokeMovementDone = true) {
         if (Dragging)
             return;
         _underInertia = false;
         _time = 0.0f;
-        Velocity = Vector2.zero;_finishing = false;
+        Velocity = Vector2.zero;
+        _finishing = false;
+        if (invokeMovementDone)
+            MovementDone?.Invoke(this, EventArgs.Empty);
     }
 }

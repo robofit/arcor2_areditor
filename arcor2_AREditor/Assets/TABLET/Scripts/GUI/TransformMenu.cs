@@ -43,6 +43,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
     public ToggleGroupIconButtons BottomButtons;
 
+    public override bool IsVisible => base.IsVisible && InteractiveObject != null;
 
     private Gizmo gizmo;
     //private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
@@ -62,7 +63,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
     private void TransformWheelMovementDone(object sender, EventArgs e) {
-        if (IsVisible() && InteractiveObject.IsLockedByMe)
+        if (IsVisible && InteractiveObject.IsLockedByMe)
             SubmitPosition();
     }
 
@@ -259,29 +260,54 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
     private void UpdateScale(float wheelValue) {
+        Vector3 newScale;
         if (InteractiveObject is CollisionObject collisionObject) {
             if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Box) {
                 switch (selectedAxis) {
                     case Gizmo.Axis.X:
-                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.right);
+                        newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * Vector3.right);
+                        if (CheckIfPositive(newScale))
+                            model.transform.localScale = newScale;
+                        else
+                            TransformWheel.List.Stop();
                         break;
                     case Gizmo.Axis.Y:
-                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.up);
+                        newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * Vector3.up);
+                        if (CheckIfPositive(newScale))
+                            model.transform.localScale = newScale;
+                        else
+                            TransformWheel.List.Stop();
                         break;
                     case Gizmo.Axis.Z:
-                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        if (CheckIfPositive(newScale))
+                            model.transform.localScale = newScale;
+                        else
+                            TransformWheel.List.Stop();
                         break;
                 }
             } else if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Sphere) {
-                model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.one);
+                newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * Vector3.one);
+                if (CheckIfPositive(newScale))
+                    model.transform.localScale = newScale;
+                else
+                    TransformWheel.List.Stop();
             } else if (collisionObject.ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.Cylinder) {
                 switch (selectedAxis) {
                     case Gizmo.Axis.X:
                     case Gizmo.Axis.Y:
-                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * new Vector3(1, 1, 0));
+                        newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * new Vector3(1, 1, 0));
+                        if (CheckIfPositive(newScale))
+                            model.transform.localScale = newScale;
+                        else
+                            TransformWheel.List.Stop();
                         break;
                     case Gizmo.Axis.Z:
-                        model.transform.localScale += TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        newScale = model.transform.localScale + TransformConvertor.ROSToUnityScale(wheelValue * Vector3.forward);
+                        if (CheckIfPositive(newScale))
+                            model.transform.localScale = newScale;
+                        else
+                            TransformWheel.List.Stop();
                         break;
                 }
             }
@@ -289,6 +315,11 @@ public class TransformMenu : RightMenu<TransformMenu> {
         
         NormalizeGizmoScale();
     }
+
+    private bool CheckIfPositive(Vector3 scale) {
+        return scale.x > 0 && scale.y > 0 && scale.z > 0;
+    }
+
 
     public float GetRoundedValue(float value) {
         switch (Units.GetValue()) {
@@ -529,7 +560,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
         }
         // take care of locked objects
         await base.Hide();
-        if (!IsVisible()) {
+        if (!IsVisible) {
             return;
         }
         
@@ -576,7 +607,7 @@ public class TransformMenu : RightMenu<TransformMenu> {
             return;
         if (historyIndex < 0) {
             if (IsPositionChanged) {
-                TransformWheel.List.Stop();
+                TransformWheel.List.Stop(false);
                 SubmitPosition(true);
             }
             historyIndex = history.Count - 1;
@@ -623,12 +654,9 @@ public class TransformMenu : RightMenu<TransformMenu> {
         RedoBtn.SetInteractivity(false);
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0 && InteractiveObject != null;
-    }
 
     public async Task SubmitPosition(bool saveHistory = true) {
-        if (!IsVisible())
+        if (!IsVisible)
             return;
         if (saveHistory) {
             SaveHistory();
@@ -638,13 +666,15 @@ public class TransformMenu : RightMenu<TransformMenu> {
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right) {
                     //await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
-                    await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
+                    if (IsVisible)
+                        await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
                 } else {
                     IRobot robot = SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
                     string armId = null;
                     if (robot.MultiArm())
                         armId = SceneManager.Instance.SelectedArmId;
-                    await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
+                    if (IsVisible)
+                        await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
                 }
                 //ResetPosition();
             } catch (RequestFailedException e) {
@@ -670,7 +700,8 @@ public class TransformMenu : RightMenu<TransformMenu> {
                             objectModel.Sphere.Radius = (decimal) transformedScale.x;
                             break;
                     }
-                    await WebsocketManager.Instance.UpdateObjectModel(actionObject.ActionObjectMetadata.Type, objectModel);
+                    if (IsVisible)
+                        await WebsocketManager.Instance.UpdateObjectModel(actionObject.ActionObjectMetadata.Type, objectModel);
                 } catch (RequestFailedException e) {
                     Notifications.Instance.ShowNotification("Failed to update size of collision object", e.Message);
                 }
@@ -678,14 +709,16 @@ public class TransformMenu : RightMenu<TransformMenu> {
             
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right)
-                    await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
+                    if (IsVisible)
+                        await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
                                                                                                                                 orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * model.transform.rotation   /*InteractiveObject.transform.localRotation * model.transform.localRotation*/))));
                 else {
                     IRobot robot = SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
                     string armId = null;
                     if (robot.MultiArm())
                         armId = SceneManager.Instance.SelectedArmId;
-                    await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top, armId);
+                    if (IsVisible)
+                        await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top, armId);
                 }
                 //ResetPosition();
             } catch (RequestFailedException e) {

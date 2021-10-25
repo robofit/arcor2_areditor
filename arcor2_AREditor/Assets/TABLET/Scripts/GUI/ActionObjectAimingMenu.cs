@@ -35,6 +35,10 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     private void Update() {
         if (!AimingInProgress || !automaticPointSelection)
             return;
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
+            AimingInProgress = false;
+            return;
+        }
         float maxDist = float.MaxValue;
         int closestPoint = 0;
         foreach (AimingPointSphere sphere in spheres) {

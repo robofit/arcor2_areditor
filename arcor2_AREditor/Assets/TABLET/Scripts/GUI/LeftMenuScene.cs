@@ -92,6 +92,9 @@ public class LeftMenuScene : LeftMenu
                     } else if (!actionObject.ActionObjectMetadata.HasPose) {
                         ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(not available for objects without pose)");
                         CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(not available for objects without pose)");
+                    } else if (actionObject.IsRobot()) {
+                        ActionObjectAimingMenuButton.SetInteractivity(false, $"{AIMING_MENU_BTN_LABEL}\n(not available for robots)");
+                        CopyButton.SetInteractivity(true);
                     } else {
                         ActionObjectAimingMenuButton.SetInteractivity(true);
                         CopyButton.SetInteractivity(true);
@@ -332,7 +335,6 @@ public class LeftMenuScene : LeftMenu
         if (CheckActionObjectAiming())
             return;
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            Notifications.Instance.ShowNotification("Robot or EE not selected", "Select it first");
             OpenRobotSelector(ActionObjectAimingMenuClick);
             return;
         }
@@ -343,7 +345,7 @@ public class LeftMenuScene : LeftMenu
             if (ActionObjectAimingMenuButton.GetComponent<Image>().enabled) {
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = false;
                 SelectorMenu.Instance.gameObject.SetActive(true);
-                if (RobotSteppingMenu.Instance.CanvasGroup.alpha > 0) {
+                if (RobotSteppingMenu.Instance.IsVisible) {
                     RobotSteppingMenu.Instance.Hide();
                 }
                 ActionObjectAimingMenu.Instance.Hide();
