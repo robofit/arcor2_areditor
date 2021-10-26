@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class AimingPointSphere : InteractiveObject {
@@ -24,10 +25,13 @@ public class AimingPointSphere : InteractiveObject {
 
     public void SetAimed(bool aimed) {
         this.aimed = aimed;
-        if (Renderer.materials.Length > 1)
-            Renderer.materials[1].color = aimed ? Color.green : Color.red;
-        else
+        if (Renderer.materials.Length == 3) {
+            List<Material> materials = new List<Material>(Renderer.materials);
+            materials[1].color = aimed ? Color.green : Color.red;
+            Renderer.materials = materials.ToArray();
+        } else {
             Renderer.material.color = aimed ? Color.green : Color.red;
+        }       
 
     }
 
