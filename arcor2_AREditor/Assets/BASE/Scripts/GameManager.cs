@@ -1234,14 +1234,15 @@ namespace Base {
 
 
             } else if (state.State == PackageStateData.StateEnum.Stopping) {
+
+                updatingPackageState = false;
+            } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 SetGameState(GameStateEnum.ClosingPackage);
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
                 SceneManager.Instance.DestroyScene();
-                Debug.LogError("stopping");
                 updatingPackageState = false;
-            } else if (state.State == PackageStateData.StateEnum.Stopped) {
                 OnStopPackage?.Invoke(this, new EventArgs());
                 updatingPackageState = false;
                 SetGameState(GameStateEnum.None);
