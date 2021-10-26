@@ -13,6 +13,7 @@ public class AimingPointSphere : InteractiveObject {
     private OutlineOnClick outlineOnClick;
     public MeshRenderer Renderer;
 
+
     public int Index => index;
     public bool Aimed => aimed;
 
@@ -23,7 +24,11 @@ public class AimingPointSphere : InteractiveObject {
 
     public void SetAimed(bool aimed) {
         this.aimed = aimed;
-        Renderer.material.color = aimed ? Color.green : Color.red;
+        if (Renderer.materials.Length > 1)
+            Renderer.materials[1].color = aimed ? Color.green : Color.red;
+        else
+            Renderer.material.color = aimed ? Color.green : Color.red;
+
     }
 
     public void Init(int index, string name) {
@@ -102,5 +107,9 @@ public class AimingPointSphere : InteractiveObject {
 
     public override void EnableVisual(bool enable) {
         throw new NotImplementedException();
+    }
+
+    private void OnDestroy() {
+        SelectorMenu.Instance.DestroySelectorItem(SelectorItem);
     }
 }

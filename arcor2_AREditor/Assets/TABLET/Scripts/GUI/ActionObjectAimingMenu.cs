@@ -105,15 +105,16 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
 
     public override async Task Hide() {
         await base.Hide();
-        if (!IsVisible)
-            return;
-        HideModelOnEE();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         foreach (AimingPointSphere sphere in spheres) {
             if (sphere != null) {
                 Destroy(sphere.gameObject);
             }
         }
+        if (!IsVisible)
+            return;
+        HideModelOnEE();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+       
         spheres.Clear();    
         currentObject = null;
         
@@ -165,7 +166,12 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
                 int idx = 0;
-                
+                foreach (AimingPointSphere sphere in spheres) {
+                    if (sphere != null) {
+                        Destroy(sphere.gameObject);
+                    }
+                }
+                spheres.Clear();
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
@@ -294,8 +300,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        if (! await currentObject.WriteLock(true) || ! await SceneManager.Instance.SelectedRobot.WriteLock(false))
-            Notifications.Instance.ShowNotification("Failed to start aiming", "Object or robot could not be locked");
         try {
             AimingInProgress = true;
             string armId = null;
@@ -359,6 +363,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             
             await WebsocketManager.Instance.ObjectAimingDone();
             FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
+            CancelAimingButton.SetInteractivity(false, "No aiming in progress");
             NextButton.SetInteractivity(false, "No aiming in progress");
             PreviousButton.SetInteractivity(false, "No aiming in progress");
             SavePositionButton.SetInteractivity(false, "No aiming in progress");
@@ -450,9 +455,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
         }
         model = null;
     }
-
-
-
 
 
     public void ShowCalibrateRobotDialog() {
