@@ -1,11 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Base;
 using UnityEngine;
 
 public class CoordinatesBtnGroup : MonoBehaviour
 {
+   
+
     public CoordBtn X, Y, Z;
     private CoordBtn selectedBtn;
+
+    public event AREditorEventArgs.GizmoAxisEventHandler OnAxisChanged;
 
 
     private void Start() {
@@ -22,11 +28,11 @@ public class CoordinatesBtnGroup : MonoBehaviour
     public void Enable(CoordBtn btn) {
         DisableAll();
         selectedBtn = btn;
-        TransformMenu.Instance.ResetTransformWheel();
         btn.Select();
+        OnAxisChanged?.Invoke(this, new GizmoAxisEventArgs(selectedBtn.Axis));
     }
 
-    public string GetSelectedAxis() {
+    public Gizmo.Axis GetSelectedAxis() {
         return selectedBtn.Axis;
     }
 }

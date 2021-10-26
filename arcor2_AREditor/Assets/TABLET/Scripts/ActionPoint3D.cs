@@ -1,5 +1,4 @@
 using Base;
-using RuntimeGizmos;
 using UnityEngine;
 using System.Collections.Generic;
 using IO.Swagger.Model;
@@ -13,7 +12,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public GameObject Sphere, Visual, CollapsedPucksVisual, Lock;
     public TextMeshPro ActionPointName;
-    private Material sphereMaterial;
+    public Material BreakPointMaterial, SphereMaterial;
     [SerializeField]
     private OutlineOnClick outlineOnClick;
     public GameObject ActionsVisuals;
@@ -35,7 +34,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
-        //transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
+        transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         //Visual.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
@@ -44,6 +43,21 @@ public class ActionPoint3D : Base.ActionPoint {
             orientations.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
     }
 
+    public override bool BreakPoint {
+        get => base.BreakPoint;
+        set {
+            base.BreakPoint = value;
+            Renderer r = Sphere.GetComponent<Renderer>();
+            if (r.materials.Length == 3) {
+                List<Material> materials = new List<Material>(r.materials) {
+                    [1] = BreakPoint ? BreakPointMaterial : SphereMaterial
+                };
+                r.materials = materials.ToArray();
+            } else {
+                r.material = BreakPoint ? BreakPointMaterial : SphereMaterial;
+            }
+        }
+    }
 
     public async void ShowMenu(bool enableBackButton = false) {
         throw new NotImplementedException();
@@ -51,13 +65,7 @@ public class ActionPoint3D : Base.ActionPoint {
 
 
     public override Vector3 GetScenePosition() {
-        Vector3 position = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
-        /*ActionObject parentActionObject = GetActionObject();
-        // if AP is child of another AP and in the top of the hierarchy is some action object, action points has to use the action objects rotation
-        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
-            position = parentActionObject.GetTransform().localRotation * position;
-        }*/
-        return position;
+        return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
     }
 
     /// <summary>
@@ -65,18 +73,12 @@ public class ActionPoint3D : Base.ActionPoint {
     /// </summary>
     /// <param name="position">Global position of AP</param>
     public override void SetScenePosition(Vector3 position) {
-        ActionObject parentActionObject = GetActionObject();
-        Vector3 p = position;
-/*
-        if (GetParent() != null && !GetParent().IsActionObject() && parentActionObject != null) {
-            
-        }*/
-        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(p));
+        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
     }
 
     public override Quaternion GetSceneOrientation() {
         //return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Orientations[0].Orientation));
-        return new Quaternion();
+        return Quaternion.identity;
     }
 
     public override void SetSceneOrientation(Quaternion orientation) {
@@ -94,7 +96,7 @@ public class ActionPoint3D : Base.ActionPoint {
         } else {
             int i = 1;
             foreach (Action3D action in Actions.Values) {
-                action.transform.localPosition = new Vector3(0, i * 0.03f, 0);
+                action.transform.localPosition = new Vector3(0, i * 0.015f + 0.015f, 0);
                 ++i;
                 action.transform.localScale = new Vector3(1, 1, 1);
             }
@@ -160,7 +162,9 @@ public class ActionPoint3D : Base.ActionPoint {
         
         HighlightAP(true);
         ActionPointName.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -178,15 +182,17 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void InitAP(IO.Swagger.Model.ActionPoint apData, float size, IActionPointParent parent = null) {
         base.InitAP(apData, size, parent);
-        sphereMaterial = Sphere.GetComponent<Renderer>().material;
         ActionPointName.text = apData.Name;
     }
 
     public override void UpdateColor() {
-        if (Enabled && !IsLocked)
-            sphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
-        else
-            sphereMaterial.color = Color.gray;
+        if (Enabled && !(IsLocked && !IsLockedByMe)) {
+            SphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
+            BreakPointMaterial.color = new Color(0.93f, 0.07f, 0.09f);
+        } else {
+            SphereMaterial.color = Color.gray;
+            BreakPointMaterial.color = Color.gray;
+        }
     }
 
     public override async void OpenMenu() {
@@ -261,5 +267,9 @@ public class ActionPoint3D : Base.ActionPoint {
 
     public override void CloseMenu() {
         throw new NotImplementedException();
+    }
+
+    public override void EnableVisual(bool enable) {
+        Visual.SetActive(enable);
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Base {
     public class PuckOutput : InputOutput {
+        /*
         public override string GetObjectTypeName() {
             return "Action output";
         }
@@ -13,11 +14,11 @@ namespace Base {
         public override string GetId() {
             return Action.GetId() + "output";
         }
-        public override void UpdateColor() {
+/*        public override void UpdateColor() {
             Renderer renderer = Action.OutputArrow.GetComponent<Renderer>();
             List<Material> materials = new List<Material>(renderer.materials);
 
-            if (Enabled && !IsLocked) {
+            if (Enabled && !(IsLocked && !IsLockedByMe)) {
                 foreach (var material in materials) {
                     if (Action.Data.Id == "START")
                         material.color = Color.green;
@@ -30,10 +31,14 @@ namespace Base {
                 foreach (var material in materials)
                     material.color = Color.gray;
             }
-        }
+        }*//*
 
         public override void CloseMenu() {
             throw new System.NotImplementedException();
         }
+
+        public override void EnableVisual(bool enable) {
+            throw new System.NotImplementedException();
+        }*/
     }
 }

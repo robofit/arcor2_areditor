@@ -17,6 +17,8 @@ public class Tile : MonoBehaviour
     public Image TopImage;
     public DateTime Created, Modified;
 
+    public ManualTooltip Tooltip;
+
 
     public void SetLabel(string label) {
         Label.text = label;

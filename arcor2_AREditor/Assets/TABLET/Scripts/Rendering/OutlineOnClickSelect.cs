@@ -44,7 +44,7 @@ public class OutlineOnClickSelect : OutlineOnClick {
         forceSelected = false;
     }
 
-    protected override void Select(bool force = false) {
+    public override void Select(bool force = false) {
         forceSelected = force;
         objSelected = true;
         SceneManager.Instance.SetSelectedObject(gameObject);

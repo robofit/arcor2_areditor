@@ -119,6 +119,7 @@ namespace Base {
         public bool AnyAvailableAction;
 
         public event AREditorEventArgs.ActionPointEventHandler OnActionPointAddedToScene;
+        public event AREditorEventArgs.ActionEventHandler OnActionAddedToScene;
 
         public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationAdded;
         public event AREditorEventArgs.ActionPointOrientationEventHandler OnActionPointOrientationUpdated;
@@ -369,6 +370,10 @@ namespace Base {
             if (project.HasLogic) {
                 UpdateLogicItems(project.Logic);
             }
+            // update orientation of all actions
+            /*foreach (Action action in GetAllActions()) {
+                action.UpdateRotation();
+            }*/
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
             } else if (project.IntModified == System.DateTime.MinValue) {
@@ -502,7 +507,7 @@ namespace Base {
                         Parameters = new List<IO.Swagger.Model.ActionParameter>()                        
                     };
                     foreach (Parameter param in action.Parameters.Values) {
-                        projectAction.Parameters.Add(DataHelper.ParameterToActionParameter(param));
+                        projectAction.Parameters.Add(param);
                     }
                 }
                 project.ActionPoints.Add(projectActionPoint);
@@ -522,22 +527,7 @@ namespace Base {
 
 
         private void Update() {
-            /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
-                GameManager.Instance.SceneInteractable &&
-                GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
-                /if (!projectActive && (ControlBoxManager.Instance.UseGizmoMove)) {
-                    ActivateActionPointsForGizmo(true);
-                    projectActive = true;
-                } else if (projectActive && !(ControlBoxManager.Instance.UseGizmoMove)) {
-                    ActivateActionPointsForGizmo(false);
-                    projectActive = false;
-                }
-            } else {
-                if (projectActive) {
-                    ActivateActionPointsForGizmo(false);
-                    projectActive = false;
-                }
-            }*/
+            
             if (updateProject) {
                 ProjectChanged = true;
                 updateProject = false;
@@ -583,7 +573,7 @@ namespace Base {
             if (actionPointParent == null) {               
                 AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
             } else {
-                AP = Instantiate(ActionPointPrefab, actionPointParent.GetTransform());
+                AP = Instantiate(ActionPointPrefab, actionPointParent.GetSpawnPoint());
             }
             AP.transform.localScale = new Vector3(1f, 1f, 1f);
             ActionPoint actionPoint = AP.GetComponent<ActionPoint>();
@@ -609,6 +599,26 @@ namespace Base {
                 }
                 if (!hasFreeName)
                     freeName = apDefaultName + "_ap_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+
+        public string GetFreeProjectName(string projectName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = projectName;
+            do {
+                hasFreeName = true;
+                try {
+                    GameManager.Instance.GetProjectId(freeName);
+                    hasFreeName = false;
+                    freeName = projectName + "_" + i++.ToString();
+                } catch (RequestFailedException) {
+                    // there is no project called "freeName" -> that is our new name
+                }
+
             } while (!hasFreeName);
 
             return freeName;
@@ -852,6 +862,15 @@ namespace Base {
             throw new KeyNotFoundException("Joints with id " + id + " not found");
         }
 
+        public IO.Swagger.Model.ProjectRobotJoints GetAnyJoints() {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.Data.RobotJoints.Count > 0)
+                    return actionPoint.Data.RobotJoints[0];
+            }
+            throw new KeyNotFoundException("No joints available");
+        }
+
+
         /// <summary>
         /// Returns orientation with id or throws KeyNotFoundException
         /// </summary>
@@ -865,6 +884,15 @@ namespace Base {
             }
             throw new KeyNotFoundException("Orientations with id " + id + " not found");
         }
+
+        public IO.Swagger.Model.NamedOrientation GetAnyNamedOrientation() {
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.Data.Orientations.Count > 0)
+                    return actionPoint.Data.Orientations[0];
+            }
+            throw new ItemNotFoundException("No orientation available");
+        }
+
 
         /// <summary>
         /// Returns action point containing orientation with id or throws KeyNotFoundException
@@ -969,9 +997,10 @@ namespace Base {
                 return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Input.Enable(enable);
+                    ;
+                    //action.Input.Enable(enable);
             }
-            EndAction.Input.Enable(enable);
+            //EndAction.Input.Enable(enable);
         }
 
 
@@ -983,9 +1012,10 @@ namespace Base {
                 return;
             foreach (ActionPoint ap in ActionPoints.Values) {
                 foreach (Action action in ap.Actions.Values)
-                    action.Output.Enable(enable);
+                    ;
+                    //action.Output.Enable(enable);
             }
-            StartAction.Output.Enable(enable);
+            //StartAction.Output.Enable(enable);
         }
 
 
@@ -1180,8 +1210,9 @@ namespace Base {
                 action.ActionUpdateBaseData(DataHelper.ActionToBareAction(projectAction));
                 // updates parameters of the action
                 action.ActionUpdate(projectAction);
-                action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
+                //action.EnableInputOutput(MainSettingsMenu.Instance.ConnectionsSwitch.IsOn());
                 updateProject = true;
+                OnActionAddedToScene.Invoke(this, new ActionEventArgs(action));
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
             }            
@@ -1220,15 +1251,40 @@ namespace Base {
         public void SetActionInputOutputVisibility(bool visible) {
             if (!Valid || !ProjectMeta.HasLogic)
                 return;
-            foreach (Action action in GetAllActions()) {
+            /*foreach (Action action in GetAllActions()) {
                 action.EnableInputOutput(visible);
             }
             StartAction.EnableInputOutput(visible);
-            EndAction.EnableInputOutput(visible);
+            EndAction.EnableInputOutput(visible);*/
             //SelectorMenu.Instance.ShowIO(visible);
             if (SelectorMenu.Instance.IOToggle.Toggled != visible)
                 SelectorMenu.Instance.IOToggle.SwitchToggle();
             SelectorMenu.Instance.IOToggle.SetInteractivity(visible, "Connections are hidden");
+        }
+
+        public bool AnyOrientationInTheProject() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                if (ap.AnyOrientation())
+                    return true;
+            }
+            return false;
+        }
+
+        public bool AnyJointsInTheProject() {
+            foreach (ActionPoint ap in ActionPoints.Values) {
+                if (ap.AnyJoints())
+                    return true;
+            }
+            return false;
+        }
+
+        public List<string> GetAllBreakpoints() {
+            List<string> breakPoints = new List<string>();
+            foreach (ActionPoint actionPoint in ActionPoints.Values) {
+                if (actionPoint.BreakPoint)
+                    breakPoints.Add(actionPoint.GetId());
+            }
+            return breakPoints;
         }
 
     }

@@ -7,31 +7,38 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionParametersMenu : Singleton<ActionParametersMenu>
+public class ActionParametersMenu : RightMenu<ActionParametersMenu>
 {
     public GameObject Content;
-    public CanvasGroup CanvasGroup;
     private Action3D currentAction;
-    public ButtonWithTooltip SaveParametersBtn;
     private List<IParameter> actionParameters = new List<IParameter>();
-    private bool parametersChanged;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
 
-    public async Task<bool> Show(Action3D action) {
-        if (!await action.WriteLock(false))
+
+    public TMPro.TMP_Text ActionName, ActionType, ActionPointName;
+
+    public override async Task<bool> Show(InteractiveObject interactiveObject, bool lockTree) {
+        if (!await base.Show(interactiveObject, lockTree))
             return false;
-        currentAction = action;
-        actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false);
-        parametersChanged = false;
-        SaveParametersBtn.SetInteractivity(false, "Parameters unchaged");
+        if (interactiveObject is Action3D action) {
+            currentAction = action;
+            actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
 
-
-        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
-        return true;
+            ActionName.text = $"Name: {action.GetName()}";
+            ActionType.text = $"Type: {action.ActionProvider.GetProviderName()}/{action.Metadata.Name}";
+            ActionPointName.text = $"AP: {action.ActionPoint.GetName()}";
+            EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+            action.ActionPoint.HighlightAP(true);
+            return true;
+        } else {
+            return false;
+        }
+        
     }
 
-    public async void Hide(bool unlock = true) {
+    public override async Task Hide() {
+        await base.Hide();
         RectTransform[] transforms = Content.GetComponentsInChildren<RectTransform>();
         if (transforms != null) {
             foreach (RectTransform o in transforms) {
@@ -40,36 +47,29 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
                 }
             }
         }
+        if (!IsVisible)
+            return;
+        
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        if (currentAction != null) {
-            if(unlock)
-                await currentAction.WriteUnlock();
-            currentAction = null;
-        }
+        currentAction.ActionPoint.HighlightAP(false);
+        currentAction = null;
+        
     }
 
-    public bool IsVisible() {
-        return CanvasGroup.alpha > 0;
-    }
 
     public void SetVisibility(bool visible) {
         EditorHelper.EnableCanvasGroup(CanvasGroup, visible);
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
-        if (!isValueValid) {
-            SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-        } else if (currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {
+        if (isValueValid && currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {           
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
-                    parametersChanged = true;
-                    //SaveParametersBtn.SetInteractivity(true);
                     SaveParameters();
                 }
             } catch (JsonReaderException) {
-                SaveParametersBtn.SetInteractivity(false, "Some parameter has invalid value");
-            }
 
+            }
         }
 
     }
@@ -79,11 +79,7 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             List<IO.Swagger.Model.ActionParameter> parameters = new List<IO.Swagger.Model.ActionParameter>();
             foreach (IParameter actionParameter in actionParameters) {
                 IO.Swagger.Model.ParameterMeta metadata = currentAction.Metadata.GetParamMetadata(actionParameter.GetName());
-                string value;
-                /*if (actionParameter.GetCurrentType() == "link")
-                    value = actionParameter.GetValue().ToString();
-                else*/
-                    value = JsonConvert.SerializeObject(actionParameter.GetValue());
+                string value = JsonConvert.SerializeObject(actionParameter.GetValue());
                 IO.Swagger.Model.ActionParameter ap = new IO.Swagger.Model.ActionParameter(name: actionParameter.GetName(), value: value, type: actionParameter.GetCurrentType());
                 parameters.Add(ap);
             }
@@ -91,10 +87,6 @@ public class ActionParametersMenu : Singleton<ActionParametersMenu>
             try {
                 await WebsocketManager.Instance.UpdateAction(currentAction.Data.Id, parameters, currentAction.GetFlows());
                 Notifications.Instance.ShowToastMessage("Parameters saved");
-                SaveParametersBtn.SetInteractivity(false, "Parameters unchanged");
-                parametersChanged = false;
-                /*if (string.IsNullOrEmpty(GameManager.Instance.ExecutingAction))
-                    await UpdateExecuteAndStopBtns();*/
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to save parameters", e.Message);
             }

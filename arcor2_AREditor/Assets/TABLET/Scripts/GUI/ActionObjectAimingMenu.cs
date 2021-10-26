@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 
-public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
+public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
 {
     public DropdownParameter PivotList;
     public ButtonWithTooltip NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton, CancelAimingButton;
@@ -26,8 +26,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
 
     public ConfirmationDialog ConfirmationDialog;
 
-    public CanvasGroup CanvasGroup;
-
     public bool AimingInProgress;
 
     public GameObject Sphere;
@@ -37,6 +35,10 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     private void Update() {
         if (!AimingInProgress || !automaticPointSelection)
             return;
+        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor) {
+            AimingInProgress = false;
+            return;
+        }
         float maxDist = float.MaxValue;
         int closestPoint = 0;
         foreach (AimingPointSphere sphere in spheres) {
@@ -77,41 +79,46 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        Hide(false);
-        
+        _ = Hide();        
     }
 
-    public async void Show(ActionObject actionObject) {
-        if (actionObject.IsRobot()) {
-            if (!await actionObject.WriteLock(false))
-                return;
+    public async override Task<bool> Show(InteractiveObject obj, bool lockTree) {
+        if (obj is ActionObject actionObject) {
+            if (actionObject.IsRobot()) {
+                return false;
+            } else {
+                if (await base.Show(obj, lockTree) && await SceneManager.Instance.SelectedRobot.WriteLock(false))
+                    lockedObjects.Add(SceneManager.Instance.SelectedRobot.GetInteractiveObject());
+                else
+                    return false;
+                currentObject = actionObject;
+            }
         } else {
-            if (!await actionObject.WriteLock(false) || !await SceneManager.Instance.SelectedRobot.WriteLock(false))
-                return;
+            return false;
         }
-        currentObject = actionObject;
+        
         await UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+        RobotInfoMenu.Instance.Show();
+        return true;
     }
 
-    public async void Hide(bool unlock = true) {
-        HideModelOnEE();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    public override async Task Hide() {
+        await base.Hide();
         foreach (AimingPointSphere sphere in spheres) {
             if (sphere != null) {
                 Destroy(sphere.gameObject);
             }
         }
-        spheres.Clear();
-        if (currentObject != null) {
-            if (unlock) {
-                await currentObject.WriteUnlock();
-                if (!currentObject.IsRobot()) {
-                    await SceneManager.Instance.SelectedRobot.WriteUnlock();
-                }
-            }
-            currentObject = null;
-        }
+        if (!IsVisible)
+            return;
+        HideModelOnEE();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+       
+        spheres.Clear();    
+        currentObject = null;
+        
+        RobotInfoMenu.Instance.Hide();
     }
 
     private void OnCameraOrRobotCalibrationEvent(object sender, ProcessStateEventArgs args) {
@@ -159,7 +166,12 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
                 int idx = 0;
-                
+                foreach (AimingPointSphere sphere in spheres) {
+                    if (sphere != null) {
+                        Destroy(sphere.gameObject);
+                    }
+                }
+                spheres.Clear();
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
@@ -288,8 +300,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        if (! await currentObject.WriteLock(true) || ! await SceneManager.Instance.SelectedRobot.WriteLock(false))
-            Notifications.Instance.ShowNotification("Failed to start aiming", "Object or robot could not be locked");
         try {
             AimingInProgress = true;
             string armId = null;
@@ -353,6 +363,7 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
             
             await WebsocketManager.Instance.ObjectAimingDone();
             FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
+            CancelAimingButton.SetInteractivity(false, "No aiming in progress");
             NextButton.SetInteractivity(false, "No aiming in progress");
             PreviousButton.SetInteractivity(false, "No aiming in progress");
             SavePositionButton.SetInteractivity(false, "No aiming in progress");
@@ -444,9 +455,6 @@ public class ActionObjectAimingMenu : Base.Singleton<ActionObjectAimingMenu>
         }
         model = null;
     }
-
-
-
 
 
     public void ShowCalibrateRobotDialog() {

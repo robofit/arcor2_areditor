@@ -4,6 +4,10 @@ using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using System.IO;
 using System;
+using System.IO.Compression;
+using System.Net;
+using System.Net.Sockets;
+using System.Net.Http;
 
 namespace Base {
     public class NotificationsModernUI : Notifications {
@@ -16,6 +20,8 @@ namespace Base {
         private Canvas Canvas;
 
         public GameObject NotificationEntryPrefab, NotificationMenuContent;
+
+        static readonly HttpClient client = new HttpClient();
 
         public void Start() {
             //Notification = NotificationManager.gameObject.GetComponent<UIManagerNotification>();
@@ -54,13 +60,14 @@ namespace Base {
             }
         }
 
-        public override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
+        public async override void SaveLogs(IO.Swagger.Model.Scene scene, IO.Swagger.Model.Project project, string customNotificationTitle = "") {
             string sceneString = "", projectString = "";
             if (SceneManager.Instance.SceneMeta != null)
                 sceneString = scene.ToJson();
             if (Base.ProjectManager.Instance.ProjectMeta != null)
                 projectString = project.ToJson();
             string dirname = Application.persistentDataPath + "/Logs/" + DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
+            string zipname = Application.persistentDataPath + "/Logs/logs.zip";
             Directory.CreateDirectory(dirname);
             StreamWriter sceneFile = File.CreateText(dirname + "/scene.json");
             sceneFile.Write(sceneString);
@@ -93,7 +100,36 @@ namespace Base {
             }
             logsFile.Close();
             ShowNotification(customNotificationTitle, "Logs saved to directory " + dirname);
+            string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6799/upload";
+            try {
+                if (File.Exists(zipname)) {
+                    File.Delete(zipname);
+                }
+                ZipFile.CreateFromDirectory(dirname, zipname);
+                FileStream file = new FileStream(zipname, FileMode.Open, FileAccess.Read);
+                HttpContent fileStreamContent = new StreamContent(file);
+                using (MultipartFormDataContent formData = new MultipartFormDataContent()) {
+                    formData.Add(fileStreamContent, "files", Path.GetFileName(zipname));
+                    HttpResponseMessage response = await client.PostAsync(uri, formData);
+                    if (!response.IsSuccessStatusCode) {
+                        Debug.LogError("Error:" + zipname + " not uploaded");                        
+                    } else {         
+                    }
 
+                }
+                
+            } catch (HttpRequestException ex) {
+                Debug.LogError($"Failed to upload logs to {uri}: " + ex.Message);
+            } catch (InvalidOperationException ex) {
+                Debug.LogError($"Failed to upload logs to {uri}: " + ex.Message);
+            } catch (Exception ex) when (ex is ArgumentException ||
+                                          ex is PathTooLongException ||
+                                          ex is DirectoryNotFoundException ||
+                                          ex is IOException) {
+                Debug.LogError("Failed to create zip folder with logs: " + ex.Message);
+            } finally {
+
+            }
         }
     }
 

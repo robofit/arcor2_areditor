@@ -33,12 +33,11 @@ public class Recalibrate : InteractiveObject {
         CalibrationManager.Instance.RecalibrateUsingARFoundation();
     }
 
-    public override void Enable(bool enable) {
-        base.Enable(enable);
-    }
 
     public override void OnHoverStart() {
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -94,5 +93,9 @@ public class Recalibrate : InteractiveObject {
 
     private void OnDestroy() {
         base.DestroyObject();
+    }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
     }
 }

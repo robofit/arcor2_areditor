@@ -175,7 +175,7 @@ namespace Base {
         /// <summary>
         /// Temp storage for delayed package
         /// </summary>
-        private PackageStateData newPackageState;
+        private PackageStateData newPackageState, nextPackageState;
 
         /// <summary>
         /// Indicates that project should be opened with delay (waiting for scene or action objects)
@@ -189,6 +189,10 @@ namespace Base {
         /// Indicates that package should be opened with delay (waiting for scene or action objects)
         /// </summary>
         private bool openPackage = false;
+        /// <summary>
+        /// Id of action which runs when initializing package
+        /// </summary>
+        public string ActionRunningOnStartupId;
 
         /// <summary>
         /// Holds ID of currently executing action. Null if there is no such action
@@ -197,7 +201,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.17.0";
+        public const string ApiVersion = "0.18.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -305,12 +309,16 @@ namespace Base {
             }
         }
 
+
+
         /// <summary>
         /// Enum specifying connection states
         /// </summary>
         public enum ConnectionStatusEnum {
             Connected, Disconnected, Connecting
         }
+
+        private bool updatingPackageState;
 
         /// <summary>
         /// Enum specifying aplication states
@@ -335,7 +343,14 @@ namespace Base {
             /// <summary>
             /// Visualisation of running package
             /// </summary>
-            PackageRunning
+            PackageRunning,
+            LoadingScene,
+            LoadingProject,
+            LoadingPackage,
+            ClosingScene,
+            ClosingProject,
+            ClosingPackage,
+            None
         }
 
         /// <summary>
@@ -377,6 +392,14 @@ namespace Base {
             /// </summary>
             SelectingActionPointParent,
             /// <summary>
+            /// Indicates that user should select orientation of action point
+            /// </summary>
+            SelectingAPOrientation,
+            /// <summary>
+            /// Indicates that user should select end effector
+            /// </summary>
+            SelectingEndEffector,
+            /// <summary>
             /// Indicates that all interaction is disabled
             /// </summary>
             InteractionDisabled
@@ -403,7 +426,7 @@ namespace Base {
                     newScene = null;
                     await SceneOpened(scene);
                 }
-            // request for delayed openning of project to allow loading of action objects and their actions
+                // request for delayed openning of project to allow loading of action objects and their actions
             } else if (openProject) {
                 openProject = false;
                 if (newProject != null && newScene != null) {
@@ -413,18 +436,23 @@ namespace Base {
                     newProject = null;
                     ProjectOpened(scene, project);
                 }
-            // request for delayed openning of package to allow loading of action objects and their actions
+                // request for delayed openning of package to allow loading of action objects and their actions
             } else if (openPackage) {
                 openPackage = false;
-                PackageStateUpdated(newPackageState);
+                updatingPackageState = true;
+                UpdatePackageState(newPackageState);
+            }
+            if (nextPackageState != null && !updatingPackageState && (GameManager.Instance.GetGameState() == GameStateEnum.PackageRunning || GameManager.Instance.GetGameState() == GameStateEnum.LoadingPackage || GameManager.Instance.GetGameState() == GameStateEnum.ClosingPackage)) {
+                updatingPackageState = true;
+                UpdatePackageState(nextPackageState);
+                nextPackageState = null;
             }
             // request for delayed openning of main screen to allow loading of action objects and their actions
             if (openMainScreenRequest && ActionsManager.Instance.ActionsReady) {
                 openMainScreenRequest = false;
                 await OpenMainScreen(openMainScreenData.What, openMainScreenData.Highlight);
             }
-            if (openPackageRunningScreenFlag && (GetGameState() == GameStateEnum.MainScreen ||
-                GetGameState() == GameStateEnum.Disconnected)) {
+            if (openPackageRunningScreenFlag && GetGameState() != GameStateEnum.PackageRunning) {
                 openPackageRunningScreenFlag = false;
                 OpenPackageRunningScreen();
             }
@@ -441,6 +469,8 @@ namespace Base {
                 }
             }
         }
+
+        public bool UpdatingPackageState => updatingPackageState;        
 
 
         //TODO: use onvalidate in all scripts to check if everything sets correctly - it allows to check in editor
@@ -462,8 +492,7 @@ namespace Base {
         /// <param name="value">New game state</param>
         public void SetGameState(GameStateEnum value) {
             gameState = value;            
-            OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));
-            
+            OnGameStateChanged?.Invoke(this, new GameStateEventArgs(gameState));            
         }
 
         /// <summary>
@@ -509,9 +538,19 @@ namespace Base {
                 requestType != EditorStateEnum.Normal &&
                 requestType != EditorStateEnum.InteractionDisabled);
             SetEditorState(requestType);
+
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(false);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(false);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(false);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(false);
+
             // "disable" non-relevant elements to simplify process for the user
-            /*switch (requestType) {
+            switch (requestType) {
                 case EditorStateEnum.SelectingActionObject:
+                    SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllActions(false);
@@ -520,43 +559,62 @@ namespace Base {
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
-                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
-                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActions(false);
+                    ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    EnableServiceInteractiveObjects(false);
                     ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
+                    SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+                    SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
                     ProjectManager.Instance.EnableAllActions(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
                     ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActionInputs(false);
-                    EnableServiceInteractiveObjects(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
-
-            }*/
+                case EditorStateEnum.SelectingAPOrientation:
+                    ProjectManager.Instance.EnableAllActions(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        await ProjectManager.Instance.EnableAllRobotsEE(false);
+                    ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    SceneManager.Instance.EnableAllActionObjects(true, true);
+                    ProjectManager.Instance.EnableAllActionPoints(true);
+                    ProjectManager.Instance.EnableAllOrientations(true);
+                    break;
+                case EditorStateEnum.SelectingEndEffector:
+                    ProjectManager.Instance.EnableAllActions(false);
+                    if (SceneManager.Instance.SceneStarted)
+                        ProjectManager.Instance.EnableAllActionOutputs(false);
+                    ProjectManager.Instance.EnableAllActionInputs(false);
+                    SceneManager.Instance.EnableAllActionObjects(false, false);
+                    SceneManager.Instance.EnableAllRobots(true);
+                    await ProjectManager.Instance.EnableAllRobotsEE(true);
+                    ProjectManager.Instance.EnableAllActionPoints(false);
+                    ProjectManager.Instance.EnableAllOrientations(false);
+                    break;
+            }
             ObjectCallback = callback;
             ObjectValidationCallback = validationCallback;
             // display info for user and bind cancel callback,
@@ -584,6 +642,12 @@ namespace Base {
                 ObjectCallback.Invoke(null);
                 ObjectCallback = null;
             }
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(true);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
             SetEditorState(EditorStateEnum.Normal);
             SelectObjectInfo.gameObject.SetActive(false);
             RestoreFilters();
@@ -613,7 +677,13 @@ namespace Base {
                     return;
                 }
                 
-            }            
+            }
+            SelectorMenu.Instance.PointsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ActionsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.IOToggle.SetInteractivity(true);
+            SelectorMenu.Instance.ObjectsToggle.SetInteractivity(true);
+            SelectorMenu.Instance.OthersToggle.SetInteractivity(true);
+            SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
             SetEditorState(EditorStateEnum.Normal);
             // hide selection info 
             SelectObjectInfo.gameObject.SetActive(false);
@@ -658,6 +728,8 @@ namespace Base {
         /// </summary>
         private void Start() {
             SetDefaultFramerate();
+            updatingPackageState = false;
+            nextPackageState = null;
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
             /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
@@ -848,6 +920,7 @@ namespace Base {
                     connectionStatus = newState;
                     break;
                 case ConnectionStatusEnum.Disconnected:
+                    connectionStatus = ConnectionStatusEnum.Disconnected;
                     OpenDisconnectedScreen();
                     OnDisconnectedFromServer?.Invoke(this, EventArgs.Empty);
                     Projects = new List<IO.Swagger.Model.ListProjectsResponseData>();
@@ -856,7 +929,6 @@ namespace Base {
                     ProjectManager.Instance.DestroyProject();
                     SceneManager.Instance.DestroyScene();
                     Scene.SetActive(false);
-                    connectionStatus = newState;
                     break;
             }
         }
@@ -901,6 +973,7 @@ namespace Base {
         /// Disconnects from server
         /// </summary>
         public void DisconnectFromSever() {
+            ConnectionStatus = ConnectionStatusEnum.Disconnected;
             WebsocketManager.Instance.DisconnectFromSever();
         }
 
@@ -1012,6 +1085,7 @@ namespace Base {
         /// <param name="scene">Scene desription from the server</param>
         /// <returns></returns>
         internal async Task SceneOpened(Scene scene) {
+            SetGameState(GameStateEnum.LoadingScene);
             if (!ActionsManager.Instance.ActionsReady) {
                 newScene = scene;
                 openScene = true;
@@ -1039,7 +1113,9 @@ namespace Base {
         /// <param name="project">Project desription from the server</param>
         /// <returns></returns>
         internal async void ProjectOpened(Scene scene, Project project) {
-            if (!ActionsManager.Instance.ActionsReady) {
+            var state = GetGameState();
+            if (!ActionsManager.Instance.ActionsReady/* || (GetGameState() != GameStateEnum.None && GetGameState() != GameStateEnum.SceneEditor
+                && GetGameState() != GameStateEnum.MainScreen && GetGameState() != GameStateEnum.Disconnected)*/) {
                 newProject = project;
                 newScene = scene;
                 openProject = true;
@@ -1049,9 +1125,11 @@ namespace Base {
                 SetEditorState(EditorStateEnum.InteractionDisabled);
                 SceneManager.Instance.DestroyScene();
             }
+            SetGameState(GameStateEnum.LoadingProject);
             try {
                 if (!await SceneManager.Instance.CreateScene(scene, true)) {
                     Notifications.Instance.SaveLogs(scene, project, "Failed to initialize scene");
+                    Debug.LogError("wft");
                     HideLoadingScreen();
                     return;
                 }
@@ -1075,7 +1153,18 @@ namespace Base {
         /// - running - the package is runnnig
         /// - paused - the package was paused
         /// - stopped - the package was stopped</param>
-        public async void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+        public void PackageStateUpdated(IO.Swagger.Model.PackageStateData state) {
+            if (!updatingPackageState) {
+                nextPackageState = null;
+                updatingPackageState = true;
+                UpdatePackageState(state);
+            }
+            else
+                nextPackageState = state;
+        }
+
+        public async void UpdatePackageState(IO.Swagger.Model.PackageStateData state) {
+
             if (state.State == PackageStateData.StateEnum.Running ||
                 state.State == PackageStateData.StateEnum.Paused) {
                 if (!ActionsManager.Instance.ActionsReady || PackageInfo == null) {
@@ -1083,65 +1172,107 @@ namespace Base {
                     openPackage = true;
                     return;
                 }
-                if (GetGameState() != GameStateEnum.PackageRunning) {
+                Debug.LogError(state);
+                if (!ProjectManager.Instance.Valid) {
                     try {
+                        SetGameState(GameStateEnum.LoadingPackage);
                         WaitUntilPackageReady(5000);
-                        if (PackageInfo == null)
-                            return;
-                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
-                            Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
+                        if (PackageInfo == null) {
+                            updatingPackageState = false;
                             return;
                         }
-                        if (PackageInfo == null)
+                        if (!await SceneManager.Instance.CreateScene(PackageInfo.Scene, false, PackageInfo.CollisionModels)) {
+                            Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize scene");
+                            updatingPackageState = false;
                             return;
+                        }
+                        if (PackageInfo == null) {
+                            updatingPackageState = false;
+                            return;
+                        }
                         if (!await ProjectManager.Instance.CreateProject(PackageInfo.Project, false)) {
                             Notifications.Instance.SaveLogs(PackageInfo.Scene, PackageInfo.Project, "Failed to initialize project");
                         }
-                        if (PackageInfo == null)
+                        if (PackageInfo == null) {
+                            updatingPackageState = false;
                             return;
+                        }
+                        Debug.LogError("done");
                         openPackageRunningScreenFlag = true;
                         if (state.State == PackageStateData.StateEnum.Paused) {
                             OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
+                        } else {
+                            OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
+                        }
+                        if (!string.IsNullOrEmpty(ActionRunningOnStartupId)) {
+                            try {
+                                Action action = ProjectManager.Instance.GetAction(ActionRunningOnStartupId);
+                                ActionsManager.Instance.CurrentlyRunningAction = action;
+                                action.RunAction();
+                            } catch (ItemNotFoundException) {
+
+                            } finally {
+                                ActionRunningOnStartupId = null;
+                            }
+
                         }
                     } catch (TimeoutException ex) {
                         Debug.LogError(ex);
                         Notifications.Instance.SaveLogs(null, null, "Failed to initialize project");
+                    } finally {
+                        updatingPackageState = false;
                     }
                 } else if (state.State == PackageStateData.StateEnum.Paused) {
                     OnPausePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
+                    updatingPackageState = false;
                 } else if (state.State == PackageStateData.StateEnum.Running) {
                     OnResumePackage?.Invoke(this, new ProjectMetaEventArgs(PackageInfo.PackageId, PackageInfo.PackageName));
                     HideLoadingScreen();
+                    updatingPackageState = false;
                 }
-                
-                
+
+
+            } else if (state.State == PackageStateData.StateEnum.Stopping) {
+
+                updatingPackageState = false;
             } else if (state.State == PackageStateData.StateEnum.Stopped) {
+                SetGameState(GameStateEnum.ClosingPackage);
                 PackageInfo = null;
                 ShowLoadingScreen("Stopping package...");
                 ProjectManager.Instance.DestroyProject();
                 SceneManager.Instance.DestroyScene();
+                updatingPackageState = false;
                 OnStopPackage?.Invoke(this, new EventArgs());
+                updatingPackageState = false;
+                SetGameState(GameStateEnum.None);
+                Debug.LogError("stopped");
             }
+
+            updatingPackageState = false;
         }
 
         /// <summary>
         /// Callback when scene was closed
         /// </summary>
         internal void SceneClosed() {
+            SetGameState(GameStateEnum.ClosingScene);
             ShowLoadingScreen();
             SceneManager.Instance.DestroyScene();
             OnCloseScene?.Invoke(this, EventArgs.Empty);
+            SetGameState(GameStateEnum.None);
         }
 
         /// <summary>
         /// Callback when project was closed
         /// </summary>
         internal void ProjectClosed() {
+            SetGameState(GameStateEnum.ClosingProject);
             ShowLoadingScreen();
             ProjectManager.Instance.DestroyProject();
             SceneManager.Instance.DestroyScene();
             OnCloseProject?.Invoke(this, EventArgs.Empty);
+            SetGameState(GameStateEnum.None);
         }
 
         /// <summary>
@@ -1155,6 +1286,19 @@ namespace Base {
                     return scene.Id;
             }
             throw new RequestFailedException("No scene with name: " + name);
+        }
+
+        /// <summary>
+        /// Get project id based on its name
+        /// </summary>
+        /// <param name="name">Name of project</param>
+        /// <returns>Project ID</returns>
+        public string GetProjectId(string name) {
+            foreach (ListProjectsResponseData project in Projects) {
+                if (name == project.Name)
+                    return project.Id;
+            }
+            throw new RequestFailedException("No project with name: " + name);
         }
 
         public void InvokeScenesListChanged() {
@@ -1599,6 +1743,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            AREditorResources.Instance.LeftMenuScene.DeactivateAllSubmenus();
             MainMenu.Instance.Close();
             SetGameState(GameStateEnum.SceneEditor);
             OnOpenSceneEditor?.Invoke(this, EventArgs.Empty);
@@ -1618,6 +1763,7 @@ namespace Base {
 #else
             Scene.SetActive(true);
 #endif
+            AREditorResources.Instance.LeftMenuProject.DeactivateAllSubmenus();
             MainMenu.Instance.Close();
             SetGameState(GameStateEnum.ProjectEditor);
             OnOpenProjectEditor?.Invoke(this, EventArgs.Empty);

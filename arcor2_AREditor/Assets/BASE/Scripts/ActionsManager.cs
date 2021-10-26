@@ -154,6 +154,7 @@ namespace Base {
                     m.ActionsLoaded = true;
                 m.Robot = IsDescendantOfType("Robot", m);
                 m.Camera = IsDescendantOfType("Camera", m);
+                m.CollisionObject = IsDescendantOfType("VirtualCollisionObject", m);
                 actionObjectsMetadata.Add(obj.Type, m);
                 if (m.Robot)
                     robotAdded = true;
@@ -187,6 +188,9 @@ namespace Base {
                     else
                         actionObjectMetadata.ActionsLoaded = true;
                     updated.Add(obj.Type);
+                    foreach (ActionObject updatedObj in SceneManager.Instance.GetAllObjectsOfType(obj.Type)) {
+                        updatedObj.UpdateModel();
+                    }
                 } else {
                     Notifications.Instance.ShowNotification("Update of object types failed", "Server trying to update non-existing object!");
                 }
@@ -252,6 +256,7 @@ namespace Base {
             foreach (KeyValuePair<string, ActionObjectMetadata> kv in actionObjectsMetadata) {
                 kv.Value.Robot = IsDescendantOfType("Robot", kv.Value);
                 kv.Value.Camera = IsDescendantOfType("Camera", kv.Value);
+                kv.Value.CollisionObject = IsDescendantOfType("VirtualCollisionObject", kv.Value);
             }
             enabled = true;
 

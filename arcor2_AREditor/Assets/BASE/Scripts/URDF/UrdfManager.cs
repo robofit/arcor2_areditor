@@ -40,7 +40,7 @@ public class UrdfManager : Singleton<UrdfManager> {
         //GameManager.Instance.SetTurboFramerate();
 
         //Debug.Log("URDF: download started");
-        string uri = "//" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         UnityWebRequest www;
         try {
             www = UnityWebRequest.Get(uri);
@@ -146,7 +146,7 @@ public class UrdfManager : Singleton<UrdfManager> {
     /// <param name="robotType">Type of the robot.</param>
     /// </summary>
     private void ImportUrdfObject(string filename, string robotType) {
-        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useColliderInVisuals:true, useUrdfMaterials: false);
+        UrdfRobot urdfRobot = UrdfRobotExtensionsRuntime.Create(filename, useColliderInVisuals:true, useUrdfMaterials:true);
         urdfRobot.transform.parent = transform;
         urdfRobot.transform.localPosition = Vector3.zero;
         urdfRobot.transform.localEulerAngles = Vector3.zero;
@@ -179,7 +179,6 @@ public class UrdfManager : Singleton<UrdfManager> {
             // check if imported model corresponds to this robot
             RobotModel robotModel = GetRobotModel(urdfRobot.gameObject);
             if (robotModel != null) {
-
                 if (args.CollidersOnly) {
                     robotModel.SetLinkCollisionLoaded(importedModel.GetComponentsInParent<UrdfLink>(true)[0].name, importedModel.GetComponentsInParent<UrdfCollision>(true)[0]);
                 } else {
@@ -190,6 +189,8 @@ public class UrdfManager : Singleton<UrdfManager> {
             }
         }
     }
+
+
 
     /// <summary>
     /// Creates identical copy of specified RobotModel.
@@ -260,7 +261,7 @@ public class UrdfManager : Singleton<UrdfManager> {
             // Check whether downloading can be started and start it, if so.
             return CanIDownload(fileName);
         }
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
             HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();

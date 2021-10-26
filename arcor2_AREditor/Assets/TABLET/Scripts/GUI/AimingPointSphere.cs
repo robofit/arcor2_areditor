@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(OutlineOnClick))]
 public class AimingPointSphere : InteractiveObject {
@@ -13,6 +14,7 @@ public class AimingPointSphere : InteractiveObject {
     private OutlineOnClick outlineOnClick;
     public MeshRenderer Renderer;
 
+
     public int Index => index;
     public bool Aimed => aimed;
 
@@ -23,7 +25,14 @@ public class AimingPointSphere : InteractiveObject {
 
     public void SetAimed(bool aimed) {
         this.aimed = aimed;
-        Renderer.material.color = aimed ? Color.green : Color.red;
+        if (Renderer.materials.Length == 3) {
+            List<Material> materials = new List<Material>(Renderer.materials);
+            materials[1].color = aimed ? Color.green : Color.red;
+            Renderer.materials = materials.ToArray();
+        } else {
+            Renderer.material.color = aimed ? Color.green : Color.red;
+        }       
+
     }
 
     public void Init(int index, string name) {
@@ -98,5 +107,13 @@ public class AimingPointSphere : InteractiveObject {
 
     public override void UpdateColor() {
         throw new System.NotImplementedException();
+    }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
+    }
+
+    private void OnDestroy() {
+        SelectorMenu.Instance.DestroySelectorItem(SelectorItem);
     }
 }

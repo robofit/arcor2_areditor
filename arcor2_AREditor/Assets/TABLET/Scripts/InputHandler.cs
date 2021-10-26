@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using RuntimeGizmos;
 
 public class InputHandler : Singleton<InputHandler> {
 
@@ -45,14 +44,7 @@ public class InputHandler : Singleton<InputHandler> {
         }
         // Left Button
         if (Input.GetMouseButtonDown(0)) {
-            if (TransformGizmo.Instance.mainTargetRoot != null) {
-                if (TransformGizmo.Instance.translatingAxis == Axis.None) {
-                    //TransformGizmo.Instance.ClearTargets();
-                    TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
-                }
-            } else {
                 TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
-            }
         }
         // Right Button
         else if (Input.GetMouseButtonDown(1)) {
@@ -158,11 +150,6 @@ public class InputHandler : Singleton<InputHandler> {
             } else if (touch.phase == TouchPhase.Ended) {
                 if (pointerOverUI)
                     return;
-                if (TransformGizmo.Instance.mainTargetRoot != null) {
-                    if (TransformGizmo.Instance.translatingAxis == Axis.None) {
-                        //TransformGizmo.Instance.ClearTargets();
-                    }
-                }
                 SelectorMenu.Instance.DeselectObject(true);
             }
         }

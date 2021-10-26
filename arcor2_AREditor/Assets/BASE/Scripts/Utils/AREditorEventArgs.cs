@@ -103,13 +103,24 @@ namespace Base {
         }
     }
 
-    public class ActionEventArgs : EventArgs {
+    public class ActionModelEventArgs : EventArgs {
         
         public IO.Swagger.Model.Action Action {
             get; set;
         }
 
-        public ActionEventArgs(IO.Swagger.Model.Action action) {
+        public ActionModelEventArgs(IO.Swagger.Model.Action action) {
+            Action = action;
+        }
+    }
+
+    public class ActionEventArgs : EventArgs {
+        
+        public Action Action {
+            get; set;
+        }
+
+        public ActionEventArgs(Action action) {
             Action = action;
         }
     }
@@ -424,6 +435,16 @@ namespace Base {
         }
     }
 
+    public class GizmoAxisEventArgs : EventArgs {
+        public Gizmo.Axis SelectedAxis {
+            get; set;
+        }
+
+        public GizmoAxisEventArgs(Gizmo.Axis gizmoAxis) {
+            SelectedAxis = gizmoAxis;
+        }
+    }
+
     public class AREditorEventArgs {
         public delegate void StringEventHandler(object sender, StringEventArgs args);
         public delegate void StringListEventHandler(object sender, StringListEventArgs args);
@@ -435,6 +456,7 @@ namespace Base {
         public delegate void BareSceneEventHandler(object sender, BareSceneEventArgs args);
         public delegate void BareActionEventHandler(object sender, BareActionEventArgs args);
         public delegate void BareActionPointEventHandler(object sender, BareActionPointEventArgs args);
+        public delegate void ActionModelEventHandler(object sender, ActionModelEventArgs args);
         public delegate void ActionEventHandler(object sender, ActionEventArgs args);
         public delegate void ProjectActionPointEventHandler(object sender, ProjectActionPointEventArgs args);
         public delegate void ActionPointEventHandler(object sender, ActionPointEventArgs args);
@@ -459,5 +481,6 @@ namespace Base {
         public delegate void ProcessStateEventHandler(object sender, ProcessStateEventArgs args);
         public delegate void CalibrationEventHandler(object sender, CalibrationEventArgs args);
         public delegate void ProjectParameterEventHandler(object sender, ProjectParameterEventArgs args);
+        public delegate void GizmoAxisEventHandler(object sender, GizmoAxisEventArgs args);
     }
 }

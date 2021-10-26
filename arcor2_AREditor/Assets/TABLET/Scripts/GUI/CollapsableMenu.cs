@@ -31,6 +31,10 @@ public class CollapsableMenu : MonoBehaviour
         Name = label;
         text.text = label;
     }
+
+    public string GetLabel() {
+        return Name;
+    }
     public void SetCollapsedState(bool state) {
         collapsed = state;
         Content.SetActive(!state);

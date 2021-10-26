@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Base;
-using RuntimeGizmos;
 using IO.Swagger.Model;
 using TriLibCore;
 using System;
@@ -16,18 +15,19 @@ public class ActionObject3D : ActionObject {
     public TextMeshPro ActionObjectName;
     public GameObject Visual, Model;
 
-    public GameObject CubePrefab, CylinderPrefab, SpherePrefab;
-
     private bool transparent = false;
-    private Renderer modelRenderer;
-    private Material modelMaterial;
+
     [SerializeField]
     private OutlineOnClick outlineOnClick;
-
+    public GameObject CubePrefab;
     private Shader standardShader;
     private Shader transparentShader;
+    private bool isGreyColorForced;
 
     private List<Renderer> aoRenderers = new List<Renderer>();
+
+    public GameObject CylinderPrefab, SpherePrefab;
+
 
     protected override void Start() {
         base.Start();
@@ -53,32 +53,30 @@ public class ActionObject3D : ActionObject {
     }
 
     public async override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
-            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
-            GameManager.Instance.ObjectSelected(this);
-            return;
-        }
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
-            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-            Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
-            return;
-        }
+    //    if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
+    //        GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
+    //        GameManager.Instance.ObjectSelected(this);
+    //        return;
+    //    }
+    //    if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
+    //        return;
+    //    }
+    //    if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
+    //        GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
+    //        Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
+    //        return;
+    //    }
 
-        outlineOnClick.GizmoUnHighlight();
-        // HANDLE MOUSE
-        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-            // We have clicked with left mouse and started manipulation with object
-            if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                StartManipulation();
-            }
-        } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            OpenMenu();
-
-        }
-
+    //    outlineOnClick.GizmoUnHighlight();
+    //    // HANDLE MOUSE
+    //    if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
+    //        // We have clicked with left mouse and started manipulation with object
+    //        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+    //            StartManipulation();
+    //        }
+    //    } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
+    //        OpenMenu();
+    //    }
     }
 
     public override void UpdateObjectName(string newUserId) {
@@ -99,7 +97,10 @@ public class ActionObject3D : ActionObject {
 
 
     public override void SetVisibility(float value, bool forceShaderChange = false) {
-        base.SetVisibility(value);
+        float normalizedValue = value;
+        if (Blocklisted)
+            normalizedValue = 0;
+        base.SetVisibility(normalizedValue);
         if (standardShader == null) {
             standardShader = Shader.Find("Standard");
         }
@@ -108,54 +109,43 @@ public class ActionObject3D : ActionObject {
             transparentShader = Shader.Find("Transparent/Diffuse");
         }
 
-        if (ActionObjectMetadata.ObjectModel != null &&
-            ActionObjectMetadata.ObjectModel.Type == ObjectModel.TypeEnum.Mesh) {
-            // Set opaque shader
-            if (value >= 1) {
-                transparent = false;
-                foreach (var renderer in aoRenderers) {
-                    foreach (var material in renderer.materials) {
-                        material.shader = standardShader;
-                        Color col = material.color;
-                        col.a = 1f;
-                        material.color = col;
-                    }
+        // Set opaque shader
+        if (value >= 1) {
+            transparent = false;
+            foreach (Renderer renderer in aoRenderers) {
+                // Object has its outline active, we need to select second material,
+                // (first is mask, second is object material, third is outline)
+                if (renderer.materials.Length == 3) {
+                    renderer.materials[1].shader = standardShader;
+                } else {
+                    renderer.material.shader = standardShader;
                 }
             }
-            // Set transparent shader
-            else {
-                if (!transparent) {
-                    transparent = true;
-                    foreach (var renderer in aoRenderers) {
-                        foreach (var material in renderer.materials) {
-                            material.shader = transparentShader;
-                        }
+        }
+        // Set transparent shader
+        else {
+            transparent = false;
+            if (forceShaderChange || !transparent) {
+                foreach (Renderer renderer in aoRenderers) {
+                    if (renderer.materials.Length == 3) {
+                        renderer.materials[1].shader = transparentShader;
+                    } else {
+                        renderer.material.shader = transparentShader;
                     }
                 }
-                foreach (var renderer in aoRenderers) {
-                    foreach (var material in renderer.materials) {
-                        Color col = material.color;
-                        col.a = value;
-                        material.color = col;
-                    }
-                }
+                transparent = true;
             }
-        } else { //not mesh
-            // Set opaque shader
-            if (value >= 1) {
-                transparent = false;
-                modelMaterial.shader = standardShader;
-            }
-            // Set transparent shader
-            else {
-                if (!transparent) {
-                    modelMaterial.shader = transparentShader;
-                    transparent = true;
+            // set alpha of the material
+            foreach (Renderer renderer in aoRenderers) {
+                Material mat;
+                if (renderer.materials.Length == 3) {
+                    mat = renderer.materials[1];
+                } else {
+                    mat = renderer.material;
                 }
-                // set alpha of the material
-                Color color = modelMaterial.color;
+                Color color = mat.color;
                 color.a = value;
-                modelMaterial.color = color;
+                mat.color = color;
             }
         }
     }
@@ -189,6 +179,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
+       
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -255,14 +246,13 @@ public class ActionObject3D : ActionObject {
         Collider = Model.GetComponent<Collider>();
         Colliders.Add(Collider);
         Model.GetComponent<OnClickCollider>().Target = gameObject;
-        modelRenderer = Model.GetComponent<Renderer>();
-        modelMaterial = modelRenderer.material;
+
         outlineOnClick = gameObject.GetComponent<OutlineOnClick>();
-        outlineOnClick.InitRenderers(new List<Renderer>() { modelRenderer });
-        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
 
         aoRenderers.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
+
+        outlineOnClick.InitRenderers(aoRenderers);
     }
 
     public override GameObject GetModelCopy() {
@@ -278,18 +268,24 @@ public class ActionObject3D : ActionObject {
     public void OnModelLoaded(object sender, ImportedMeshEventArgs args) {
         if (args.Name != this.GetId())
             return;
+
+        bool outlineWasHighlighted = outlineOnClick.Highlighted;
+
         if (Model != null) {
+            outlineOnClick.UnHighlight();
+            outlineOnClick.ClearRenderers();
+
             Model.SetActive(false);
             Destroy(Model);
         }
+
         Model = args.RootGameObject;
 
         Model.gameObject.transform.parent = Visual.transform;
         Model.gameObject.transform.localPosition = Vector3.zero;
+        Model.gameObject.transform.localRotation = Quaternion.identity;
 
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
-        Model.AddComponent<GizmoOutlineHandler>().OutlineOnClick = outlineOnClick;
-
         
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
             child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
@@ -300,12 +296,18 @@ public class ActionObject3D : ActionObject {
         Colliders.Clear();
         aoRenderers.AddRange(Model.GetComponentsInChildren<Renderer>(true));
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
-
-        outlineOnClick.ClearRenderers();
         outlineOnClick.InitRenderers(aoRenderers);
+        outlineOnClick.InitMaterials();
 
-        transparent = false; //needs to be set before 1st call of SetVisibility after model loading
-        SetVisibility(visibility);
+        //transparent = false; //needs to be set before 1st call of SetVisibility after model loading
+        SetVisibility(visibility, forceShaderChange:true);
+
+        if (outlineWasHighlighted) {
+            outlineOnClick.Highlight();
+            if (SelectorMenu.Instance.ManuallySelected) {
+                DisplayOffscreenIndicator(true);
+            }
+        }
 
         MeshImporter.Instance.OnMeshImported -= OnModelLoaded;
     }
@@ -317,6 +319,8 @@ public class ActionObject3D : ActionObject {
     private void OnModelLoadError(IContextualizedError obj) {
         Notifications.Instance.ShowNotification("Unable to show mesh " + this.GetName(), obj.GetInnerException().Message);
     }
+
+    
 
 
     public override void OnHoverStart() {
@@ -341,7 +345,9 @@ public class ActionObject3D : ActionObject {
             ActionObjectName.gameObject.SetActive(true);
         }
         outlineOnClick.Highlight();
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -351,17 +357,54 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void UpdateColor() {
-        Color color;
-        if (Enabled && !IsLocked)
-            color = new Color(0.89f, 0.83f, 0.44f);
-        else
-            color = Color.gray;
-        color.a = SceneManager.Instance.ActionObjectsVisibility;
-        modelMaterial.color = color;
+        if (Blocklisted)
+            return;
+
+        SetGrey(IsLockedByOtherUser || isGreyColorForced);
+    }
+
+    /// <summary>
+    /// Sets grey color of AO model (indicates that model is not in position of real robot)
+    /// </summary>
+    /// <param name="grey">True for setting grey, false for standard state.</param>
+    public void SetGrey(bool grey, bool force = false) {
+        isGreyColorForced = force && grey;
+        if (force) {
+            UpdateColor();
+            return;
+        }
+
+        if (grey) {
+            foreach (Renderer renderer in aoRenderers) {
+                foreach (Material mat in renderer.materials) {
+                    mat.SetTexture("_EmissionMap", null);
+                    mat.SetColor("_EmissionColor", new Color(0.2f, 0.05f, 0.05f));
+                    mat.EnableKeyword("_EMISSION");
+                }
+            }
+        } else {
+            foreach (Renderer renderer in aoRenderers) {
+                foreach (Material mat in renderer.materials) {
+                    mat.DisableKeyword("_EMISSION");
+                }
+            }
+        }
+    }
+
+    public override void Enable(bool enable, bool putOnBlocklist = false, bool removeFromBlocklist = false) {
+        bool prevBlocklisted = Blocklisted;
+        base.Enable(enable, putOnBlocklist, removeFromBlocklist);
+        if (prevBlocklisted != Blocklisted) {
+            if (Blocklisted) {
+                SetVisibility(0);
+            } else {
+                SetVisibility(MainSettingsMenu.Instance.GetVisibilityActionObjects());
+            }
+        }
     }
 
     public override void OpenMenu() {
-        ActionObjectMenu.Instance.Show(this);
+        _ = ActionObjectMenu.Instance.Show(this, false);
     }
 
     public override bool HasMenu() {
@@ -389,6 +432,31 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void CloseMenu() {
-        ActionObjectMenu.Instance.Hide();
+        _ = ActionObjectMenu.Instance.Hide();
+    }
+
+    public override void EnableVisual(bool enable) {
+        Visual.SetActive(enable);
+    }
+
+    public override void UpdateModel() {
+        if (ActionObjectMetadata.ObjectModel == null)
+            return;
+        Vector3? dimensions = null;
+        switch (ActionObjectMetadata.ObjectModel.Type) {
+            case ObjectModel.TypeEnum.Box:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
+               break;
+            case ObjectModel.TypeEnum.Sphere:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius));
+                break;
+            case ObjectModel.TypeEnum.Cylinder:
+                dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Radius, (float) ActionObjectMetadata.ObjectModel.Cylinder.Height));
+                break;
+
+        }
+        if (dimensions != null)
+            Model.transform.localScale = new Vector3(dimensions.Value.x, dimensions.Value.y, dimensions.Value.z);
+
     }
 }

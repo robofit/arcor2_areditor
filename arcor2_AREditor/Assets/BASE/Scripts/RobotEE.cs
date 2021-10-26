@@ -10,20 +10,41 @@ public class RobotEE : InteractiveObject, ISubItem {
     
     [SerializeField]
     private TMPro.TMP_Text eeName;
+    public OutlineOnClick OutlineOnClick;
+    public string EEId, ARMId;
+    public IRobot Robot;
 
-    public string RobotId, EEId, ARMId;
-    
-
-    public void InitEE(IRobot robot, string armId, string eeId) {
-        RobotId = robot.GetId();
-        ARMId = armId;
-        EEId = eeId;
-        SetLabel(robot.GetName(), eeId);
-        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+    private void Awake() {
+        SceneManager.Instance.OnRobotSelected += OnRobotSelected;
     }
 
-    public void SetLabel(string robotName, string eeName) {
-        this.eeName.text = robotName + "/" + eeName;
+    private void OnDestroy() {
+        SceneManager.Instance.OnRobotSelected -= OnRobotSelected;
+    }
+
+    private void OnRobotSelected(object sender, System.EventArgs e) {
+        if (SceneManager.Instance.SelectedEndEffector == this) {
+            OutlineOnClick.Select();
+        } else {
+            OutlineOnClick.Deselect();
+        }
+    }
+
+    public void InitEE(IRobot robot, string armId, string eeId) {
+        Robot = robot;
+        ARMId = armId;
+        EEId = eeId;
+        UpdateLabel();
+        SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
+
+        
+    }
+
+    public void UpdateLabel() {
+        if (Robot.MultiArm())
+            eeName.text = $"{Robot.GetName()}/{ARMId}/{EEId}";
+        else
+            eeName.text = $"{Robot.GetName()}/{EEId}";
     }
 
     public override void OnClick(Click type) {
@@ -32,14 +53,26 @@ public class RobotEE : InteractiveObject, ISubItem {
         }
     }
 
+    public bool IsSelected => SceneManager.Instance.SelectedEndEffector == this;
+
     public override void OnHoverStart() {
         eeName.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
+        if (IsSelected) {
+            OutlineOnClick.Deselect();
+        }
+        OutlineOnClick.Highlight();
     }
 
     public override void OnHoverEnd() {
         eeName.gameObject.SetActive(false);
         DisplayOffscreenIndicator(false);
+        OutlineOnClick.UnHighlight();
+        if (IsSelected) {
+            OutlineOnClick.Select();
+        }
     }
 
     /// <summary>
@@ -55,11 +88,14 @@ public class RobotEE : InteractiveObject, ISubItem {
     }
 
     public override string GetName() {
-        return EEId;
+        if (Robot.MultiArm())
+            return $"{ARMId}/{EEId}";
+        else
+            return EEId;
     }
 
     public override string GetId() {
-        return $"{RobotId}/{ARMId}/{EEId}";
+        return $"{Robot.GetId()}/{ARMId}/{EEId}";
     }
 
     public override void OpenMenu() {
@@ -100,13 +136,17 @@ public class RobotEE : InteractiveObject, ISubItem {
 
     public InteractiveObject GetParentObject() {
         try {
-            return SceneManager.Instance.GetActionObject(RobotId);
+            return SceneManager.Instance.GetActionObject(Robot.GetId());
         } catch (KeyNotFoundException) {
             return null;
         }
     }
 
     public override void CloseMenu() {
+        throw new System.NotImplementedException();
+    }
+
+    public override void EnableVisual(bool enable) {
         throw new System.NotImplementedException();
     }
 }

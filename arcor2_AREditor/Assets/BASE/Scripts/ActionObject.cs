@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
+using System;
 
 namespace Base {
     public abstract class ActionObject : InteractiveObject, IActionProvider, IActionPointParent {
@@ -37,6 +38,11 @@ namespace Base {
             } else {
                 SetVisibility(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
             }
+
+            if (PlayerPrefsHelper.LoadBool($"ActionObject/{GetId()}/blocklisted", false)) {
+                Enable(false, true, false);
+            }
+
         }
         
         public virtual void UpdateObjectName(string newUserId) {
@@ -210,6 +216,8 @@ namespace Base {
             return Data.Id;
         }
 
+        public abstract void UpdateModel();
+
         //TODO: is this working?
         public List<ActionPoint> GetActionPoints() {
             List<ActionPoint> actionPoints = new List<ActionPoint>();
@@ -286,7 +294,7 @@ namespace Base {
         } else if (SceneManager.Instance.SceneStarted) {
             return new RequestResult(false, "Scene online");
         } else {
-            IO.Swagger.Model.RemoveFromSceneResponse response = await WebsocketManager.Instance.RemoveFromScene(GetId(), false, true);
+                IO.Swagger.Model.RemoveFromSceneResponse response = await WebsocketManager.Instance.RemoveFromScene(GetId(), false, true);
             if (response.Result)
                 return new RequestResult(true);
             else
@@ -296,13 +304,17 @@ namespace Base {
 
 
     public async override void Remove() {
-        IO.Swagger.Model.RemoveFromSceneResponse response =
+            IO.Swagger.Model.RemoveFromSceneResponse response =
             await WebsocketManager.Instance.RemoveFromScene(GetId(), false, false);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to remove object " + GetName(), response.Messages[0]);
             return;
         }
     }
+
+        public Transform GetSpawnPoint() {
+            return transform;
+        }
     }
 
 

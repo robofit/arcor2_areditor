@@ -10,6 +10,8 @@ using UnityEngine.Events;
 using System.Threading.Tasks;
 using TriLibCore.Extensions;
 using RuntimeInspectorNamespace;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class SelectorMenu : Singleton<SelectorMenu> {
@@ -17,7 +19,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     public GameObject SelectorItemPrefab;
 
     public CanvasGroup CanvasGroup;
-    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContainerAlphabet, ContainerAim, ContainerNoPose;
+    public GameObject ContentAim, ContentAlphabet, ContentNoPose, ContentBlocklisted, ContainerAlphabet, ContainerAim, ContainerNoPose, ContainerBlocklisted;
     private List<SelectorItem> selectorItemsAimMenu = new List<SelectorItem>();
     private List<SelectorItem> selectorItemsNoPoseMenu = new List<SelectorItem>();
     public event AREditorEventArgs.InteractiveObjectEventHandler OnObjectSelectedChangedEvent;
@@ -82,6 +84,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             case EditorStateEnum.SelectingActionObject:
             case EditorStateEnum.SelectingActionOutput:
             case EditorStateEnum.SelectingActionPoint:
+            case EditorStateEnum.SelectingEndEffector:
+            case EditorStateEnum.SelectingAPOrientation:
             case EditorStateEnum.SelectingActionPointParent:
                 DeselectObject(true);
                 requestingObject = true;
@@ -124,20 +128,12 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
         
     }
-    /*
-    public void ForceUpdateMenus() {
-        UpdateAlphabetMenu();
-        if (ContentNoPose.activeSelf)
-            UpdateNoPoseMenu();
-    }*/
 
     private void OnProjectChanged(object sender, System.EventArgs e) {
-        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
     private void OnSceneChanged(object sender, System.EventArgs e) {
-        //UpdateAlphabetMenu();
         UpdateNoPoseMenu();
     }
 
@@ -165,52 +161,42 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         }
     }
 
-    private void PrintItems() {
-        Debug.Log(selectorItemsAimMenu.Count);
-        foreach (SelectorItem item in selectorItemsAimMenu) {
-            Debug.LogError(item.InteractiveObject.GetName() + ": " + item.Score + " (" + item.InteractiveObject.GetId() + ")");
-        }
-    }
 
     public void UpdateAimMenu(List<Tuple<float, InteractiveObject>> items) {
         if (ContainerAim.activeSelf) {
-            foreach (Tuple<float, InteractiveObject> item in items) {
+
+            // add all items to selector items aim menu list so they can be sorted and their score updated
+            foreach (Tuple<float, InteractiveObject> item in items) {                
                 if (item.Item2.GetType() == typeof(ActionObjectNoPose))
                     continue;
                 if (!item.Item2.Enabled)
                     continue;
-                if (true) { //selectorItemsAimMenu.Count < 6 || item.Item1 <= selectorItemsAimMenu.Last().Score) {
-                    if (!SelectorItems.ContainsKey(item.Item2.GetId())) {
-                        continue;
-                    }
-                    SelectorItem selectorItem = GetSelectorItemInAimMenu(item.Item2);
-                    if (selectorItem == null) {
-                        
-                        selectorItem = SelectorItems[item.Item2.GetId()];
-                        AddItemToAimingList(selectorItem);
-                    } else {
-                        if (IsRootItem(selectorItem) && selectorItem.transform.parent != ContentAim.transform) {
-                            selectorItem.transform.SetParent(ContentAim.transform);
-                        }
-                    }
-                    selectorItem.UpdateScore(item.Item1, iteration);
-                    
+                if (!SelectorItems.ContainsKey(item.Item2.GetId())) {
+                    continue;
                 }
 
-            }
-
+                SelectorItem selectorItem = selectorItemsAimMenu.Find(x => (x.InteractiveObject.GetId() == item.Item2.GetId()));
+                if (selectorItem == null) {
+                    selectorItem = item.Item2.SelectorItem;                    
+                    selectorItemsAimMenu.Add(selectorItem);
+                }                 
+                selectorItem.UpdateScore(item.Item1, iteration);
+            }            
             ++iteration;
             
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             HashSet<string> newItems = new HashSet<string>();
             int index = 0;
             bool selectedAdded = false;
+
+            // find MaxItems to be inserted to the list
+            // for each sub item find all ancestors and add them to list
             foreach (SelectorItem item in selectorItemsAimMenu) {
                 if (iteration - selectorItemsAimMenu[index].GetLastUpdate() <= 5) {
                     newItems.Add(selectorItemsAimMenu[index].InteractiveObject.GetId());
                     newItems.UnionWith(GetAncestors(selectorItemsAimMenu[index].InteractiveObject));
                     if (ManuallySelected && selectorItemsAimMenu[index].IsSelected()) {
-                        selectedAdded = true;
+                        selectedAdded = true;                        
                     }
                 }
                 if (newItems.Count >= MaxItems) {
@@ -218,18 +204,29 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 }
                 ++index;
             }
-            if (ManuallySelected && !selectedAdded)
-                newItems.Add(GetSelectedObject().GetId());
+            // add manually selected item if it is not there yet
+            if (ManuallySelected) {
+                if (!selectedAdded)
+                    newItems.Add(GetSelectedObject().GetId());
+                SelectorItem parent = GetSelectedObject().SelectorItem.ParentItem;
+                while (parent != null) {
+                    newItems.Add(parent.InteractiveObject.GetId());
+                    parent = parent.ParentItem;
+                }                
+            }
+            // remove all old items from list
             foreach (SelectorItem item in selectorItemsAimMenu) {
-                if (newItems.Contains(item.InteractiveObject.GetId()))
-                    continue;
-                RemoveFromAimingList(item);
+                if (!newItems.Contains(item.InteractiveObject.GetId()))
+                    RemoveFromAimingList(item);
             }
             selectorItemsAimMenu.Clear();
+
+            // add all new items to the list
             foreach (string io in newItems) {
                 if (SelectorItems.TryGetValue(io, out SelectorItem selectorItem))
                     AddItemToAimingList(selectorItem);
             }
+
             selectorItemsAimMenu.Sort(new SelectorItemComparer());
             
         }
@@ -258,9 +255,8 @@ public class SelectorMenu : Singleton<SelectorMenu> {
                 SelectedObjectChanged(null);
             }
         }
-
-
     }
+
     private HashSet<string> GetAncestors(InteractiveObject interactiveObject) {
         HashSet<string> ancestors = new HashSet<string>();
         if (interactiveObject is ISubItem subItem && subItem.GetParentObject() != null) {
@@ -271,6 +267,9 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
     
     public void RemoveFromAimingList(SelectorItem selectorItem) {
+        //Debug.LogError($"{selectorItem.Label.text}: {selectorItem.ChildSelected}");
+        if (selectorItem.InteractiveObject.Blocklisted)
+            return;
         if (IsRootItem(selectorItem)) {
             selectorItem.transform.SetParent(ContentAlphabet.transform);
         } else {            
@@ -279,14 +278,20 @@ public class SelectorMenu : Singleton<SelectorMenu> {
     }
 
     public void AddItemToAimingList(SelectorItem selectorItem) {
+        if (selectorItem.InteractiveObject.Blocklisted)
+            return;
         selectorItem.SetCollapsedState(false);
         
         if (IsRootItem(selectorItem)) {
-            selectorItem.transform.SetParent(ContentAim.transform);
+            if (selectorItem.transform.parent != ContentAim.transform)
+                selectorItem.transform.SetParent(ContentAim.transform);
         } else {
-            selectorItem.gameObject.SetActive(selectorItem.InteractiveObject.Enabled);
             if (!selectorItem.gameObject.activeSelf)
-                return;     
+                selectorItem.gameObject.SetActive(true);
+            
+            //selectorItem.gameObject.SetActive(selectorItem.InteractiveObject.Enabled);
+            //if (!selectorItem.gameObject.activeSelf)
+            //    return;     
             
         }
         selectorItemsAimMenu.Add(selectorItem);
@@ -305,14 +310,14 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         selectorItems.RemoveAt(index);
     }
 
-    public void SetSelectedObject(InteractiveObject interactiveObject, bool manually = false) {
+    public void SetSelectedObject(InteractiveObject interactiveObject, bool manually = false, bool enableRequestingObject = true) {
         if (SelectorItems.TryGetValue(interactiveObject.GetId(), out SelectorItem item)) {
-            SetSelectedObject(item, manually);            
+            SetSelectedObject(item, manually, enableRequestingObject);            
         }
     }
 
-    public void SetSelectedObject(SelectorItem selectorItem, bool manually = false) {
-        if (manually && requestingObject) {
+    public void SetSelectedObject(SelectorItem selectorItem, bool manually = false, bool enableRequestingObject = true) {
+        if (manually && requestingObject && enableRequestingObject) {
             GameManager.Instance.ObjectSelected(selectorItem.InteractiveObject);
         } else {
             if (manually) {
@@ -326,10 +331,11 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             if (!selectorItem.IsSelected()) {
                 DeselectObject(manually);                
             }
-            selectorItem.SetSelected(true, manually);
             if (manually) {
                 ManuallySelected = true;
             }
+            selectorItem.SetSelected(true, manually);
+
             SelectedObjectChanged(selectorItem, ManuallySelected);
         }        
     }
@@ -362,7 +368,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             InteractiveObject parent = subItem.GetParentObject();
             if (parent != null && parent.SelectorItem != null) {
                 selectorItem.transform.SetParent(parent.SelectorItem.SublistContent.transform);
-                parent.SelectorItem.AddChild(selectorItem, ContainerAlphabet.activeSelf);
+                parent.SelectorItem.AddChild(selectorItem);
             } else {
                 throw new RequestFailedException("Trying to create subitem without parent item in list. This should not had happened, please report");
             }
@@ -379,6 +385,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             SwitchToAlphabet(false);
 
         selectorItem.transform.localScale = Vector3.one;
+        selectorItem.CollapsableButton.gameObject.SetActive(!ContainerAim.activeSelf);
         return selectorItem;
     }
 
@@ -410,7 +417,7 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             InteractiveObject parentObject = subItem.GetParentObject();
             if (parentObject != null)
                 if (SelectorItems.TryGetValue(parentObject.GetId(), out SelectorItem parentSelectorItem)) {
-                    parentSelectorItem.RemoveChild(selectorItem, ContainerAlphabet.activeSelf);
+                    parentSelectorItem.RemoveChild(selectorItem);
                 }
         }
         if (selectorItem != null && selectorItem.gameObject != null)
@@ -511,11 +518,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAim.SetActive(true);
         ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(false);
         foreach (SelectorItem item in SelectorItems.Values) {
             if (!IsRootItem(item)) {
                 item.gameObject.SetActive(false);
             }
-            item.CollapsableButton.interactable = false;
+            item.CollapsableButton.gameObject.SetActive(false);
+            //item.CollapsableButton.interactable = false;
         }
     }
 
@@ -523,6 +532,15 @@ public class SelectorMenu : Singleton<SelectorMenu> {
         ContainerAim.SetActive(false);
         ContainerNoPose.SetActive(true);
         ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(false);
+        UpdateNoPoseMenu();
+    }
+
+    public void SwitchToBlocklisted() {
+        ContainerAim.SetActive(false);
+        ContainerNoPose.SetActive(false);
+        ContainerAlphabet.SetActive(false);
+        ContainerBlocklisted.SetActive(true);
         UpdateNoPoseMenu();
     }
 
@@ -532,8 +550,13 @@ public class SelectorMenu : Singleton<SelectorMenu> {
 
     public void SwitchToAlphabet(bool updateCollapsedState) {
         foreach (SelectorItem item in SelectorItems.Values.OrderBy(item => item.InteractiveObject.GetName())) {
+            if (item.InteractiveObject.Blocklisted)
+                continue;
             if (IsRootItem(item)) {
-                item.transform.SetParent(ContentAlphabet.transform);
+                if (item.transform.parent != ContentAlphabet.transform) {
+                    item.transform.SetParent(ContentAlphabet.transform);
+                }
+                item.CollapsableButton.gameObject.SetActive(item.Collapsable);
                 item.transform.SetAsLastSibling();
             } else {
                 item.gameObject.SetActive(item.InteractiveObject.Enabled);
@@ -541,13 +564,22 @@ public class SelectorMenu : Singleton<SelectorMenu> {
             }
             if (updateCollapsedState)
                 item.SetCollapsedState(true);
-            item.CollapsableButton.interactable = item.HasChilds();
+            //item.CollapsableButton.interactable = item.HasChilds();
         }
         selectorItemsAimMenu.Clear();
         selectorItemsNoPoseMenu.Clear();
         ContainerAim.SetActive(false);
         ContainerNoPose.SetActive(false);
         ContainerAlphabet.SetActive(true);
+        ContainerBlocklisted.SetActive(false);
+    }
+
+    public void PutOnBlocklist(SelectorItem selectorItem) {
+        selectorItem.transform.SetParent(ContentBlocklisted.transform);
+    }
+
+    public void RemoveFromBlacklist(SelectorItem selectorItem) {
+        selectorItem.transform.SetParent(ContentAlphabet.transform);
     }
 
     public InteractiveObject GetSelectedObject() {

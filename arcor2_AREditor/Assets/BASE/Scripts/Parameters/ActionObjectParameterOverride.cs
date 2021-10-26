@@ -46,7 +46,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Modify() {
-        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, LayoutGroupToBeDisabled, CanvasRoot, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, false, default, false);
+        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, LayoutGroupToBeDisabled, CanvasRoot, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, null, false, default, false);
         Input.SetLabel("", "");
         Value.gameObject.SetActive(false);
         Input.GetTransform().SetParent(Value.transform.parent);
@@ -80,9 +80,9 @@ public class ActionObjectParameterOverride : MonoBehaviour
         Parameter parameter = new Parameter(parameterMetadata, Input.GetValue());
         try {
             if (overridden)
-                await WebsocketManager.Instance.UpdateOverride(objectId, parameter, false);
+                await WebsocketManager.Instance.UpdateOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
             else
-                await WebsocketManager.Instance.AddOverride(objectId, parameter, false);
+                await WebsocketManager.Instance.AddOverride(objectId, DataHelper.ActionParameterToParameter(parameter), false);
             Destroy(Input.GetTransform().gameObject);
             Value.gameObject.SetActive(true);
             SaveBtn.gameObject.SetActive(false);

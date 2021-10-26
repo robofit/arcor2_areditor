@@ -449,7 +449,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         if (isOrientationDetail) {
             //await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
-            CurrentActionPoint.GetOrientationVisual(orientation.Id).SendMessage("Select", false);
         } else { //joints
             DestroyJointsFields();
             /*try {

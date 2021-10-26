@@ -1355,8 +1355,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8224582756380341003}
-        m_MethodName: CloseWindow
+      - m_Target: {fileID: 8224582756380341004}
+        m_MethodName: Close
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4330,6 +4330,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 9196643912252405683}
   Button: {fileID: 0}
+  Button2: {fileID: 0}
   TooltipContent: {fileID: 7884660972827001669}
 --- !u!1 &8224582756522917327
 GameObject:

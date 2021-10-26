@@ -58,7 +58,7 @@ public class CoordBtn : MonoBehaviour
             field.text += string.Format("{0:0.##°}", value);
     }
 
-    public string Axis;
+    public Gizmo.Axis Axis;
     public void Deselect() {
         Background.color = new Color(Outline.color.r, Outline.color.g, Outline.color.b, 0f);
     }

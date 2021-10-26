@@ -66,7 +66,7 @@ public class EditProjectParameterDialog : Dialog {
         } else { //editing constant
             try {
                 await WebsocketManager.Instance.WriteLock(projectParameter.Id, false);
-                Title.text = "Edit project paramater";
+                Title.text = "Edit project parameter";
                 removeButton.SetActive(true);
                 nameInput.SetValue(projectParameter.Name);
                 OnTypeSelected(projectParameter.Type);

@@ -35,4 +35,8 @@ public interface IRobot
 
     Task<bool> WriteUnlock();
 
+    string LockOwner();
+
+    InteractiveObject GetInteractiveObject();
+
     }

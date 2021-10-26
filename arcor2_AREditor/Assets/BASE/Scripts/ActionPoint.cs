@@ -12,6 +12,7 @@ namespace Base {
         // Key string is set to IO.Swagger.Model.ActionPoint Data.Uuid
         public Dictionary<string, Action> Actions = new Dictionary<string, Action>();
         public GameObject ActionsSpawn;
+        public GameObject ActionPoints;
 
         public IActionPointParent Parent;
 
@@ -28,6 +29,16 @@ namespace Base {
 
         public bool OrientationsVisible, ActionsCollapsed;
 
+        private bool breakPoint;
+
+        public virtual bool BreakPoint {
+            get => breakPoint;
+            set {
+                breakPoint = value;
+                PlayerPrefsHelper.SaveBool("/AP/" + Data.Id + "/breakPoint", value);
+            }
+        }
+
         protected override void Start() {
             base.Start();
         }
@@ -42,12 +53,14 @@ namespace Base {
         public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
             Data.Name = apData.Name;
             Data.Position = apData.Position;
-
             SelectorItem.SetText(apData.Name);
             // update position and rotation based on received data from swagger
             transform.localPosition = GetScenePosition();
             if (Parent != null)
                 ConnectionToParent.UpdateLine();
+            /*foreach (Action action in Actions.Values) {
+                action.UpdateRotation();
+            }*/
             //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
             //transform.localRotation = GetSceneOrientation();
         }
@@ -61,6 +74,7 @@ namespace Base {
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
             OrientationsVisible = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/visible", true);
             ActionsCollapsed = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/actionsCollapsed", false);
+            BreakPoint = PlayerPrefsHelper.LoadBool("/AP/" + Data.Id + "/breakPoint", false);
             transform.localPosition = GetScenePosition();
             SetSize(size);
             if (Data.Actions == null)
@@ -169,12 +183,32 @@ namespace Base {
                         ActionPoint parent = ProjectManager.Instance.GetActionPoint(Data.Parent);
                         return parent.GetFirstOrientation();
                     }
+
                 } else {
                     return Data.Orientations[0];
                 }
             } catch (KeyNotFoundException) {
                 
             }
+            throw new ItemNotFoundException("No orientation");
+        }
+
+        public NamedOrientation GetFirstOrientationFromDescendants() {
+            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+            foreach (Transform t in ActionPoints.transform) {
+                ActionPoint ap = t.GetComponent<ActionPoint>();
+                if (ap.Data.Orientations.Count > 0)
+                    return ap.Data.Orientations[0];
+                descendantActionPoints.Add(ap);
+            }
+            foreach (ActionPoint ap in descendantActionPoints) {
+                try {
+                    return ap.GetFirstOrientationFromDescendants();
+                } catch (ItemNotFoundException) {
+
+                }
+            }
+            
             throw new ItemNotFoundException("No orientation");
         }
 
@@ -226,6 +260,25 @@ namespace Base {
             }
 
             throw new ItemNotFoundException();    
+        }
+
+        public IO.Swagger.Model.ProjectRobotJoints GetFirstJointsFromDescendants() {
+            List<ActionPoint> descendantActionPoints = new List<ActionPoint>();
+            foreach (Transform t in ActionPoints.transform) {
+                ActionPoint ap = t.GetComponent<ActionPoint>();
+                if (ap.Data.RobotJoints.Count > 0)
+                    return ap.Data.RobotJoints[0];
+                descendantActionPoints.Add(ap);
+            }
+            foreach (ActionPoint ap in descendantActionPoints) {
+                try {
+                    return ap.GetFirstJointsFromDescendants();
+                } catch (ItemNotFoundException) {
+
+                }
+            }
+
+            throw new ItemNotFoundException("No joints");
         }
 
         public Dictionary<string, IO.Swagger.Model.ProjectRobotJoints> GetAllJoints(bool uniqueOnly = false, string robot_id = null, bool valid_only = false) {
@@ -605,9 +658,12 @@ namespace Base {
             apOrientation.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(apOrientation);
         }
 
-        internal async void ShowOrientationDetailMenu(string orientationId) {
-            if (await ActionPointAimingMenu.Instance.Show(this))
+        internal async Task<bool> ShowOrientationDetailMenu(string orientationId) {
+            if (await ActionPointAimingMenu.Instance.Show(this, true)) {
                 ActionPointAimingMenu.Instance.OpenDetailMenu(GetOrientation(orientationId));
+                return true;
+            }
+            return false;
         }
 
         public abstract void HighlightAP(bool highlight);
@@ -637,6 +693,16 @@ namespace Base {
             return Data.Id;
         }
 
+        public bool AnyOrientation() {
+            return Data.Orientations.Count > 0;
+        }
 
+        public bool AnyJoints() {
+            return Data.RobotJoints.Count > 0;
+        }
+
+        public Transform GetSpawnPoint() {
+            return ActionPoints.transform;
+        }
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 namespace Base
 {
     public class PuckInput : InputOutput {
+        /*
         public override string GetObjectTypeName() {
             return "Action input";
         }
@@ -18,7 +19,7 @@ namespace Base
             Renderer renderer = Action.InputArrow.GetComponent<Renderer>();
             List<Material> materials = new List<Material>(renderer.materials);
 
-            if (Enabled && !IsLocked) {
+            if (Enabled && !(IsLocked && !IsLockedByMe)) {
                 foreach (var material in materials) {
                     if (Action.Data.Id == "START")
                         material.color = Color.green;
@@ -36,6 +37,10 @@ namespace Base
         public override void CloseMenu() {
             throw new System.NotImplementedException();
         }
+
+        public override void EnableVisual(bool enable) {
+            throw new System.NotImplementedException();
+        }*/
     }    
 
 }

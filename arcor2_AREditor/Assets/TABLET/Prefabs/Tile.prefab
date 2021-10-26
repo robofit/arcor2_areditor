@@ -386,6 +386,8 @@ GameObject:
   - component: {fileID: 5577844582908990050}
   - component: {fileID: 5577844582908990048}
   - component: {fileID: 5577844582908990049}
+  - component: {fileID: 1867291939924683192}
+  - component: {fileID: 8618573487220897875}
   m_Layer: 5
   m_Name: TopImage
   m_TagString: Untagged
@@ -449,6 +451,39 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1867291939924683192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5577844582908990051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81a9e081a4afa64dae6b9d42bc38c9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  description: 
+  delay: 0
+  tooltipRect: {fileID: 0}
+  descriptionText: {fileID: 0}
+  tooltipAnimator: {fileID: 0}
+--- !u!114 &8618573487220897875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5577844582908990051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460eb6905d847b04aa698917ba20ca95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipContent: {fileID: 1867291939924683192}
+  Description: 
+  DescriptionAlternative: 
+  displayAlternativeDescription: 0
 --- !u!1 &6416656681662972361
 GameObject:
   m_ObjectHideFlags: 0

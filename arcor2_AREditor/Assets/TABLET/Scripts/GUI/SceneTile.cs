@@ -19,16 +19,35 @@ public class SceneTile : Tile
     public void InitTile(string sceneUserId, UnityAction mainCallback, UnityAction optionCallback, bool starVisible, DateTime created, DateTime modified, string sceneId) {
         base.InitTile(sceneUserId, mainCallback, optionCallback, starVisible, created, modified);
         SceneId = sceneId;
-        string filename = PlayerPrefsHelper.LoadString(SceneId + "/image", "");
+        InitTile(sceneId);
+        SetTimestamp(modified.ToString());
+    }
+
+    private void InitTile(string sceneId) {
+        string filename = PlayerPrefsHelper.LoadString(sceneId + "/image", "");
         if (!string.IsNullOrEmpty(filename) && File.Exists(filename)) {
             Sprite sprite = ImageHelper.LoadNewSprite(filename);
             TopImage.sprite = sprite;
         }
-        SetTimestamp(modified.ToString());
     }
 
     public void SetTimestamp(string timestamp) {
         this.timestamp.text = "Last modified: " + timestamp;
+    }
+
+    public void InitInvalidScene(string sceneName, bool starVisible, DateTime created, DateTime modified, string sceneId, string problem) {
+        SetLabel($"{sceneName} (invalid)");
+        Created = created;
+        Modified = modified;
+        SetTimestamp(modified.ToString());
+        InitTile(sceneId);
+        SetStar(starVisible);
+        OptionButton.gameObject.SetActive(false);
+        MainButton.interactable = false;
+        TopImage.color = new Color(1, 1, 1, 0.4f);
+        Outline.color = Color.gray;
+        Tooltip.Description = problem;
+        Tooltip.EnableTooltip();
     }
 
 }

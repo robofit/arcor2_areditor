@@ -31,7 +31,9 @@ public class CreateAnchor : InteractiveObject {
     }
 
     public override void OnHoverStart() {
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -83,6 +85,10 @@ public class CreateAnchor : InteractiveObject {
     }
 
     public override void CloseMenu() {
+        throw new NotImplementedException();
+    }
+
+    public override void EnableVisual(bool enable) {
         throw new NotImplementedException();
     }
 }

@@ -378,6 +378,36 @@ Transform:
   m_Father: {fileID: 5140028460938256069}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1971873318144013396
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 409205357714358730}
+  m_Layer: 0
+  m_Name: ActionPoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &409205357714358730
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971873318144013396}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 5140028460938256069}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2089000416326979096
 GameObject:
   m_ObjectHideFlags: 0
@@ -491,6 +521,7 @@ Transform:
   - {fileID: 2078995270900387591}
   - {fileID: 1717202696203822476}
   - {fileID: 6002740434822622662}
+  - {fileID: 409205357714358730}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -511,6 +542,7 @@ MonoBehaviour:
   Colliders:
   - {fileID: 2135223395522982168}
   ActionsSpawn: {fileID: 1416551817558692293}
+  ActionPoints: {fileID: 1971873318144013396}
   ConnectionToParent: {fileID: 0}
   orientations: {fileID: 1503747242841873625}
   OrientationsVisible: 0
@@ -520,6 +552,8 @@ MonoBehaviour:
   CollapsedPucksVisual: {fileID: 466432081720523530}
   Lock: {fileID: 1363249344476663095}
   ActionPointName: {fileID: 7311055202736559548}
+  BreakPointMaterial: {fileID: 2100000, guid: d2efd014cac5b1a48a466e981dd5b46d, type: 2}
+  SphereMaterial: {fileID: 2100000, guid: bfcf70772abfa0a429d14a477808fa5c, type: 2}
   outlineOnClick: {fileID: 8058654341286488384}
   ActionsVisuals: {fileID: 1416551817558692293}
 --- !u!114 &5547556670204946479
@@ -548,9 +582,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
-  OutlineSize: 1
-  OutlineHoverSize: 1
-  OutlineShaderType: 0
+  SetOutlineSize: 1
+  OutlineSize: 0.01
+  OutlineHoverSize: 0.005
+  OutlineShaderType: 1
   OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
     type: 2}
   OutlineClickSecondPass: {fileID: 2100000, guid: ec9869b8f200e5144b913b44d0b5a07c,
@@ -755,7 +790,6 @@ GameObject:
   - component: {fileID: 4618120162863866931}
   - component: {fileID: 2135223395522982168}
   - component: {fileID: 1162351292833498496}
-  - component: {fileID: 2592820939571358080}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: ActionPoint
@@ -851,19 +885,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   Target: {fileID: 2740470206176205867}
---- !u!114 &2592820939571358080
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7822383090967264636}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56dd716813c47194695f505324fcf244, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OutlineOnClick: {fileID: 8058654341286488384}
 --- !u!1 &7934289815226500860
 GameObject:
   m_ObjectHideFlags: 0

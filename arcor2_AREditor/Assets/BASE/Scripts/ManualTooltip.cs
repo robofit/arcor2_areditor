@@ -75,7 +75,8 @@ public class ManualTooltip : MonoBehaviour {
 
 
     private void OnDisable() {
-        if (tooltipContent != null && tooltipContent.tooltipAnimator != null)
+        string currentText = DisplayAlternativeDescription ? DescriptionAlternative : Description;
+        if (tooltipContent != null && tooltipContent.tooltipAnimator != null && tooltipContent.descriptionText.text == currentText)
             tooltipContent.OnPointerExit(null);
     }
 

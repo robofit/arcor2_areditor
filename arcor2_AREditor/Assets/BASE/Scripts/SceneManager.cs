@@ -75,6 +75,10 @@ namespace Base {
         /// </summary>
         public GameObject ActionObjectNoPosePrefab;
         /// <summary>
+        /// Prefab for collision object
+        /// </summary>
+        public GameObject CollisionObjectPrefab;
+        /// <summary>
         /// Object which is currently selected in scene
         /// </summary>
         public GameObject CurrentlySelectedObject;
@@ -135,10 +139,10 @@ namespace Base {
 
         public string SelectedArmId;
 
-        public RobotEE SelectedEndEffector;
+        private RobotEE selectedEndEffector;
 
         public string SelectCreatedActionObject;
-
+        public bool OpenTransformMenuOnCreatedObject;
 
         
 
@@ -165,6 +169,10 @@ namespace Base {
         public bool SceneStarted {
             get => sceneStarted;
             private set => sceneStarted = value;
+        }
+        public RobotEE SelectedEndEffector {
+            get => selectedEndEffector;
+            set => selectedEndEffector = value;
         }
 
         /// <summary>
@@ -360,11 +368,10 @@ namespace Base {
         public async Task SelectRobotAndEE(string robotId, string armId, string eeId) {
             if (!string.IsNullOrEmpty(robotId)) {
                 try {
-                    SelectedArmId = armId;
-                    SelectedRobot = GetRobot(robotId);
+                    IRobot robot = GetRobot(robotId);
                     if (!string.IsNullOrEmpty(eeId)) {
                         try {
-                            SelectedEndEffector = await(SelectedRobot.GetEE(eeId, armId));
+                            SelectRobotAndEE(await (robot.GetEE(eeId, armId)));
                         } catch (ItemNotFoundException ex) {
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
                             PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
@@ -375,7 +382,34 @@ namespace Base {
                     PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
                     Debug.LogError(ex);
                 }
+            } else {
+                SelectRobotAndEE(null);
             }
+        }
+
+        public void SelectRobotAndEE(RobotEE endEffector) {
+            if (endEffector == null) {
+                SelectedArmId = null;
+                SelectedRobot = null;
+                SelectedEndEffector = null;
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", null);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", null);
+            } else {
+                try {
+                    SelectedArmId = endEffector.ARMId;
+                    SelectedRobot = GetRobot(endEffector.Robot.GetId());
+                    SelectedEndEffector = endEffector;
+                } catch (ItemNotFoundException ex) {
+                    PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", null);
+                    Debug.LogError(ex);
+                }
+
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotId", SelectedRobot.GetId());
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedRobotArmId", SelectedArmId);
+                PlayerPrefsHelper.SaveString(SceneMeta.Id + "/selectedEndEffectorId", SelectedEndEffector.EEId);
+            }
+
             OnRobotSelected(this, EventArgs.Empty);
         }
 
@@ -429,7 +463,7 @@ namespace Base {
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
         private async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
-            if (!RobotsEEVisible) {
+            if (!RobotsEEVisible || !Valid) {
                 return;
             }
             foreach (RobotEefDataEefPose eefPose in args.Data.EndEffectors) {
@@ -578,7 +612,8 @@ namespace Base {
             if (aom.Robot) {
                 //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
-
+            } else if (aom.CollisionObject) {
+                obj = Instantiate(CollisionObjectPrefab, ActionObjectsSpawn.transform);
             } else if (aom.HasPose) {
                 obj = Instantiate(ActionObjectPrefab, ActionObjectsSpawn.transform);
             } else {
@@ -619,6 +654,41 @@ namespace Base {
                 }
                 if (!hasFreeName)
                     freeName = ToUnderscoreCase(aoType) + "_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+        public string GetFreeObjectTypeName(string objectTypeName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = objectTypeName;
+            do {
+                hasFreeName = true;
+                if (ActionsManager.Instance.ActionObjectsMetadata.ContainsKey(freeName)) {
+                    hasFreeName = false;
+                }
+                if (!hasFreeName)
+                    freeName = ToUnderscoreCase(objectTypeName) + "_" + i++.ToString();
+            } while (!hasFreeName);
+
+            return freeName;
+        }
+
+        public string GetFreeSceneName(string sceneName) {
+            int i = 1;
+            bool hasFreeName;
+            string freeName = sceneName;
+            do {
+                hasFreeName = true;
+                try {
+                    GameManager.Instance.GetSceneId(freeName);
+                    hasFreeName = false;
+                    freeName = sceneName + "_" + i++.ToString();
+                } catch (RequestFailedException) {
+                    
+                }
+                    
             } while (!hasFreeName);
 
             return freeName;
@@ -741,9 +811,15 @@ namespace Base {
                 if (ActionObjectPickerMenu.Instance.IsVisible())
                     AREditorResources.Instance.LeftMenuScene.AddButtonClick();
                 SelectorMenu.Instance.SetSelectedObject(actionObject.SelectorItem, true);
-                SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
+                if (!actionObject.ActionObjectMetadata.HasPose)
+                    SelectorMenu.Instance.BottomButtons.SelectButton(SelectorMenu.Instance.BottomButtons.Buttons[2], true);
+            }
+            if (OpenTransformMenuOnCreatedObject) {
+                AREditorResources.Instance.LeftMenuScene.SetActiveSubmenu(LeftMenuSelection.Utility);
+                AREditorResources.Instance.LeftMenuScene.MoveClick();
             }
             SelectCreatedActionObject = "";
+            OpenTransformMenuOnCreatedObject = false;
             updateScene = true;
         }
 
@@ -950,6 +1026,19 @@ namespace Base {
                 }
             }
             return objects;
+        }
+
+        public async Task<List<RobotEE>> GetAllRobotsEEs() {
+            List<RobotEE> eeList = new List<RobotEE>();
+            foreach (ActionObject ao in ActionObjects.Values) {
+                if (ao.IsRobot())
+                    eeList.AddRange(await ((IRobot) ao).GetAllEE());
+            }
+            return eeList;
+        }
+
+        public List<ActionObject> GetAllObjectsOfType(string type) {
+            return ActionObjects.Values.Where(obj => obj.ActionObjectMetadata.Type == type).ToList();
         }
              
         

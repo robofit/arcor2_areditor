@@ -82,7 +82,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.05
+        value: 0.01170044
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -91,7 +91,7 @@ LineRenderer:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0.05
+        value: 0.011690829
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -155,11 +155,11 @@ MonoBehaviour:
   - {fileID: 0}
   points:
   - color: {r: 1, g: 1, b: 1, a: 1}
-    direction: 1
+    direction: 0
     position: 0
     weight: 0.1
   - color: {r: 1, g: 1, b: 1, a: 1}
-    direction: 3
+    direction: 2
     position: 0
     weight: 0.1
   resolution: 20

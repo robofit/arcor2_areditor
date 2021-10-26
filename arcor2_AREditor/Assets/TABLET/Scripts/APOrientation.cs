@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,6 +16,9 @@ public class APOrientation : InteractiveObject, ISubItem {
     [SerializeField]
     private OutlineOnClick outlineOnClick;
 
+    [SerializeField]
+    private MeshRenderer renderer;
+
 
     public override void OnClick(Click type) {
         if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
@@ -29,23 +33,12 @@ public class APOrientation : InteractiveObject, ISubItem {
     public override void OnHoverStart() {
         if (!enabled)
             return;
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPoint &&
-            GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.SelectingActionPointParent) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Closed) {
-                if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning)
-                    return;
-            } else {
-                return;
-            }
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor &&
-            GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning) {
-            return;
-        }
+        
 
         HighlightOrientation(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -75,12 +68,19 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override async void OpenMenu() {
-        ActionPoint.ShowOrientationDetailMenu(OrientationId);
-        HighlightOrientation(true);
+        throw new NotImplementedException();
     }
 
     public override bool HasMenu() {
-        return true;
+        return false;
+    }
+
+    public async Task<bool> OpenDetailMenu() {
+        if (await ActionPoint.ShowOrientationDetailMenu(OrientationId)) {
+            HighlightOrientation(true);
+            return true;
+        }
+        return false;
     }
 
     public async override Task<RequestResult> Movable() {
@@ -123,7 +123,14 @@ public class APOrientation : InteractiveObject, ISubItem {
     }
 
     public override void UpdateColor() {
-        //TODO??
+        Color c;
+        if (Enabled && !(IsLocked && !IsLockedByMe))
+            c = new Color(0.9921f, 0.721f, 0.074f);
+        else
+            c = Color.gray;
+        foreach (Renderer r in outlineOnClick.Renderers)
+            r.material.color = c;
+            
     }
 
     public InteractiveObject GetParentObject() {
@@ -138,5 +145,9 @@ public class APOrientation : InteractiveObject, ISubItem {
     public override void CloseMenu() {
         ActionPointAimingMenu.Instance.Hide();
         HighlightOrientation(false);
+    }
+
+    public override void EnableVisual(bool enable) {
+        throw new System.NotImplementedException();
     }
 }

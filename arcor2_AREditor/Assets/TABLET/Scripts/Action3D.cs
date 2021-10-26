@@ -23,13 +23,17 @@ public class Action3D : Base.Action, ISubItem {
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
         base.Init(projectAction, metadata, ap, actionProvider);
-        Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
-        Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
+       // Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
+        //Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
     protected override void Start() {
         base.Start();
         GameManager.Instance.OnStopPackage += OnProjectStop;
+    }
+
+    private void LateUpdate() {
+        UpdateRotation();
     }
 
     private void OnEnable() {
@@ -125,7 +129,9 @@ public class Action3D : Base.Action, ISubItem {
         }
         outlineOnClick.Highlight();
         NameText.gameObject.SetActive(true);
-        DisplayOffscreenIndicator(true);
+        if (SelectorMenu.Instance.ManuallySelected) {
+            DisplayOffscreenIndicator(true);
+        }
     }
 
     public override void OnHoverEnd() {
@@ -135,11 +141,10 @@ public class Action3D : Base.Action, ISubItem {
     }
 
     public override void UpdateColor() {
-        Input.UpdateColor();
-        Output.UpdateColor();
+        
 
         foreach (Material material in Visual.materials)
-            if (Enabled && !IsLocked)
+            if (Enabled && !(IsLocked && !IsLockedByMe))
                 material.color = new Color(0.9f, 0.84f, 0.27f);
             else
                 material.color = Color.gray;
@@ -149,13 +154,8 @@ public class Action3D : Base.Action, ISubItem {
         return Data.Name;
     }
 
-    public override async void OpenMenu() {
-        if (!await ActionParametersMenu.Instance.Show(this))
-            return;
-        //ActionMenu.Instance.CurrentAction = this;
-        //MenuManager.Instance.ShowMenu(MenuManager.Instance.PuckMenu);
-        selected = true;
-        ActionPoint.HighlightAP(true);        
+    public override void OpenMenu() {
+        _ = ActionParametersMenu.Instance.Show(this, false);        
     }
 
     public override void CloseMenu() {
@@ -212,23 +212,19 @@ public class Action3D : Base.Action, ISubItem {
         if (owner != LandingScreen.Instance.GetUsername()) {
             NameText.text = GetLockedText();
         }
-        Input.OnObjectLocked(owner);
-        Output.OnObjectLocked(owner);
     }
 
     public override void OnObjectUnlocked() {
         base.OnObjectUnlocked();
         NameText.text = GetName();
-        Input.OnObjectUnlocked();
-        Output.OnObjectUnlocked();
     }
 
     public InteractiveObject GetParentObject() {
         return ActionPoint;
     }
 
-    public override void EnableInputOutput(bool enable) {
-        InputArrow.gameObject.SetActive(enable);
-        OutputArrow.gameObject.SetActive(enable);
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
     }
 }

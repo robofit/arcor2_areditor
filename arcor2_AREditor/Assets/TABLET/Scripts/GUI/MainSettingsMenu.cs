@@ -32,18 +32,27 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     private EditProjectParameterDialog EditConstantDialog;
     //private Action3D currentAction;
 
-
+    public LinkableInput ProjectServiceURI;
+    public ButtonWithTooltip ResetProjectServiceURIButton;
     private void Start() {
         SceneManager.Instance.OnLoadScene += OnLoadScene;
         ProjectManager.Instance.OnLoadProject += OnLoadProject;
         EditConstantDialog = (EditProjectParameterDialog) AREditorResources.Instance.EditProjectParameterDialog;
         ConnectionsSwitch.AddOnValueChangedListener((_) => AREditorResources.Instance.LeftMenuProject.UpdateBtns());
         ConnectionsSwitch.AddOnValueChangedListener(ProjectManager.Instance.SetActionInputOutputVisibility);
-
+        WebsocketManager.Instance.OnProjectParameterAdded += OnProjectParameterAdded;
+        WebsocketManager.Instance.OnProjectParameterRemoved += OnProjectParameterRemoved;
 
     }
 
-
+    public string GetProjectServiceURI(bool complete = true) {
+        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
+        string suffix = complete ? "/files/" : "";
+        if (string.IsNullOrEmpty(uri))
+            return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790" + suffix;
+        else
+            return uri + suffix;
+    }
     private void OnLoadProject(object sender, EventArgs e) {
         OnProjectOrSceneLoaded(true);
     }
@@ -116,6 +125,14 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 #endif
         ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
+        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
+        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
+        if (string.IsNullOrEmpty(uri)) {
+            ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+        } else {
+            ResetProjectServiceURIButton.SetInteractivity(true);
+        }
+            
 
     }
 
@@ -138,9 +155,13 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     public void Show() {
+
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
             if (ContainerConstants.activeSelf) //project parameters submenu cannot be opened when project is not opened
                 SwitchToEditor();
+        } else {
+            DestroyConstantButtons();
+            GenerateParameterButtons();
         }
 
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
@@ -156,6 +177,10 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     public void SetVisibilityActionObjects() {
         SceneManager.Instance.SetVisibilityActionObjects(ActionObjectsVisibilitySlider.value / 100f);
+    }
+
+    public float GetVisibilityActionObjects() {
+        return ActionObjectsVisibilitySlider.value / 100f;
     }
 
     public void ShowAPOrientations() {
@@ -279,6 +304,18 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         PlayerPrefsHelper.SaveBool("control_box_display_connections", (bool) ConnectionsSwitch.GetValue());
     }
 
+    public void SetProjectServiceURI(string uri) {
+        PlayerPrefsHelper.SaveString("ProjectServiceURI", uri);
+        ResetProjectServiceURIButton.SetInteractivity(true);
+    }
+
+    public void ResetProjectServiceURI() {
+        PlayerPrefsHelper.SaveString("ProjectServiceURI", "");
+        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
+        ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+    }
+
+
 
 
     #region Project parameters
@@ -300,7 +337,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     private void GenerateParameterButtons() {
-        foreach (var projectParameter in ProjectManager.Instance.ProjectParameters.OrderBy(p => p.Name)) {
+        foreach (ProjectParameter projectParameter in ProjectManager.Instance.ProjectParameters.OrderBy(p => p.Name)) {
             GenerateParameterButton(projectParameter);
         }
     }

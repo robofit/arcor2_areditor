@@ -11,6 +11,15 @@ public class LogicItem
     private InputOutput input;
     private PuckOutput output;
 
+    public InputOutput Input {
+        get => input;
+        set => input = value;
+    }
+    public PuckOutput Output {
+        get => output;
+        set => output = value;
+    }
+
     public LogicItem(IO.Swagger.Model.LogicItem logicItem) {
         Data = logicItem;
         UpdateConnection(logicItem);
@@ -32,6 +41,7 @@ public class LogicItem
         input.AddLogicItem(Data.Id);
         output.AddLogicItem(Data.Id);        
         connection = ConnectionManagerArcoro.Instance.CreateConnection(input.gameObject, output.gameObject);
+        //output.Action.UpdateRotation(input.Action);
     }
 
     public Connection GetConnection() {

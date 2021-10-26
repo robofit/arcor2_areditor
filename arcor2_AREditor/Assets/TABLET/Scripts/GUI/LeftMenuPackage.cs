@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class LeftMenuPackage : LeftMenu {
 
-    public ButtonWithTooltip PauseBtn, ResumeBtn;
+    public ButtonWithTooltip PauseBtn, ResumeBtn, StepBtn;
 
     protected override void Awake() {
         base.Awake();
@@ -24,20 +24,18 @@ public class LeftMenuPackage : LeftMenu {
         ResumeBtn.gameObject.SetActive(false);
         PauseBtn.gameObject.SetActive(true);
         PauseBtn.SetInteractivity(true);
+        StepBtn.SetInteractivity(false, "Step to next action\n(Only available when progam is paused)");
     }
 
     private void OnPausePackage(object sender, ProjectMetaEventArgs args) {
         ResumeBtn.gameObject.SetActive(true);
         PauseBtn.gameObject.SetActive(false);
         ResumeBtn.SetInteractivity(true);
+        StepBtn.SetInteractivity(true);
     }
 
     private void OnOpenProjectRunning(object sender, ProjectMetaEventArgs args) {
-        ResumeBtn.gameObject.SetActive(false);
-        PauseBtn.gameObject.SetActive(true);
-        CloseButton.SetInteractivity(true);
-        PauseBtn.SetInteractivity(true);
-        EditorInfo.text = "Package: " + args.Name;
+        EditorInfo.text = "Package: \n" + args.Name;
         UpdateVisibility();
     }
 
@@ -87,11 +85,12 @@ public class LeftMenuPackage : LeftMenu {
 
 
     private void StopPackageCallback(string _, string data) {
-        GameManager.Instance.HideLoadingScreen();
         IO.Swagger.Model.StopPackageResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.StopPackageResponse>(data);
         CloseButton.SetInteractivity(true);
         if (!response.Result) {
             Notifications.Instance.ShowNotification("Failed to stop package.", response.Messages.Count > 0 ? response.Messages[0] : "Unknown error");
+            GameManager.Instance.HideLoadingScreen();
+
         }
     } 
 
@@ -137,4 +136,16 @@ public class LeftMenuPackage : LeftMenu {
             previousUpdateDone = true;
         }
     }
+
+    public override void CopyObjectClick() {
+        throw new System.NotImplementedException();
+    }
+
+    public async void StepAction() {
+        try {
+            await WebsocketManager.Instance.StepAction();
+        } catch (RequestFailedException ex) {
+            Notifications.Instance.ShowNotification("Failed to step", ex.Message);
+        }
+    } 
 }

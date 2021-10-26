@@ -57,15 +57,16 @@ public class MeshImporter : Singleton<MeshImporter> {
             // Requires Simple Collada asset from Unity Asset Store: https://assetstore.unity.com/packages/tools/input-management/simple-collada-19579
             // Supports: DAE
             StartCoroutine(ColladaImporter.Instance.ImportAsync(daeFile, Quaternion.identity, Vector3.one, Vector3.zero,
-                onModelImported: delegate (GameObject loadedGameObject) { OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(loadedGameObject, aoId));}));
+                onModelImported: delegate (GameObject loadedGameObject) { OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(loadedGameObject, aoId));},
+                wrapperGameObject: loadedObject));
 
         } else {
             // Requires Trilib 2 asset from Unity Asset Store: https://assetstore.unity.com/packages/tools/modeling/trilib-2-model-loading-package-157548
             // Supports: FBX, OBJ, GLTF2, STL, PLY, 3MF
             AssetLoaderOptions assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
             AssetLoader.LoadModelFromFile(path, null, delegate (AssetLoaderContext assetLoaderContext) {
-                OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.RootGameObject, aoId));
-            }, null, assetLoaderOptions: assetLoaderOptions, onError: OnModelLoadError);
+                OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.WrapperGameObject, aoId));
+            }, null, assetLoaderOptions: assetLoaderOptions, onError: OnModelLoadError, wrapperGameObject: loadedObject);
         }
     }
 
@@ -79,7 +80,7 @@ public class MeshImporter : Singleton<MeshImporter> {
     private IEnumerator DownloadMesh(string meshId, string fileName, string aoId) {
 
         //Debug.LogError("MESH: download started");
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
             // Request and wait for the desired page.
             yield return www.Send();
@@ -194,7 +195,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             return CanIDownload(meshId);
         }
         
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         DateTime downloadedZipLastModified = meshFileInfo.LastWriteTime;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);

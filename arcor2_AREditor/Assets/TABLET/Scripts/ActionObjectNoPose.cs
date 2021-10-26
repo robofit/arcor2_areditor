@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
-using RuntimeGizmos;
 using UnityEngine;
 
 public class ActionObjectNoPose : ActionObject {
@@ -13,6 +12,10 @@ public class ActionObjectNoPose : ActionObject {
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
         // no pose object has no model
+    }
+
+    public override void EnableVisual(bool enable) {
+        throw new NotImplementedException();
     }
 
     public override GameObject GetModelCopy() {
@@ -52,7 +55,7 @@ public class ActionObjectNoPose : ActionObject {
     }
 
     public override async void OpenMenu() {
-        ActionObjectMenu.Instance.Show(this);
+        _ = ActionObjectMenu.Instance.Show(this, false);
     }
 
     public override void SetInteractivity(bool interactive) {
@@ -77,5 +80,9 @@ public class ActionObjectNoPose : ActionObject {
 
     public override void UpdateColor() {
         //nothing to do here
+    }
+
+    public override void UpdateModel() {
+        // nothing to do here
     }
 }

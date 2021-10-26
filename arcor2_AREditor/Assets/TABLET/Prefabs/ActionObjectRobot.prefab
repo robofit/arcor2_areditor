@@ -57,7 +57,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 2180264, guid: 94522fae1bb33cc42bdfc27f05f99fcd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -195,7 +195,6 @@ GameObject:
   - component: {fileID: 4117692875275004883}
   - component: {fileID: -3082953001628312356}
   - component: {fileID: -6384501486800412016}
-  - component: {fileID: 6226430248659389064}
   - component: {fileID: 5348447349821022215}
   m_Layer: 0
   m_Name: ActionObjectRobot
@@ -274,19 +273,6 @@ MonoBehaviour:
     type: 2}
   Renderers: []
   HoverOnly: 0
---- !u!114 &6226430248659389064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4117692875275004882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56dd716813c47194695f505324fcf244, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OutlineOnClick: {fileID: -6384501486800412016}
 --- !u!114 &5348447349821022215
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,6 +289,7 @@ MonoBehaviour:
   needBoxIndicator: 0
   needArrowIndicator: 1
   needDistanceText: 0
+  targetGameObject: {fileID: 0}
   indicator: {fileID: 0}
 --- !u!1 &7548553722561557311
 GameObject:

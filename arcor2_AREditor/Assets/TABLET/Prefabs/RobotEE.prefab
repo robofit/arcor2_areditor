@@ -66,8 +66,9 @@ MonoBehaviour:
   Colliders:
   - {fileID: 7157647198806504771}
   eeName: {fileID: 2613969908525368025}
-  RobotId: 
+  OutlineOnClick: {fileID: 2419119033604782728}
   EEId: 
+  ARMId: 
 --- !u!114 &2419119033604782728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,20 +82,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
-  OutlineSize: 1
-  OutlineHoverSize: 1
-  OutlineShaderType: 0
-  OutlineClickFirstPass: {fileID: 0}
-  OutlineClickSecondPass: {fileID: 0}
-  OutlineHoverFirstPass: {fileID: 0}
-  OutlineHoverSecondPass: {fileID: 0}
+  SetOutlineSize: 1
+  OutlineSize: 0.25
+  OutlineHoverSize: 0.2
+  OutlineShaderType: 1
+  OutlineClickFirstPass: {fileID: 2100000, guid: 5a34724aa4ed6d942bea3c530bc7477e,
+    type: 2}
+  OutlineClickSecondPass: {fileID: 2100000, guid: 70d480e8ad3b0114995e1ef19f3e76b6,
+    type: 2}
+  OutlineHoverFirstPass: {fileID: 2100000, guid: e228e0abdac53964f92bf2e43a91291e,
+    type: 2}
+  OutlineHoverSecondPass: {fileID: 2100000, guid: 4f80697ede457564bab8264fcd20b029,
+    type: 2}
   OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
     type: 2}
   OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
     type: 2}
   Renderers:
   - {fileID: 5195496566737001950}
-  HoverOnly: 1
+  HoverOnly: 0
 --- !u!114 &-8625929120649407953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,6 +117,7 @@ MonoBehaviour:
   needBoxIndicator: 0
   needArrowIndicator: 1
   needDistanceText: 0
+  targetGameObject: {fileID: 0}
   indicator: {fileID: 0}
 --- !u!1 &5484956194713478415
 GameObject:
@@ -212,7 +219,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 2100000, guid: 9ad269c99dcf42b7aedefd83dd5a7b9d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -263,7 +270,7 @@ MonoBehaviour:
   m_text: RobotEE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 9ad269c99dcf42b7aedefd83dd5a7b9d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

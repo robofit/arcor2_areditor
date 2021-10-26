@@ -175,6 +175,7 @@ namespace Base {
             }
         }
 
+
         /// <summary>
         /// Disconnects from server
         /// </summary>
@@ -548,8 +549,6 @@ namespace Base {
             OnRobotMoveToActionPointOrientationEvent?.Invoke(this, new RobotMoveToActionPointOrientationEventArgs(robotMoveToActionPointOrientationEvent));
             if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointOrientationEvent.Data.Message);
-            else if (robotMoveToActionPointOrientationEvent.Data.MoveEventType == RobotMoveToActionPointOrientationData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToPoseEvent(string data) {
@@ -557,8 +556,6 @@ namespace Base {
             OnRobotMoveToPoseEvent?.Invoke(this, new RobotMoveToPoseEventArgs(robotMoveToPoseEvent));
             if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToPoseEvent.Data.Message);
-            else if (robotMoveToPoseEvent.Data.MoveEventType == RobotMoveToPoseData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToJointsEvent(string data) {
@@ -566,8 +563,6 @@ namespace Base {
             OnRobotMoveToJointsEvent?.Invoke(this, new RobotMoveToJointsEventArgs(robotMoveToJointsEvent));
             if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToJointsEvent.Data.Message);
-            else if (robotMoveToJointsEvent.Data.MoveEventType == RobotMoveToJointsData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleRobotMoveToActionPointJointsEvent(string data) {
@@ -575,25 +570,22 @@ namespace Base {
             OnRobotMoveToActionPointJointsEvent?.Invoke(this, new RobotMoveToActionPointJointsEventArgs(robotMoveToActionPointJointsEvent));
             if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.Failed)
                 Notifications.Instance.ShowNotification("Robot failed to move", robotMoveToActionPointJointsEvent.Data.Message);
-            else if (robotMoveToActionPointJointsEvent.Data.MoveEventType == RobotMoveToActionPointJointsData.MoveEventTypeEnum.End)
-                Notifications.Instance.ShowNotification("Robot moved to desired position", "");
         }
 
         private void HandleStateBefore(string obj) {
-            if (!ProjectManager.Instance.Valid)
-                return;
             string puck_id;
-            if (!ProjectManager.Instance.Valid) {
-                Debug.LogWarning("Project not yet loaded, ignoring current action");
-                return;
-            }
+            
             try {
 
                 IO.Swagger.Model.ActionStateBefore actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateBefore>(obj);
 
                 puck_id = actionStateBefore.Data.ActionId;
 
-
+                if (!ProjectManager.Instance.Valid) {
+                    Debug.LogWarning("Project not yet loaded, ignoring current action");
+                    GameManager.Instance.ActionRunningOnStartupId = puck_id;
+                    return;
+                }
 
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleCurrentAction()");
@@ -1106,7 +1098,7 @@ namespace Base {
         /// <returns></returns>
         public async Task RunPackage(string packageId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId);
+            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId, breakpoints: new List<string>(), false);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);
@@ -1119,9 +1111,10 @@ namespace Base {
         /// removed immideately after package execution. Throws RequestFailedException when request failed
         /// </summary>
         /// <returns></returns>
-        public async Task TemporaryPackage() {
+        public async Task TemporaryPackage(List<string> apBreakpoints, bool pauseOnFirstAction = false) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage");
+            IO.Swagger.Model.TemporaryPackageRequestArgs args = new TemporaryPackageRequestArgs(breakpoints: apBreakpoints, startPaused: pauseOnFirstAction);
+            IO.Swagger.Model.TemporaryPackageRequest request = new IO.Swagger.Model.TemporaryPackageRequest(id: r_id, request: "TemporaryPackage", args: args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.TemporaryPackageResponse response = await WaitForResult<IO.Swagger.Model.TemporaryPackageResponse>(r_id, 30000);
             if (response == null || !response.Result)
@@ -1399,8 +1392,7 @@ namespace Base {
         /// <returns></returns>
         public async Task DeleteObjectType(string type) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
-            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: false);
+            IO.Swagger.Model.DeleteObjectTypesRequest request = new IO.Swagger.Model.DeleteObjectTypesRequest(id: r_id, request: "DeleteObjectTypes", args: new List<string>() { type }, dryRun: false);
             SendDataToServer(request.ToJson(), r_id, true);
             RemoveFromSceneResponse response = await WaitForResult<IO.Swagger.Model.RemoveFromSceneResponse>(r_id);
             if (response == null || !response.Result) {
@@ -1408,11 +1400,10 @@ namespace Base {
             }
         }
 
-        public void DeleteObjectTypeDryRun(string type, UnityAction<string, string> callback) {
+        public void DeleteObjectTypeDryRun(List<string> types, UnityAction<string, string> callback) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.IdArgs args = new IO.Swagger.Model.IdArgs(id: type);
-            IO.Swagger.Model.DeleteObjectTypeRequest request = new IO.Swagger.Model.DeleteObjectTypeRequest(id: r_id, request: "DeleteObjectType", args: args, dryRun: true);
-            responsesCallback.Add(r_id, Tuple.Create(type, callback));
+            IO.Swagger.Model.DeleteObjectTypesRequest request = new IO.Swagger.Model.DeleteObjectTypesRequest(id: r_id, request: "DeleteObjectTypes", args: types, dryRun: true);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
             SendDataToServer(request.ToJson(), r_id, false);
         }
 
@@ -2676,6 +2667,77 @@ namespace Base {
                 throw new RequestFailedException(response == null ? new List<string>() { "Failed to remove project parameter" } : response.Messages);
             }
         }
+
+        /// <summary>
+        /// Removes project parameter
+        /// </summary>
+        /// <param name="id">ID of project parameter to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public async Task UpdateObjectModel(string id, ObjectModel objectModel, bool dryRun = false) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.UpdateObjectModelRequestArgs args = new UpdateObjectModelRequestArgs(objectModel: objectModel, objectTypeId: id);
+
+            IO.Swagger.Model.UpdateObjectModelRequest request = new IO.Swagger.Model.UpdateObjectModelRequest (r_id, "UpdateObjectModel", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.UpdateObjectModelResponse response = await WaitForResult<IO.Swagger.Model.UpdateObjectModelResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to update object model" } : response.Messages);
+            }
+        }
+
+        /// <summary>
+        /// Removes project parameter
+        /// </summary>
+        /// <param name="id">ID of project parameter to remove</param>
+        /// <param name="dryRun"></param>
+        /// <returns></returns>
+        public Task AddVirtualCollisionObjectToScene(string name, ObjectModel objectModel, IO.Swagger.Model.Pose pose, UnityAction<string, string> callback, bool dryRun = false) {
+            Debug.Assert(callback != null);
+            int r_id = Interlocked.Increment(ref requestID);
+            responsesCallback.Add(r_id, Tuple.Create("", callback));
+            AddVirtualCollisionObjectToSceneRequestArgs args = new AddVirtualCollisionObjectToSceneRequestArgs(model: objectModel, name: name, pose: pose);
+            AddVirtualCollisionObjectToSceneRequest request = new AddVirtualCollisionObjectToSceneRequest(r_id, "AddVirtualCollisionObjectToScene", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, false);
+            return Task.CompletedTask;
+        }
+
+        public async Task DuplicateScene(string sceneId, string newSceneName) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CopySceneRequestArgs args = new CopySceneRequestArgs(sourceId: sceneId, targetName: newSceneName);
+
+            IO.Swagger.Model.CopySceneRequest request = new IO.Swagger.Model.CopySceneRequest(r_id, "CopyScene", args: args);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CopySceneResponse response = await WaitForResult<IO.Swagger.Model.CopySceneResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to duplicate scene" } : response.Messages);
+            }
+        }
+
+        public async Task DuplicateProject(string projectId, string newProjectName, bool dryRun) {
+            int r_id = Interlocked.Increment(ref requestID);
+            IO.Swagger.Model.CopyProjectRequestArgs args = new CopyProjectRequestArgs(sourceId: projectId, targetName: newProjectName);
+
+            IO.Swagger.Model.CopyProjectRequest request = new IO.Swagger.Model.CopyProjectRequest(r_id, "CopyProject", args: args, dryRun: dryRun);
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.CopyProjectResponse response = await WaitForResult<IO.Swagger.Model.CopyProjectResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to duplicate project" } : response.Messages);
+            }
+        }
+
+        public async Task StepAction() {
+            int r_id = Interlocked.Increment(ref requestID);
+            
+            IO.Swagger.Model.StepActionRequest request = new IO.Swagger.Model.StepActionRequest(r_id, "StepAction");
+            SendDataToServer(request.ToJson(), r_id, true);
+            IO.Swagger.Model.StepActionResponse response = await WaitForResult<IO.Swagger.Model.StepActionResponse>(r_id);
+            if (response == null || !response.Result) {
+                throw new RequestFailedException(response == null ? new List<string>() { "Failed to step" } : response.Messages);
+            }
+        }
+
+
     }
 }
 

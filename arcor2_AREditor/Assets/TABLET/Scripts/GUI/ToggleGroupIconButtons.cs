@@ -7,7 +7,6 @@ public class ToggleGroupIconButtons : MonoBehaviour {
     public List<IconButton> Buttons = new List<IconButton>();
     public IconButton Default;
 
-    private Button selected;
 
     public Color SelectedColor;
 
@@ -26,6 +25,18 @@ public class ToggleGroupIconButtons : MonoBehaviour {
         button.Background.color = SelectedColor;
         if (invoke)
             button.Button.onClick.Invoke();
+    }
+
+    public void SelectButton(int index, bool invoke) {
+        SelectButton(Buttons[index], invoke);
+    }
+
+    public int GetSelectedIndex() {
+        for (int i = 0; i < Buttons.Count; ++i) {
+            if (Buttons[i].Background.color == SelectedColor)
+                return i;
+        }
+        return 0;
     }
 
 }

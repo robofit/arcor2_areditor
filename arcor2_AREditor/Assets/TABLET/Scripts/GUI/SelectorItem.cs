@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
@@ -22,9 +23,15 @@ public class SelectorItem : MonoBehaviour
     public GameObject SublistContent;
     public ManualTooltip Tooltip;
 
+
+
+
     public bool Removed; // TODO: set to true when removed from selectoraimmenu, 
 
     private List<SelectorItem> childs = new List<SelectorItem>();
+
+    public SelectorItem ParentItem;
+
 
     private void Start() {
         Removed = false;
@@ -47,16 +54,16 @@ public class SelectorItem : MonoBehaviour
         }
     }
 
-    public void AddChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+    public void AddChild(SelectorItem selectorItem) {
         childs.Add(selectorItem);
-        if (updateCollapsableInteractivity)
-            CollapsableButton.interactable = true;
+        selectorItem.ParentItem = this;
+        CollapsableButton.interactable = true;
     }
 
-    public void RemoveChild(SelectorItem selectorItem, bool updateCollapsableInteractivity) {
+    public void RemoveChild(SelectorItem selectorItem) {
         childs.Remove(selectorItem);
-        if (updateCollapsableInteractivity)
-            CollapsableButton.interactable = HasChilds();
+        selectorItem.ParentItem = null;
+        CollapsableButton.interactable = HasChilds();
     }
 
     public bool HasChilds() {
@@ -79,7 +86,6 @@ public class SelectorItem : MonoBehaviour
         } else if (interactiveObject.GetType() == typeof(PuckOutput)) {
             Icon.sprite = AREditorResources.Instance.ActionOutput;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.Action))) {
-            Collapsable = true;
             Icon.sprite = AREditorResources.Instance.Action;
         } else if (interactiveObject.GetType().IsSubclassOf(typeof(Base.ActionPoint))) {
             Collapsable = true;
@@ -107,8 +113,7 @@ public class SelectorItem : MonoBehaviour
 
     public void SetSelected(bool selected, bool manually) {
         if (InteractiveObject != null) {
-
-            if (!this.selected && selected) {
+            if ((!this.selected && selected) || (selected && manually)) {
                 InteractiveObject.SendMessage("OnHoverStart", SendMessageOptions.DontRequireReceiver);
             } else if (this.selected && !selected) {
                 InteractiveObject.SendMessage("OnHoverEnd", SendMessageOptions.DontRequireReceiver);

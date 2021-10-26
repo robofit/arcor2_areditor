@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
-using RuntimeGizmos;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 
@@ -10,7 +9,6 @@ public class VRModeManager : Singleton<VRModeManager> {
 
     public Camera VRCamera;
     public Camera ARCamera;
-    public TransformGizmo TFGizmo;
     public GameObject ARCameraVis;
     public GameObject GridPlane;
     public Joystick CameraMoveJoystick;
@@ -47,7 +45,10 @@ public class VRModeManager : Singleton<VRModeManager> {
         GridPlane.SetActive(false);
         gridInitPos = GridPlane.transform.position.y;
 
+#if AR_ON
         TrackingManager.Instance.NewLowestPlanePosition += AdjustGridPlane;
+#endif
+
 #endif
     }
 
@@ -125,9 +126,6 @@ public class VRModeManager : Singleton<VRModeManager> {
 
         ARCameraVis.SetActive(true);
 
-        // Switch camera in Gizmo to VRCamera
-        TFGizmo.myCamera = VRCamera;
-
         ARCamera.enabled = false;
 
         TrackingManager.Instance.ChangePlaneTransparency(false);
@@ -154,9 +152,6 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.tag = "Untagged";
 
         ARCameraVis.SetActive(false);
-
-        // Switch camera in Gizmo back to ARCamera (tablet)
-        TFGizmo.myCamera = ARCamera;
 
         TrackingManager.Instance.ChangePlaneTransparency(true);
 

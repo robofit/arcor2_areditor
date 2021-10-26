@@ -10,14 +10,19 @@ public class TransformWheelList : EventTrigger {
     public Vector2 Velocity;
     private bool _underInertia;
     private bool _finishing;
-    private bool _dragging = false;
     private float _time = 0.0f;
     private float _smoothTime = 2f;
     private float _finishY;
 
+    public bool Dragging { get; private set; } = false;
+
+    public EventHandler MovementDone, MovementStart;
+
     public void Init() {
+        if (Velocity != Vector2.zero)
+            MovementDone?.Invoke(this, EventArgs.Empty);
         _underInertia = false;
-        _dragging = false;
+        Dragging = false;
         _finishing = false;
         _time = 0;
         _finishY = 0;
@@ -26,7 +31,7 @@ public class TransformWheelList : EventTrigger {
 
     public void Update() {
 
-        if (_dragging) {
+        if (Dragging) {
             Vector2 prevPosition = _curPosition;
             _curPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             Velocity = _curPosition - prevPosition;
@@ -59,6 +64,7 @@ public class TransformWheelList : EventTrigger {
                 _time = 0.0f;
                 _finishing = false;
                 Velocity = Vector2.zero;
+                MovementDone?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -82,9 +88,12 @@ public class TransformWheelList : EventTrigger {
     }
 
     public override void OnPointerDown(PointerEventData eventData) {
+        if (Velocity.magnitude == 0) {
+            MovementStart?.Invoke(this, EventArgs.Empty);
+        }
         _curPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         _underInertia = false;
-        _dragging = true;
+        Dragging = true;
         _time = 0.0f;
         Velocity = Vector2.zero;
         _finishing = false;
@@ -92,6 +101,17 @@ public class TransformWheelList : EventTrigger {
 
     public override void OnPointerUp(PointerEventData eventData) {
         _underInertia = true;
-        _dragging = false;
+        Dragging = false;
+    }
+
+    public void Stop(bool invokeMovementDone = true) {
+        if (Dragging)
+            return;
+        _underInertia = false;
+        _time = 0.0f;
+        Velocity = Vector2.zero;
+        _finishing = false;
+        if (invokeMovementDone)
+            MovementDone?.Invoke(this, EventArgs.Empty);
     }
 }

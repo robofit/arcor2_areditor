@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
 
-public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
+public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     public Base.ActionObject CurrentObject;
     public GameObject Parameters;
     public Slider VisibilitySlider;
@@ -23,8 +24,9 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
     protected bool parametersChanged = false;
     public VerticalLayoutGroup DynamicContentLayout;
     public GameObject CanvasRoot;
-    public CanvasGroup CanvasGroup;
     public TMPro.TMP_Text VisibilityLabel;
+
+    public SwitchComponent BlocklistSwitch;
 
     public GameObject ParameterOverridePrefab;
     private Dictionary<string, ActionObjectParameterOverride> overrides = new Dictionary<string, ActionObjectParameterOverride>();
@@ -66,7 +68,13 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
             UpdateMenu();
     }
 
+    public void PutOnBlocklist() {
+        CurrentObject.Enable(false, true, false);
+    }
 
+    public void RemoveFromBlocklist() {
+        CurrentObject.Enable(SelectorMenu.Instance.ObjectsToggle.Toggled, false, true);
+    }
 
     public async void DeleteActionObject() {
         IO.Swagger.Model.RemoveFromSceneResponse response =
@@ -105,25 +113,30 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
         }
     }
 
-    public async void Show(ActionObject actionObject) {
-        if (!await actionObject.WriteLock(false))
-            return;
-
-        CurrentObject = actionObject;
-        UpdateMenu();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+    public override async Task<bool> Show(InteractiveObject obj, bool lockTree) {
+        if (!await base.Show(obj, false))
+            return false;
+        if (obj is ActionObject actionObject) {
+            CurrentObject = actionObject;
+            UpdateMenu();
+            EditorHelper.EnableCanvasGroup(CanvasGroup, true);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public void Hide() {
+    public override async Task Hide() {
+        await base.Hide();
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-        if (CurrentObject != null)
-            _ = CurrentObject.WriteUnlock();
     }
 
 
     public virtual void UpdateMenu() {
         // Parameters:
         ObjectHasNoParameterLabel.SetActive(CurrentObject.ObjectParameters.Count == 0);
+        BlocklistSwitch.SetValue(CurrentObject.Blocklisted);
         Parameters.GetComponent<VerticalLayoutGroup>().enabled = true;
         foreach (Transform o in Parameters.transform) {
             if (o.name != "Layout" && o.gameObject.tag != "Persistent") {
@@ -147,7 +160,7 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
 
     private void UpdateMenuScene() {
         if (CurrentObject.ObjectParameters.Count > 0) {
-            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false);
+            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null);
         }
         foreach (IParameter parameter in objectParameters) {
             parameter.SetInteractable(!SceneManager.Instance.SceneStarted);
@@ -264,7 +277,6 @@ public class ActionObjectMenu : Base.Singleton<ActionObjectMenu> {
 
     private static void ShowActionObject(ActionObject actionObject) {
         actionObject.OpenMenu();
-        actionObject.SendMessage("Select", false);
     }
 
 }
