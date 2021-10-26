@@ -53,6 +53,7 @@ MonoBehaviour:
   ActionPoint: {fileID: 0}
   OrientationId: 
   outlineOnClick: {fileID: 3977943581295511037}
+  renderer: {fileID: 0}
 --- !u!114 &3977943581295511037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66,13 +67,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Enabled: 1
+  SetOutlineSize: 0
   OutlineSize: 1
   OutlineHoverSize: 1
-  OutlineShaderType: 0
-  OutlineClickFirstPass: {fileID: 0}
-  OutlineClickSecondPass: {fileID: 0}
-  OutlineHoverFirstPass: {fileID: 0}
-  OutlineHoverSecondPass: {fileID: 0}
+  OutlineShaderType: 1
+  OutlineClickFirstPass: {fileID: 2100000, guid: ad5f46c258da37740a57c75f33330d0d,
+    type: 2}
+  OutlineClickSecondPass: {fileID: 2100000, guid: ec9869b8f200e5144b913b44d0b5a07c,
+    type: 2}
+  OutlineHoverFirstPass: {fileID: 2100000, guid: 32f6f3bd3400ec64aafb1498b4499443,
+    type: 2}
+  OutlineHoverSecondPass: {fileID: 2100000, guid: fce076e5d681de848b2f11401d0de4ba,
+    type: 2}
   OutlineClickMaterial: {fileID: 2100000, guid: 1ef88d2e88b167344b7db905a28877ad,
     type: 2}
   OutlineHoverMaterial: {fileID: 2100000, guid: 6f85ebaaa5685a345b1269fa36ddcf6c,
