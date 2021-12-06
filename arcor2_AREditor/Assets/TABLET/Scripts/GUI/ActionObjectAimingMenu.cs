@@ -193,6 +193,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                     CancelAimingButton.SetInteractivity(true);
                     await CheckDoneBtn();
                     AimingInProgress = true;
+                    if (currentObject is ActionObject3D actionObject3D)
+                        actionObject3D.UnHighlight();
                     UpdateCurrentPointLabel();
                     if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                         NextButton.SetInteractivity(true);
@@ -207,6 +209,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                     SavePositionButton.SetInteractivity(false, "No aiming in progress");
                     CancelAimingButton.SetInteractivity(false, "No aiming in progress");
                     AimingInProgress = false;
+                    if (currentObject is ActionObject3D actionObject3D)
+                        actionObject3D.Highlight();
                 }
             } else if (!currentObject.IsRobot() && !currentObject.IsCamera() && currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
@@ -271,6 +275,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
         try {
             await WebsocketManager.Instance.CancelObjectAiming();
             AimingInProgress = false;
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             if (currentFocusPoint >= 0 && currentFocusPoint < spheres.Count)
                 spheres[currentFocusPoint].UnHighlight();
             UpdateCurrentPointLabel();
@@ -319,6 +325,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             SavePositionButton.SetInteractivity(true);
             CancelAimingButton.SetInteractivity(true);
             StartObjectFocusingButton.SetInteractivity(false, "Already aiming");
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.UnHighlight();
             if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                 NextButton.SetInteractivity(true);
                 PreviousButton.SetInteractivity(true);
@@ -332,6 +340,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             CurrentPointLabel.text = "";
             currentFocusPoint = -1;
             AimingInProgress = false;
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             if (ex.Message == "Focusing already started.") { //TODO HACK! find better solution
                 FocusObjectDone();
             }
@@ -368,6 +378,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             PreviousButton.SetInteractivity(false, "No aiming in progress");
             SavePositionButton.SetInteractivity(false, "No aiming in progress");
             StartObjectFocusingButton.SetInteractivity(true);
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             AimingInProgress = false;
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
@@ -483,6 +495,15 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     public void OpenSteppingMenu() {
         RobotSteppingMenu.Instance.Show(true, "Go back to aiming menu", () => EditorHelper.EnableCanvasGroup(CanvasGroup, true));
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    }
+
+    public void Highlight(bool enable) {
+        if (currentObject != null && currentObject is ActionObject3D actionObject) {
+            if (enable)
+                actionObject.Highlight();
+            else
+                actionObject.UnHighlight();
+        }
     }
 
 }

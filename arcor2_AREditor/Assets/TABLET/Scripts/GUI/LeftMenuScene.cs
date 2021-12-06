@@ -131,6 +131,7 @@ public class LeftMenuScene : LeftMenu
         try {
             await WebsocketManager.Instance.CancelObjectAiming();
             ActionObjectAimingMenu.Instance.AimingInProgress = false;
+            ActionObjectAimingMenu.Instance.Highlight(true);
             DeactivateAllSubmenus();
             ConfirmationDialog.Close();
         } catch (RequestFailedException ex) {
