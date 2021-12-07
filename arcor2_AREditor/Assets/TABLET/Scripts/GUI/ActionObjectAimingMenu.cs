@@ -175,8 +175,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                    sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
-                    sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
+                    sphere.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(point.Position));
+                    sphere.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(point.Orientation));
                     sphere.Init(idx, $"Aiming point #{idx}");
                     spheres.Add(sphere);
                     ++idx;
