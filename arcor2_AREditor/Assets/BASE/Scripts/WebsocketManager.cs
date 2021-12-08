@@ -1098,7 +1098,7 @@ namespace Base {
         /// <returns></returns>
         public async Task RunPackage(string packageId) {
             int r_id = Interlocked.Increment(ref requestID);
-            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId);
+            IO.Swagger.Model.RunPackageRequestArgs args = new IO.Swagger.Model.RunPackageRequestArgs(id: packageId, breakpoints: new List<string>(), false);
             IO.Swagger.Model.RunPackageRequest request = new IO.Swagger.Model.RunPackageRequest(id: r_id, request: "RunPackage", args);
             SendDataToServer(request.ToJson(), r_id, true);
             IO.Swagger.Model.RunPackageResponse response = await WaitForResult<IO.Swagger.Model.RunPackageResponse>(r_id, 30000);

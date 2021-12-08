@@ -459,4 +459,12 @@ public class ActionObject3D : ActionObject {
             Model.transform.localScale = new Vector3(dimensions.Value.x, dimensions.Value.y, dimensions.Value.z);
 
     }
+
+    public void Highlight() {
+        outlineOnClick.Highlight();
+    }
+
+    public void UnHighlight() {
+        outlineOnClick.UnHighlight();
+    }
 }

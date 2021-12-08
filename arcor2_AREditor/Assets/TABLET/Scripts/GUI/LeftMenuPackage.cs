@@ -35,12 +35,7 @@ public class LeftMenuPackage : LeftMenu {
     }
 
     private void OnOpenProjectRunning(object sender, ProjectMetaEventArgs args) {
-        ResumeBtn.gameObject.SetActive(false);
-        PauseBtn.gameObject.SetActive(true);
-        CloseButton.SetInteractivity(true);
-        PauseBtn.SetInteractivity(true);
-        StepBtn.SetInteractivity(false, "Step to next action\n(Only available when progam is paused)");
-        EditorInfo.text = "Package: " + args.Name;
+        EditorInfo.text = "Package: \n" + args.Name;
         UpdateVisibility();
     }
 

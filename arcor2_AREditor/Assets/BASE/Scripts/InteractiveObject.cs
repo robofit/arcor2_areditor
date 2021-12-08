@@ -132,10 +132,10 @@ public abstract class InteractiveObject : Clickable {
     public virtual async Task<bool> WriteLock(bool lockTree) {
         if (IsLockedByMe) { //object is already locked by this user
             if (lockedTree != lockTree) {
-                if (await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT)) {
+                /*if (await UpdateLock(lockTree ? IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.TREE : IO.Swagger.Model.UpdateLockRequestArgs.NewTypeEnum.OBJECT)) {
                     lockedTree = lockTree;
                     return true;
-                } // if updateLock failed, try to lock normally
+                } // if updateLock failed, try to lock normally*/
             } else { //same type of lock
                 return true;
             }

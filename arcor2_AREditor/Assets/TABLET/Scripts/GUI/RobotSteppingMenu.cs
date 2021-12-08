@@ -317,17 +317,24 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
     }
 
 
-    public async override Task Hide() {
-        await base.Hide();
+    public override Task Hide() {
+        return Hide(true);
+    }
+
+    public async Task Hide(bool unlockRobot) {
+        if (unlockRobot)
+            await base.Hide();
+        else
+            lockedObjects.Clear(); 
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
         if (gizmo != null)
             Destroy(gizmo.gameObject);
         closeCallback?.Invoke();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);        
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
     }
 
     public void HideMenu() {
-        Hide();
+        Hide(false);
     }
 
     public void SetRotationAxis(Gizmo.Axis axis) {

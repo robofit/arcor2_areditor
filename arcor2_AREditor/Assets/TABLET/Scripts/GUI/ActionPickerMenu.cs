@@ -13,7 +13,6 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     public GameObject Content;
     public GameObject CollapsablePrefab, ButtonPrefab;
 
-    public AddNewActionDialog AddNewActionDialog;
     private ActionPoint currentActionPoint;
 
     public GameObject HiddenPlace;
@@ -144,6 +143,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
         await base.Hide();
         ClearMenu();
         currentActionPoint = null;
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
     }
 
     
@@ -153,10 +153,6 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     }
 
 
-    public void ShowAddNewActionDialog(string action_id, IActionProvider actionProvider) {
-        AddNewActionDialog.InitFromMetadata(actionProvider, actionProvider.GetActionMetadata(action_id), currentActionPoint);
-        AddNewActionDialog.Open();
-    }
 
     public async void DuplicateAction(Base.Action action) {
         string newActionName = Base.ProjectManager.Instance.GetFreeActionName(action.GetName() + "_copy");

@@ -65,6 +65,10 @@ public class MeshImporter : Singleton<MeshImporter> {
             // Supports: FBX, OBJ, GLTF2, STL, PLY, 3MF
             AssetLoaderOptions assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
             AssetLoader.LoadModelFromFile(path, null, delegate (AssetLoaderContext assetLoaderContext) {
+                if (Path.GetExtension(path).ToLower() == ".stl") {
+                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f);
+                }
+
                 OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.WrapperGameObject, aoId));
             }, null, assetLoaderOptions: assetLoaderOptions, onError: OnModelLoadError, wrapperGameObject: loadedObject);
         }
@@ -80,7 +84,7 @@ public class MeshImporter : Singleton<MeshImporter> {
     private IEnumerator DownloadMesh(string meshId, string fileName, string aoId) {
 
         //Debug.LogError("MESH: download started");
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
             // Request and wait for the desired page.
             yield return www.Send();
@@ -195,7 +199,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             return CanIDownload(meshId);
         }
         
-        string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790/files/" + fileName;
+        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
         DateTime downloadedZipLastModified = meshFileInfo.LastWriteTime;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);

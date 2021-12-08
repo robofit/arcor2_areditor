@@ -39,9 +39,6 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
 
     public override async Task Hide() {
         await base.Hide();
-        if (!IsVisible)
-            return;
-
         RectTransform[] transforms = Content.GetComponentsInChildren<RectTransform>();
         if (transforms != null) {
             foreach (RectTransform o in transforms) {
@@ -50,7 +47,9 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
                 }
             }
         }
-
+        if (!IsVisible)
+            return;
+        
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         currentAction.ActionPoint.HighlightAP(false);
         currentAction = null;
