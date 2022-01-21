@@ -157,9 +157,9 @@ namespace Base {
 
             GameManager.Instance.ConnectionStatus = GameManager.ConnectionStatusEnum.Connecting;
             try {
-                APIDomainWS = GetWSURI(domain, port);
+                APIDomainWS = GetWSURI(domain.Trim(), port);
                 websocket = new WebSocket(APIDomainWS);
-                serverDomain = domain;
+                serverDomain = domain.Trim();
 
                 websocket.OnOpen += OnConnected;
                 websocket.OnError += OnError;
