@@ -105,15 +105,16 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
 
     public override async Task Hide() {
         await base.Hide();
-        if (!IsVisible)
-            return;
-        HideModelOnEE();
-        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         foreach (AimingPointSphere sphere in spheres) {
             if (sphere != null) {
                 Destroy(sphere.gameObject);
             }
         }
+        if (!IsVisible)
+            return;
+        HideModelOnEE();
+        EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+       
         spheres.Clear();    
         currentObject = null;
         
@@ -165,12 +166,17 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                 UpdatePositionBlockVO.SetActive(false);
                 UpdatePositionBlockMesh.SetActive(true);
                 int idx = 0;
-                
+                foreach (AimingPointSphere sphere in spheres) {
+                    if (sphere != null) {
+                        Destroy(sphere.gameObject);
+                    }
+                }
+                spheres.Clear();
                 foreach (IO.Swagger.Model.Pose point in currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints) {
                     AimingPointSphere sphere = Instantiate(Sphere, currentObject.transform).GetComponent<AimingPointSphere>();
                     sphere.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                    sphere.transform.localPosition = DataHelper.PositionToVector3(point.Position);
-                    sphere.transform.localRotation = DataHelper.OrientationToQuaternion(point.Orientation);
+                    sphere.transform.localPosition = TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(point.Position));
+                    sphere.transform.localRotation = TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(point.Orientation));
                     sphere.Init(idx, $"Aiming point #{idx}");
                     spheres.Add(sphere);
                     ++idx;
@@ -187,6 +193,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                     CancelAimingButton.SetInteractivity(true);
                     await CheckDoneBtn();
                     AimingInProgress = true;
+                    if (currentObject is ActionObject3D actionObject3D)
+                        actionObject3D.UnHighlight();
                     UpdateCurrentPointLabel();
                     if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                         NextButton.SetInteractivity(true);
@@ -201,6 +209,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
                     SavePositionButton.SetInteractivity(false, "No aiming in progress");
                     CancelAimingButton.SetInteractivity(false, "No aiming in progress");
                     AimingInProgress = false;
+                    if (currentObject is ActionObject3D actionObject3D)
+                        actionObject3D.Highlight();
                 }
             } else if (!currentObject.IsRobot() && !currentObject.IsCamera() && currentObject.ActionObjectMetadata.ObjectModel != null) {
                 UpdatePositionBlockVO.SetActive(true);
@@ -265,6 +275,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
         try {
             await WebsocketManager.Instance.CancelObjectAiming();
             AimingInProgress = false;
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             if (currentFocusPoint >= 0 && currentFocusPoint < spheres.Count)
                 spheres[currentFocusPoint].UnHighlight();
             UpdateCurrentPointLabel();
@@ -294,8 +306,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to update object position", "No robot or end effector available");
             return;
         }
-        if (! await currentObject.WriteLock(true) || ! await SceneManager.Instance.SelectedRobot.WriteLock(false))
-            Notifications.Instance.ShowNotification("Failed to start aiming", "Object or robot could not be locked");
         try {
             AimingInProgress = true;
             string armId = null;
@@ -315,6 +325,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             SavePositionButton.SetInteractivity(true);
             CancelAimingButton.SetInteractivity(true);
             StartObjectFocusingButton.SetInteractivity(false, "Already aiming");
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.UnHighlight();
             if (!automaticPointSelection && currentObject.ActionObjectMetadata.ObjectModel.Mesh.FocusPoints.Count > 1) {
                 NextButton.SetInteractivity(true);
                 PreviousButton.SetInteractivity(true);
@@ -328,6 +340,8 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             CurrentPointLabel.text = "";
             currentFocusPoint = -1;
             AimingInProgress = false;
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             if (ex.Message == "Focusing already started.") { //TODO HACK! find better solution
                 FocusObjectDone();
             }
@@ -359,10 +373,13 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             
             await WebsocketManager.Instance.ObjectAimingDone();
             FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
+            CancelAimingButton.SetInteractivity(false, "No aiming in progress");
             NextButton.SetInteractivity(false, "No aiming in progress");
             PreviousButton.SetInteractivity(false, "No aiming in progress");
             SavePositionButton.SetInteractivity(false, "No aiming in progress");
             StartObjectFocusingButton.SetInteractivity(true);
+            if (currentObject is ActionObject3D actionObject3D)
+                actionObject3D.Highlight();
             AimingInProgress = false;
         } catch (Base.RequestFailedException ex) {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to focus object", ex.Message);
@@ -452,9 +469,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     }
 
 
-
-
-
     public void ShowCalibrateRobotDialog() {
         if (CalibrateRobotDialog.Init(SceneManager.Instance.GetCamerasNames(), currentObject.Data.Id))
             CalibrateRobotDialog.Open();
@@ -481,6 +495,15 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     public void OpenSteppingMenu() {
         RobotSteppingMenu.Instance.Show(true, "Go back to aiming menu", () => EditorHelper.EnableCanvasGroup(CanvasGroup, true));
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
+    }
+
+    public void Highlight(bool enable) {
+        if (currentObject != null && currentObject is ActionObject3D actionObject) {
+            if (enable)
+                actionObject.Highlight();
+            else
+                actionObject.UnHighlight();
+        }
     }
 
 }
