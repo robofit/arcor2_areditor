@@ -305,7 +305,7 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     }
 
     public void SetProjectServiceURI(string uri) {
-        PlayerPrefsHelper.SaveString("ProjectServiceURI", uri);
+        PlayerPrefsHelper.SaveString("ProjectServiceURI", uri.Trim());
         ResetProjectServiceURIButton.SetInteractivity(true);
     }
 
