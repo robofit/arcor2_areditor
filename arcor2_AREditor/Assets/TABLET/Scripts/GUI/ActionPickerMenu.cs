@@ -115,15 +115,37 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
     }
 
     private RequestResult CheckActionParameters(Base.ActionMetadata actionMetadata) {
+        //TODO - otestovat
         RequestResult result = new RequestResult(true);
         bool poseError = false, jointsError = false, dynamicValueError = false;
         bool anyOrientation = ProjectManager.Instance.AnyOrientationInTheProject();
         bool anyJoints = ProjectManager.Instance.AnyJointsInTheProject();
         foreach (ParameterMetadata param in actionMetadata.ParametersMetadata.Values) {
-            if (!poseError && param.Type == ParameterMetadata.POSE && !anyOrientation) {
-                result.Success = false;
-                result.Message += "(there is no available orientation in the project and this action requires it)\n";
-                poseError = true;
+            
+            if (!poseError && param.Type == ParameterMetadata.POSE) {
+                int poseParemetersCount = 0;
+                if (anyOrientation) {
+                    foreach (ParameterMetadata parameter in actionMetadata.ParametersMetadata.Values) {
+                        if (parameter.Type == ParameterMetadata.POSE) {
+                            if (++poseParemetersCount > 1) {
+                                break;
+                            }
+
+                        }
+                    }
+                }
+                
+                if (poseParemetersCount == 1 && !currentActionPoint.AnyOrientation()) {
+                    result.Success = false;
+                    result.Message += "(there is no available orientation in the selected AP and this action requires it)\n";
+                    poseError = true;
+                } else if (!anyOrientation) {
+                    result.Success = false;
+                    result.Message += "(there is no available orientation in the project and this action requires it)\n";
+                    poseError = true;
+                }
+
+                
             }
             if (!jointsError && param.Type == ParameterMetadata.JOINTS && !anyJoints) {
                 result.Success = false;
