@@ -118,7 +118,10 @@ public class ActionObject3D : ActionObject {
                 if (renderer.materials.Length == 3) {
                     renderer.materials[1].shader = standardShader;
                 } else {
-                    renderer.material.shader = standardShader;
+                    // include submeshes as well
+                    foreach (Material mat in renderer.materials) {
+                        mat.shader = standardShader;
+                    }
                 }
             }
         }
@@ -130,22 +133,29 @@ public class ActionObject3D : ActionObject {
                     if (renderer.materials.Length == 3) {
                         renderer.materials[1].shader = transparentShader;
                     } else {
-                        renderer.material.shader = transparentShader;
+                        // include submeshes as well
+                        foreach (Material mat in renderer.materials) {
+                            mat.shader = transparentShader;
+                        }
                     }
                 }
                 transparent = true;
             }
             // set alpha of the material
             foreach (Renderer renderer in aoRenderers) {
-                Material mat;
                 if (renderer.materials.Length == 3) {
+                    Material mat;
                     mat = renderer.materials[1];
+                    Color color = mat.color;
+                    color.a = value;
+                    mat.color = color;
                 } else {
-                    mat = renderer.material;
+                    foreach (Material mat in renderer.materials) {
+                        Color color = mat.color;
+                        color.a = value;
+                        mat.color = color;
+                    }
                 }
-                Color color = mat.color;
-                color.a = value;
-                mat.color = color;
             }
         }
     }
