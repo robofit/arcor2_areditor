@@ -144,7 +144,17 @@ public class OutlineOnClick : Clickable {
     }
 
     public void InitRenderers(List<Renderer> renderers) {
-        Renderers = renderers;
+        Renderers = ClearRenderersWithSubmesh(renderers);
+    }
+
+    private List<Renderer> ClearRenderersWithSubmesh(List<Renderer> renderers) {
+        List<Renderer> clearedRenderers = new List<Renderer>();
+        foreach (Renderer renderer in renderers) {
+            if (!(renderer.GetComponent<MeshFilter>().mesh.subMeshCount > 1)) {
+                clearedRenderers.Add(renderer);
+            }
+        }
+        return clearedRenderers;
     }
 
     public void ClearRenderers() {

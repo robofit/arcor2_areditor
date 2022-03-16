@@ -49,10 +49,9 @@ public class ActionPoint3D : Base.ActionPoint {
             base.BreakPoint = value;
             Renderer r = Sphere.GetComponent<Renderer>();
             if (r.materials.Length == 3) {
-                List<Material> materials = new List<Material>(r.materials) {
-                    [1] = BreakPoint ? BreakPointMaterial : SphereMaterial
-                };
-                r.materials = materials.ToArray();
+                Material[] materials = r.materials;
+                materials[1] = BreakPoint ? BreakPointMaterial : SphereMaterial;
+                r.materials = materials;
             } else {
                 r.material = BreakPoint ? BreakPointMaterial : SphereMaterial;
             }

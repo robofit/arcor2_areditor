@@ -238,7 +238,6 @@ namespace Base {
             SetOutlineSizeBasedOnScale();
 
             SetVisibility(visibility, forceShaderChange: true);
-            UpdateColor();
 
             SetDefaultJoints();
 
@@ -302,7 +301,6 @@ namespace Base {
         public override void Show() {
             robotVisible = true;
             SetVisibility(1);
-            UpdateColor();
         }
 
         public override void Hide() {
@@ -395,6 +393,8 @@ namespace Base {
                     mat.color = color;
                 }
             }
+
+            UpdateColor();
         }
 
         public override void OnClick(Click type) {
@@ -743,6 +743,7 @@ namespace Base {
             } else {
                 foreach (Renderer renderer in robotRenderers) {
                     foreach (Material mat in renderer.materials) {
+                        mat.SetColor("_EmissionColor", new Color(0.2f, 0.05f, 0.05f, 0f));
                         mat.DisableKeyword("_EMISSION");
                     }
                 }
