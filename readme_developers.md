@@ -24,7 +24,7 @@
    git lfs install
    git lfs pull
    ```
- - when downloading Unity (current version for this project is 2019.4.20.f1) choose modules according to your needs (e.g. Android build support for creating .apk files)
+ - when downloading Unity (current version for this project is 2021.2.14f1) choose modules according to your needs (e.g. Android build support for creating .apk files)
  - Get third party assets. BUT-based developers may ask to get access to a private repository (added as submodule of this repo). External developers will have to get following assets from Unity AssetStore (extract and copy into Assets/Submodules):
    - [Lunar Mobile Console](https://assetstore.unity.com/packages/tools/gui/lunar-mobile-console-free-82881) (optional)
    - [Loading screen animation](https://assetstore.unity.com/packages/tools/loading-screen-animation-98505) 
@@ -43,7 +43,7 @@
      ```
      - on Linux, you can use bash script in /scripts/patch_simple_collada_asset.sh
 
- - download and set custom gradle - follow https://developers.google.com/ar/develop/unity/android-11-build#unity_20193_and_20194 (We recommend "binary-only" version of gradle, since we encountered bugs with "complete" version)
+ - download and set custom gradle (5.6.4) - follow https://developers.google.com/ar/develop/unity/android-11-build#unity_20193_and_20194 (We recommend "binary-only" version of gradle, since we encountered bugs with "complete" version)
  - delete folder repository\arcor2_AREditor\Assets\Submodules\TriLib\TriLibSamples
  - in Unity, go to Project Settings -> XR -> ARCore Extensions and change Android Authentication Strategy from "Keyless" to "Api Key"
 
