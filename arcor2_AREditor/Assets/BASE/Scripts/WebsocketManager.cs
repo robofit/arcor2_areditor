@@ -204,9 +204,10 @@ namespace Base {
         /// </summary>
         /// <returns>Domain name or IP addr of server</returns>
         public string GetServerDomain() {
-            if (websocket.State != WebSocketState.Open) {
+            if (websocket == null || websocket.State != WebSocketState.Open) {
                 return null;
             }
+            Debug.Assert(serverDomain != null, "serverDomain is null");
             return serverDomain;
         }
 
