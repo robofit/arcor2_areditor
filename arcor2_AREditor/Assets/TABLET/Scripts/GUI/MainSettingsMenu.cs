@@ -48,6 +48,10 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     public string GetProjectServiceURI(bool complete = true) {
         string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
         string suffix = complete ? "/files/" : "";
+
+        // TODO this could (should?) work without connection to the server
+        Debug.Assert(!string.IsNullOrEmpty(WebsocketManager.Instance.GetServerDomain()), "GetProjectServiceURI was probably used without connection to the server.");
+
         if (string.IsNullOrEmpty(uri))
             return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790" + suffix;
         else

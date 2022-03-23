@@ -100,7 +100,13 @@ namespace Base {
             }
             logsFile.Close();
             ShowNotification(customNotificationTitle, "Logs saved to directory " + dirname);
-            string uri = "http://" + WebsocketManager.Instance.GetServerDomain() + ":6799/upload";
+
+            // TODO why we upload logs only when the editor is connected to the server?
+            string serverDomain = WebsocketManager.Instance.GetServerDomain();
+            
+            if (String.IsNullOrEmpty(serverDomain)) return;
+
+            string uri = "http://" + serverDomain + ":6799/upload";
             try {
                 if (File.Exists(zipname)) {
                     File.Delete(zipname);
