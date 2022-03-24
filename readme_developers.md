@@ -43,7 +43,6 @@
      ```
      - on Linux, you can use bash script in /scripts/patch_simple_collada_asset.sh
 
- - download and set custom gradle (5.6.4) - follow https://developers.google.com/ar/develop/unity/android-11-build#unity_20193_and_20194 (We recommend "binary-only" version of gradle, since we encountered bugs with "complete" version)
  - delete folder repository\arcor2_AREditor\Assets\Submodules\TriLib\TriLibSamples
  - in Unity, go to Project Settings -> XR -> ARCore Extensions and change Android Authentication Strategy from "Keyless" to "Api Key"
 
