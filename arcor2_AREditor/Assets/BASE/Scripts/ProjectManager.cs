@@ -985,8 +985,10 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values)
                     action.Enable(enable);
             }
-            StartAction.Enable(enable);
-            EndAction.Enable(enable);
+            if (StartAction != null)
+                StartAction.Enable(enable);
+            if (EndAction != null)
+                EndAction.Enable(enable);
         }
 
         /// <summary>
