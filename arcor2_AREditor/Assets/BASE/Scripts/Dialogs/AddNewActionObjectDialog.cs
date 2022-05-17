@@ -20,6 +20,7 @@ public class AddNewActionObjectDialog : Dialog {
     private LabeledInput nameInput;
     private GameObject overlay;
     private System.Action callback = null;
+    public WalktroughHandler WalktroughHandler;
 
 
     private void Init() {
@@ -47,6 +48,10 @@ public class AddNewActionObjectDialog : Dialog {
 
     public void InitDialog(ActionObjectMetadata metadata) {
         actionObjectMetadata = metadata;
+
+        if (WalktroughHandler.Initialized && WalktroughHandler.WalktroughOverlay.activeInHierarchy) {
+            WalktroughHandler.StepOver();
+        }
         
         parametersMetadata = new Dictionary<string, ParameterMetadata>();
         foreach (IO.Swagger.Model.ParameterMeta meta in metadata.Settings) {

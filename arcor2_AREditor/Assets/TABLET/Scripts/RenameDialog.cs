@@ -17,6 +17,7 @@ public class RenameDialog : Dialog
     [SerializeField]
     private LabeledInput nameInput;
     private GameObject overlay;
+    private WalktroughHandler WalktroughHandler;
 
     private InteractiveObject selectedObject;
 
@@ -31,6 +32,10 @@ public class RenameDialog : Dialog
             return;
         if (!await objectToRename.WriteLock(false))
             return;
+
+        if (WalktroughHandler.gameObject.activeInHierarchy && WalktroughHandler.Manager.Order == 35) {
+            WalktroughHandler.StepOver();
+        }
 
         this.isNewObject = isNewObject;
         _updateVisibilityCallback = updateVisibilityCallback;
