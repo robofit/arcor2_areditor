@@ -33,6 +33,8 @@ public class WalktroughHandler : MonoBehaviour {
 
     public int SkipToStep;
 
+    public GameObject GoOnlineButton;
+
     public void Awake() {
         if (Initialized == false)
             Initialized = true;
@@ -202,8 +204,6 @@ public class WalktroughHandler : MonoBehaviour {
     }
     public void HighligthButton() {
         if (WalktroughStep.HighlitedButton != null) {
-
-
             
             var buttonPosition = (RectTransform) WalktroughStep.HighlitedButton.gameObject.transform;
 
@@ -214,13 +214,22 @@ public class WalktroughHandler : MonoBehaviour {
             HighlightingFrame.gameObject.transform.position = buttonPosition.position ;
 
             if (WalktroughStep.HighlitedButton == AddNewScene) {
-                ((RectTransform) HighlightingFrame.gameObject.transform).sizeDelta = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).rect.size + new Vector2(100, 100);
-                ((RectTransform) HighlightingFrame.gameObject.transform).pivot = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).pivot;
-                HighlightingFrame.gameObject.transform.position = buttonPosition.GetChild(0).gameObject.transform.position;
+                HandleProblematicButton(buttonPosition);
+            }
+            if (WalktroughStep.HighlitedButton == GoOnlineButton) {
+                ((RectTransform) HighlightingFrame.gameObject.transform).sizeDelta = ((RectTransform) buttonPosition.gameObject.transform).rect.size + new Vector2(100, 100);
+                ((RectTransform) HighlightingFrame.gameObject.transform).pivot = ((RectTransform) buttonPosition.gameObject.transform).pivot;
+                HighlightingFrame.gameObject.transform.position = buttonPosition.gameObject.transform.position;
             }
 
             HighlightingFrame.SetActive(true);
         }
+    }
+
+    private void HandleProblematicButton(RectTransform buttonPosition) {
+        ((RectTransform) HighlightingFrame.gameObject.transform).sizeDelta = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).rect.size + new Vector2(100, 100);
+        ((RectTransform) HighlightingFrame.gameObject.transform).pivot = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).pivot;
+        HighlightingFrame.gameObject.transform.position = buttonPosition.GetChild(0).gameObject.transform.position;
     }
 
     public void CancelHighlighting() {

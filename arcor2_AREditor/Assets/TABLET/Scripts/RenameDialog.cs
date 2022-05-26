@@ -17,7 +17,7 @@ public class RenameDialog : Dialog
     [SerializeField]
     private LabeledInput nameInput;
     private GameObject overlay;
-    private WalktroughHandler WalktroughHandler;
+    public WalktroughHandler WalktroughHandler;
 
     private InteractiveObject selectedObject;
 
