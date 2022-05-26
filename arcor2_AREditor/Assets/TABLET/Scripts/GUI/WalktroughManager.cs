@@ -474,17 +474,9 @@ public class WalktroughManager : MonoBehaviour {
         },
 
         new WalktroughStep {
-            Order = 52,
-            PrimaryText = "Now let's click on home button.",
-            SecondaryText = "",
-            Tip = "",
-            HighlitedButton = null,
-        },
-
-        new WalktroughStep {
             Order = 53,
             PrimaryText = "And now you can enjoy watching your programed task.",
-            SecondaryText = "",
+            SecondaryText = "Aim at START (GREEN ARROW) and click RUN button.",
             Tip = "If you have problems finding funcitionality just use the TOOL TIPS.",
             HighlitedButton = null,
         }

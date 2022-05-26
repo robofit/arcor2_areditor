@@ -227,7 +227,7 @@ public class WalktroughHandler : MonoBehaviour {
     }
 
     private void HandleProblematicButton(RectTransform buttonPosition) {
-        ((RectTransform) HighlightingFrame.gameObject.transform).sizeDelta = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).rect.size + new Vector2(100, 100);
+        ((RectTransform) HighlightingFrame.gameObject.transform).sizeDelta = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).rect.size + new Vector2(100, 80);
         ((RectTransform) HighlightingFrame.gameObject.transform).pivot = ((RectTransform) buttonPosition.GetChild(0).gameObject.transform).pivot;
         HighlightingFrame.gameObject.transform.position = buttonPosition.GetChild(0).gameObject.transform.position;
     }
