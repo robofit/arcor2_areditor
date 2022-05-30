@@ -139,8 +139,8 @@ PlayerSettings:
   bundleVersion: 0.18.1-b2
   preloadedAssets:
   - {fileID: 11400000, guid: 20a9bcdf4f5308b4cbe95702f502a097, type: 2}
-  - {fileID: 4800000, guid: c9f956787b1d945e7b36e0516201fc76, type: 3}
   - {fileID: -2463257785536252682, guid: 4c23dffa6be639149863cb8c370c5da8, type: 2}
+  - {fileID: 4800000, guid: c9f956787b1d945e7b36e0516201fc76, type: 3}
   - {fileID: 11400000, guid: 8840d73fe5000973ea1c8daed2dde73f, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -869,6 +869,7 @@ PlayerSettings:
   metroSplashScreenUseBackgroundColor: 0
   platformCapabilities:
     WindowsStoreApps:
+      EnterpriseAuthentication: False
       OfflineMapsManagement: False
       HumanInterfaceDevice: False
       Location: False
@@ -880,7 +881,6 @@ PlayerSettings:
       PrivateNetworkClientServer: False
       InternetClientServer: False
       VideosLibrary: False
-      BackgroundMediaPlayback: False
       Objects3D: False
       RemoteSystem: False
       BlockedChatMessages: False
@@ -903,9 +903,9 @@ PlayerSettings:
       RecordedCallsFolder: False
       Contacts: False
       InternetClient: True
-      Proximity: False
       CodeGeneration: False
-      EnterpriseAuthentication: False
+      BackgroundMediaPlayback: False
+      Proximity: False
   metroTargetDeviceFamilies:
     Desktop: False
     Holographic: True
@@ -917,7 +917,6 @@ PlayerSettings:
   metroFTAName: 
   metroFTAFileTypes: []
   metroProtocolName: 
-  vcxProjDefaultLanguage: 
   XboxOneProductId: 
   XboxOneUpdateKey: 
   XboxOneSandboxId: 

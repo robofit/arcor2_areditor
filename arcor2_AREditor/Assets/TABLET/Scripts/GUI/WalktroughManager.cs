@@ -239,7 +239,7 @@ public class WalktroughManager : MonoBehaviour {
             Order = 24,
             PrimaryText = "Nice! Let's create blank ACTION POINT represented by BALL.",
             SecondaryText = "Tap the Add button.",
-            Tip = "Every ACTION - (YELLOW ARROW) is bound to the ACTION POINT (BALL).",
+            Tip = "Every ACTION (YELLOW ARROW) is bound to the ACTION POINT (BALL).",
             HighlitedButton = null,
         },
 

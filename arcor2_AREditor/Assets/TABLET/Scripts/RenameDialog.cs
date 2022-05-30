@@ -33,8 +33,12 @@ public class RenameDialog : Dialog
         if (!await objectToRename.WriteLock(false))
             return;
 
-        if (WalktroughHandler.gameObject.activeInHierarchy && WalktroughHandler.Manager.Order == 35) {
+        if (WalktroughHandler.gameObject.activeInHierarchy && WalktroughHandler.Manager.Order == 35 || WalktroughHandler.Manager.Order == 34) {
             WalktroughHandler.StepOver();
+            if (WalktroughHandler.Manager.Order == 34)
+            {
+                WalktroughHandler.StepOver();
+            }
         }
 
         this.isNewObject = isNewObject;
