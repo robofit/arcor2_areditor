@@ -22,6 +22,8 @@ namespace Base {
         /// Websocket context
         /// </summary>
         private WebSocket websocket;
+
+        int counter = 0;
         /// <summary>
         /// Dictionary of unprocessed responses
         /// </summary>
@@ -579,30 +581,37 @@ namespace Base {
             try {
 
                 IO.Swagger.Model.ActionStateBefore actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateBefore>(obj);
+                if (!string.IsNullOrEmpty(actionStateBefore.Data.ActionId)) {
+                    puck_id = actionStateBefore.Data.ActionId;
 
-                puck_id = actionStateBefore.Data.ActionId;
+                    if (!ProjectManager.Instance.Valid) {
+                        Debug.LogWarning("Project not yet loaded, ignoring current action");
+                        GameManager.Instance.ActionRunningOnStartupId = puck_id;
+                        return;
+                    }
+                    // Stop previously running action (change its color to default)
+                    if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                        ActionsManager.Instance.CurrentlyRunningAction.StopAction();
 
-                if (!ProjectManager.Instance.Valid) {
-                    Debug.LogWarning("Project not yet loaded, ignoring current action");
-                    GameManager.Instance.ActionRunningOnStartupId = puck_id;
-                    return;
+                    Action puck = ProjectManager.Instance.GetAction(puck_id);
+                    ActionsManager.Instance.CurrentlyRunningAction = puck;
+                    // Run current action (set its color to running)
+                    puck.RunAction();
+                } else {
+                    if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                        ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+                    ActionsManager.Instance.CurrentlyRunningAction = null;
                 }
+                
+                
 
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
+            } catch (ItemNotFoundException e) {
+                Debug.LogError(e);
             }
-            // Stop previously running action (change its color to default)
-            if (ActionsManager.Instance.CurrentlyRunningAction != null)
-                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
-            try {
-                Action puck = ProjectManager.Instance.GetAction(puck_id);
-                ActionsManager.Instance.CurrentlyRunningAction = puck;
-                // Run current action (set its color to running)
-                puck.RunAction();
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-            }
+            
         }
 
         private void HandleActionStateAfter(string obj) {
@@ -613,11 +622,10 @@ namespace Base {
             try {
 
                 IO.Swagger.Model.ActionStateAfter actionStateBefore = JsonConvert.DeserializeObject<IO.Swagger.Model.ActionStateAfter>(obj);
-
-                puck_id = actionStateBefore.Data.ActionId;
-
-
-
+                if (ActionsManager.Instance.CurrentlyRunningAction != null)
+                        ActionsManager.Instance.CurrentlyRunningAction.StopAction();
+                    ActionsManager.Instance.CurrentlyRunningAction = null;
+                
             } catch (NullReferenceException e) {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
