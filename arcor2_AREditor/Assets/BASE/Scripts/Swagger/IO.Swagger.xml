@@ -663,7 +663,7 @@
             </member>
         <member name="T:IO.Swagger.Model.NewObjectTypeResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.NewObjectTypeResponse.#ctor">
@@ -1109,7 +1109,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateObjectPoseUsingRobotResponse.#ctor">
@@ -1308,7 +1308,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StepRobotEefRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, axis: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Axis, what: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.What, mode: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Mode, step: float, safe: bool = True, pose: Union[arcor2.data.common.Pose, NoneType] = None, speed: float = 0.25, linear: bool = True, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, axis: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Axis, what: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.What, mode: arcor2_arserver_data.rpc.robot.StepRobotEef.Request.Args.Mode, step: float, safe: bool = True, pose: Optional[arcor2.data.common.Pose] = None, speed: float = 0.25, linear: bool = True, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.StepRobotEefRequestArgs.AxisEnum">
@@ -1541,6 +1541,78 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotEefDataEefPose">
+             <summary>
+             EefPose(end_effector_id: str, pose: arcor2.data.common.Pose, arm_id: Optional[str] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefDataEefPose" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.#ctor(System.String,System.String,IO.Swagger.Model.Pose)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefDataEefPose" /> class.
+             </summary>
+             <param name="armId">armId.</param>
+             <param name="endEffectorId">endEffectorId (required).</param>
+             <param name="pose">pose (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefDataEefPose.ArmId">
+             <summary>
+             Gets or Sets ArmId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefDataEefPose.EndEffectorId">
+             <summary>
+             Gets or Sets EndEffectorId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefDataEefPose.Pose">
+             <summary>
+             Gets or Sets Pose
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.Equals(IO.Swagger.Model.RobotEefDataEefPose)">
+             <summary>
+             Returns true if RobotEefDataEefPose instances are equal
+             </summary>
+             <param name="input">Instance of RobotEefDataEefPose to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefDataEefPose.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.PausePackageRequest">
              <summary>
              Request(id: int)
@@ -1613,9 +1685,69 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotJointsAllOf">
+             <summary>
+             RobotJointsAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJointsAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.#ctor(IO.Swagger.Model.RobotJointsData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJointsAllOf" /> class.
+             </summary>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJointsAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.Equals(IO.Swagger.Model.RobotJointsAllOf)">
+             <summary>
+             Returns true if RobotJointsAllOf instances are equal
+             </summary>
+             <param name="input">Instance of RobotJointsAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.StepRobotEefResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StepRobotEefResponse.#ctor">
@@ -1699,7 +1831,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RegisterForRobotEventResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RegisterForRobotEventResponse.#ctor">
@@ -1855,7 +1987,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Project">
              <summary>
-             Project(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'List[ActionPoint]' = &lt;factory&gt;, parameters: 'List[ProjectParameter]' = &lt;factory&gt;, functions: 'List[ProjectFunction]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, object_overrides: 'List[SceneObjectOverride]' = &lt;factory&gt;, project_objects_ids: 'Optional[List[str]]' = None)
+             Project(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', action_points: 'list[ActionPoint]' = &lt;factory&gt;, parameters: 'list[ProjectParameter]' = &lt;factory&gt;, functions: 'list[ProjectFunction]' = &lt;factory&gt;, logic: 'list[LogicItem]' = &lt;factory&gt;, object_overrides: 'list[SceneObjectOverride]' = &lt;factory&gt;, project_objects_ids: 'Optional[list[str]]' = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Project.#ctor">
@@ -1993,7 +2125,7 @@
             </member>
         <member name="T:IO.Swagger.Model.NewSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.NewSceneResponse.#ctor">
@@ -2077,7 +2209,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToJointsRequestArgs">
              <summary>
-             Args(robot_id: str, speed: float, joints: List[arcor2.data.common.Joint], safe: bool = True, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, speed: float, joints: list[arcor2.data.common.Joint], safe: bool = True, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToJointsRequestArgs.#ctor">
@@ -2390,7 +2522,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Response">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Response.#ctor">
@@ -2786,7 +2918,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToActionPointRequestArgs">
              <summary>
-             Args(robot_id: str, speed: float, end_effector_id: Union[str, NoneType] = None, orientation_id: Union[str, NoneType] = None, joints_id: Union[str, NoneType] = None, safe: bool = True, linear: bool = False, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, speed: float, end_effector_id: Optional[str] = None, orientation_id: Optional[str] = None, joints_id: Optional[str] = None, safe: bool = True, linear: bool = False, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToActionPointRequestArgs.#ctor">
@@ -3086,7 +3218,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CloseSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CloseSceneResponse.#ctor">
@@ -3357,7 +3489,7 @@
             </member>
         <member name="T:IO.Swagger.Model.OpenProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.OpenProjectResponse.#ctor">
@@ -3634,7 +3766,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SceneObject">
              <summary>
-             SceneObject(name: 'str', type: 'str', pose: 'Optional[Pose]' = None, parameters: 'List[Parameter]' = &lt;factory&gt;, children: 'List[SceneObject]' = &lt;factory&gt;, id: 'str' = '')
+             SceneObject(name: 'str', type: 'str', pose: 'Optional[Pose]' = None, parameters: 'list[Parameter]' = &lt;factory&gt;, children: 'list[SceneObject]' = &lt;factory&gt;, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SceneObject.#ctor">
@@ -3802,7 +3934,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeleteSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeleteSceneResponse.#ctor">
@@ -4739,24 +4871,25 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionStateBeforeData">
              <summary>
-             Data(action_id: str, parameters: List[str])
+             Data(action_id: Optional[str] = None, parameters: Optional[list[str]] = None, action_point_ids: Optional[set[str]] = None)
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ActionStateBeforeData.#ctor">
+        <member name="M:IO.Swagger.Model.ActionStateBeforeData.#ctor(System.String,System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ActionStateBeforeData" /> class.
              </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.ActionStateBeforeData.#ctor(System.String,System.Collections.Generic.List{System.String})">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.ActionStateBeforeData" /> class.
-             </summary>
-             <param name="actionId">actionId (required).</param>
-             <param name="parameters">parameters (required).</param>
+             <param name="actionId">actionId.</param>
+             <param name="actionPointIds">actionPointIds.</param>
+             <param name="parameters">parameters.</param>
             </member>
         <member name="P:IO.Swagger.Model.ActionStateBeforeData.ActionId">
              <summary>
              Gets or Sets ActionId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ActionStateBeforeData.ActionPointIds">
+             <summary>
+             Gets or Sets ActionPointIds
              </summary>
             </member>
         <member name="P:IO.Swagger.Model.ActionStateBeforeData.Parameters">
@@ -4931,7 +5064,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ReadUnlockResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ReadUnlockResponse.#ctor">
@@ -5015,7 +5148,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MarkersCornersResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_calibration_data.MarkerCorners], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_calibration_data.MarkerCorners]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MarkersCornersResponse.#ctor">
@@ -5177,7 +5310,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectAimingAddPointResponseData">
              <summary>
-             Data(finished_indexes: List[int])
+             Data(finished_indexes: list[int])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAimingAddPointResponseData.#ctor">
@@ -5237,7 +5370,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SceneObjectOverride">
              <summary>
-             SceneObjectOverride(id: 'str', parameters: 'List[Parameter]')
+             SceneObjectOverride(id: 'str', parameters: 'list[Parameter]')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SceneObjectOverride.#ctor">
@@ -5488,9 +5621,75 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotEefData">
+             <summary>
+             Data(robot_id: str, end_effectors: list[arcor2_runtime.events.RobotEef.Data.EefPose] = &lt;factory&gt;)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefData" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.#ctor(System.Collections.Generic.List{IO.Swagger.Model.RobotEefDataEefPose},System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefData" /> class.
+             </summary>
+             <param name="endEffectors">endEffectors.</param>
+             <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefData.EndEffectors">
+             <summary>
+             Gets or Sets EndEffectors
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefData.RobotId">
+             <summary>
+             Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.Equals(IO.Swagger.Model.RobotEefData)">
+             <summary>
+             Returns true if RobotEefData instances are equal
+             </summary>
+             <param name="input">Instance of RobotEefData to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefData.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.AddActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionResponse.#ctor">
@@ -5822,7 +6021,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddLogicItemResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddLogicItemResponse.#ctor">
@@ -5904,9 +6103,70 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.TemporaryPackageRequestArgs">
+             <summary>
+             Args(start_paused: bool = False, breakpoints: Optional[set[str]] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.#ctor(System.Collections.Generic.List{System.String},System.Boolean)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.TemporaryPackageRequestArgs" /> class.
+             </summary>
+             <param name="breakpoints">breakpoints.</param>
+             <param name="startPaused">startPaused (default to false).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.TemporaryPackageRequestArgs.Breakpoints">
+             <summary>
+             Gets or Sets Breakpoints
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.TemporaryPackageRequestArgs.StartPaused">
+             <summary>
+             Gets or Sets StartPaused
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.Equals(IO.Swagger.Model.TemporaryPackageRequestArgs)">
+             <summary>
+             Returns true if TemporaryPackageRequestArgs instances are equal
+             </summary>
+             <param name="input">Instance of TemporaryPackageRequestArgs to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestArgs.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.RemoveActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveActionResponse.#ctor">
@@ -6170,7 +6430,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateProjectHasLogicResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateProjectHasLogicResponse.#ctor">
@@ -6254,7 +6514,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CalibrateCameraResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CalibrateCameraResponse.#ctor">
@@ -6338,7 +6598,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RunPackageRequestArgs">
              <summary>
-             Args(id: str, start_paused: bool = False, breakpoints: Union[Set[str], NoneType] = None)
+             Args(id: str, start_paused: bool = False, breakpoints: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RunPackageRequestArgs.#ctor">
@@ -6410,7 +6670,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointPositionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointPositionResponse.#ctor">
@@ -6494,7 +6754,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CameraColorParametersResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2.data.camera.CameraParameters, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2.data.camera.CameraParameters] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CameraColorParametersResponse.#ctor">
@@ -6570,6 +6830,72 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.CameraColorParametersResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.RobotJointsData">
+             <summary>
+             Data(robot_id: str, joints: list[arcor2.data.common.Joint])
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJointsData" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.#ctor(System.Collections.Generic.List{IO.Swagger.Model.Joint},System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJointsData" /> class.
+             </summary>
+             <param name="joints">joints (required).</param>
+             <param name="robotId">robotId (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJointsData.Joints">
+             <summary>
+             Gets or Sets Joints
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJointsData.RobotId">
+             <summary>
+             Gets or Sets RobotId
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.Equals(IO.Swagger.Model.RobotJointsData)">
+             <summary>
+             Returns true if RobotJointsData instances are equal
+             </summary>
+             <param name="input">Instance of RobotJointsData to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJointsData.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -7055,7 +7381,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SystemInfoResponseData">
              <summary>
-             Data(version: str, api_version: str, supported_parameter_types: Set[str] = &lt;factory&gt;, supported_rpc_requests: Set[str] = &lt;factory&gt;)
+             Data(version: str, api_version: str, supported_parameter_types: set[str] = &lt;factory&gt;, supported_rpc_requests: set[str] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SystemInfoResponseData.#ctor">
@@ -7645,7 +7971,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToPoseResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToPoseResponse.#ctor">
@@ -7908,9 +8234,69 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotEefAllOf">
+             <summary>
+             RobotEefAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.#ctor(IO.Swagger.Model.RobotEefData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEefAllOf" /> class.
+             </summary>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEefAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.Equals(IO.Swagger.Model.RobotEefAllOf)">
+             <summary>
+             Returns true if RobotEefAllOf instances are equal
+             </summary>
+             <param name="input">Instance of RobotEefAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEefAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.PackageStateData">
              <summary>
-             Data(state: arcor2.data.events.PackageState.Data.StateEnum = &lt;StateEnum.UNDEFINED: 'undefined'&gt;, package_id: Union[str, NoneType] = None)
+             Data(state: arcor2.data.events.PackageState.Data.StateEnum = &lt;StateEnum.UNDEFINED: 'undefined'&gt;, package_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.PackageStateData.StateEnum">
@@ -8215,7 +8601,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetCameraPoseResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_calibration_data.EstimatedPose, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2_calibration_data.EstimatedPose] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetCameraPoseResponse.#ctor">
@@ -8365,7 +8751,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorPoseRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorPoseRequestArgs.#ctor">
@@ -8888,7 +9274,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetRobotArmsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotArmsResponse.#ctor">
@@ -9027,7 +9413,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameActionResponse.#ctor">
@@ -9111,7 +9497,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddOverrideResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddOverrideResponse.#ctor">
@@ -9255,7 +9641,7 @@
             </member>
         <member name="T:IO.Swagger.Model.BareActionPoint">
              <summary>
-             BareActionPoint(name: 'str', position: 'Position', parent: 'Optional[str]' = None, id: 'str' = '')
+             BareActionPoint(name: 'str', position: 'Position', parent: 'Optional[str]' = None, display_name: 'Optional[str]' = None, description: 'Optional[str]' = None, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.BareActionPoint.#ctor">
@@ -9263,14 +9649,26 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareActionPoint" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.BareActionPoint.#ctor(System.String,System.String,System.String,IO.Swagger.Model.Position)">
+        <member name="M:IO.Swagger.Model.BareActionPoint.#ctor(System.String,System.String,System.String,System.String,System.String,IO.Swagger.Model.Position)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.BareActionPoint" /> class.
              </summary>
+             <param name="description">description.</param>
+             <param name="displayName">displayName.</param>
              <param name="id">id (default to "").</param>
              <param name="name">name (required).</param>
              <param name="parent">parent.</param>
              <param name="position">position (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.BareActionPoint.Description">
+             <summary>
+             Gets or Sets Description
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.BareActionPoint.DisplayName">
+             <summary>
+             Gets or Sets DisplayName
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.BareActionPoint.Id">
              <summary>
@@ -9333,7 +9731,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateLogicItemRequestArgs">
              <summary>
-             Args(logic_item_id: str, start: str, end: str, condition: Union[arcor2.data.common.ProjectLogicIf, NoneType] = None)
+             Args(logic_item_id: str, start: str, end: str, condition: Optional[arcor2.data.common.ProjectLogicIf] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateLogicItemRequestArgs.#ctor">
@@ -9411,7 +9809,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProcessStateData">
              <summary>
-             Data(id: str, state: arcor2_arserver_data.events.common.ProcessState.Data.StateEnum, message: Union[str, NoneType] = None)
+             Data(id: str, state: arcor2_arserver_data.events.common.ProcessState.Data.StateEnum, message: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.ProcessStateData.StateEnum">
@@ -10075,7 +10473,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddVirtualCollisionObjectToSceneResponse.#ctor">
@@ -10588,7 +10986,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RemoveFromSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveFromSceneResponse.#ctor">
@@ -10672,7 +11070,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointResponse.#ctor">
@@ -11026,7 +11424,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeleteProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeleteProjectResponse.#ctor">
@@ -11108,9 +11506,81 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetSceneRequest">
+             <summary>
+             Request(id: int, args: arcor2.data.rpc.common.IdArgs)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.IdArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.Equals(IO.Swagger.Model.GetSceneRequest)">
+             <summary>
+             Returns true if GetSceneRequest instances are equal
+             </summary>
+             <param name="input">Instance of GetSceneRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.RemoveActionPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveActionPointResponse.#ctor">
@@ -11314,7 +11784,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CloseProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CloseProjectResponse.#ctor">
@@ -11596,7 +12066,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointJointsUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotResponse.#ctor">
@@ -12055,7 +12525,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenamePackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenamePackageResponse.#ctor">
@@ -12241,7 +12711,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddApUsingRobotRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, name: str, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, name: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddApUsingRobotRequestArgs.#ctor">
@@ -12391,7 +12861,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Notification">
              <summary>
-             Notification(data: Union[arcor2.data.events.Notification.Data, NoneType] = None)
+             Notification(data: Optional[arcor2.data.events.Notification.Data] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.Notification.ChangeTypeEnum">
@@ -12494,7 +12964,7 @@
             </member>
         <member name="T:IO.Swagger.Model.PackageMeta">
              <summary>
-             PackageMeta(name: str, built: datetime.datetime, executed: Union[datetime.datetime, NoneType] = None)
+             PackageMeta(name: str, built: datetime.datetime, executed: Optional[datetime.datetime] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.PackageMeta.#ctor">
@@ -12566,7 +13036,7 @@
             </member>
         <member name="T:IO.Swagger.Model.BuildProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_arserver_data.rpc.build.BuildProject.Response.Data, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2_arserver_data.rpc.build.BuildProject.Response.Data] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.BuildProjectResponse.#ctor">
@@ -12650,7 +13120,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectAimingStartResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAimingStartResponse.#ctor">
@@ -12734,7 +13204,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeleteOverrideResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeleteOverrideResponse.#ctor">
@@ -13094,7 +13564,7 @@
             </member>
         <member name="T:IO.Swagger.Model.HandTeachingModeData">
              <summary>
-             Data(robot_id: str, enabled: bool, arm_id: Union[str, NoneType] = None)
+             Data(robot_id: str, enabled: bool, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.HandTeachingModeData.#ctor">
@@ -13166,7 +13636,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetRobotMetaResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.robot.RobotMeta], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.robot.RobotMeta]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotMetaResponse.#ctor">
@@ -13250,7 +13720,7 @@
             </member>
         <member name="T:IO.Swagger.Model.HandTeachingModeResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.HandTeachingModeResponse.#ctor">
@@ -13406,7 +13876,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UploadPackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UploadPackageResponse.#ctor">
@@ -13490,7 +13960,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetRobotJointsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2.data.common.Joint], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2.data.common.Joint]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotJointsResponse.#ctor">
@@ -13646,7 +14116,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameProjectResponse.#ctor">
@@ -13883,7 +14353,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointJointsRequestArgs">
              <summary>
-             Args(joints_id: str, joints: List[arcor2.data.common.Joint])
+             Args(joints_id: str, joints: list[arcor2.data.common.Joint])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointJointsRequestArgs.#ctor">
@@ -14069,7 +14539,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListPackagesResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: List[arcor2_execution_data.common.PackageSummary] = &lt;factory&gt;)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: list[arcor2_execution_data.common.PackageSummary] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListPackagesResponse.#ctor">
@@ -14213,7 +14683,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SceneStateData">
              <summary>
-             Data(state: arcor2_arserver_data.events.scene.SceneState.Data.StateEnum, message: Union[str, NoneType] = None)
+             Data(state: arcor2_arserver_data.events.scene.SceneState.Data.StateEnum, message: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.SceneStateData.StateEnum">
@@ -14462,7 +14932,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Action">
              <summary>
-             Action(name: 'str', type: 'str', id: 'str' = '', parameters: 'List[ActionParameter]' = &lt;factory&gt;, flows: 'List[Flow]' = &lt;factory&gt;)
+             Action(name: 'str', type: 'str', id: 'str' = '', parameters: 'list[ActionParameter]' = &lt;factory&gt;, flows: 'list[Flow]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Action.#ctor">
@@ -14738,7 +15208,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorsRequestArgs">
              <summary>
-             Args(robot_id: str, arm_id: Union[str, NoneType])
+             Args(robot_id: str, arm_id: Optional[str])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorsRequestArgs.#ctor">
@@ -14870,7 +15340,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointJointsUsingRobotResponse.#ctor">
@@ -15057,7 +15527,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RegisterUserResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RegisterUserResponse.#ctor">
@@ -15199,69 +15669,9 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
-        <member name="T:IO.Swagger.Model.OpenSceneRequestAllOf">
-             <summary>
-             OpenSceneRequestAllOf
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.#ctor">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.OpenSceneRequestAllOf" /> class.
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.#ctor(IO.Swagger.Model.IdArgs)">
-             <summary>
-             Initializes a new instance of the <see cref="T:IO.Swagger.Model.OpenSceneRequestAllOf" /> class.
-             </summary>
-             <param name="args">args (required).</param>
-            </member>
-        <member name="P:IO.Swagger.Model.OpenSceneRequestAllOf.Args">
-             <summary>
-             Gets or Sets Args
-             </summary>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.ToString">
-             <summary>
-             Returns the string presentation of the object
-             </summary>
-             <returns>String presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.ToJson">
-             <summary>
-             Returns the JSON string presentation of the object
-             </summary>
-             <returns>JSON string presentation of the object</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.Equals(System.Object)">
-             <summary>
-             Returns true if objects are equal
-             </summary>
-             <param name="input">Object to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.Equals(IO.Swagger.Model.OpenSceneRequestAllOf)">
-             <summary>
-             Returns true if OpenSceneRequestAllOf instances are equal
-             </summary>
-             <param name="input">Instance of OpenSceneRequestAllOf to be compared</param>
-             <returns>Boolean</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.GetHashCode">
-             <summary>
-             Gets the hash code
-             </summary>
-             <returns>Hash code</returns>
-            </member>
-        <member name="M:IO.Swagger.Model.OpenSceneRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
-             <summary>
-             To validate all properties of the instance
-             </summary>
-             <param name="validationContext">Validation context</param>
-             <returns>Validation Result</returns>
-            </member>
         <member name="T:IO.Swagger.Model.ObjectTypeUsageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectTypeUsageResponse.#ctor">
@@ -15609,7 +16019,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionParamValuesResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ActionParamValuesResponse.#ctor">
@@ -15693,7 +16103,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateObjectModelResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateObjectModelResponse.#ctor">
@@ -15899,7 +16309,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameObjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameObjectResponse.#ctor">
@@ -16043,7 +16453,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointJointsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointJointsResponse.#ctor">
@@ -16193,7 +16603,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Flow">
              <summary>
-             Flow(type: 'FlowTypes' = &lt;FlowTypes.DEFAULT: 'default'&gt;, outputs: 'List[str]' = &lt;factory&gt;)
+             Flow(type: 'FlowTypes' = &lt;FlowTypes.DEFAULT: 'default'&gt;, outputs: 'list[str]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.Flow.TypeEnum">
@@ -16264,7 +16674,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, safe: bool = True, speed: float = 0.25, linear: bool = True, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, safe: bool = True, speed: float = 0.25, linear: bool = True, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SetEefPerpendicularToWorldRequestArgs.#ctor">
@@ -16354,7 +16764,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CopyActionPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CopyActionPointResponse.#ctor">
@@ -16701,9 +17111,64 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetSceneResponseAllOf">
+             <summary>
+             GetSceneResponseAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.#ctor(IO.Swagger.Model.Scene)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneResponseAllOf" /> class.
+             </summary>
+             <param name="data">data.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponseAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.Equals(IO.Swagger.Model.GetSceneResponseAllOf)">
+             <summary>
+             Returns true if GetSceneResponseAllOf instances are equal
+             </summary>
+             <param name="input">Instance of GetSceneResponseAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ObjectAimingDoneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_arserver_data.rpc.objects.ObjectAimingAddPoint.Response.Data, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2_arserver_data.rpc.objects.ObjectAimingAddPoint.Response.Data] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAimingDoneResponse.#ctor">
@@ -17238,7 +17703,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ForwardKinematicsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2.data.common.Pose, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2.data.common.Pose] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ForwardKinematicsResponse.#ctor">
@@ -17653,7 +18118,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RemoveLogicItemResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveLogicItemResponse.#ctor">
@@ -18162,15 +18627,15 @@
              TemporaryPackageRequestAllOf
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.TemporaryPackageRequestAllOf.#ctor(System.String)">
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequestAllOf.#ctor(IO.Swagger.Model.TemporaryPackageRequestArgs)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.TemporaryPackageRequestAllOf" /> class.
              </summary>
-             <param name="data">data (default to "").</param>
+             <param name="args">args.</param>
             </member>
-        <member name="P:IO.Swagger.Model.TemporaryPackageRequestAllOf.Data">
+        <member name="P:IO.Swagger.Model.TemporaryPackageRequestAllOf.Args">
              <summary>
-             Gets or Sets Data
+             Gets or Sets Args
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.TemporaryPackageRequestAllOf.ToString">
@@ -18383,7 +18848,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CameraColorImageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[str, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CameraColorImageResponse.#ctor">
@@ -18467,7 +18932,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointOrientationUsingRobotResponse.#ctor">
@@ -18549,6 +19014,109 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotEef">
+             <summary>
+             RobotEef(data: arcor2_runtime.events.RobotEef.Data)
+             </summary>
+            </member>
+        <member name="T:IO.Swagger.Model.RobotEef.ChangeTypeEnum">
+             <summary>
+             Defines ChangeType
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotEef.ChangeTypeEnum.Add">
+             <summary>
+             Enum Add for value: add
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotEef.ChangeTypeEnum.Update">
+             <summary>
+             Enum Update for value: update
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotEef.ChangeTypeEnum.Remove">
+             <summary>
+             Enum Remove for value: remove
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotEef.ChangeTypeEnum.Updatebase">
+             <summary>
+             Enum Updatebase for value: update_base
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEef.ChangeType">
+             <summary>
+             Gets or Sets ChangeType
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEef" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.#ctor(System.Nullable{IO.Swagger.Model.RobotEef.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.RobotEefData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotEef" /> class.
+             </summary>
+             <param name="changeType">changeType.</param>
+             <param name="_event">_event (required).</param>
+             <param name="parentId">parentId.</param>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEef.Event">
+             <summary>
+             Gets or Sets Event
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEef.ParentId">
+             <summary>
+             Gets or Sets ParentId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotEef.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.Equals(IO.Swagger.Model.RobotEef)">
+             <summary>
+             Returns true if RobotEef instances are equal
+             </summary>
+             <param name="input">Instance of RobotEef to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotEef.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ObjectTypeUsageRequestAllOf">
              <summary>
              ObjectTypeUsageRequestAllOf
@@ -18611,7 +19179,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StartSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StartSceneResponse.#ctor">
@@ -18761,7 +19329,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CollisionModels">
              <summary>
-             CollisionModels(boxes: List[arcor2.data.object_type.Box] = &lt;factory&gt;, spheres: List[arcor2.data.object_type.Sphere] = &lt;factory&gt;, cylinders: List[arcor2.data.object_type.Cylinder] = &lt;factory&gt;, meshes: List[arcor2.data.object_type.Mesh] = &lt;factory&gt;)
+             CollisionModels(boxes: list[arcor2.data.object_type.Box] = &lt;factory&gt;, spheres: list[arcor2.data.object_type.Sphere] = &lt;factory&gt;, cylinders: list[arcor2.data.object_type.Cylinder] = &lt;factory&gt;, meshes: list[arcor2.data.object_type.Mesh] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CollisionModels.#ctor(System.Collections.Generic.List{IO.Swagger.Model.Box},System.Collections.Generic.List{IO.Swagger.Model.Cylinder},System.Collections.Generic.List{IO.Swagger.Model.Mesh},System.Collections.Generic.List{IO.Swagger.Model.Sphere})">
@@ -19085,9 +19653,64 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetProjectResponseAllOf">
+             <summary>
+             GetProjectResponseAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.#ctor(IO.Swagger.Model.Project)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetProjectResponseAllOf" /> class.
+             </summary>
+             <param name="data">data.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponseAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.Equals(IO.Swagger.Model.GetProjectResponseAllOf)">
+             <summary>
+             Returns true if GetProjectResponseAllOf instances are equal
+             </summary>
+             <param name="input">Instance of GetProjectResponseAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.AddActionPointOrientationResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointOrientationResponse.#ctor">
@@ -19683,7 +20306,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeleteObjectTypesResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.rpc.objects.DeleteObjectTypes.Response.Data], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.rpc.objects.DeleteObjectTypes.Response.Data]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeleteObjectTypesResponse.#ctor">
@@ -19827,7 +20450,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ForwardKinematicsRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, joints: List[arcor2.data.common.Joint], arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, joints: list[arcor2.data.common.Joint], arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ForwardKinematicsRequestArgs.#ctor">
@@ -20434,7 +21057,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameActionPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameActionPointResponse.#ctor">
@@ -20518,7 +21141,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToActionPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToActionPointResponse.#ctor">
@@ -20950,7 +21573,7 @@
             </member>
         <member name="T:IO.Swagger.Model.TemporaryPackageRequest">
              <summary>
-             Request(id: int)
+             Request(id: int, args: Optional[arcor2_arserver_data.rpc.build.TemporaryPackage.Request.Args] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.TemporaryPackageRequest.#ctor">
@@ -20958,13 +21581,13 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.TemporaryPackageRequest" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.TemporaryPackageRequest.#ctor(System.Int32,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.TemporaryPackageRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.TemporaryPackageRequestArgs)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.TemporaryPackageRequest" /> class.
              </summary>
              <param name="id">id (required).</param>
              <param name="request">request (required).</param>
-             <param name="data">data (default to "").</param>
+             <param name="args">args.</param>
             </member>
         <member name="P:IO.Swagger.Model.TemporaryPackageRequest.Id">
              <summary>
@@ -20976,9 +21599,9 @@
              Gets or Sets Request
              </summary>
             </member>
-        <member name="P:IO.Swagger.Model.TemporaryPackageRequest.Data">
+        <member name="P:IO.Swagger.Model.TemporaryPackageRequest.Args">
              <summary>
-             Gets or Sets Data
+             Gets or Sets Args
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.TemporaryPackageRequest.ToString">
@@ -21100,7 +21723,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetGrippersRequestArgs">
              <summary>
-             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetGrippersRequestArgs.#ctor">
@@ -21232,7 +21855,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MarkerCorners">
              <summary>
-             MarkerCorners(marker_id: int, corners: List[arcor2_calibration_data.Corner])
+             MarkerCorners(marker_id: int, corners: list[arcor2_calibration_data.Corner])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MarkerCorners.#ctor">
@@ -21298,7 +21921,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CancelActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CancelActionResponse.#ctor">
@@ -21454,7 +22077,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SaveProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveProjectResponse.#ctor">
@@ -22943,7 +23566,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetRobotJointsRequestArgs">
              <summary>
-             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetRobotJointsRequestArgs.#ctor">
@@ -23539,7 +24162,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetSuctionsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetSuctionsResponse.#ctor">
@@ -23804,7 +24427,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddObjectToSceneRequestArgs">
              <summary>
-             Args(name: str, type: str, pose: Union[arcor2.data.common.Pose, NoneType] = None, parameters: List[arcor2.data.common.Parameter] = &lt;factory&gt;)
+             Args(name: str, type: str, pose: Optional[arcor2.data.common.Pose] = None, parameters: list[arcor2.data.common.Parameter] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddObjectToSceneRequestArgs.#ctor">
@@ -23882,7 +24505,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CalibrateRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CalibrateRobotResponse.#ctor">
@@ -24219,7 +24842,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectAction">
              <summary>
-             ObjectAction(name: str, description: Union[str, NoneType] = None, parameters: List[arcor2.data.object_type.ParameterMeta] = &lt;factory&gt;, meta: arcor2.data.common.ActionMetadata = &lt;factory&gt;, origins: Union[str, NoneType] = None, returns: List[str] = &lt;factory&gt;, disabled: bool = False, problem: Union[str, NoneType] = None)
+             ObjectAction(name: str, description: Optional[str] = None, parameters: list[arcor2.data.object_type.ParameterMeta] = &lt;factory&gt;, meta: arcor2.data.common.ActionMetadata = &lt;factory&gt;, origins: Optional[str] = None, returns: list[str] = &lt;factory&gt;, disabled: bool = False, problem: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAction.#ctor">
@@ -24321,7 +24944,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateProjectDescriptionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateProjectDescriptionResponse.#ctor">
@@ -24759,7 +25382,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointOrientationResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointOrientationResponse.#ctor">
@@ -25135,7 +25758,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListProjectsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.rpc.project.ListProjects.Response.Data], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.rpc.project.ListProjects.Response.Data]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListProjectsResponse.#ctor">
@@ -25219,7 +25842,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StopSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StopSceneResponse.#ctor">
@@ -25303,7 +25926,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Scene">
              <summary>
-             Scene(name: 'str', description: 'str' = &lt;factory&gt;, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', objects: 'List[SceneObject]' = &lt;factory&gt;)
+             Scene(name: 'str', description: 'str' = &lt;factory&gt;, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', objects: 'list[SceneObject]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Scene.#ctor">
@@ -25730,7 +26353,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateLockResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateLockResponse.#ctor">
@@ -25874,7 +26497,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListScenesResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.rpc.scene.ListScenes.Response.Data], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.rpc.scene.ListScenes.Response.Data]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListScenesResponse.#ctor">
@@ -25958,7 +26581,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectModel">
              <summary>
-             ObjectModel(type: arcor2.data.object_type.Model3dType, box: Union[arcor2.data.object_type.Box, NoneType] = None, cylinder: Union[arcor2.data.object_type.Cylinder, NoneType] = None, sphere: Union[arcor2.data.object_type.Sphere, NoneType] = None, mesh: Union[arcor2.data.object_type.Mesh, NoneType] = None)
+             ObjectModel(type: arcor2.data.object_type.Model3dType, box: Optional[arcor2.data.object_type.Box] = None, cylinder: Optional[arcor2.data.object_type.Cylinder] = None, sphere: Optional[arcor2.data.object_type.Sphere] = None, mesh: Optional[arcor2.data.object_type.Mesh] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.ObjectModel.TypeEnum">
@@ -26132,7 +26755,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ParameterMeta">
              <summary>
-             ParameterMeta(name: str, type: str, dynamic_value: bool = False, dynamic_value_parents: Union[Set[str], NoneType] = None, description: Union[str, NoneType] = None, default_value: Union[str, NoneType] = None, extra: Union[str, NoneType] = None, children: List[ForwardRef('ParameterMeta')] = &lt;factory&gt;)
+             ParameterMeta(name: str, type: str, dynamic_value: bool = False, dynamic_value_parents: Optional[set[str]] = None, description: Optional[str] = None, default_value: Optional[str] = None, extra: Optional[str] = None, children: list['ParameterMeta'] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ParameterMeta.#ctor">
@@ -26140,7 +26763,7 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ParameterMeta" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ParameterMeta.#ctor(System.Collections.Generic.List{IO.Swagger.Model.ParameterMeta},System.String,System.String,System.Boolean,System.Collections.Generic.List{System.String},System.String,System.String,System.String)">
+        <member name="M:IO.Swagger.Model.ParameterMeta.#ctor(System.Collections.Generic.List{System.Object},System.String,System.String,System.Boolean,System.Collections.Generic.List{System.String},System.String,System.String,System.String)">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ParameterMeta" /> class.
              </summary>
@@ -26298,9 +26921,93 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetProjectResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2.data.common.Project] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetProjectResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,IO.Swagger.Model.Project)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetProjectResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.Equals(IO.Swagger.Model.GetProjectResponse)">
+             <summary>
+             Returns true if GetProjectResponse instances are equal
+             </summary>
+             <param name="input">Instance of GetProjectResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.ChangedObjectTypes">
              <summary>
-             ChangedObjectTypes(data: List[arcor2_arserver_data.objects.ObjectTypeMeta])
+             ChangedObjectTypes(data: list[arcor2_arserver_data.objects.ObjectTypeMeta])
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.ChangedObjectTypes.ChangeTypeEnum">
@@ -26829,9 +27536,112 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.RobotJoints">
+             <summary>
+             RobotJoints(data: arcor2_runtime.events.RobotJoints.Data)
+             </summary>
+            </member>
+        <member name="T:IO.Swagger.Model.RobotJoints.ChangeTypeEnum">
+             <summary>
+             Defines ChangeType
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotJoints.ChangeTypeEnum.Add">
+             <summary>
+             Enum Add for value: add
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotJoints.ChangeTypeEnum.Update">
+             <summary>
+             Enum Update for value: update
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotJoints.ChangeTypeEnum.Remove">
+             <summary>
+             Enum Remove for value: remove
+             </summary>
+            </member>
+        <member name="F:IO.Swagger.Model.RobotJoints.ChangeTypeEnum.Updatebase">
+             <summary>
+             Enum Updatebase for value: update_base
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJoints.ChangeType">
+             <summary>
+             Gets or Sets ChangeType
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJoints" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.#ctor(System.Nullable{IO.Swagger.Model.RobotJoints.ChangeTypeEnum},System.String,System.String,IO.Swagger.Model.RobotJointsData)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.RobotJoints" /> class.
+             </summary>
+             <param name="changeType">changeType.</param>
+             <param name="_event">_event (required).</param>
+             <param name="parentId">parentId.</param>
+             <param name="data">data (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJoints.Event">
+             <summary>
+             Gets or Sets Event
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJoints.ParentId">
+             <summary>
+             Gets or Sets ParentId
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.RobotJoints.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.Equals(IO.Swagger.Model.RobotJoints)">
+             <summary>
+             Returns true if RobotJoints instances are equal
+             </summary>
+             <param name="input">Instance of RobotJoints to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.RobotJoints.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.GetGrippersResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetGrippersResponse.#ctor">
@@ -27113,7 +27923,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToPoseData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, target_pose: arcor2.data.common.Pose, safe: bool, linear: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, target_pose: arcor2.data.common.Pose, safe: bool, linear: bool, message: Optional[str] = None, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToPoseData.MoveEventTypeEnum">
@@ -27338,7 +28148,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RemoveActionPointOrientationResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveActionPointOrientationResponse.#ctor">
@@ -27500,7 +28310,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RunPackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RunPackageResponse.#ctor">
@@ -27893,7 +28703,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateObjectParametersResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateObjectParametersResponse.#ctor">
@@ -27977,7 +28787,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CameraParameters">
              <summary>
-             CameraParameters(fx: float, fy: float, cx: float, cy: float, dist_coefs: List[float])
+             CameraParameters(fx: float, fy: float, cx: float, cy: float, dist_coefs: list[float])
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CameraParameters.#ctor">
@@ -28325,7 +29135,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StopRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StopRobotResponse.#ctor">
@@ -28409,7 +29219,7 @@
             </member>
         <member name="T:IO.Swagger.Model.TemporaryPackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.TemporaryPackageResponse.#ctor">
@@ -28553,7 +29363,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToJointsData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, target_joints: List[arcor2.data.common.Joint], safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, target_joints: list[arcor2.data.common.Joint], safe: bool, message: Optional[str] = None, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum">
@@ -29434,7 +30244,7 @@
             </member>
         <member name="T:IO.Swagger.Model.HandTeachingModeRequestArgs">
              <summary>
-             Args(robot_id: str, enable: bool, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, enable: bool, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.HandTeachingModeRequestArgs.#ctor">
@@ -29784,7 +30594,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ReadLockResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ReadLockResponse.#ctor">
@@ -29868,7 +30678,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CopySceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[str, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CopySceneResponse.#ctor">
@@ -30013,7 +30823,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeleteObjectTypesRequest">
              <summary>
-             Request(id: int, args: Union[Set[str], NoneType] = None, dry_run: bool = False)
+             Request(id: int, args: Optional[set[str]] = None, dry_run: bool = False)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeleteObjectTypesRequest.#ctor">
@@ -30091,7 +30901,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StopPackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StopPackageResponse.#ctor">
@@ -30167,6 +30977,66 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.StopPackageResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.GetSceneRequestAllOf">
+             <summary>
+             GetSceneRequestAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneRequestAllOf" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.#ctor(IO.Swagger.Model.IdArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneRequestAllOf" /> class.
+             </summary>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneRequestAllOf.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.Equals(IO.Swagger.Model.GetSceneRequestAllOf)">
+             <summary>
+             Returns true if GetSceneRequestAllOf instances are equal
+             </summary>
+             <param name="input">Instance of GetSceneRequestAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneRequestAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -30278,7 +31148,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointOrientationUsingRobotResponse.#ctor">
@@ -30572,7 +31442,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ResumePackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ResumePackageResponse.#ctor">
@@ -30656,7 +31526,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameSceneResponse.#ctor">
@@ -31398,7 +32268,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetObjectTypesResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.objects.ObjectTypeMeta], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.objects.ObjectTypeMeta]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetObjectTypesResponse.#ctor">
@@ -31542,7 +32412,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetActionsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2_arserver_data.objects.ObjectAction], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2_arserver_data.objects.ObjectAction]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetActionsResponse.#ctor">
@@ -31764,7 +32634,7 @@
             </member>
         <member name="T:IO.Swagger.Model.InverseKinematicsRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, pose: arcor2.data.common.Pose, start_joints: Union[List[arcor2.data.common.Joint], NoneType] = None, avoid_collisions: bool = True, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, pose: arcor2.data.common.Pose, start_joints: Optional[list[arcor2.data.common.Joint]] = None, avoid_collisions: bool = True, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.InverseKinematicsRequestArgs.#ctor">
@@ -32137,7 +33007,7 @@
             </member>
         <member name="T:IO.Swagger.Model.PausePackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.PausePackageResponse.#ctor">
@@ -32299,7 +33169,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SetEefPerpendicularToWorldResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SetEefPerpendicularToWorldResponse.#ctor">
@@ -32535,7 +33405,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameActionPointOrientationResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameActionPointOrientationResponse.#ctor">
@@ -32777,7 +33647,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CopyProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CopyProjectResponse.#ctor">
@@ -33259,7 +34129,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, orientation_id: str, safe: bool, linear: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, end_effector_id: str, orientation_id: str, safe: bool, linear: bool, message: Optional[str] = None, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointOrientationData.MoveEventTypeEnum">
@@ -33459,7 +34329,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListScenesResponseData">
              <summary>
-             Data(id: 'str', name: 'str', created: 'datetime', modified: 'datetime', description: 'Optional[str]' = None, problems: Union[List[str], NoneType] = None)
+             Data(id: 'str', name: 'str', created: 'datetime', modified: 'datetime', description: 'Optional[str]' = None, problems: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListScenesResponseData.#ctor">
@@ -33549,7 +34419,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CalibrateRobotRequestArgs">
              <summary>
-             Args(robot_id: str, camera_id: Union[str, NoneType] = None, move_to_calibration_pose: bool = True)
+             Args(robot_id: str, camera_id: Optional[str] = None, move_to_calibration_pose: bool = True)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CalibrateRobotRequestArgs.#ctor">
@@ -33621,7 +34491,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointRequestArgs">
              <summary>
-             Args(name: str, position: arcor2.data.common.Position, parent: Union[str, NoneType] = None)
+             Args(name: str, position: arcor2.data.common.Position, parent: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointRequestArgs.#ctor">
@@ -33748,7 +34618,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetSuctionsRequestArgs">
              <summary>
-             Args(robot_id: str, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetSuctionsRequestArgs.#ctor">
@@ -33874,7 +34744,7 @@
             </member>
         <member name="T:IO.Swagger.Model.WriteLockResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.WriteLockResponse.#ctor">
@@ -34030,7 +34900,7 @@
             </member>
         <member name="T:IO.Swagger.Model.NewProjectResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.NewProjectResponse.#ctor">
@@ -34114,7 +34984,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RemoveActionPointJointsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveActionPointJointsResponse.#ctor">
@@ -34375,7 +35245,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateProjectParameterRequestArgs">
              <summary>
-             Args(id: str, name: Union[str, NoneType] = None, value: Union[str, NoneType] = None)
+             Args(id: str, name: Optional[str] = None, value: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateProjectParameterRequestArgs.#ctor">
@@ -34578,9 +35448,81 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetProjectRequest">
+             <summary>
+             Request(id: int, args: arcor2.data.rpc.common.IdArgs)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetProjectRequest" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.#ctor(System.Int32,System.String,IO.Swagger.Model.IdArgs)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetProjectRequest" /> class.
+             </summary>
+             <param name="id">id (required).</param>
+             <param name="request">request (required).</param>
+             <param name="args">args (required).</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectRequest.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectRequest.Request">
+             <summary>
+             Gets or Sets Request
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetProjectRequest.Args">
+             <summary>
+             Gets or Sets Args
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.Equals(IO.Swagger.Model.GetProjectRequest)">
+             <summary>
+             Returns true if GetProjectRequest instances are equal
+             </summary>
+             <param name="input">Instance of GetProjectRequest to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetProjectRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.UpdateLogicItemResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateLogicItemResponse.#ctor">
@@ -34862,7 +35804,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorsResponse.#ctor">
@@ -35067,7 +36009,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SystemInfoResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_arserver_data.rpc.common.SystemInfo.Response.Data, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2_arserver_data.rpc.common.SystemInfo.Response.Data] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SystemInfoResponse.#ctor">
@@ -35151,7 +36093,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateObjectParametersRequestArgs">
              <summary>
-             Args(id: str, parameters: List[arcor2.data.common.Parameter] = &lt;factory&gt;)
+             Args(id: str, parameters: list[arcor2.data.common.Parameter] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateObjectParametersRequestArgs.#ctor">
@@ -35277,7 +36219,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddObjectToSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddObjectToSceneResponse.#ctor">
@@ -36092,7 +37034,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProjectRobotJoints">
              <summary>
-             ProjectRobotJoints(name: 'str', robot_id: 'str', joints: 'List[Joint]', is_valid: 'bool' = False, arm_id: 'Optional[str]' = None, id: 'str' = '')
+             ProjectRobotJoints(name: 'str', robot_id: 'str', joints: 'list[Joint]', is_valid: 'bool' = False, arm_id: 'Optional[str]' = None, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectRobotJoints.#ctor">
@@ -36182,7 +37124,7 @@
             </member>
         <member name="T:IO.Swagger.Model.GetEndEffectorPoseResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2.data.common.Pose, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2.data.common.Pose] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.GetEndEffectorPoseResponse.#ctor">
@@ -36526,7 +37468,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProjectFunction">
              <summary>
-             ProjectFunction(name: 'str', actions: 'List[Action]' = &lt;factory&gt;, logic: 'List[LogicItem]' = &lt;factory&gt;, parameters: 'List[ActionParameter]' = &lt;factory&gt;, returns: 'List[FunctionReturns]' = &lt;factory&gt;, id: 'str' = '')
+             ProjectFunction(name: 'str', actions: 'list[Action]' = &lt;factory&gt;, logic: 'list[LogicItem]' = &lt;factory&gt;, parameters: 'list[ActionParameter]' = &lt;factory&gt;, returns: 'list[FunctionReturns]' = &lt;factory&gt;, id: 'str' = '')
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectFunction.#ctor">
@@ -36616,7 +37558,7 @@
             </member>
         <member name="T:IO.Swagger.Model.DeletePackageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.DeletePackageResponse.#ctor">
@@ -36700,7 +37642,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotArg">
              <summary>
-             RobotArg(robot_id: str, end_effector: str, arm_id: Union[str, NoneType] = None)
+             RobotArg(robot_id: str, end_effector: str, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RobotArg.#ctor">
@@ -36773,7 +37715,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointUsingRobotResponse.#ctor">
@@ -37125,6 +38067,61 @@
              <returns>Hash code</returns>
             </member>
         <member name="M:IO.Swagger.Model.ObjectTypeUsageRequest.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
+        <member name="T:IO.Swagger.Model.TemporaryPackageResponseAllOf">
+             <summary>
+             TemporaryPackageResponseAllOf
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.#ctor(System.String)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.TemporaryPackageResponseAllOf" /> class.
+             </summary>
+             <param name="data">data (default to "").</param>
+            </member>
+        <member name="P:IO.Swagger.Model.TemporaryPackageResponseAllOf.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.Equals(IO.Swagger.Model.TemporaryPackageResponseAllOf)">
+             <summary>
+             Returns true if TemporaryPackageResponseAllOf instances are equal
+             </summary>
+             <param name="input">Instance of TemporaryPackageResponseAllOf to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.TemporaryPackageResponseAllOf.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
              <summary>
              To validate all properties of the instance
              </summary>
@@ -37539,7 +38536,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddApUsingRobotResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddApUsingRobotResponse.#ctor">
@@ -37731,6 +38728,90 @@
              <param name="validationContext">Validation context</param>
              <returns>Validation Result</returns>
             </member>
+        <member name="T:IO.Swagger.Model.GetSceneResponse">
+             <summary>
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2.data.common.Scene] = None)
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.#ctor">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneResponse" /> class.
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.#ctor(System.Int32,System.Collections.Generic.List{System.String},System.String,System.Boolean,IO.Swagger.Model.Scene)">
+             <summary>
+             Initializes a new instance of the <see cref="T:IO.Swagger.Model.GetSceneResponse" /> class.
+             </summary>
+             <param name="id">id (default to 0).</param>
+             <param name="messages">messages.</param>
+             <param name="response">response (required).</param>
+             <param name="result">result (default to true).</param>
+             <param name="data">data.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponse.Id">
+             <summary>
+             Gets or Sets Id
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponse.Messages">
+             <summary>
+             Gets or Sets Messages
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponse.Response">
+             <summary>
+             Gets or Sets Response
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponse.Result">
+             <summary>
+             Gets or Sets Result
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.GetSceneResponse.Data">
+             <summary>
+             Gets or Sets Data
+             </summary>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.ToString">
+             <summary>
+             Returns the string presentation of the object
+             </summary>
+             <returns>String presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.ToJson">
+             <summary>
+             Returns the JSON string presentation of the object
+             </summary>
+             <returns>JSON string presentation of the object</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.Equals(System.Object)">
+             <summary>
+             Returns true if objects are equal
+             </summary>
+             <param name="input">Object to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.Equals(IO.Swagger.Model.GetSceneResponse)">
+             <summary>
+             Returns true if GetSceneResponse instances are equal
+             </summary>
+             <param name="input">Instance of GetSceneResponse to be compared</param>
+             <returns>Boolean</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.GetHashCode">
+             <summary>
+             Gets the hash code
+             </summary>
+             <returns>Hash code</returns>
+            </member>
+        <member name="M:IO.Swagger.Model.GetSceneResponse.System#ComponentModel#DataAnnotations#IValidatableObject#Validate(System.ComponentModel.DataAnnotations.ValidationContext)">
+             <summary>
+             To validate all properties of the instance
+             </summary>
+             <param name="validationContext">Validation context</param>
+             <returns>Validation Result</returns>
+            </member>
         <member name="T:IO.Swagger.Model.CopyActionPointRequestAllOf">
              <summary>
              CopyActionPointRequestAllOf
@@ -37799,7 +38880,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionResultData">
              <summary>
-             Data(action_id: str, results: Union[List[str], NoneType] = None, error: Union[str, NoneType] = None)
+             Data(action_id: str, results: Optional[list[str]] = None, error: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ActionResultData.#ctor">
@@ -38111,7 +39192,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionRequestArgs">
              <summary>
-             Args(action_point_id: str, name: str, type: str, parameters: List[arcor2.data.common.ActionParameter] = &lt;factory&gt;, flows: List[arcor2.data.common.Flow] = &lt;factory&gt;)
+             Args(action_point_id: str, name: str, type: str, parameters: list[arcor2.data.common.ActionParameter] = &lt;factory&gt;, flows: list[arcor2.data.common.Flow] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionRequestArgs.#ctor">
@@ -38351,7 +39432,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionStateAfterData">
              <summary>
-             Data(action_id: str, results: Union[List[str], NoneType] = None)
+             Data(action_id: str, results: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ActionStateAfterData.#ctor">
@@ -38570,7 +39651,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectAimingAddPointResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[arcor2_arserver_data.rpc.objects.ObjectAimingAddPoint.Response.Data, NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[arcor2_arserver_data.rpc.objects.ObjectAimingAddPoint.Response.Data] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAimingAddPointResponse.#ctor">
@@ -38714,7 +39795,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ExecuteActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ExecuteActionResponse.#ctor">
@@ -38870,7 +39951,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateOverrideResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateOverrideResponse.#ctor">
@@ -38954,7 +40035,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToPoseRequestArgs">
              <summary>
-             Args(robot_id: str, end_effector_id: str, speed: float, position: Union[arcor2.data.common.Position, NoneType], orientation: Union[arcor2.data.common.Orientation, NoneType], safe: bool = True, linear: bool = False, arm_id: Union[str, NoneType] = None)
+             Args(robot_id: str, end_effector_id: str, speed: float, position: Optional[arcor2.data.common.Position], orientation: Optional[arcor2.data.common.Orientation], safe: bool = True, linear: bool = False, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToPoseRequestArgs.#ctor">
@@ -39056,7 +40137,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateProjectParameterResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateProjectParameterResponse.#ctor">
@@ -39466,7 +40547,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateObjectPoseResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateObjectPoseResponse.#ctor">
@@ -39616,7 +40697,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ProjectsWithSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ProjectsWithSceneResponse.#ctor">
@@ -40260,7 +41341,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionRequestArgs">
              <summary>
-             Args(action_id: str, parameters: Union[List[arcor2.data.common.ActionParameter], NoneType] = None, flows: Union[List[arcor2.data.common.Flow], NoneType] = None)
+             Args(action_id: str, parameters: Optional[list[arcor2.data.common.ActionParameter]] = None, flows: Optional[list[arcor2.data.common.Flow]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionRequestArgs.#ctor">
@@ -40435,7 +41516,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddLogicItemRequestArgs">
              <summary>
-             Args(start: str, end: str, condition: Union[arcor2.data.common.ProjectLogicIf, NoneType] = None)
+             Args(start: str, end: str, condition: Optional[arcor2.data.common.ProjectLogicIf] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddLogicItemRequestArgs.#ctor">
@@ -40507,7 +41588,7 @@
             </member>
         <member name="T:IO.Swagger.Model.CopyActionPointRequestArgs">
              <summary>
-             Args(id: str, position: Union[arcor2.data.common.Position, NoneType] = None)
+             Args(id: str, position: Optional[arcor2.data.common.Position] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.CopyActionPointRequestArgs.#ctor">
@@ -40573,7 +41654,7 @@
             </member>
         <member name="T:IO.Swagger.Model.StepActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.StepActionResponse.#ctor">
@@ -40994,7 +42075,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionParamValuesRequestArgs">
              <summary>
-             Args(id: str, param_id: str, parent_params: List[arcor2.data.common.IdValue] = &lt;factory&gt;)
+             Args(id: str, param_id: str, parent_params: list[arcor2.data.common.IdValue] = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ActionParamValuesRequestArgs.#ctor">
@@ -41067,7 +42148,7 @@
             </member>
         <member name="T:IO.Swagger.Model.WriteUnlockResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.WriteUnlockResponse.#ctor">
@@ -41217,7 +42298,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ShowMainScreenData">
              <summary>
-             Data(what: arcor2_arserver_data.events.common.ShowMainScreen.Data.WhatEnum, highlight: Union[str, NoneType] = None)
+             Data(what: arcor2_arserver_data.events.common.ShowMainScreen.Data.WhatEnum, highlight: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.ShowMainScreenData.WhatEnum">
@@ -41303,7 +42384,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionResponse.#ctor">
@@ -41465,7 +42546,7 @@
             </member>
         <member name="T:IO.Swagger.Model.MoveToJointsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.MoveToJointsResponse.#ctor">
@@ -41549,7 +42630,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateActionPointParentResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateActionPointParentResponse.#ctor">
@@ -41989,7 +43070,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SaveSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SaveSceneResponse.#ctor">
@@ -42547,7 +43628,7 @@
             </member>
         <member name="T:IO.Swagger.Model.OpenSceneResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.OpenSceneResponse.#ctor">
@@ -42992,7 +44073,7 @@
             </member>
         <member name="T:IO.Swagger.Model.SceneObjectUsageResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[Set[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[set[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.SceneObjectUsageResponse.#ctor">
@@ -43226,7 +44307,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ListProjectsResponseData">
              <summary>
-             Data(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', problems: Union[List[str], NoneType] = None)
+             Data(name: 'str', scene_id: 'str', description: 'str' = &lt;factory&gt;, has_logic: 'bool' = True, created: 'Optional[datetime]' = None, modified: 'Optional[datetime]' = None, int_modified: 'Optional[datetime]' = None, id: 'str' = '', problems: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ListProjectsResponseData.#ctor">
@@ -43676,7 +44757,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointJointsData">
              <summary>
-             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, joints_id: str, safe: bool, message: Union[str, NoneType] = None, arm_id: Union[str, NoneType] = None)
+             Data(move_event_type: arcor2_arserver_data.events.robot.RobotMoveToData.MoveEventType, robot_id: str, joints_id: str, safe: bool, message: Optional[str] = None, arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="T:IO.Swagger.Model.RobotMoveToActionPointJointsData.MoveEventTypeEnum">
@@ -44188,7 +45269,7 @@
             </member>
         <member name="T:IO.Swagger.Model.UpdateSceneDescriptionResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.UpdateSceneDescriptionResponse.#ctor">
@@ -44608,7 +45689,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ActionPoint">
              <summary>
-             ActionPoint(name: 'str', position: 'Position', parent: 'Optional[str]' = None, id: 'str' = '', orientations: 'List[NamedOrientation]' = &lt;factory&gt;, robot_joints: 'List[ProjectRobotJoints]' = &lt;factory&gt;, actions: 'List[Action]' = &lt;factory&gt;)
+             ActionPoint(name: 'str', position: 'Position', parent: 'Optional[str]' = None, display_name: 'Optional[str]' = None, description: 'Optional[str]' = None, id: 'str' = '', orientations: 'list[NamedOrientation]' = &lt;factory&gt;, robot_joints: 'list[ProjectRobotJoints]' = &lt;factory&gt;, actions: 'list[Action]' = &lt;factory&gt;)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ActionPoint.#ctor">
@@ -44616,10 +45697,12 @@
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ActionPoint" /> class.
              </summary>
             </member>
-        <member name="M:IO.Swagger.Model.ActionPoint.#ctor(System.String,System.String,System.String,IO.Swagger.Model.Position,System.Collections.Generic.List{IO.Swagger.Model.Action},System.Collections.Generic.List{IO.Swagger.Model.NamedOrientation},System.Collections.Generic.List{IO.Swagger.Model.ProjectRobotJoints})">
+        <member name="M:IO.Swagger.Model.ActionPoint.#ctor(System.String,System.String,System.String,System.String,System.String,IO.Swagger.Model.Position,System.Collections.Generic.List{IO.Swagger.Model.Action},System.Collections.Generic.List{IO.Swagger.Model.NamedOrientation},System.Collections.Generic.List{IO.Swagger.Model.ProjectRobotJoints})">
              <summary>
              Initializes a new instance of the <see cref="T:IO.Swagger.Model.ActionPoint" /> class.
              </summary>
+             <param name="description">description.</param>
+             <param name="displayName">displayName.</param>
              <param name="id">id (default to "").</param>
              <param name="name">name (required).</param>
              <param name="parent">parent.</param>
@@ -44627,6 +45710,16 @@
              <param name="actions">actions.</param>
              <param name="orientations">orientations.</param>
              <param name="robotJoints">robotJoints.</param>
+            </member>
+        <member name="P:IO.Swagger.Model.ActionPoint.Description">
+             <summary>
+             Gets or Sets Description
+             </summary>
+            </member>
+        <member name="P:IO.Swagger.Model.ActionPoint.DisplayName">
+             <summary>
+             Gets or Sets DisplayName
+             </summary>
             </member>
         <member name="P:IO.Swagger.Model.ActionPoint.Id">
              <summary>
@@ -44704,7 +45797,7 @@
             </member>
         <member name="T:IO.Swagger.Model.ObjectAimingCancelResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.ObjectAimingCancelResponse.#ctor">
@@ -44788,7 +45881,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RenameActionPointJointsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RenameActionPointJointsResponse.#ctor">
@@ -45223,7 +46316,7 @@
             </member>
         <member name="T:IO.Swagger.Model.LockData">
              <summary>
-             LockData(object_ids: List[str], owner: str)
+             LockData(object_ids: list[str], owner: str)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.LockData.#ctor">
@@ -45289,7 +46382,7 @@
             </member>
         <member name="T:IO.Swagger.Model.InverseKinematicsResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None, data: Union[List[arcor2.data.common.Joint], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None, data: Optional[list[arcor2.data.common.Joint]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.InverseKinematicsResponse.#ctor">
@@ -45649,7 +46742,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs">
              <summary>
-             Args(action_point_id: str, robot_id: str, name: str = 'default', arm_id: Union[str, NoneType] = None)
+             Args(action_point_id: str, robot_id: str, name: str = 'default', arm_id: Optional[str] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddActionPointJointsUsingRobotRequestArgs.#ctor">
@@ -45727,7 +46820,7 @@
             </member>
         <member name="T:IO.Swagger.Model.AddProjectParameterResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.AddProjectParameterResponse.#ctor">
@@ -45889,7 +46982,7 @@
             </member>
         <member name="T:IO.Swagger.Model.Mesh">
              <summary>
-             Mesh(id: str, data_id: str, focus_points: Union[List[arcor2.data.common.Pose], NoneType] = None)
+             Mesh(id: str, data_id: str, focus_points: Optional[list[arcor2.data.common.Pose]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.Mesh.#ctor">
@@ -45961,7 +47054,7 @@
             </member>
         <member name="T:IO.Swagger.Model.RemoveProjectParameterResponse">
              <summary>
-             Response(id: int = 0, result: bool = True, messages: Union[List[str], NoneType] = None)
+             Response(id: int = 0, result: bool = True, messages: Optional[list[str]] = None)
              </summary>
             </member>
         <member name="M:IO.Swagger.Model.RemoveProjectParameterResponse.#ctor">
