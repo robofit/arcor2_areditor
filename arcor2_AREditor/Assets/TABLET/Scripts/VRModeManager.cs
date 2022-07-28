@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Base;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 
 public class VRModeManager : Singleton<VRModeManager> {
@@ -16,6 +17,15 @@ public class VRModeManager : Singleton<VRModeManager> {
     public Joystick CameraRotateJoystick;
     public float WalkingSpeed = 5f;
     public float RotatingSpeed = 4f;
+    public float DeadZone = 0f;
+    public bool LinearJoysticks = true;
+    public Canvas VRJoystickCanvas;
+    public Image RightMenuHideBackground;
+    public Image LeftMenuHideBackground;
+
+    private VRJoystick CameraMoveVR;
+    private VRJoystick CameraMoveUpVR;
+    private VRJoystick CameraRotateVR;
 
     private ARCameraBackground arCameraBG;
     public bool VRModeON { get; private set; } = false;
@@ -36,6 +46,10 @@ public class VRModeManager : Singleton<VRModeManager> {
         arCameraBG = ARCamera.GetComponent<ARCameraBackground>();
         arCameraPosition = ARCamera.transform.position;
         arCameraRotation = ARCamera.transform.eulerAngles;
+
+        CameraMoveVR = CameraMoveJoystick.GetComponent<VRJoystick>();
+        CameraMoveUpVR = CameraMoveUpJoystick.GetComponent<VRJoystick>();
+        CameraRotateVR = CameraRotateJoystick.GetComponent<VRJoystick>();
 
         CameraMoveJoystick.gameObject.SetActive(false);
         CameraMoveUpJoystick.gameObject.SetActive(false);
@@ -65,11 +79,24 @@ public class VRModeManager : Singleton<VRModeManager> {
                 rotateHorizontal = 0, rotateVertical = 0, moveUp = 0;
             // Move with joysticks only when no menu is opened
             if (GameManager.Instance.SceneInteractable) {
-                moveHorizontal = CameraMoveJoystick.Horizontal;
-                moveVertical = CameraMoveJoystick.Vertical;
-                rotateHorizontal = CameraRotateJoystick.Horizontal;
-                rotateVertical = CameraRotateJoystick.Vertical;
-                moveUp = CameraMoveUpJoystick.Vertical;
+                //moveHorizontal = CameraMoveJoystick.Horizontal;
+                //moveVertical = CameraMoveJoystick.Vertical;
+                //rotateHorizontal = CameraRotateJoystick.Horizontal;
+                //rotateVertical = CameraRotateJoystick.Vertical;
+                //moveUp = CameraMoveUpJoystick.Vertical;
+                moveHorizontal = Math.Abs(CameraMoveJoystick.Horizontal) > DeadZone ? CameraMoveJoystick.Horizontal : 0f;
+                moveVertical = Math.Abs(CameraMoveJoystick.Vertical) > DeadZone ? CameraMoveJoystick.Vertical : 0f;
+                rotateHorizontal = Math.Abs(CameraRotateJoystick.Horizontal) > DeadZone ? CameraRotateJoystick.Horizontal : 0f;
+                rotateVertical = Math.Abs(CameraRotateJoystick.Vertical) > DeadZone ? CameraRotateJoystick.Vertical : 0f;
+                moveUp = Math.Abs(CameraMoveUpJoystick.Vertical) > DeadZone ? CameraMoveUpJoystick.Vertical : 0f;
+
+                if (!LinearJoysticks) {
+                    moveHorizontal = Mathf.Pow(moveHorizontal, 2) * Mathf.Sign(moveHorizontal);
+                    moveVertical = Mathf.Pow(moveVertical, 2) * Mathf.Sign(moveVertical);
+                    rotateHorizontal = Mathf.Pow(rotateHorizontal, 2) * Mathf.Sign(rotateHorizontal);
+                    rotateVertical = Mathf.Pow(rotateVertical, 2) * Mathf.Sign(rotateVertical);
+                    moveUp = Mathf.Pow(moveUp, 2) * Mathf.Sign(moveUp);
+                }
             }
             // Translate camera based on left joystick and movement of tablet
             VRCamera.transform.Translate(ARCamera.transform.InverseTransformDirection(ARCamera.transform.position - arCameraPosition), Space.Self);
@@ -158,5 +185,17 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRModeON = false;
 
         SceneManager.Instance.SetVisibilityActionObjects(PlayerPrefsHelper.LoadFloat("AOVisibilityAR", 0f));
+    }
+
+    public void EnableVRJoysticks(bool enable) {
+        if (enable && (CameraMoveVR.VRJoystickEnabled || CameraMoveUpVR.VRJoystickEnabled || CameraRotateVR.VRJoystickEnabled)) {
+            VRJoystickCanvas.sortingOrder = 1;
+            LeftMenuHideBackground.enabled = true;
+            RightMenuHideBackground.enabled = true;
+        } else if (!enable && !(CameraMoveVR.VRJoystickEnabled || CameraMoveUpVR.VRJoystickEnabled || CameraRotateVR.VRJoystickEnabled)) {
+            VRJoystickCanvas.sortingOrder = -1;
+            LeftMenuHideBackground.enabled = false;
+            RightMenuHideBackground.enabled = false;
+        }
     }
 }
