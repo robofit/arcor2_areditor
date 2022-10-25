@@ -66,7 +66,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             AssetLoaderOptions assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
             AssetLoader.LoadModelFromFile(path, null, delegate (AssetLoaderContext assetLoaderContext) {
                 if (Path.GetExtension(path).ToLower() == ".stl") {
-                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f);
+                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f); // TODO kinali hacked version had 0, 90f, 0
                 }
 
                 OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.WrapperGameObject, aoId));
