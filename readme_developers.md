@@ -1,7 +1,11 @@
 # arcor2_editor
 
 ### Instalation
- - clone this repo
+ - clone this repo a switch to the directory:
+   ```bash
+   git clone git@github.com:robofit/arcor2_areditor.git
+   cd arcor2_areditor/
+   ```
  - get submodules (there is one private, see below):
    ```bash
    git submodule update --init
@@ -25,7 +29,7 @@
    git lfs pull
    ```
  - when downloading Unity (current version for this project is 2021.3.11f1) choose modules according to your needs (e.g. Android build support for creating .apk files)
- - Get third party assets. BUT-based developers may ask to get access to a private repository (added as submodule of this repo). External developers will have to get following assets from Unity AssetStore (extract and copy into Assets/Submodules):
+ - Get third party assets. BUT-based developers may ask to get access to a private repository (added as submodule of this repo - don't forget to add your ssh public key to your GH account). External developers will have to get following assets from Unity AssetStore (extract and copy into Assets/Submodules):
    - [Lunar Mobile Console](https://assetstore.unity.com/packages/tools/gui/lunar-mobile-console-free-82881) (optional)
    - [Loading screen animation](https://assetstore.unity.com/packages/tools/loading-screen-animation-98505) 
    - [Modern UI Pack](https://assetstore.unity.com/packages/tools/gui/modern-ui-pack-150824)
