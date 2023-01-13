@@ -76,9 +76,7 @@ namespace Base {
 
         // ONDESTROY CANNOT BE USED BECAUSE OF ITS DELAYED CALL - it causes mess when directly creating project from scene
         private void OnDestroy() {
-        //    base.OnDestroy();
             SceneManager.Instance.OnSceneStateEvent -= OnSceneStateEvent;
-        //    DeleteActionObject();
         }
 
         private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -193,7 +191,6 @@ namespace Base {
         }
 
         private void OnRobotModelLoaded(object sender, RobotUrdfModelArgs args) {
-            //Debug.Log("URDF:" + args.RobotType + " robot is fully loaded");
 
             // check if the robot of the type we need was loaded
             if (args.RobotType == Data.Type) {
@@ -253,14 +250,6 @@ namespace Base {
                 }
             }
 
-            // Show or hide the robot based on global settings of displaying ActionObjects.
-            // Needs to be called additionally, because when global setting is called, robot model is not loaded and only its placeholder is active.
-            /*if (robotVisible) {
-                Show();
-            } else {
-                Hide();
-            }
-            */
             if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.PackageRunning || GameManager.Instance.GetGameState() != GameManager.GameStateEnum.LoadingPackage)
                 await WebsocketManager.Instance.RegisterForRobotEvent(GetId(), true, RegisterForRobotEventRequestArgs.WhatEnum.Joints);
         }
@@ -395,32 +384,6 @@ namespace Base {
             }
 
             UpdateColor();
-        }
-
-        public override void OnClick(Click type) {
-            if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionObject ||
-             GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingActionPointParent) {
-                GameManager.Instance.ObjectSelected(this);
-                return;
-            }
-            if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-                return;
-            }
-            if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.SceneEditor &&
-                GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-                Notifications.Instance.ShowNotification("Not allowed", "Editation of action object only allowed in scene or project editor");
-                return;
-            }
-           
-            // HANDLE MOUSE
-            if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-                // We have clicked with left mouse and started manipulation with object
-                if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
-                    StartManipulation();
-                }
-            } else if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-                OpenMenu();
-            }
         }
 
 
@@ -675,9 +638,7 @@ namespace Base {
                 } else {
                     return true;
                 }
-            } else {
-                //Debug.LogError("Trying to set joint values, but robot urdf model is not loaded nor assigned.");
-            }
+            } 
             return false;
         }
 

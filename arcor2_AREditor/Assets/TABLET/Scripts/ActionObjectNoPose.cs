@@ -42,9 +42,6 @@ public class ActionObjectNoPose : ActionObject {
         throw new NotImplementedException();
     }
 
-    public override void OnClick(Click type) {
-        throw new NotImplementedException();
-    }
 
     public override void OnHoverEnd() {
         // should not do anything

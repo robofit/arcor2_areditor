@@ -40,7 +40,6 @@ namespace Base {
             UpdateName(Data.Name);
             if (actionProvider != null)
                 UpdateType();
-            //UpdateRotation(null);
             SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
         }
 
@@ -87,23 +86,6 @@ namespace Base {
         }
 
         public void DeleteAction() {
-            // Delete connection on input and set the gameobject that was connected through its output to the "end" value.
-            /*if (Input.Connection != null) {
-                InputOutput connectedActionIO = Input.Connection.target[0].GetComponent<InputOutput>();
-                connectedActionIO.Data.Default = "end";
-                // Remove the reference in connections manager.
-                ConnectionManagerArcoro.Instance.Connections.Remove(Input.Connection);
-                Destroy(Input.Connection.gameObject);
-            }
-            // Delete connection on output and set the gameobject that was connected through its input to the "start" value.
-            if (Output.Connection != null) {
-                InputOutput connectedActionIO = Output.Connection.target[1].GetComponent<InputOutput>();
-                connectedActionIO.Data.Default = "start";
-                // Remove the reference in connections manager.
-                ConnectionManagerArcoro.Instance.Connections.Remove(Output.Connection);
-                Destroy(Output.Connection.gameObject);
-            }*/
-
             Destroy(gameObject);
             DestroyObject();
             ActionPoint.Actions.Remove(Data.Id);
@@ -148,8 +130,6 @@ namespace Base {
         }
 
         public override void DestroyObject() {
-           // SelectorMenu.Instance.DestroySelectorItem(Input);
-           // SelectorMenu.Instance.DestroySelectorItem(Output);
             base.DestroyObject();
         }
 
@@ -284,7 +264,6 @@ namespace Base {
                     if (!await otherAction.WriteLock(false)) {
                         return;
                     }
-                    //ConnectionManagerArcoro.Instance.CreateConnectionToPointer(otherAction.Input.gameObject);
                     AddConnection();
                     
                 } catch (RequestFailedException ex) {
@@ -301,13 +280,7 @@ namespace Base {
                 UpdateRotation(c.Input.Action);
             } else {
                 UpdateRotation(null);
-            }
-            /*
-            if (Input.AnyConnection()) {
-                LogicItem c = Input.GetLogicItems()[0];
-                c.Output.Action.UpdateRotation(this);
-            }*/
-                
+            }                
         }
 
         public void UpdateRotation(Base.Action otherAction) {

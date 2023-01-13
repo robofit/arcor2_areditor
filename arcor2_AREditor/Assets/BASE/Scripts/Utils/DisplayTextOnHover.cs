@@ -15,7 +15,4 @@ public class DisplayTextOnHover : Clickable {
         TextToDisplay.gameObject.SetActive(false);
     }
 
-    public override void OnClick(Click type) {
-        
-    }
 }

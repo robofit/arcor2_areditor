@@ -321,7 +321,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         if (isOrientationDetail) {
             try {
-                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation.Orientation, DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
@@ -406,14 +406,6 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     }
 
     public async void ShowMenu(Base.ActionPoint currentActionPoint, ProjectRobotJoints joints) {
-        /*try {
-            await WebsocketManager.Instance.WriteLock(joints.Id, false);
-        } catch (RequestFailedException ex) {
-            Notifications.Instance.ShowNotification("Failed to lock joints", ex.Message);
-            Debug.LogError(ex.Message);
-            return;
-        }*/
-
         CurrentActionPoint = currentActionPoint;
         this.joints = joints;
         isOrientationDetail = false;
@@ -447,15 +439,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
             return;
         gameObject.SetActive(false);
 
-        if (isOrientationDetail) {
-            //await CurrentActionPoint.GetOrientationVisual(orientation.Id).WriteUnlock();
-        } else { //joints
+        if (!isOrientationDetail) {
             DestroyJointsFields();
-            /*try {
-                await WebsocketManager.Instance.WriteUnlock(joints.Id);
-            } catch (RequestFailedException ex) {
-                Debug.LogError(ex.Message);
-            }*/
         }
 
         foreach (KeyValuePair<string, float> rv in robotVisibilityBackup) {

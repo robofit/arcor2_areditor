@@ -201,7 +201,7 @@ namespace Base {
         /// <summary>
         /// Api version
         /// </summary>        
-        public const string ApiVersion = "0.20.0";
+        public const string ApiVersion = "1.0.0";
         /// <summary>
         /// List of projects metadata
         /// </summary>
@@ -294,7 +294,6 @@ namespace Base {
         }
 
 
-        //private Firebase.FirebaseApp app;
 
         /// <summary>
         /// Determines whether the application is in correct state (scene or project editor) and
@@ -554,31 +553,25 @@ namespace Base {
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllActions(false);
-                    ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
                     break;
                 case EditorStateEnum.SelectingActionOutput:
                     ProjectManager.Instance.EnableAllActionPoints(true);
-                    ProjectManager.Instance.EnableAllActionInputs(false);
                     ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    ProjectManager.Instance.EnableAllActionOutputs(true);
                     break;
                 case EditorStateEnum.SelectingActionInput:
                     ProjectManager.Instance.EnableAllActionPoints(true);
-                    ProjectManager.Instance.EnableAllActionOutputs(false);
                     ProjectManager.Instance.EnableAllActions(true);
                     SceneManager.Instance.EnableAllActionObjects(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    ProjectManager.Instance.EnableAllActionInputs(true);
                     break;
                 case EditorStateEnum.SelectingActionPointParent:
                     SelectorMenu.Instance.RobotsToggle.SetInteractivity(true);
@@ -588,8 +581,6 @@ namespace Base {
                     ProjectManager.Instance.EnableAllOrientations(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActionInputs(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     break;
@@ -597,8 +588,6 @@ namespace Base {
                     ProjectManager.Instance.EnableAllActions(false);
                     if (SceneManager.Instance.SceneStarted)
                         await ProjectManager.Instance.EnableAllRobotsEE(false);
-                    ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActionInputs(false);
                     SceneManager.Instance.EnableAllActionObjects(true, true);
                     ProjectManager.Instance.EnableAllActionPoints(true);
                     ProjectManager.Instance.EnableAllOrientations(true);
@@ -606,11 +595,9 @@ namespace Base {
                 case EditorStateEnum.SelectingEndEffector:
                     ProjectManager.Instance.EnableAllActions(false);
                     if (SceneManager.Instance.SceneStarted)
-                        ProjectManager.Instance.EnableAllActionOutputs(false);
-                    ProjectManager.Instance.EnableAllActionInputs(false);
+                        await ProjectManager.Instance.EnableAllRobotsEE(true);
                     SceneManager.Instance.EnableAllActionObjects(false, false);
                     SceneManager.Instance.EnableAllRobots(true);
-                    await ProjectManager.Instance.EnableAllRobotsEE(true);
                     ProjectManager.Instance.EnableAllActionPoints(false);
                     ProjectManager.Instance.EnableAllOrientations(false);
                     break;
@@ -732,20 +719,6 @@ namespace Base {
             nextPackageState = null;
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
             ARSession.enabled = false;
-            /*Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
-              var dependencyStatus = task.Result;
-              if (dependencyStatus == Firebase.DependencyStatus.Available) {
-                // Create and hold a reference to your FirebaseApp,
-                // where app is a Firebase.FirebaseApp property of your application class.
-                   app = Firebase.FirebaseApp.DefaultInstance;
-
-                // Set a flag here to indicate whether Firebase is ready to use by your app.
-              } else {
-                UnityEngine.Debug.LogError(System.String.Format(
-                  "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
-                // Firebase Unity SDK is not safe to use here.
-              }
-            });*/
 #endif
             Scene.SetActive(false);
             if (Application.isEditor || Debug.isDebugBuild) {
@@ -871,7 +844,6 @@ namespace Base {
             // initialize when connected to the server
             ExecutingAction = null;
             ConnectionStatus = GameManager.ConnectionStatusEnum.Connected;
-            //Debug.LogError("onConnected triggered");
         }
 
         /// <summary>
@@ -906,7 +878,6 @@ namespace Base {
                     OnConnectedToServer?.Invoke(this, new StringEventArgs(WebsocketManager.Instance.APIDomainWS));
 
                     await UpdateActionObjects();
-                   // await UpdateServices();
                     await UpdateRobotsMeta();
 
                     try {
@@ -1114,8 +1085,7 @@ namespace Base {
         /// <returns></returns>
         internal async void ProjectOpened(Scene scene, Project project) {
             var state = GetGameState();
-            if (!ActionsManager.Instance.ActionsReady/* || (GetGameState() != GameStateEnum.None && GetGameState() != GameStateEnum.SceneEditor
-                && GetGameState() != GameStateEnum.MainScreen && GetGameState() != GameStateEnum.Disconnected)*/) {
+            if (!ActionsManager.Instance.ActionsReady) {
                 newProject = project;
                 newScene = scene;
                 openProject = true;

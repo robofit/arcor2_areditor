@@ -38,4 +38,8 @@ public class LinkableDropdown : LinkableParameter
         base.SetType(type, linkable, switchBtnClicked);
         this.type = type;
     }
+
+    protected override object GetDefaultValue() {
+        return null;
+    }
 }

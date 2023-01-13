@@ -14,11 +14,14 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     public ParameterMetadata ParameterMetadata;
     protected OnChangeParameterHandlerDelegate onChangeParameterHandler;
     protected string type;
-    protected object value;
+    protected object manualValue;
     protected int dropdownIndexSelected;
     
-    public const string ProjectParameterText = "project_parameter";
     private const string NewProjectParameterText = "New project parameter";
+
+    public const string LINK = "link";
+    public const string PROJECT_PARAMETER = "project_parameter";
+    public const string VALUE = "value";
 
     /// <summary>
     ///  !! has to be set in either start or init !!
@@ -33,9 +36,9 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         return ActionsDropdown.GetName();
     }
     public virtual object GetValue() {
-        if (type == "link")
+        if (type == LINK)
             return EncodeLinkValue((string) ActionsDropdown.GetValue());
-        else if (type == ProjectParameterText) {
+        else if (type == PROJECT_PARAMETER) {
             return EncodeProjectParameterValue(((string) ActionsDropdown.GetValue()).Split(':')[0]);
         } else
             return Parameter.GetValue();
@@ -53,29 +56,30 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         ActionsDropdown.SetLabel(label, description);
         Parameter.SetLabel(label, description);
     }
-    public virtual void SetValue(object value) {
-        if (type != "link" && type != ProjectParameterText && value != null) {
-            Parameter.SetValue(value);
-        } else if (type == "link") {
-            SetupDropdownForActions(value);
-        } else if (type == ProjectParameterText) {
-            SetupDropdownForProjectParameters(ParameterMetadata.Type, value);
+    public virtual void SetValue(object newValue) {
+        if (type != LINK && type != PROJECT_PARAMETER && newValue != null) {
+            manualValue = newValue;
+            Parameter.SetValue(newValue);
+        } else if (type == LINK) {
+            SetupDropdownForActions(newValue);
+        } else if (type == PROJECT_PARAMETER) {
+            SetupDropdownForProjectParameters(ParameterMetadata.Type, newValue);
         }
 
 
 
     }
 
-    private void SetupDropdownForActions(object value) {
+    private void SetupDropdownForActions(object newValue) {
         List<string> actions = new List<string>();
         foreach (Base.Action action in Base.ProjectManager.Instance.GetActionsWithReturnType(ParameterMetadata.Type)) {
             actions.Add(action.GetName());
         }
         
-        ActionsDropdown.PutData(actions, DecodeLinkValue(value?.ToString()), (string v) => onChangeParameterHandler(GetName(), v, type));
+        ActionsDropdown.PutData(actions, DecodeLinkValue(newValue?.ToString()), (string v) => onChangeParameterHandler(GetName(), v, type));
     }
 
-    private void SetupDropdownForProjectParameters(string type, object value) {
+    private void SetupDropdownForProjectParameters(string type, object newValue) {
         if (ProjectParametersHelper.TypeSupported(type)) {
             List<string> projectParameters = new List<string>();
             List<string> labels = new List<string>();
@@ -83,7 +87,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             foreach (IO.Swagger.Model.ProjectParameter pp in ProjectManager.Instance.ProjectParameters.Where(c => c.Type == type).OrderBy(p => p.Name)) {
                 projectParameters.Add(pp.Name);
                 labels.Add($"{pp.Name}: {ProjectParameterHelper.GetValue(pp)}");
-                if (value != null && pp.Id == JsonConvert.DeserializeObject<string>(value.ToString())) {
+                if (newValue != null && pp.Id == JsonConvert.DeserializeObject<string>(newValue.ToString())) {
                     selectedLabel = labels.Last();
                 }                
             }
@@ -138,46 +142,53 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         if (!linkable) {
             ParameterTypeToggle.gameObject.SetActive(false);
             ActionsDropdown.gameObject.SetActive(false);
-        } else if (type == "link") {
+        } else if (type == LINK) {
             ParameterTypeToggle.gameObject.SetActive(true);
-            ParameterTypeToggle.SetState("link", false);
+            ParameterTypeToggle.SetState(LINK, false);
             ActionsDropdown.gameObject.SetActive(true);
             Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForActions(null);
-        } else if (type == ProjectParameterText) {
+        } else if (type == PROJECT_PARAMETER) {
             ParameterTypeToggle.gameObject.SetActive(true);
-            ParameterTypeToggle.SetState("constant", false);
+            ParameterTypeToggle.SetState(PROJECT_PARAMETER, false);
             Parameter.GetTransform().gameObject.SetActive(false);
             SetupDropdownForProjectParameters(ParameterMetadata.Type, null);
             ActionsDropdown.gameObject.SetActive(true);
         } else {
+
             Parameter.GetTransform().gameObject.SetActive(true);
             ActionsDropdown.gameObject.SetActive(false);
             ParameterTypeToggle.gameObject.SetActive(true);
-            ParameterTypeToggle.SetState("value", false);
+            ParameterTypeToggle.SetState(VALUE, false);
         }
         
     }
 
     public void CreateLinkCb() {
         //TODO: switch type of input and update btns
-        SetType("link", true, true);
+        SetType(LINK, true, true);
         if (ActionsDropdown.GetValue() != null)
             onChangeParameterHandler.Invoke(Parameter.GetName(), GetValue(), GetCurrentType());
     }
 
     public void PickProjectParameterCb() {
-        SetType(ProjectParameterText, true, true);
+        manualValue = GetValue();
+        SetType(PROJECT_PARAMETER, true, true);
         if (ActionsDropdown.Dropdown.isActiveAndEnabled && ActionsDropdown.GetValue().ToString() != NewProjectParameterText)
             onChangeParameterHandler.Invoke(Parameter.GetName(), GetValue(), GetCurrentType());
     }
 
     public void SetValueManually() {
         SetType(ParameterMetadata.Type, true, true);
+        if (manualValue != null)
+            SetValue(manualValue);
+        else {
+            SetValue(GetDefaultValue());
+        }
         onChangeParameterHandler.Invoke(Parameter.GetName(), GetValue(), GetCurrentType());
     }
 
-    private string EncodeLinkValue(string dropdownValue) {
+    protected string EncodeLinkValue(string dropdownValue) {
         try {
             Base.Action action = Base.ProjectManager.Instance.GetActionByName(dropdownValue);
             return action.GetId() + "/default/0";
@@ -187,7 +198,9 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
 
     }
 
-    private string DecodeLinkValue(string linkValue) {
+    protected abstract object GetDefaultValue();
+
+    protected string DecodeLinkValue(string linkValue) {
         if (string.IsNullOrEmpty(linkValue))
             return null;
         if (!linkValue.Contains("/"))
@@ -200,12 +213,12 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         return null;
     }
 
-    private string DecodeProjectParameterValue(string value) {
-        if (string.IsNullOrEmpty(value))
+    private string DecodeProjectParameterValue(string newValue) {
+        if (string.IsNullOrEmpty(newValue))
             return null;
 
         Regex r = new Regex(@"[a-z_0-9]+", RegexOptions.IgnoreCase);
-        var matches = r.Matches(value);
+        MatchCollection matches = r.Matches(newValue);
         if (matches.Count == 0)
             return null;
 
@@ -213,7 +226,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         IO.Swagger.Model.ProjectParameter pp = ProjectManager.Instance.ProjectParameters.Find(p => p.Id == projectParameterId);
         return pp?.Name;
     }
-    public virtual void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
+    public virtual void Init(ParameterMetadata parameterMetadata, string type, object newValue, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
         InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         ParameterMetadata = parameterMetadata;
         SetType(type, linkable, false);

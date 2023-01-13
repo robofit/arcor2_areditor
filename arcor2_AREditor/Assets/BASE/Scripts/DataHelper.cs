@@ -19,7 +19,7 @@ public static class DataHelper {
     public static Quaternion OrientationToQuaternion(IO.Swagger.Model.Orientation orientation) => new Quaternion((float) orientation.X, (float) orientation.Y, (float) orientation.Z, (float) orientation.W);
 
     public static IO.Swagger.Model.Pose CreatePose(Vector3 position, Quaternion orientation) {
-        return new IO.Swagger.Model.Pose(QuaternionToOrientation(orientation), Vector3ToPosition(position));
+        return new IO.Swagger.Model.Pose(orientation: QuaternionToOrientation(orientation), position: Vector3ToPosition(position));
     }
 
     public static void GetPose(IO.Swagger.Model.Pose pose, out Vector3 position, out Quaternion orientation) {

@@ -55,7 +55,7 @@ public class AddJointsMenu : MonoBehaviour {
             if (SceneManager.Instance.SelectedRobot.MultiArm())
                 armId = SceneManager.Instance.SelectedArmId;
             jointsName = NameInput.text;
-            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, armId);
+            await Base.WebsocketManager.Instance.AddActionPointJoints(CurrentActionPoint.Data.Id, SceneManager.Instance.SelectedRobot.GetId(), jointsName, SceneManager.Instance.SelectedEndEffector.EEId, armId);
             Notifications.Instance.ShowToastMessage("Joints added successfully");
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to add joints", ex.Message);

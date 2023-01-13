@@ -73,9 +73,6 @@ public class AimingPointSphere : InteractiveObject {
         return new RequestResult(false, "Aiming points cannot be moved");
     }
 
-    public override void OnClick(Click type) {
-        throw new System.NotImplementedException();
-    }
 
     public override void OnHoverEnd() {
         outlineOnClick.UnHighlight();

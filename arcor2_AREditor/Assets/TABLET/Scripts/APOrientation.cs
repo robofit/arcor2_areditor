@@ -19,17 +19,6 @@ public class APOrientation : InteractiveObject, ISubItem {
     [SerializeField]
     private MeshRenderer renderer;
 
-
-    public override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        if (type == Click.MOUSE_RIGHT_BUTTON || (type == Click.TOUCH)) {
-            OpenMenu();
-        }       
-        
-    }
-
     public override void OnHoverStart() {
         if (!enabled)
             return;

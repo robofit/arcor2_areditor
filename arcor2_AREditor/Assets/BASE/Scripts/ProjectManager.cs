@@ -91,11 +91,6 @@ namespace Base {
             } 
         }
 
-
-        /// <summary>
-        /// Invoked when some of the action point weas updated. Contains action point description
-        /// </summary>
-        //public event AREditorEventArgs.ActionPointUpdatedEventHandler OnActionPointUpdated; 
         /// <summary>
         /// Invoked when project loaded
         /// </summary>
@@ -370,10 +365,6 @@ namespace Base {
             if (project.HasLogic) {
                 UpdateLogicItems(project.Logic);
             }
-            // update orientation of all actions
-            /*foreach (Action action in GetAllActions()) {
-                action.UpdateRotation();
-            }*/
             if (project.Modified == System.DateTime.MinValue) { //new project, never saved
                 projectChanged = true;
             } else if (project.IntModified == System.DateTime.MinValue) {
@@ -667,7 +658,6 @@ namespace Base {
         public void UpdateActionPoints(Project project) {
             List<string> currentAP = new List<string>();
             List<string> currentActions = new List<string>();
-            // key = parentId, value = list of APs with given parent
             Dictionary<string, List<IO.Swagger.Model.ActionPoint>> actionPointsWithParents = new Dictionary<string, List<IO.Swagger.Model.ActionPoint>>();
             // ordered list of already processed parents. This ensure that global APs are processed first,
             // then APs with action objects as a parents and then APs with already processed AP parents
@@ -715,8 +705,6 @@ namespace Base {
                         // update actions in current action point 
                         (List<string>, Dictionary<string, string>) updateActionsResult = actionPoint.UpdateActionPoint(projectActionPoint);
                         currentActions.AddRange(updateActionsResult.Item1);
-                        // merge dictionaries
-                        //connections = connections.Concat(updateActionsResult.Item2).GroupBy(i => i.Key).ToDictionary(i => i.Key, i => i.First().Value);
 
                         actionPoint.UpdatePositionsOfPucks();
 
@@ -727,9 +715,6 @@ namespace Base {
                 }
                 
             }
-            
-
-            //UpdateActionConnections(project.ActionPoints, connections);
 
             // Remove deleted actions
             foreach (string actionId in GetAllActionsDict().Keys.ToList<string>()) {
@@ -893,6 +878,11 @@ namespace Base {
             throw new ItemNotFoundException("No orientation available");
         }
 
+        public ActionPoint GetAnyActionPoint() {
+            if (ActionPoints.Count > 0)
+                return ActionPoints.First().Value;
+            throw new ItemNotFoundException("No action point available");
+        }
 
         /// <summary>
         /// Returns action point containing orientation with id or throws KeyNotFoundException
@@ -991,40 +981,12 @@ namespace Base {
                 EndAction.Enable(enable);
         }
 
-        /// <summary>
-        /// Disables all action inputs
-        /// </summary>
-        public void EnableAllActionInputs(bool enable) {
-            if (!Valid)
-                return;
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    ;
-                    //action.Input.Enable(enable);
-            }
-            //EndAction.Input.Enable(enable);
-        }
-
-
-        /// <summary>
-        /// Disable all action outputs
-        /// </summary>
-        public void EnableAllActionOutputs(bool enable) {
-            if (!Valid)
-                return;
-            foreach (ActionPoint ap in ActionPoints.Values) {
-                foreach (Action action in ap.Actions.Values)
-                    ;
-                    //action.Output.Enable(enable);
-            }
-            //StartAction.Output.Enable(enable);
-        }
+        
 
 
         #region ACTIONS
 
         public Action SpawnAction(IO.Swagger.Model.Action projectAction, ActionPoint ap) {
-            //string action_id, string action_name, string action_type, 
             Debug.Assert(!ActionsContainsName(projectAction.Name));
             ActionMetadata actionMetadata;
             string providerName = projectAction.Type.Split('/').First();
@@ -1117,7 +1079,6 @@ namespace Base {
                 }
             }
 
-            //Debug.LogError("Action " + Id + " not found!");
             throw new ItemNotFoundException("Action with ID " + id + " not found");
         }
 
@@ -1135,7 +1096,6 @@ namespace Base {
                 }
             }
 
-            //Debug.LogError("Action " + id + " not found!");
             throw new ItemNotFoundException("Action with name " + name + " not found");
         }
 
@@ -1253,12 +1213,6 @@ namespace Base {
         public void SetActionInputOutputVisibility(bool visible) {
             if (!Valid || !ProjectMeta.HasLogic)
                 return;
-            /*foreach (Action action in GetAllActions()) {
-                action.EnableInputOutput(visible);
-            }
-            StartAction.EnableInputOutput(visible);
-            EndAction.EnableInputOutput(visible);*/
-            //SelectorMenu.Instance.ShowIO(visible);
             if (SelectorMenu.Instance.IOToggle.Toggled != visible)
                 SelectorMenu.Instance.IOToggle.SwitchToggle();
             SelectorMenu.Instance.IOToggle.SetInteractivity(visible, "Connections are hidden");

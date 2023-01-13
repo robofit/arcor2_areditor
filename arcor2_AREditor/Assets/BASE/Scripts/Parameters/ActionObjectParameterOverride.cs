@@ -46,7 +46,7 @@ public class ActionObjectParameterOverride : MonoBehaviour
     }
 
     public void Modify() {
-        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, LayoutGroupToBeDisabled, CanvasRoot, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, null, false, default, false);
+        Input = Parameter.InitializeParameter(parameterMetadata, OnChangeParameterHandler, LayoutGroupToBeDisabled, CanvasRoot, Parameter.Encode(Value.text, parameterMetadata.Type), parameterMetadata.Type, null, null, false, default, false);
         Input.SetLabel("", "");
         Value.gameObject.SetActive(false);
         Input.GetTransform().SetParent(Value.transform.parent);

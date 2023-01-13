@@ -13,7 +13,6 @@ namespace Base {
     public class ActionsManager : Singleton<ActionsManager> {
 
         private Dictionary<string, ActionObjectMetadata> actionObjectsMetadata = new Dictionary<string, ActionObjectMetadata>();
-       // private Dictionary<string, ServiceMetadata> servicesMetadata = new Dictionary<string, ServiceMetadata>();
         
         public Action CurrentlyRunningAction = null;
         
@@ -21,7 +20,7 @@ namespace Base {
 
         
         public GameObject LinkableParameterInputPrefab, LinkableParameterDropdownPrefab, LinkableParameterDropdownPosesPrefab,
-            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
+            LinkableParameterDropdownPositionsPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
             LinkableParameterBooleanPrefab, ParameterDropdownPrefab;
 
         public GameObject InteractiveObjects;
@@ -36,11 +35,6 @@ namespace Base {
         public Dictionary<string, ActionObjectMetadata> ActionObjectsMetadata {
             get => actionObjectsMetadata; set => actionObjectsMetadata = value;
         }
-       /* public Dictionary<string, ServiceMetadata> ServicesMetadata {
-            get => servicesMetadata;
-            set => servicesMetadata = value;
-        }
-        */
         private void Awake() {
             ActionsReady = false;
             ActionObjectsLoaded = false;
@@ -71,11 +65,6 @@ namespace Base {
                         return;
                     }
                 }
-              /*  foreach (ServiceMetadata sm in ServicesMetadata.Values) {
-                    if (!sm.ActionsLoaded) {
-                        return;
-                    }
-                }*/
                 ActionsReady = true;
                 OnActionsLoaded?.Invoke(this, EventArgs.Empty);
                 enabled = false;
@@ -83,7 +72,6 @@ namespace Base {
         }
 
         public void Init() {
-           // servicesMetadata.Clear();
             actionObjectsMetadata.Clear();
             AbstractOnlyObjects = true;
             ActionsReady = false;
@@ -97,18 +85,6 @@ namespace Base {
             }
             return actionObjectMetadata.HasPose;
         }
-
-
-        /*  
-          public async Task UpdateServicesMetadata(List<IO.Swagger.Model.ServiceTypeMeta> newServices) {
-              foreach (IO.Swagger.Model.ServiceTypeMeta newServiceMeta in newServices) {
-                  ServiceMetadata serviceMetadata = new ServiceMetadata(newServiceMeta);
-                  ServicesMetadata[serviceMetadata.Type] = serviceMetadata;
-                  await UpdateActionsOfService(serviceMetadata);
-              }
-              ServicesLoaded = true;
-              OnServiceMetadataUpdated?.Invoke(this, EventArgs.Empty);
-          }*/
 
         // TODO - solve somehow better.. perhaps own class for robot objects and services?
         internal void UpdateRobotsMetadata(List<RobotMeta> list) {
