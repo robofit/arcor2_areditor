@@ -77,15 +77,6 @@ namespace Base {
                 
             }
             
-            //TODO: update all action points and actions.. ?
-                
-            // update position and rotation based on received data from swagger
-            //if (visibility)
-            //    Show();
-            //else
-            //    Hide();
-
-            
         }
 
         public void ResetPosition() {
@@ -126,21 +117,6 @@ namespace Base {
         public abstract Quaternion GetSceneOrientation();
 
         public abstract void SetSceneOrientation(Quaternion orientation);
-
-        public void SetWorldPosition(Vector3 position) {
-            Data.Pose.Position = DataHelper.Vector3ToPosition(position);
-        }
-
-        public Vector3 GetWorldPosition() {
-            return DataHelper.PositionToVector3(Data.Pose.Position);
-        }
-        public void SetWorldOrientation(Quaternion orientation) {
-            Data.Pose.Orientation = DataHelper.QuaternionToOrientation(orientation);
-        }
-
-        public Quaternion GetWorldOrientation() {
-            return DataHelper.OrientationToQuaternion(Data.Pose.Orientation);
-        }
 
         public string GetProviderName() {
             return Data.Name;
@@ -192,9 +168,7 @@ namespace Base {
 
 
         public virtual void SetVisibility(float value, bool forceShaderChange = false) {
-            //Debug.Assert(value >= 0 && value <= 1, "Action object: " + Data.Id + " SetVisibility(" + value.ToString() + ")");
             visibility = value;
-            //PlayerPrefsHelper.SaveFloat(SceneManager.Instance.SceneMeta.Id + "/ActionObject/" + Data.Id + "/visibility", value);
         }
 
         public float GetVisibility() {
@@ -218,7 +192,6 @@ namespace Base {
 
         public abstract void UpdateModel();
 
-        //TODO: is this working?
         public List<ActionPoint> GetActionPoints() {
             List<ActionPoint> actionPoints = new List<ActionPoint>();
             foreach (ActionPoint actionPoint in ProjectManager.Instance.ActionPoints.Values) {

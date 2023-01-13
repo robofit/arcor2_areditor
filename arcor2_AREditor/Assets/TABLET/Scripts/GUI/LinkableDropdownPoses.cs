@@ -23,12 +23,6 @@ public class LinkableDropdownPoses : LinkableDropdown
         canvasGroupToHide = windowToHideWhenRequestingObj;
         List<string> options = new List<string>();
         parentActionPoint = actionPoint;
-
-        /*foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
-            foreach (IO.Swagger.Model.NamedOrientation orientation in ap.GetNamedOrientations()) {
-                options.Add(ap.Data.Name + "." + orientation.Name);
-            }
-        }*/
         
     }
 
@@ -51,11 +45,7 @@ public class LinkableDropdownPoses : LinkableDropdown
                 Debug.LogError(ex);
             }
 
-        } else {
-
-        }
-        //if (type == "link")
-        //    ActionsDropdown.SetValue($"{selectedAP.GetName()}.{selectedOrientation.GetName()}");
+        } 
 
         UpdateButtonLabel();
 
@@ -116,7 +106,7 @@ public class LinkableDropdownPoses : LinkableDropdown
 
     public override object GetValue() {
         object v = base.GetValue();
-        if (type == "link")
+        if (type == LINK)
             return (string) v;
         else {
             string value = (string) v;

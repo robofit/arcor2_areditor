@@ -38,13 +38,6 @@ public class AddNewActionObjectDialog : Dialog {
         this.callback = callback;
     }
 
-
-    public async void InitFromActionObject(Base.ActionObject actionObject) {
-        /*InitDialog(actionObject.ActionProvider, actionObject.Metadata, actionObject.ActionPoint);
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionObject.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
-        nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(actionObject.Data.Name));*/
-    }
-
     public void InitDialog(ActionObjectMetadata metadata) {
         actionObjectMetadata = metadata;
         

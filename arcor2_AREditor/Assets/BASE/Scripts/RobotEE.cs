@@ -47,12 +47,6 @@ public class RobotEE : InteractiveObject, ISubItem {
             eeName.text = $"{Robot.GetName()}/{EEId}";
     }
 
-    public override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-    }
-
     public bool IsSelected => SceneManager.Instance.SelectedEndEffector == this;
 
     public override void OnHoverStart() {

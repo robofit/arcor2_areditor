@@ -24,9 +24,6 @@ public class TabletVis : InteractiveObject {
         return new RequestResult(false, "Tablet vizualization could not be moved");
     }
 
-    public override void OnClick(Click type) {
-        
-    }
 
     public override void OnHoverEnd() {
         name.SetActive(false);

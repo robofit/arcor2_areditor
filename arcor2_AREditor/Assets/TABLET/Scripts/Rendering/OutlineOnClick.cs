@@ -61,9 +61,7 @@ public class OutlineOnClick : Clickable {
 
     public bool HoverOnly = false;
 
-    //[Range(0.0f, 0.1f)]
-    //public float OutlineSize = 0.05f;
-    //private float CurrentOutlineSize;
+
 
     private bool selected = false;
     private bool highlighted = false;
@@ -256,9 +254,6 @@ public class OutlineOnClick : Clickable {
         }
     }
 
-    public override void OnClick(Click type) {
-
-    }
 
     public override void OnHoverStart() {
 

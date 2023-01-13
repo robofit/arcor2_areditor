@@ -51,7 +51,6 @@ namespace Base {
                     hitinfo = hit;
                     anyHit = true;
                     directHit = true;
-                    //Debug.DrawRay(ray.origin, ray.direction);
                 } else {
                     RaycastHit[] hits = Physics.BoxCastAll(ray.origin, new Vector3(0.03f, 0.03f, 0.0001f), ray.direction, Camera.main.transform.rotation);
                     if (hits.Length > 0) {
@@ -114,8 +113,6 @@ namespace Base {
                     }
                     if (h) {
                         items.Sort((x, y) => x.Item1.CompareTo(y.Item1));
-                        /* if (items.Count > 10)
-                             items.RemoveRange(10, items.Count - 10);*/
                         SelectorMenu.Instance.UpdateAimMenu(items);
                     } else {
                         SelectorMenu.Instance.UpdateAimMenu(new List<Tuple<float, InteractiveObject>>());
@@ -169,25 +166,7 @@ namespace Base {
                 CurrentObject = null;
             }
             endingHover = false;
-        }
-
-        public void Touch() {
-            if (CurrentObject == null)
-                return;
-            Clickable clickable = CurrentObject.GetComponent<Clickable>();
-            if (clickable == null)
-                return;
-            clickable.OnClick(Clickable.Click.TOUCH);
-        }
-
-        public void LongTouch() {
-            if (CurrentObject == null)
-                return;
-            Clickable clickable = CurrentObject.GetComponent<Clickable>();
-            if (clickable == null)
-                return;
-            clickable.OnClick(Clickable.Click.LONG_TOUCH);
-        }
+        }        
     }
 }
 

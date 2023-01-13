@@ -17,7 +17,6 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     protected object manualValue;
     protected int dropdownIndexSelected;
     
-   // public const string ProjectParameterText = "project_parameter";
     private const string NewProjectParameterText = "New project parameter";
 
     public const string LINK = "link";

@@ -17,26 +17,10 @@ public class ActionPoint3D : Base.ActionPoint {
     private OutlineOnClick outlineOnClick;
     public GameObject ActionsVisuals;
 
-
-    private void Awake() {
-    }
-
-
-
-    private async void UpdatePose() {
-        try {
-            await WebsocketManager.Instance.UpdateActionPointPosition(Data.Id, Data.Position);
-        } catch (RequestFailedException e) {
-            Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
-            ResetPosition();
-        }
-    }
-
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
         transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         ActionsVisuals.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
-        //Visual.transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
         if (Parent != null)
             orientations.transform.rotation = Parent.GetTransform().rotation;
         else
@@ -58,30 +42,14 @@ public class ActionPoint3D : Base.ActionPoint {
         }
     }
 
-    public async void ShowMenu(bool enableBackButton = false) {
-        throw new NotImplementedException();
-    }
-
-
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Position));
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="position">Global position of AP</param>
-    public override void SetScenePosition(Vector3 position) {
-        Data.Position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position));
-    }
+   
 
     public override Quaternion GetSceneOrientation() {
-        //return TransformConvertor.ROSToUnity(DataHelper.OrientationToQuaternion(Data.Orientations[0].Orientation));
         return Quaternion.identity;
-    }
-
-    public override void SetSceneOrientation(Quaternion orientation) {
-        //Data.Orientations.Add(new IO.Swagger.Model.NamedOrientation(id: "default", orientation:DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(orientation))));
     }
 
     public override void UpdatePositionsOfPucks() {
@@ -260,9 +228,7 @@ public class ActionPoint3D : Base.ActionPoint {
         ActionPointName.text = GetName();
     }
 
-    public override void OnClick(Click type) {
-        throw new NotImplementedException();
-    }
+   
 
     public override void CloseMenu() {
         throw new NotImplementedException();

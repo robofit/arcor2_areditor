@@ -432,7 +432,6 @@ namespace Base {
                         if (!result.Wait(timeout)) {
                             Debug.LogError("The timeout interval elapsed.");
                             //TODO: throw an exception and handle it properly
-                            //throw new TimeoutException();
                             return default;
                         } else {
                             value = result.Result;
@@ -630,17 +629,7 @@ namespace Base {
                 Debug.Log("Parse error in HandleCurrentAction()");
                 return;
             }
-            // Stop previously running action (change its color to default)
-            /*if (ActionsManager.Instance.CurrentlyRunningAction != null)
-                ActionsManager.Instance.CurrentlyRunningAction.StopAction();
-            try {
-                Action puck = ProjectManager.Instance.GetAction(puck_id);
-                ActionsManager.Instance.CurrentlyRunningAction = puck;
-                // Run current action (set its color to running)
-                puck.RunAction();
-            } catch (ItemNotFoundException ex) {
-                Debug.LogError(ex);
-            }*/
+            
         }
 
 

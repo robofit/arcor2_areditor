@@ -112,7 +112,7 @@ public class LinkableDropdownPositions : LinkableDropdown
     public override object GetValue()
     {
         object v = base.GetValue();
-        if (type == "link")
+        if (type == LINK)
             return v;
         else
         {

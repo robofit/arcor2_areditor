@@ -43,12 +43,7 @@ namespace Base {
             base.Start();
         }
 
-        protected virtual void Update() {
-            if (gameObject.transform.hasChanged) {
-                SetScenePosition(transform.localPosition);
-                transform.hasChanged = false;
-            }
-        }
+        
 
         public virtual void ActionPointBaseUpdate(IO.Swagger.Model.BareActionPoint apData) {
             Data.Name = apData.Name;
@@ -58,11 +53,6 @@ namespace Base {
             transform.localPosition = GetScenePosition();
             if (Parent != null)
                 ConnectionToParent.UpdateLine();
-            /*foreach (Action action in Actions.Values) {
-                action.UpdateRotation();
-            }*/
-            //TODO: ActionPoint has multiple rotations of end-effectors, for visualization, render end-effectors individually
-            //transform.localRotation = GetSceneOrientation();
         }
 
         
@@ -103,17 +93,7 @@ namespace Base {
             SceneManager.Instance.AOToAPConnectionsManager.AddConnection(newConnection);
 
             ConnectionToParent = newConnection;
-            /*
-            // Add connection renderer into ChangeMaterialOnSelected script attached on parent AO 
-            ChangeMaterialOnSelected changeMaterial;            
-            changeMaterial = parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
-
-            // if the script is not attached on parent AO, then add it and initialize its click material
-            if (changeMaterial == null) {
-                changeMaterial = parent.GetGameObject().AddComponent<ChangeMaterialOnSelected>();
-                changeMaterial.ClickMaterial = ConnectionToParent.ClickMaterial;
-            }
-            changeMaterial.AddRenderer(ConnectionToParent.GetComponent<LineRenderer>());*/
+            
         }
 
         internal string GetFreeOrientationName() {
@@ -338,9 +318,6 @@ namespace Base {
         private void RemoveConnectionToParent() {
             // Remove connections to parent
             if (ConnectionToParent != null && ConnectionToParent.gameObject != null) {
-                // remove renderer from ChangeMaterialOnSelected script attached on the AO
-                /*ChangeMaterialOnSelected changeMaterial = Parent.GetGameObject().GetComponent<ChangeMaterialOnSelected>();
-                changeMaterial.RemoveRenderer(ConnectionToParent.GetComponent<LineRenderer>());*/
                 // remove connection from connectinos manager
                 SceneManager.Instance.AOToAPConnectionsManager.RemoveConnection(ConnectionToParent);
                 // destroy connection gameobject
@@ -353,9 +330,7 @@ namespace Base {
         }
 
         public abstract Vector3 GetScenePosition();
-        public abstract void SetScenePosition(Vector3 position);
         public abstract Quaternion GetSceneOrientation();
-        public abstract void SetSceneOrientation(Quaternion orientation);
 
         public void RemoveActions() {
             // Remove all actions of this action point
@@ -437,10 +412,7 @@ namespace Base {
                     action.ActionUpdate(projectAction);
 
                     // Add current connection from the server, we will only map the outputs
-                    /*foreach (IO.Swagger.Model.ActionIO actionIO in projectAction.Outputs) {
-                        //if(!connections.ContainsKey(projectAction.Id))
-                        connections.Add(projectAction.Id, actionIO.Default);
-                    }*/
+                    
 
                     // local list of all actions for current action point
                     currentA.Add(projectAction.Id);

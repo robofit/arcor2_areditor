@@ -317,14 +317,6 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
                 string armId = null;
                 if (SceneManager.Instance.SelectedRobot.MultiArm())
                     armId = SceneManager.Instance.SelectedArmId;
-                
-
-                /*
-                if (! await SceneManager.Instance.SelectedRobot.WriteLock(false)) {
-                    Notifications.Instance.ShowNotification("Failed to update position", "Robot could not be locked");
-                    return;
-                }*/
-                
                 await WebsocketManager.Instance.UpdateActionPointUsingRobot(CurrentActionPoint.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.EEId, armId);
                 await SceneManager.Instance.SelectedRobot.WriteUnlock();
             }
@@ -340,9 +332,6 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
     public void OnPositionManualUpdateClick() {
         UpdateActionPointPosition(PositionManualEdit.GetPosition());
     }
-
-
-
 
 
     public void UpdateOrientationsDynamicList() {
@@ -459,8 +448,6 @@ public class ActionPointAimingMenu : RightMenu<ActionPointAimingMenu> {
         
 
         try {
-            //string robotId = SceneManager.Instance.RobotNameToId(JointsRobotsList.GetValue().ToString());
-
             foreach (RectTransform o in JointsDynamicList.GetComponentsInChildren<RectTransform>()) {
                 if (o.gameObject.tag != "Persistent") {
                     Destroy(o.gameObject);

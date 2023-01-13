@@ -38,8 +38,7 @@ public class LeftMenuScene : LeftMenu
         ActionObjectAimingMenuButton.SetDescription(AIMING_MENU_BTN_LABEL);
         AddActionObjectButton.SetDescription(ADD_ACTION_OBJECT_BTN_LABEL);
     }
-    protected override void Update() {
-        base.Update();
+    protected void Update() {
         if (SceneManager.Instance.SceneMeta != null)
             EditorInfo.text = "Scene: \n" + SceneManager.Instance.SceneMeta.Name;
     }

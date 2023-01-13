@@ -18,9 +18,7 @@ namespace Base
 
         public bool Enabled = true;
 
-        // Call using SendMessage("OnClick", Base.Clickable.Click.MOUSE_LEFT_BUTTON) to specify which button caused the click.
-        // Implement by inheriting from Clickable abstract class.
-        public abstract void OnClick(Click type);
+
 
         public abstract void OnHoverStart();
 
