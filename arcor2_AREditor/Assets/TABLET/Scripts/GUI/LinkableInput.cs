@@ -18,47 +18,24 @@ public class LinkableInput : LinkableParameter {
 
         SetOnValueChanged(onChangeParameterHandler);
         SetValue(value);
-        //object v = value;
-        /*switch (type) {
-            case "string":
-                if (value == null)
-                    v = parameterMetadata.GetDefaultValue<string>();
-                break;
-            case "integer":
-                if (value == null)
-                    v = parameterMetadata.GetDefaultValue<int>();
-                break;
-            case "double":
-                if (value == null)
-                    v = parameterMetadata.GetDefaultValue<double>();
-                break;
-            case "link":
-                if (value == null)
-                    v = null;
-                break;
-            default:
-                v = null;
-                break;
-        }*/
+       
     }
 
 
 
 
     public void SetOnValueChanged(OnChangeParameterHandlerDelegate onChangeParameterHandler) {
-        //input.Input.Input.onValueChanged.AddListener((string newValue)
-        //        => onChangeParameterHandler(actionParameterMetadata.Name, newValue, type));
         this.onChangeParameterHandler = onChangeParameterHandler;
     }
 
     public override void SetType(string type, bool linkable, bool switchBtnClicked) {
         base.SetType(type, linkable, switchBtnClicked);
 
-        if (type == "link") {
+        if (type == LINK) {
             //Input.gameObject.SetActive(false);
             //Input.Input.onValueChanged.
             //Input.Input.onValueChanged.RemoveAllListeners();
-        } else if(type == ProjectParameterText) {
+        } else if(type == PROJECT_PARAMETER) {
             //Input.gameObject.SetActive(false);
             //Input.Input.onValueChanged.RemoveAllListeners();
         } else {
@@ -122,5 +99,9 @@ public class LinkableInput : LinkableParameter {
 
     public override void SetInteractable(bool interactable) {
         Input.SetInteractable(interactable);
+    }
+
+    protected override object GetDefaultValue() {
+        return null;
     }
 }

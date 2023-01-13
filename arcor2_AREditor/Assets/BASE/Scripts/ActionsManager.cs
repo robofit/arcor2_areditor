@@ -21,7 +21,7 @@ namespace Base {
 
         
         public GameObject LinkableParameterInputPrefab, LinkableParameterDropdownPrefab, LinkableParameterDropdownPosesPrefab,
-            ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
+            LinkableParameterDropdownPositionsPrefab, ParameterDropdownJointsPrefab, ActionPointOrientationPrefab, ParameterRelPosePrefab,
             LinkableParameterBooleanPrefab, ParameterDropdownPrefab;
 
         public GameObject InteractiveObjects;

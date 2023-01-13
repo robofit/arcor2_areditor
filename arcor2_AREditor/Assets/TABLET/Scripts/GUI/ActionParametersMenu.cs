@@ -23,7 +23,7 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
             return false;
         if (interactiveObject is Action3D action) {
             currentAction = action;
-            actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup);
+            actionParameters = await Parameter.InitActionParameters(currentAction.ActionProvider.GetProviderId(), currentAction.Parameters.Values.ToList(), Content, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, CanvasGroup, currentAction.ActionPoint);
 
             ActionName.text = $"Name: {action.GetName()}";
             ActionType.text = $"Type: {action.ActionProvider.GetProviderName()}/{action.Metadata.Name}";
@@ -65,6 +65,9 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
         if (isValueValid && currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {           
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
+                    if (newValue == null) {
+                        actionParameter.SetValue(actionParameter.ParameterMetadata.GetDefaultValue());
+                    }
                     SaveParameters();
                 }
             } catch (JsonReaderException) {

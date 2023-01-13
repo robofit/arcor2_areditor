@@ -30,5 +30,7 @@ public class LinkableBoolParameter : LinkableParameter
         }*/
     }
 
-
+    protected override object GetDefaultValue() {
+        return false;
+    }
 }

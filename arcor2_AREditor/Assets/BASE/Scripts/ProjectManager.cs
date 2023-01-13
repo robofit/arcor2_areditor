@@ -893,6 +893,11 @@ namespace Base {
             throw new ItemNotFoundException("No orientation available");
         }
 
+        public ActionPoint GetAnyActionPoint() {
+            if (ActionPoints.Count > 0)
+                return ActionPoints.First().Value;
+            throw new ItemNotFoundException("No action point available");
+        }
 
         /// <summary>
         /// Returns action point containing orientation with id or throws KeyNotFoundException

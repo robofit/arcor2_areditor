@@ -14,41 +14,61 @@ public class LinkableDropdownPoses : LinkableDropdown
     private CanvasGroup canvasGroupToHide;
     private InteractiveObject selectedObject;
     private bool selectedObjectManually;
+    private ActionPoint parentActionPoint;
 
 
     public void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot,
-        Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, CanvasGroup windowToHideWhenRequestingObj, bool linkable = true) {
+        Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint, bool linkable = true) {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         canvasGroupToHide = windowToHideWhenRequestingObj;
         List<string> options = new List<string>();
+        parentActionPoint = actionPoint;
 
         /*foreach (Base.ActionPoint ap in Base.ProjectManager.Instance.GetAllActionPoints()) {
             foreach (IO.Swagger.Model.NamedOrientation orientation in ap.GetNamedOrientations()) {
                 options.Add(ap.Data.Name + "." + orientation.Name);
             }
         }*/
-        if (value != null) {
+        
+    }
+
+    public override void SetValue(object newValue) {
+        base.SetValue(newValue);
+        if (newValue != null) {
             try {
-                selectedAP = ProjectManager.Instance.GetActionPointWithOrientation((string) value);
-                selectedOrientation = selectedAP.GetOrientationVisual((string) value);
-                
+                if (type == LINK || type == PROJECT_PARAMETER) {
+                    selectedAP = null;
+                    selectedOrientation = null;
+                    if (type == LINK) {
+                        ActionsDropdown.SetValue(DecodeLinkValue((string) newValue));
+                    }
+                } else {
+                    selectedAP = ProjectManager.Instance.GetActionPointWithOrientation((string) newValue);
+                    selectedOrientation = selectedAP.GetOrientationVisual((string) newValue);
+                }
+
             } catch (KeyNotFoundException ex) {
                 Debug.LogError(ex);
             }
 
+        } else {
+
         }
-        if (type == "link")
-            ActionsDropdown.SetValue($"{selectedAP.GetName()}.{selectedOrientation.GetName()}");
+        //if (type == "link")
+        //    ActionsDropdown.SetValue($"{selectedAP.GetName()}.{selectedOrientation.GetName()}");
 
         UpdateButtonLabel();
+
     }
 
     private void UpdateButtonLabel() {
         if (selectedAP != null && selectedOrientation != null)
             Button.SetLabel($"AP: {selectedAP.GetName()}\nPose: {selectedOrientation.GetName()}");
         else
-            Button.SetLabel($"There is no available Pose");
+            Button.SetLabel($"No pose is selected");
     }
+
+    
 
     public async void OnClick() {
         selectedObject = SelectorMenu.Instance.GetSelectedObject();
@@ -89,7 +109,7 @@ public class LinkableDropdownPoses : LinkableDropdown
         if (selectedInput is APOrientation) {
             return new RequestResult(true);
         } else {
-            return new RequestResult(false, "Selected object is not end effector");
+            return new RequestResult(false, "Selected object is not APOrientation");
         }
     }
 
@@ -97,7 +117,7 @@ public class LinkableDropdownPoses : LinkableDropdown
     public override object GetValue() {
         object v = base.GetValue();
         if (type == "link")
-            return v;
+            return (string) v;
         else {
             string value = (string) v;
             if (value == null)
@@ -106,5 +126,13 @@ public class LinkableDropdownPoses : LinkableDropdown
                 return null;
             return selectedOrientation.GetId();
         }    
+    }
+
+    protected override object GetDefaultValue() {
+        List<IO.Swagger.Model.NamedOrientation> orientations = parentActionPoint.GetNamedOrientations();
+        if (orientations.Count > 0)
+            return orientations[0].Id;
+        else
+            return ProjectManager.Instance.GetAnyNamedOrientation().Id;
     }
 }

@@ -55,6 +55,7 @@ namespace Base {
                     break;
                 case "string_enum":
                 case "pose":
+                case "position":
                 case "joints":
                 case "string":
                     SetValue((string) value);
@@ -95,6 +96,7 @@ namespace Base {
                     return JsonConvert.SerializeObject(int.Parse(value));
                 case "string_enum":
                 case "pose":
+                case "position":
                 case "joints":
                 case "string":
                     return JsonConvert.SerializeObject(value);                    
@@ -120,6 +122,7 @@ namespace Base {
                     return GetValue<int>(value).ToString();
                 case "string_enum":
                 case "pose":
+                case "position":
                 case "joints":
                 case "string":
                 case "link":
@@ -181,8 +184,8 @@ namespace Base {
             return input;*/
 
             RelPoseParam input;
-            IO.Swagger.Model.Pose selectedValue = new IO.Swagger.Model.Pose(new IO.Swagger.Model.Orientation(),
-                new IO.Swagger.Model.Position());
+            IO.Swagger.Model.Pose selectedValue = new IO.Swagger.Model.Pose(orientation: new IO.Swagger.Model.Orientation(),
+                position: new IO.Swagger.Model.Position());
             if (value != null) {
                 selectedValue = value;
             } else if (actionParameterMetadata.DefaultValue != null) {
@@ -254,20 +257,38 @@ namespace Base {
             //return InitializeDropdownParameter(actionParameterMetadata, options, selectedValueString, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, ActionsManager.Instance.ParameterDropdownPrefab);
         }
 
-        public static IParameter InitializePoseParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable, CanvasGroup windowToHideWhenRequestingObj) {
+        public static IParameter InitializePoseParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint) {
 
             LinkableDropdownPoses dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterDropdownPosesPrefab).GetComponent<LinkableDropdownPoses>();
             string selectedValue = null;
             if (value != null) {
                 selectedValue = Parameter.GetValue<string>(value);
             } 
-            dropdownParameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, windowToHideWhenRequestingObj, linkable);
+            dropdownParameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, windowToHideWhenRequestingObj, actionPoint, linkable);
             //DropdownParameterPutData(dropdownParameter.DropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
 
             //DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
             return dropdownParameter;
 
            
+        }
+
+
+
+        public static IParameter InitializePositionParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string type, bool linkable, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint) {
+
+            LinkableDropdownPositions dropdownParameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterDropdownPositionsPrefab).GetComponent<LinkableDropdownPositions>();
+            string selectedValue = null;
+            if (value != null) {
+                selectedValue = Parameter.GetValue<string>(value);
+            }
+            dropdownParameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, windowToHideWhenRequestingObj, actionPoint, linkable);
+            //DropdownParameterPutData(dropdownParameter.DropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
+
+            //DropdownParameterPutData(dropdownParameter, data, selectedValue, actionParameterMetadata.Name, onChangeParameterHandler, actionParameterMetadata.Type);
+            return dropdownParameter;
+
+
         }
 
         public static IParameter InitializeJointsParameter(ParameterMetadata actionParameterMetadata, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, string value, string actionProviderId = "") {
@@ -316,8 +337,8 @@ namespace Base {
             LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
             object selectedValue = null;
             if (value != null) {
-                if (type == LinkableParameter.ProjectParameterText)
-                    selectedValue = value; //id of project parameter
+                if (type == LinkableParameter.PROJECT_PARAMETER || type == LinkableParameter.LINK)
+                    selectedValue = value; //id of project parameter or link to action
                 else
                     selectedValue = Parameter.GetValue<int?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
@@ -334,8 +355,8 @@ namespace Base {
             LinkableBoolParameter parameter = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterBooleanPrefab).GetComponent<LinkableBoolParameter>();
             object selectedValue = null;
             if (value != null) {
-                if (type == LinkableParameter.ProjectParameterText)
-                    selectedValue = value; //id of project parameter
+                if (type == LinkableParameter.PROJECT_PARAMETER || type == LinkableParameter.LINK)
+                    selectedValue = value; //id of project parameter or link to action
                 else
                     selectedValue = Parameter.GetValue<bool?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
@@ -361,8 +382,8 @@ namespace Base {
 
             object selectedValue = null;
             if (value != null) {
-                if (type == LinkableParameter.ProjectParameterText)
-                    selectedValue = value; //id of project parameter
+                if (type == LinkableParameter.PROJECT_PARAMETER || type == LinkableParameter.LINK)
+                    selectedValue = value; //id of project parameter or link to action
                 else
                     selectedValue = Parameter.GetValue<double?>(value.ToString());
             } else if (actionParameterMetadata.DefaultValue != null) {
@@ -435,10 +456,10 @@ namespace Base {
             }
         }
 
-        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable, CanvasGroup windowToHideWhenRequestingObj) {
+        public static List<IParameter> InitParameters(List<ParameterMetadata> parameter_metadatas, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (ParameterMetadata parameterMetadata in parameter_metadatas) {
-                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, windowToHideWhenRequestingObj, darkMode, "", linkable);
+                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, null, parameterMetadata.Type, windowToHideWhenRequestingObj, actionPoint, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -450,10 +471,10 @@ namespace Base {
             return parameters;
         }
 
-        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable, CanvasGroup windowToHideWhenRequestingObj) {
+        public static List<IParameter> InitParameters(List<Parameter> _parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, bool linkable, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint) {
             List<IParameter> parameters = new List<IParameter>();
             foreach (Parameter parameter in _parameters) {
-                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, windowToHideWhenRequestingObj, darkMode, "", linkable);
+                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, windowToHideWhenRequestingObj, actionPoint, darkMode, "", linkable);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Type);
                     continue;
@@ -487,6 +508,9 @@ namespace Base {
                             }                         
                         }
                         break;
+                    case "position":
+                        value = actionPoint.GetId();                        
+                        break;
                     case "joints":
                         try {
                             value = actionPoint.GetFirstJoints().Id;
@@ -508,7 +532,7 @@ namespace Base {
                 if (value != null) {
                     value = JsonConvert.SerializeObject(value);
                 }
-                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, parameterMetadata.Type, windowToHideWhenRequestingObj, darkMode, actionProviderId);
+                IParameter param = InitializeParameter(parameterMetadata, handler, dynamicContentLayout, canvasRoot, value, parameterMetadata.Type, windowToHideWhenRequestingObj, actionPoint, darkMode, actionProviderId);
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameterMetadata.Type);
                     continue;
@@ -545,11 +569,11 @@ namespace Base {
             return actionParameters;
         }
 
-        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<Parameter> parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, CanvasGroup windowToHideWhenRequestingObj) {
+        public static async Task<List<IParameter>> InitActionParameters(string actionProviderId, List<Parameter> parameters, GameObject parentObject, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup dynamicContentLayout, GameObject canvasRoot, bool darkMode, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint) {
             List<Tuple<DropdownParameter, Parameter>> dynamicDropdowns = new List<Tuple<DropdownParameter, Parameter>>();
             List<IParameter> actionParameters = new List<IParameter>();
             foreach (Parameter parameter in parameters) {
-                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, windowToHideWhenRequestingObj, darkMode, actionProviderId);
+                IParameter param = InitializeParameter(parameter.ParameterMetadata, handler, dynamicContentLayout, canvasRoot, parameter.Value, parameter.Type, windowToHideWhenRequestingObj, actionPoint, darkMode, actionProviderId);
 
                 if (param == null) {
                     Notifications.Instance.ShowNotification("Plugin missing", "Ignoring parameter of type: " + parameter.ParameterMetadata.Name);
@@ -597,7 +621,7 @@ namespace Base {
         }
 
         public static IParameter InitializeParameter(ParameterMetadata actionParameterMetadata, OnChangeParameterHandlerDelegate handler, VerticalLayoutGroup layoutGroupToBeDisabled,
-            GameObject canvasRoot, string value, string type, CanvasGroup windowToHideWhenRequestingObj, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
+            GameObject canvasRoot, string value, string type, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint = null, bool darkMode = false, string actionProviderId = "", bool linkable = true) {
             IParameter parameter = null;
 
 
@@ -609,7 +633,10 @@ namespace Base {
                     parameter = InitializeRelativePoseParameter(actionParameterMetadata, handler, Parameter.GetValue<IO.Swagger.Model.Pose>(value), linkable);
                     break;
                 case "pose":
-                    parameter = InitializePoseParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable, windowToHideWhenRequestingObj);
+                    parameter = InitializePoseParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable, windowToHideWhenRequestingObj, actionPoint);
+                    break;
+                case "position":
+                    parameter = InitializePositionParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, value, type, linkable, windowToHideWhenRequestingObj, actionPoint);
                     break;
                 case "joints":
                     parameter = InitializeJointsParameter(actionParameterMetadata, layoutGroupToBeDisabled, canvasRoot, handler, Parameter.GetValue<string>(value), actionProviderId);
