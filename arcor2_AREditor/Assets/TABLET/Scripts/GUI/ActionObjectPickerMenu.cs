@@ -77,7 +77,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
             }
             // create one button for each object type
             foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectsMetadata.Values.OrderBy(x => x.Type)) {
-                if (actionObject.Abstract || actionObject.CollisionObject)
+                if (actionObject.Abstract || (actionObject.CollisionObject && actionObject.ObjectModel.Type != ObjectModel.TypeEnum.Mesh))
                     continue;
                 CreateBtn(actionObject);
             }
