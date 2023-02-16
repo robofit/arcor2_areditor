@@ -32,8 +32,8 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
     private EditProjectParameterDialog EditConstantDialog;
     //private Action3D currentAction;
 
-    public LinkableInput ProjectServiceURI;
-    public ButtonWithTooltip ResetProjectServiceURIButton;
+    public LinkableInput AssetServiceURI;
+    public ButtonWithTooltip ResetAssetServiceURIButton;
     private void Start() {
         SceneManager.Instance.OnLoadScene += OnLoadScene;
         ProjectManager.Instance.OnLoadProject += OnLoadProject;
@@ -45,18 +45,28 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 
     }
 
-    public string GetProjectServiceURI(bool complete = true) {
-        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
-        string suffix = complete ? "/files/" : "";
 
+    /// <summary>
+    /// Returns the URI of asset service
+    /// </summary>
+    /// <returns></returns>
+    public string GetAssetServiceURI() {
+        string uri = PlayerPrefsHelper.LoadString("AssetServiceURI", "");
+        
         // TODO this could (should?) work without connection to the server
-        Debug.Assert(!string.IsNullOrEmpty(WebsocketManager.Instance.GetServerDomain()), "GetProjectServiceURI was probably used without connection to the server.");
+        Debug.Assert(!string.IsNullOrEmpty(WebsocketManager.Instance.GetServerDomain()), "GetAssetServiceURI was probably used without connection to the server.");
 
         if (string.IsNullOrEmpty(uri))
-            return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790" + suffix;
-        else
-            return uri + suffix;
+            return "http://" + WebsocketManager.Instance.GetServerDomain() + ":6790";
+        else {
+            return uri.Trim('/');
+        }
     }
+
+    public string GetAssetFileURI(string file_id) {
+        return $"{GetAssetServiceURI()}/assets/{file_id}/data";
+    }
+
     private void OnLoadProject(object sender, EventArgs e) {
         OnProjectOrSceneLoaded(true);
     }
@@ -129,12 +139,12 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
 #endif
         ConnectionsSwitch.SetValue(PlayerPrefsHelper.LoadBool("control_box_display_connections", true));
         recalibrationTime.SetValue(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
-        string uri = PlayerPrefsHelper.LoadString("ProjectServiceURI", "");
-        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
+        string uri = PlayerPrefsHelper.LoadString("AssetServiceURI", "");
+        AssetServiceURI.Input.SetValue(GetAssetServiceURI());
         if (string.IsNullOrEmpty(uri)) {
-            ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+            ResetAssetServiceURIButton.SetInteractivity(false, "Default value is already set");
         } else {
-            ResetProjectServiceURIButton.SetInteractivity(true);
+            ResetAssetServiceURIButton.SetInteractivity(true);
         }
             
 
@@ -308,15 +318,16 @@ public class MainSettingsMenu : Singleton<MainSettingsMenu>
         PlayerPrefsHelper.SaveBool("control_box_display_connections", (bool) ConnectionsSwitch.GetValue());
     }
 
-    public void SetProjectServiceURI(string uri) {
-        PlayerPrefsHelper.SaveString("ProjectServiceURI", uri.Trim());
-        ResetProjectServiceURIButton.SetInteractivity(true);
+    public void SetAssetServiceURI(string uri) {
+        string uri_without_whitespaces = uri.Trim();
+        PlayerPrefsHelper.SaveString("AssetServiceURI", uri_without_whitespaces);
+        ResetAssetServiceURIButton.SetInteractivity(true);
     }
 
-    public void ResetProjectServiceURI() {
-        PlayerPrefsHelper.SaveString("ProjectServiceURI", "");
-        ProjectServiceURI.Input.SetValue(GetProjectServiceURI(false));
-        ResetProjectServiceURIButton.SetInteractivity(false, "Default value is already set");
+    public void ResetAssetServiceURI() {
+        PlayerPrefs.DeleteKey("AssetServiceURI");
+        AssetServiceURI.Input.SetValue(GetAssetServiceURI());
+        ResetAssetServiceURIButton.SetInteractivity(false, "Default value is already set");
     }
 
 
