@@ -23,12 +23,9 @@ public class LinkableBoolParameter : LinkableParameter
     public override void SetType(string type, bool linkable, bool switchBtnClicked) {
         base.SetType(type, linkable, switchBtnClicked);
         this.type = type;
-        /*if (type == "link") {
-            SwitchComponent.gameObject.SetActive(false);
-        } else {
-            SwitchComponent.gameObject.SetActive(true);
-        }*/
     }
 
-
+    protected override object GetDefaultValue() {
+        return false;
+    }
 }

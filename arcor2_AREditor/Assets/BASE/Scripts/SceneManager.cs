@@ -252,23 +252,6 @@ namespace Base {
 
         // Update is called once per frame
         private void Update() {
-            // Activates scene if the AREditor is in SceneEditor mode and scene is interactable (no windows are openned).
-            /*if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
-                GameManager.Instance.SceneInteractable &&
-                GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal) {
-                if (!sceneActive && (ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateActionObjectsForGizmo(true);
-                    sceneActive = true;
-                } else if (sceneActive && !(ControlBoxManager.Instance.UseGizmoMove || ControlBoxManager.Instance.UseGizmoRotate)) {
-                    ActivateActionObjectsForGizmo(false);
-                    sceneActive = false;
-                }
-            } else {
-                if (sceneActive) {
-                    ActivateActionObjectsForGizmo(false);
-                    sceneActive = false;
-                }
-            }*/
             if (updateScene) {
                 SceneChanged = true;
                 updateScene = false;
@@ -279,7 +262,6 @@ namespace Base {
         /// Initialization of scene manager
         /// </summary>
         private void Start() {
-            OnLoadScene += OnSceneLoaded;
             WebsocketManager.Instance.OnRobotEefUpdated += RobotEefUpdated;
             WebsocketManager.Instance.OnRobotJointsUpdated += RobotJointsUpdated;
             WebsocketManager.Instance.OnSceneBaseUpdated += OnSceneBaseUpdated;
@@ -479,17 +461,7 @@ namespace Base {
             }
         }
 
-        /// <summary>
-        /// Initialize robots end effectors
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnSceneLoaded(object sender, EventArgs e) {
-            /*if (RobotsEEVisible) {
-                ShowRobotsEE();
-            }*/
-        }
-
+      
         /// <summary>
         /// Return true if there is any robot in scene
         /// </summary>
@@ -610,7 +582,6 @@ namespace Base {
             }
             GameObject obj;
             if (aom.Robot) {
-                //Debug.Log("URDF: spawning RobotActionObject");
                 obj = Instantiate(RobotPrefab, ActionObjectsSpawn.transform);
             } else if (aom.CollisionObject) {
                 obj = Instantiate(CollisionObjectPrefab, ActionObjectsSpawn.transform);

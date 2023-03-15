@@ -27,10 +27,10 @@ public class MeshImporter : Singleton<MeshImporter> {
     /// <param name="mesh"></param>
     /// <param name="aoId">ID of action object which is asociated with the mesh</param>
     public void LoadModel(IO.Swagger.Model.Mesh mesh, string aoId) {
-        if (CheckIfNewerRobotModelExists(mesh.Id, mesh.DataId)) {
-            StartCoroutine(DownloadMesh(mesh.Id, mesh.DataId, aoId));
+        if (CheckIfNewerRobotModelExists(mesh.Id, mesh.AssetId)) {
+            StartCoroutine(DownloadMesh(mesh.Id, mesh.AssetId, aoId));
         } else {
-            StartCoroutine(ImportMeshWhenReady(string.Format("{0}/meshes/{1}/{2}", Application.persistentDataPath, mesh.Id, mesh.DataId), aoId, mesh.DataId));
+            StartCoroutine(ImportMeshWhenReady(string.Format("{0}/meshes/{1}/{2}", Application.persistentDataPath, mesh.Id, mesh.AssetId), aoId, mesh.AssetId));
         }
     }
 
@@ -66,7 +66,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             AssetLoaderOptions assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
             AssetLoader.LoadModelFromFile(path, null, delegate (AssetLoaderContext assetLoaderContext) {
                 if (Path.GetExtension(path).ToLower() == ".stl") {
-                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f);
+                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f); // TODO kinali hacked version had 0, 90f, 0
                 }
 
                 OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.WrapperGameObject, aoId));

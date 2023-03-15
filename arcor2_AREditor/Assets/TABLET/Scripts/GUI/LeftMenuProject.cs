@@ -20,8 +20,7 @@ public class LeftMenuProject : LeftMenu
     public InputDialog InputDialog;
 
     private string selectAPNameWhenCreated = "";
-    protected override void Update() {
-        base.Update();
+    protected void Update() {
         if (ProjectManager.Instance.ProjectMeta != null)
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }

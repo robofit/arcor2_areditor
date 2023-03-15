@@ -77,7 +77,10 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
             }
             // create one button for each object type
             foreach (ActionObjectMetadata actionObject in ActionsManager.Instance.ActionObjectsMetadata.Values.OrderBy(x => x.Type)) {
-                if (actionObject.Abstract || actionObject.CollisionObject)
+                // abstract objects could not be created
+                // collision objects are intented to be instantiated only once in the moment they are created, therefore
+                // they are not listed in this menu, except for mesh-based objects (which could not be created or altered in the editor)
+                if (actionObject.Abstract || (actionObject.CollisionObject && actionObject.ObjectModel.Type != ObjectModel.TypeEnum.Mesh))
                     continue;
                 CreateBtn(actionObject);
             }

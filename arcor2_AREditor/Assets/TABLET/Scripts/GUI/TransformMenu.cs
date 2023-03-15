@@ -22,7 +22,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
     public InteractiveObject InteractiveObject;
     public TransformWheel TransformWheel;
     public GameObject Wheel, StepButtons;
-    //public CoordinatesBtnGroup Coordinates;
     public TranformWheelUnits Units, UnitsDegrees;
     private GameObject model;
     public TwoStatesToggleNew RobotTabletBtn;
@@ -46,7 +45,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
     public override bool IsVisible => base.IsVisible || InteractiveObject != null;
 
     private Gizmo gizmo;
-    //private bool IsPositionChanged => model != null && (model.transform.localPosition != Vector3.zero || model.transform.localRotation != Quaternion.identity);
     private bool IsPositionChanged => model != null && ((model.transform.position - InteractiveObject.transform.position).magnitude > 0.001 || Quaternion.Angle(model.transform.rotation, InteractiveObject.transform.rotation) > 0.001);
     private bool IsSizeChanged => model != null && InteractiveObject != null && InteractiveObject is CollisionObject collisionObject && (model.transform.localScale != collisionObject.Model.transform.localScale);
 
@@ -90,17 +88,13 @@ public class TransformMenu : RightMenu<TransformMenu> {
     }
 
     private void Update() {
-        //ResetButton.SetInteractivity(isPositionChanged || isSizeChanged);
         if (model == null || gizmo == null)
             return;
         if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Left) {
             if (SceneManager.Instance.IsRobotAndEESelected()) {
                 model.transform.position = SceneManager.Instance.SelectedEndEffector.transform.position;
-                //Coordinates.X.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.x);
                 gizmo.SetXDelta(model.transform.localPosition.x);
-                //Coordinates.Y.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.y);
                 gizmo.SetYDelta(model.transform.localPosition.y);
-                //Coordinates.Z.SetValueMeters(SceneManager.Instance.SelectedEndEffector.transform.position.z);
                 gizmo.SetZDelta(model.transform.localPosition.z);
                 UpdateTranslate(GetPositionValue(TransformWheel.GetValue()));
                 return;
@@ -115,12 +109,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
             Quaternion delta = TransformConvertor.UnityToROS(model.transform.localRotation);
             Quaternion newrotation = TransformConvertor.UnityToROS(model.transform.rotation * Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation));
-            /*Coordinates.X.SetValueDegrees(newrotation.eulerAngles.x);
-            Coordinates.X.SetDeltaDegrees(delta.eulerAngles.x);
-            Coordinates.Y.SetValueDegrees(newrotation.eulerAngles.y);
-            Coordinates.Y.SetDeltaDegrees(delta.eulerAngles.y);
-            Coordinates.Z.SetValueDegrees(newrotation.eulerAngles.z);
-            Coordinates.Z.SetDeltaDegrees(delta.eulerAngles.z);*/
             gizmo.SetXDeltaRotation(delta.eulerAngles.x);
             gizmo.SetYDeltaRotation(delta.eulerAngles.y);
             gizmo.SetZDeltaRotation(delta.eulerAngles.z);
@@ -129,12 +117,9 @@ public class TransformMenu : RightMenu<TransformMenu> {
             if (handHolding || prevValue != newValue)
                 UpdateTranslate(newValue - prevValue);
 
-            //Coordinates.X.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).x);
   
             gizmo.SetXDelta(TransformConvertor.UnityToROS(model.transform.localPosition).x);
-            //Coordinates.Y.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).y);
             gizmo.SetYDelta(TransformConvertor.UnityToROS(model.transform.localPosition).y);
-            //Coordinates.Z.SetValueMeters(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position)).z);
             gizmo.SetZDelta(TransformConvertor.UnityToROS(model.transform.localPosition).z);
         } else {
             if (InteractiveObject is CollisionObject collisionObject) {
@@ -371,7 +356,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
 
     public void SwitchToTablet() {
         TransformWheel.gameObject.SetActive(true);
-        //ResetPosition();
         Wheel.gameObject.SetActive(true);
         if (InteractiveObject.GetType() != typeof(ActionPoint3D))
             RotateBtn.SetInteractivity(true);
@@ -388,7 +372,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
             return;
         }
         TransformWheel.gameObject.SetActive(false);
-        //ResetPosition();
         if (CurrentState == State.Rotate) {
             SwitchToTranslate();
         }
@@ -666,7 +649,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
         if (InteractiveObject is ActionPoint3D actionPoint) {
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right) {
-                    //await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.localPosition + model.transform.localPosition)));
                     if (IsVisible)
                         await WebsocketManager.Instance.UpdateActionPointPosition(InteractiveObject.GetId(), DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(InteractiveObject.transform.parent.InverseTransformPoint(model.transform.position))));
                 } else {
@@ -677,7 +659,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
                     if (IsVisible)
                         await WebsocketManager.Instance.UpdateActionPointUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), armId);
                 }
-                //ResetPosition();
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action point position", e.Message);
             }
@@ -711,8 +692,8 @@ public class TransformMenu : RightMenu<TransformMenu> {
             try {
                 if (RobotTabletBtn.CurrentState == TwoStatesToggleNew.States.Right)
                     if (IsVisible)
-                        await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position) /*InteractiveObject.transform.localPosition + model.transform.localPosition*/)),
-                                                                                                                                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * model.transform.rotation   /*InteractiveObject.transform.localRotation * model.transform.localRotation*/))));
+                        await WebsocketManager.Instance.UpdateActionObjectPose(InteractiveObject.GetId(), new IO.Swagger.Model.Pose(position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(model.transform.position))),
+                                                                                                                                orientation: DataHelper.QuaternionToOrientation(TransformConvertor.UnityToROS(Quaternion.Inverse(GameManager.Instance.Scene.transform.rotation) * model.transform.rotation))));
                 else {
                     IRobot robot = SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
                     string armId = null;
@@ -721,7 +702,6 @@ public class TransformMenu : RightMenu<TransformMenu> {
                     if (IsVisible)
                         await WebsocketManager.Instance.UpdateActionObjectPoseUsingRobot(InteractiveObject.GetId(), SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs.PivotEnum.Top, armId);
                 }
-                //ResetPosition();
             } catch (RequestFailedException e) {
                 Notifications.Instance.ShowNotification("Failed to update action object position", e.Message);
             }

@@ -225,27 +225,6 @@ public abstract class LeftMenu : MonoBehaviour {
         }
     }
 
-    protected virtual void Update() {
-
-        if (!updateButtonsInteractivity)
-            return;
-
-        /*if (MenuManager.Instance.CheckIsAnyRightMenuOpened()) {
-            SetActiveSubmenu(LeftMenuSelection.Favorites);
-            RobotButton.interactable = false;
-            AddButton.interactable = false;
-            UtilityButton.interactable = false;
-            HomeButton.interactable = false;
-            return;
-        }
-
-        RobotButton.interactable = true;
-        AddButton.interactable = true;
-        UtilityButton.interactable = true;
-        HomeButton.interactable = true;
-        */
-
-    }
 
     private async void LateUpdate() {
         if (CanvasGroup.alpha > 0 && selectedObjectUpdated && previousUpdateDone) {
@@ -513,14 +492,12 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
         if (selectedObject.GetType() == typeof(Recalibrate)) {
-            ((Recalibrate) selectedObject).OnClick(Clickable.Click.TOUCH);
+            ((Recalibrate) selectedObject).Calibrate();
         } else if (selectedObject.GetType() == typeof(CreateAnchor)) {
-            ((CreateAnchor) selectedObject).OnClick(Clickable.Click.TOUCH);
+            ((CreateAnchor) selectedObject).Calibrate();
         } else if (selectedObject.GetType() == typeof(RecalibrateUsingServer)) {
-            ((RecalibrateUsingServer) selectedObject).OnClick(Clickable.Click.TOUCH);
+            ((RecalibrateUsingServer) selectedObject).Calibrate();
         }
-
-        //SetActiveSubmenu(LeftMenuSelection.None);
     }
 
     public void MainSettingsButtonClick() {
@@ -531,7 +508,6 @@ public abstract class LeftMenu : MonoBehaviour {
             MainSettingsButton.GetComponent<Image>().enabled = false;
             MainSettingsMenu.Instance.Hide();
             SelectorMenu.Instance.gameObject.SetActive(true);
-            //ActionPicker.SetActive(false);
         } else {
             MainSettingsButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);

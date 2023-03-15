@@ -33,16 +33,9 @@ public class AddNewActionObjectDialog : Dialog {
     /// <param name="callback">Function to be called if adding action object was successful</param>
     public void InitFromMetadata(Base.ActionObjectMetadata metadata, System.Action callback = null) {
         InitDialog(metadata);
-        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null);
+        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null, null);
         nameInput.SetValue(Base.SceneManager.Instance.GetFreeAOName(metadata.Type));
         this.callback = callback;
-    }
-
-
-    public async void InitFromActionObject(Base.ActionObject actionObject) {
-        /*InitDialog(actionObject.ActionProvider, actionObject.Metadata, actionObject.ActionPoint);
-        actionParameters = await Base.Action.InitParameters(actionProvider.GetProviderId(), actionObject.Parameters.Values.ToList(), DynamicContent, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot);
-        nameInput.SetValue(Base.ProjectManager.Instance.GetFreeActionName(actionObject.Data.Name));*/
     }
 
     public void InitDialog(ActionObjectMetadata metadata) {

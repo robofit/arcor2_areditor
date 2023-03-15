@@ -12,12 +12,6 @@ public abstract class StartEndAction : Base.Action {
     protected OutlineOnClick outlineOnClick;
     public GameObject ModelPrefab;
 
-    public override void OnClick(Click type) {
-        if (type == Click.MOUSE_LEFT_BUTTON || type == Click.LONG_TOUCH) {
-            // We have clicked with left mouse and started manipulation with object
-            StartManipulation();
-        }
-    }
 
     public virtual void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
         base.Init(projectAction, metadata, ap, actionProvider);

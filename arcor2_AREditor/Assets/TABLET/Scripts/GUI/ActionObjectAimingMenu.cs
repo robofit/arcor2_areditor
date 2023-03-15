@@ -318,8 +318,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             currentFocusPoint = 0;
             UpdateCurrentPointLabel();
             //TODO: ZAJISTIT ABY MENU NEŠLO ZAVŘÍT když běží focusing - ideálně nějaký dialog
-            //GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = false;
-            //GetComponent<SimpleSideMenu>().overlayCloseOnPressed = false;
 
             await CheckDoneBtn();
             SavePositionButton.SetInteractivity(true);
@@ -367,8 +365,6 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             CurrentPointLabel.text = "";
             
             // TODO: znovupovolit zavření menu
-            //GetComponent<SimpleSideMenu>().handleToggleStateOnPressed = true;
-            //GetComponent<SimpleSideMenu>().overlayCloseOnPressed = true;
             currentFocusPoint = -1;            
             
             await WebsocketManager.Instance.ObjectAimingDone();

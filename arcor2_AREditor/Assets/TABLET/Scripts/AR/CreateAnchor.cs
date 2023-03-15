@@ -10,12 +10,8 @@ public class CreateAnchor : InteractiveObject {
     private void Awake() {
         CreateSelectorItem();
     }
-
-    public override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.Normal ||
-            GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.InteractionDisabled) {
-            CalibrationManager.Instance.CreateAnchor(transform);
-        }
+    public void Calibrate() {
+        CalibrationManager.Instance.CreateAnchor(transform);
     }
 
     public void CreateSelectorItem() {

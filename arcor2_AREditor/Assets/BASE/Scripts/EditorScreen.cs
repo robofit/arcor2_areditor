@@ -28,12 +28,7 @@ public class EditorScreen : MonoBehaviour {
         Base.GameManager.Instance.OnOpenMainScreen += HideEditorWindow;
         Base.GameManager.Instance.OnDisconnectedFromServer += HideEditorWindow;
         Base.SceneManager.Instance.OnSceneStateEvent += OnSceneStateEvent;
-        //Base.GameManager.Instance.OnGameStateChanged += OnGameStateChanged;
     }
-
-   /* private void OnGameStateChanged(object sender, GameStateEventArgs args) {
-        StartStopSceneBtn.gameObject.SetActive(args.Data == GameManager.GameStateEnum.ProjectEditor || args.Data == GameManager.GameStateEnum.SceneEditor);
-    }*/
 
     private void ShowEditorWindow(object sender, EventArgs args) {
         CanvasGroup.alpha = 1;

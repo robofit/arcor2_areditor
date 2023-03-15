@@ -18,12 +18,6 @@ public class RecalibrateUsingServer : InteractiveObject {
         base.Start();
     }
 
-    public override void OnClick(Click type) {
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return;
-        }
-        Calibrate();
-    }
 
     public void CreateSelectorItem() {
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);

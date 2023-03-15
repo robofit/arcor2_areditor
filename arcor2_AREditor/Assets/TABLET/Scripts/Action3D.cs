@@ -23,8 +23,6 @@ public class Action3D : Base.Action, ISubItem {
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider) {
         base.Init(projectAction, metadata, ap, actionProvider);
-       // Input.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Input);
-        //Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
     protected override void Start() {
@@ -82,30 +80,7 @@ public class Action3D : Base.Action, ISubItem {
         NameText.text = aData.Name;
     }
 
-    public bool CheckClick() {
-        if (GameManager.Instance.GetEditorState() == GameManager.EditorStateEnum.SelectingAction) {
-            GameManager.Instance.ObjectSelected(this);
-            return false;
-        }
-        if (GameManager.Instance.GetEditorState() != GameManager.EditorStateEnum.Normal) {
-            return false;
-        }
-        if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor) {
-            Notifications.Instance.ShowNotification("Not allowed", "Editation of action only allowed in project editor");
-            return false;
-        }
-        return true;
-
-    }
-
-    public override void OnClick(Click type) {
-        if (!CheckClick())
-            return;
-        if (type == Click.MOUSE_RIGHT_BUTTON || type == Click.TOUCH) {
-            OpenMenu();
-        }
-    }
-
+    
     private void OnDeselect(object sender, EventArgs e) {
         if (selected) {
             ActionPoint.HighlightAP(false);

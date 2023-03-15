@@ -16,6 +16,7 @@ namespace Base {
         public const string JOINTS = "joints";
         public const string BOOL = "boolean";
         public const string POSE = "pose";
+        public const string POSITION = "position";
 
         public ARServer.Models.BaseParameterExtra ParameterExtra = null;
 
@@ -82,7 +83,17 @@ namespace Base {
                 case BOOL:
                     return GetDefaultValue<bool>();
                 case POSE:
-                    return GetDefaultValue<string>();
+                    try {
+                        return ProjectManager.Instance.GetAnyNamedOrientation().Id;
+                    } catch (ItemNotFoundException) {
+                        return null;
+                    }
+                case POSITION:
+                    try {
+                        return ProjectManager.Instance.GetAnyActionPoint().GetId();
+                    } catch (ItemNotFoundException) {
+                        return null;
+                    }
                 default:
                     Debug.LogError($"Trying to use unsupported parameter type: {Type}");
                     throw new RequestFailedException("Unknown type");

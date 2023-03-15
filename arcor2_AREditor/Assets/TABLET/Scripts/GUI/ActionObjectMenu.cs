@@ -49,7 +49,6 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     }
 
     private void OnOverrideRemoved(object sender, ParameterEventArgs args) {
-        //Debug
         if (CurrentObject.TryGetParameter(args.Parameter.Name, out IO.Swagger.Model.Parameter parameter)) {
             if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
                 parameterOverride.SetValue(Parameter.GetStringValue(parameter.Value, parameter.Type), false);
@@ -58,7 +57,6 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     }
 
     private void OnOverrideAddedOrUpdated(object sender, ParameterEventArgs args) {
-        //Debug.LogError("added");
         if (overrides.TryGetValue(args.Parameter.Name, out ActionObjectParameterOverride parameterOverride)) {
             parameterOverride.SetValue(Parameter.GetStringValue(args.Parameter.Value, args.Parameter.Type), true);
         }
@@ -160,12 +158,11 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
 
     private void UpdateMenuScene() {
         if (CurrentObject.ObjectParameters.Count > 0) {
-            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null);
+            objectParameters = Parameter.InitParameters(CurrentObject.ObjectParameters.Values.ToList(), Parameters, OnChangeParameterHandler, DynamicContentLayout, CanvasRoot, false, false, null, null);
         }
         foreach (IParameter parameter in objectParameters) {
             parameter.SetInteractable(!SceneManager.Instance.SceneStarted);
         }
-        //SaveParametersBtn.gameObject.SetActive(CurrentObject.ObjectParameters.Count != 0);
         
         parametersChanged = false;
     }
@@ -239,8 +236,6 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
         } else if (CurrentObject.TryGetParameter(parameterId, out IO.Swagger.Model.Parameter parameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != parameter.Value) {
-                    //parametersChanged = true;
-                    //SaveParametersBtn.SetInteractivity(true);
                     SaveParameters();
                 }
             } catch (JsonReaderException) {
