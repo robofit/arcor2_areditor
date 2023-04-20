@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class OnClickCollider : Clickable {
     public GameObject Target;

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Base;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
@@ -19,7 +18,7 @@ public class TrackingManager : Singleton<TrackingManager> {
     public Material PlaneTransparentMaterial;
     public Material PlaneOpaqueMaterial;
 
-    public event AREditorEventArgs.FloatEventHandler NewLowestPlanePosition; 
+    public event AREditorEventArgs.FloatEventHandler NewLowestPlanePosition;
 
     private float lowestPlanePosition = 0f;
 
@@ -83,10 +82,10 @@ public class TrackingManager : Singleton<TrackingManager> {
 
         ARPlaneManager.planesChanged += OnPlanesChanged;
         ARPointCloudManager.pointCloudsChanged += OnPointCloudChanged;
-        
+
         mainCamera = Camera.main.transform;
         //ARTrackedImageManager.trackedImagesChanged += OnTrackedImagesChanged;
-        
+
         deviceTrackingStatus = DeviceTrackingStatus.NotTracking;
         anchorTrackingStatus = AnchorTrackingStatus.NotCalibrated;
 #endif       
@@ -331,12 +330,12 @@ public class TrackingManager : Singleton<TrackingManager> {
     /// <returns></returns>
     private IEnumerator TrackingFailureTimeout(float timeout) {
         yield return new WaitForSeconds(timeout);
-        StopTrackingFailureNotifications(stopVideoOverride:true);
+        StopTrackingFailureNotifications(stopVideoOverride: true);
 
         Notifications.Instance.ShowNotification("Tracking lost timeout!", "System will be calibrated.");
 
         // Make request for recalibration
-        CalibrationManager.Instance.Recalibrate(startAutoCalibrationProcess:true);
+        CalibrationManager.Instance.Recalibrate(startAutoCalibrationProcess: true);
     }
 
     public TrackingQuality GetTrackingQuality() {

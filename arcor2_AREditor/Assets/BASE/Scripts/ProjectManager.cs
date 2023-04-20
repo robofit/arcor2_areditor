@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
@@ -88,7 +87,7 @@ namespace Base {
                 if (origVal != value) {
                     OnProjectSavedSatusChanged?.Invoke(this, EventArgs.Empty);
                 }
-            } 
+            }
         }
 
         /// <summary>
@@ -297,7 +296,7 @@ namespace Base {
                 return;
             }
         }
-        
+
 
         private void OnActionPointAdded(object sender, ProjectActionPointEventArgs data) {
             ActionPoint ap = null;
@@ -312,7 +311,7 @@ namespace Base {
                 }
 
             }
-            
+
             updateProject = true;
         }
 
@@ -320,7 +319,7 @@ namespace Base {
             if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
                 SetProjectMeta(args.Project);
                 updateProject = true;
-            } 
+            }
         }
 
         /// <summary>
@@ -344,7 +343,7 @@ namespace Base {
                     break;
                 }
 
-            StartAction = Instantiate(StartPrefab,  SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
+            StartAction = Instantiate(StartPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<StartAction>();
             StartAction.Init(null, null, null, null, "START");
             EndAction = Instantiate(EndPrefab, SceneManager.Instance.SceneOrigin.transform).GetComponent<EndAction>();
             EndAction.Init(null, null, null, null, "END");
@@ -356,7 +355,7 @@ namespace Base {
                         Parameter parameter = new Parameter(meta, p.Value);
                         actionObject.Overrides[p.Name] = parameter;
                     }
-                    
+
                 }
             }
 
@@ -398,7 +397,7 @@ namespace Base {
             if (StartAction != null) {
                 Destroy(StartAction.gameObject);
                 StartAction = null;
-            }               
+            }
             if (EndAction != null) {
                 Destroy(EndAction.gameObject);
                 EndAction = null;
@@ -478,7 +477,7 @@ namespace Base {
             ProjectMeta.IntModified = project.IntModified;
             ProjectMeta.Modified = project.Modified;
             ProjectMeta.Name = project.Name;
-            
+
         }
 
         /// <summary>
@@ -495,7 +494,7 @@ namespace Base {
                 foreach (Action action in ap.Actions.Values) {
                     IO.Swagger.Model.Action projectAction = new IO.Swagger.Model.Action(id: action.Data.Id,
                         name: action.Data.Name, type: action.Data.Type) {
-                        Parameters = new List<IO.Swagger.Model.ActionParameter>()                        
+                        Parameters = new List<IO.Swagger.Model.ActionParameter>()
                     };
                     foreach (Parameter param in action.Parameters.Values) {
                         projectAction.Parameters.Add(param);
@@ -518,7 +517,7 @@ namespace Base {
 
 
         private void Update() {
-            
+
             if (updateProject) {
                 ProjectChanged = true;
                 updateProject = false;
@@ -561,7 +560,7 @@ namespace Base {
         public ActionPoint SpawnActionPoint(IO.Swagger.Model.ActionPoint apData, IActionPointParent actionPointParent) {
             Debug.Assert(apData != null);
             GameObject AP;
-            if (actionPointParent == null) {               
+            if (actionPointParent == null) {
                 AP = Instantiate(ActionPointPrefab, ActionPointsOrigin.transform);
             } else {
                 AP = Instantiate(ActionPointPrefab, actionPointParent.GetSpawnPoint());
@@ -713,7 +712,7 @@ namespace Base {
                         processedParents.Add(projectActionPoint.Id);
                     }
                 }
-                
+
             }
 
             // Remove deleted actions
@@ -981,7 +980,7 @@ namespace Base {
                 EndAction.Enable(enable);
         }
 
-        
+
 
 
         #region ACTIONS
@@ -995,7 +994,7 @@ namespace Base {
             try {
                 actionProvider = SceneManager.Instance.GetActionObject(providerName);
             } catch (KeyNotFoundException ex) {
-                throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);                
+                throw new RequestFailedException("PROVIDER NOT FOUND EXCEPTION: " + providerName + " " + actionType);
             }
 
             try {
@@ -1177,7 +1176,7 @@ namespace Base {
                 OnActionAddedToScene.Invoke(this, new ActionEventArgs(action));
             } catch (RequestFailedException ex) {
                 Debug.LogError(ex);
-            }            
+            }
         }
 
         /// <summary>

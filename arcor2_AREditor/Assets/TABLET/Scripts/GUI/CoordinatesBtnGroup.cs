@@ -1,12 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
-public class CoordinatesBtnGroup : MonoBehaviour
-{
-   
+public class CoordinatesBtnGroup : MonoBehaviour {
+
 
     public CoordBtn X, Y, Z;
     private CoordBtn selectedBtn;

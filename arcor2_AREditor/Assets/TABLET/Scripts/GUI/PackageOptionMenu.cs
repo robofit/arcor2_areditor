@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using UnityEngine;
@@ -88,7 +86,7 @@ public class PackageOptionMenu : TileOptionMenu {
             Notifications.Instance.ShowNotification("Failed to rename package", e.Message);
         } finally {
             Base.GameManager.Instance.HideLoadingScreen();
-        }        
+        }
     }
 
 

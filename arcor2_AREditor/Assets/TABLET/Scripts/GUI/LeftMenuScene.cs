@@ -4,15 +4,12 @@ using UnityEngine.UI;
 using Base;
 using static Base.GameManager;
 using System.Threading.Tasks;
-using System.Collections;
-using TMPro;
 using System.Linq;
 using Newtonsoft.Json;
 using IO.Swagger.Model;
 using System.Collections.Generic;
 
-public class LeftMenuScene : LeftMenu
-{
+public class LeftMenuScene : LeftMenu {
 
     //public GameObject MeshPicker;
 
@@ -22,9 +19,9 @@ public class LeftMenuScene : LeftMenu
 
     public ButtonWithTooltip AddActionObjectButton;
 
-    private const string AIMING_MENU_BTN_LABEL = "Action object precise aiming"; 
-    private const string ADD_ACTION_OBJECT_BTN_LABEL = "Add new action object to scene"; 
-    private const string ADD_NEW_COLLISION_OBJECT_BTN_LABEL = "Add new collision object to scene"; 
+    private const string AIMING_MENU_BTN_LABEL = "Action object precise aiming";
+    private const string ADD_ACTION_OBJECT_BTN_LABEL = "Add new action object to scene";
+    private const string ADD_NEW_COLLISION_OBJECT_BTN_LABEL = "Add new collision object to scene";
 
     protected override void Awake() {
         base.Awake();
@@ -56,7 +53,7 @@ public class LeftMenuScene : LeftMenu
 
     protected async override Task UpdateBtns(InteractiveObject obj) {
         try {
-        
+
             if (CanvasGroup.alpha == 0) {
                 return;
             }
@@ -106,7 +103,7 @@ public class LeftMenuScene : LeftMenu
                 }
             }
 
-            
+
             previousUpdateDone = true;
         } finally {
             previousUpdateDone = true;
@@ -157,20 +154,20 @@ public class LeftMenuScene : LeftMenu
     }
 
     public override void UpdateVisibility() {
-        
+
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor &&
             MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);            
+            UpdateVisibility(true);
         } else {
             UpdateVisibility(false);
         }
-        
+
     }
 
     public override void UpdateVisibility(bool visible, bool force = false) {
         base.UpdateVisibility(visible, force);
         if (GameManager.Instance.GetGameState() == GameStateEnum.SceneEditor)
-            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);        
+            AREditorResources.Instance.StartStopSceneBtn.gameObject.SetActive(visible);
     }
 
     public async void SaveScene() {
@@ -293,7 +290,7 @@ public class LeftMenuScene : LeftMenu
                 }
                 message += ".";
             } else if (SceneManager.Instance.SceneStarted) {
-                 message += "System will go offline.";
+                message += "System will go offline.";
             }
 
             ConfirmationDialog.Open("Close scene",
@@ -316,7 +313,7 @@ public class LeftMenuScene : LeftMenu
     }
 
 
-    public void ShowNewObjectTypeMenu() {        
+    public void ShowNewObjectTypeMenu() {
         if (!SelectorMenu.Instance.gameObject.activeSelf && !AddNewCollisionObjectButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
         }
@@ -349,13 +346,13 @@ public class LeftMenuScene : LeftMenu
                     RobotSteppingMenu.Instance.Hide();
                 }
                 ActionObjectAimingMenu.Instance.Hide();
-                
+
             } else {
                 _ = ActionObjectAimingMenu.Instance.Show(actionObject, false);
                 ActionObjectAimingMenuButton.GetComponent<Image>().enabled = true;
                 SelectorMenu.Instance.gameObject.SetActive(false);
             }
-        }        
+        }
     }
 
     private bool CheckActionObjectAiming() {

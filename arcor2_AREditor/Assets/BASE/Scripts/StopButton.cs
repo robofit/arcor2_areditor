@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 
-public class StopButton : MonoBehaviour
-{
+public class StopButton : MonoBehaviour {
     private void Start() {
         Base.GameManager.Instance.OnActionExecution += OnActionExecution;
         Base.GameManager.Instance.OnActionExecutionFinished += OnActionExecutionFinishedOrCancelled;
@@ -24,8 +21,8 @@ public class StopButton : MonoBehaviour
                 gameObject.SetActive(true);
         } catch (ItemNotFoundException ex) {
 
-        } 
-        
+        }
+
     }
 
     public async void CancelExecution() {

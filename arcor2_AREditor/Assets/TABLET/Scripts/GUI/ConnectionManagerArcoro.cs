@@ -31,9 +31,9 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
             c.target[0] = o2.GetComponent<RectTransform>();
         }
         Connections.Add(c);
-        if (! (bool) MainSettingsMenu.Instance.ConnectionsSwitch.GetValue())
+        if (!(bool) MainSettingsMenu.Instance.ConnectionsSwitch.GetValue())
             c.gameObject.SetActive(false);
-        
+
         return c;
     }
 
@@ -72,7 +72,7 @@ public class ConnectionManagerArcoro : Base.Singleton<ConnectionManagerArcoro> {
         return GetConnectedTo(virtualConnectionToMouse, virtualPointer);
     }
 
-     public Base.Action GetActionConnectedTo(Connection c, GameObject o) {        
+    public Base.Action GetActionConnectedTo(Connection c, GameObject o) {
         return GetConnectedTo(c, o).GetComponent<InputOutput>().Action;
     }
 

@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ToastMessage : Base.Singleton<ToastMessage>
-{
+public class ToastMessage : Base.Singleton<ToastMessage> {
     [SerializeField]
     private TMPro.TMP_Text text;
     [SerializeField]
@@ -11,17 +9,16 @@ public class ToastMessage : Base.Singleton<ToastMessage>
 
     public void ShowMessage(string message, int duration) {
 #if UNITY_ANDROID && AR_ON
-            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            AndroidJavaObject unityActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        AndroidJavaObject unityActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-            if (unityActivity != null) {
-                AndroidJavaClass toastClass = new AndroidJavaClass("android.widget.Toast");
-                unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
-                {
-                    AndroidJavaObject toastObject = toastClass.CallStatic<AndroidJavaObject>("makeText", unityActivity, message, 0);
-                    toastObject.Call("show");
-                }));
-            }
+        if (unityActivity != null) {
+            AndroidJavaClass toastClass = new AndroidJavaClass("android.widget.Toast");
+            unityActivity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
+                AndroidJavaObject toastObject = toastClass.CallStatic<AndroidJavaObject>("makeText", unityActivity, message, 0);
+                toastObject.Call("show");
+            }));
+        }
 #elif UNITY_STANDALONE || !AR_ON
         text.text = message;
         StopAllCoroutines();

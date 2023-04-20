@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionButton : MonoBehaviour
-{
+public class ActionButton : MonoBehaviour {
     public Image Background;
     [SerializeField]
     public Button Button;
@@ -32,14 +29,13 @@ public class ActionButton : MonoBehaviour
         return text.text;
     }
     // Update is called once per frame
-    private void Update()
-    {
+    private void Update() {
         if (blinking)
-            Background.color = Color.Lerp(new Color(0.224f, 0.224f, 0.224f), new Color(0.063f, 0.063f, 0.063f), Mathf.PingPong(Time.time, 0.3f)*3);
+            Background.color = Color.Lerp(new Color(0.224f, 0.224f, 0.224f), new Color(0.063f, 0.063f, 0.063f), Mathf.PingPong(Time.time, 0.3f) * 3);
     }
 
     public void Highlight(float time) {
-        blinking = true;        
+        blinking = true;
         Invoke("Disable", time);
     }
 

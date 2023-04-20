@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class VirtualConnectionOnTouch : Base.VirtualConnection {
@@ -14,7 +12,7 @@ public class VirtualConnectionOnTouch : Base.VirtualConnection {
     private void Update() {
         if (!Base.GameManager.Instance.SceneInteractable)
             return;
-        
+
 
         if (DrawVirtualConnection) {
 #if UNITY_EDITOR || UNITY_STANDALONE

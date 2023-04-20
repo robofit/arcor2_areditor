@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
@@ -24,8 +23,8 @@ public class DropdownEndEffectors : MonoBehaviour {
             Debug.LogError(ex);
             Base.NotificationsModernUI.Instance.ShowNotification("End effector load failed", "Failed to load end effectors, try again later");
         }
-        
-        
+
+
     }
 
     public void PutData(List<string> data, UnityAction<string> onChangeCallback) {

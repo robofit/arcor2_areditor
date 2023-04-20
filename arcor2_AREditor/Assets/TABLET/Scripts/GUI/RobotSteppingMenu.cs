@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Base;
-using System;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 using UnityEngine.Events;
@@ -40,7 +37,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
         WebsocketManager.Instance.OnRobotMoveToPoseEvent += OnRobotMoveToPoseEvent;
         WebsocketManager.Instance.OnRobotMoveToJointsEvent += OnRobotMoveToJointsEvent;
         closeCallback = null;
-    }  
+    }
 
     private void OnRobotMoveToJointsEvent(object sender, RobotMoveToJointsEventArgs args) {
         if (args.Event.Data.MoveEventType == IO.Swagger.Model.RobotMoveToJointsData.MoveEventTypeEnum.End ||
@@ -73,7 +70,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
 
                 if (translate) {
                     Vector3 position = TransformConvertor.UnityToROS(OrigPose.transform.InverseTransformPoint(SceneManager.Instance.SelectedEndEffector.transform.position));
-                    
+
                     //Coordinates.X.SetValueMeters(position.x);
                     //Coordinates.Y.SetValueMeters(position.y);
                     //Coordinates.Z.SetValueMeters(position.z);
@@ -230,7 +227,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
     private void SetHandTeachingButtonInteractivity() {
         ActionObject ao = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
         bool success = ActionsManager.Instance.RobotsMeta.TryGetValue(ao.ActionObjectMetadata.Type, out IO.Swagger.Model.RobotMeta robotMeta);
-        if(success)
+        if (success)
             HandTeachingModeButton.SetInteractivity(robotMeta.Features.HandTeaching, "Robot does not support hand teaching mode");
         else
             HandTeachingModeButton.SetInteractivity(true); //actually this should never happen
@@ -325,7 +322,7 @@ public class RobotSteppingMenu : RightMenu<RobotSteppingMenu> {
         if (unlockRobot)
             await base.Hide();
         else
-            lockedObjects.Clear(); 
+            lockedObjects.Clear();
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
         if (gizmo != null)
             Destroy(gizmo.gameObject);

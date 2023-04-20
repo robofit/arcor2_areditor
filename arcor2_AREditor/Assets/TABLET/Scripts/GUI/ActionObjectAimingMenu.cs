@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Base;
-using IO.Swagger.Model;
-using UnityEngine;
-using UnityEngine.UI;
 using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
+using UnityEngine;
 
-public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
-{
+public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu> {
     public DropdownParameter PivotList;
     public ButtonWithTooltip NextButton, PreviousButton, FocusObjectDoneButton, StartObjectFocusingButton, SavePositionButton, CancelAimingButton;
     public TMPro.TMP_Text CurrentPointLabel;
@@ -79,7 +75,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     }
 
     private void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
-        _ = Hide();        
+        _ = Hide();
     }
 
     public async override Task<bool> Show(InteractiveObject obj, bool lockTree) {
@@ -96,7 +92,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
         } else {
             return false;
         }
-        
+
         await UpdateMenu();
         EditorHelper.EnableCanvasGroup(CanvasGroup, true);
         RobotInfoMenu.Instance.Show();
@@ -114,10 +110,10 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
             return;
         HideModelOnEE();
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
-       
-        spheres.Clear();    
+
+        spheres.Clear();
         currentObject = null;
-        
+
         RobotInfoMenu.Instance.Hide();
     }
 
@@ -133,7 +129,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
 
     public async Task UpdateMenu() {
         CalibrateBtn.gameObject.SetActive(false);
-        
+
 
         if (!SceneManager.Instance.SceneStarted) {
             UpdatePositionBlockVO.SetActive(false);
@@ -230,7 +226,7 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
         }
 
 
-        
+
 
 
     }
@@ -363,10 +359,10 @@ public class ActionObjectAimingMenu : RightMenu<ActionObjectAimingMenu>
     public async void FocusObjectDone() {
         try {
             CurrentPointLabel.text = "";
-            
+
             // TODO: znovupovolit zavření menu
-            currentFocusPoint = -1;            
-            
+            currentFocusPoint = -1;
+
             await WebsocketManager.Instance.ObjectAimingDone();
             FocusObjectDoneButton.SetInteractivity(false, "No aiming in progress");
             CancelAimingButton.SetInteractivity(false, "No aiming in progress");

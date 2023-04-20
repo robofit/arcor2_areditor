@@ -1,8 +1,6 @@
 using UnityEngine;
-using System.IO;
 using System;
 using Base;
-using UnityEngine.UI;
 using System.Threading.Tasks;
 
 public class SceneOptionMenu : TileOptionMenu {
@@ -13,7 +11,7 @@ public class SceneOptionMenu : TileOptionMenu {
     [SerializeField]
     private ConfirmationDialog confirmationDialog;
     public ConfirmationDialog ConfirmationDialog => confirmationDialog;
-    
+
 
     protected override void Start() {
         base.Start();
@@ -69,7 +67,7 @@ public class SceneOptionMenu : TileOptionMenu {
             Notifications.Instance.ShowNotification("Failed to rename scene", e.Message);
         } finally {
             Base.GameManager.Instance.HideLoadingScreen();
-        }        
+        }
     }
 
 

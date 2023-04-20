@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
 using System.IO;
 
-public class SceneTile : Tile
-{
+public class SceneTile : Tile {
     public string SceneId;
     [SerializeField]
     private TMPro.TMP_Text timestamp;

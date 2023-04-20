@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
-using System.Text.RegularExpressions;
 using UnityEngine.UI;
 using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine.Events;
-using MiniJSON;
-using RosSharp.Urdf;
 
 namespace Base {
     public class Parameter : IO.Swagger.Model.ActionParameter {
@@ -30,7 +27,7 @@ namespace Base {
             Name = ParameterMetadata.Name;
             Type = type;
             Value = value;
-            
+
         }
 
         public Parameter(IO.Swagger.Model.ParameterMeta parameterMetadata, string value) : this(parameterMetadata, parameterMetadata.Type, value) { }
@@ -92,7 +89,7 @@ namespace Base {
                 case ParameterMetadata.POSITION:
                 case ParameterMetadata.JOINTS:
                 case ParameterMetadata.STR:
-                    return JsonConvert.SerializeObject(value);                    
+                    return JsonConvert.SerializeObject(value);
                 case ParameterMetadata.DOUBLE:
                     return JsonConvert.SerializeObject(double.Parse(value, CultureInfo.InvariantCulture));
                 case ParameterMetadata.BOOL:
@@ -124,7 +121,7 @@ namespace Base {
                     return GetValue<bool>(value).ToString();
             }
             throw new RequestFailedException("Unknown parameter type");
-        } 
+        }
 
         public void SetValue(object newValue) {
             if (newValue == null)
@@ -146,7 +143,7 @@ namespace Base {
                 return input;
             } else {
                 LinkableInput input = GameObject.Instantiate(ActionsManager.Instance.LinkableParameterInputPrefab).GetComponent<LinkableInput>();
-                
+
                 input.GetComponent<LinkableInput>().Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
                 return input;
             }
@@ -231,11 +228,11 @@ namespace Base {
             string selectedValue = null;
             if (value != null) {
                 selectedValue = Parameter.GetValue<string>(value);
-            } 
+            }
             dropdownParameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, windowToHideWhenRequestingObj, actionPoint, linkable);
             return dropdownParameter;
 
-           
+
         }
 
 
@@ -323,7 +320,7 @@ namespace Base {
                 selectedValue = actionParameterMetadata.GetDefaultValue<bool>();
             }
             parameter.Init(actionParameterMetadata, type, selectedValue, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
-            
+
             return parameter;
         }
 
@@ -452,14 +449,14 @@ namespace Base {
                             } catch (ItemNotFoundException) {
                                 try {
                                     value = ProjectManager.Instance.GetAnyNamedOrientation().Id;
-                                } catch (ItemNotFoundException) {                                
-                                       
+                                } catch (ItemNotFoundException) {
+
                                 }
-                            }                         
+                            }
                         }
                         break;
                     case ParameterMetadata.POSITION:
-                        value = actionPoint.GetId();                        
+                        value = actionPoint.GetId();
                         break;
                     case ParameterMetadata.JOINTS:
                         try {
@@ -475,7 +472,7 @@ namespace Base {
                                     // there are no valid joints in the scene
                                 }
                             }
-                            
+
                         }
                         break;
                 }
@@ -665,6 +662,6 @@ namespace Base {
 
     }
 
-    
+
 
 }

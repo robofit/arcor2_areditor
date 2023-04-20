@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
@@ -80,7 +77,7 @@ public class VRModeManager : Singleton<VRModeManager> {
             VRCamera.transform.localPosition = new Vector3(VRCamera.transform.localPosition.x, posY, VRCamera.transform.localPosition.z);
             // Translate the camera wrapper on Y axis to move up/down
             VRCamera.transform.parent.Translate(new Vector3(0f, moveUp, 0f) * Time.deltaTime * WalkingSpeed, Space.World);
-            
+
             // Add joystick
             rotationY = VRCamera.transform.eulerAngles.y + rotateHorizontal * RotatingSpeed;
             rotationX = VRCamera.transform.eulerAngles.x - rotateVertical * RotatingSpeed;
@@ -100,7 +97,7 @@ public class VRModeManager : Singleton<VRModeManager> {
 
     public void EnableVRMode() {
         float cameraFoV = ARCamera.fieldOfView;
-        
+
         // Disable camera view. By disabling, FoV will change back to original value 60, keep the FoV all time the same as ARCameraBackground sets it.
         arCameraBG.enabled = false;
         ARCamera.fieldOfView = cameraFoV;
@@ -113,7 +110,7 @@ public class VRModeManager : Singleton<VRModeManager> {
         VRCamera.transform.rotation = ARCamera.transform.rotation;
         arCameraRotation = ARCamera.transform.eulerAngles;
         arCameraPosition = ARCamera.transform.position;
-                
+
         CameraMoveJoystick.gameObject.SetActive(true);
         CameraMoveUpJoystick.gameObject.SetActive(true);
         CameraRotateJoystick.gameObject.SetActive(true);

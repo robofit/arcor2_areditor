@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LinkableDropdownPoses : LinkableDropdown
-{
+public class LinkableDropdownPoses : LinkableDropdown {
     private ActionPoint selectedAP = null;
     private APOrientation selectedOrientation = null;
     public ActionButton Button;
@@ -23,7 +20,7 @@ public class LinkableDropdownPoses : LinkableDropdown
         canvasGroupToHide = windowToHideWhenRequestingObj;
         List<string> options = new List<string>();
         parentActionPoint = actionPoint;
-        
+
     }
 
     public override void SetValue(object newValue) {
@@ -45,7 +42,7 @@ public class LinkableDropdownPoses : LinkableDropdown
                 Debug.LogError(ex);
             }
 
-        } 
+        }
 
         UpdateButtonLabel();
 
@@ -58,7 +55,7 @@ public class LinkableDropdownPoses : LinkableDropdown
             Button.SetLabel($"No pose is selected");
     }
 
-    
+
 
     public async void OnClick() {
         selectedObject = SelectorMenu.Instance.GetSelectedObject();
@@ -115,7 +112,7 @@ public class LinkableDropdownPoses : LinkableDropdown
             if (selectedOrientation == null)
                 return null;
             return selectedOrientation.GetId();
-        }    
+        }
     }
 
     protected override object GetDefaultValue() {

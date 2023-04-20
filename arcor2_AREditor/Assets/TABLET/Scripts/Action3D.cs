@@ -1,13 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using Newtonsoft.Json;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
@@ -80,7 +76,7 @@ public class Action3D : Base.Action, ISubItem {
         NameText.text = aData.Name;
     }
 
-    
+
     private void OnDeselect(object sender, EventArgs e) {
         if (selected) {
             ActionPoint.HighlightAP(false);
@@ -116,7 +112,7 @@ public class Action3D : Base.Action, ISubItem {
     }
 
     public override void UpdateColor() {
-        
+
 
         foreach (Material material in Visual.materials)
             if (Enabled && !(IsLocked && !IsLockedByMe))
@@ -130,7 +126,7 @@ public class Action3D : Base.Action, ISubItem {
     }
 
     public override void OpenMenu() {
-        _ = ActionParametersMenu.Instance.Show(this, false);        
+        _ = ActionParametersMenu.Instance.Show(this, false);
     }
 
     public override void CloseMenu() {

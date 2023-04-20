@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using Base;
-using UnityEngine;
 
 /// <summary>
 /// Inherited class of OutlineOnClick for displaying outline on touch began and immediately hiding the outline on touch end.
 /// </summary>
 public class OutlineOnClickHighlight : OutlineOnClick {
-    
+
     private void OnEnable() {
         InputHandler.Instance.OnGeneralClick += OnGeneralClick;
     }
@@ -18,7 +14,7 @@ public class OutlineOnClickHighlight : OutlineOnClick {
         }
     }
 
-   
+
 
     private void OnGeneralClick(object sender, EventClickArgs e) {
         if (e.ClickType == Click.TOUCH_ENDED) {

@@ -5,8 +5,6 @@ using Base;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using System.Threading.Tasks;
 using IO.Swagger.Model;
 using static Base.AREditorEventArgs;
@@ -22,9 +20,9 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         Failure,
         Processing
     }
-//#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
-//    public ARCoreExtensions ARCoreExt;
-//#endif
+    //#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+    //    public ARCoreExtensions ARCoreExt;
+    //#endif
     public ARSessionOrigin ARSessionOrigin;
     public ARAnchorManager ARAnchorManager;
     public ARPlaneManager ARPlaneManager;
@@ -34,7 +32,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public ARCameraManager ARCameraManager;
     public Transform ARCamera;
     public GameObject WorldAnchorPrefab;
-    
+
     public VideoPlayerImage TrackingLostAnimation;
 
     [HideInInspector]
@@ -188,10 +186,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
     }
 
-#region Calibration using ARFoundation
+    #region Calibration using ARFoundation
 
     private void RunLocalARFoundationCalibration() {
-        #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // If we used server calibration before, remove all server anchors and prepare for local calibration
         if (UsingServerCalibration) {
             //Debug.Log("Local: Was using server calibration");
@@ -217,7 +215,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             }
             localCalibration = StartCoroutine(Calibrate());
         }
-        
+
         UsingServerCalibration = false;
 #endif
     }
@@ -423,12 +421,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private void AttachScene(GameObject worldAnchor) {
-    //private void AttachScene(GameObject worldAnchor, bool initLocalAnchor = false) {
+        //private void AttachScene(GameObject worldAnchor, bool initLocalAnchor = false) {
         //if (initLocalAnchor) {
         //    WorldAnchorLocal = ARAnchorManager.AddAnchor(new Pose(Camera.main.transform.position, Camera.main.transform.rotation));
         //    GameManager.Instance.Scene.transform.parent = WorldAnchorLocal.gameObject.transform;
         //} else
-        if(worldAnchor != null) {
+        if (worldAnchor != null) {
             GameManager.Instance.Scene.transform.parent = worldAnchor.transform;
         }
 
@@ -456,7 +454,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             if (WorldAnchorCloud == null) {
                 Notifications.Instance.ShowNotification("Cloud anchor fail", "Cloud anchor couldn't be loaded");
                 Debug.Log("Cloud anchor fail: Cloud anchor couldn't be loaded " + cloudAnchorId);
-                return false;    
+                return false;
             }
 
             return true;
@@ -473,7 +471,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
             if (Vector3.Distance(trackedImg.transform.position, ARCamera.position) <= 0.05f) {
                 trackedImg.gameObject.SetActive(false);
             } else {
-                bool wasActive = trackedImg.gameObject.activeSelf;                
+                bool wasActive = trackedImg.gameObject.activeSelf;
                 trackedImg.gameObject.SetActive(active);
             }
         }
@@ -517,7 +515,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     private void RunServerAutoCalibration() {
-        #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
+#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // If we used local calibration before, remove all local anchors and prepare for server calibration
         if (!UsingServerCalibration) {
             //Debug.Log("Server: Was using local calibration");
@@ -568,13 +566,13 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         }
 
         while (!Calibrated) {
-            
+
             markerDetectionState = MarkerDetectionState.Processing;
             bool calibrated = false;
             yield return CalibrateUsingServerAsync(success => {
                 calibrated = success;
                 markerDetectionState = success ? MarkerDetectionState.Success : MarkerDetectionState.Failure;
-            }, inverse: true, force:true);
+            }, inverse: true, force: true);
 
             Calibrated = calibrated;
 
@@ -612,7 +610,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     private void FrameReceived(ARCameraFrameEventArgs arCameraArgs) {
         if (!firstFrameReceived) {
             firstFrameReceived = true;
-            
+
             displayMatrix = arCameraArgs.displayMatrix;
             projectionMatrix = arCameraArgs.projectionMatrix;
             if (ARCameraManager.descriptor.supportsCameraConfigurations) {
@@ -633,12 +631,12 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         // Get information about the device camera image.
         if (ARCameraManager.TryAcquireLatestCpuImage(out XRCpuImage image)) {
-                        // If successful, launch a coroutine that waits for the image
+            // If successful, launch a coroutine that waits for the image
             // to be ready, then apply it to a texture.
             //StartCoroutine(ProcessImage(image, cameraIntrinsics, inverse));
             yield return ProcessImage(image, cameraIntrinsics, success => {
                 callback?.Invoke(success);
-            }, inverse, autoCalibrate, force:force, showNotification:showNotification);
+            }, inverse, autoCalibrate, force: force, showNotification: showNotification);
 
             // It's safe to dispose the image before the async operation completes.
             image.Dispose();
@@ -687,11 +685,11 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         // Create a texture if necessary.
         //Texture2D
-            m_Texture = new Texture2D(
-                request.conversionParams.outputDimensions.x,
-                request.conversionParams.outputDimensions.y,
-                request.conversionParams.outputFormat,
-                false);
+        m_Texture = new Texture2D(
+            request.conversionParams.outputDimensions.x,
+            request.conversionParams.outputDimensions.y,
+            request.conversionParams.outputFormat,
+            false);
 
         // Copy the image data into the texture.
         m_Texture.LoadRawTextureData(rawData);
@@ -712,8 +710,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                                                      fy: (decimal) cameraIntrinsics.focalLength.y);
 
         if (inverse) {
-            GetMarkerPosition(cameraParams, imageString, autoCalibrate:autoCalibrate, force:force, showNotification:showNotification);            
-        } 
+            GetMarkerPosition(cameraParams, imageString, autoCalibrate: autoCalibrate, force: force, showNotification: showNotification);
+        }
 
         yield return new WaitWhile(() => markerDetectionState == MarkerDetectionState.Processing);
         if (markerDetectionState == MarkerDetectionState.Success) {
@@ -744,10 +742,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     public async void GetMarkerPosition(CameraParameters cameraParams, string image, bool autoCalibrate = false, bool force = false, bool showNotification = false) {
         try {
             // receive cameraPose from server
-            IO.Swagger.Model.EstimatedPose markerEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse:true);
+            IO.Swagger.Model.EstimatedPose markerEstimatedPose = await WebsocketManager.Instance.GetCameraPose(cameraParams, image, inverse: true);
 
-            if ((float)markerEstimatedPose.Quality > anchorQuality || force) {
-                anchorQuality = (float)markerEstimatedPose.Quality;
+            if ((float) markerEstimatedPose.Quality > anchorQuality || force) {
+                anchorQuality = (float) markerEstimatedPose.Quality;
                 IO.Swagger.Model.Pose markerPose = markerEstimatedPose.Pose;
 
                 Vector3 markerPositionReceived = new Vector3((float) markerPose.Position.X, (float) markerPose.Position.Y, (float) markerPose.Position.Z);
@@ -761,8 +759,8 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
                 // Marker Position
                 GameObject marker = Instantiate(MarkerPositionGameObject);
-                marker.transform.localPosition = ARCameraTransformMatrix.MultiplyPoint3x4(markerPosition); 
-                marker.transform.localRotation = TransformConvertor.GetQuaternionFromMatrix(ARCameraTransformMatrix) * markerRotation; 
+                marker.transform.localPosition = ARCameraTransformMatrix.MultiplyPoint3x4(markerPosition);
+                marker.transform.localRotation = TransformConvertor.GetQuaternionFromMatrix(ARCameraTransformMatrix) * markerRotation;
                 marker.transform.localScale = new Vector3(1f, 1f, 1f);
 
                 CreateLocalAnchor(marker);
@@ -775,7 +773,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
                 if (showNotification) {
                     Notifications.Instance.ShowNotification("No markers visible", "Find some markers and try again.");
                 }
-            }            
+            }
 
         } catch (RequestFailedException ex) {
             markerDetectionState = MarkerDetectionState.Failure;
@@ -874,6 +872,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         texture.Apply();
     }
 
-#endregion
+    #endregion
 
 }
