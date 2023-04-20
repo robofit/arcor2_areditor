@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
@@ -118,7 +117,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 SetActiveSubmenu(LeftMenuSelection.Favorites);
                 isVisibilityForced = false;
                 UpdateVisibility();
-            }            
+            }
         }
 
     }
@@ -190,7 +189,7 @@ public abstract class LeftMenu : MonoBehaviour {
         RequestResult remove = await removable;
 
         if (selectedObject != null && objId != selectedObject.GetId()) // selected object was updated in the meantime
-            return; 
+            return;
         MoveButton.SetInteractivity(move.Success, $"{MOVE_BTN_LABEL}\n({move.Message})");
         MoveButton2.SetInteractivity(move.Success, $"{MOVE_BTN_LABEL}\n({move.Message})");
         RemoveButton.SetInteractivity(remove.Success, $"{REMOVE_BTN_LABEL}\n({remove.Message})");
@@ -252,7 +251,7 @@ public abstract class LeftMenu : MonoBehaviour {
             SelectorMenu.Instance.gameObject.SetActive(false);
             selectedObject.OpenMenu();
         }
-        
+
 
     }
 
@@ -263,7 +262,7 @@ public abstract class LeftMenu : MonoBehaviour {
         CanvasGroup.interactable = visible;
         CanvasGroup.blocksRaycasts = visible;
         CanvasGroup.alpha = visible ? 1 : 0;
-        
+
         if (visible)
             UpdateBtns();
     }
@@ -326,7 +325,7 @@ public abstract class LeftMenu : MonoBehaviour {
         } else {
             InteractiveObject tempSelectedObject = SelectorMenu.Instance.GetSelectedObject();
             bool manuallySelected = SelectorMenu.Instance.ManuallySelected;
-            callback = (returnedObject) => {                
+            callback = (returnedObject) => {
                 SelectEndEffector(returnedObject);
                 if (tempSelectedObject != null)
                     SelectorMenu.Instance.SetSelectedObject(tempSelectedObject, manuallySelected);
@@ -351,7 +350,7 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         RobotEE endEffector = (RobotEE) selectedObject;
         SceneManager.Instance.SelectRobotAndEE(endEffector);
-        
+
 
         Notifications.Instance.ShowToastMessage($"Selected EE {endEffector.GetName()} on robot {SceneManager.Instance.SelectedRobot.GetName()}" + (SceneManager.Instance.SelectedRobot.MultiArm() ? $" (arm {SceneManager.Instance.SelectedArmId})" : ""));
     }
@@ -383,11 +382,11 @@ public abstract class LeftMenu : MonoBehaviour {
             SelectorMenu.Instance.gameObject.SetActive(true);
             RobotSteppingMenu.Instance.Hide();
         } else { //open menu
-            ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());            
+            ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
             RobotSteppingButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
             RobotSteppingMenu.Instance.Show();
-            
+
         }
     }
 
@@ -416,7 +415,7 @@ public abstract class LeftMenu : MonoBehaviour {
         if (selectedObject is null)
             return;
 
-        
+
         //was clicked the button in favorites or settings submenu?
         Button clickedButton;
         if (CurrentSubmenuOpened == LeftMenuSelection.Favorites)
@@ -432,20 +431,20 @@ public abstract class LeftMenu : MonoBehaviour {
             SelectorMenu.Instance.gameObject.SetActive(true);
             TransformMenu.Instance.Hide();
         } else {
-            clickedButton.GetComponent<Image>().enabled = true;            
-            
-            if (! await TransformMenu.Instance.Show(selectedObject, true)) {
+            clickedButton.GetComponent<Image>().enabled = true;
+
+            if (!await TransformMenu.Instance.Show(selectedObject, true)) {
                 SetActiveSubmenu(CurrentSubmenuOpened);
                 return;
             }
-            
+
             SelectorMenu.Instance.gameObject.SetActive(false);
         }
 
     }
 
     public void RenameClick() {
-        RenameClick(false);   
+        RenameClick(false);
     }
 
     public void RenameClick(bool removeOnCancel, UnityAction confirmCallback = null, bool keepObjectLocked = false) {
@@ -547,7 +546,7 @@ public abstract class LeftMenu : MonoBehaviour {
                 RobotButtons.SetActive(active);
                 RobotButton.GetComponent<Image>().enabled = active;
                 break;
-            
+
         }
     }
 
@@ -587,7 +586,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     private async Task<RequestResult> ValidateParent(object selectedParent) {
         RequestResult result;
-        
+
         if (selectedParent is IActionPointParent parent) {
             result = new RequestResult(true, "");
             if (selectedActionPoint.GetId() == parent.GetId()) {
@@ -602,17 +601,17 @@ public abstract class LeftMenu : MonoBehaviour {
                     result.Success = false;
                     result.Message = ex.Message;
                 }
-            }            
+            }
         } else {
             result = new RequestResult(false, "This object could not be parent of AP");
         }
-        
+
 
         return result;
     }
     private async void AssignToParent(object selectedObject) {
         IActionPointParent parent = (IActionPointParent) selectedObject;
-        
+
         if (parent == null)
             return;
         string id = "";
@@ -638,7 +637,7 @@ public abstract class LeftMenu : MonoBehaviour {
     }
 }
 
-public enum LeftMenuSelection{
+public enum LeftMenuSelection {
     None, Favorites, Add, Utility, Home, Robot
 }
 

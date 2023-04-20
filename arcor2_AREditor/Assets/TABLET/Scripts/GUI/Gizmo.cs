@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Gizmo : MonoBehaviour {
@@ -65,7 +63,7 @@ public class Gizmo : MonoBehaviour {
                 XAxisOutline.UnHighlight();
                 break;
         }
-        
+
     }
 
     private string FormatValue(float value) {
@@ -78,27 +76,27 @@ public class Gizmo : MonoBehaviour {
         return $"{value:0.###}m";
     }
 
-    public void SetXDelta(float value) {        
+    public void SetXDelta(float value) {
         XAxisLabel.text = $"Δ{FormatValue(value)}";
     }
 
-    public void SetYDelta(float value) {        
+    public void SetYDelta(float value) {
         YAxisLabel.text = $"Δ{FormatValue(value)}";
     }
 
-    public void SetZDelta(float value) {        
+    public void SetZDelta(float value) {
         ZAxisLabel.text = $"Δ{FormatValue(value)}";
     }
 
-    public void SetXDeltaRotation(float value) {        
+    public void SetXDeltaRotation(float value) {
         XAxisLabel.text = $"Δ{value:0.##}°";
     }
 
-    public void SetYDeltaRotation(float value) {        
+    public void SetYDeltaRotation(float value) {
         YAxisLabel.text = $"Δ{value:0.##}°";
     }
 
-    public void SetZDeltaRotation(float value) {        
+    public void SetZDeltaRotation(float value) {
         ZAxisLabel.text = $"Δ{value:0.##}°";
     }
 

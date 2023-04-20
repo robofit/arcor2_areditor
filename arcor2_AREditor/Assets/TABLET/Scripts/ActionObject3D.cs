@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -6,8 +5,6 @@ using Base;
 using IO.Swagger.Model;
 using TriLibCore;
 using System;
-using TriLibCore.General;
-using System.Threading.Tasks;
 
 [RequireComponent(typeof(OutlineOnClick))]
 [RequireComponent(typeof(Target))]
@@ -35,7 +32,7 @@ public class ActionObject3D : ActionObject {
 
     }
 
-    
+
     public override Vector3 GetScenePosition() {
         return TransformConvertor.ROSToUnity(DataHelper.PositionToVector3(Data.Pose.Position));
     }
@@ -161,7 +158,7 @@ public class ActionObject3D : ActionObject {
     }
 
     public override void CreateModel(CollisionModels customCollisionModels = null) {
-       
+
         if (ActionObjectMetadata.ObjectModel == null || ActionObjectMetadata.ObjectModel.Type == IO.Swagger.Model.ObjectModel.TypeEnum.None) {
             Model = Instantiate(CubePrefab, Visual.transform);
             Model.transform.localScale = new Vector3(0.05f, 0.01f, 0.05f);
@@ -220,7 +217,7 @@ public class ActionObject3D : ActionObject {
                     break;
             }
         }
-        
+
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
         Collider = Model.GetComponent<Collider>();
         Colliders.Add(Collider);
@@ -265,7 +262,7 @@ public class ActionObject3D : ActionObject {
         Model.gameObject.transform.localRotation = Quaternion.identity;
 
         gameObject.GetComponent<BindParentToChild>().ChildToBind = Model;
-        
+
         foreach (Renderer child in Model.GetComponentsInChildren<Renderer>(true)) {
             child.gameObject.AddComponent<OnClickCollider>().Target = gameObject;
             child.gameObject.AddComponent<MeshCollider>();
@@ -277,7 +274,7 @@ public class ActionObject3D : ActionObject {
         Colliders.AddRange(Model.GetComponentsInChildren<MeshCollider>(true));
         outlineOnClick.InitRenderers(aoRenderers);
         outlineOnClick.InitMaterials();
-        SetVisibility(visibility, forceShaderChange:true);
+        SetVisibility(visibility, forceShaderChange: true);
 
         if (outlineWasHighlighted) {
             outlineOnClick.Highlight();
@@ -297,7 +294,7 @@ public class ActionObject3D : ActionObject {
         Notifications.Instance.ShowNotification("Unable to show mesh " + this.GetName(), obj.GetInnerException().Message);
     }
 
-    
+
 
 
     public override void OnHoverStart() {
@@ -423,7 +420,7 @@ public class ActionObject3D : ActionObject {
         switch (ActionObjectMetadata.ObjectModel.Type) {
             case ObjectModel.TypeEnum.Box:
                 dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Box.SizeX, (float) ActionObjectMetadata.ObjectModel.Box.SizeY, (float) ActionObjectMetadata.ObjectModel.Box.SizeZ));
-               break;
+                break;
             case ObjectModel.TypeEnum.Sphere:
                 dimensions = TransformConvertor.ROSToUnityScale(new Vector3((float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius, (float) ActionObjectMetadata.ObjectModel.Sphere.Radius));
                 break;

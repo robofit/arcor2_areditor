@@ -1,15 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using Michsky.UI.ModernUIPack;
-using System.Linq;
 using System.Threading.Tasks;
 using Base;
-using System;
 
-public class DropdownRobots : MonoBehaviour
-{
+public class DropdownRobots : MonoBehaviour {
     public DropdownParameter Dropdown;
 
     /// <summary>
@@ -27,7 +23,7 @@ public class DropdownRobots : MonoBehaviour
         if (!withEEOnly) {
             foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
                 robotNames.Add(robot.GetName());
-                
+
             }
         } else if (withEEOnly && SceneManager.Instance.SceneStarted) {
             foreach (IRobot robot in Base.SceneManager.Instance.GetRobots()) {
@@ -47,7 +43,7 @@ public class DropdownRobots : MonoBehaviour
         int selectedItemIndex = 0;
         foreach (string robotName in robotNames) {
             CustomDropdown.Item item = new CustomDropdown.Item {
-                itemName = robotName                
+                itemName = robotName
             };
             if (robotName == selectedRobotName)
                 selectedItemIndex = Dropdown.Dropdown.dropdownItems.Count;

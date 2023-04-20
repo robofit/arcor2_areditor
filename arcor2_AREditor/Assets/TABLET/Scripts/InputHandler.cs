@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -44,7 +43,7 @@ public class InputHandler : Singleton<InputHandler> {
         }
         // Left Button
         if (Input.GetMouseButtonDown(0)) {
-                TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
+            TryToRaycast(Clickable.Click.MOUSE_LEFT_BUTTON);
         }
         // Right Button
         else if (Input.GetMouseButtonDown(1)) {
@@ -155,7 +154,7 @@ public class InputHandler : Singleton<InputHandler> {
         }
     }
 
-   
+
 }
 
 public class EventClickArgs : EventArgs {

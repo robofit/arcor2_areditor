@@ -1,15 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using Base;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PositionManualEdit : MonoBehaviour
-{
+public class PositionManualEdit : MonoBehaviour {
     public TMPro.TMP_InputField InputX, InputY, InputZ;
 
     [SerializeField]

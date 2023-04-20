@@ -1,9 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using Base;
-using UnityEngine;
-public class CollisionObject : ActionObject3D
-{
+public class CollisionObject : ActionObject3D {
     public override string GetObjectTypeName() {
         return "Collision object";
     }

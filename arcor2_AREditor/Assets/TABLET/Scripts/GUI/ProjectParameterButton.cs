@@ -1,14 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Base;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 
-public class ProjectParameterButton : MonoBehaviour
-{
+public class ProjectParameterButton : MonoBehaviour {
     public Button Button;
     [SerializeField]
     private ButtonWithTooltip ButtonWithTooltip;
@@ -16,8 +10,7 @@ public class ProjectParameterButton : MonoBehaviour
     public string Id;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         WebsocketManager.Instance.OnProjectParameterUpdated += OnProjectParameterUpdated;
         LockingEventsCache.Instance.OnObjectLockingEvent += OnLockingEvent;
     }

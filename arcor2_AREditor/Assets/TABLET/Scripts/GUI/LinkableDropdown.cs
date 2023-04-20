@@ -1,26 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.Parameter;
 
-public class LinkableDropdown : LinkableParameter
-{
+public class LinkableDropdown : LinkableParameter {
     public DropdownParameter DropdownParameter;
 
     public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {
         Parameter = DropdownParameter;
 
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
-        
+
         SetOnValueChanged(onChangeParameterHandler);
         SetValue(value);
-        
+
 
     }
 
-   
+
     public override void InitDropdown(VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot) {
         base.InitDropdown(layoutGroupToBeDisabled, canvasRoot);
         DropdownParameter.Init(layoutGroupToBeDisabled, canvasRoot, type);

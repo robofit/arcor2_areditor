@@ -1,16 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.UI;
-using Newtonsoft.Json;
 using Base;
-using System.Threading.Tasks;
-using System;
 using UnityEngine.Events;
 
-public class RenameDialog : Dialog
-{
+public class RenameDialog : Dialog {
     //public GameObject CanvasRoot;
     public TMPro.TMP_Text Title;
 
@@ -35,7 +27,7 @@ public class RenameDialog : Dialog
         this.isNewObject = isNewObject;
         _updateVisibilityCallback = updateVisibilityCallback;
         selectedObject = objectToRename;
-        
+
 
         Title.text = "Rename " + selectedObject.GetObjectTypeName();
         this.keepObjectLocked = keepObjectLocked;
@@ -60,7 +52,7 @@ public class RenameDialog : Dialog
 
         ConfirmButton.SetInteractivity(valid, "Name has not been changed");
     }
-   
+
     public override async void Confirm() {
         string name = (string) nameInput.GetValue();
         if (name == selectedObject.GetName()) { //for new objects, without changing name

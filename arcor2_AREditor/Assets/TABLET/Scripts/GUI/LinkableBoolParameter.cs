@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.Parameter;
 
-public class LinkableBoolParameter : LinkableParameter
-{
+public class LinkableBoolParameter : LinkableParameter {
     public SwitchComponent SwitchComponent;
 
     public override void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot, OnChangeParameterHandlerDelegate onChangeParameterHandler, bool linkable = true) {

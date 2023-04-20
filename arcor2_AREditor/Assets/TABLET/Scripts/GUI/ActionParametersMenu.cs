@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,8 +6,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActionParametersMenu : RightMenu<ActionParametersMenu>
-{
+public class ActionParametersMenu : RightMenu<ActionParametersMenu> {
     public GameObject Content;
     private Action3D currentAction;
     private List<IParameter> actionParameters = new List<IParameter>();
@@ -34,7 +32,7 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
         } else {
             return false;
         }
-        
+
     }
 
     public override async Task Hide() {
@@ -49,11 +47,11 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
         }
         if (!IsVisible)
             return;
-        
+
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
         currentAction.ActionPoint.HighlightAP(false);
         currentAction = null;
-        
+
     }
 
 
@@ -62,7 +60,7 @@ public class ActionParametersMenu : RightMenu<ActionParametersMenu>
     }
 
     public void OnChangeParameterHandler(string parameterId, object newValue, string type, bool isValueValid = true) {
-        if (isValueValid && currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {           
+        if (isValueValid && currentAction.Parameters.TryGetValue(parameterId, out Parameter actionParameter)) {
             try {
                 if (JsonConvert.SerializeObject(newValue) != actionParameter.Value) {
                     if (newValue == null) {

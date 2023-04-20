@@ -1,12 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CoordBtn : MonoBehaviour
-{
+public class CoordBtn : MonoBehaviour {
     private void Awake() {
         Background.color = Color.clear;
     }
@@ -28,7 +24,7 @@ public class CoordBtn : MonoBehaviour
         } else {
             field.text = "";
         }
-        if (value < 0.99 && value >= 0.009 || value > -0.99 && value < -0.009 )
+        if (value < 0.99 && value >= 0.009 || value > -0.99 && value < -0.009)
             field.text += string.Format("{0:0.##cm}", value * 100);
         else if (value < 0.009 && value > 0.009)
             field.text += string.Format("{0:0.##mm}", value * 1000);

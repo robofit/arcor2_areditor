@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Base;
-using UnityEngine;
 
 public class CalibrateRobotDialog : Dialog {
 
@@ -36,8 +33,8 @@ public class CalibrateRobotDialog : Dialog {
             } finally {
                 Close();
             }
-        }      
-        
+        }
+
     }
 
 }

@@ -1,12 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 using System.IO;
 using System;
 using System.IO.Compression;
-using System.Net;
-using System.Net.Sockets;
 using System.Net.Http;
 
 namespace Base {
@@ -82,7 +79,7 @@ namespace Base {
             if (GameManager.Instance.SystemInfo != null) {
                 logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo.Version);
             }
-            
+
             logsFile.WriteLine("Editor API version: " + GameManager.ApiVersion);
             if (GameManager.Instance.SystemInfo != null) {
                 logsFile.WriteLine("Server API version: " + GameManager.Instance.SystemInfo.ApiVersion);
@@ -103,8 +100,9 @@ namespace Base {
 
             // TODO why we upload logs only when the editor is connected to the server?
             string serverDomain = WebsocketManager.Instance.GetServerDomain();
-            
-            if (String.IsNullOrEmpty(serverDomain)) return;
+
+            if (String.IsNullOrEmpty(serverDomain))
+                return;
 
             string uri = "http://" + serverDomain + ":6799/upload";
             try {
@@ -118,12 +116,12 @@ namespace Base {
                     formData.Add(fileStreamContent, "files", Path.GetFileName(zipname));
                     HttpResponseMessage response = await client.PostAsync(uri, formData);
                     if (!response.IsSuccessStatusCode) {
-                        Debug.LogError("Error:" + zipname + " not uploaded");                        
-                    } else {         
+                        Debug.LogError("Error:" + zipname + " not uploaded");
+                    } else {
                     }
 
                 }
-                
+
             } catch (HttpRequestException ex) {
                 Debug.LogError($"Failed to upload logs to {uri}: " + ex.Message);
             } catch (InvalidOperationException ex) {

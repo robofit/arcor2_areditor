@@ -1,7 +1,6 @@
 using System;
 using UnityEngine.UI;
 using Base;
-using System.Collections;
 using IO.Swagger.Model;
 using UnityEngine;
 using System.Threading.Tasks;
@@ -10,8 +9,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using static Base.GameManager;
 
-public class LeftMenuProject : LeftMenu
-{
+public class LeftMenuProject : LeftMenu {
 
     public ButtonWithTooltip SetActionPointParentButton, AddActionButton, AddActionButton2, RunButton, RunButton2,
         AddConnectionButton, AddConnectionButton2, BuildPackageButton, AddActionPointUsingRobotButton, AddActionPointButton,
@@ -24,8 +22,8 @@ public class LeftMenuProject : LeftMenu
         if (ProjectManager.Instance.ProjectMeta != null)
             EditorInfo.text = "Project: \n" + ProjectManager.Instance.ProjectMeta.Name;
     }
-    
-    
+
+
 
     private const string SET_ACTION_POINT_PARENT_LABEL = "Set action point parent";
     private const string ADD_ACTION_LABEL = "Add action";
@@ -70,7 +68,7 @@ public class LeftMenuProject : LeftMenu
 
     protected override void Awake() {
         base.Awake();
-       
+
     }
 
     protected override void OnSceneStateEvent(object sender, SceneStateEventArgs args) {
@@ -105,7 +103,7 @@ public class LeftMenuProject : LeftMenu
                 previousUpdateDone = true;
                 return;
             }
-        
+
             await base.UpdateBtns(obj);
 #if UNITY_ANDROID && AR_ON
             if (!CalibrationManager.Instance.Calibrated && !TrackingManager.Instance.IsDeviceTracking()) {
@@ -120,8 +118,7 @@ public class LeftMenuProject : LeftMenu
                 AddActionPointButton2.SetInteractivity(false, $"{ADD_ACTION_POINT_LABEL}\n(AR not calibrated)");
                 CopyButton.SetInteractivity(false, $"{COPY_LABEL}\n(AR not calibrated");
                 ActionPointAimingMenuButton.SetInteractivity(false, $"{ACTION_POINT_AIMING_LABEL}\n(AR not calibrated)");
-            }
-            else
+            } else
 #endif
             if (requestingObject || obj == null) {
                 SetActionPointParentButton.SetInteractivity(false, $"{SET_ACTION_POINT_PARENT_LABEL}\n(no action point is selected)");
@@ -164,7 +161,7 @@ public class LeftMenuProject : LeftMenu
                     AddActionButton2.SetInteractivity(false, $"{ADD_ACTION_LABEL}\n(selected object is not action point)");
                     CopyButton.SetInteractivity(obj is Base.Action && !(obj is StartEndAction), $"{COPY_LABEL}\n(selected object cannot be duplicated)");
                 }
-                
+
                 ActionPointAimingMenuButton.SetInteractivity(obj is ActionPoint3D || obj is APOrientation, $"{ACTION_POINT_AIMING_LABEL}\n(selected object is not action point or orientation)");
                 if (obj is IActionPointParent) {
                     AddActionPointButton.SetDescription($"Add AP relative to {obj.GetName()}");
@@ -174,7 +171,7 @@ public class LeftMenuProject : LeftMenu
                 }
                 AddActionPointButton2.SetInteractivity(AddActionPointButton.IsInteractive(), $"{ADD_ACTION_POINT_LABEL}\n({AddActionPointButton.GetAlternativeDescription()})");
                 AddActionPointButton2.SetDescription(AddActionPointButton.GetDescription());
-                
+
                 if (!MainSettingsMenu.Instance.ConnectionsSwitch.IsOn()) {
                     AddConnectionButton.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
                     AddConnectionButton2.SetInteractivity(false, $"{ADD_CONNECTION_LABEL}\n(connections are hidden)");
@@ -187,7 +184,7 @@ public class LeftMenuProject : LeftMenu
                         }
                         AddConnectionButton2.SetInteractivity(AddConnectionButton.IsInteractive(), AddConnectionButton.GetAlternativeDescription());
                     }
-                    
+
 
                 }
                 string runBtnInteractivity = null;
@@ -221,7 +218,7 @@ public class LeftMenuProject : LeftMenu
                     RunButton2.SetInteractivity(false, $"{RUN_ACTION_OR_PACKAGE_LABEL}\n({runBtnInteractivity})");
                 }
 
-                
+
             }
 
             if (!SceneManager.Instance.SceneStarted) {
@@ -252,11 +249,11 @@ public class LeftMenuProject : LeftMenu
         UpdateBtns();
     }
 
-    
+
 
     public void SaveProject() {
         SaveButton.SetInteractivity(false, "Saving project...");
-        Base.GameManager.Instance.SaveProject();        
+        Base.GameManager.Instance.SaveProject();
     }
 
     public async void BuildPackage(string name) {
@@ -294,16 +291,16 @@ public class LeftMenuProject : LeftMenu
 
 
     private void OnProjectSavedStatusChanged(object sender, EventArgs e) {
-       UpdateBuildAndSaveBtns();
+        UpdateBuildAndSaveBtns();
     }
-    
+
 
     public override async void UpdateBuildAndSaveBtns() {
         if (GameManager.Instance.GetGameState() != GameManager.GameStateEnum.ProjectEditor)
             return;
         if (CurrentSubmenuOpened != LeftMenuSelection.Home)
             return;
-        
+
         BuildPackageButton.SetInteractivity(false, $"Build package\n(checking...)");
         SaveButton.SetInteractivity(false, "Save project\n(checking...)");
         CloseButton.SetInteractivity(false, "Close project\n(checking...)");
@@ -314,7 +311,7 @@ public class LeftMenuProject : LeftMenu
         }
 
         if (!ProjectManager.Instance.ProjectChanged) {
-            BuildPackageButton.SetInteractivity(true);            
+            BuildPackageButton.SetInteractivity(true);
             SaveButton.SetInteractivity(false, "Save project\n(there are no unsaved changes)");
         } else {
             WebsocketManager.Instance.SaveProject(true, SaveProjectCallback);
@@ -366,7 +363,7 @@ public class LeftMenuProject : LeftMenu
             return;
         if (selectedObject.GetType() == typeof(ActionPoint3D)) {
             selectAPNameWhenCreated = selectedObject.GetName() + "_copy";
-            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);            
+            WebsocketManager.Instance.CopyActionPoint(selectedObject.GetId(), null, selectedObject.GetName(), CopyActionPointCallback);
         } else if (selectedObject is Base.Action action) {
             ActionPickerMenu.Instance.DuplicateAction(action);
         }
@@ -383,7 +380,7 @@ public class LeftMenuProject : LeftMenu
 
     public async void AddConnectionClick() {
         if (SelectorMenu.Instance.GetSelectedObject() is Base.Action action) {
-            action.AddConnection();            
+            action.AddConnection();
         }
     }
 
@@ -410,7 +407,7 @@ public class LeftMenuProject : LeftMenu
             } else {
                 Notifications.Instance.ShowNotification("Failed to open action picker", "Could not lock action point");
             }
-            
+
         }
     }
 
@@ -492,7 +489,7 @@ public class LeftMenuProject : LeftMenu
             if (selectedObject is ActionPoint3D actionPoint) {
                 opened = await ActionPointAimingMenu.Instance.Show(actionPoint, true);
             } else if (selectedObject is APOrientation orientation) {
-                opened = await orientation.OpenDetailMenu();     
+                opened = await orientation.OpenDetailMenu();
             }
             if (opened) {
                 ActionPointAimingMenuButton.GetComponent<Image>().enabled = true;
@@ -500,7 +497,7 @@ public class LeftMenuProject : LeftMenu
             } else {
                 Notifications.Instance.ShowNotification("Failed to open action picker", "Could not lock action point");
             }
-            
+
 
         }
     }
@@ -509,7 +506,7 @@ public class LeftMenuProject : LeftMenu
     public override void UpdateVisibility() {
         if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor &&
             MainMenu.Instance.CurrentState() == DanielLochner.Assets.SimpleSideMenu.SimpleSideMenu.State.Closed) {
-            UpdateVisibility(true);            
+            UpdateVisibility(true);
         } else {
             UpdateVisibility(false);
         }
@@ -566,14 +563,14 @@ public class LeftMenuProject : LeftMenu
                 // TODO: enable stop execution (_ = GameManager.Instance.CancelExecution();)
                 action.ActionBeingExecuted = false;
             } else if (selectedObject.GetType() == typeof(APOrientation)) {
-                
+
                 //await WebsocketManager.Instance.MoveToActionPointOrientation(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetId(), 0.5m, selectedObject.GetId(), false);
-            } 
+            }
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to execute action", ex.Message);
             return;
         }
-        
+
     }
 
     public void RunDebugClicked() {
@@ -594,6 +591,6 @@ public class LeftMenuProject : LeftMenu
         } catch (RequestFailedException ex) {
             Notifications.Instance.ShowNotification("Failed to debug project", ex.Message);
             GameManager.Instance.HideLoadingScreen();
-        } 
+        }
     }
 }

@@ -1,13 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
-using RosSharp.Urdf;
 using UnityEngine;
 
 [RequireComponent(typeof(Target))]
 public class RobotEE : InteractiveObject, ISubItem {
-    
+
     [SerializeField]
     private TMPro.TMP_Text eeName;
     public OutlineOnClick OutlineOnClick;
@@ -37,7 +35,7 @@ public class RobotEE : InteractiveObject, ISubItem {
         UpdateLabel();
         SelectorItem = SelectorMenu.Instance.CreateSelectorItem(this);
 
-        
+
     }
 
     public void UpdateLabel() {

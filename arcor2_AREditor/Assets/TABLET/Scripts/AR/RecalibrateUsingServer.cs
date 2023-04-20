@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using UnityEngine;
@@ -24,7 +22,7 @@ public class RecalibrateUsingServer : InteractiveObject {
     }
 
     public void Calibrate() {
-        CalibrationManager.Instance.RecalibrateUsingServer(inverse:true, showNotification:true);
+        CalibrationManager.Instance.RecalibrateUsingServer(inverse: true, showNotification: true);
     }
 
 

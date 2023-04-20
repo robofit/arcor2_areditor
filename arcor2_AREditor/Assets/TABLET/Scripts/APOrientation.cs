@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
@@ -22,7 +20,7 @@ public class APOrientation : InteractiveObject, ISubItem {
     public override void OnHoverStart() {
         if (!enabled)
             return;
-        
+
 
         HighlightOrientation(true);
         if (SelectorMenu.Instance.ManuallySelected) {
@@ -119,7 +117,7 @@ public class APOrientation : InteractiveObject, ISubItem {
             c = Color.gray;
         foreach (Renderer r in outlineOnClick.Renderers)
             r.material.color = c;
-            
+
     }
 
     public InteractiveObject GetParentObject() {

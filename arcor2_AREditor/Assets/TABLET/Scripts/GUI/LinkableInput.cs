@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using Base;
 using UnityEngine;
@@ -16,7 +14,7 @@ public class LinkableInput : LinkableParameter {
 
         SetOnValueChanged(onChangeParameterHandler);
         SetValue(value);
-       
+
     }
 
 
@@ -30,14 +28,14 @@ public class LinkableInput : LinkableParameter {
         base.SetType(type, linkable, switchBtnClicked);
 
         if (type != LINK && type != PROJECT_PARAMETER) {
-               
+
             Input.SetType(type);
             switch (ParameterMetadata.Type) {
                 case ParameterMetadata.INT:
                     if (string.IsNullOrEmpty(Input.Input.text)) {
                         Input.SetValue(ParameterMetadata.GetDefaultValue<int>());
                     }
-                    
+
                     if (switchBtnClicked)
                         Input.Input.onValueChanged.Invoke(Input.Input.text);
                     else
@@ -62,7 +60,7 @@ public class LinkableInput : LinkableParameter {
                         Input.Input.onValueChanged.AddListener((string value) => onChangeParameterHandler(Input.GetName(), value, type));
                     break;
             }
-            
+
         }
     }
 

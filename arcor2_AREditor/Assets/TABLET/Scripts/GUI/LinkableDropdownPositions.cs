@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LinkableDropdownPositions : LinkableDropdown
-{
+public class LinkableDropdownPositions : LinkableDropdown {
     private ActionPoint selectedAP = null;
     public ActionButton Button;
     private CanvasGroup canvasGroupToHide;
@@ -17,8 +14,7 @@ public class LinkableDropdownPositions : LinkableDropdown
 
 
     public void Init(ParameterMetadata parameterMetadata, string type, object value, VerticalLayoutGroup layoutGroupToBeDisabled, GameObject canvasRoot,
-        Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint, bool linkable = true)
-    {
+        Parameter.OnChangeParameterHandlerDelegate onChangeParameterHandler, CanvasGroup windowToHideWhenRequestingObj, ActionPoint actionPoint, bool linkable = true) {
         base.Init(parameterMetadata, type, value, layoutGroupToBeDisabled, canvasRoot, onChangeParameterHandler, linkable);
         canvasGroupToHide = windowToHideWhenRequestingObj;
         List<string> options = new List<string>();
@@ -35,7 +31,7 @@ public class LinkableDropdownPositions : LinkableDropdown
                     selectedAP = null;
                     if (type == LINK) {
                         ActionsDropdown.SetValue(DecodeLinkValue((string) value));
-                    } 
+                    }
                 } else {
                     selectedAP = ProjectManager.Instance.GetActionPoint((string) value);
                 }
@@ -50,24 +46,21 @@ public class LinkableDropdownPositions : LinkableDropdown
         UpdateButtonLabel();
     }
 
-    private void UpdateButtonLabel()
-    {
+    private void UpdateButtonLabel() {
         if (selectedAP != null)
             Button.SetLabel($"AP: {selectedAP.GetName()}");
         else
             Button.SetLabel($"There is no available Position");
     }
 
-    public async void OnClick()
-    {
+    public async void OnClick() {
         selectedObject = SelectorMenu.Instance.GetSelectedObject();
         selectedObjectManually = SelectorMenu.Instance.ManuallySelected;
         await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingActionPoint, SelectAP, "Select action point",
             ValidateAP, () => {
                 EditorHelper.EnableCanvasGroup(canvasGroupToHide, true);
                 canvasGroupToHide.gameObject.SetActive(true);
-                if (selectedObject != null)
-                {
+                if (selectedObject != null) {
                     SelectorMenu.Instance.SetSelectedObject(selectedObject, selectedObjectManually, false);
                 }
                 AREditorResources.Instance.LeftMenuProject.UpdateBtns();
@@ -78,8 +71,7 @@ public class LinkableDropdownPositions : LinkableDropdown
         SelectorMenu.Instance.gameObject.SetActive(true);
     }
 
-    private async void SelectAP(object selectedObject)
-    {
+    private async void SelectAP(object selectedObject) {
         selectedAP = (ActionPoint) selectedObject;
         if (selectedAP == null)
             return;
@@ -87,8 +79,7 @@ public class LinkableDropdownPositions : LinkableDropdown
         UpdateButtonLabel();
         EditorHelper.EnableCanvasGroup(canvasGroupToHide, true);
         canvasGroupToHide.gameObject.SetActive(true);
-        if (this.selectedObject != null)
-        {
+        if (this.selectedObject != null) {
             SelectorMenu.Instance.SetSelectedObject(this.selectedObject, selectedObjectManually, false);
         }
         onChangeParameterHandler?.Invoke(GetName(), GetValue(), type);
@@ -96,27 +87,21 @@ public class LinkableDropdownPositions : LinkableDropdown
         SelectorMenu.Instance.gameObject.SetActive(false);
     }
 
-    private async Task<RequestResult> ValidateAP(object selectedInput)
-    {
-        if (selectedInput is ActionPoint3D)
-        {
+    private async Task<RequestResult> ValidateAP(object selectedInput) {
+        if (selectedInput is ActionPoint3D) {
             return new RequestResult(true);
-        }
-        else
-        {
+        } else {
             return new RequestResult(false, "Selected object is not action point");
         }
     }
 
 
-    public override object GetValue()
-    {
+    public override object GetValue() {
         object v = base.GetValue();
         if (type == LINK)
             return v;
-        else
-        {
-            string value = (string)v;
+        else {
+            string value = (string) v;
             if (value == null)
                 return null;
             if (selectedAP == null)

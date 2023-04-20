@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Base;
@@ -7,8 +6,7 @@ using IO.Swagger.Model;
 using Newtonsoft.Json;
 using UnityEngine;
 
-public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
-{
+public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu> {
     public enum Type {
         Robots,
         ActionObjects,
@@ -85,7 +83,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                 CreateBtn(actionObject);
             }
         }
-        
+
     }
 
     private ActionButtonWithIconRemovable CreateBtn(ActionObjectMetadata metadata) {
@@ -127,7 +125,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
 
 
     private void AddObjectToScene(string type) {
-        if (Base.ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {            
+        if (Base.ActionsManager.Instance.ActionObjectsMetadata.TryGetValue(type, out Base.ActionObjectMetadata actionObjectMetadata)) {
             ShowAddObjectDialog(type);
         } else {
             Base.NotificationsModernUI.Instance.ShowNotification("Failed to add object", "Object type " + type + " does not exist!");
@@ -149,7 +147,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         WebsocketManager.Instance.DeleteObjectTypeDryRun(types, UpdateRemoveBtnCallback);
     }
 
-    public void UpdateRemoveBtnCallback(string _, string data) {        
+    public void UpdateRemoveBtnCallback(string _, string data) {
         IO.Swagger.Model.DeleteObjectTypesResponse deleteObjectTypeResponse =
             JsonConvert.DeserializeObject<IO.Swagger.Model.DeleteObjectTypesResponse>(data);
         Dictionary<string, string> problems = new Dictionary<string, string>();
@@ -166,7 +164,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
                     b.RemoveBtn.SetInteractivity(true);
                 }
             }
-                
+
         }
     }
 
@@ -212,7 +210,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         ObjectTypeMeta newObjectType = CreateObjectTypeMeta(CollisionObjectType.Cube);
         SceneManager.Instance.SelectCreatedActionObject = newObjectType.Type;
         SceneManager.Instance.OpenTransformMenuOnCreatedObject = true;
-        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);        
+        await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
     }
 
     public async void CreateCylinder() {
@@ -229,7 +227,7 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         await WebsocketManager.Instance.AddVirtualCollisionObjectToScene(newObjectType.Type, newObjectType.ObjectModel, Sight.Instance.CreatePoseInTheView(), AddVirtualCollisionObjectResponseCallback);
     }
 
-    
+
 
     private void AddVirtualCollisionObjectResponseCallback(string objectType, string data) {
         AddVirtualCollisionObjectToSceneResponse response = JsonConvert.DeserializeObject<AddVirtualCollisionObjectToSceneResponse>(data);
@@ -281,4 +279,4 @@ public class ActionObjectPickerMenu : Singleton<ActionObjectPickerMenu>
         return objectTypeMeta;
     }
 
-    }
+}
