@@ -239,7 +239,7 @@ namespace Base {
                 return null;
             List<Flow> flows = GetFlows();
             string flowName = flows[0].Type.GetValueOrDefault().ToString().ToLower();
-            IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(JsonConvert.SerializeObject(Output.ifValue), $"{GetId()}/{flowName}/0");
+            IO.Swagger.Model.ProjectLogicIf projectLogicIf = new ProjectLogicIf(value: JsonConvert.SerializeObject(Output.ifValue), what: $"{GetId()}/{flowName}/0");
             return projectLogicIf;
         }
 
