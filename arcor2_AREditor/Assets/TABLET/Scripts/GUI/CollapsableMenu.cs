@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CollapsableMenu : MonoBehaviour
-{
+public class CollapsableMenu : MonoBehaviour {
     [SerializeField]
     private string Name;
     [SerializeField]
@@ -45,8 +42,7 @@ public class CollapsableMenu : MonoBehaviour
         }
     }
 
-    public void ToggleCollapsedState()
-    {
+    public void ToggleCollapsedState() {
         SetCollapsedState(Content.activeSelf);
     }
 

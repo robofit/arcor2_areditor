@@ -1,13 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using Base;
 using IO.Swagger.Model;
 using UnityEngine;
 
-public class OrientationManualEdit : MonoBehaviour
-{
+public class OrientationManualEdit : MonoBehaviour {
     public TMPro.TMP_InputField InputX, InputY, InputZ, InputW; //for quaternion/euler input
     public GameObject InputFieldW; //for setting (in)active
 

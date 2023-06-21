@@ -1,12 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using Base;
-using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class OutputTypeDialog : Dialog
-{
+public class OutputTypeDialog : Dialog {
     public InputOutput InputOutput;
     private UnityAction confirmDialog;
 
@@ -40,5 +36,5 @@ public class OutputTypeDialog : Dialog
         confirmDialog.Invoke();
     }
 
-   
+
 }

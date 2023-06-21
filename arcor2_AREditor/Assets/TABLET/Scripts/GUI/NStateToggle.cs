@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using TrilleonAutomation;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class NStateToggle : MonoBehaviour
-{
+public class NStateToggle : MonoBehaviour {
     public List<Sprite> Images;
     public List<UnityEvent> Callbacks;
     private List<Image> circles;
@@ -16,7 +12,7 @@ public class NStateToggle : MonoBehaviour
     public Image Circle;
     public Button Button;
 
-    private int selectedIndex; 
+    private int selectedIndex;
 
     private void Awake() {
         Debug.Assert(Images.Count == Callbacks.Count);

@@ -1,10 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Base;
-using Michsky.UI.ModernUIPack;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UI;
@@ -72,7 +69,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
         foreach (KeyValuePair<IActionProvider, List<Base.ActionMetadata>> keyval in actionsMetadata) {
             CollapsableMenu collapsableMenu = Instantiate(CollapsablePrefab, Content.transform).GetComponent<CollapsableMenu>();
             collapsableMenu.SetLabel(keyval.Key.GetProviderName());
-            if (uncollapsedObjects != null && uncollapsedObjects.Contains(keyval.Key.GetProviderName())) 
+            if (uncollapsedObjects != null && uncollapsedObjects.Contains(keyval.Key.GetProviderName()))
                 collapsableMenu.Collapsed = false;
             else
                 collapsableMenu.Collapsed = true;
@@ -121,7 +118,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
         bool anyOrientation = ProjectManager.Instance.AnyOrientationInTheProject();
         bool anyJoints = ProjectManager.Instance.AnyJointsInTheProject();
         foreach (ParameterMetadata param in actionMetadata.ParametersMetadata.Values) {
-            
+
             if (!poseError && param.Type == ParameterMetadata.POSE) {
                 int poseParemetersCount = 0;
                 if (anyOrientation) {
@@ -134,7 +131,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
                         }
                     }
                 }
-                
+
                 if (poseParemetersCount == 1 && !currentActionPoint.AnyOrientation()) {
                     result.Success = false;
                     result.Message += "(there is no available orientation in the selected AP and this action requires it)\n";
@@ -145,7 +142,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
                     poseError = true;
                 }
 
-                
+
             }
             if (!jointsError && param.Type == ParameterMetadata.JOINTS && !anyJoints) {
                 result.Success = false;
@@ -168,7 +165,7 @@ public class ActionPickerMenu : RightMenu<ActionPickerMenu> {
         EditorHelper.EnableCanvasGroup(CanvasGroup, false);
     }
 
-    
+
 
     public void SetVisibility(bool visible) {
         EditorHelper.EnableCanvasGroup(CanvasGroup, visible);

@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DanielLochner.Assets.SimpleSideMenu;
 
-public abstract class OptionMenu : MonoBehaviour
-{
+public abstract class OptionMenu : MonoBehaviour {
     [SerializeField]
     protected SimpleSideMenu menu;
     [SerializeField]

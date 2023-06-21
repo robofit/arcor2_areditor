@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.GameManager;
 
 [RequireComponent(typeof(Button))]
-public class DisableButtonWhenRequestingObject : MonoBehaviour
-{
+public class DisableButtonWhenRequestingObject : MonoBehaviour {
     private ToggleIconButton button;
     private void Awake() {
         button = GetComponent<ToggleIconButton>();

@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Base;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +7,7 @@ public class VideoPlayerImage : MonoBehaviour {
 
     public RawImage RawImage;
     public VideoPlayer VideoPlayer;
-    
+
     private Texture originalImageTexture;
 
     private void Start() {

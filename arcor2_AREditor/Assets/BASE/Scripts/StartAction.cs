@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Base;
 using UnityEngine;
 
-public class StartAction : StartEndAction
-{
+public class StartAction : StartEndAction {
 
     public override void Init(IO.Swagger.Model.Action projectAction, Base.ActionMetadata metadata, Base.ActionPoint ap, IActionProvider actionProvider, string actionType) {
         IO.Swagger.Model.Action prAction = new IO.Swagger.Model.Action(
@@ -18,7 +15,7 @@ public class StartAction : StartEndAction
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, actionType);
         transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, 0));
-       // Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
+        // Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 
 

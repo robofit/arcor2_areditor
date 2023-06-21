@@ -1,5 +1,4 @@
 using Base;
-using DanielLochner.Assets.SimpleSideMenu;
 using IO.Swagger.Model;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
@@ -22,7 +21,7 @@ public class AddOrientationMenu : MonoBehaviour {
 
 
     public async void UpdateMenu() {
-        
+
         ValidateFields();
     }
 
@@ -33,8 +32,7 @@ public class AddOrientationMenu : MonoBehaviour {
         if (string.IsNullOrEmpty(name)) {
             buttonTooltip.description = "Name is required parameter";
             interactable = false;
-        }
-        else if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
+        } else if (CurrentActionPoint.OrientationNameExist(name) || CurrentActionPoint.JointsNameExist(name)) {
             buttonTooltip.description = "There already exists orientation or joints with name " + name;
             interactable = false;
         }
@@ -46,8 +44,7 @@ public class AddOrientationMenu : MonoBehaviour {
                     interactable = false;
                 }
             }
-        }
-        else {
+        } else {
             if (interactable) {
                 if (!SceneManager.Instance.IsRobotSelected()) {
                     interactable = false;

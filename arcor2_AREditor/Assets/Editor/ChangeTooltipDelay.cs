@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Reflection;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
 
@@ -31,10 +28,10 @@ public class ChangeTooltipDelay : MonoBehaviour {
                 }
             }
         }
-        
-        
+
+
     }
-       
+
 
 
     private static GameObject[] GetSceneObjects() {

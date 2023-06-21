@@ -1,11 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System;
-using DanielLochner.Assets.SimpleSideMenu;
-using Michsky.UI.ModernUIPack;
 using Base;
 using System.Collections.Generic;
-using static IO.Swagger.Model.UpdateObjectPoseUsingRobotRequestArgs;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +30,7 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
     protected List<IParameter> objectParameters = new List<IParameter>();
 
     private void Start() {
-        
+
         Debug.Assert(VisibilitySlider != null);
         Debug.Assert(InputDialog != null);
         Debug.Assert(ConfirmationDialog != null);
@@ -163,7 +159,7 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
         foreach (IParameter parameter in objectParameters) {
             parameter.SetInteractable(!SceneManager.Instance.SceneStarted);
         }
-        
+
         parametersChanged = false;
     }
 
@@ -181,7 +177,7 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
             overrides[param.Name] = overrideParam;
         }
 
-        
+
     }
 
     protected virtual void UpdateSaveBtn() {
@@ -251,9 +247,9 @@ public class ActionObjectMenu : RightMenu<ActionObjectMenu> {
             CurrentObject.SetVisibility(value / 100f);
     }
 
-    
 
-   
+
+
 
     public async void ShowNextAO() {
         if (!await CurrentObject.WriteUnlock())

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Base;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
     protected string type;
     protected object manualValue;
     protected int dropdownIndexSelected;
-    
+
     private const string NewProjectParameterText = "New project parameter";
 
     public const string LINK = "link";
@@ -75,7 +74,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         foreach (Base.Action action in Base.ProjectManager.Instance.GetActionsWithReturnType(ParameterMetadata.Type)) {
             actions.Add(action.GetName());
         }
-        
+
         ActionsDropdown.PutData(actions, DecodeLinkValue(newValue?.ToString()), (string v) => onChangeParameterHandler(GetName(), v, type));
     }
 
@@ -89,7 +88,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
                 labels.Add($"{pp.Name}: {ProjectParameterHelper.GetValue(pp)}");
                 if (newValue != null && pp.Id == JsonConvert.DeserializeObject<string>(newValue.ToString())) {
                     selectedLabel = labels.Last();
-                }                
+                }
             }
             projectParameters.Add(NewProjectParameterText);
             labels.Add(NewProjectParameterText);
@@ -106,7 +105,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         if (projectParameterName == NewProjectParameterText) {
             bool hideActionParametersMenu = AREditorResources.Instance.ActionParametersMenu.IsVisible;
             if (hideActionParametersMenu)
-                AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);            
+                AREditorResources.Instance.ActionParametersMenu.SetVisibility(false);
 
             _ = AREditorResources.Instance.EditProjectParameterDialog.Init((string newProjectParameterName) => {
                 if (hideActionParametersMenu)
@@ -161,7 +160,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
             ParameterTypeToggle.gameObject.SetActive(true);
             ParameterTypeToggle.SetState(VALUE, false);
         }
-        
+
     }
 
     public void CreateLinkCb() {
@@ -233,7 +232,7 @@ public abstract class LinkableParameter : MonoBehaviour, IParameter {
         this.onChangeParameterHandler = onChangeParameterHandler;
     }
 
-    
+
 
     public Transform GetTransform() {
         return transform;

@@ -1,9 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using System;
-using UnityEngine.Playables;
 using Base;
 using System.Linq;
 using Newtonsoft.Json;
@@ -11,8 +8,7 @@ using IO.Swagger.Model;
 using System.Threading.Tasks;
 using System.Threading;
 
-public class MainScreen : Base.Singleton<MainScreen>
-{
+public class MainScreen : Base.Singleton<MainScreen> {
     public TMPro.TMP_Text[] ScenesBtns, ProjectsBtns, PackagesBtns;
     public GameObject SceneTilePrefab, TileNewPrefab, ProjectTilePrefab, PackageTilePrefab, ScenesDynamicContent, ProjectsDynamicContent, PackagesDynamicContent;
     public NewProjectDialog NewProjectDialog;
@@ -102,7 +98,7 @@ public class MainScreen : Base.Singleton<MainScreen>
     private void SortCurrentList() {
         List<Tile> tiles = null;
         if (ScenesList.gameObject.activeSelf) {
-            tiles = SceneTiles.Select<SceneTile, Tile>(x => x).ToList();   
+            tiles = SceneTiles.Select<SceneTile, Tile>(x => x).ToList();
         } else if (ProjectsList.gameObject.activeSelf) {
             tiles = ProjectTiles.Select<ProjectTile, Tile>(x => x).ToList();
         } else if (PackageList.gameObject.activeSelf) {
@@ -286,7 +282,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         } finally {
             GameManager.Instance.HideLoadingScreen(true);
         }
-        
+
     }
 
     public async void SwitchToScenes() {
@@ -318,7 +314,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             FilterScenesById(null);
             FilterLists();
             SortCurrentList();
-        } catch (TimeoutException ex) {            
+        } catch (TimeoutException ex) {
             Notifications.Instance.ShowNotification("Failed to switch to scenes", ex.Message);
         } finally {
             GameManager.Instance.HideLoadingScreen(true);
@@ -370,7 +366,7 @@ public class MainScreen : Base.Singleton<MainScreen>
 
     public void LoadScenesCb(string id, string responseData) {
         IO.Swagger.Model.ListScenesResponse response = JsonConvert.DeserializeObject<IO.Swagger.Model.ListScenesResponse>(responseData);
-        
+
         if (response == null || !response.Result) {
             Notifications.Instance.ShowNotification("Failed to load scenes", "Please, try again later.");
             scenesUpdating = false;
@@ -416,19 +412,19 @@ public class MainScreen : Base.Singleton<MainScreen>
             if (s.SceneId == tileId) {
                 s.Highlight();
                 return;
-            }            
+            }
         }
         foreach (ProjectTile p in ProjectTiles) {
             if (p.ProjectId == tileId) {
                 p.Highlight();
                 return;
-            }            
+            }
         }
         foreach (PackageTile p in PackageTiles) {
             if (p.PackageId == tileId) {
                 p.Highlight();
                 return;
-            }            
+            }
         }
     }
 
@@ -456,7 +452,7 @@ public class MainScreen : Base.Singleton<MainScreen>
             if (sceneId == null) {
                 tile.gameObject.SetActive(true);
                 return;
-            }               
+            }
 
             if (tile.SceneId != sceneId) {
                 tile.gameObject.SetActive(false);
@@ -482,7 +478,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         FilterProjectsBySceneId(sceneId);
     }
 
-     public void ShowRelatedScene(string sceneId) {
+    public void ShowRelatedScene(string sceneId) {
         SwitchToScenes();
         FilterScenesById(sceneId);
     }
@@ -491,7 +487,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         if (enable) {
             starredOnly = false;
             FilterLists();
-        }            
+        }
     }
 
     public void EnableStarred(bool enable) {
@@ -588,7 +584,7 @@ public class MainScreen : Base.Singleton<MainScreen>
         foreach (IO.Swagger.Model.ListProjectsResponseData project in Base.GameManager.Instance.Projects) {
             ProjectTile tile = Instantiate(ProjectTilePrefab, ProjectsDynamicContent.transform).GetComponent<ProjectTile>();
             bool starred = PlayerPrefsHelper.LoadBool("project/" + project.Id + "/starred", false);
-            if (project.Problems == null) {                
+            if (project.Problems == null) {
                 try {
                     string sceneName = GameManager.Instance.GetSceneName(project.SceneId);
                     tile.InitTile(project.Name,

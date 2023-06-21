@@ -1,8 +1,7 @@
 using Base;
 using UnityEngine;
 
-public class RobotInfoMenu : Singleton<RobotInfoMenu>
-{
+public class RobotInfoMenu : Singleton<RobotInfoMenu> {
 
     public TMPro.TMP_Text SelectedRobot, SelectedArm, SelectedEE;
 
@@ -19,7 +18,7 @@ public class RobotInfoMenu : Singleton<RobotInfoMenu>
     }
 
     private void OnRobotSelected(object sender, System.EventArgs e) {
-        UpdateLabels();        
+        UpdateLabels();
     }
 
     private void UpdateLabels() {

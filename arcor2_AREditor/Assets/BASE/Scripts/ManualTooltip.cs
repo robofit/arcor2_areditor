@@ -1,10 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Michsky.UI.ModernUIPack;
-using UnityEngine.EventSystems;
-using RuntimeInspectorNamespace;
-using TMPro;
 
 [RequireComponent(typeof(TooltipContent))]
 public class ManualTooltip : MonoBehaviour {
@@ -42,7 +37,7 @@ public class ManualTooltip : MonoBehaviour {
             tooltipContent.enabled = false;
             return;
         }
-        
+
 
         if (DisplayAlternativeDescription) {
             ShowAlternativeDescription();
