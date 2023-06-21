@@ -67,7 +67,7 @@ public class MeshImporter : Singleton<MeshImporter> {
             AssetLoaderOptions assetLoaderOptions = AssetLoader.CreateDefaultLoaderOptions();
             AssetLoader.LoadModelFromFile(path, null, delegate (AssetLoaderContext assetLoaderContext) {
                 if (Path.GetExtension(path).ToLower() == ".stl") {
-                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 180f, 0f); // TODO kinali hacked version had 0, 90f, 0
+                    assetLoaderContext.RootGameObject.transform.Rotate(0f, 90f, 0f);
                 }
 
                 OnMeshImported?.Invoke(this, new ImportedMeshEventArgs(assetLoaderContext.WrapperGameObject, aoId));
@@ -85,7 +85,8 @@ public class MeshImporter : Singleton<MeshImporter> {
     private IEnumerator DownloadMesh(string meshId, string fileName, string aoId) {
 
         //Debug.LogError("MESH: download started");
-        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
+        string uri = MainSettingsMenu.Instance.GetAssetFileURI(fileName);
+        Debug.LogError(uri);
         using (UnityWebRequest www = UnityWebRequest.Get(uri)) {
             // Request and wait for the desired page.
             yield return www.Send();
@@ -200,7 +201,8 @@ public class MeshImporter : Singleton<MeshImporter> {
             return CanIDownload(meshId);
         }
 
-        string uri = MainSettingsMenu.Instance.GetProjectServiceURI() + fileName;
+        string uri = MainSettingsMenu.Instance.GetAssetFileURI(fileName);
+
         DateTime downloadedZipLastModified = meshFileInfo.LastWriteTime;
         try {
             HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
