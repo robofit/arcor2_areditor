@@ -59,6 +59,8 @@ public class LeftMenuProject : LeftMenu {
         GameManager.Instance.OnActionExecution += OnActionExecutionEvent;
         GameManager.Instance.OnActionExecutionCanceled += OnActionExecutionEvent;
         GameManager.Instance.OnActionExecutionFinished += OnActionExecutionEvent;
+
+        base.Start();
     }
 
 
@@ -420,18 +422,33 @@ public class LeftMenuProject : LeftMenu {
         }
     }
 
-    public void AddActionPointUsingRobotClick() {
-        string armId = null;
+    public async void AddActionPointUsingRobotClick() {
+        string armId = null;        
+
+        // if any robot is targeted by the cursor, automatically select its end effector
+        InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
+        if (selectedObject != null) {
+            if (selectedObject.GetType() == typeof(RobotActionObject)) {
+                RobotActionObject selectedRobot = (RobotActionObject) selectedObject;
+                List<RobotEE> eeList = await selectedRobot.GetAllEE();
+                if (eeList?.Count > 0) {
+                    SceneManager.Instance.SelectRobotAndEE(eeList[0]);
+                }
+            }
+        }
+
+        // if not looking at any robot nor any robot is selected, open selector menu and let the user select the robot manually
         if (!SceneManager.Instance.IsRobotAndEESelected()) {
             OpenRobotSelector(AddActionPointUsingRobotClick);
             return;
-        }
-        if (SceneManager.Instance.SelectedRobot.MultiArm())
-            armId = SceneManager.Instance.SelectedArmId;
-        CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
+        } else { // open menu
+            if (SceneManager.Instance.SelectedRobot.MultiArm())
+                armId = SceneManager.Instance.SelectedArmId;
+            CreateGlobalActionPointUsingRobot(ProjectManager.Instance.GetFreeAPName("global"),
             SceneManager.Instance.SelectedRobot.GetId(),
             SceneManager.Instance.SelectedEndEffector.EEId,
             armId);
+        }
     }
 
     /// <summary>

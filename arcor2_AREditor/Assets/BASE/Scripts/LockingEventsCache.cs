@@ -11,6 +11,7 @@ namespace Base {
         /// Invoked when an object is locked or unlocked
         /// </summary>
         public event AREditorEventArgs.ObjectLockingEventHandler OnObjectLockingEvent;
+        public event AREditorEventArgs.StringEventHandler OnAfterObjectLockingEvent;
         private bool canInvoke = false;
         private bool wasAppKilled = true;
         private bool arOn = false;
@@ -69,6 +70,7 @@ namespace Base {
                 }
             }
             InvokeEvents();
+            OnAfterObjectLockingEvent?.Invoke(this, new StringEventArgs(""));
         }
 
 

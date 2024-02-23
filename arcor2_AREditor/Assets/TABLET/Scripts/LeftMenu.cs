@@ -40,7 +40,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected const string COPY_LABEL = "Duplicate object";
 
     protected virtual void Start() {
-        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        LockingEventsCache.Instance.OnAfterObjectLockingEvent += OnAfterObjectLockingEvent;
         SceneManager.Instance.OnRobotSelected += OnRobotSelected;
         if (MoveButton != null && MoveButton2 != null) {
             MoveButton.SetDescription(MOVE_BTN_LABEL);
@@ -65,8 +65,9 @@ public abstract class LeftMenu : MonoBehaviour {
         MainMenu.Instance.AddListener(() => OnGameStateChanged(this, null));
     }
 
-    private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+    private void OnAfterObjectLockingEvent(object sender, StringEventArgs args) {
         UpdateBuildAndSaveBtns();
+        UpdateBtns();
     }
 
     private void OnRobotSelected(object sender, EventArgs e) {
