@@ -35,8 +35,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public GameObject JointsDynamicList;
 
     public ConfirmationDialog ConfirmationDialog;
-    private NamedOrientation orientation;
-    private ProjectRobotJoints joints;
+    public NamedOrientation orientation;
+    public ProjectRobotJoints joints;
     private bool isOrientationDetail; //true for orientation, false for joints
 
     //visibility of robot model backup: Dictionary<robotID,visibilityValue>
@@ -54,7 +54,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
-            MoveHereModel();
+            //MoveHereModel();
         }
     }
 
@@ -315,13 +315,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereModel(bool avoid_collision = true) {
+    public async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
         List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
         string robotId;
 
-        if (isOrientationDetail) {
+        if (true) {
             try {
-                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
@@ -333,8 +333,9 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
                 return;
             } catch (RequestFailedException ex) {
+                Debug.Log("am i here");
                 if (avoid_collision) //if this is first call, try it again without avoiding collisions
-                    MoveHereModel(false);
+                    MoveHereModel(position, false);
                 else
                     Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
                 return;
@@ -418,7 +419,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         await PrepareRobotModel(joints.RobotId, false);
 
-        MoveHereModel();
+        //MoveHereModel();
         UpdateJointsList();
         ShowMenu(currentActionPoint);
     }

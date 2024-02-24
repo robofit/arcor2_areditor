@@ -421,7 +421,7 @@ namespace Base {
         /// </summary>
         /// <param name="sender">Who invoked event.</param>
         /// <param name="args">Robot joints data</param>
-        private async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
+        public async void RobotJointsUpdated(object sender, RobotJointsUpdatedEventArgs args) {
             // if initializing or deinitializing scene OR scene is not started, dont update robot joints
             if (!Valid || !SceneStarted)
                 return;
@@ -439,7 +439,7 @@ namespace Base {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args">Robot ee data</param>
-        private async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
+        public async void RobotEefUpdated(object sender, RobotEefUpdatedEventArgs args) {
             if (!RobotsEEVisible || !Valid) {
                 return;
             }

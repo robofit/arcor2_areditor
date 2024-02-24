@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static Base.GameManager;
 
@@ -14,7 +17,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
     public ButtonWithTooltip MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton,
-        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton, MainSettingsButton, CopyButton; //Buttons with number 2 are duplicates in favorites submenu
+        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, ModelSteppingButton, CloseButton, SaveButton, MainSettingsButton, CopyButton; //Buttons with number 2 are duplicates in favorites submenu
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
@@ -36,6 +39,7 @@ public abstract class LeftMenu : MonoBehaviour {
     private const string OPEN_MENU_BTN_LABEL = "Open menu";
     private const string ROBOT_STEPPING_MENU_BTN_LABEL = "Robot stepping menu";
     private const string ROBOT_SELECTOR_MENU_BTN_LABEL = "Select robot";
+    private const string MODEL_STEPPING_MENU_BTN_LABEL = "Model stepping menu";
     protected const string COPY_LABEL = "Duplicate object";
 
     protected virtual void Start() {
@@ -57,6 +61,15 @@ public abstract class LeftMenu : MonoBehaviour {
             RobotSteppingButton.SetDescription(ROBOT_STEPPING_MENU_BTN_LABEL);
         if (RobotSelectorButton != null)
             RobotSelectorButton.SetDescription(ROBOT_SELECTOR_MENU_BTN_LABEL);
+        if (ModelSteppingButton != null) {
+            Debug.Log("button present");
+            ModelSteppingButton.SetDescription(MODEL_STEPPING_MENU_BTN_LABEL);
+        } else {
+            Debug.Log("button missin");
+        }
+            
+        ModelSteppingMenu.Instance.gameObject.SetActive(false);
+     
     }
 
     protected virtual void Awake() {
@@ -176,8 +189,12 @@ public abstract class LeftMenu : MonoBehaviour {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
                     !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
                     SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+            ModelSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
+                    !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
+                    SceneManager.Instance.SceneStarted ? $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         } else {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+            ModelSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         }
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
@@ -363,7 +380,78 @@ public abstract class LeftMenu : MonoBehaviour {
         }
     }
 
+    public async void ModelSteppingButtonClick() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to open model manipulation menu", "Scene offline");
+            return;
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            OpenRobotSelector(ModelSteppingButtonClick);
+            return;
+        }
 
+        if (ModelSteppingMenu.Instance.isActiveAndEnabled) {
+            ModelSteppingMenu.Instance.gameObject.SetActive(false);
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
+        } else {
+            
+            await RobotSteppingMenu.Instance.Hide();
+            ModelSteppingMenu.Instance.gameObject.SetActive(true);
+            //ModelSteppingMenu.Instance.Show();
+            SelectorMenu.Instance.gameObject.SetActive(false);
+            
+        }
+        
+    }
+
+    /*
+    public async void AddRobotModel() {
+        ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
+        ActionObjectMetadata metadata = robot.ActionObjectMetadata;
+        ActionObjectMetadata actionObjectMetadata = robot.ActionObjectMetadata;
+
+        string newActionObjectName = "model";
+        GameObject CanvasRoot = new GameObject();
+        GameObject DynamicContent = new GameObject();
+        VerticalLayoutGroup DynamicContentLayout = gameObject.AddComponent<VerticalLayoutGroup>();
+        List<IParameter> actionParameters = new List<IParameter>();
+        Dictionary<string, Base.ParameterMetadata> parametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
+        parametersMetadata = new Dictionary<string, ParameterMetadata>();
+        foreach (IO.Swagger.Model.ParameterMeta meta in metadata.Settings) {
+            parametersMetadata.Add(meta.Name, new ParameterMetadata(meta));
+        }
+
+
+        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, null, DynamicContentLayout, CanvasRoot, false, false, null, null);
+
+        foreach (Transform t in DynamicContent.transform) {
+            if (t.gameObject.tag != "Persistent")
+                Destroy(t.gameObject);
+        }
+
+        if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
+            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
+            foreach (IParameter actionParameter in actionParameters) {
+                if (!parametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
+                    Base.Notifications.Instance.ShowNotification("Failed to create new action object", "Failed to get metadata for action object parameter: " + actionParameter.GetName());
+                    return;
+                }
+                ActionParameter ap = new ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
+                parameters.Add(DataHelper.ActionParameterToParameter(ap));
+            }
+            try {
+                IO.Swagger.Model.Pose pose = robot.GetPose();
+                SceneManager.Instance.SelectCreatedActionObject = newActionObjectName;
+
+                await Base.WebsocketManager.Instance.AddObjectToScene(newActionObjectName, actionObjectMetadata.Type, pose, parameters);
+                
+            } catch (Base.RequestFailedException e) {
+                Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
+            }
+        }
+    }
+    */
+    
 
     public async void RobotSteppingButtonClick() {
         if (!SceneManager.Instance.SceneStarted) {
@@ -380,11 +468,12 @@ public abstract class LeftMenu : MonoBehaviour {
         if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
             RobotSteppingButton.GetComponent<Image>().enabled = false;
             SelectorMenu.Instance.gameObject.SetActive(true);
-            RobotSteppingMenu.Instance.Hide();
+            await RobotSteppingMenu.Instance.Hide();
         } else { //open menu
             ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
             RobotSteppingButton.GetComponent<Image>().enabled = true;
             SelectorMenu.Instance.gameObject.SetActive(false);
+            ModelSteppingMenu.Instance.gameObject.SetActive(false);
             RobotSteppingMenu.Instance.Show();
 
         }
