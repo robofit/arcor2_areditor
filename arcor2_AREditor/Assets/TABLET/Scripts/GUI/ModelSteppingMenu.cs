@@ -54,7 +54,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private async void OnEnable() {
         robot = (RobotActionObject) SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
         robot.SetVisibility(1.0f);
-        robot.HideOutline();
+        //robot.HideOutline();
 
         WebsocketManager.Instance.OnRobotEefUpdated -= SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated -= SceneManager.Instance.RobotJointsUpdated;
@@ -81,7 +81,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
     private void OnDisable() {
         SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
-        robot.ShowOutline();
+        //robot.ShowOutline();
 
         Destroy(gizmo);
         Destroy(pointInstance);
