@@ -109,14 +109,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 pointInstance.transform.position = position;
             }
 
-            Vector3 position2 = new Vector3();
-            Quaternion rotation = new Quaternion();
-            robot.transform.GetPositionAndRotation(out position2, out rotation);
+            robot.transform.GetPositionAndRotation(out Vector3 position2, out Quaternion rotation);
             float a = pointInstance.transform.position.x - position2.x;
             float b = pointInstance.transform.position.z - position2.z;
 
+            //temporary
+            //just to see the model move a bit
             double angle = -Math.Atan(a / b);
-            var testjoint = robot.RobotModel.GetJoints()[0];
+            IO.Swagger.Model.Joint testjoint = robot.RobotModel.GetJoints()[0];
             robot.RobotModel.SetJointAngle(testjoint.Name, (float) angle);
 
 
@@ -163,21 +163,42 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     public void OnSelectButtonClick() {
-        //return;
+#if AR_ON
+            return;
+#endif
+
+        ToggleMove();
+
+    }
+    public void OnSelectButtonHold() {
+#if !AR_ON
+            return;
+#endif
+
+        ToggleMove();
+    }
+    public void OnSelectButtonRelease() {
+#if !AR_ON
+            return;
+#endif
+
+        ToggleMove(true);
+    }
+    public void ToggleMove(bool forceStop = false) {
+        isMoving = !isMoving;
+
+        if (forceStop) {
+            isMoving = false;
+        }
 
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
 
-        if (!isMoving) {
+        if (isMoving) {
             RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
             originalEEPosition = pointInstance.transform.position;
             rayHitPosition = ray.GetPoint(pointDistance);
-            Vector3 PointPosition = pointInstance.transform.position;
-            Vector3 RayOrigin = ray.origin;
 
-            //pointDistance = Vector3.Distance(rayHitPosition, RayOrigin);
         }
-
-        isMoving = !isMoving;
 
         if (isMoving) {
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
@@ -185,34 +206,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
         }
 
-
-
-    }
-    public void OnSelectButtonHold() {
-        Debug.Log("pressed down");
-
-        return;
-
-        if (selection != Selection.ee)
-            return;
-
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
-
-        originalEEPosition = pointInstance.transform.position;
-        Vector3 PointPosition = pointInstance.transform.position;
-        Vector3 RayOrigin = ray.origin;
-
-        pointDistance = Vector3.Distance(PointPosition, RayOrigin);
-
-        isMoving = true;
-
-        ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
-    }
-    public void OnSelectButtonRelease() {
-        return;
-        Debug.Log("relaesed");
-        isMoving = false;
-        ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
     }
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
         SelectAxis(args.SelectedAxis);
@@ -225,7 +218,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         }
 
-        SelectionText.GetComponent<TextMeshProUGUI>().text = "Axis: " + axis.ToString();
+        SelectionText.GetComponent<TextMeshProUGUI>().text = axis.ToString() + " Axis";
         UnselectEE();
         gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
 
@@ -240,8 +233,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 Select(Selection.z);
                 break;
             default:
-                Debug.Log("problem");
-                break;
+                throw new NotImplementedException();
         }
 
     }
@@ -268,7 +260,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
 
         Select(plane);
-        SelectionText.GetComponent<TextMeshProUGUI>().text = "Plane: " + plane.ToString();
+        SelectionText.GetComponent<TextMeshProUGUI>().text = plane.ToString() + " Plane";
     }
 
     private void Select(Selection value) {
