@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class GizmoVariant : MonoBehaviour
 {
-    [SerializeField] private OutlineOnClick XYOutline;
-    [SerializeField] private OutlineOnClick XZOutline;
-    [SerializeField] private OutlineOnClick YZOutline;
+    public OutlineOnClick XYOutline;
+    public OutlineOnClick XZOutline;
+    public OutlineOnClick YZOutline;
+
+    public GameObject XYPlaneMesh;
+    public GameObject XZPlaneMesh;
+    public GameObject YZPlaneMesh;
 
     // Start is called before the first frame update
     void Start()

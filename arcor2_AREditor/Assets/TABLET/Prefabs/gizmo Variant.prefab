@@ -30,7 +30,7 @@ Transform:
   m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 0.072, y: -0.029, z: -0.02}
   m_LocalScale: {x: 0.12, y: 0.12, z: 0.01}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 7683024923412860986}
   m_LocalEulerAnglesHint: {x: 90, y: 90, z: 180}
@@ -621,6 +621,9 @@ MonoBehaviour:
   XYOutline: {fileID: 4969730534063560022}
   XZOutline: {fileID: 6462107973359545539}
   YZOutline: {fileID: 4266723920111604581}
+  XYPlaneMesh: {fileID: 6576584784451953700}
+  XZPlaneMesh: {fileID: 3927724953025855256}
+  YZPlaneMesh: {fileID: 8347471665963207896}
 --- !u!4 &589469728861098411 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 968243829547990733, guid: 8e1e9484b46fc154dbf161f926d6f9d1,
