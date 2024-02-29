@@ -32,12 +32,12 @@ tmpconf=$(mktemp ./conf.XXXXXX)
 tmpoutput=$(mktemp -d ./output.XXXXXX)
 
 
-echo '{\n"optionalEmitDefaultValues": true,\n"packageName": "IO.Swagger"\n}' > "$tmpconf"
+echo '{"optionalEmitDefaultValues": true,"packageName": "IO.Swagger"}' > "$tmpconf"
 
 sed 's/      - properties: {}/      - properties:\n          data:\n            default: ""\n            type: string/g' "$1" | perl -0777 -pe's/format: uuid\n/\n/g' | perl -0777 -pe's/properties:\n        allowed_values:\n          type: array\n          uniqueItems: true/properties:\n        allowed_values:\n          type: array\n          uniqueItems: true\n          items:\n            {}/g' > "$tmpfile"
 
 
-sudo docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate -i /local/"$tmpfile" -g csharp -o /local/"$tmpoutput" -c /local/"$tmpconf" || exit 1
+sudo docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli:v6.6.0 generate -i /local/"$tmpfile" -g csharp -o /local/"$tmpoutput" -c /local/"$tmpconf" || exit 1
 rm "$tmpconf"
 sudo chown -R `whoami` "$tmpoutput"
 
