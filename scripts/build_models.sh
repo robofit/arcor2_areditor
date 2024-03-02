@@ -67,9 +67,9 @@ cd ..
 mkdir "$output" 
 mv "$tmpoutput"/bin/* "$output"
 
-#rm -rf "$tmpoutput"
+rm -rf "$tmpoutput"
 
-rm "$tmpfile"
+#rm "$tmpfile"
 
 echo "Models in directory $output"
 
