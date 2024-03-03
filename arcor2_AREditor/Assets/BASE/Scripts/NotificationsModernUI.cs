@@ -77,7 +77,7 @@ namespace Base {
             StreamWriter logsFile = File.CreateText(dirname + "/logs.txt");
             logsFile.WriteLine("Editor version: " + Application.version);
             if (GameManager.Instance.SystemInfo != null) {
-                logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo.Version);
+                logsFile.WriteLine("Server version: " + GameManager.Instance.SystemInfo._Version);
             }
 
             logsFile.WriteLine("Editor API version: " + GameManager.ApiVersion);

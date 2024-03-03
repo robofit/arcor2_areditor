@@ -870,7 +870,7 @@ namespace Base {
 
                     SystemInfo = systemInfo;
                     ServerVersion.text = "Editor version: " + Application.version +
-                        "\nServer version: " + systemInfo.Version;
+                        "\nServer version: " + systemInfo._Version;
                     ConnectionInfo.text = WebsocketManager.Instance.APIDomainWS;
                     MainMenu.Instance.gameObject.SetActive(false);
 
