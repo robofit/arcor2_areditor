@@ -4,6 +4,7 @@ using Base;
 using IO.Swagger.Model;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
@@ -18,19 +19,29 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private DraggablePoint draggablePoint;
     public GameObject PointPrefab;
 
+    public GameObject DistanceControl;
+    public GameObject LeftMenu;
     public GameObject SelectionText;
     public GameObject ButtonHintText;
     public Slider SensitivitySlider;
+    public Slider UpDownSensitivitySlider;
     public Button SelectButton;
     public GameObject XYPlaneMesh;
     public GameObject XZPlaneMesh;
     public GameObject YZPlaneMesh;
+    public GameObject XAxis;
+    public GameObject YAxis;
+    public GameObject ZAxis;
 
     private Vector3 OrigPlaneScale;
     private Vector3 ActivePlaneScale;
 
+    private Vector3 OrigAxisScale;
+    private Vector3 ActiveAxisScale;
+
     private float pointDistance = 0.5f;
     private float DragMultiplier = 0.3f;
+    private float UpDownMultiplier = 0.3f;
     private Vector3 originalEEPosition;
     private Vector3 rayHitPosition;
 
@@ -48,14 +59,16 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private Selection selection = Selection.none;
 
     private bool isMoving = false;
+    private bool moveForwardHeld = false;
+    private bool moveBackwardHeld = false;
     
 
     // Start is called before the first frame update
     private void Start() {
         SensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
+        UpDownSensitivitySlider.onValueChanged.AddListener(UpdateUpDownSensitivity);
     
     }
-
 
     private async void OnEnable() {
         robot = (RobotActionObject) SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
@@ -89,10 +102,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         XZPlaneMesh = gizmo.GetComponent<GizmoVariant>().XZPlaneMesh;
         YZPlaneMesh = gizmo.GetComponent<GizmoVariant>().YZPlaneMesh;
 
+        XAxis = gizmo.GetComponent<GizmoVariant>().XAxis;
+        YAxis = gizmo.GetComponent <GizmoVariant>().YAxis;
+        ZAxis = gizmo.GetComponent<GizmoVariant>().ZAxis;
+
         OrigPlaneScale = XYPlaneMesh.transform.localScale;
         ActivePlaneScale.z = OrigPlaneScale.z;
         ActivePlaneScale.x = 3.0f;
         ActivePlaneScale.y = 3.0f;
+
+        OrigAxisScale = XAxis.transform.localScale;
+        ActiveAxisScale = XAxis.transform.localScale;
+        ActiveAxisScale.z = 10f;
     }
     private void OnDisable() {
         SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
@@ -105,7 +126,19 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private void Update() {
         if (isMoving && pointInstance != null) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
+
+            if (moveForwardHeld) {
+                Debug.Log("move forward is held");
+                pointDistance += 0.05f * UpDownMultiplier;
+            }
+            if (moveBackwardHeld) {
+                Debug.Log("move backward is held");
+                pointDistance += -0.05f * UpDownMultiplier;
+            }
+
             Vector3 difference = ray.GetPoint(pointDistance) - rayHitPosition;
+
+
 
             Vector3 targetPosition = pointInstance.transform.position;
 
@@ -113,34 +146,55 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 targetPosition = originalEEPosition + difference * DragMultiplier;
             } else if (selection == Selection.x) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.y) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.z) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.XY) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
+
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.XZ) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
+
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.YZ) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
+
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             }
+
+
 
             pointInstance.transform.position = targetPosition;
 
+            MoveHereModel(targetPosition);
+
+            //temporary
+            //just to see the model move a bit
+            /*
             robot.transform.GetPositionAndRotation(out Vector3 position2, out Quaternion rotation);
             float a = pointInstance.transform.position.x - position2.x;
             float b = pointInstance.transform.position.z - position2.z;
 
-            //temporary
-            //just to see the model move a bit
             double angle = -Math.Atan(a / b);
             IO.Swagger.Model.Joint testjoint = robot.RobotModel.GetJoints()[0];
             robot.RobotModel.SetJointAngle(testjoint.Name, (float) angle);
+            */
 
-
+        } else {
+            XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
+            YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, OrigAxisScale, 0.25f);
+            ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, OrigAxisScale, 0.25f);
+            XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+            XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+            YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
         }
     }
     private void FixedUpdate() {
@@ -205,6 +259,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         ToggleMove(true);
     }
+    public void OnUpButtonHold() {
+        moveForwardHeld = true;
+    }
+    public void OnUpButtonRelease() {
+        moveForwardHeld = false;
+    }
+    public void OnDownButtonHold() {
+        moveBackwardHeld = true;
+    }
+    public void OnDownButtonRelease() {
+        moveBackwardHeld = false;
+    }
     public void ToggleMove(bool forceStop = false) {
         isMoving = !isMoving;
 
@@ -229,8 +295,10 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         if (isMoving) {
             HideGizmoOnMove();
+            LeftMenu.SetActive(false);
         } else {
             ShowGizmo();
+            LeftMenu.SetActive(true);
         }
 
     }
@@ -239,22 +307,28 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         Vector3 lineOrigin = draggablePoint.transform.position;
         Vector3 lineEnd = draggablePoint.transform.position;
 
+
         if (selection == Selection.ee) {
             Debug.Log("got to hidin");
             gizmo.gameObject.SetActive(false);
+            DistanceControl.SetActive(true);
 
         } else if (selection == Selection.XY) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            XYPlaneMesh.transform.localScale = ActivePlaneScale;
+            
+            //XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
 
         } else if (selection == Selection.XZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            XZPlaneMesh.transform.localScale = ActivePlaneScale;
+            
+            //XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
 
         } else if (selection == Selection.YZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            YZPlaneMesh.transform.localScale = ActivePlaneScale;
-        } else if (selection == Selection.x) {
+            
+            //YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+
+        } /*else if (selection == Selection.x) {
             gizmo.gameObject.SetActive(false);
             lineEnd.x += 5.0f;
             lineOrigin.x -= 5.0f;
@@ -272,14 +346,15 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             lineOrigin.z -= 5.0f;
             draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(0, lineOrigin);
             draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
-        }
+        }*/
 
     }
     private void ShowGizmo() {
         gizmo.gameObject.SetActive(true);
-        XYPlaneMesh.transform.localScale = OrigPlaneScale;
+        /*XYPlaneMesh.transform.localScale = OrigPlaneScale;
         XZPlaneMesh.transform.localScale = OrigPlaneScale;
-        YZPlaneMesh.transform.localScale = OrigPlaneScale;
+        YZPlaneMesh.transform.localScale = OrigPlaneScale;*/
+        DistanceControl.SetActive(false);
     }
 
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
@@ -356,6 +431,41 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         DragMultiplier = value;
     }
 
+    private void UpdateUpDownSensitivity(float value) {
+        UpDownMultiplier = value;
+    }
+
+    private async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
+        List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
+
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        try {
+            IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
+            List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
+
+            modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
+            //await PrepareRobotModel(SceneManager.Instance.SelectedRobot.GetId(), false);
+            if (!avoid_collision) {
+                Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
+            }
+        } catch (ItemNotFoundException ex) {
+            Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+            return;
+        } catch (RequestFailedException ex) {
+            Debug.Log("am i here");
+            if (avoid_collision) //if this is first call, try it again without avoiding collisions
+                MoveHereModel(position, false);
+            else
+                Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+            return;
+        }
+
+        foreach (IO.Swagger.Model.Joint joint in modelJoints) {
+            SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
+        }
+    }
+
     #region DEBUG BUTTONS
     public async void OnFirstButtonClick() {
         Debug.Log("vis: " + SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).GetVisibility());
@@ -372,7 +482,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         orientationJointsDetailMenu.joints = projectRobotJoints;
 
-        Orientation orientation = new Orientation(y: (decimal) -1.0);
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
         orientationJointsDetailMenu.orientation = new NamedOrientation("why", orientation);
 
@@ -447,13 +557,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     public void OnThirdButtonClick() {
-        isMoving = !isMoving;/*
+        //isMoving = !isMoving;
+        /*
         if (isMoving && PointInstance == null) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
  
             Vector3 position = /*TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)))ray.GetPoint(0.5f);
             PointInstance = Instantiate(Point, position, Quaternion.identity);
         }*/
+
+        YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue += 100;
+        Debug.Log("Renderqueue: " + YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue);
+        
     }
 
     #endregion DEBUG BUTTONS

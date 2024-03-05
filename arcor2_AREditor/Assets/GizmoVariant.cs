@@ -12,6 +12,10 @@ public class GizmoVariant : MonoBehaviour
     public GameObject XZPlaneMesh;
     public GameObject YZPlaneMesh;
 
+    public GameObject XAxis;
+    public GameObject YAxis;
+    public GameObject ZAxis;
+
     // Start is called before the first frame update
     void Start()
     {
