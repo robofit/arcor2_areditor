@@ -48,7 +48,11 @@ sed -i'' 's/DataMember(Name="cylinder", EmitDefaultValue=true)/DataMember(Name="
 sed -i'' 's/DataMember(Name="mesh", EmitDefaultValue=true)/DataMember(Name="mesh", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="sphere", EmitDefaultValue=true)/DataMember(Name="sphere", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="type", EmitDefaultValue=true)/DataMember(Name="type", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequestArgs.cs
+sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequest.cs
 sed -i'' 's/DataMember(Name="object_model", EmitDefaultValue=true)/DataMember(Name="object_model", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequestArgs.cs
+sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequest.cs
 
 #find ./"$tmpoutput"/src/IO.Swagger/Model -type f -exec sed -i.bak "s/regexUuid.Match(this.Uuid/regexUuid.Match(this.Uuid.ToString()/g" {} \;
 
