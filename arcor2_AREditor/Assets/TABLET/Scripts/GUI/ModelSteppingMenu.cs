@@ -146,55 +146,43 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 targetPosition = originalEEPosition + difference * DragMultiplier;
             } else if (selection == Selection.x) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
-                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                //XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.y) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
-                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                //YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.z) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
-                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                //ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.XY) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
 
-                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                //XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.XZ) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
 
-                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                //XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.YZ) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
 
-                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                //YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             }
 
 
 
             pointInstance.transform.position = targetPosition;
 
-            MoveHereModel(targetPosition);
-
-            //temporary
-            //just to see the model move a bit
-            /*
-            robot.transform.GetPositionAndRotation(out Vector3 position2, out Quaternion rotation);
-            float a = pointInstance.transform.position.x - position2.x;
-            float b = pointInstance.transform.position.z - position2.z;
-
-            double angle = -Math.Atan(a / b);
-            IO.Swagger.Model.Joint testjoint = robot.RobotModel.GetJoints()[0];
-            robot.RobotModel.SetJointAngle(testjoint.Name, (float) angle);
-            */
+            //MoveHereModel(targetPosition);
 
         } else {
-            XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
+            /*XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
             YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, OrigAxisScale, 0.25f);
             ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, OrigAxisScale, 0.25f);
             XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
             XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
-            YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+            YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);*/
         }
     }
     private void FixedUpdate() {
@@ -297,6 +285,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             HideGizmoOnMove();
             LeftMenu.SetActive(false);
         } else {
+            Debug.Log("Distance: " + Vector3.Distance(pointInstance.transform.position, endEffector.transform.position));
+            MoveHereModel(pointInstance.transform.position);
             ShowGizmo();
             LeftMenu.SetActive(true);
         }
