@@ -1,11 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq.Expressions;
 using Base;
 using IO.Swagger.Model;
+using RuntimeInspectorNamespace;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private RobotActionObject robot;
@@ -23,9 +30,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject LeftMenu;
     public GameObject SelectionText;
     public GameObject ButtonHintText;
-    public Slider SensitivitySlider;
-    public Slider UpDownSensitivitySlider;
-    public Button SelectButton;
+    public UnityEngine.UI.Slider SensitivitySlider;
+    public UnityEngine.UI.Slider UpDownSensitivitySlider;
+    public UnityEngine.UI.Button SelectButton;
     public GameObject XYPlaneMesh;
     public GameObject XZPlaneMesh;
     public GameObject YZPlaneMesh;
@@ -175,6 +182,10 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             pointInstance.transform.position = targetPosition;
 
             //MoveHereModel(targetPosition);
+            //if (Time.frameCount % 10 == 0) {
+            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+            //}
+            
 
         } else {
             /*XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
@@ -269,28 +280,22 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
 
         if (isMoving) {
-            RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
+            //RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
             originalEEPosition = pointInstance.transform.position;
             rayHitPosition = ray.GetPoint(pointDistance);
 
-        }
-
-        if (isMoving) {
+            HideGizmoOnMove();
+            LeftMenu.SetActive(false);
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
         } else {
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
-        }
+            Debug.Log("robot pose: " + robot.GetPose());
+            //MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
 
-        if (isMoving) {
-            HideGizmoOnMove();
-            LeftMenu.SetActive(false);
-        } else {
-            Debug.Log("Distance: " + Vector3.Distance(pointInstance.transform.position, endEffector.transform.position));
-            MoveHereModel(pointInstance.transform.position);
             ShowGizmo();
             LeftMenu.SetActive(true);
-        }
 
+        }
     }
 
     private void HideGizmoOnMove() {
@@ -428,13 +433,23 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
         List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
 
+        
+
         Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
         try {
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
             List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
-            modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
+            Debug.Log("joint 1: " + startJoints[0].Value);
+            Debug.Log("joint 2: " + startJoints[1].Value);
+            Debug.Log("joint 3: " + startJoints[2].Value);
+            Debug.Log("joint 4: " + startJoints[3].Value);
+            Debug.Log("joint 5: " + startJoints[4].Value);
+
+            //modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
+            //modelJoints = DobotInverseKinematics(startJoints, pose);
+            modelJoints = DobotInverseKinematicsAbsolute(startJoints, pose);
             //await PrepareRobotModel(SceneManager.Instance.SelectedRobot.GetId(), false);
             if (!avoid_collision) {
                 Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
@@ -454,6 +469,12 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         foreach (IO.Swagger.Model.Joint joint in modelJoints) {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
         }
+
+        Debug.Log("result joint 1: " + modelJoints[0].Value);
+        Debug.Log("result joint 2: " + modelJoints[1].Value);
+        Debug.Log("result joint 3: " + modelJoints[2].Value);
+        Debug.Log("result joint 4: " + modelJoints[3].Value);
+        Debug.Log("result joint 5: " + modelJoints[4].Value);
     }
 
     #region DEBUG BUTTONS
@@ -562,5 +583,100 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     #endregion DEBUG BUTTONS
+
+    private List<IO.Swagger.Model.Joint> DobotInverseKinematics(List<IO.Swagger.Model.Joint> startJoints, IO.Swagger.Model.Pose pose) {
+        double link_2_length = 0.135;
+        double link_3_length = 0.147;
+        double link_4_length = 0.06;
+        double end_effector_length = 0.06;
+
+
+        Quaternion quat = new Quaternion((float)pose.Orientation.X, (float)pose.Orientation.Y, (float)pose.Orientation.Z, (float)pose.Orientation.W);
+        Vector3 eul = Quaternion.ToEulerAngles(quat.normalized);
+        double yaw = eul.z;
+
+        double x = (double)pose.Position.X;
+        double y = (double)pose.Position.Y;
+        double z = (double)pose.Position.Z + end_effector_length;
+
+        double r = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+        double rho_sq = Math.Pow(r - link_4_length, 2) + Math.Pow(y, 2);
+        
+        double rho = Math.Sqrt(rho_sq);
+
+        double l2_sq = Math.Pow(link_2_length, 2);
+        double l3_sq = Math.Pow(link_3_length, 2);
+
+        double alpha = 0;
+        double gamma = 0;
+
+        try {
+            alpha = Math.Acos(l2_sq + rho_sq - l3_sq) / (2.0 * link_2_length * rho);
+            gamma = Math.Acos((l2_sq + l3_sq - rho_sq) / (2.0 * link_2_length * link_3_length));
+        }
+        catch (Exception e){
+            Debug.Log("aint it, " + e);
+        }
+
+        double beta = Math.Atan2(z, r - link_4_length);
+
+        double baseAngle = Math.Atan2(y, x);
+        double rearAngle = Math.PI / 2 - beta - alpha;
+        double frontAngle = Math.PI / 2 - gamma;
+
+        Debug.Log("result 1: " + baseAngle);
+        Debug.Log("result 2: " + rearAngle);
+        Debug.Log("result 3: " + frontAngle);
+        Debug.Log("result 4: " + (-rearAngle - frontAngle));
+        Debug.Log("result 5: " + (yaw - baseAngle));
+
+        List<IO.Swagger.Model.Joint> newJoints = new List<IO.Swagger.Model.Joint>() {
+            new IO.Swagger.Model.Joint("magician_joint_1", (decimal)baseAngle),
+            new IO.Swagger.Model.Joint("magician_joint_2", (decimal)rearAngle),
+            new IO.Swagger.Model.Joint("magician_joint_3", (decimal)frontAngle),
+            new IO.Swagger.Model.Joint("magician_joint_4", (decimal)(-rearAngle - frontAngle)),
+            new IO.Swagger.Model.Joint("magician_joint_5", (decimal)(yaw - baseAngle))
+        };
+
+
+
+
+        return newJoints;
+    }
+
+    private List<IO.Swagger.Model.Joint> DobotInverseKinematicsAbsolute(List<IO.Swagger.Model.Joint> startJoints, IO.Swagger.Model.Pose pose) {
+        return DobotInverseKinematics(startJoints, MakePoseRel(robot.GetPose(), pose));
+    }
+
+    private IO.Swagger.Model.Pose MakePoseRel(IO.Swagger.Model.Pose parent, IO.Swagger.Model.Pose child) {
+        IO.Swagger.Model.Position position = new IO.Swagger.Model.Position();
+        position.X = child.Position.X - parent.Position.X;
+        position.Y = child.Position.Y - parent.Position.Y;
+        position.Z = child.Position.Z - parent.Position.Z;
+
+        //return null;
+        /*return Pose(
+        (child.position - parent.position).rotated(parent.orientation, inverse = True),
+        Orientation.from_quaternion(parent.orientation.as_quaternion().inverse() * child.orientation.as_quaternion()),
+        )*/
+        //Orientation.from_quaternion(parent.orientation.as_quaternion().inverse() * child.orientation.as_quaternion())
+
+        Quaternion parentQuat = new Quaternion(x: (float)parent.Orientation.X, y: (float)parent.Orientation.Y, z: (float)parent.Orientation.Z, w: (float)parent.Orientation.W).normalized;
+        Quaternion childQuat = new Quaternion(x: (float) child.Orientation.X, y: (float) child.Orientation.Y, z: (float) child.Orientation.Z, w: (float) child.Orientation.W).normalized;
+
+        Quaternion resultQuat = Quaternion.Inverse(parentQuat) * childQuat;
+
+        Orientation resultOrientation = new Orientation(x: (decimal)resultQuat.x, y: (decimal)resultQuat.y, z: (decimal)resultQuat.z, w: (decimal)resultQuat.w);
+
+        return new IO.Swagger.Model.Pose(position, resultOrientation);
+
+        
+
+
+    }
+
+    private IO.Swagger.Model.Position RotatePosition(IO.Swagger.Model.Position pose) {
+        return null;
+    }
 
 }
