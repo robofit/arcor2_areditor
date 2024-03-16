@@ -16,6 +16,10 @@ public class GizmoVariant : MonoBehaviour
     public GameObject YAxis;
     public GameObject ZAxis;
 
+    public GameObject XCone;
+    public GameObject YCone;
+    public GameObject ZCone;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,27 +33,42 @@ public class GizmoVariant : MonoBehaviour
     }
 
     public void HighlightXY() {
-        XYOutline.Highlight();
+        /*XYOutline.Highlight();
         XZOutline.UnHighlight();
-        YZOutline.UnHighlight();
+        YZOutline.UnHighlight();*/
     }
 
     public void HighlightXZ() {
-        XZOutline.Highlight();
+        /*XZOutline.Highlight();
         XYOutline.UnHighlight();
-        YZOutline.UnHighlight();
+        YZOutline.UnHighlight();*/
     }
 
     public void HighlightYZ() {
-        YZOutline.Highlight();
+        /*YZOutline.Highlight();
         XYOutline.UnHighlight();
-        XZOutline.UnHighlight();
+        XZOutline.UnHighlight();*/
     }
 
     public void UnhighlightAll() {
-        XYOutline.UnHighlight();
+        /*XYOutline.UnHighlight();
         XZOutline.UnHighlight();
-        YZOutline.UnHighlight();
+        YZOutline.UnHighlight();*/
+        XCone.SetActive(true);
+        YCone.SetActive(true);
+        ZCone.SetActive(true);
+    }
+
+    public void HideXCone() {
+        XCone.SetActive(false);
+    }
+
+    public void HideYCone() {
+        YCone.SetActive(false);
+    }
+
+    public void HideZCone() {
+        ZCone.SetActive(false);
     }
 
 }
