@@ -96,7 +96,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         };
 
         foreach (Renderer i in robot.robotRenderers) {
-            i.materials = mats.ToArray();
+            List<Material> materials = i.materials.ToList();
+            materials.Add(ClippingMaterial);
+            i.materials = materials.ToArray();
         }
 
         /*foreach (Renderer i in robot.robotRenderers) {
@@ -156,6 +158,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private void OnDisable() {
         SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
         //robot.ShowOutline();
+
+        Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
 
         Destroy(gizmo);
         Destroy(pointInstance);
