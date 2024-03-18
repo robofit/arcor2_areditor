@@ -32,12 +32,12 @@ tmpconf=$(mktemp ./conf.XXXXXX)
 tmpoutput=$(mktemp -d ./output.XXXXXX)
 
 
-echo '{\n"optionalEmitDefaultValues": true,\n"packageName": "IO.Swagger"\n}' > "$tmpconf"
+echo '{"optionalEmitDefaultValues": true,"packageName": "IO.Swagger"}' > "$tmpconf"
 
 sed 's/      - properties: {}/      - properties:\n          data:\n            default: ""\n            type: string/g' "$1" | perl -0777 -pe's/format: uuid\n/\n/g' | perl -0777 -pe's/properties:\n        allowed_values:\n          type: array\n          uniqueItems: true/properties:\n        allowed_values:\n          type: array\n          uniqueItems: true\n          items:\n            {}/g' > "$tmpfile"
 
 
-sudo docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate -i /local/"$tmpfile" -g csharp -o /local/"$tmpoutput" -c /local/"$tmpconf" || exit 1
+sudo docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli:v6.6.0 generate -i /local/"$tmpfile" -g csharp -o /local/"$tmpoutput" -c /local/"$tmpconf" || exit 1
 rm "$tmpconf"
 sudo chown -R `whoami` "$tmpoutput"
 
@@ -48,7 +48,11 @@ sed -i'' 's/DataMember(Name="cylinder", EmitDefaultValue=true)/DataMember(Name="
 sed -i'' 's/DataMember(Name="mesh", EmitDefaultValue=true)/DataMember(Name="mesh", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="sphere", EmitDefaultValue=true)/DataMember(Name="sphere", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="type", EmitDefaultValue=true)/DataMember(Name="type", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequestArgs.cs
+sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequest.cs
 sed -i'' 's/DataMember(Name="object_model", EmitDefaultValue=true)/DataMember(Name="object_model", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequestArgs.cs
+sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequest.cs
 
 #find ./"$tmpoutput"/src/IO.Swagger/Model -type f -exec sed -i.bak "s/regexUuid.Match(this.Uuid/regexUuid.Match(this.Uuid.ToString()/g" {} \;
 
