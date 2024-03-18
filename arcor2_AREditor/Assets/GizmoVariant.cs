@@ -20,6 +20,8 @@ public class GizmoVariant : MonoBehaviour
     public GameObject YCone;
     public GameObject ZCone;
 
+    public GameObject ClippingPlane;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -33,27 +35,27 @@ public class GizmoVariant : MonoBehaviour
     }
 
     public void HighlightXY() {
-        /*XYOutline.Highlight();
+        XYOutline.Highlight();
         XZOutline.UnHighlight();
-        YZOutline.UnHighlight();*/
+        YZOutline.UnHighlight();
     }
 
     public void HighlightXZ() {
-        /*XZOutline.Highlight();
+        XZOutline.Highlight();
         XYOutline.UnHighlight();
-        YZOutline.UnHighlight();*/
+        YZOutline.UnHighlight();
     }
 
     public void HighlightYZ() {
-        /*YZOutline.Highlight();
+        YZOutline.Highlight();
         XYOutline.UnHighlight();
-        XZOutline.UnHighlight();*/
+        XZOutline.UnHighlight();
     }
 
     public void UnhighlightAll() {
-        /*XYOutline.UnHighlight();
+        XYOutline.UnHighlight();
         XZOutline.UnHighlight();
-        YZOutline.UnHighlight();*/
+        YZOutline.UnHighlight();
         XCone.SetActive(true);
         YCone.SetActive(true);
         ZCone.SetActive(true);
@@ -69,6 +71,28 @@ public class GizmoVariant : MonoBehaviour
 
     public void HideZCone() {
         ZCone.SetActive(false);
+    }
+
+    public void SetXZClippingPlane() {
+        ClippingPlane.transform.SetParent(XZPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -90f, -90f);
+    }
+
+    public void SetYZClippingPlane() {
+        ClippingPlane.transform.SetParent(YZPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -180f, -180f);
+    }
+
+    public void SetXYClippingPlane() {
+        ClippingPlane.transform.SetParent(XYPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -180f, -180f);
+    }
+
+    public void SetDir(bool dir) {
+        ClippingPlane.GetComponent<ClippingPlane>().dir = dir;
     }
 
 }

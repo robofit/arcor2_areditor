@@ -9,6 +9,7 @@ using Base;
 using IO.Swagger.Model;
 using RuntimeInspectorNamespace;
 using TMPro;
+using TrilleonAutomation;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem.HID;
@@ -22,7 +23,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private RobotEE endEffector;
 
     private Gizmo gizmo;
-    private Gizmo.Axis selectedAxis;
     public GameObject GizmoPrefab;
 
     private GameObject pointInstance;
@@ -91,15 +91,17 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             }
         }
 
-        List<Material> mats = new List<Material> {
+        /*List<Material> mats = new List<Material> {
             ClippingMaterial
         };
 
-        foreach (Renderer i in robot.robotRenderers) {
+        /*foreach (Renderer i in robot.robotRenderers) {
             List<Material> materials = i.materials.ToList();
             materials.Add(ClippingMaterial);
             i.materials = materials.ToArray();
-        }
+        }*/
+
+        EnableClippingMaterial();
 
         /*foreach (Renderer i in robot.robotRenderers) {
             Material[] materials = new Material[i.materials.Length + 1];
@@ -136,7 +138,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         gizmo.transform.SetParent(pointInstance.transform);
         gizmo.transform.localPosition = Vector3.zero;
         Sight.Instance.SelectedGizmoAxis += OnSelectedGizmoAxis;
-        SelectAxis(Gizmo.Axis.X, true);
+        //SelectAxis(Gizmo.Axis.X, true);
 
         XYPlaneMesh = gizmo.GetComponent<GizmoVariant>().XYPlaneMesh;
         XZPlaneMesh = gizmo.GetComponent<GizmoVariant>().XZPlaneMesh;
@@ -240,26 +242,30 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectEE();
+                    //SelectEE();
+                    Select(Selection.ee);
                     break;
                 }
                 else if (hit.collider.gameObject.CompareTag("xy_plane")) {
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.XY);
+                    //SelectPlane(Selection.XY);
+                    Select(Selection.XY);
                     return;
                 } else if (hit.collider.gameObject.CompareTag("xz_plane")) {
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.XZ);
+                    //SelectPlane(Selection.XZ);
+                    Select(Selection.XZ);
                     return;
                 } else if (hit.collider.gameObject.CompareTag("yz_plane")) {
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.YZ);
+                    //SelectPlane(Selection.YZ);
+                    Select(Selection.YZ);
                     return;
                 }
             }
@@ -341,17 +347,15 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         } else if (selection == Selection.XY) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
+            //gizmo.gameObject.GetComponent<GizmoVariant>().SetDir(true);
             //XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
 
         } else if (selection == Selection.XZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
             //XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
 
         } else if (selection == Selection.YZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
             //YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
 
         } else if (selection == Selection.x) {
@@ -372,14 +376,27 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         XZPlaneMesh.transform.localScale = OrigPlaneScale;
         YZPlaneMesh.transform.localScale = OrigPlaneScale;*/
         DistanceControl.SetActive(false);
+
+        //DisableClippingMaterial();
     }
 
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
-        SelectAxis(args.SelectedAxis);
+        switch (args.SelectedAxis.ToString()) {
+            case "X":
+                Select(Selection.x);
+                break;
+            case "Y":
+                Select(Selection.y);
+                break;
+            case "Z":
+                Select(Selection.z);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
     }
-    private void SelectAxis(Gizmo.Axis axis, bool forceUpdate = false) {
-        if (forceUpdate || selectedAxis != axis) {
-            selectedAxis = axis;
+    /*private void SelectAxis(Gizmo.Axis axis, bool forceUpdate = false) {
+        if (forceUpdate) {
             gizmo.SetRotationAxis(Gizmo.Axis.NONE);
 
         }
@@ -398,14 +415,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 throw new NotImplementedException();
         }
 
-    }
+    }*/
 
-    private void SelectEE() {
+    /*private void SelectEE() {
         Select(Selection.ee);
-    }
-    private void SelectPlane(Selection plane) {
+    }*/
+    /*private void SelectPlane(Selection plane) {
         Select(plane);
-    }
+    }*/
     private void Select(Selection value) {
         if (isMoving) {
             return;
@@ -422,20 +439,26 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Axis";
             if (value == Selection.x) {
                 gizmo.HiglightAxis(Gizmo.Axis.X);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
             } else if (value == Selection.y) {
                 gizmo.HiglightAxis(Gizmo.Axis.Y);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 90f, 90f);
             } else if (value == Selection.z) {
                 gizmo.HiglightAxis(Gizmo.Axis.Z);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             }
 
         } else if (value == Selection.XY || value == Selection.XZ || value == Selection.YZ) {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Plane";
             if (value == Selection.XY) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXY();
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetXYClippingPlane();
             } else if (value == Selection.XZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXZ();
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetXZClippingPlane();
             } else if (value == Selection.YZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightYZ();
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetYZClippingPlane();
             }
         } else if (value == Selection.ee) {
             draggablePoint.GetComponent<LineRenderer>().enabled = true;
@@ -499,6 +522,20 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private void UpdateUpDownSensitivity(float value) {
         UpDownMultiplier = value;
+    }
+
+    private void DisableClippingMaterial() {
+        foreach (Renderer i in robot.robotRenderers) {
+            i.materials[^1] = null;
+        }
+    }
+
+    private void EnableClippingMaterial() {
+        foreach (Renderer i in robot.robotRenderers) {
+            var materials = i.materials.ToList();
+            materials.Add(ClippingMaterial);
+            i.materials = materials.ToArray();
+        }
     }
 
     #region DEBUG BUTTONS
@@ -601,8 +638,10 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             PointInstance = Instantiate(Point, position, Quaternion.identity);
         }*/
 
-        YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue += 100;
-        Debug.Log("Renderqueue: " + YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue);
+        /*YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue += 100;
+        Debug.Log("Renderqueue: " + YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue);*/
+
+        //gizmo.GetComponent<GizmoVariant>().GetChildren
         
     }
 
