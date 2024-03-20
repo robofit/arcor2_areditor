@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteAlways]
 public class ClippingPlane : MonoBehaviour {
     //material we pass the values to
-    public Material mat;
+    public List<Material> Materials;
 
     public bool dir = false;
 
@@ -20,6 +21,9 @@ public class ClippingPlane : MonoBehaviour {
         //transfer values from plane to vector4
         Vector4 planeRepresentation = new Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.distance);
         //pass vector to shader
-        mat.SetVector("_Plane", planeRepresentation);
+        foreach (Material material in Materials) {
+            material.SetVector("_Plane", planeRepresentation);
+        }
+        
     }
 }

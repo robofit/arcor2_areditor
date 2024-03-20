@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class GizmoVariant : MonoBehaviour
 {
@@ -21,6 +22,8 @@ public class GizmoVariant : MonoBehaviour
     public GameObject ZCone;
 
     public GameObject ClippingPlane;
+
+    public bool Flipped = false;
 
     // Start is called before the first frame update
     void Start()
@@ -93,6 +96,32 @@ public class GizmoVariant : MonoBehaviour
 
     public void SetDir(bool dir) {
         ClippingPlane.GetComponent<ClippingPlane>().dir = dir;
+    }
+
+    public void AddMaterial(Material material) {
+        ClippingPlane.GetComponent<ClippingPlane>().Materials.Add(material);
+    }
+
+    public void RemoveMaterial(Material material) {
+        ClippingPlane.GetComponent<ClippingPlane>().Materials.Remove(material);
+    }
+
+    public void FlipX() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.x *= -1;
+        gameObject.transform.localScale = scale;
+    }
+
+    public void FlipY() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.y *= -1;
+        gameObject.transform.localScale = scale;
+    }
+
+    public void FlipZ() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.z *= -1;
+        gameObject.transform.localScale = scale;
     }
 
 }

@@ -6,7 +6,7 @@ Shader "ClippingColorChange" {
         _Metallic ("Metalness", Range(0, 1)) = 0
         [HDR]_Emission ("Emission", color) = (0,0,0)
 
-        _AlternateColor ("Alternate Color", Color) = (0, 1, 0, 1) // New property for the alternate color
+        _AlternateColor ("Alternate Color", Color) = (1, 0, 0, 0) // New property for the alternate color
     }
 
     SubShader {
@@ -46,7 +46,7 @@ Shader "ClippingColorChange" {
             } else {
                 fixed4 col = tex2D(_MainTex, i.uv_MainTex);
                 col *= _Color;
-                o.Albedo = _AlternateColor.rgb; // Render in alternate color if below the clipping plane
+                o.Albedo = col.rgb + _AlternateColor.rgb; // Render in alternate color if below the clipping plane
                 o.Metallic = 0;
                 o.Smoothness = 0;
                 o.Emission = _Emission;
