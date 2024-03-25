@@ -124,4 +124,8 @@ public class GizmoVariant : MonoBehaviour
         gameObject.transform.localScale = scale;
     }
 
+    public void RotateTo(float angle) {
+        gameObject.transform.rotation = Quaternion.Euler(0f, angle, 0f);
+    }
+
 }

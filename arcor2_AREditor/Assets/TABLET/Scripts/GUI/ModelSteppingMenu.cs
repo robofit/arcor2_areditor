@@ -65,6 +65,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private bool moveBackwardHeld = false;
 
     private bool isWaiting = false;
+    private bool cameraCoord = false;
     
     private void Start() {
         SensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
@@ -129,19 +130,35 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         //EnableClippingMaterial();
     }
-    private void OnDisable() {
+    private async void OnDisable() {
         SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
 
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
 
         robot.GetComponent<OutlineOnClick>().Enabled = true;
 
+        
+
+        endEffector.transform.position = pointInstance.transform.position;
+        await robot.EnableVisualisationOfEE();
+
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(pointInstance.transform.position));
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        await WebsocketManager.Instance.MoveToPose(
+            robotId: SceneManager.Instance.SelectedRobot.GetId(),
+            endEffectorId: endEffector.EEId,
+            speed: (decimal)0.5,
+            position: position,
+            orientation: orientation);
+
         Destroy(gizmo);
         Destroy(pointInstance);
     }
 
     private void Update() {
-        if (gizmo != null) {
+        //gizmo flipping
+        if (gizmo != null && !cameraCoord) {
             if (Camera.main.transform.position.z < pointInstance.transform.position.z) {
                 if (!flippedX) {
                     gizmo.GetComponent<GizmoVariant>().FlipX();
@@ -177,8 +194,19 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                     flippedY = false;
                 }
             }
+
         }
-        
+
+        if (cameraCoord && !isMoving) {
+            Vector3 targetPosition = new Vector3(
+                Camera.main.transform.position.x,
+                gizmo.transform.position.y,
+                Camera.main.transform.position.z);
+
+            gizmo.transform.LookAt(targetPosition);
+        }
+
+        //movement
         if (isMoving && pointInstance != null) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
 
@@ -202,6 +230,16 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 draggablePoint.GetComponent<LineRenderer>().SetPosition(0, targetPosition);
                 draggablePoint.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
             } else if (selection == Selection.x) {
+                /*Vector2 p1 = new Vector2(originalEEPosition.x, originalEEPosition.z).normalized;
+                Vector2 d1 = new Vector2(1.0f, 1.0f);
+                Vector2 p2 = new Vector2(difference.x, difference.z);
+                Vector2 d2 = new Vector2(-1.0f, 1.0f);
+                Debug.Log("gizmo rot: " + gizmo.gameObject.transform.rotation.eulerAngles.y + "\np1: " + p1 + "\nd1: " + d1 + "\np2: " + p2 + "\nd2: " + d2);
+
+                Vector2 result = CalculateIntersection(p1, d1, p2, d2);
+                Debug.Log("result:" + result);
+                targetPosition.x = originalEEPosition.x + result.x * DragMultiplier;
+                targetPosition.z = originalEEPosition.z + result.y * DragMultiplier;*/
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.y) {
@@ -351,7 +389,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private void OnMove() {
         if (selection == Selection.ee) {
-            gizmo.gameObject.SetActive(false);
+            //gizmo.gameObject.SetActive(false);
             DistanceControl.SetActive(true);
 
         } else if (selection == Selection.XY) {
@@ -469,9 +507,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             Debug.Log("joint 5: " + startJoints[4].Value);
 
             modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
-            //modelJoints = DobotInverseKinematics(startJoints, pose);
-            //modelJoints = DobotInverseKinematicsAbsolute(startJoints, pose);
-            //await PrepareRobotModel(SceneManager.Instance.SelectedRobot.GetId(), false);
             if (!avoid_collision) {
                 Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
             }
@@ -494,12 +529,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         }
 
         isWaiting = false;
-
-        /*Debug.Log("result joint 1: " + modelJoints[0].Value);
-        Debug.Log("result joint 2: " + modelJoints[1].Value);
-        Debug.Log("result joint 3: " + modelJoints[2].Value);
-        Debug.Log("result joint 4: " + modelJoints[3].Value);
-        Debug.Log("result joint 5: " + modelJoints[4].Value);*/
     }
 
     private void UpdateSensitivity(float value) {
@@ -511,11 +540,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void DisableClippingMaterial() {
-        /*foreach (Renderer i in robot.robotRenderers) {
-            List<Material> materials = i.materials.ToList();
-            materials.Remove(materials.Last());
-            i.materials = materials.ToArray();
-        }*/
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("Standard");
@@ -528,12 +552,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void EnableClippingMaterial() {
-        /*foreach (Renderer i in robot.robotRenderers) {
-            List<Material> materials = i.materials.ToList();
-            materials.Add(ClippingMaterial);
-            i.materials = materials.ToArray();
-        }*/
-
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("ClippingColorChange");
@@ -548,15 +566,26 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     #region DEBUG BUTTONS
     public void OnFirstButtonClick() {
-        gizmo.GetComponent<GizmoVariant>().FlipX();
+        cameraCoord = !cameraCoord;
+
     }
 
     public void OnSecondButtonClick() {
-        EnableClippingMaterial();
+        Debug.Log("Rotation: " + gizmo.transform.localEulerAngles);
     }
 
-    public void OnThirdButtonClick() {
-        DisableClippingMaterial();
+    public async void OnThirdButtonClick() {
+        endEffector.transform.position = pointInstance.transform.position;
+
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(pointInstance.transform.position));
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        await WebsocketManager.Instance.MoveToPose(
+            robotId: SceneManager.Instance.SelectedRobot.GetId(),
+            endEffectorId: endEffector.EEId,
+            speed: (decimal) 0.5,
+            position: position,
+            orientation: orientation);
     }
 
     #endregion DEBUG BUTTONS
@@ -651,4 +680,32 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     #endregion
+
+    //chatgpt
+    private Vector2 CalculateIntersection(Vector2 p1, Vector2 d1, Vector2 p2, Vector2 d2) {
+        // Calculate the slopes of the lines
+        float m1 = d1.y / d1.x; // slope of line 1
+        float m2 = d2.y / d2.x; // slope of line 2
+
+       
+
+        // Calculate the y-intercepts of the lines
+        float b1 = p1.y - m1 * p1.x; // y-intercept of line 1
+        float b2 = p2.y - m2 * p2.x; // y-intercept of line 2
+
+        // Calculate the intersection point
+        float x = (b2 - b1) / (m1 - m2);
+        float y = m1 * x + b1;
+
+        return new Vector2(x, y);
+    }
+
+    //https://gamedev.stackexchange.com/questions/192692/get-a-vector2-based-on-object-rotation-in-unity
+    Vector2 RotationToVector(float degrees) {
+
+        Quaternion rotation = Quaternion.Euler(0, 0, degrees);
+        Vector2 v = rotation * Vector2.up;
+
+        return v;
+    }
 }
