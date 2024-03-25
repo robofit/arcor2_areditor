@@ -55,6 +55,8 @@ sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="ar
 sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequest.cs
 sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/StepRobotEefRequestArgs.cs
 sed -i'' 's/DataMember(Name="pose", EmitDefaultValue=true)/DataMember(Name="pose", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/StepRobotEefRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToPoseRequest.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToPoseRequestArgs.cs
 
 #find ./"$tmpoutput"/src/IO.Swagger/Model -type f -exec sed -i.bak "s/regexUuid.Match(this.Uuid/regexUuid.Match(this.Uuid.ToString()/g" {} \;
 
