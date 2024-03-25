@@ -1,25 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq.Expressions;
 using Base;
 using IO.Swagger.Model;
-using RuntimeInspectorNamespace;
 using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.InputSystem.HID;
-using UnityEngine.Rendering;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private RobotActionObject robot;
     private RobotEE endEffector;
 
     private Gizmo gizmo;
-    private Gizmo.Axis selectedAxis;
     public GameObject GizmoPrefab;
 
     private GameObject pointInstance;
@@ -39,6 +29,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject XAxis;
     public GameObject YAxis;
     public GameObject ZAxis;
+    public Material ClippingMaterial;
+
+    private bool flippedX = false;
+    private bool flippedY = false;
+    private bool flippedZ = false;
 
     private Vector3 OrigPlaneScale;
     private Vector3 ActivePlaneScale;
@@ -48,7 +43,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private float pointDistance = 0.5f;
     private float DragMultiplier = 0.3f;
-    private float UpDownMultiplier = 0.3f;
+    private float UpDownMultiplier = 0.2f;
     private Vector3 originalEEPosition;
     private Vector3 rayHitPosition;
 
@@ -68,19 +63,31 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private bool isMoving = false;
     private bool moveForwardHeld = false;
     private bool moveBackwardHeld = false;
-    
 
-    // Start is called before the first frame update
+    private bool isWaiting = false;
+    private bool cameraCoord = false;
+    
     private void Start() {
         SensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
         UpDownSensitivitySlider.onValueChanged.AddListener(UpdateUpDownSensitivity);
-    
     }
 
     private async void OnEnable() {
+        flippedX = false; flippedY = false; flippedZ = false;
         robot = (RobotActionObject) SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
         robot.SetVisibility(1.0f);
-        //robot.HideOutline();
+        robot.GetComponent<OutlineOnClick>().UnHighlight();
+        robot.GetComponent<OutlineOnClick>().Enabled = false;
+        await robot.DisableVisualisationOfEE();
+
+        foreach (Renderer i in robot.robotRenderers) {
+            Debug.Log("materials: ");
+            foreach (Material j in i.materials) {
+                Debug.Log("mat: " +  j.name);
+            }
+        }
+
+        
 
         WebsocketManager.Instance.OnRobotEefUpdated -= SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated -= SceneManager.Instance.RobotJointsUpdated;
@@ -103,7 +110,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         gizmo.transform.SetParent(pointInstance.transform);
         gizmo.transform.localPosition = Vector3.zero;
         Sight.Instance.SelectedGizmoAxis += OnSelectedGizmoAxis;
-        SelectAxis(Gizmo.Axis.X, true);
 
         XYPlaneMesh = gizmo.GetComponent<GizmoVariant>().XYPlaneMesh;
         XZPlaneMesh = gizmo.GetComponent<GizmoVariant>().XZPlaneMesh;
@@ -121,16 +127,86 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         OrigAxisScale = XAxis.transform.localScale;
         ActiveAxisScale = XAxis.transform.localScale;
         ActiveAxisScale.z = 10f;
+
+        //EnableClippingMaterial();
     }
-    private void OnDisable() {
+    private async void OnDisable() {
         SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
-        //robot.ShowOutline();
+
+        Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
+
+        robot.GetComponent<OutlineOnClick>().Enabled = true;
+
+        
+
+        endEffector.transform.position = pointInstance.transform.position;
+        await robot.EnableVisualisationOfEE();
+
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(pointInstance.transform.position));
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        await WebsocketManager.Instance.MoveToPose(
+            robotId: SceneManager.Instance.SelectedRobot.GetId(),
+            endEffectorId: endEffector.EEId,
+            speed: (decimal)0.5,
+            position: position,
+            orientation: orientation);
 
         Destroy(gizmo);
         Destroy(pointInstance);
     }
 
     private void Update() {
+        //gizmo flipping
+        if (gizmo != null && !cameraCoord) {
+            if (Camera.main.transform.position.z < pointInstance.transform.position.z) {
+                if (!flippedX) {
+                    gizmo.GetComponent<GizmoVariant>().FlipX();
+                    flippedX = true;
+                }
+            } else {
+                if (flippedX) {
+                    gizmo.GetComponent<GizmoVariant>().FlipX();
+                    flippedX = false;
+                }
+            }
+
+            if (Camera.main.transform.position.x < pointInstance.transform.position.x) {
+                if (!flippedZ) {
+                    gizmo.GetComponent<GizmoVariant>().FlipZ();
+                    flippedZ = true;
+                }
+            } else {
+                if (flippedZ) {
+                    gizmo.GetComponent<GizmoVariant>().FlipZ();
+                    flippedZ = false;
+                }
+            }
+            
+            if (Camera.main.transform.position.y < pointInstance.transform.position.y) {
+                if (!flippedY) {
+                    gizmo.GetComponent<GizmoVariant>().FlipY();
+                    flippedY = true;
+                }
+            } else {
+                if (flippedY) {
+                    gizmo.GetComponent<GizmoVariant>().FlipY();
+                    flippedY = false;
+                }
+            }
+
+        }
+
+        if (cameraCoord && !isMoving) {
+            Vector3 targetPosition = new Vector3(
+                Camera.main.transform.position.x,
+                gizmo.transform.position.y,
+                Camera.main.transform.position.z);
+
+            gizmo.transform.LookAt(targetPosition);
+        }
+
+        //movement
         if (isMoving && pointInstance != null) {
             Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
 
@@ -145,55 +221,68 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
             Vector3 difference = ray.GetPoint(pointDistance) - rayHitPosition;
 
-
-
             Vector3 targetPosition = pointInstance.transform.position;
 
             if (selection == Selection.ee) {
                 targetPosition = originalEEPosition + difference * DragMultiplier;
+                Vector3 lineEnd = robot.transform.position;
+                lineEnd.y = targetPosition.y;
+                draggablePoint.GetComponent<LineRenderer>().SetPosition(0, targetPosition);
+                draggablePoint.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
             } else if (selection == Selection.x) {
+                /*Vector2 p1 = new Vector2(originalEEPosition.x, originalEEPosition.z).normalized;
+                Vector2 d1 = new Vector2(1.0f, 1.0f);
+                Vector2 p2 = new Vector2(difference.x, difference.z);
+                Vector2 d2 = new Vector2(-1.0f, 1.0f);
+                Debug.Log("gizmo rot: " + gizmo.gameObject.transform.rotation.eulerAngles.y + "\np1: " + p1 + "\nd1: " + d1 + "\np2: " + p2 + "\nd2: " + d2);
+
+                Vector2 result = CalculateIntersection(p1, d1, p2, d2);
+                Debug.Log("result:" + result);
+                targetPosition.x = originalEEPosition.x + result.x * DragMultiplier;
+                targetPosition.z = originalEEPosition.z + result.y * DragMultiplier;*/
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
-                //XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.y) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
-                //YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.z) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
-                //ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
             } else if (selection == Selection.XY) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
 
-                //XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.XZ) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
 
-                //XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             } else if (selection == Selection.YZ) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
 
-                //YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
             }
-
-
 
             pointInstance.transform.position = targetPosition;
 
-            //MoveHereModel(targetPosition);
-            //if (Time.frameCount % 10 == 0) {
-            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
-            //}
+            if (!isWaiting) {
+                isWaiting = true;
+                MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+            }
+                
             
-
         } else {
-            /*XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
-            YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, OrigAxisScale, 0.25f);
-            ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, OrigAxisScale, 0.25f);
-            XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
-            XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
-            YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);*/
+            if (XAxis != null &&  YAxis != null && ZAxis != null) {
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, OrigAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, OrigAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, OrigAxisScale, 0.25f);
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, OrigPlaneScale, 0.25f);
+            }
+            
         }
     }
     private void FixedUpdate() {
@@ -203,32 +292,32 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             foreach (RaycastHit hit in hits) {
                 if (hit.collider.gameObject.name == "DraggablePoint(Clone)") {
                     if (!isMoving) {
-                        //rayHitPosition = hit.transform.position;
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectEE();
+                    //SelectEE();
+                    Select(Selection.ee);
                     break;
                 }
                 else if (hit.collider.gameObject.CompareTag("xy_plane")) {
                     if (!isMoving) {
-                        //rayHitPosition = hit.transform.position;
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.XY);
+                    //SelectPlane(Selection.XY);
+                    Select(Selection.XY);
                     return;
                 } else if (hit.collider.gameObject.CompareTag("xz_plane")) {
                     if (!isMoving) {
-                        //rayHitPosition = hit.transform.position;
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.XZ);
+                    //SelectPlane(Selection.XZ);
+                    Select(Selection.XZ);
                     return;
                 } else if (hit.collider.gameObject.CompareTag("yz_plane")) {
                     if (!isMoving) {
-                        //rayHitPosition = hit.transform.position;
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
-                    SelectPlane(Selection.YZ);
+                    //SelectPlane(Selection.YZ);
+                    Select(Selection.YZ);
                     return;
                 }
             }
@@ -284,85 +373,64 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             originalEEPosition = pointInstance.transform.position;
             rayHitPosition = ray.GetPoint(pointDistance);
 
-            HideGizmoOnMove();
+            OnMove();
             LeftMenu.SetActive(false);
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
         } else {
             ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
             Debug.Log("robot pose: " + robot.GetPose());
             //MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
-
-            ShowGizmo();
+            gizmo.GetComponent<GizmoVariant>().UnhighlightAll();
+            OnStopMove();
             LeftMenu.SetActive(true);
 
         }
     }
 
-    private void HideGizmoOnMove() {
-        Vector3 lineOrigin = draggablePoint.transform.position;
-        Vector3 lineEnd = draggablePoint.transform.position;
-
-
+    private void OnMove() {
         if (selection == Selection.ee) {
-            Debug.Log("got to hidin");
-            gizmo.gameObject.SetActive(false);
+            //gizmo.gameObject.SetActive(false);
             DistanceControl.SetActive(true);
 
         } else if (selection == Selection.XY) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
-            //XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            XYPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            EnableClippingMaterial();
 
         } else if (selection == Selection.XZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
-            //XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            XZPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            EnableClippingMaterial();
 
         } else if (selection == Selection.YZ) {
             gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            
-            //YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            YZPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
+            EnableClippingMaterial();
 
-        } /*else if (selection == Selection.x) {
-            gizmo.gameObject.SetActive(false);
-            lineEnd.x += 5.0f;
-            lineOrigin.x -= 5.0f;
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(0, lineOrigin);
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
+        } else if (selection == Selection.x) {
+            gizmo.GetComponent<GizmoVariant>().HideXCone();
+
         } else if (selection == Selection.z) {
-            gizmo.gameObject.SetActive(false);
-            lineEnd.y += 5.0f;
-            lineOrigin.y -= 5.0f;
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(0, lineOrigin);
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
+            gizmo.GetComponent<GizmoVariant>().HideZCone();
+
         } else if (selection == Selection.y) {
-            gizmo.gameObject.SetActive(false);
-            lineEnd.z += 5.0f;
-            lineOrigin.z -= 5.0f;
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(0, lineOrigin);
-            draggablePoint.gameObject.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
-        }*/
+            gizmo.GetComponent<GizmoVariant>().HideYCone();
+        }
 
     }
-    private void ShowGizmo() {
+    private void OnStopMove() {
         gizmo.gameObject.SetActive(true);
-        /*XYPlaneMesh.transform.localScale = OrigPlaneScale;
-        XZPlaneMesh.transform.localScale = OrigPlaneScale;
-        YZPlaneMesh.transform.localScale = OrigPlaneScale;*/
+
+        XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
+        YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
+        XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         DistanceControl.SetActive(false);
+
+        DisableClippingMaterial();
     }
 
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
-        SelectAxis(args.SelectedAxis);
-    }
-    private void SelectAxis(Gizmo.Axis axis, bool forceUpdate = false) {
-        if (forceUpdate || selectedAxis != axis) {
-            selectedAxis = axis;
-            gizmo.SetRotationAxis(Gizmo.Axis.NONE);
-
-        }
-
-        switch (axis.ToString()) {
+        switch (args.SelectedAxis.ToString()) {
             case "X":
                 Select(Selection.x);
                 break;
@@ -375,22 +443,13 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             default:
                 throw new NotImplementedException();
         }
-
     }
-
-    private void SelectEE() {
-        Select(Selection.ee);
-    }
-
-    private void SelectPlane(Selection plane) {
-        Select(plane);
-    }
-
     private void Select(Selection value) {
         if (isMoving) {
             return;
         }
 
+        draggablePoint.GetComponent<LineRenderer>().enabled = false;
         gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
         gizmo.UnhighlightAllAxis();
         draggablePoint.Unhighlight();
@@ -401,39 +460,39 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Axis";
             if (value == Selection.x) {
                 gizmo.HiglightAxis(Gizmo.Axis.X);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
             } else if (value == Selection.y) {
                 gizmo.HiglightAxis(Gizmo.Axis.Y);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 90f, 90f);
             } else if (value == Selection.z) {
                 gizmo.HiglightAxis(Gizmo.Axis.Z);
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             }
 
         } else if (value == Selection.XY || value == Selection.XZ || value == Selection.YZ) {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Plane";
             if (value == Selection.XY) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXY();
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 90f, 90f);
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetXYClippingPlane();
             } else if (value == Selection.XZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXZ();
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 0f, 0f); 
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetXZClippingPlane();
             } else if (value == Selection.YZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightYZ();
+                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
+                //gizmo.gameObject.GetComponent<GizmoVariant>().SetYZClippingPlane();
             }
         } else if (value == Selection.ee) {
+            draggablePoint.GetComponent<LineRenderer>().enabled = true;
             SelectionText.GetComponent<TextMeshProUGUI>().text = "End-Effector";
             draggablePoint.Highlight();
         }
     }
 
-    private void UpdateSensitivity(float value) {
-        DragMultiplier = value;
-    }
-
-    private void UpdateUpDownSensitivity(float value) {
-        UpDownMultiplier = value;
-    }
-
     private async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
         List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
-
-        
 
         Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
@@ -447,15 +506,13 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             Debug.Log("joint 4: " + startJoints[3].Value);
             Debug.Log("joint 5: " + startJoints[4].Value);
 
-            //modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
-            //modelJoints = DobotInverseKinematics(startJoints, pose);
-            modelJoints = DobotInverseKinematicsAbsolute(startJoints, pose);
-            //await PrepareRobotModel(SceneManager.Instance.SelectedRobot.GetId(), false);
+            modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
             if (!avoid_collision) {
                 Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
             }
         } catch (ItemNotFoundException ex) {
             Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+            isWaiting = false;
             return;
         } catch (RequestFailedException ex) {
             Debug.Log("am i here");
@@ -463,6 +520,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 MoveHereModel(position, false);
             else
                 Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+            isWaiting = false;
             return;
         }
 
@@ -470,120 +528,69 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
         }
 
-        Debug.Log("result joint 1: " + modelJoints[0].Value);
-        Debug.Log("result joint 2: " + modelJoints[1].Value);
-        Debug.Log("result joint 3: " + modelJoints[2].Value);
-        Debug.Log("result joint 4: " + modelJoints[3].Value);
-        Debug.Log("result joint 5: " + modelJoints[4].Value);
+        isWaiting = false;
+    }
+
+    private void UpdateSensitivity(float value) {
+        DragMultiplier = value;
+    }
+
+    private void UpdateUpDownSensitivity(float value) {
+        UpDownMultiplier = value;
+    }
+
+    private void DisableClippingMaterial() {
+        foreach (Renderer i in robot.robotRenderers) {
+            if (i.materials.Length == 3) {
+                i.materials[1].shader = Shader.Find("Standard");
+                gizmo.GetComponent<GizmoVariant>().RemoveMaterial(i.materials[1]);
+            } else {
+                i.material.shader = Shader.Find("Standard");
+                gizmo.GetComponent<GizmoVariant>().RemoveMaterial(i.material);
+            }
+        }
+    }
+
+    private void EnableClippingMaterial() {
+        foreach (Renderer i in robot.robotRenderers) {
+            if (i.materials.Length == 3) {
+                i.materials[1].shader = Shader.Find("ClippingColorChange");
+                gizmo.GetComponent<GizmoVariant>().AddMaterial(i.materials[1]);
+            } else {
+                i.material.shader = Shader.Find("ClippingColorChange");
+                gizmo.GetComponent<GizmoVariant>().AddMaterial(i.material);
+            }
+
+        }
     }
 
     #region DEBUG BUTTONS
-    public async void OnFirstButtonClick() {
-        Debug.Log("vis: " + SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).GetVisibility());
+    public void OnFirstButtonClick() {
+        cameraCoord = !cameraCoord;
 
-        OrientationJointsDetailMenu orientationJointsDetailMenu = this.gameObject.AddComponent<OrientationJointsDetailMenu>();
+    }
 
-        List<string> ArmsIDs = await robot.GetArmsIds();
-        string ArmsID = ArmsIDs[0];
+    public void OnSecondButtonClick() {
+        Debug.Log("Rotation: " + gizmo.transform.localEulerAngles);
+    }
 
-        List<string> EEIDs = await robot.GetEndEffectorIds();
-        string EEID = EEIDs[0];
+    public async void OnThirdButtonClick() {
+        endEffector.transform.position = pointInstance.transform.position;
 
-        ProjectRobotJoints projectRobotJoints = new ProjectRobotJoints("what", robot.GetId(), robot.RobotModel.GetJoints(), true, ArmsID, EEID);
-
-        orientationJointsDetailMenu.joints = projectRobotJoints;
-
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(pointInstance.transform.position));
         Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
 
-        orientationJointsDetailMenu.orientation = new NamedOrientation("why", orientation);
-
-        Vector3 newPos = new Vector3();
-
-        newPos = endEffector.transform.position;
-
-        /*newPos.x += 0.06f;
-        newPos.y += 0.02f;
-        newPos.z -= 0.04f;*/
-
-        Debug.Log("newPos: " + newPos);
-        orientationJointsDetailMenu.MoveHereModel(newPos, true);
-
-        //Robot.RobotModel.SetZeroJointAngles();
-    }
-
-    public async void OnSecondButtonClick() {
-        Debug.Log("got here?");
-        List<string> EEIDs = await robot.GetEndEffectorIds();
-        string EEID = EEIDs[0];
-        List<string> ArmsIDs = await robot.GetArmsIds();
-        string ArmsID = ArmsIDs[0];
-
-        Vector3 newPosition = new Vector3();
-
-        newPosition = endEffector.transform.position;
-
-        Debug.Log("old: " + endEffector.transform.position);
-
-        newPosition.x += 0.05f;
-
-        endEffector.UpdatePosition(newPosition, Quaternion.AngleAxis(180, new Vector3(1, 0, 0)));
-
-        IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose();
-        pose.Position = new IO.Swagger.Model.Position((decimal) newPosition.x, (decimal) newPosition.y, (decimal) newPosition.z);
-
-        Debug.Log("new: " + endEffector.transform.position);
-
-
-        //List<IO.Swagger.Model.Joint> joints = await WebsocketManager.Instance.InverseKinematics(Robot.GetId(), EEID, true, pose, Robot.RobotModel.GetJoints());
-
-        foreach (var joint in robot.RobotModel.GetJoints()) {
-            print("key: " + joint.Name + "value: " + joint.Value);
-        }
-
-        var testjoint = robot.RobotModel.GetJoints()[0];
-        Vector3 position = new Vector3();
-        Quaternion rotation = new Quaternion();
-        robot.transform.GetPositionAndRotation(out position, out rotation);
-
-        float a = pointInstance.transform.position.x - position.x;
-        float b = pointInstance.transform.position.z - position.z;
-
-        double angle = -Math.Atan(a / b);
-
-        robot.RobotModel.SetJointAngle(testjoint.Name, (float) angle);
-
-
-
-
-
-        /*foreach (var joint in joints) {
-            print("name" + joint.Name + "value" + joint.Value);
-        }
-
-        foreach (var joint in joints) {
-            Robot.RobotModel.SetJointAngle(joint.Name, (float)joint.Value);
-        }*/
-
-
-    }
-
-    public void OnThirdButtonClick() {
-        //isMoving = !isMoving;
-        /*
-        if (isMoving && PointInstance == null) {
-            Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0f));
- 
-            Vector3 position = /*TransformConvertor.UnityToROS(GameManager.Instance.Scene.transform.InverseTransformPoint(ray.GetPoint(0.5f)))ray.GetPoint(0.5f);
-            PointInstance = Instantiate(Point, position, Quaternion.identity);
-        }*/
-
-        YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue += 100;
-        Debug.Log("Renderqueue: " + YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue);
-        
+        await WebsocketManager.Instance.MoveToPose(
+            robotId: SceneManager.Instance.SelectedRobot.GetId(),
+            endEffectorId: endEffector.EEId,
+            speed: (decimal) 0.5,
+            position: position,
+            orientation: orientation);
     }
 
     #endregion DEBUG BUTTONS
 
+    #region IK
     private List<IO.Swagger.Model.Joint> DobotInverseKinematics(List<IO.Swagger.Model.Joint> startJoints, IO.Swagger.Model.Pose pose) {
         double link_2_length = 0.135;
         double link_3_length = 0.147;
@@ -654,13 +661,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         position.Y = child.Position.Y - parent.Position.Y;
         position.Z = child.Position.Z - parent.Position.Z;
 
-        //return null;
-        /*return Pose(
-        (child.position - parent.position).rotated(parent.orientation, inverse = True),
-        Orientation.from_quaternion(parent.orientation.as_quaternion().inverse() * child.orientation.as_quaternion()),
-        )*/
-        //Orientation.from_quaternion(parent.orientation.as_quaternion().inverse() * child.orientation.as_quaternion())
-
         Quaternion parentQuat = new Quaternion(x: (float)parent.Orientation.X, y: (float)parent.Orientation.Y, z: (float)parent.Orientation.Z, w: (float)parent.Orientation.W).normalized;
         Quaternion childQuat = new Quaternion(x: (float) child.Orientation.X, y: (float) child.Orientation.Y, z: (float) child.Orientation.Z, w: (float) child.Orientation.W).normalized;
 
@@ -679,4 +679,33 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         return null;
     }
 
+    #endregion
+
+    //chatgpt
+    private Vector2 CalculateIntersection(Vector2 p1, Vector2 d1, Vector2 p2, Vector2 d2) {
+        // Calculate the slopes of the lines
+        float m1 = d1.y / d1.x; // slope of line 1
+        float m2 = d2.y / d2.x; // slope of line 2
+
+       
+
+        // Calculate the y-intercepts of the lines
+        float b1 = p1.y - m1 * p1.x; // y-intercept of line 1
+        float b2 = p2.y - m2 * p2.x; // y-intercept of line 2
+
+        // Calculate the intersection point
+        float x = (b2 - b1) / (m1 - m2);
+        float y = m1 * x + b1;
+
+        return new Vector2(x, y);
+    }
+
+    //https://gamedev.stackexchange.com/questions/192692/get-a-vector2-based-on-object-rotation-in-unity
+    Vector2 RotationToVector(float degrees) {
+
+        Quaternion rotation = Quaternion.Euler(0, 0, degrees);
+        Vector2 v = rotation * Vector2.up;
+
+        return v;
+    }
 }

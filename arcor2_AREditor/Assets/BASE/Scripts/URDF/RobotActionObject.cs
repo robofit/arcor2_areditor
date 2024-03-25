@@ -47,7 +47,7 @@ namespace Base {
         
         private GameObject RobotPlaceholder;
 
-        private List<Renderer> robotRenderers = new List<Renderer>();
+        public List<Renderer> robotRenderers = new List<Renderer>();
         private List<Collider> robotColliders = new List<Collider>();
 
         private bool transparent = false;

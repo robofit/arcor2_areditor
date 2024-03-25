@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class GizmoVariant : MonoBehaviour
 {
@@ -15,6 +16,14 @@ public class GizmoVariant : MonoBehaviour
     public GameObject XAxis;
     public GameObject YAxis;
     public GameObject ZAxis;
+
+    public GameObject XCone;
+    public GameObject YCone;
+    public GameObject ZCone;
+
+    public GameObject ClippingPlane;
+
+    public bool Flipped = false;
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +59,73 @@ public class GizmoVariant : MonoBehaviour
         XYOutline.UnHighlight();
         XZOutline.UnHighlight();
         YZOutline.UnHighlight();
+        XCone.SetActive(true);
+        YCone.SetActive(true);
+        ZCone.SetActive(true);
+    }
+
+    public void HideXCone() {
+        XCone.SetActive(false);
+    }
+
+    public void HideYCone() {
+        YCone.SetActive(false);
+    }
+
+    public void HideZCone() {
+        ZCone.SetActive(false);
+    }
+
+    public void SetXZClippingPlane() {
+        ClippingPlane.transform.SetParent(XZPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -90f, -90f);
+    }
+
+    public void SetYZClippingPlane() {
+        ClippingPlane.transform.SetParent(YZPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -180f, -180f);
+    }
+
+    public void SetXYClippingPlane() {
+        ClippingPlane.transform.SetParent(XYPlaneMesh.transform);
+        ClippingPlane.transform.position = Vector3.zero;
+        ClippingPlane.transform.rotation = Quaternion.Euler(0f, -180f, -180f);
+    }
+
+    public void SetDir(bool dir) {
+        ClippingPlane.GetComponent<ClippingPlane>().dir = dir;
+    }
+
+    public void AddMaterial(Material material) {
+        ClippingPlane.GetComponent<ClippingPlane>().Materials.Add(material);
+    }
+
+    public void RemoveMaterial(Material material) {
+        ClippingPlane.GetComponent<ClippingPlane>().Materials.Remove(material);
+    }
+
+    public void FlipX() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.x *= -1;
+        gameObject.transform.localScale = scale;
+    }
+
+    public void FlipY() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.y *= -1;
+        gameObject.transform.localScale = scale;
+    }
+
+    public void FlipZ() {
+        Vector3 scale = gameObject.transform.localScale;
+        scale.z *= -1;
+        gameObject.transform.localScale = scale;
+    }
+
+    public void RotateTo(float angle) {
+        gameObject.transform.rotation = Quaternion.Euler(0f, angle, 0f);
     }
 
 }
