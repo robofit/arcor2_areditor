@@ -37,9 +37,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private Vector3 OrigPlaneScale;
     private Vector3 ActivePlaneScale;
+    private Vector3 HiddenPlaneScale = Vector3.zero;
 
     private Vector3 OrigAxisScale;
     private Vector3 ActiveAxisScale;
+    private Vector3 HiddenAxisScale;
 
     private float pointDistance = 0.5f;
     private float DragMultiplier = 0.3f;
@@ -128,6 +130,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         ActiveAxisScale = XAxis.transform.localScale;
         ActiveAxisScale.z = 10f;
 
+        HiddenAxisScale = XAxis.transform.localScale;
+        HiddenAxisScale.z = 0.0f;
+
         //EnableClippingMaterial();
     }
     private async void OnDisable() {
@@ -154,6 +159,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         Destroy(gizmo);
         Destroy(pointInstance);
+
+        WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
+        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
     }
 
     private void Update() {
@@ -229,6 +237,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 lineEnd.y = targetPosition.y;
                 draggablePoint.GetComponent<LineRenderer>().SetPosition(0, targetPosition);
                 draggablePoint.GetComponent<LineRenderer>().SetPosition(1, lineEnd);
+
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
+
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
             } else if (selection == Selection.x) {
                 /*Vector2 p1 = new Vector2(originalEEPosition.x, originalEEPosition.z).normalized;
                 Vector2 d1 = new Vector2(1.0f, 1.0f);
@@ -242,27 +258,63 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 targetPosition.z = originalEEPosition.z + result.y * DragMultiplier;*/
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, ActiveAxisScale, 0.25f);
+
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
             } else if (selection == Selection.y) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
                 YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, ActiveAxisScale, 0.25f);
+
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
             } else if (selection == Selection.z) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
                 ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, ActiveAxisScale, 0.25f);
+
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
             } else if (selection == Selection.XY) {
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
 
                 XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
             } else if (selection == Selection.XZ) {
                 targetPosition.x = originalEEPosition.x + difference.x * DragMultiplier;
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
 
                 XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
             } else if (selection == Selection.YZ) {
                 targetPosition.z = originalEEPosition.z + difference.z * DragMultiplier;
                 targetPosition.y = originalEEPosition.y + difference.y * DragMultiplier;
 
                 YZPlaneMesh.transform.localScale = Vector3.Lerp(YZPlaneMesh.transform.localScale, ActivePlaneScale, 0.25f);
+
+                XYPlaneMesh.transform.localScale = Vector3.Lerp(XYPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XZPlaneMesh.transform.localScale = Vector3.Lerp(XZPlaneMesh.transform.localScale, HiddenPlaneScale, 0.25f);
+                XAxis.transform.localScale = Vector3.Lerp(XAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                YAxis.transform.localScale = Vector3.Lerp(YAxis.transform.localScale, HiddenAxisScale, 0.25f);
+                ZAxis.transform.localScale = Vector3.Lerp(ZAxis.transform.localScale, HiddenAxisScale, 0.25f);
             }
 
             pointInstance.transform.position = targetPosition;
@@ -390,6 +442,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private void OnMove() {
         if (selection == Selection.ee) {
             //gizmo.gameObject.SetActive(false);
+            draggablePoint.GetComponent<LineRenderer>().enabled = true;
             DistanceControl.SetActive(true);
 
         } else if (selection == Selection.XY) {
@@ -407,20 +460,15 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             YZPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
             EnableClippingMaterial();
 
-        } else if (selection == Selection.x) {
-            gizmo.GetComponent<GizmoVariant>().HideXCone();
-
-        } else if (selection == Selection.z) {
-            gizmo.GetComponent<GizmoVariant>().HideZCone();
-
-        } else if (selection == Selection.y) {
-            gizmo.GetComponent<GizmoVariant>().HideYCone();
         }
 
+        gizmo.gameObject.GetComponent<GizmoVariant>().HideXCone();
+        gizmo.gameObject.GetComponent<GizmoVariant>().HideYCone();
+        gizmo.gameObject.GetComponent<GizmoVariant>().HideZCone();
     }
     private void OnStopMove() {
         gizmo.gameObject.SetActive(true);
-
+        draggablePoint.GetComponent<LineRenderer>().enabled = false;
         XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
@@ -449,7 +497,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             return;
         }
 
-        draggablePoint.GetComponent<LineRenderer>().enabled = false;
         gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
         gizmo.UnhighlightAllAxis();
         draggablePoint.Unhighlight();
@@ -485,7 +532,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 //gizmo.gameObject.GetComponent<GizmoVariant>().SetYZClippingPlane();
             }
         } else if (value == Selection.ee) {
-            draggablePoint.GetComponent<LineRenderer>().enabled = true;
             SelectionText.GetComponent<TextMeshProUGUI>().text = "End-Effector";
             draggablePoint.Highlight();
         }
