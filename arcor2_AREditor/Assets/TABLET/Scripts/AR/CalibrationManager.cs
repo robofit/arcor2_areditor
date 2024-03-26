@@ -629,8 +629,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public IEnumerator CalibrateUsingServerAsync(Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false, bool force = false, bool showNotification = false) {
-        Debug.Log("Calibrating using server");
-
+        
         if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics)) {
             callback?.Invoke(false);
             yield break;
@@ -784,7 +783,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         } catch (RequestFailedException ex) {
             markerDetectionState = MarkerDetectionState.Failure;
-            Debug.Log("No markers visible");
             if (showNotification) {
                 Notifications.Instance.ShowNotification("No markers visible", "Find some markers and try again.");
             }
