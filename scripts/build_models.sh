@@ -48,11 +48,38 @@ sed -i'' 's/DataMember(Name="cylinder", EmitDefaultValue=true)/DataMember(Name="
 sed -i'' 's/DataMember(Name="mesh", EmitDefaultValue=true)/DataMember(Name="mesh", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="sphere", EmitDefaultValue=true)/DataMember(Name="sphere", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
 sed -i'' 's/DataMember(Name="type", EmitDefaultValue=true)/DataMember(Name="type", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectModel.cs
-sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequestArgs.cs
-sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequest.cs
 sed -i'' 's/DataMember(Name="object_model", EmitDefaultValue=true)/DataMember(Name="object_model", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="needs_parent_type", EmitDefaultValue=true)/DataMember(Name="needs_parent_type", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="settings", EmitDefaultValue=true)/DataMember(Name="settings", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="abstract", EmitDefaultValue=true)/DataMember(Name="abstract", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="disabled", EmitDefaultValue=true)/DataMember(Name="disabled", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs
+sed -i'' 's/DataMember(Name="problem", EmitDefaultValue=true)/DataMember(Name="problem", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ObjectTypeMeta.cs	
+sed -i'' 's/DataMember(Name="condition", EmitDefaultValue=true)/DataMember(Name="condition", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/AddLogicItemRequestArgs.cs
+sed -i'' 's/DataMember(Name="pose", EmitDefaultValue=true)/DataMember(Name="pose", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/AddObjectToSceneRequestArgs.cs
+sed -i'' 's/DataMember(Name="settings", EmitDefaultValue=true)/DataMember(Name="settings", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/AddObjectToSceneRequestArgs.cs
+sed -i'' 's/DataMember(Name="end_effector_id", EmitDefaultValue=true)/DataMember(Name="end_effector_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToActionPointRequestArgs.cs
+sed -i'' 's/DataMember(Name="orientation_id", EmitDefaultValue=true)/DataMember(Name="orientation_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToActionPointRequestArgs.cs
+sed -i'' 's/DataMember(Name="joints_id", EmitDefaultValue=true)/DataMember(Name="joints_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToActionPointRequestArgs.cs
+sed -i'' 's/DataMember(Name="joints", EmitDefaultValue=true)/DataMember(Name="joints", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/UpdateActionPointJointsRequestArgs.cs
+sed -i'' 's/DataMember(Name="position", EmitDefaultValue=true)/DataMember(Name="position", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/CopyActionPointRequestArgs.cs
+sed -i'' 's/DataMember(Name="pose", EmitDefaultValue=true)/DataMember(Name="pose", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/StepRobotEefRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/RobotArg.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/UpdateActionPointUsingRobotRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/AddApUsingRobotRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/AddActionPointJointsUsingRobotRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToActionPointRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/MoveToPoseRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorPoseRequestArgs.cs
 sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequestArgs.cs
 sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/GetEndEffectorsRequest.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ForwardKinematicsRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/HandTeachingModeRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/StepRobotEefRequestArgs.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/SetEefPerpendicularToWorldRequestArgs.cs
+sed -i'' 's/DataMember(Name="action_id", EmitDefaultValue=true)/DataMember(Name="action_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ActionStateBeforeData.cs
+sed -i'' 's/DataMember(Name="action_id", EmitDefaultValue=true)/DataMember(Name="action_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/ActionStateAfterData.cs
+sed -i'' 's/DataMember(Name="arm_id", EmitDefaultValue=true)/DataMember(Name="arm_id", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequestArgs.cs
+sed -i'' 's/DataMember(Name="data", EmitDefaultValue=true)/DataMember(Name="data", EmitDefaultValue=false)/' ./"$tmpoutput"/src/IO.Swagger/Model/InverseKinematicsRequest.cs
 
 #find ./"$tmpoutput"/src/IO.Swagger/Model -type f -exec sed -i.bak "s/regexUuid.Match(this.Uuid/regexUuid.Match(this.Uuid.ToString()/g" {} \;
 
