@@ -17,6 +17,9 @@ public class ActionPoint3D : Base.ActionPoint {
     private OutlineOnClick outlineOnClick;
     public GameObject ActionsVisuals;
 
+    public Renderer VisualRenderer;
+
+
     private void LateUpdate() {
         // Fix of AP rotations - works on both PC and tablet
         transform.rotation = Base.SceneManager.Instance.SceneOrigin.transform.rotation;
@@ -31,13 +34,12 @@ public class ActionPoint3D : Base.ActionPoint {
         get => base.BreakPoint;
         set {
             base.BreakPoint = value;
-            Renderer r = Sphere.GetComponent<Renderer>();
-            if (r.materials.Length == 3) {
-                Material[] materials = r.materials;
-                materials[1] = BreakPoint ? BreakPointMaterial : SphereMaterial;
-                r.materials = materials;
+            if (VisualRenderer.materials.Length == 3) {
+                Material[] materials = VisualRenderer.materials;
+                materials[1].color = BreakPoint ? BreakPointMaterial.color : SphereMaterial.color;
+                VisualRenderer.materials = materials;
             } else {
-                r.material = BreakPoint ? BreakPointMaterial : SphereMaterial;
+                VisualRenderer.material.color = BreakPoint ? BreakPointMaterial.color : SphereMaterial.color;
             }
         }
     }
@@ -153,12 +155,24 @@ public class ActionPoint3D : Base.ActionPoint {
     }
 
     public override void UpdateColor() {
-        if (Enabled && !(IsLocked && !IsLockedByMe)) {
-            SphereMaterial.color = new Color(0.51f, 0.51f, 0.89f);
-            BreakPointMaterial.color = new Color(0.93f, 0.07f, 0.09f);
-        } else {
-            SphereMaterial.color = Color.gray;
-            BreakPointMaterial.color = Color.gray;
+        foreach (Material material in VisualRenderer.materials) {
+            if (Enabled && !(IsLocked && !IsLockedByMe)) {
+                if (VisualRenderer.materials.Length == 3) {
+                    Material[] materials = VisualRenderer.materials;
+                    materials[1].color = BreakPoint ? BreakPointMaterial.color : SphereMaterial.color;
+                    VisualRenderer.materials = materials;
+                } else {
+                    VisualRenderer.material.color = BreakPoint ? BreakPointMaterial.color : SphereMaterial.color;
+                }
+            } else {
+                if (VisualRenderer.materials.Length == 3) {
+                    Material[] materials = VisualRenderer.materials;
+                    materials[1].color = Color.gray;
+                    VisualRenderer.materials = materials;
+                } else {
+                    VisualRenderer.material.color = Color.gray;
+                }
+            }
         }
     }
 

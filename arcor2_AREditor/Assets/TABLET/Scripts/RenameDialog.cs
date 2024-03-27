@@ -1,6 +1,7 @@
 using UnityEngine;
 using Base;
 using UnityEngine.Events;
+using System;
 
 public class RenameDialog : Dialog {
     //public GameObject CanvasRoot;
@@ -62,6 +63,9 @@ public class RenameDialog : Dialog {
         }
 
         try {
+            // Replace whitespace with underscore
+            name = name.Replace(" ", "_");
+
             await selectedObject.Rename(name);
             Cancel();
             confirmCallback?.Invoke();

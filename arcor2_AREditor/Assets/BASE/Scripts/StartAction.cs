@@ -14,7 +14,7 @@ public class StartAction : StartEndAction {
             parameters: new List<IO.Swagger.Model.ActionParameter>(),
             type: "");
         base.Init(prAction, metadata, ap, actionProvider, actionType);
-        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, 0));
+        transform.localPosition = PlayerPrefsHelper.LoadVector3(playerPrefsKey, new Vector3(0, 0.15f, -0.6f));
         // Output.SelectorItem = SelectorMenu.Instance.CreateSelectorItem(Output);
     }
 

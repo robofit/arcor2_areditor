@@ -514,6 +514,10 @@ public class CalibrationManager : Singleton<CalibrationManager> {
         AutoRecalibrateTime = time;
     }
 
+    private float GetSavedAutoCalibTime() {
+        return float.Parse(PlayerPrefsHelper.LoadString("/autoCalib/recalibrationTime", "120"));
+    }
+
     private void RunServerAutoCalibration() {
 #if (UNITY_ANDROID || UNITY_IOS) && AR_ON
         // If we used local calibration before, remove all local anchors and prepare for server calibration
@@ -590,15 +594,18 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
             if (AutoRecalibration) {
                 markerDetectionState = MarkerDetectionState.Processing;
+                float serviceStartTime = Time.realtimeSinceStartup;
                 yield return CalibrateUsingServerAsync(success => {
                     if (success) {
                         markerDetectionState = MarkerDetectionState.Success;
                         recalibrateTime = 2f;
+                        AutoRecalibrateTime = GetSavedAutoCalibTime();
                     } else {
                         markerDetectionState = MarkerDetectionState.Failure;
                         if (anchorQuality > 0) {
                             anchorQuality -= 0.05f;
                         }
+                        AutoRecalibrateTime = 0.5f - (Time.realtimeSinceStartup - serviceStartTime);
                     }
                 }, inverse: true, autoCalibrate: true);
             }
@@ -622,8 +629,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     }
 
     public IEnumerator CalibrateUsingServerAsync(Action<bool> callback = null, bool inverse = false, bool autoCalibrate = false, bool force = false, bool showNotification = false) {
-        Debug.Log("Calibrating using server");
-
+        
         if (!ARCameraManager.TryGetIntrinsics(out XRCameraIntrinsics cameraIntrinsics)) {
             callback?.Invoke(false);
             yield break;
@@ -777,7 +783,6 @@ public class CalibrationManager : Singleton<CalibrationManager> {
 
         } catch (RequestFailedException ex) {
             markerDetectionState = MarkerDetectionState.Failure;
-            Debug.Log("No markers visible");
             if (showNotification) {
                 Notifications.Instance.ShowNotification("No markers visible", "Find some markers and try again.");
             }
