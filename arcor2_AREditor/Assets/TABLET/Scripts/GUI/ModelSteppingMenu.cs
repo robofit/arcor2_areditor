@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using TMPro;
@@ -20,6 +21,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject LeftMenu;
     public GameObject SelectionText;
     public GameObject ButtonHintText;
+    public GameObject ExitDialog;
+    public GameObject ImpossiblePoseNotification;
     public UnityEngine.UI.Slider SensitivitySlider;
     public UnityEngine.UI.Slider UpDownSensitivitySlider;
     public UnityEngine.UI.Button SelectButton;
@@ -46,6 +49,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private float pointDistance = 0.5f;
     private float DragMultiplier = 0.3f;
     private float UpDownMultiplier = 0.2f;
+    private Vector3 fallbackEEPosition;
     private Vector3 originalEEPosition;
     private Vector3 rayHitPosition;
 
@@ -74,8 +78,10 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         UpDownSensitivitySlider.onValueChanged.AddListener(UpdateUpDownSensitivity);
     }
 
-    private async void OnEnable() {
-        flippedX = false; flippedY = false; flippedZ = false;
+    public async Task TurnOn() {
+        flippedX = false;
+        flippedY = false;
+        flippedZ = false;
         robot = (RobotActionObject) SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
         robot.SetVisibility(1.0f);
         robot.GetComponent<OutlineOnClick>().UnHighlight();
@@ -85,11 +91,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         foreach (Renderer i in robot.robotRenderers) {
             Debug.Log("materials: ");
             foreach (Material j in i.materials) {
-                Debug.Log("mat: " +  j.name);
+                Debug.Log("mat: " + j.name);
             }
         }
 
-        
+
 
         WebsocketManager.Instance.OnRobotEefUpdated -= SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated -= SceneManager.Instance.RobotJointsUpdated;
@@ -103,7 +109,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         Vector3 originalPos = endEffector.transform.position;
 
-        
+        fallbackEEPosition = endEffector.transform.position;
+
         pointInstance = Instantiate(PointPrefab, originalPos, Quaternion.identity);
 
         draggablePoint = pointInstance.GetComponent<DraggablePoint>();
@@ -118,7 +125,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         YZPlaneMesh = gizmo.GetComponent<GizmoVariant>().YZPlaneMesh;
 
         XAxis = gizmo.GetComponent<GizmoVariant>().XAxis;
-        YAxis = gizmo.GetComponent <GizmoVariant>().YAxis;
+        YAxis = gizmo.GetComponent<GizmoVariant>().YAxis;
         ZAxis = gizmo.GetComponent<GizmoVariant>().ZAxis;
 
         OrigPlaneScale = XYPlaneMesh.transform.localScale;
@@ -135,25 +142,26 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         //EnableClippingMaterial();
     }
-    private async void OnDisable() {
-        SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
+
+    public async Task TurnOff() {
+        SceneManager.Instance?.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
 
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
 
         robot.GetComponent<OutlineOnClick>().Enabled = true;
 
-        
-
         endEffector.transform.position = pointInstance.transform.position;
         await robot.EnableVisualisationOfEE();
 
-        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(pointInstance.transform.position));
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position)));
         Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        
 
         await WebsocketManager.Instance.MoveToPose(
             robotId: SceneManager.Instance.SelectedRobot.GetId(),
             endEffectorId: endEffector.EEId,
-            speed: (decimal)0.5,
+            speed: (decimal) 0.5,
             position: position,
             orientation: orientation);
 
@@ -162,6 +170,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
+
+        LeftMenu.GetComponent<LeftMenu>().ModelSteppingMenuClosed();
+        
+    }
+
+    public void ExitDialogShow() {
+        ExitDialog.SetActive(true);
+
     }
 
     private void Update() {
@@ -546,29 +562,28 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
             List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
-            Debug.Log("joint 1: " + startJoints[0].Value);
-            Debug.Log("joint 2: " + startJoints[1].Value);
-            Debug.Log("joint 3: " + startJoints[2].Value);
-            Debug.Log("joint 4: " + startJoints[3].Value);
-            Debug.Log("joint 5: " + startJoints[4].Value);
-
             modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
             if (!avoid_collision) {
                 Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
             }
         } catch (ItemNotFoundException ex) {
-            Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+            ImpossiblePoseNotification.SetActive(true);
+            //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
             return;
         } catch (RequestFailedException ex) {
+            
             Debug.Log("am i here");
             if (avoid_collision) //if this is first call, try it again without avoiding collisions
                 MoveHereModel(position, false);
             else
-                Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+                //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
+            ImpossiblePoseNotification.SetActive(true);
             return;
         }
+
+        ImpossiblePoseNotification.SetActive(false);
 
         foreach (IO.Swagger.Model.Joint joint in modelJoints) {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
@@ -608,6 +623,15 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             }
 
         }
+    }
+
+    public void OnCancelButtonClick() {
+        ExitDialog.SetActive(false);
+    }
+
+    public void OnYesButtonClick() {
+        ExitDialog.SetActive(false);
+        TurnOff();
     }
 
     #region DEBUG BUTTONS

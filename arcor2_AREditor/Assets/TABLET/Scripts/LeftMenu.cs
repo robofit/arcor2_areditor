@@ -61,12 +61,9 @@ public abstract class LeftMenu : MonoBehaviour {
             RobotSteppingButton.SetDescription(ROBOT_STEPPING_MENU_BTN_LABEL);
         if (RobotSelectorButton != null)
             RobotSelectorButton.SetDescription(ROBOT_SELECTOR_MENU_BTN_LABEL);
-        if (ModelSteppingButton != null) {
-            Debug.Log("button present");
+        if (ModelSteppingButton != null) 
             ModelSteppingButton.SetDescription(MODEL_STEPPING_MENU_BTN_LABEL);
-        } else {
-            Debug.Log("button missin");
-        }
+        
             
         ModelSteppingMenu.Instance.gameObject.SetActive(false);
      
@@ -194,7 +191,8 @@ public abstract class LeftMenu : MonoBehaviour {
                     SceneManager.Instance.SceneStarted ? $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         } else {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
-            ModelSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+            
+            ModelSteppingButton?.SetInteractivity(SceneManager.Instance.SceneStarted, $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         }
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
@@ -390,17 +388,26 @@ public abstract class LeftMenu : MonoBehaviour {
         }
 
         if (ModelSteppingMenu.Instance.isActiveAndEnabled) {
-            ModelSteppingMenu.Instance.gameObject.SetActive(false);
+            //await ModelSteppingMenu.Instance.TurnOff();
+            ModelSteppingMenu.Instance.ExitDialogShow();
+            /*ModelSteppingMenu.Instance.gameObject.SetActive(false);
             SelectorMenu.Instance.gameObject.SetActive(true);
-            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
+            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);*/
         } else {
-            
             await RobotSteppingMenu.Instance.Hide();
+            await ModelSteppingMenu.Instance.TurnOn();
             ModelSteppingMenu.Instance.gameObject.SetActive(true);
             //ModelSteppingMenu.Instance.Show();
             SelectorMenu.Instance.gameObject.SetActive(false);
             
         }
+        
+    }
+
+    public void ModelSteppingMenuClosed() {
+        ModelSteppingMenu.Instance.gameObject.SetActive(false);
+        SelectorMenu.Instance.gameObject.SetActive(true);
+        SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
         
     }
 
