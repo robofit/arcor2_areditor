@@ -217,36 +217,27 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             dummy.transform.rotation = pointInstance.transform.rotation;
 
             if (selection == Selection.ee) {
-                targetPosition = originalPointPosition + difference * DragMultiplier;
-                
+                dummy.transform.Translate(difference * DragMultiplier);
 
             } else if (selection == Selection.x) {
-                targetPosition.x = originalPointPosition.x + difference.x * DragMultiplier;
                 dummy.transform.Translate(difference.x * DragMultiplier, 0f, 0f);
 
             } else if (selection == Selection.y) {
-                targetPosition.z = originalPointPosition.z + difference.z * DragMultiplier;
                 dummy.transform.Translate(0f, 0f, difference.z * DragMultiplier);
 
             } else if (selection == Selection.z) {
-                targetPosition.y = originalPointPosition.y + difference.y * DragMultiplier;
                 dummy.transform.Translate(0f, difference.y * DragMultiplier, 0f);
 
             } else if (selection == Selection.XY) {
-                targetPosition.y = originalPointPosition.y + difference.y * DragMultiplier;
-                targetPosition.x = originalPointPosition.x + difference.x * DragMultiplier;
+                dummy.transform.Translate(difference.x * DragMultiplier, difference.y * DragMultiplier, 0f);
 
             } else if (selection == Selection.XZ) {
-                targetPosition.x = originalPointPosition.x + difference.x * DragMultiplier;
-                targetPosition.z = originalPointPosition.z + difference.z * DragMultiplier;
+                dummy.transform.Translate(difference.x * DragMultiplier, 0f, difference.z * DragMultiplier);
 
             } else if (selection == Selection.YZ) {
-                targetPosition.z = originalPointPosition.z + difference.z * DragMultiplier;
-                targetPosition.y = originalPointPosition.y + difference.y * DragMultiplier;
+                dummy.transform.Translate(0f, difference.y * DragMultiplier, difference.z * DragMultiplier);
 
             }
-
-            //pointInstance.transform.position = targetPosition;
 
             pointInstance.transform.position = dummy.transform.position;
 
