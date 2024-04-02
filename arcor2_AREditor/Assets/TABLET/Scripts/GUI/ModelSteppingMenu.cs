@@ -199,26 +199,22 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             Vector3 rayPoint = ray.GetPoint(pointDistance);
 
             dummy.transform.position = rayPoint;
-            dummy.transform.RotateAround(rayHitPosition, Vector3.up, -pointInstance.transform.rotation.eulerAngles.y);
             rayPoint = dummy.transform.position;
 
 
             Vector3 difference = rayPoint - rayHitPosition;
 
             Debug.Log("angles: " + pointInstance.transform.rotation.eulerAngles.y);
-            //difference = Quaternion.AngleAxis(pointInstance.transform.rotation.eulerAngles.y, Vector3.up) * difference;
-            //difference = pointInstance.transform.InverseTransformVector(difference);
-            difference = pointInstance.transform.TransformDirection(difference);
+            difference = pointInstance.transform.InverseTransformVector(difference);
 
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(1, rayHitPosition);
+            //Debug: draw difference vector
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(1, rayHitPosition);
 
             Vector3 targetPosition = originalPointPosition;
 
             dummy.transform.position = originalPointPosition;
             dummy.transform.rotation = pointInstance.transform.rotation;
-
-            targetPosition = pointInstance.transform.InverseTransformPoint(targetPosition);
 
             if (selection == Selection.ee) {
                 targetPosition = originalPointPosition + difference * DragMultiplier;
@@ -230,10 +226,12 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
             } else if (selection == Selection.y) {
                 targetPosition.z = originalPointPosition.z + difference.z * DragMultiplier;
-                
+                dummy.transform.Translate(0f, 0f, difference.z * DragMultiplier);
+
             } else if (selection == Selection.z) {
                 targetPosition.y = originalPointPosition.y + difference.y * DragMultiplier;
-                
+                dummy.transform.Translate(0f, difference.y * DragMultiplier, 0f);
+
             } else if (selection == Selection.XY) {
                 targetPosition.y = originalPointPosition.y + difference.y * DragMultiplier;
                 targetPosition.x = originalPointPosition.x + difference.x * DragMultiplier;
