@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -106,21 +107,33 @@ public class GizmoVariant : MonoBehaviour
         ClippingPlane.GetComponent<ClippingPlane>().Materials.Remove(material);
     }
 
-    public void FlipX() {
+    public void FlipX(bool flip) {
         Vector3 scale = gameObject.transform.localScale;
-        scale.x *= -1;
+        if (flip) {
+            scale.x = -Math.Abs(scale.x);
+        } else {
+            scale.x = Math.Abs(scale.x);
+        }
         gameObject.transform.localScale = scale;
     }
 
-    public void FlipY() {
+    public void FlipY(bool flip) {
         Vector3 scale = gameObject.transform.localScale;
-        scale.y *= -1;
+        if (flip) {
+            scale.y = -Math.Abs(scale.y);
+        } else {
+            scale.y = Math.Abs(scale.y);
+        }
         gameObject.transform.localScale = scale;
     }
 
-    public void FlipZ() {
+    public void FlipZ(bool flip) {
         Vector3 scale = gameObject.transform.localScale;
-        scale.z *= -1;
+        if (flip) {
+            scale.z = -Math.Abs(scale.z);
+        } else {
+            scale.z = Math.Abs(scale.z);
+        }
         gameObject.transform.localScale = scale;
     }
 

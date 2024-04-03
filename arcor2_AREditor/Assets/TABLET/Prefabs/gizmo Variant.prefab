@@ -214,8 +214,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Enabled: 1
   SetOutlineSize: 0
-  OutlineSize: 1
-  OutlineHoverSize: 1
+  OutlineSize: 0.5
+  OutlineHoverSize: 0.5
   OutlineShaderType: 0
   OutlineClickFirstPass: {fileID: 0}
   OutlineClickSecondPass: {fileID: 0}
@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef7bab2be847c6a4e96296d074f2a76d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mat: {fileID: 2100000, guid: faeb6ed6b9678eb4c826b313ac0e8dfd, type: 2}
+  Materials: []
   dir: 0
 --- !u!1 &6576584784451953700
 GameObject:
@@ -721,6 +721,7 @@ MonoBehaviour:
   YCone: {fileID: 997283544617459534}
   ZCone: {fileID: 3073153874693800457}
   ClippingPlane: {fileID: 6353117228916884264}
+  Flipped: 0
 --- !u!1 &555815780548419829 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 213767856491483027, guid: 8e1e9484b46fc154dbf161f926d6f9d1,
