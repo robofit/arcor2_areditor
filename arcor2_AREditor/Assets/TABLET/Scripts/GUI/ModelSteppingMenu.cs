@@ -25,6 +25,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject ButtonHintText;
     public GameObject ExitDialog;
     public GameObject ConfirmPoseDialog;
+    public GameObject CoordsToggle;
     public GameObject LockButton;
     public GameObject ImpossiblePoseNotification;
     public UnityEngine.UI.Slider SensitivitySlider;
@@ -154,6 +155,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     public async Task TurnOff(bool reset = false) {
+        CoordsToggle.GetComponent<TwoStatesToggleNew>().SwitchToLeft();
+        LockButton.SetActive(false);
+
         pointPosition = pointInstance.transform.position;
 
         SceneManager.Instance?.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
