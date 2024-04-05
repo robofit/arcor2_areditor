@@ -6,7 +6,7 @@ Shader "ClippingColorChange" {
         _Metallic ("Metalness", Range(0, 1)) = 0
         [HDR]_Emission ("Emission", color) = (0,0,0)
 
-        _AlternateColor ("Alternate Color", Color) = (1, 0, 0, 0) // New property for the alternate color
+        _AlternateColor ("Alternate Color", Color) = (0.6, 0.29, 0.29, 0) // New property for the alternate color
     }
 
     SubShader {

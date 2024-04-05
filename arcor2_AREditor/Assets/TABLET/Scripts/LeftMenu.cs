@@ -388,8 +388,10 @@ public abstract class LeftMenu : MonoBehaviour {
         }
 
         if (ModelSteppingMenu.Instance.isActiveAndEnabled) {
-            //await ModelSteppingMenu.Instance.TurnOff();
-            ModelSteppingMenu.Instance.ExitDialogShow();
+            await ModelSteppingMenu.Instance.TurnOff();
+            ModelSteppingMenu.Instance.gameObject.SetActive(false);
+            SelectorMenu.Instance.gameObject.SetActive(true);
+            //ModelSteppingMenu.Instance.ExitDialogShow();
             /*ModelSteppingMenu.Instance.gameObject.SetActive(false);
             SelectorMenu.Instance.gameObject.SetActive(true);
             SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);*/

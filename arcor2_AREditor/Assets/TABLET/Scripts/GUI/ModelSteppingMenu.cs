@@ -24,6 +24,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject SelectionText;
     public GameObject ButtonHintText;
     public GameObject ExitDialog;
+    public GameObject ConfirmPoseDialog;
+    public GameObject LockButton;
     public GameObject ImpossiblePoseNotification;
     public UnityEngine.UI.Slider SensitivitySlider;
     public UnityEngine.UI.Slider UpDownSensitivitySlider;
@@ -50,6 +52,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private Vector3 fallbackEEPosition;
     private Vector3 originalPointPosition;
     private Vector3 rayHitPosition;
+
+    private Vector3 pointPosition;
 
     private Vector3 forwardBackwardAdjust = Vector3.zero;
 
@@ -78,6 +82,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private void Start() {
         SensitivitySlider.onValueChanged.AddListener(UpdateSensitivity);
         UpDownSensitivitySlider.onValueChanged.AddListener(UpdateUpDownSensitivity);
+        LockButton.GetComponent<LockButton>().OnUnlockedEvent += OnUnlockUserSystem;
+        LockButton.GetComponent<LockButton>().OnLockedEvent += OnLockUserSystem;
     }
 
     public async Task TurnOn() {
@@ -99,11 +105,22 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         endEffector = await robot.GetEE(EEID, armID);
 
-        Vector3 originalPos = endEffector.transform.position;
-
         fallbackEEPosition = endEffector.transform.position;
 
-        pointInstance = Instantiate(PointPrefab, originalPos, Quaternion.identity);
+        if (endEffector.transform.position == pointPosition) {
+            ConfirmPoseDialog.SetActive(false);
+        } else {
+            ConfirmPoseDialog.SetActive(true);
+        }
+
+        if (pointPosition != Vector3.zero) {
+            pointInstance = Instantiate(PointPrefab, pointPosition, Quaternion.identity);
+            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+            
+        } else {
+            pointInstance = Instantiate(PointPrefab, endEffector.transform.position, Quaternion.identity);
+        }
+        
 
         draggablePoint = pointInstance.GetComponent<DraggablePoint>();
 
@@ -137,16 +154,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     public async Task TurnOff(bool reset = false) {
+        pointPosition = pointInstance.transform.position;
+
         SceneManager.Instance?.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
 
         Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
 
         robot.GetComponent<OutlineOnClick>().Enabled = true;
 
-        endEffector.transform.position = pointInstance.transform.position;
+        //endEffector.transform.position = pointInstance.transform.position;
         await robot.EnableVisualisationOfEE();
 
-
+        /*
         if (reset) {
             MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(fallbackEEPosition));
         }
@@ -162,6 +181,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 orientation: orientation);
 
         }
+        */
 
         Destroy(gizmo);
         Destroy(pointInstance);
@@ -170,16 +190,24 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
 
-        LeftMenu.GetComponent<LeftMenu>().ModelSteppingMenuClosed();
+        //LeftMenu.GetComponent<LeftMenu>().ModelSteppingMenuClosed();
         
     }
 
     private void Update() {
+        if (cameraCoord && !isMoving) {
+            Vector3 targetPosition = new Vector3(
+                Camera.main.transform.position.x,
+                pointInstance.transform.position.y,
+                Camera.main.transform.position.z);
+            pointInstance.transform.LookAt(targetPosition);
+        }
+
         //gizmo flipping
         Vector3 localCamPos = Camera.main.transform.position;
         localCamPos = pointInstance.transform.InverseTransformPoint(localCamPos);
 
-        if (!isMoving) {
+        if (!isMoving && !cameraCoord) {
             if (localCamPos.z < 0) {
                 gizmo.GetComponent<GizmoVariant>().FlipX(true);
             } else {
@@ -338,13 +366,12 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
             OnMove();
         } else {
-           
             OnStopMove();
-
         }
     }
 
     private void OnMove() {
+        ConfirmPoseDialog.gameObject.SetActive(true);
         forwardBackwardAdjust = Vector3.zero;
         LeftMenu.SetActive(false);
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
@@ -383,7 +410,6 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
         gizmo.GetComponent<GizmoVariant>().UnhighlightAll();
 
-
         StopAllCoroutines();
         ShowAllAxisAndPlanes();
 
@@ -411,26 +437,20 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Axis";
             if (value == Selection.x) {
                 gizmo.HiglightAxis(Gizmo.Axis.X);
-                //gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
             } else if (value == Selection.y) {
                 gizmo.HiglightAxis(Gizmo.Axis.Y);
-                //gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 90f, 90f);
             } else if (value == Selection.z) {
                 gizmo.HiglightAxis(Gizmo.Axis.Z);
-                //gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             }
 
         } else if (value == Selection.XY || value == Selection.XZ || value == Selection.YZ) {
             SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Plane";
             if (value == Selection.XY) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXY();
-                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 90f + pointInstance.transform.rotation.eulerAngles.y, 90f);
             } else if (value == Selection.XZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightXZ();
-                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(0f, 0f, 0f); 
             } else if (value == Selection.YZ) {
                 gizmo.gameObject.GetComponent<GizmoVariant>().HighlightYZ();
-                gizmo.gameObject.GetComponent<GizmoVariant>().ClippingPlane.transform.rotation = Quaternion.Euler(90f, 90f + pointInstance.transform.rotation.eulerAngles.y, 0f);
             }
         } else if (value == Selection.ee) {
             SelectionText.GetComponent<TextMeshProUGUI>().text = "End-Effector";
@@ -516,6 +536,39 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private void StartCoroutines(Selection selected) {
         if (selected == Selection.ee) {
             HideAllAxisAndPlanes();
+            return;
+        }
+
+        if (selected == Selection.XZ) {
+            StartCoroutine(AxisScale(XAxis, ActiveAxisScale));
+            StartCoroutine(AxisScale(ZAxis, HiddenAxisScale));
+            StartCoroutine(AxisScale(YAxis, ActiveAxisScale));
+
+            StartCoroutine(AxisScale(XYPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(XZPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(YZPlaneMesh, HiddenPlaneScale));
+            return;
+        }
+
+        if (selected == Selection.YZ) {
+            StartCoroutine(AxisScale(XAxis, HiddenAxisScale));
+            StartCoroutine(AxisScale(ZAxis, ActiveAxisScale));
+            StartCoroutine(AxisScale(YAxis, ActiveAxisScale));
+
+            StartCoroutine(AxisScale(XYPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(XZPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(YZPlaneMesh, HiddenPlaneScale));
+            return;
+        }
+
+        if (selected == Selection.XY) {
+            StartCoroutine(AxisScale(XAxis, ActiveAxisScale));
+            StartCoroutine(AxisScale(ZAxis, ActiveAxisScale));
+            StartCoroutine(AxisScale(YAxis, HiddenAxisScale));
+
+            StartCoroutine(AxisScale(XYPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(XZPlaneMesh, HiddenPlaneScale));
+            StartCoroutine(AxisScale(YZPlaneMesh, HiddenPlaneScale));
             return;
         }
 
@@ -643,6 +696,26 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     #endregion MAIN BUTTONS
 
+    #region COORD SYSTEM BUTTONS
+    public void OnWorldSystemButtonClick() {
+        cameraCoord = false;
+        pointInstance.transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    public void OnUserSystemButtonClick() {
+        cameraCoord = true;
+    }
+
+    public void OnLockUserSystem() {
+        cameraCoord = false;
+    }
+
+    public void OnUnlockUserSystem() {
+        cameraCoord = true;
+    }
+
+    #endregion COORD SYSTEM BUTTONS
+
     #region EXIT DIALOG
     public void ExitDialogShow() {
         ExitDialog.SetActive(true);
@@ -663,6 +736,32 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     #endregion EXIT DIALOG
+
+    #region CONFIRM DIALOG
+    public async void OnConfirmButtonClick() {
+        Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position)));
+        Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
+
+        await WebsocketManager.Instance.MoveToPose(
+            robotId: SceneManager.Instance.SelectedRobot.GetId(),
+            endEffectorId: endEffector.EEId,
+            speed: (decimal) 0.5,
+            position: position,
+            orientation: orientation);
+
+        endEffector.transform.position = pointInstance.transform.position;
+
+        ConfirmPoseDialog.SetActive(false);
+    }
+
+    public void OnRevertButtonClick() {
+        pointInstance.transform.position = endEffector.transform.position;
+        MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+
+        ConfirmPoseDialog.SetActive(false);
+    }
+
+    #endregion CONFIRM DIALOG
 
     #region DEBUG BUTTONS
     public void OnFirstButtonClick() {
