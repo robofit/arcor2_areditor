@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
 using TMPro;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
@@ -25,6 +26,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     public GameObject ButtonHintText;
     public GameObject ExitDialog;
     public GameObject ConfirmPoseDialog;
+    public GameObject ConfirmPoseDialogDisable;
     public GameObject CoordsToggle;
     public GameObject LockButton;
     public GameObject ImpossiblePoseNotification;
@@ -71,6 +73,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         YZ
     }
 
+    private enum MaterialEnabled {
+        standard,
+        clipping,
+        invalid
+    }
+
+    private MaterialEnabled materialEnabled = MaterialEnabled.standard;
+
     private Selection selection = Selection.none;
 
     private bool isMoving = false;
@@ -108,7 +118,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         fallbackEEPosition = endEffector.transform.position;
 
-        if (endEffector.transform.position == pointPosition) {
+        if (endEffector.transform.position == pointPosition || pointPosition == Vector3.zero) {
             ConfirmPoseDialog.SetActive(false);
         } else {
             ConfirmPoseDialog.SetActive(true);
@@ -154,6 +164,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         //EnableClippingMaterial();
     }
 
+    
+
     public async Task TurnOff(bool reset = false) {
         CoordsToggle.GetComponent<TwoStatesToggleNew>().SwitchToLeft();
         LockButton.SetActive(false);
@@ -166,39 +178,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         robot.GetComponent<OutlineOnClick>().Enabled = true;
 
-        //endEffector.transform.position = pointInstance.transform.position;
         await robot.EnableVisualisationOfEE();
-
-        /*
-        if (reset) {
-            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(fallbackEEPosition));
-        }
-        else {
-            Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position)));
-            Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
-
-            await WebsocketManager.Instance.MoveToPose(
-                robotId: SceneManager.Instance.SelectedRobot.GetId(),
-                endEffectorId: endEffector.EEId,
-                speed: (decimal) 0.5,
-                position: position,
-                orientation: orientation);
-
-        }
-        */
 
         Destroy(gizmo);
         Destroy(pointInstance);
         Destroy(dummy);
 
         WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
-        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
-
-        //LeftMenu.GetComponent<LeftMenu>().ModelSteppingMenuClosed();
-        
+        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;        
     }
 
     private void Update() {
+        //user-space gizmo rotation
         if (cameraCoord && !isMoving) {
             Vector3 targetPosition = new Vector3(
                 Camera.main.transform.position.x,
@@ -260,9 +251,24 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
             Vector3 rayPoint = ray.GetPoint(pointDistance);
 
-            dummy.transform.position = rayPoint;
-            rayPoint = dummy.transform.position;
+            //Forward/Backward adjust
+            if (moveForwardHeld) {
+                Vector3 dir = pointInstance.transform.position - Camera.main.transform.position;
+                dir = Vector3.Normalize(dir);
+                forwardBackwardAdjust.x += dir.x * UpDownMultiplier;
+                forwardBackwardAdjust.z += dir.z * UpDownMultiplier;
+            }
+            if (moveBackwardHeld) {
+                Vector3 dir = Camera.main.transform.position - pointInstance.transform.position;
+                dir = Vector3.Normalize(dir);
+                forwardBackwardAdjust.x += dir.x * UpDownMultiplier;
+                forwardBackwardAdjust.z += dir.z * UpDownMultiplier;
+            }
+            rayPoint.x += forwardBackwardAdjust.x;
+            rayPoint.z += forwardBackwardAdjust.z;
 
+            dummy.transform.position = rayPoint;
+            //rayPoint = dummy.transform.position;
 
             Vector3 difference = rayPoint - rayHitPosition;
 
@@ -295,8 +301,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
             } else if (selection == Selection.YZ) {
                 dummy.transform.Translate(0f, difference.y * DragMultiplier, difference.z * DragMultiplier);
-
             }
+
+            
 
             pointInstance.transform.position = dummy.transform.position;
 
@@ -375,7 +382,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void OnMove() {
-        ConfirmPoseDialog.gameObject.SetActive(true);
+        ConfirmPoseDialog.SetActive(true);
+        ConfirmPoseDialogDisable.SetActive(true);
         forwardBackwardAdjust = Vector3.zero;
         LeftMenu.SetActive(false);
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
@@ -410,6 +418,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         gizmo.gameObject.GetComponent<GizmoVariant>().HideZCone();
     }
     private void OnStopMove() {
+        if (!ImpossiblePoseNotification.activeSelf) {
+            ConfirmPoseDialogDisable.SetActive(false);
+        }
         LeftMenu.SetActive(true);
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
         gizmo.GetComponent<GizmoVariant>().UnhighlightAll();
@@ -423,7 +434,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         DistanceControl.SetActive(false);
 
-        DisableClippingMaterial();
+        EnableStandardMaterial();
     }
 
     private void Select(Selection value) {
@@ -438,7 +449,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         selection = value;
 
         if (value == Selection.x || value == Selection.y || value == Selection.z) {
-            SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString() + " Axis";
+            SelectionText.GetComponent<TextMeshProUGUI>().text = value.ToString().ToUpper() + " Axis";
             if (value == Selection.x) {
                 gizmo.HiglightAxis(Gizmo.Axis.X);
             } else if (value == Selection.y) {
@@ -476,7 +487,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 //Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
             }
         } catch (ItemNotFoundException ex) {
-            ImpossiblePoseNotification.SetActive(true);
+            ImpossiblePoseNotify(true);
             //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
             return;
@@ -487,11 +498,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             else
                 //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
-            ImpossiblePoseNotification.SetActive(true);
+            ImpossiblePoseNotify(true);
             return;
         }
 
-        ImpossiblePoseNotification.SetActive(false);
+        ImpossiblePoseNotify(false);
 
         foreach (IO.Swagger.Model.Joint joint in modelJoints) {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
@@ -534,6 +545,39 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 throw new NotImplementedException();
 
         }
+    }
+
+    private void ImpossiblePoseNotify(bool isImpossible) {
+        ImpossiblePoseNotification.SetActive(isImpossible);
+
+        if (isImpossible) {
+            if (materialEnabled == MaterialEnabled.invalid) {
+                return;
+            }
+            EnableInvalidMaterial();
+            /*robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetVector("_OutlineColor", (Vector4) Color.red);
+            robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetFloat("_OutlineWidth", 0.003f);
+            robot.GetComponent<OutlineOnClick>().Highlight();*/
+        } else {
+            if (isMoving) {
+                if (selection == Selection.XZ || selection == Selection.XY || selection == Selection.YZ) {
+                    if (materialEnabled == MaterialEnabled.clipping) {
+                        return;
+                    }
+
+                    EnableClippingMaterial();
+                } else {
+                    if (materialEnabled == MaterialEnabled.standard) {
+                        return;
+                    }
+                    EnableStandardMaterial();
+                }
+            }
+            /*robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetVector("_OutlineColor", (Vector4) Color.yellow);
+            robot.GetComponent<OutlineOnClick>().UnHighlight();*/
+        }
+
+
     }
 
     #region SCALING COROUTINES
@@ -635,7 +679,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     #endregion SENSITIVITY SLIDERS
 
     #region CLIPPING MATERIAL
-    private void DisableClippingMaterial() {
+    private void EnableStandardMaterial() {
+        materialEnabled = MaterialEnabled.standard;
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("Standard");
@@ -648,6 +693,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void EnableClippingMaterial() {
+        materialEnabled = MaterialEnabled.clipping;
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("ClippingColorChange");
@@ -657,6 +703,17 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 gizmo.GetComponent<GizmoVariant>().AddMaterial(i.material);
             }
 
+        }
+    }
+
+    private void EnableInvalidMaterial() {
+        materialEnabled = MaterialEnabled.invalid;
+        foreach (Renderer i in robot.robotRenderers) {
+            if (i.materials.Length == 3) {
+                i.materials[1].shader = Shader.Find("InvalidPose");
+            } else {
+                i.material.shader = Shader.Find("InvalidPose");
+            }
         }
     }
 

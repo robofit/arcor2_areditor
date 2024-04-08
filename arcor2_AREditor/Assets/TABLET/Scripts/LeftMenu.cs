@@ -405,63 +405,7 @@ public abstract class LeftMenu : MonoBehaviour {
         }
         
     }
-
-    public void ModelSteppingMenuClosed() {
-        ModelSteppingMenu.Instance.gameObject.SetActive(false);
-        SelectorMenu.Instance.gameObject.SetActive(true);
-        SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
-        
-    }
-
-    /*
-    public async void AddRobotModel() {
-        ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
-        ActionObjectMetadata metadata = robot.ActionObjectMetadata;
-        ActionObjectMetadata actionObjectMetadata = robot.ActionObjectMetadata;
-
-        string newActionObjectName = "model";
-        GameObject CanvasRoot = new GameObject();
-        GameObject DynamicContent = new GameObject();
-        VerticalLayoutGroup DynamicContentLayout = gameObject.AddComponent<VerticalLayoutGroup>();
-        List<IParameter> actionParameters = new List<IParameter>();
-        Dictionary<string, Base.ParameterMetadata> parametersMetadata = new Dictionary<string, Base.ParameterMetadata>();
-        parametersMetadata = new Dictionary<string, ParameterMetadata>();
-        foreach (IO.Swagger.Model.ParameterMeta meta in metadata.Settings) {
-            parametersMetadata.Add(meta.Name, new ParameterMetadata(meta));
-        }
-
-
-        actionParameters = Base.Parameter.InitParameters(parametersMetadata.Values.ToList(), DynamicContent, null, DynamicContentLayout, CanvasRoot, false, false, null, null);
-
-        foreach (Transform t in DynamicContent.transform) {
-            if (t.gameObject.tag != "Persistent")
-                Destroy(t.gameObject);
-        }
-
-        if (Base.Parameter.CheckIfAllValuesValid(actionParameters)) {
-            List<IO.Swagger.Model.Parameter> parameters = new List<IO.Swagger.Model.Parameter>();
-            foreach (IParameter actionParameter in actionParameters) {
-                if (!parametersMetadata.TryGetValue(actionParameter.GetName(), out Base.ParameterMetadata actionParameterMetadata)) {
-                    Base.Notifications.Instance.ShowNotification("Failed to create new action object", "Failed to get metadata for action object parameter: " + actionParameter.GetName());
-                    return;
-                }
-                ActionParameter ap = new ActionParameter(name: actionParameter.GetName(), value: JsonConvert.SerializeObject(actionParameter.GetValue()), type: actionParameterMetadata.Type);
-                parameters.Add(DataHelper.ActionParameterToParameter(ap));
-            }
-            try {
-                IO.Swagger.Model.Pose pose = robot.GetPose();
-                SceneManager.Instance.SelectCreatedActionObject = newActionObjectName;
-
-                await Base.WebsocketManager.Instance.AddObjectToScene(newActionObjectName, actionObjectMetadata.Type, pose, parameters);
-                
-            } catch (Base.RequestFailedException e) {
-                Base.Notifications.Instance.ShowNotification("Failed to add action", e.Message);
-            }
-        }
-    }
-    */
     
-
     public async void RobotSteppingButtonClick() {
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
