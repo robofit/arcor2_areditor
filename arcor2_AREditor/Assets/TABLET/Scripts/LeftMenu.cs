@@ -43,7 +43,7 @@ public abstract class LeftMenu : MonoBehaviour {
     protected const string COPY_LABEL = "Duplicate object";
 
     protected virtual void Start() {
-        LockingEventsCache.Instance.OnObjectLockingEvent += OnObjectLockingEvent;
+        LockingEventsCache.Instance.OnAfterObjectLockingEvent += OnAfterObjectLockingEvent;
         SceneManager.Instance.OnRobotSelected += OnRobotSelected;
         if (MoveButton != null && MoveButton2 != null) {
             MoveButton.SetDescription(MOVE_BTN_LABEL);
@@ -74,8 +74,9 @@ public abstract class LeftMenu : MonoBehaviour {
         MainMenu.Instance.AddListener(() => OnGameStateChanged(this, null));
     }
 
-    private void OnObjectLockingEvent(object sender, ObjectLockingEventArgs args) {
+    private void OnAfterObjectLockingEvent(object sender, StringEventArgs args) {
         UpdateBuildAndSaveBtns();
+        UpdateBtns();
     }
 
     private void OnRobotSelected(object sender, EventArgs e) {
@@ -407,28 +408,46 @@ public abstract class LeftMenu : MonoBehaviour {
     }
     
     public async void RobotSteppingButtonClick() {
+        // Scene offline
         if (!SceneManager.Instance.SceneStarted) {
             Notifications.Instance.ShowNotification("Failed to open robot manipulation menu", "Scene offline");
             return;
-        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
-            OpenRobotSelector(RobotSteppingButtonClick);
-            return;
+        }
+        // Scene online
+        else {
+            // If the stepping button is clicked again when the stepping menu was aleready opened, close it
+            if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
+                RobotSteppingButton.GetComponent<Image>().enabled = false;
+                SelectorMenu.Instance.gameObject.SetActive(true);
+                RobotSteppingMenu.Instance.Hide();
+            } else {
+
+                // if any robot is targeted by the cursor, automatically select its end effector
+                InteractiveObject selectedObject = SelectorMenu.Instance.GetSelectedObject();
+                if (selectedObject != null) {
+                    if (selectedObject.GetType() == typeof(RobotActionObject)) {
+                        RobotActionObject selectedRobot = (RobotActionObject) selectedObject;
+                        List<RobotEE> eeList = await selectedRobot.GetAllEE();
+                        if (eeList?.Count > 0) {
+                            SceneManager.Instance.SelectRobotAndEE(eeList[0]);
+                        }
+                    }
+                }
+
+                // if not looking at any robot nor any robot is selected, open selector menu and let the user select the robot manually
+                if (!SceneManager.Instance.IsRobotAndEESelected()) {
+                    OpenRobotSelector(RobotSteppingButtonClick);
+                    return;
+                } else { // open menu
+                    ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
+                    RobotSteppingButton.GetComponent<Image>().enabled = true;
+                    SelectorMenu.Instance.gameObject.SetActive(false);
+                    RobotSteppingMenu.Instance.Show();
+                }
+            }
         }
         if (!SelectorMenu.Instance.gameObject.activeSelf && !RobotSteppingButton.GetComponent<Image>().enabled) { //other menu/dialog opened
             SetActiveSubmenu(CurrentSubmenuOpened); //close all other opened menus/dialogs and takes care of red background of buttons
-        }
-
-        if (RobotSteppingButton.GetComponent<Image>().enabled) { //hide menu
-            RobotSteppingButton.GetComponent<Image>().enabled = false;
-            SelectorMenu.Instance.gameObject.SetActive(true);
-            await RobotSteppingMenu.Instance.Hide();
-        } else { //open menu
-            ActionObject robot = SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId());
-            RobotSteppingButton.GetComponent<Image>().enabled = true;
-            SelectorMenu.Instance.gameObject.SetActive(false);
-            ModelSteppingMenu.Instance.gameObject.SetActive(false);
-            RobotSteppingMenu.Instance.Show();
-
         }
     }
 

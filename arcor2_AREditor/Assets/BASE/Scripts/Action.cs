@@ -241,6 +241,11 @@ namespace Base
 
         private async Task CreateNewConnection()
         {
+
+            if (!await WriteLock(false)) {
+                return;
+            }
+
             ConnectionManagerArcoro.Instance.CreateConnectionToPointer(Output.gameObject);
 
             await GameManager.Instance.RequestObject(GameManager.EditorStateEnum.SelectingAction, GetOtherAction,
@@ -325,10 +330,6 @@ namespace Base
                     GameManager.Instance.ShowLoadingScreen("Removing old connection...");
                     await WebsocketManager.Instance.RemoveLogicItem(logicItem.Data.Id);
                     GameManager.Instance.HideLoadingScreen();
-                    if (!await otherAction.WriteLock(false))
-                    {
-                        return;
-                    }
                     AddConnection();
 
                 }
