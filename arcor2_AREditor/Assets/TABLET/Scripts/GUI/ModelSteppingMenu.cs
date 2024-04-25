@@ -15,6 +15,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private Gizmo gizmo;
     public GameObject GizmoPrefab;
+    public GameObject SceneOrigin;
 
     private GameObject pointInstance;
     private DraggablePoint draggablePoint;
@@ -22,12 +23,17 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     public GameObject DistanceControl;
     public GameObject LeftMenu;
+    public GameObject LeftMenuScene;
+    public GameObject LeftMenuProject;
+    public GameObject OnlineButton;
     public GameObject SelectionText;
     public GameObject ButtonHintText;
     public GameObject ExitDialog;
     public GameObject ConfirmPoseDialog;
-    public GameObject ConfirmPoseDialogDisable;
+    public GameObject ConfirmButtonDisable;
+    public GameObject RevertButtonDisable;
     public GameObject CoordsToggle;
+    public GameObject CoordsToggleDisable;
     public GameObject LockButton;
     public GameObject ImpossiblePoseNotification;
     public UnityEngine.UI.Slider SensitivitySlider;
@@ -50,17 +56,24 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     private Vector3 HiddenAxisScale;
 
     private float pointDistance = 0.5f;
-    private float DragMultiplier = 0.3f * 0.03f;
-    private float UpDownMultiplier = 0.02f;
+    private float DragMultiplier = 1.0f * 0.03f;
+    private float ForwardBackwardMultiplier = 0.003f;
     private Vector3 fallbackEEPosition;
     private Vector3 originalPointPosition;
-    private Vector3 rayHitPosition;
+    private Vector3 originalRayPoint;
 
     private Vector3 pointPosition;
+
+    private Dictionary<string, Vector3> pointPositions = new Dictionary<string, Vector3>();
+
+    private Vector3 lastValidPosition;
 
     private Vector3 forwardBackwardAdjust = Vector3.zero;
 
     private GameObject dummy;
+    private GameObject lastValidTransform;
+
+    private bool transformSet = false;
 
     private enum Selection {
         none,
@@ -73,13 +86,13 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         YZ
     }
 
-    private enum MaterialEnabled {
+    private enum ShaderEnabled {
         standard,
         clipping,
         invalid
     }
 
-    private MaterialEnabled materialEnabled = MaterialEnabled.standard;
+    private ShaderEnabled shaderEnabled = ShaderEnabled.standard;
 
     private Selection selection = Selection.none;
 
@@ -98,6 +111,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     public async Task TurnOn() {
+        if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.SceneEditor) {
+            LeftMenu = LeftMenuScene;
+        } else if (GameManager.Instance.GetGameState() == GameManager.GameStateEnum.ProjectEditor) {
+            LeftMenu = LeftMenuProject;
+        }
         robot = (RobotActionObject) SceneManager.Instance.GetRobot(SceneManager.Instance.SelectedRobot.GetId());
         robot.SetVisibility(1.0f);
         robot.GetComponent<OutlineOnClick>().UnHighlight();
@@ -118,24 +136,36 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         fallbackEEPosition = endEffector.transform.position;
 
+        if (pointPositions.TryGetValue(robot.GetId(), out Vector3 outValue)) {
+            pointPosition = outValue;
+        } else {
+            pointPosition = Vector3.zero;
+        }
+
         if (endEffector.transform.position == pointPosition || pointPosition == Vector3.zero) {
             ConfirmPoseDialog.SetActive(false);
         } else {
             ConfirmPoseDialog.SetActive(true);
         }
 
+        lastValidTransform = new GameObject();
+
         if (pointPosition != Vector3.zero) {
-            pointInstance = Instantiate(PointPrefab, pointPosition, Quaternion.identity);
-            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
-            
+            pointInstance = Instantiate(PointPrefab, pointPosition, Quaternion.identity, SceneOrigin.transform);
+            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), lastValidTransform.transform);
+
         } else {
-            pointInstance = Instantiate(PointPrefab, endEffector.transform.position, Quaternion.identity);
+            pointInstance = Instantiate(PointPrefab, endEffector.transform.position, Quaternion.identity, SceneOrigin.transform);
         }
+
         
+        lastValidTransform.transform.position = pointInstance.transform.position;
+        transformSet = true;
 
         draggablePoint = pointInstance.GetComponent<DraggablePoint>();
 
         gizmo = Instantiate(GizmoPrefab).GetComponent<Gizmo>();
+        gizmo.transform.rotation = Quaternion.identity;
         gizmo.transform.SetParent(pointInstance.transform);
         gizmo.transform.localPosition = Vector3.zero;
         Sight.Instance.SelectedGizmoAxis += OnSelectedGizmoAxis;
@@ -161,16 +191,22 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         HiddenAxisScale = XAxis.transform.localScale;
         HiddenAxisScale.z = 0.0f;
 
+        ImpossiblePoseNotify(false, true);
+
         //EnableClippingMaterial();
+
+        //draggablePoint.GetComponent<LineRenderer>().enabled = true;
     }
 
     
 
     public async Task TurnOff(bool reset = false) {
+        transformSet = false;
+
         CoordsToggle.GetComponent<TwoStatesToggleNew>().SwitchToLeft();
         LockButton.SetActive(false);
 
-        pointPosition = pointInstance.transform.position;
+        pointPositions[robot.GetId()] = lastValidTransform.transform.position;
 
         SceneManager.Instance?.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
 
@@ -183,6 +219,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         Destroy(gizmo);
         Destroy(pointInstance);
         Destroy(dummy);
+        Destroy(lastValidTransform);
 
         WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
         WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;        
@@ -190,6 +227,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     private void Update() {
         //user-space gizmo rotation
+        //https://discussions.unity.com/t/lookat-to-only-rotate-on-y-axis-how/10895/3
         if (cameraCoord && !isMoving) {
             Vector3 targetPosition = new Vector3(
                 Camera.main.transform.position.x,
@@ -203,13 +241,13 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         localCamPos = pointInstance.transform.InverseTransformPoint(localCamPos);
 
         if (!isMoving && !cameraCoord) {
-            if (localCamPos.z < 0) {
+            if (localCamPos.x > 0) {
                 gizmo.GetComponent<GizmoVariant>().FlipX(true);
             } else {
                 gizmo.GetComponent<GizmoVariant>().FlipX(false);
             }
 
-            if (localCamPos.x < 0) {
+            if (localCamPos.z < 0) {
                 gizmo.GetComponent<GizmoVariant>().FlipZ(true);
             } else {
                 gizmo.GetComponent<GizmoVariant>().FlipZ(false);
@@ -255,14 +293,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             if (moveForwardHeld) {
                 Vector3 dir = pointInstance.transform.position - Camera.main.transform.position;
                 dir = Vector3.Normalize(dir);
-                forwardBackwardAdjust.x += dir.x * UpDownMultiplier;
-                forwardBackwardAdjust.z += dir.z * UpDownMultiplier;
+                forwardBackwardAdjust.x += dir.x * ForwardBackwardMultiplier;
+                forwardBackwardAdjust.z += dir.z * ForwardBackwardMultiplier;
             }
             if (moveBackwardHeld) {
                 Vector3 dir = Camera.main.transform.position - pointInstance.transform.position;
                 dir = Vector3.Normalize(dir);
-                forwardBackwardAdjust.x += dir.x * UpDownMultiplier;
-                forwardBackwardAdjust.z += dir.z * UpDownMultiplier;
+                forwardBackwardAdjust.x += dir.x * ForwardBackwardMultiplier;
+                forwardBackwardAdjust.z += dir.z * ForwardBackwardMultiplier;
             }
             rayPoint.x += forwardBackwardAdjust.x;
             rayPoint.z += forwardBackwardAdjust.z;
@@ -270,7 +308,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             dummy.transform.position = rayPoint;
             //rayPoint = dummy.transform.position;
 
-            Vector3 difference = rayPoint - rayHitPosition;
+            Vector3 difference = rayPoint - originalRayPoint;
 
             difference = pointInstance.transform.InverseTransformVector(difference);
 
@@ -285,34 +323,37 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 dummy.transform.Translate(difference * DragMultiplier);
 
             } else if (selection == Selection.x) {
-                dummy.transform.Translate(difference.x * DragMultiplier, 0f, 0f);
+                dummy.transform.Translate(0f, 0f, difference.z * DragMultiplier);
 
             } else if (selection == Selection.y) {
-                dummy.transform.Translate(0f, 0f, difference.z * DragMultiplier);
+                dummy.transform.Translate(difference.x * DragMultiplier, 0f, 0f);
 
             } else if (selection == Selection.z) {
                 dummy.transform.Translate(0f, difference.y * DragMultiplier, 0f);
 
             } else if (selection == Selection.XY) {
-                dummy.transform.Translate(difference.x * DragMultiplier, difference.y * DragMultiplier, 0f);
+                dummy.transform.Translate(0f, difference.y * DragMultiplier, difference.z * DragMultiplier);
 
             } else if (selection == Selection.XZ) {
                 dummy.transform.Translate(difference.x * DragMultiplier, 0f, difference.z * DragMultiplier);
 
             } else if (selection == Selection.YZ) {
-                dummy.transform.Translate(0f, difference.y * DragMultiplier, difference.z * DragMultiplier);
+                dummy.transform.Translate(difference.x * DragMultiplier, difference.y * DragMultiplier, 0f);
             }
-
-            
 
             pointInstance.transform.position = dummy.transform.position;
 
             if (!isWaiting) {
                 isWaiting = true;
-                MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
-            }   
-            
-        } 
+                MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), dummy.transform);
+            }
+
+            draggablePoint.GetComponent<LineRenderer>().SetPosition(0, lastValidTransform.transform.position);
+            draggablePoint.GetComponent<LineRenderer>().SetPosition(1, pointInstance.transform.position);
+
+        } /*else if (!isMoving && transformSet) {
+            pointInstance.transform.position = lastValidTransform.transform.position;
+        }*/
             
     }
     private void FixedUpdate() {
@@ -321,7 +362,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
         if (hits.Length > 0) {
             foreach (RaycastHit hit in hits) {
-                if (hit.collider.gameObject.name == "DraggablePoint(Clone)") {
+                if (hit.collider.gameObject.name == "DraggablePoint(Clone)") { //stupid, fix
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
@@ -373,7 +414,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
         if (isMoving) {
             originalPointPosition = pointInstance.transform.position;
-            rayHitPosition = ray.GetPoint(pointDistance);
+            originalRayPoint = ray.GetPoint(pointDistance);
 
             OnMove();
         } else {
@@ -382,45 +423,51 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void OnMove() {
+        CoordsToggleDisable.SetActive(true);
         ConfirmPoseDialog.SetActive(true);
-        ConfirmPoseDialogDisable.SetActive(true);
+        ConfirmButtonDisable.SetActive(true);
+        RevertButtonDisable.SetActive(true);
         forwardBackwardAdjust = Vector3.zero;
         LeftMenu.SetActive(false);
+        OnlineButton.SetActive(false);
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "";
 
         StopAllCoroutines();
         StartCoroutines(selection);
 
-        if (selection == Selection.ee) {
-            //gizmo.gameObject.SetActive(false);
-            draggablePoint.GetComponent<LineRenderer>().enabled = true;
-            DistanceControl.SetActive(true);
+        DistanceControl.SetActive(true);
 
-        } else if (selection == Selection.XY) {
-            gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            XYPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
-            EnableClippingMaterial();
-
-        } else if (selection == Selection.XZ) {
-            gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            XZPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
-            EnableClippingMaterial();
-
-        } else if (selection == Selection.YZ) {
-            gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
-            YZPlaneMesh.GetComponent<MeshRenderer>().material.renderQueue = 2000;
-            EnableClippingMaterial();
-
-        } 
-
+        gizmo.gameObject.GetComponent<GizmoVariant>().UnhighlightAll();
         gizmo.gameObject.GetComponent<GizmoVariant>().HideXCone();
         gizmo.gameObject.GetComponent<GizmoVariant>().HideYCone();
         gizmo.gameObject.GetComponent<GizmoVariant>().HideZCone();
     }
     private void OnStopMove() {
-        if (!ImpossiblePoseNotification.activeSelf) {
-            ConfirmPoseDialogDisable.SetActive(false);
+        OnlineButton.SetActive(true);
+        CoordsToggleDisable.SetActive(false);
+
+        if (ImpossiblePoseNotification.active == true) {
+            //pointInstance.transform.position = lastValidPosition;
+            //MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+            ImpossiblePoseNotify(false, true);
+
+            pointInstance.transform.position = lastValidTransform.transform.position;
+            MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), lastValidTransform.transform);
+
+            //pointInstance.transform.position = lastValidTransform.transform.position;
+        } else {
+            lastValidTransform.transform.position = pointInstance.transform.position;
         }
+
+        //Makes me angry that this has to be here, but the notification won't disappear otherwise
+
+        //ImpossiblePoseNotify should take care of this, but it just disables the red material and
+        //leaves the notification active for some reason
+        ImpossiblePoseNotification.SetActive(false);
+
+        ConfirmButtonDisable.SetActive(false);
+        RevertButtonDisable.SetActive(false);
+
         LeftMenu.SetActive(true);
         ButtonHintText.GetComponent<TextMeshProUGUI>().text = "Hold to drag";
         gizmo.GetComponent<GizmoVariant>().UnhighlightAll();
@@ -429,12 +476,12 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         ShowAllAxisAndPlanes();
 
         //draggablePoint.GetComponent<LineRenderer>().enabled = false;
-        XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
-        YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
-        XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
+        //XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
+        //YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
+        //XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         DistanceControl.SetActive(false);
 
-        EnableStandardMaterial();
+        EnableStandardShader();
     }
 
     private void Select(Selection value) {
@@ -473,7 +520,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         }
     }
 
-    private async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
+    private async void MoveHereModel(Vector3 position, Transform dummyTransform, bool avoid_collision = true) {
         List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
 
         Orientation orientation = new Orientation(w: (decimal) 0.0, x: (decimal) 0.0, y: (decimal) 1.0, z: (decimal) 0.0);
@@ -487,28 +534,34 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 //Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
             }
         } catch (ItemNotFoundException ex) {
-            ImpossiblePoseNotify(true);
+            ImpossiblePoseNotify(true, false);
             //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
             return;
         } catch (RequestFailedException ex) {
-            
+            /*
             if (avoid_collision) //if this is first call, try it again without avoiding collisions
-                MoveHereModel(position, false);
-            else
-                //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
+                MoveHereModel(position, dummy, false);
+            */
             isWaiting = false;
-            ImpossiblePoseNotify(true);
+            ImpossiblePoseNotify(true, false);
             return;
         }
-
-        ImpossiblePoseNotify(false);
-
+        
         foreach (IO.Swagger.Model.Joint joint in modelJoints) {
             SceneManager.Instance.SelectedRobot.SetJointValue(joint.Name, (float) joint.Value);
         }
 
         isWaiting = false;
+
+        //lastValidTransform.transform.position = dummyTransform.position;
+
+        ImpossiblePoseNotify(false, false);
+
+        //lastValidPosition = position;
+        
+
+        
     }
 
     private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
@@ -547,34 +600,17 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         }
     }
 
-    private void ImpossiblePoseNotify(bool isImpossible) {
-        ImpossiblePoseNotification.SetActive(isImpossible);
+    private void ImpossiblePoseNotify(bool isImpossible, bool force) {
+        if (!(isMoving || force)) {
+            return;
+        }
 
         if (isImpossible) {
-            if (materialEnabled == MaterialEnabled.invalid) {
-                return;
-            }
-            EnableInvalidMaterial();
-            /*robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetVector("_OutlineColor", (Vector4) Color.red);
-            robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetFloat("_OutlineWidth", 0.003f);
-            robot.GetComponent<OutlineOnClick>().Highlight();*/
+            EnableInvalidShader();
+            ImpossiblePoseNotification.SetActive(true);
         } else {
-            if (isMoving) {
-                if (selection == Selection.XZ || selection == Selection.XY || selection == Selection.YZ) {
-                    if (materialEnabled == MaterialEnabled.clipping) {
-                        return;
-                    }
-
-                    EnableClippingMaterial();
-                } else {
-                    if (materialEnabled == MaterialEnabled.standard) {
-                        return;
-                    }
-                    EnableStandardMaterial();
-                }
-            }
-            /*robot.GetComponent<OutlineOnClick>().localOutlineHoverSecondPass.SetVector("_OutlineColor", (Vector4) Color.yellow);
-            robot.GetComponent<OutlineOnClick>().UnHighlight();*/
+            EnableStandardShader();
+            ImpossiblePoseNotification.SetActive(false);
         }
 
 
@@ -673,14 +709,14 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void UpdateUpDownSensitivity(float value) {
-        UpDownMultiplier = value;
+        ForwardBackwardMultiplier = value;
     }
 
     #endregion SENSITIVITY SLIDERS
 
-    #region CLIPPING MATERIAL
-    private void EnableStandardMaterial() {
-        materialEnabled = MaterialEnabled.standard;
+    #region MATERIALS
+    private void EnableStandardShader() {
+        shaderEnabled = ShaderEnabled.standard;
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("Standard");
@@ -693,6 +729,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
     }
 
     private void EnableClippingMaterial() {
+        /*
         materialEnabled = MaterialEnabled.clipping;
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
@@ -704,10 +741,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             }
 
         }
+        */
     }
 
-    private void EnableInvalidMaterial() {
-        materialEnabled = MaterialEnabled.invalid;
+    private void EnableInvalidShader() {
+        shaderEnabled = ShaderEnabled.invalid;
         foreach (Renderer i in robot.robotRenderers) {
             if (i.materials.Length == 3) {
                 i.materials[1].shader = Shader.Find("InvalidPose");
@@ -717,7 +755,7 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         }
     }
 
-    #endregion CLIPPING MATERIAL
+    #endregion MATERIALS
 
     #region MAIN BUTTONS
     public void OnSelectButtonClick() {
@@ -765,6 +803,11 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     public void OnUserSystemButtonClick() {
         cameraCoord = true;
+        gizmo.GetComponent<GizmoVariant>().FlipX(false);
+        gizmo.GetComponent<GizmoVariant>().FlipY(false);
+        gizmo.GetComponent<GizmoVariant>().FlipZ(false);
+
+        LockButton.GetComponent<LockButton>().ChangeToUnlocked();
     }
 
     public void OnLockUserSystem() {
@@ -817,7 +860,9 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     public void OnRevertButtonClick() {
         pointInstance.transform.position = endEffector.transform.position;
-        MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
+        lastValidTransform.transform.position = endEffector.transform.position;
+        MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), lastValidTransform.transform);
+        
 
         ConfirmPoseDialog.SetActive(false);
     }
@@ -826,110 +871,18 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
 
     #region DEBUG BUTTONS
     public void OnFirstButtonClick() {
-        cameraCoord = !cameraCoord;
+        
+        draggablePoint.GetComponent<LineRenderer>().enabled = true;
 
     }
 
     public void OnSecondButtonClick() {
-        pointInstance.transform.rotation = Quaternion.Euler(0, 45f, 0);
+        pointInstance.transform.position = lastValidTransform.transform.position;
     }
 
     public async void OnThirdButtonClick() {
-        pointInstance.transform.rotation = Quaternion.Euler(0, 0, 0);
     }
 
     #endregion DEBUG BUTTONS
-
-    #region IK
-    private List<IO.Swagger.Model.Joint> DobotInverseKinematics(List<IO.Swagger.Model.Joint> startJoints, IO.Swagger.Model.Pose pose) {
-        double link_2_length = 0.135;
-        double link_3_length = 0.147;
-        double link_4_length = 0.06;
-        double end_effector_length = 0.06;
-
-
-        Quaternion quat = new Quaternion((float)pose.Orientation.X, (float)pose.Orientation.Y, (float)pose.Orientation.Z, (float)pose.Orientation.W);
-        Vector3 eul = Quaternion.ToEulerAngles(quat.normalized);
-        double yaw = eul.z;
-
-        double x = (double)pose.Position.X;
-        double y = (double)pose.Position.Y;
-        double z = (double)pose.Position.Z + end_effector_length;
-
-        double r = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
-        double rho_sq = Math.Pow(r - link_4_length, 2) + Math.Pow(y, 2);
-        
-        double rho = Math.Sqrt(rho_sq);
-
-        double l2_sq = Math.Pow(link_2_length, 2);
-        double l3_sq = Math.Pow(link_3_length, 2);
-
-        double alpha = 0;
-        double gamma = 0;
-
-        try {
-            alpha = Math.Acos(l2_sq + rho_sq - l3_sq) / (2.0 * link_2_length * rho);
-            gamma = Math.Acos((l2_sq + l3_sq - rho_sq) / (2.0 * link_2_length * link_3_length));
-        }
-        catch (Exception e){
-            Debug.Log("aint it, " + e);
-        }
-
-        double beta = Math.Atan2(z, r - link_4_length);
-
-        double baseAngle = Math.Atan2(y, x);
-        double rearAngle = Math.PI / 2 - beta - alpha;
-        double frontAngle = Math.PI / 2 - gamma;
-
-        Debug.Log("result 1: " + baseAngle);
-        Debug.Log("result 2: " + rearAngle);
-        Debug.Log("result 3: " + frontAngle);
-        Debug.Log("result 4: " + (-rearAngle - frontAngle));
-        Debug.Log("result 5: " + (yaw - baseAngle));
-
-        List<IO.Swagger.Model.Joint> newJoints = new List<IO.Swagger.Model.Joint>() {
-            new IO.Swagger.Model.Joint("magician_joint_1", (decimal)baseAngle),
-            new IO.Swagger.Model.Joint("magician_joint_2", (decimal)rearAngle),
-            new IO.Swagger.Model.Joint("magician_joint_3", (decimal)frontAngle),
-            new IO.Swagger.Model.Joint("magician_joint_4", (decimal)(-rearAngle - frontAngle)),
-            new IO.Swagger.Model.Joint("magician_joint_5", (decimal)(yaw - baseAngle))
-        };
-
-
-
-
-        return newJoints;
-    }
-
-    private List<IO.Swagger.Model.Joint> DobotInverseKinematicsAbsolute(List<IO.Swagger.Model.Joint> startJoints, IO.Swagger.Model.Pose pose) {
-        return DobotInverseKinematics(startJoints, MakePoseRel(robot.GetPose(), pose));
-    }
-
-    private IO.Swagger.Model.Pose MakePoseRel(IO.Swagger.Model.Pose parent, IO.Swagger.Model.Pose child) {
-        IO.Swagger.Model.Position position = new IO.Swagger.Model.Position();
-        position.X = child.Position.X - parent.Position.X;
-        position.Y = child.Position.Y - parent.Position.Y;
-        position.Z = child.Position.Z - parent.Position.Z;
-
-        Quaternion parentQuat = new Quaternion(x: (float)parent.Orientation.X, y: (float)parent.Orientation.Y, z: (float)parent.Orientation.Z, w: (float)parent.Orientation.W).normalized;
-        Quaternion childQuat = new Quaternion(x: (float) child.Orientation.X, y: (float) child.Orientation.Y, z: (float) child.Orientation.Z, w: (float) child.Orientation.W).normalized;
-
-        Quaternion resultQuat = Quaternion.Inverse(parentQuat) * childQuat;
-
-        Orientation resultOrientation = new Orientation(x: (decimal)resultQuat.x, y: (decimal)resultQuat.y, z: (decimal)resultQuat.z, w: (decimal)resultQuat.w);
-
-        return new IO.Swagger.Model.Pose(position, resultOrientation);
-
-        
-
-
-    }
-
-    private IO.Swagger.Model.Position RotatePosition(IO.Swagger.Model.Position pose) {
-        return null;
-    }
-
-    #endregion
-
 
 }

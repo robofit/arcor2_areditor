@@ -8,12 +8,13 @@ public class SensitivitySlider : MonoBehaviour
 {
     [SerializeField] private Slider slider;
     [SerializeField] private TextMeshProUGUI text;
+    [SerializeField] private string format = "0.00";
 
     // Start is called before the first frame update
     void Start()
     {
         slider.onValueChanged.AddListener((v) => {
-            text.text = "Sensitivity: " + v.ToString("0.00");
+            text.text = "Sensitivity: " + v.ToString(format);
         });
 
         
