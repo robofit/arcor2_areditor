@@ -6,7 +6,7 @@ Shader "ClippingColorChange" {
         _Metallic ("Metalness", Range(0, 1)) = 0
         [HDR]_Emission ("Emission", color) = (0,0,0)
 
-        _AlternateColor ("Alternate Color", Color) = (0.6, 0.29, 0.29, 0) // New property for the alternate color
+        _AlternateColor ("Alternate Color", Color) = (0.6, 0.29, 0.29, 0)
     }
 
     SubShader {
@@ -23,7 +23,7 @@ Shader "ClippingColorChange" {
         half _Metallic;
         half3 _Emission;
         float4 _Plane;
-        float4 _AlternateColor; // Declare variable for the alternate color
+        float4 _AlternateColor;
 
         struct Input {
             float2 uv_MainTex;
@@ -35,21 +35,14 @@ Shader "ClippingColorChange" {
             float distance = dot(i.worldPos, _Plane.xyz);
             distance = distance + _Plane.w;
 
-            // Instead of clipping, we use a conditional to render in different colors
             if (distance > 0) {
                 fixed4 col = tex2D(_MainTex, i.uv_MainTex);
                 col *= _Color;
                 o.Albedo = col.rgb;
-                o.Metallic = _Metallic;
-                o.Smoothness = _Smoothness;
-                o.Emission = _Emission;
             } else {
                 fixed4 col = tex2D(_MainTex, i.uv_MainTex);
                 col *= _Color;
-                o.Albedo = col.rgb + _AlternateColor.rgb; // Render in alternate color if below the clipping plane
-                o.Metallic = 0;
-                o.Smoothness = 0;
-                o.Emission = _Emission;
+                o.Albedo = col.rgb + _AlternateColor.rgb;
             }
         }
         ENDCG

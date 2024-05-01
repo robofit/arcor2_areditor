@@ -905,7 +905,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slider: {fileID: 7670382351719661677}
   text: {fileID: 2143352007311589192}
-  format: 0.000
+  format: 0.0
+  newMin: 0
+  newMax: 10
 --- !u!1 &1325428084746692598
 GameObject:
   m_ObjectHideFlags: 0
@@ -3623,6 +3625,8 @@ MonoBehaviour:
   slider: {fileID: 8333066501508414535}
   text: {fileID: 8940381222728666558}
   format: 0.00
+  newMin: 0
+  newMax: 1
 --- !u!1 &5958035540270551389
 GameObject:
   m_ObjectHideFlags: 0

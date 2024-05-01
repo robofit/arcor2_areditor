@@ -222,7 +222,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
         Destroy(lastValidTransform);
 
         WebsocketManager.Instance.OnRobotEefUpdated += SceneManager.Instance.RobotEefUpdated;
-        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;        
+        WebsocketManager.Instance.OnRobotJointsUpdated += SceneManager.Instance.RobotJointsUpdated;
+        gameObject.SetActive(false);
     }
 
     private void Update() {
@@ -313,8 +314,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
             difference = pointInstance.transform.InverseTransformVector(difference);
 
             //Debug: draw difference vector
-            //draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
-            //draggablePoint.GetComponent<LineRenderer>().SetPosition(1, rayHitPosition);
+            draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
+            draggablePoint.GetComponent<LineRenderer>().SetPosition(1, originalRayPoint);
 
             dummy.transform.position = originalPointPosition;
             dummy.transform.rotation = pointInstance.transform.rotation;
@@ -348,8 +349,8 @@ public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
                 MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), dummy.transform);
             }
 
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(0, lastValidTransform.transform.position);
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(1, pointInstance.transform.position);
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(0, lastValidTransform.transform.position);
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(1, pointInstance.transform.position);
 
         } /*else if (!isMoving && transformSet) {
             pointInstance.transform.position = lastValidTransform.transform.position;

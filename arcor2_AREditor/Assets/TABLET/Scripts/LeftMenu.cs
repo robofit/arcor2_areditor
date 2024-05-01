@@ -390,13 +390,13 @@ public abstract class LeftMenu : MonoBehaviour {
 
         if (ModelSteppingMenu.Instance.isActiveAndEnabled) {
             await ModelSteppingMenu.Instance.TurnOff();
-            ModelSteppingMenu.Instance.gameObject.SetActive(false);
             SelectorMenu.Instance.gameObject.SetActive(true);
             //ModelSteppingMenu.Instance.ExitDialogShow();
             /*ModelSteppingMenu.Instance.gameObject.SetActive(false);
             SelectorMenu.Instance.gameObject.SetActive(true);
             SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);*/
         } else {
+            RobotSteppingButton.GetComponent<Image>().enabled = false;
             await RobotSteppingMenu.Instance.Hide();
             await ModelSteppingMenu.Instance.TurnOn();
             ModelSteppingMenu.Instance.gameObject.SetActive(true);
@@ -443,6 +443,9 @@ public abstract class LeftMenu : MonoBehaviour {
                     RobotSteppingButton.GetComponent<Image>().enabled = true;
                     SelectorMenu.Instance.gameObject.SetActive(false);
                     RobotSteppingMenu.Instance.Show();
+                    if (ModelSteppingMenu.Instance.isActiveAndEnabled) {
+                        ModelSteppingMenu.Instance.TurnOff();
+                    }
                 }
             }
         }
@@ -620,7 +623,7 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameDialog.Cancel();
         TransformMenu.Instance.Hide();
         RobotSteppingMenu.Instance.Hide();
-
+        ModelSteppingMenu.Instance.TurnOff();
         MainSettingsMenu.Instance.Hide();
         ActionObjectMenu.Instance.Hide();
 
