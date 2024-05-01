@@ -9,7 +9,7 @@ using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
-public class ModelSteppingMenu : RightMenu<ModelSteppingMenu> {
+public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     private RobotActionObject robot;
     private RobotEE endEffector;
 
