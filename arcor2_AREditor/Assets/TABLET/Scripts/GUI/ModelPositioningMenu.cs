@@ -803,27 +803,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
 
     #endregion COORD SYSTEM BUTTONS
 
-    #region EXIT DIALOG
-    public void ExitDialogShow() {
-        ExitDialog.SetActive(true);
-
-    }
-    public void OnCancelButtonClick() {
-        ExitDialog.SetActive(false);
-    }
-
-    public void OnYesButtonClick() {
-        ExitDialog.SetActive(false);
-        TurnOff();
-    }
-
-    public void OnNoButtonClick() {
-        ExitDialog.SetActive(false);
-        TurnOff(reset: true);
-    }
-
-    #endregion EXIT DIALOG
-
     #region CONFIRM DIALOG
     public async void OnConfirmButtonClick() {
         Position position = DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position)));
