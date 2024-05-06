@@ -168,7 +168,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         gizmo.transform.rotation = Quaternion.identity;
         gizmo.transform.SetParent(pointInstance.transform);
         gizmo.transform.localPosition = Vector3.zero;
-        Sight.Instance.SelectedGizmoAxis += OnSelectedGizmoAxis;
 
         XYPlaneMesh = gizmo.GetComponent<GizmoVariant>().XYPlaneMesh;
         XZPlaneMesh = gizmo.GetComponent<GizmoVariant>().XZPlaneMesh;
@@ -209,8 +208,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         pointPositions[robot.GetId()] = lastValidTransform.transform.position;
 
         SceneManager.Instance?.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);
-
-        Sight.Instance.SelectedGizmoAxis -= OnSelectedGizmoAxis;
 
         robot.GetComponent<OutlineOnClick>().Enabled = true;
 
@@ -398,6 +395,33 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
                     Select(Selection.YZ);
                     return;
                 }
+
+                else if (hit.collider.gameObject.CompareTag("gizmo_x")) {
+                    if (!isMoving) {
+                        pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
+                    }
+
+                    Select(Selection.x);
+                    return;
+                }
+
+                else if (hit.collider.gameObject.CompareTag("gizmo_y")) {
+                    if (!isMoving) {
+                        pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
+                    }
+
+                    Select(Selection.y);
+                    return;
+                }
+
+                else if (hit.collider.gameObject.CompareTag("gizmo_z")) {
+                    if (!isMoving) {
+                        pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
+                    }
+
+                    Select(Selection.z);
+                    return;
+                }
             }
         }
 
@@ -563,22 +587,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         
 
         
-    }
-
-    private void OnSelectedGizmoAxis(object sender, GizmoAxisEventArgs args) {
-        switch (args.SelectedAxis.ToString()) {
-            case "X":
-                Select(Selection.x);
-                break;
-            case "Y":
-                Select(Selection.y);
-                break;
-            case "Z":
-                Select(Selection.z);
-                break;
-            default:
-                throw new NotImplementedException();
-        }
     }
 
     private GameObject SelectionToGameObject(Selection selection) {
@@ -873,7 +881,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     #region DEBUG BUTTONS
     public void OnFirstButtonClick() {
         
-        draggablePoint.GetComponent<LineRenderer>().enabled = true;
+        EnableInvalidShader();
 
     }
 
