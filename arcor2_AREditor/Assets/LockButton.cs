@@ -1,3 +1,12 @@
+/*
+ * LockButton
+ * Author: Timotej Halenár
+ * Login: xhalen00
+ * Bachelor's Thesis 
+ * VUT FIT 2024
+ * 
+ * */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;

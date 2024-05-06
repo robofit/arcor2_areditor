@@ -1,3 +1,12 @@
+/*
+ * GizmoVariant
+ * Author: Timotej Halenár
+ * Login: xhalen00
+ * Bachelor's Thesis 
+ * VUT FIT 2024
+ * 
+ * */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -93,10 +102,6 @@ public class GizmoVariant : MonoBehaviour
         ClippingPlane.transform.SetParent(XYPlaneMesh.transform);
         ClippingPlane.transform.position = Vector3.zero;
         ClippingPlane.transform.rotation = Quaternion.Euler(0f, -180f, -180f);
-    }
-
-    public void SetDir(bool dir) {
-        ClippingPlane.GetComponent<ClippingPlane>().dir = dir;
     }
 
     public void AddMaterial(Material material) {

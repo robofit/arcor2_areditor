@@ -1,3 +1,12 @@
+/*
+ * ModelPositioningMenu
+ * Author: Timotej Halenár
+ * Login: xhalen00
+ * Bachelor's Thesis 
+ * VUT FIT 2024
+ * 
+ * */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -48,7 +57,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     public Material ClippingMaterial;
 
     private Vector3 OrigPlaneScale;
-    private Vector3 ActivePlaneScale;
     private Vector3 HiddenPlaneScale = Vector3.zero;
 
     private Vector3 OrigAxisScale;
@@ -178,10 +186,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         ZAxis = gizmo.GetComponent<GizmoVariant>().ZAxis;
 
         OrigPlaneScale = XYPlaneMesh.transform.localScale;
-        ActivePlaneScale = OrigPlaneScale;
-        //ActivePlaneScale.z = OrigPlaneScale.z;
-        //ActivePlaneScale.x = 3.0f;
-        //ActivePlaneScale.y = 3.0f;
 
         OrigAxisScale = XAxis.transform.localScale;
         ActiveAxisScale = XAxis.transform.localScale;
@@ -191,10 +195,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         HiddenAxisScale.z = 0.0f;
 
         ImpossiblePoseNotify(false, true);
-
-        //EnableClippingMaterial();
-
-        //draggablePoint.GetComponent<LineRenderer>().enabled = true;
     }
 
     
@@ -304,15 +304,14 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
             rayPoint.z += forwardBackwardAdjust.z;
 
             dummy.transform.position = rayPoint;
-            //rayPoint = dummy.transform.position;
 
             Vector3 difference = rayPoint - originalRayPoint;
 
             difference = pointInstance.transform.InverseTransformVector(difference);
 
             //Debug: draw difference vector
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
-            draggablePoint.GetComponent<LineRenderer>().SetPosition(1, originalRayPoint);
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(0, rayPoint);
+            //draggablePoint.GetComponent<LineRenderer>().SetPosition(1, originalRayPoint);
 
             dummy.transform.position = originalPointPosition;
             dummy.transform.rotation = pointInstance.transform.rotation;
@@ -346,12 +345,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
                 MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), dummy.transform);
             }
 
-            //draggablePoint.GetComponent<LineRenderer>().SetPosition(0, lastValidTransform.transform.position);
-            //draggablePoint.GetComponent<LineRenderer>().SetPosition(1, pointInstance.transform.position);
-
-        } /*else if (!isMoving && transformSet) {
-            pointInstance.transform.position = lastValidTransform.transform.position;
-        }*/
+        } 
             
     }
     private void FixedUpdate() {
@@ -360,7 +354,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         RaycastHit[] hits = Physics.RaycastAll(ray.origin, ray.direction);
         if (hits.Length > 0) {
             foreach (RaycastHit hit in hits) {
-                if (hit.collider.gameObject.name == "DraggablePoint(Clone)") { //stupid, fix
+                if (hit.collider.gameObject.CompareTag("draggable_point")) {
                     if (!isMoving) {
                         pointDistance = Vector3.Distance(hit.transform.position, ray.origin);
                     }
@@ -472,14 +466,11 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         CoordsToggleDisable.SetActive(false);
 
         if (ImpossiblePoseNotification.active == true) {
-            //pointInstance.transform.position = lastValidPosition;
-            //MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position));
             ImpossiblePoseNotify(false, true);
 
             pointInstance.transform.position = lastValidTransform.transform.position;
             MoveHereModel(SceneManager.Instance.SceneOrigin.transform.parent.InverseTransformPoint(pointInstance.transform.position), lastValidTransform.transform);
 
-            //pointInstance.transform.position = lastValidTransform.transform.position;
         } else {
             lastValidTransform.transform.position = pointInstance.transform.position;
         }
@@ -500,10 +491,6 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
         StopAllCoroutines();
         ShowAllAxisAndPlanes();
 
-        //draggablePoint.GetComponent<LineRenderer>().enabled = false;
-        //XYPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
-        //YZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
-        //XZPlaneMesh.gameObject.GetComponent<MeshRenderer>().material.renderQueue = 4700;
         DistanceControl.SetActive(false);
 
         EnableStandardShader();
@@ -555,19 +542,13 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
             List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
             modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
-            if (!avoid_collision) {
-                //Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
-            }
+            
         } catch (ItemNotFoundException ex) {
             ImpossiblePoseNotify(true, false);
-            //Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
             isWaiting = false;
             return;
+
         } catch (RequestFailedException ex) {
-            /*
-            if (avoid_collision) //if this is first call, try it again without avoiding collisions
-                MoveHereModel(position, dummy, false);
-            */
             isWaiting = false;
             ImpossiblePoseNotify(true, false);
             return;
@@ -579,14 +560,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
 
         isWaiting = false;
 
-        //lastValidTransform.transform.position = dummyTransform.position;
-
         ImpossiblePoseNotify(false, false);
-
-        //lastValidPosition = position;
-        
-
-        
     }
 
     private GameObject SelectionToGameObject(Selection selection) {
@@ -675,7 +649,7 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
                 }
             } else if (i == Selection.XY || i == Selection.XZ || i == Selection.YZ) {
                 if (i == selected) {
-                    StartCoroutine(AxisScale(SelectionToGameObject(i), ActivePlaneScale));
+                    //StartCoroutine(AxisScale(SelectionToGameObject(i), ActivePlaneScale));
                     Debug.Log("Selected: " + i.ToString());
                 } else {
                     StartCoroutine(AxisScale(SelectionToGameObject(i), HiddenPlaneScale));

@@ -1,3 +1,5 @@
+//Clipping shader based on RonjaTutorials: https://www.ronja-tutorials.com/post/021-plane-clipping/
+
 Shader "ClippingColorChange" {
     Properties {
         _Color ("Tint", Color) = (0, 0, 0, 1)
