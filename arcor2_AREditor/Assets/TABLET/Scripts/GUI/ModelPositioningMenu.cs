@@ -700,42 +700,12 @@ public class ModelPositioningMenu : RightMenu<ModelPositioningMenu> {
     #region MATERIALS
     private void EnableStandardShader() {
         shaderEnabled = ShaderEnabled.standard;
-        foreach (Renderer i in robot.robotRenderers) {
-            if (i.materials.Length == 3) {
-                i.materials[1].shader = Shader.Find("Standard");
-                gizmo.GetComponent<GizmoVariant>().RemoveMaterial(i.materials[1]);
-            } else {
-                i.material.shader = Shader.Find("Standard");
-                gizmo.GetComponent<GizmoVariant>().RemoveMaterial(i.material);
-            }
-        }
-    }
-
-    private void EnableClippingMaterial() {
-        /*
-        materialEnabled = MaterialEnabled.clipping;
-        foreach (Renderer i in robot.robotRenderers) {
-            if (i.materials.Length == 3) {
-                i.materials[1].shader = Shader.Find("ClippingColorChange");
-                gizmo.GetComponent<GizmoVariant>().AddMaterial(i.materials[1]);
-            } else {
-                i.material.shader = Shader.Find("ClippingColorChange");
-                gizmo.GetComponent<GizmoVariant>().AddMaterial(i.material);
-            }
-
-        }
-        */
+        robot.EnableStandardShader();
     }
 
     private void EnableInvalidShader() {
         shaderEnabled = ShaderEnabled.invalid;
-        foreach (Renderer i in robot.robotRenderers) {
-            if (i.materials.Length == 3) {
-                i.materials[1].shader = Shader.Find("InvalidPose");
-            } else {
-                i.material.shader = Shader.Find("InvalidPose");
-            }
-        }
+        robot.EnableInvalidShader();
     }
 
     #endregion MATERIALS

@@ -54,7 +54,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         if (joints != null && joints.Id == args.Data.Id) {
             joints = args.Data;
             UpdateMenu();
-            //MoveHereModel();
+            MoveHereModel();
         }
     }
 
@@ -315,13 +315,13 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
         }
     }
 
-    public async void MoveHereModel(Vector3 position, bool avoid_collision = true) {
+    public async void MoveHereModel(bool avoid_collision = true) {
         List<IO.Swagger.Model.Joint> modelJoints; //joints to move the model to
         string robotId;
 
-        if (true) {
+        if (isOrientationDetail) {
             try {
-                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(position)));
+                IO.Swagger.Model.Pose pose = new IO.Swagger.Model.Pose(orientation: orientation.Orientation, position: DataHelper.Vector3ToPosition(TransformConvertor.UnityToROS(CurrentActionPoint.transform.position)));
                 List<IO.Swagger.Model.Joint> startJoints = SceneManager.Instance.SelectedRobot.GetJoints();
 
                 modelJoints = await WebsocketManager.Instance.InverseKinematics(SceneManager.Instance.SelectedRobot.GetId(), SceneManager.Instance.SelectedEndEffector.GetName(), true, pose, startJoints);
@@ -329,13 +329,12 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 if (!avoid_collision) {
                     Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
                 }
-            } catch(ItemNotFoundException ex) {
+            } catch (ItemNotFoundException ex) {
                 Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
                 return;
             } catch (RequestFailedException ex) {
-                Debug.Log("am i here");
                 if (avoid_collision) //if this is first call, try it again without avoiding collisions
-                    MoveHereModel(position, false);
+                    MoveHereModel(false);
                 else
                     Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
                 return;
@@ -419,7 +418,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
 
         await PrepareRobotModel(joints.RobotId, false);
 
-        //MoveHereModel();
+        MoveHereModel();
         UpdateJointsList();
         ShowMenu(currentActionPoint);
     }

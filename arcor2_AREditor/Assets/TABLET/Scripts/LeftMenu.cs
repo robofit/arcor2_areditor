@@ -388,19 +388,16 @@ public abstract class LeftMenu : MonoBehaviour {
             return;
         }
 
+        //if the menu is active, turn off and enable selector menu
         if (ModelPositioningMenu.Instance.isActiveAndEnabled) {
             await ModelPositioningMenu.Instance.TurnOff();
             SelectorMenu.Instance.gameObject.SetActive(true);
-            //ModelSteppingMenu.Instance.ExitDialogShow();
-            /*ModelSteppingMenu.Instance.gameObject.SetActive(false);
-            SelectorMenu.Instance.gameObject.SetActive(true);
-            SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).SetVisibility(0.0f);*/
+        //otherwise, make sure robot stepping menu is disabled and enable the positioning menu
         } else {
             RobotSteppingButton.GetComponent<Image>().enabled = false;
             await RobotSteppingMenu.Instance.Hide();
             await ModelPositioningMenu.Instance.TurnOn();
             ModelPositioningMenu.Instance.gameObject.SetActive(true);
-            //ModelSteppingMenu.Instance.Show();
             SelectorMenu.Instance.gameObject.SetActive(false);
             
         }
