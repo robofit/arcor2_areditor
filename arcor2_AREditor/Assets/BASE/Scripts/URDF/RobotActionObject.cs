@@ -9,6 +9,7 @@ using IO.Swagger.Model;
 using RosSharp.Urdf;
 using TMPro;
 using UnityEngine;
+using static UnityEditor.Recorder.OutputPath;
 
 namespace Base {
 
@@ -384,6 +385,26 @@ namespace Base {
             }
 
             UpdateColor();
+        }
+
+        public void EnableStandardShader() {
+            foreach (Renderer i in robotRenderers) {
+                if (i.materials.Length == 3) {
+                    i.materials[1].shader = Shader.Find("Standard");
+                } else {
+                    i.material.shader = Shader.Find("Standard");
+                }
+            }
+        }
+
+        public void EnableInvalidShader() {
+            foreach (Renderer i in robotRenderers) {
+                if (i.materials.Length == 3) {
+                    i.materials[1].shader = Shader.Find("InvalidPose");
+                } else {
+                    i.material.shader = Shader.Find("InvalidPose");
+                }
+            }
         }
 
 

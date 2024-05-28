@@ -4,13 +4,19 @@ using UnityEngine.UI;
 
 public class TwoStatesToggleNew : MonoBehaviour
 {
+    public bool DefaultLeft = false;
+
     public enum States {
         Left,
         Right
     }  
     
     private void Awake() {
-        CurrentState = States.Right;
+        if (DefaultLeft) {
+            CurrentState = States.Left;
+        } else {
+            CurrentState = States.Right;
+        }
     }
     public Image LeftImage, RightImage;
     private Sprite icon1, icon2;

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Base;
 using IO.Swagger.Model;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static Base.GameManager;
 
@@ -15,7 +17,7 @@ public abstract class LeftMenu : MonoBehaviour {
 
     public Button FavoritesButton, RobotButton, AddButton, UtilityButton, HomeButton;
     public ButtonWithTooltip MoveButton, MoveButton2, RemoveButton, RenameButton, CalibrationButton,
-        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, CloseButton, SaveButton, MainSettingsButton, CopyButton; //Buttons with number 2 are duplicates in favorites submenu
+        OpenMenuButton, RobotSelectorButton, RobotSteppingButton, ModelPositioningButton, CloseButton, SaveButton, MainSettingsButton, CopyButton; //Buttons with number 2 are duplicates in favorites submenu
     public GameObject FavoritesButtons, HomeButtons, UtilityButtons, AddButtons, RobotButtons;
     public RenameDialog RenameDialog;
     public RobotSelectorDialog RobotSelector;
@@ -37,6 +39,7 @@ public abstract class LeftMenu : MonoBehaviour {
     private const string OPEN_MENU_BTN_LABEL = "Open menu";
     private const string ROBOT_STEPPING_MENU_BTN_LABEL = "Robot stepping menu";
     private const string ROBOT_SELECTOR_MENU_BTN_LABEL = "Select robot";
+    private const string MODEL_STEPPING_MENU_BTN_LABEL = "Model stepping menu";
     protected const string COPY_LABEL = "Duplicate object";
 
     protected virtual void Start() {
@@ -58,6 +61,12 @@ public abstract class LeftMenu : MonoBehaviour {
             RobotSteppingButton.SetDescription(ROBOT_STEPPING_MENU_BTN_LABEL);
         if (RobotSelectorButton != null)
             RobotSelectorButton.SetDescription(ROBOT_SELECTOR_MENU_BTN_LABEL);
+        if (ModelPositioningButton != null) 
+            ModelPositioningButton.SetDescription(MODEL_STEPPING_MENU_BTN_LABEL);
+        
+            
+        ModelPositioningMenu.Instance.gameObject.SetActive(false);
+     
     }
 
     protected virtual void Awake() {
@@ -178,8 +187,13 @@ public abstract class LeftMenu : MonoBehaviour {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
                     !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
                     SceneManager.Instance.SceneStarted ? $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+            ModelPositioningButton.SetInteractivity(SceneManager.Instance.SceneStarted &&
+                    !SceneManager.Instance.GetActionObject(SceneManager.Instance.SelectedRobot.GetId()).IsLockedByOtherUser,
+                    SceneManager.Instance.SceneStarted ? $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(robot used by {SceneManager.Instance.SelectedRobot.LockOwner()})" : $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         } else {
             RobotSteppingButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
+            
+            ModelPositioningButton?.SetInteractivity(SceneManager.Instance.SceneStarted, $"{MODEL_STEPPING_MENU_BTN_LABEL}\n(scene offline)");
         }
         RobotSelectorButton.SetInteractivity(SceneManager.Instance.SceneStarted, $"{ROBOT_SELECTOR_MENU_BTN_LABEL}\n(scene offline)");
     }
@@ -365,8 +379,31 @@ public abstract class LeftMenu : MonoBehaviour {
         }
     }
 
+    public async void ModelPositioningButtonClick() {
+        if (!SceneManager.Instance.SceneStarted) {
+            Notifications.Instance.ShowNotification("Failed to open model manipulation menu", "Scene offline");
+            return;
+        } else if (!SceneManager.Instance.IsRobotAndEESelected()) {
+            OpenRobotSelector(ModelPositioningButtonClick);
+            return;
+        }
 
-
+        //if the menu is active, turn off and enable selector menu
+        if (ModelPositioningMenu.Instance.isActiveAndEnabled) {
+            await ModelPositioningMenu.Instance.TurnOff();
+            SelectorMenu.Instance.gameObject.SetActive(true);
+        //otherwise, make sure robot stepping menu is disabled and enable the positioning menu
+        } else {
+            RobotSteppingButton.GetComponent<Image>().enabled = false;
+            await RobotSteppingMenu.Instance.Hide();
+            await ModelPositioningMenu.Instance.TurnOn();
+            ModelPositioningMenu.Instance.gameObject.SetActive(true);
+            SelectorMenu.Instance.gameObject.SetActive(false);
+            
+        }
+        
+    }
+    
     public async void RobotSteppingButtonClick() {
         // Scene offline
         if (!SceneManager.Instance.SceneStarted) {
@@ -403,6 +440,9 @@ public abstract class LeftMenu : MonoBehaviour {
                     RobotSteppingButton.GetComponent<Image>().enabled = true;
                     SelectorMenu.Instance.gameObject.SetActive(false);
                     RobotSteppingMenu.Instance.Show();
+                    if (ModelPositioningMenu.Instance.isActiveAndEnabled) {
+                        ModelPositioningMenu.Instance.TurnOff();
+                    }
                 }
             }
         }
@@ -580,7 +620,7 @@ public abstract class LeftMenu : MonoBehaviour {
             RenameDialog.Cancel();
         TransformMenu.Instance.Hide();
         RobotSteppingMenu.Instance.Hide();
-
+        ModelPositioningMenu.Instance.TurnOff();
         MainSettingsMenu.Instance.Hide();
         ActionObjectMenu.Instance.Hide();
 

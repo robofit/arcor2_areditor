@@ -66,6 +66,12 @@ public class Gizmo : MonoBehaviour {
 
     }
 
+    public void UnhighlightAllAxis() {
+        XAxisOutline.UnHighlight();
+        YAxisOutline.UnHighlight();
+        ZAxisOutline.UnHighlight();
+    }
+
     private string FormatValue(float value) {
         if (Mathf.Abs(value) < 0.000099f)
             return $"0cm";

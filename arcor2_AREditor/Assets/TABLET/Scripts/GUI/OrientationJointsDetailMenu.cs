@@ -35,8 +35,8 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
     public GameObject JointsDynamicList;
 
     public ConfirmationDialog ConfirmationDialog;
-    private NamedOrientation orientation;
-    private ProjectRobotJoints joints;
+    public NamedOrientation orientation;
+    public ProjectRobotJoints joints;
     private bool isOrientationDetail; //true for orientation, false for joints
 
     //visibility of robot model backup: Dictionary<robotID,visibilityValue>
@@ -329,7 +329,7 @@ public class OrientationJointsDetailMenu : MonoBehaviour, IMenu {
                 if (!avoid_collision) {
                     Notifications.Instance.ShowNotification("The model is in a collision with other object!", "");
                 }
-            } catch(ItemNotFoundException ex) {
+            } catch (ItemNotFoundException ex) {
                 Notifications.Instance.ShowNotification("Unable to move here model", ex.Message);
                 return;
             } catch (RequestFailedException ex) {
