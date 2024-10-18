@@ -23,7 +23,7 @@ public class CalibrationManager : Singleton<CalibrationManager> {
     //#if (UNITY_ANDROID || UNITY_IOS) && AR_ON
     //    public ARCoreExtensions ARCoreExt;
     //#endif
-    public ARSessionOrigin ARSessionOrigin;
+    
     public ARAnchorManager ARAnchorManager;
     public ARPlaneManager ARPlaneManager;
     public ARRaycastManager ARRaycastManager;

@@ -12,7 +12,6 @@ namespace Base {
 
    public class Sight : Singleton<Sight> {
         public GameObject CurrentObject;
-        public Collider CameraCollider;
 
         public System.DateTime HoverStartTime;
 

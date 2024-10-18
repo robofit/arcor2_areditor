@@ -9,7 +9,6 @@ using IO.Swagger.Model;
 using RosSharp.Urdf;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.Recorder.OutputPath;
 
 namespace Base {
 
